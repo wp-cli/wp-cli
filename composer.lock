@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "eea2fcc353b7a69e08b5fe4e8b63531b",
+    "content-hash": "46c250650822c29f0ea72cee2f3e1dfc",
     "packages": [
         {
             "name": "mustache/mustache",
@@ -3081,21 +3081,21 @@
         },
         {
             "name": "wp-cli/core-command",
-            "version": "v2.0.2",
+            "version": "v2.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/core-command.git",
-                "reference": "bb4c50e24a9d5e761e8804ba8b8735ddfc98d423"
+                "reference": "54fdd306f5c6f136a9c4046358380eda4c92fd0c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/core-command/zipball/bb4c50e24a9d5e761e8804ba8b8735ddfc98d423",
-                "reference": "bb4c50e24a9d5e761e8804ba8b8735ddfc98d423",
+                "url": "https://api.github.com/repos/wp-cli/core-command/zipball/54fdd306f5c6f136a9c4046358380eda4c92fd0c",
+                "reference": "54fdd306f5c6f136a9c4046358380eda4c92fd0c",
                 "shasum": ""
             },
             "require": {
                 "composer/semver": "^1.4",
-                "wp-cli/wp-cli": "dev-master"
+                "wp-cli/wp-cli": "^2.1"
             },
             "require-dev": {
                 "wp-cli/checksum-command": "^1 || ^2",
@@ -3144,7 +3144,7 @@
             ],
             "description": "Downloads, installs, updates, and manages a WordPress installation.",
             "homepage": "https://github.com/wp-cli/core-command",
-            "time": "2018-12-12T13:08:59+00:00"
+            "time": "2018-12-18T16:55:35+00:00"
         },
         {
             "name": "wp-cli/db-command",
@@ -3565,22 +3565,22 @@
         },
         {
             "name": "wp-cli/package-command",
-            "version": "v2.0.3",
+            "version": "v2.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/package-command.git",
-                "reference": "b295eec9f503000a3bea9c247397db4b0b4839c9"
+                "reference": "9cd0995fe59b2cbcf1cadb81f93c0f1191de9209"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/package-command/zipball/b295eec9f503000a3bea9c247397db4b0b4839c9",
-                "reference": "b295eec9f503000a3bea9c247397db4b0b4839c9",
+                "url": "https://api.github.com/repos/wp-cli/package-command/zipball/9cd0995fe59b2cbcf1cadb81f93c0f1191de9209",
+                "reference": "9cd0995fe59b2cbcf1cadb81f93c0f1191de9209",
                 "shasum": ""
             },
             "require": {
                 "composer/composer": ">=1.2.0 <1.7.0 || ^1.7.1",
                 "ext-json": "*",
-                "wp-cli/wp-cli": "dev-master"
+                "wp-cli/wp-cli": "^2.1"
             },
             "require-dev": {
                 "wp-cli/scaffold-command": "^1 || ^2",
@@ -3622,7 +3622,7 @@
             ],
             "description": "Lists, installs, and removes WP-CLI packages.",
             "homepage": "https://github.com/wp-cli/package-command",
-            "time": "2018-10-02T10:24:48+00:00"
+            "time": "2018-12-18T17:19:48+00:00"
         },
         {
             "name": "wp-cli/wp-cli-tests",
@@ -3733,16 +3733,16 @@
         },
         {
             "name": "wp-coding-standards/wpcs",
-            "version": "1.2.0",
+            "version": "1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards.git",
-                "reference": "7aa217ab38156c5cb4eae0f04ae376027c407a9b"
+                "reference": "f328bcafd97377e8e5e5d7b244d5ddbf301a3a5c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/WordPress-Coding-Standards/WordPress-Coding-Standards/zipball/7aa217ab38156c5cb4eae0f04ae376027c407a9b",
-                "reference": "7aa217ab38156c5cb4eae0f04ae376027c407a9b",
+                "url": "https://api.github.com/repos/WordPress-Coding-Standards/WordPress-Coding-Standards/zipball/f328bcafd97377e8e5e5d7b244d5ddbf301a3a5c",
+                "reference": "f328bcafd97377e8e5e5d7b244d5ddbf301a3a5c",
                 "shasum": ""
             },
             "require": {
@@ -3772,7 +3772,7 @@
                 "standards",
                 "wordpress"
             ],
-            "time": "2018-11-12T10:13:12+00:00"
+            "time": "2018-12-18T09:43:51+00:00"
         }
     ],
     "aliases": [],
