@@ -25,7 +25,7 @@ final class IncludeFrameworkAutoloader implements BootstrapStep {
 	 * @return BootstrapState Modified state to pass to the next step.
 	 */
 	public function process( BootstrapState $state ) {
-		if ( ! class_exists( 'WP_CLI\Autolaoder' ) ) {
+		if ( ! class_exists( 'WP_CLI\Autoloader' ) ) {
 			require_once WP_CLI_ROOT . '/php/WP_CLI/Autoloader.php';
 		}
 
