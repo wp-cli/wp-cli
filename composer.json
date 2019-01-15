@@ -12,7 +12,7 @@
         "ext-curl": "*",
         "ext-readline": "*",
         "mustache/mustache": "~2.4",
-        "ramsey/array_column": "~1.1",
+        "symfony/polyfill-php55": "~1.10",
         "rmccue/requests": "~1.6",
         "symfony/finder": ">2.7",
         "wp-cli/mustangostang-spyc": "^0.6.3",
