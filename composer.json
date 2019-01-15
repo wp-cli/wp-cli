@@ -14,7 +14,7 @@
         "mustache/mustache": "~2.4",
         "symfony/polyfill-php55": "~1.10",
         "rmccue/requests": "~1.6",
-        "symfony/finder": ">2.7",
+        "symfony/finder": "~2.7",
         "wp-cli/mustangostang-spyc": "^0.6.3",
         "wp-cli/php-cli-tools": "~0.11.2"
     },
