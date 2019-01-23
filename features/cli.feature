@@ -65,11 +65,11 @@ Feature: `wp cli` tasks
     When I run `wp --require=custom-cmd.php custom-command --quiet`
     Then STDOUT should be:
       """
-      Global configuration `url` does exists.
+      Global configuration `quiet` does exists.
       """
 
     When I run `wp --require=custom-cmd.php custom-command`
     Then STDOUT should be:
       """
-      Global configuration `url` does not exists.
+      Global configuration `quiet` does not exists.
       """
