@@ -48,13 +48,18 @@ Feature: `wp cli` tasks
       class Custom_Command extends WP_CLI_Command {
 
           /**
+           * Custom Command to validate a global configuration does exists or not.
+           *
+           * <config>
+           * : Config name to validate.
+           *
            * @when after_wp_load
            */
-          public function __invoke() {
-              if ( WP_CLI::has_config( 'user' ) ) {
-                  WP_CLI::log( 'Global configuration `user` does exists.' );
+          public function __invoke( $args ) {
+              if ( WP_CLI::has_config( $args[0] ) ) {
+                  WP_CLI::log( 'Global configuration `url` does exists.' );
               } else {
-                  WP_CLI::log( 'Global configuration `user` does not exists.' );
+                  WP_CLI::log( 'Global configuration `dummy` does not exists.' );
               }
           }
 
@@ -62,14 +67,14 @@ Feature: `wp cli` tasks
       WP_CLI::add_command( 'custom-command', 'Custom_Command' );
       """
 
-    When I run `wp --require=custom-cmd.php custom-command --user=1`
+    When I run `wp --require=custom-cmd.php custom-command url`
     Then STDOUT should be:
       """
-      Global configuration `user` does exists.
+      Global configuration `url` does exists.
       """
 
-    When I run `wp --require=custom-cmd.php custom-command`
+    When I run `wp --require=custom-cmd.php custom-command dummy`
     Then STDOUT should be:
       """
-      Global configuration `user` does not exists.
+      Global configuration `dummy` does not exists.
       """
