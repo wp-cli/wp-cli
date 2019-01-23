@@ -51,10 +51,10 @@ Feature: `wp cli` tasks
            * @when after_wp_load
            */
           public function __invoke() {
-              if ( WP_CLI::has_config( 'quiet' ) ) {
-                  WP_CLI::log( 'Global configuration `quiet` does exists.' );
+              if ( WP_CLI::has_config( 'user' ) ) {
+                  WP_CLI::log( 'Global configuration `user` does exists.' );
               } else {
-                  WP_CLI::log( 'Global configuration `quiet` does not exists.' );
+                  WP_CLI::log( 'Global configuration `user` does not exists.' );
               }
           }
 
@@ -62,14 +62,14 @@ Feature: `wp cli` tasks
       WP_CLI::add_command( 'custom-command', 'Custom_Command' );
       """
 
-    When I run `wp --require=custom-cmd.php custom-command --quiet`
+    When I run `wp --require=custom-cmd.php custom-command --user=1`
     Then STDOUT should be:
       """
-      Global configuration `quiet` does exists.
+      Global configuration `user` does exists.
       """
 
     When I run `wp --require=custom-cmd.php custom-command`
     Then STDOUT should be:
       """
-      Global configuration `quiet` does not exists.
+      Global configuration `user` does not exists.
       """
