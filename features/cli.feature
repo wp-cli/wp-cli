@@ -67,6 +67,7 @@ Feature: `wp cli` tasks
       """
       Global configuration `url` does exists.
       """
+
     When I run `wp --require=custom-cmd.php custom-command`
     Then STDOUT should be:
       """
