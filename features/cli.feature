@@ -62,12 +62,12 @@ Feature: `wp cli` tasks
       WP_CLI::add_command( 'custom-command', 'Custom_Command' );
       """
 
-    When I try `wp custom-command --url=example.com`
+    When I run `wp custom-command --url=example.com`
     Then STDOUT should be:
       """
       Global configuration `url` does exists.
       """
-    When I try `wp custom-command`
+    When I run `wp custom-command`
     Then STDOUT should be:
       """
       Global configuration `url` does not exists.
