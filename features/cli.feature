@@ -51,10 +51,10 @@ Feature: `wp cli` tasks
            * @when after_wp_load
            */
           public function __invoke() {
-              if ( WP_CLI::has_config( 'dummy' ) ) {
-                  WP_CLI::log( 'Configuration `dummy` does exists.' );
+              if ( WP_CLI::has_config( 'quiet' ) ) {
+                  WP_CLI::log( 'Global configuration `quiet` does exists.' );
               } else {
-                  WP_CLI::log( 'Configuration `dummy` does not exists.' );
+                  WP_CLI::log( 'Global configuration `quiet` does not exists.' );
               }
           }
 
@@ -62,14 +62,14 @@ Feature: `wp cli` tasks
       WP_CLI::add_command( 'custom-command', 'Custom_Command' );
       """
 
-    When I run `wp --require=custom-cmd.php custom-command --dummy=example.com`
+    When I run `wp --require=custom-cmd.php custom-command --quiet`
     Then STDOUT should be:
       """
-      Configuration `dummy` does exists.
+      Global configuration `url` does exists.
       """
 
     When I run `wp --require=custom-cmd.php custom-command`
     Then STDOUT should be:
       """
-      Configuration `dummy` does not exists.
+      Global configuration `url` does not exists.
       """
