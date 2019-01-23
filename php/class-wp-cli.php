@@ -1113,6 +1113,20 @@ class WP_CLI {
 	}
 
 	/**
+	 * Confirm that global configuration parameters does exists.
+	 *
+	 * @access public
+	 * @category Input
+	 *
+	 * @param null $key Check if the config does exists.
+	 *
+	 * @return bool
+	 */
+	public static function has_config( $key = null ) {
+		return array_key_exists( $key, self::get_runner()->config );
+	}
+
+	/**
 	 * Get values of global configuration parameters.
 	 *
 	 * Provides access to `--path=<path>`, `--url=<url>`, and other values of
