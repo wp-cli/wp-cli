@@ -40,7 +40,7 @@ Feature: `wp cli` tasks
     And STDERR should be empty
     And the return code should be 0
 
-  Scenario: Ability to detect a globgal configuration does exists or not
+  Scenario: Ability to detect a global configuration does exists or not
     Given a WP installation
     And a custom-cmd.php file:
       """
@@ -62,12 +62,12 @@ Feature: `wp cli` tasks
       WP_CLI::add_command( 'custom-command', 'Custom_Command' );
       """
 
-    When I run `wp custom-command --url=example.com`
+    When I run `wp --require=custom-cmd.php custom-command --url=example.com`
     Then STDOUT should be:
       """
       Global configuration `url` does exists.
       """
-    When I run `wp custom-command`
+    When I run `wp --require=custom-cmd.php custom-command`
     Then STDOUT should be:
       """
       Global configuration `url` does not exists.
