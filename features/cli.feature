@@ -51,7 +51,7 @@ Feature: `wp cli` tasks
            * Custom Command to validate a global configuration does exists or not.
            *
            * <config>
-           * : Config name to validate.
+           * : Configuration parameter name to check for.
            *
            * @when after_wp_load
            */
