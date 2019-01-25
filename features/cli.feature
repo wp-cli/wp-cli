@@ -40,7 +40,7 @@ Feature: `wp cli` tasks
     And STDERR should be empty
     And the return code should be 0
 
-  Scenario: Ability to detect a global configuration does exists or not
+  Scenario: Checking whether a global configuration parameter exists or not
     Given a WP installation
     And a custom-cmd.php file:
       """
