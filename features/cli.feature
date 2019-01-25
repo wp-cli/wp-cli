@@ -48,7 +48,7 @@ Feature: `wp cli` tasks
       class Custom_Command extends WP_CLI_Command {
 
           /**
-           * Custom Command to validate a global configuration does exists or not.
+           * Custom command to validate a global configuration does exist or not.
            *
            * <config>
            * : Configuration parameter name to check for.
