@@ -1118,7 +1118,7 @@ class WP_CLI {
 	 * @access public
 	 * @category Input
 	 *
-	 * @param null $key Check if the config does exists.
+	 * @param string $key Config parameter key to check.
 	 *
 	 * @return bool
 	 */
