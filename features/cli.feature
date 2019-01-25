@@ -39,3 +39,41 @@ Feature: `wp cli` tasks
       """
     And STDERR should be empty
     And the return code should be 0
+
+  Scenario: Checking whether a global configuration parameter exists or not
+    Given a WP installation
+    And a custom-cmd.php file:
+      """
+      <?php
+      class Custom_Command extends WP_CLI_Command {
+
+          /**
+           * Custom command to validate a global configuration does exist or not.
+           *
+           * <config>
+           * : Configuration parameter name to check for.
+           *
+           * @when after_wp_load
+           */
+          public function __invoke( $args ) {
+              if ( WP_CLI::has_config( $args[0] ) ) {
+                  WP_CLI::log( "Global configuration '{$args[0]}' does exist." );
+              } else {
+                  WP_CLI::log( "Global configuration '{$args[0]}' does not exist." );
+              }
+          }
+      }
+      WP_CLI::add_command( 'custom-command', 'Custom_Command' );
+      """
+
+    When I run `wp --require=custom-cmd.php custom-command url`
+    Then STDOUT should be:
+      """
+      Global configuration 'url' does exist.
+      """
+
+    When I run `wp --require=custom-cmd.php custom-command dummy`
+    Then STDOUT should be:
+      """
+      Global configuration 'dummy' does not exist.
+      """
