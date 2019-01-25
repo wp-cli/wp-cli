@@ -1122,7 +1122,7 @@ class WP_CLI {
 	 *
 	 * @return bool
 	 */
-	public static function has_config( $key = null ) {
+	public static function has_config( $key ) {
 		return array_key_exists( $key, self::get_runner()->config );
 	}
 
