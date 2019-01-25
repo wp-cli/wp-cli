@@ -76,5 +76,5 @@ Feature: `wp cli` tasks
     When I run `wp --require=custom-cmd.php custom-command dummy`
     Then STDOUT should be:
       """
-      Global configuration `dummy` does not exists.
+      Global configuration 'dummy' does not exist.
       """
