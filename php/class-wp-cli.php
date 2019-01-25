@@ -1113,7 +1113,7 @@ class WP_CLI {
 	}
 
 	/**
-	 * Confirm that global configuration parameters does exists.
+	 * Confirm that a global configuration parameter does exist.
 	 *
 	 * @access public
 	 * @category Input
