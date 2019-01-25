@@ -57,7 +57,7 @@ Feature: `wp cli` tasks
            */
           public function __invoke( $args ) {
               if ( WP_CLI::has_config( $args[0] ) ) {
-                  WP_CLI::log( 'Global configuration `url` does exists.' );
+                  WP_CLI::log( "Global configuration '{$args[0]}' does exist." );
               } else {
                   WP_CLI::log( "Global configuration '{$args[0]}' does not exist." );
               }
