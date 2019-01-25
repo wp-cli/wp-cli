@@ -62,7 +62,6 @@ Feature: `wp cli` tasks
                   WP_CLI::log( "Global configuration '{$args[0]}' does not exist." );
               }
           }
-
       }
       WP_CLI::add_command( 'custom-command', 'Custom_Command' );
       """
