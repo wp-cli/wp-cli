@@ -26,6 +26,19 @@ Feature: CLI Cache
       wordpress-4.9-en_US.tar.gz
       """
 
+  Scenario: Skipping cache dir
+    Given a env-var.php file:
+      """
+      <?php
+      putenv( 'WP_CLI_CACHE_DIR=/dev/null' );
+      """
+
+    When I run `wp --require=env-var.php core download --path=/tmp/wp-core --version=4.9`
+    Then the /tmp/wp-core/core directory should contain:
+    """
+    wordpress-4.9-en_US.tar.gz
+    """
+
   Scenario: Remove all but newest files from cache directory
     Given an empty cache
     And a file-a-12345.tmp cache file:
