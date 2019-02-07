@@ -592,7 +592,8 @@ class WP_CLI {
 
 		if ( ! empty( $parent ) ) {
 			$sub_command = trim( str_replace( $parent, '', $name ) );
-			self::debug( "Adding command: {$sub_command} in {$parent} Namespace", 'commands' );
+			self::debug( "Adding namespace: {$parent}", 'commands' );
+			self::debug( "Adding command: {$sub_command} to namespace {$parent}", 'commands' );
 		} else {
 			self::debug( "Adding command: {$name}", 'commands' );
 		}
