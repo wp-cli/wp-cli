@@ -1,0 +1,6 @@
+version: 2
+dependencies:
+- type: php
+  settings:
+    github_labels:
+    - "scope:distribution"
