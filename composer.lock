@@ -95,6 +95,7 @@
                 "array_column",
                 "column"
             ],
+            "abandoned": true,
             "time": "2015-03-20T22:07:39+00:00"
         },
         {
@@ -420,16 +421,16 @@
         },
         {
             "name": "composer/ca-bundle",
-            "version": "1.1.3",
+            "version": "1.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "8afa52cd417f4ec417b4bfe86b68106538a87660"
+                "reference": "558f321c52faeb4828c03e7dc0cfe39a09e09a2d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/8afa52cd417f4ec417b4bfe86b68106538a87660",
-                "reference": "8afa52cd417f4ec417b4bfe86b68106538a87660",
+                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/558f321c52faeb4828c03e7dc0cfe39a09e09a2d",
+                "reference": "558f321c52faeb4828c03e7dc0cfe39a09e09a2d",
                 "shasum": ""
             },
             "require": {
@@ -472,20 +473,20 @@
                 "ssl",
                 "tls"
             ],
-            "time": "2018-10-18T06:09:13+00:00"
+            "time": "2019-01-28T09:30:10+00:00"
         },
         {
             "name": "composer/composer",
-            "version": "1.8.0",
+            "version": "1.8.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "d8aef3af866b28786ce9b8647e52c42496436669"
+                "reference": "bc364c2480c17941e2135cfc568fa41794392534"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/d8aef3af866b28786ce9b8647e52c42496436669",
-                "reference": "d8aef3af866b28786ce9b8647e52c42496436669",
+                "url": "https://api.github.com/repos/composer/composer/zipball/bc364c2480c17941e2135cfc568fa41794392534",
+                "reference": "bc364c2480c17941e2135cfc568fa41794392534",
                 "shasum": ""
             },
             "require": {
@@ -552,7 +553,7 @@
                 "dependency",
                 "package"
             ],
-            "time": "2018-12-03T09:31:16+00:00"
+            "time": "2019-02-11T09:52:10+00:00"
         },
         {
             "name": "composer/semver",
@@ -679,16 +680,16 @@
         },
         {
             "name": "composer/xdebug-handler",
-            "version": "1.3.1",
+            "version": "1.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/xdebug-handler.git",
-                "reference": "dc523135366eb68f22268d069ea7749486458562"
+                "reference": "d17708133b6c276d6e42ef887a877866b909d892"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/dc523135366eb68f22268d069ea7749486458562",
-                "reference": "dc523135366eb68f22268d069ea7749486458562",
+                "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/d17708133b6c276d6e42ef887a877866b909d892",
+                "reference": "d17708133b6c276d6e42ef887a877866b909d892",
                 "shasum": ""
             },
             "require": {
@@ -719,7 +720,7 @@
                 "Xdebug",
                 "performance"
             ],
-            "time": "2018-11-29T10:59:02+00:00"
+            "time": "2019-01-28T20:25:53+00:00"
         },
         {
             "name": "dealerdirect/phpcodesniffer-composer-installer",
@@ -977,23 +978,23 @@
         },
         {
             "name": "justinrainbow/json-schema",
-            "version": "5.2.7",
+            "version": "5.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/justinrainbow/json-schema.git",
-                "reference": "8560d4314577199ba51bf2032f02cd1315587c23"
+                "reference": "dcb6e1006bb5fd1e392b4daa68932880f37550d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/8560d4314577199ba51bf2032f02cd1315587c23",
-                "reference": "8560d4314577199ba51bf2032f02cd1315587c23",
+                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/dcb6e1006bb5fd1e392b4daa68932880f37550d4",
+                "reference": "dcb6e1006bb5fd1e392b4daa68932880f37550d4",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2.1",
+                "friendsofphp/php-cs-fixer": "~2.2.20",
                 "json-schema/json-schema-test-suite": "1.2.0",
                 "phpunit/phpunit": "^4.8.35"
             },
@@ -1039,7 +1040,7 @@
                 "json",
                 "schema"
             ],
-            "time": "2018-02-14T22:26:30+00:00"
+            "time": "2019-01-14T23:55:14+00:00"
         },
         {
             "name": "phpcompatibility/php-compatibility",
@@ -1678,12 +1679,24 @@
         {
             "name": "roave/security-advisories",
             "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Roave/SecurityAdvisories.git",
+                "reference": "344bf4ed1263c75e7f96b87b80c52e8373561e19"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/344bf4ed1263c75e7f96b87b80c52e8373561e19",
+                "reference": "344bf4ed1263c75e7f96b87b80c52e8373561e19",
+                "shasum": ""
+            },
             "conflict": {
                 "3f/pygmentize": "<1.2",
                 "adodb/adodb-php": "<5.20.12",
                 "alterphp/easyadmin-extension-bundle": ">=1.2,<1.2.11|>=1.3,<1.3.1",
                 "amphp/artax": "<1.0.6|>=2,<2.0.6",
                 "amphp/http": "<1.0.1",
+                "api-platform/core": ">=2.2,<2.2.10|>=2.3,<2.3.6",
                 "asymmetricrypt/asymmetricrypt": ">=0,<9.9.99",
                 "aws/aws-sdk-php": ">=3,<3.2.1",
                 "brightlocal/phpwhois": "<=4.2.5",
@@ -1709,10 +1722,9 @@
                 "doctrine/mongodb-odm-bundle": ">=2,<3.0.1",
                 "doctrine/orm": ">=2,<2.4.8|>=2.5,<2.5.1",
                 "dompdf/dompdf": ">=0.6,<0.6.2",
-                "drupal/core": ">=7,<7.60|>=8,<8.5.8|>=8.6,<8.6.2",
-                "drupal/drupal": ">=7,<7.60|>=8,<8.5.8|>=8.6,<8.6.2",
+                "drupal/core": ">=7,<7.62|>=8,<8.5.9|>=8.6,<8.6.6",
+                "drupal/drupal": ">=7,<7.62|>=8,<8.5.9|>=8.6,<8.6.6",
                 "erusev/parsedown": "<1.7",
-                "ezsystems/ezplatform": "<1.7.8.1|>=1.8,<1.13.4.1|>=2,<2.2.3.1|>=2.3,<2.3.2.1",
                 "ezsystems/ezpublish-kernel": ">=5.3,<5.3.12.1|>=5.4,<5.4.13.1|>=6,<6.7.9.1|>=6.8,<6.13.5.1|>=7,<7.2.4.1|>=7.3,<7.3.2.1",
                 "ezsystems/ezpublish-legacy": ">=5.3,<5.3.12.6|>=5.4,<5.4.12.3|>=2011,<2017.12.4.3|>=2018.6,<2018.6.1.4|>=2018.9,<2018.9.1.3",
                 "ezsystems/repository-forms": ">=2.3,<2.3.2.1",
@@ -1739,6 +1751,7 @@
                 "la-haute-societe/tcpdf": "<6.2.22",
                 "laravel/framework": ">=4,<4.0.99|>=4.1,<=4.1.31|>=4.2,<=4.2.22|>=5,<=5.0.35|>=5.1,<=5.1.46|>=5.2,<=5.2.45|>=5.3,<=5.3.31|>=5.4,<=5.4.36|>=5.5,<5.5.42|>=5.6,<5.6.30",
                 "laravel/socialite": ">=1,<1.0.99|>=2,<2.0.10",
+                "league/commonmark": ">=0.15.6,<0.18.1",
                 "magento/magento1ce": "<1.9.4",
                 "magento/magento1ee": ">=1.9,<1.14.4",
                 "magento/product-community-edition": ">=2,<2.2.7",
@@ -1752,6 +1765,7 @@
                 "pagarme/pagarme-php": ">=0,<3",
                 "paragonie/random_compat": "<2",
                 "paypal/merchant-sdk-php": "<3.12",
+                "pear/archive_tar": "<1.4.4",
                 "phpmailer/phpmailer": ">=5,<5.2.27|>=6,<6.0.6",
                 "phpoffice/phpexcel": "<=1.8.1",
                 "phpoffice/phpspreadsheet": "<=1.5",
@@ -1772,7 +1786,7 @@
                 "silverstripe/userforms": "<3",
                 "simple-updates/phpwhois": "<=1",
                 "simplesamlphp/saml2": "<1.10.6|>=2,<2.3.8|>=3,<3.1.4",
-                "simplesamlphp/simplesamlphp": "<1.15.2",
+                "simplesamlphp/simplesamlphp": "<1.16.3",
                 "simplesamlphp/simplesamlphp-module-infocard": "<1.0.1",
                 "slim/slim": "<2.6",
                 "smarty/smarty": "<3.1.33",
@@ -1811,8 +1825,8 @@
                 "titon/framework": ">=0,<9.9.99",
                 "truckersmp/phpwhois": "<=4.3.1",
                 "twig/twig": "<1.20",
-                "typo3/cms": ">=6.2,<6.2.30|>=7,<7.6.32|>=8,<8.7.21|>=9,<9.5.2",
-                "typo3/cms-core": ">=8,<8.7.21|>=9,<9.5.2",
+                "typo3/cms": ">=6.2,<6.2.30|>=7,<7.6.32|>=8,<8.7.23|>=9,<9.5.4",
+                "typo3/cms-core": ">=8,<8.7.23|>=9,<9.5.4",
                 "typo3/flow": ">=1,<1.0.4|>=1.1,<1.1.1|>=2,<2.0.1|>=2.3,<2.3.16|>=3,<3.0.10|>=3.1,<3.1.7|>=3.2,<3.2.7|>=3.3,<3.3.5",
                 "typo3/neos": ">=1.1,<1.1.3|>=1.2,<1.2.13|>=2,<2.0.4",
                 "ua-parser/uap-php": "<3.8",
@@ -1864,7 +1878,7 @@
                 }
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-            "time": "2018-12-14T13:12:19+00:00"
+            "time": "2019-02-05T19:58:17+00:00"
         },
         {
             "name": "sebastian/comparator",
@@ -2333,16 +2347,16 @@
         },
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "3.3.2",
+            "version": "3.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "6ad28354c04b364c3c71a34e4a18b629cc3b231e"
+                "reference": "379deb987e26c7cd103a7b387aea178baec96e48"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/6ad28354c04b364c3c71a34e4a18b629cc3b231e",
-                "reference": "6ad28354c04b364c3c71a34e4a18b629cc3b231e",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/379deb987e26c7cd103a7b387aea178baec96e48",
+                "reference": "379deb987e26c7cd103a7b387aea178baec96e48",
                 "shasum": ""
             },
             "require": {
@@ -2380,7 +2394,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2018-09-23T23:08:17+00:00"
+            "time": "2018-12-19T23:57:18+00:00"
         },
         {
             "name": "symfony/config",
