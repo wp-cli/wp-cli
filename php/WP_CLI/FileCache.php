@@ -318,6 +318,7 @@ class FileCache {
 			if ( preg_match( '{(^|[\\\\/])(\$null|nul|NUL|/dev/null)([\\\\/]|$)}', $dir ) ) {
 				return false;
 			}
+
 			if ( ! @mkdir( $dir, 0777, true ) ) { // @codingStandardsIgnoreLine
 				$error = error_get_last();
 				\WP_CLI::warning( sprintf( "Failed to create directory '%s': %s.", $dir, $error['message'] ) );
