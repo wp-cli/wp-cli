@@ -26,7 +26,7 @@ Feature: CLI Cache
       wordpress-4.9-en_US.tar.gz
       """
 
-  Scenario: Defining cache directory to an inaccessible directory
+  Scenario: Using a null device disables the cache without throwing an error
     Given an empty directory
     And a env-var.php file:
       """
