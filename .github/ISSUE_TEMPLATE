@@ -22,6 +22,7 @@ Oh! It's worth noting WP-CLI represents a collection of sub-projects, each with 
 * `wp (eval|eval-file)` https://github.com/wp-cli/eval-command
 * `wp export` https://github.com/wp-cli/export-command
 * `wp (option|post|comment|user|term|site) *` https://github.com/wp-cli/entity-command
+* `wp i18n` https://github.com/wp-cli/i18n-command
 * `wp import` https://github.com/wp-cli/import-command
 * `wp language` https://github.com/wp-cli/language-command
 * `wp media *` https://github.com/wp-cli/media-command
