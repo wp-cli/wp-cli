@@ -314,6 +314,11 @@ class FileCache {
 	 */
 	protected function ensure_dir_exists( $dir ) {
 		if ( ! is_dir( $dir ) ) {
+			// Disable the cache if a null device like /dev/null is being used.
+			if ( preg_match( '{(^|[\\\\/])(\$null|nul|NUL|/dev/null)([\\\\/]|$)}', $dir ) ) {
+				return false;
+			}
+
 			if ( ! @mkdir( $dir, 0777, true ) ) { // @codingStandardsIgnoreLine
 				$error = error_get_last();
 				\WP_CLI::warning( sprintf( "Failed to create directory '%s': %s.", $dir, $error['message'] ) );
