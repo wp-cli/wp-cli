@@ -50,7 +50,7 @@ Before installing WP-CLI, please make sure your environment meets the minimum re
 - PHP 5.4 or later
 - WordPress 3.7 or later. Versions older than the latest WordPress release may have degraded functionality
 
-Once you've verified requirements, download the [wp-cli.phar](https://raw.github.com/wp-cli/builds/gh-pages/phar/wp-cli.phar) file using `wget` or `curl`:
+Once you've verified requirements, download the [wp-cli.phar](https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar) file using `wget` or `curl`:
 
 ```bash
 curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
