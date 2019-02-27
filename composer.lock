@@ -1683,12 +1683,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "0e9deaa81b96fd55d9ba0fd9f5fa0353b7b79725"
+                "reference": "4e04718428742618a4bf24dafca45b8645c9320d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/0e9deaa81b96fd55d9ba0fd9f5fa0353b7b79725",
-                "reference": "0e9deaa81b96fd55d9ba0fd9f5fa0353b7b79725",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/4e04718428742618a4bf24dafca45b8645c9320d",
+                "reference": "4e04718428742618a4bf24dafca45b8645c9320d",
                 "shasum": ""
             },
             "conflict": {
@@ -1723,8 +1723,8 @@
                 "doctrine/mongodb-odm-bundle": ">=2,<3.0.1",
                 "doctrine/orm": ">=2,<2.4.8|>=2.5,<2.5.1",
                 "dompdf/dompdf": ">=0.6,<0.6.2",
-                "drupal/core": ">=7,<7.62|>=8,<8.5.9|>=8.6,<8.6.6",
-                "drupal/drupal": ">=7,<7.62|>=8,<8.5.9|>=8.6,<8.6.6",
+                "drupal/core": ">=7,<7.62|>=8,<8.5.11|>=8.6,<8.6.10",
+                "drupal/drupal": ">=7,<7.62|>=8,<8.5.11|>=8.6,<8.6.10",
                 "erusev/parsedown": "<1.7",
                 "ezsystems/ezpublish-kernel": ">=5.3,<5.3.12.1|>=5.4,<5.4.13.1|>=6,<6.7.9.1|>=6.8,<6.13.5.1|>=7,<7.2.4.1|>=7.3,<7.3.2.1",
                 "ezsystems/ezpublish-legacy": ">=5.3,<5.3.12.6|>=5.4,<5.4.12.3|>=2011,<2017.12.4.3|>=2018.6,<2018.6.1.4|>=2018.9,<2018.9.1.3",
@@ -1821,7 +1821,7 @@
                 "symfony/yaml": ">=2,<2.0.22|>=2.1,<2.1.7",
                 "tecnickcom/tcpdf": "<6.2.22",
                 "thelia/backoffice-default-template": ">=2.1,<2.1.2",
-                "thelia/thelia": ">=2.1,<2.1.2|>=2.1.0-beta1,<2.1.3",
+                "thelia/thelia": ">=2.1.0-beta1,<2.1.3|>=2.1,<2.1.2",
                 "theonedemon/phpwhois": "<=4.2.5",
                 "titon/framework": ">=0,<9.9.99",
                 "truckersmp/phpwhois": "<=4.3.1",
@@ -1879,7 +1879,7 @@
                 }
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-            "time": "2019-02-20T16:25:00+00:00"
+            "time": "2019-02-26T21:14:50+00:00"
         },
         {
             "name": "sebastian/comparator",
