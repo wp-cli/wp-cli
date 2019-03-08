@@ -289,6 +289,15 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			"--post_title='Escaped \'single \'quotes!'",
 		);
 		$this->assertEquals( $expected, Utils\parse_str_to_argv( "post create --post_title='Escaped \'single \'quotes!'" ) );
+
+		$expected = array(
+			'search-replace',
+			'//old-domain.com',
+			'//new-domain.com',
+			'specifictable',
+			'--all-tables',
+		);
+		$this->assertEquals( $expected, Utils\parse_str_to_argv( 'search-replace "//old-domain.com" "//new-domain.com" "specifictable" --all-tables' ) );
 	}
 
 	public function testAssocArgsToString() {
