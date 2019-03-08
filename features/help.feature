@@ -143,9 +143,12 @@ Feature: Get help about WP-CLI commands
 
     When I try `wp help non-existent-command`
     Then the return code should be 1
-    And STDERR should be:
+    And STDERR should contain:
       """
-      Warning: Can’t select database. We were able to connect to the database server (which means your username and password is okay) but not able to select the `wp_cli_test` database.
+      We were able to connect to the database server (which means your username and password is okay) but not able to select the `wp_cli_test` database.
+      """
+    And STDERR should contain:
+      """
       Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
       """
     And STDOUT should be empty
