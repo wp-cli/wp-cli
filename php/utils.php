@@ -945,7 +945,7 @@ function report_batch_operation_results( $noun, $verb, $total, $successes, $fail
  * @return array
  */
 function parse_str_to_argv( $arguments ) {
-	preg_match_all( '/(?:[^\s]*(?:(["|\']).*?(?<!\\\)\1))|(?:[^\s]+)/', $arguments, $matches );
+	preg_match_all( '/(?:[^\s\"]*\".+?(?<!\\\\)\"[^\s\"]*|[^\s\']*\'(.+?)(?<!\\\\)\'[^\s\']*|[^\s]+)/', $arguments, $matches );
 	$argv = isset( $matches[0] ) ? $matches[0] : array();
 	$argv = array_map(
 		function( $arg ) {
