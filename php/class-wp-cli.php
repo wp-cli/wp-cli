@@ -430,7 +430,7 @@ class WP_CLI {
 	 *    @type string   $when          Execute callback on a named WP-CLI hook (e.g. before_wp_load).
 	 *    @type bool     $is_deferred   Whether the command addition had already been deferred.
 	 * }
-	 * @return true True on success, false if deferred, hard error if registration failed.
+	 * @return bool True on success, false if deferred, hard error if registration failed.
 	 */
 	public static function add_command( $name, $callable, $args = array() ) {
 		// Bail immediately if the WP-CLI executable has not been run.
