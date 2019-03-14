@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "46c250650822c29f0ea72cee2f3e1dfc",
+    "content-hash": "ae839d38ddf049f58d628c44f702b063",
     "packages": [
         {
             "name": "mustache/mustache",
@@ -3799,8 +3799,7 @@
     "prefer-lowest": false,
     "platform": {
         "php": ">=5.4",
-        "ext-curl": "*",
-        "ext-readline": "*"
+        "ext-curl": "*"
     },
     "platform-dev": [],
     "platform-overrides": {
