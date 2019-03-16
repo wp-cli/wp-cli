@@ -10,7 +10,6 @@
     "require": {
         "php": ">=5.4",
         "ext-curl": "*",
-        "ext-readline": "*",
         "mustache/mustache": "~2.4",
         "ramsey/array_column": "~1.1",
         "rmccue/requests": "~1.6",
@@ -27,6 +26,7 @@
         "wp-cli/wp-cli-tests": "^2.0.8"
     },
     "suggest": {
+        "ext-readline": "Include for a better --prompt implementation",
         "ext-zip": "Needed to support extraction of ZIP archives when doing downloads or updates"
     },
     "config": {
