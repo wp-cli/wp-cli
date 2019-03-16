@@ -81,4 +81,25 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 		rmdir( $cache_dir );
 		$class_wp_cli_logger->setValue( $prev_logger );
 	}
+
+	public function test_export() {
+		$max_size   = 32;
+		$ttl        = 60;
+		$cache_dir  = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache', true );
+		$target_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache-export/nonexistant-subdirectory', true );
+		$target     = $target_dir . '/foo';
+		$key        = 'foo';
+		$contents   = 'bar';
+		$cache      = new FileCache( $cache_dir, $ttl, $max_size );
+
+		// Assert subdirectory is created.
+		$cache->write( $key, $contents );
+		$cache->export( $key, $target );
+		$this->assertEquals( $contents, file_get_contents( $target ) );
+
+		// Clean up.
+		$cache->clear();
+		unlink( $target );
+		rmdir( $target_dir );
+	}
 }
