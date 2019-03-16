@@ -178,7 +178,7 @@ class FileCache {
 	public function export( $key, $target, $ttl = null ) {
 		$filename = $this->has( $key, $ttl );
 
-		if ( $filename ) {
+		if ( $filename && $this->ensure_dir_exists( dirname( $target ) ) ) {
 			return copy( $filename, $target );
 		}
 
