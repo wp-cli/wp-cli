@@ -5,8 +5,8 @@ namespace WP_CLI\Dispatcher;
 /**
  * Get the path to a command, e.g. "core download"
  *
- * @param WP_CLI\Dispatcher\Subcommand $command
- * @return string
+ * @param Subcommand|CompositeCommand $command
+ * @return string[]
  */
 function get_path( $command ) {
 	$path = array();

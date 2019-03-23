@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Loggers;
 
+use WP_CLI\Runner;
+
 /**
  * Base logger class
  */
@@ -29,7 +31,8 @@ abstract class Base {
 	 * Write a message to STDERR, prefixed with "Debug: ".
 	 *
 	 * @param string $message Message to write.
-	 * @param string $group Organize debug message to a specific group.
+	 * @param string|bool $group Organize debug message to a specific group.
+     * Use `false` for no group.
 	 */
 	public function debug( $message, $group = false ) {
 		static $start_time = null;
