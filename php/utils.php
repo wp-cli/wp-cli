@@ -1383,7 +1383,7 @@ function get_php_binary() {
  * @param array $env Array of environment variables.
  * @param array $other_options Array of additional options (Windows only).
  *
- * @return string Command stripped of any environment variable settings.
+ * @return resource Command stripped of any environment variable settings.
  */
 function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = null, $other_options = null ) {
 	if ( is_windows() ) {
