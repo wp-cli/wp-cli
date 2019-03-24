@@ -749,7 +749,7 @@ class WP_CLI {
 	 *
 	 * @param string $message Message to write to STDERR.
 	 * @param string|bool $group Organize debug message to a specific group.
-     * Use `false` to not group the message.
+	 * Use `false` to not group the message.
 	 * @return null
 	 */
 	public static function debug( $message, $group = false ) {

@@ -69,7 +69,7 @@ class CommandFactory {
 	 *
 	 * @param mixed $parent The new command's parent Composite command
 	 * @param string|bool $name Represents how the command should be invoked.
-     * If false, will be determined from the documented subject, represented by `$reflection`.
+	 * If false, will be determined from the documented subject, represented by `$reflection`.
 	 * @param mixed $callable A callable function or closure, or class name and method
 	 * @param object $reflection Reflection instance, for doc parsing
 	 * @param string $class A subclass of WP_CLI_Command
