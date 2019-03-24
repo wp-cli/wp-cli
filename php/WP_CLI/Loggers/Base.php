@@ -32,7 +32,7 @@ abstract class Base {
 	 *
 	 * @param string $message Message to write.
 	 * @param string|bool $group Organize debug message to a specific group.
-     * Use `false` for no group.
+	 * Use `false` for no group.
 	 */
 	public function debug( $message, $group = false ) {
 		static $start_time = null;
