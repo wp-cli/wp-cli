@@ -32,7 +32,7 @@ class Query implements \Iterator {
 	 * </code>
 	 *
 	 * @param string $query The query as a string. It shouldn't include any LIMIT clauses
-	 * @param number $chunk_size How many rows to retrieve at once; default value is 500 (optional)
+	 * @param int $chunk_size How many rows to retrieve at once; default value is 500 (optional)
 	 */
 	public function __construct( $query, $chunk_size = 500 ) {
 		$this->query = $query;
