@@ -329,6 +329,41 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
 	}
 
+	public function testMysqlHostToCLIArgs() {
+		// Test hostname only, with and without 'p:' modifier
+		$expected = array(
+			'hostname'
+		);
+		$testcase = 'hostname';
+		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
+
+		$testcase = 'p:hostname';
+		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
+
+		// Test hostname with port number, with and without 'p:' modifier
+		$expected = array(
+			'hostname',
+			3306,
+			'tcp'
+		);
+		$testcase = 'hostname:3306';
+		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
+
+		$testcase = 'p:hostname:3306';
+		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
+
+		// Test hostname with socket path, with and without 'p:' modifier
+		$expected = array(
+			'hostname',
+			'/path/to/socket'
+		);
+		$testcase = 'hostname:/path/to/socket';
+		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
+
+		$testcase = 'p:hostname:/path/to/socket';
+		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
+	}
+
 	public function testForceEnvOnNixSystems() {
 		$env_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
 
