@@ -377,11 +377,11 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	/**
 	 * Return aliases array.
 	 *
-	 * @param        array  $aliases     Current aliases data.
-	 * @param        string $alias       Name of alias.
-	 * @param        array  $key_args    Associative arguments
-	 * @param        bool   $is_grouping Check if its a grouping operation.
-	 * @param string string $grouping    Grouping value.
+	 * @param array  $aliases     Current aliases data.
+	 * @param string $alias       Name of alias.
+	 * @param array  $key_args    Associative arguments
+	 * @param bool   $is_grouping Check if its a grouping operation.
+	 * @param string $grouping    Grouping value.
 	 *
 	 * @return mixed
 	 */
