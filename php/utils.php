@@ -236,9 +236,9 @@ function locate_wp_config() {
 
 	if ( null === $path ) {
 		$path = false;
-		
-		if ( getenv('WP_CONFIG_PATH') && file_exists( getenv('WP_CONFIG_PATH') ) ) {
-			$path = getenv('WP_CONFIG_PATH');
+
+		if ( getenv( 'WP_CONFIG_PATH' ) && file_exists( getenv( 'WP_CONFIG_PATH' ) ) ) {
+			$path = getenv( 'WP_CONFIG_PATH' );
 		} elseif ( file_exists( ABSPATH . 'wp-config.php' ) ) {
 			$path = ABSPATH . 'wp-config.php';
 		} elseif ( file_exists( dirname( ABSPATH ) . '/wp-config.php' ) && ! file_exists( dirname( ABSPATH ) . '/wp-settings.php' ) ) {
