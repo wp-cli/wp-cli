@@ -12,16 +12,25 @@ use Mustangostang\Spyc;
  *
  * ## EXAMPLES
  *
+ *     # List alias information.
+ *     $ wp cli alias list
+ *     list
+ *     ---
+ *     @all: Run command against every registered alias.
+ *     @local:
+ *       user: wpcli
+ *       path: /Users/wpcli/sites/testsite
+ *
  *     # Get alias information.
  *     $ wp cli alias get @dev
  *     ssh: dev@somedeve.env:12345/home/dev/
  *
  *     # Add alias.
- *     $ wp cli alias add prod login@host /path/to/wordpress/install/
+ *     $ wp cli alias add prod --set-ssh=login@host --set-path=/path/to/wordpress/install/ --set-user=wpcli
  *     Success: Added '@prod' alias.
  *
  *     # Update alias.
- *     $ wp cli alias update @prod newlogin@host /updated/wordpress/path/
+ *     $ wp cli alias update @prod --set-user=newuser --set-path=/new/path/to/wordpress/install/
  *     Success: Updated 'prod' alias.
  *
  *     # Delete alias.
@@ -111,11 +120,23 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * <key>
 	 * : Key for the alias.
 	 *
-	 * <login>
-	 * : SSH Login.
+	 * [--set-user=<user>]
+	 * : Set user for alias.
 	 *
-	 * <wp_path>
-	 * : WordPress install path.
+	 * [--set-url=<url>]
+	 * : Set url for alias.
+	 *
+	 * [--set-path=<path>]
+	 * : Set path for alias.
+	 *
+	 * [--set-ssh=<ssh>]
+	 * : Set ssh for alias.
+	 *
+	 * [--set-http=<http>]
+	 * : Set http for alias.
+	 *
+	 * [--grouping=<grouping>]
+	 * : For grouping multiple aliases.
 	 *
 	 * [--config=<config>]
 	 * : Config file to be considered for operations.
@@ -129,12 +150,16 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Add alias to global config.
-	 *     $ wp cli alias add @prod login@host /path/to/wordpress/install/
+	 *     $ wp cli alias add @prod  --set-ssh=login@host --set-path=/path/to/wordpress/install/ --set-user=wpcli
 	 *     Success: Added '@prod' alias.
 	 *
 	 *     # Add alias to project config.
-	 *     $ wp cli alias add @prod login@host /path/to/wordpress/install/ --config=project
+	 *     $ wp cli alias add @prod --set-ssh=login@host --set-path=/path/to/wordpress/install/ --set-user=wpcli --config=project
 	 *     Success: Added '@prod' alias.
+	 *
+	 *     # Add group of aliases.
+	 *     $ wp cli alias add @multiservers --grouping=servera,serverb
+	 *     Success: Added '@multiservers' alias.
 	 *
 	 * @subcommand add
 	 */
@@ -146,12 +171,20 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$this->validate_config_file( $config_path );
 
-		list( $alias, $login, $wp_path ) = $args;
+		$alias    = $args[0];
+		$grouping = \WP_CLI\Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		if ( ! isset( $aliases[ $alias ] ) ) {
-			$aliases[ $alias ]['ssh'] = "{$login}:{$wp_path}";
-			$yaml_data                = Spyc::YAMLDump( $aliases );
+			if ( null === $grouping ) {
+				$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, false );
+			} else {
+				$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, true, $grouping );
+			}
 
+			// Convert data to YAML string.
+			$yaml_data = Spyc::YAMLDump( $aliases );
+
+			// Add data in config file.
 			if ( file_put_contents( $config_path, $yaml_data ) ) {
 				WP_CLI::success( "Added '{$alias}' alias." );
 			}
@@ -218,11 +251,23 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * <key>
 	 * : Key for the alias.
 	 *
-	 * <login>
-	 * : SSH Login.
+	 * [--set-user=<user>]
+	 * : Set user for alias.
 	 *
-	 * <wp_path>
-	 * : WordPress install path.
+	 * [--set-url=<url>]
+	 * : Set url for alias.
+	 *
+	 * [--set-path=<path>]
+	 * : Set path for alias.
+	 *
+	 * [--set-ssh=<ssh>]
+	 * : Set ssh for alias.
+	 *
+	 * [--set-http=<http>]
+	 * : Set http for alias.
+	 *
+	 * [--grouping=<grouping>]
+	 * : For grouping multiple aliases.
 	 *
 	 * [--config=<config>]
 	 * : Config file to be considered for operations.
@@ -235,29 +280,37 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Update alias.
-	 *     $ wp cli alias update @prod newlogin@host /updated/wordpress/path/
+	 *     $ wp cli alias update @prod --set-user=newuser --set-path=/new/path/to/wordpress/install/
 	 *     Success: Updated 'prod' alias.
 	 *
 	 *     # Update project alias.
-	 *     $ wp cli alias update @prod newlogin@host /updated/wordpress/path/ --config=project
+	 *     $ wp cli alias update @prod --set-user=newuser --set-path=/new/path/to/wordpress/install/ --config=project
 	 *     Success: Updated 'prod' alias.
 	 *
 	 * @subcommand update
 	 */
 	public function update( $args, $assoc_args ) {
 
-		list( $alias, $login, $wp_path ) = $args;
-
-		$config = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
+		$config   = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
+		$alias    = $args[0];
+		$grouping = \WP_CLI\Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		list( $config_path, $aliases ) = $this->get_aliases_data( $config, $alias );
 
 		$this->validate_config_file( $config_path );
 
 		if ( ! empty( $aliases[ $alias ] ) ) {
-			$aliases[ $alias ]['ssh'] = "{$login}:{$wp_path}";
-			$yaml_data                = Spyc::YAMLDump( $aliases );
 
+			if ( null === $grouping ) {
+				$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, false );
+			} else {
+				$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, true, $grouping );
+			}
+
+			// Convert data to YAML string.
+			$yaml_data = Spyc::YAMLDump( $aliases );
+
+			// Add data in config file.
 			if ( file_put_contents( $config_path, $yaml_data ) ) {
 				WP_CLI::success( "Updated '{$alias}' alias." );
 			}
@@ -319,5 +372,49 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		if ( ! file_exists( $config_path ) || ! is_writable( $config_path ) ) {
 			WP_CLI::error( "Config file does not exist: {$config_path}" );
 		}
+	}
+
+	/**
+	 * Return aliases array.
+	 *
+	 * @param        array  $aliases     Current aliases data.
+	 * @param        string $alias       Name of alias.
+	 * @param        array  $key_args    Associative arguments
+	 * @param        bool   $is_grouping Check if its a grouping operation.
+	 * @param string string $grouping    Grouping value.
+	 *
+	 * @return mixed
+	 */
+	private function build_aliases( $aliases, $alias, $key_args, $is_grouping, $grouping = ''  ) {
+		if ( ! $is_grouping ) {
+			foreach ( $key_args as $key => $value ) {
+				if ( strpos( $key, 'set-' ) !== false ) {
+					$alias_key_info = explode( '-', $key );
+					$alias_key      = empty( $alias_key_info[1] ) ? '' : $alias_key_info[1];
+					if ( ! empty( $alias_key ) ) {
+						$aliases[ $alias ][ $alias_key ] = $value;
+					}
+				}
+			}
+		} else {
+			$valid_assoc_args = array( 'config', 'grouping' );
+			$invalid_args     = array_diff( array_keys( $key_args ), $valid_assoc_args );
+
+			// Check for invalid args.
+			if ( ! empty( $invalid_args ) ) {
+				$args_info = implode( ',', $invalid_args );
+				WP_CLI::error( "--grouping argument works alone. Found invalid arg(s) '$args_info'." );
+			}
+
+			if ( ! empty( $grouping ) ) {
+				$group_alias_list  = explode( ',', $grouping );
+				$group_alias       = array_map( function ( $current_alias ) {
+					return '@' . $current_alias;
+				}, $group_alias_list );
+				$aliases[ $alias ] = $group_alias;
+			}
+		}
+
+		return $aliases;
 	}
 }
