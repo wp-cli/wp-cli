@@ -165,10 +165,10 @@ Feature: Create shortcuts to specific WordPress installs
     And a wp-cli.yml file:
     """
     @foo:
-      ssh: foo@bar:/path/to/wordpress
+      ssh: wpcli@wp-cli.org:2222
     """
 
-    When I run `wp cli alias add @dev user@hostname /path/to/wordpress --config=project`
+    When I run `wp cli alias add @dev --set-user=wpcli --set-path=/path/to/wordpress --config=project`
     Then STDOUT should be:
        """
        Success: Added '@dev' alias.
@@ -178,9 +178,10 @@ Feature: Create shortcuts to specific WordPress installs
       """
       @all: Run command against every registered alias.
       @foo:
-        ssh: foo@bar:/path/to/wordpress
+        ssh: wpcli@wp-cli.org:2222
       @dev:
-        ssh: user@hostname:/path/to/wordpress
+        user: wpcli
+        path: /path/to/wordpress
       """
 
   Scenario: Delete an alias
@@ -216,10 +217,10 @@ Feature: Create shortcuts to specific WordPress installs
     And a wp-cli.yml file:
     """
     @foo:
-      ssh: foo@host:/old/path
+      user: wpcli
     """
 
-    When I run `wp cli alias update @foo foo@host /new/path --config=project`
+    When I run `wp cli alias update @foo --set-user=newuser --config=project`
     Then STDOUT should be:
        """
       Success: Updated '@foo' alias.
@@ -229,9 +230,9 @@ Feature: Create shortcuts to specific WordPress installs
       """
       @all: Run command against every registered alias.
       @foo:
-        ssh: foo@host:/new/path
+        user: newuser
       """
-    When I try `wp cli alias update @otherfoo foo@host /some/path`
+    When I try `wp cli alias update @otherfoo --set-ssh=foo@host --set-path=/some/path`
     Then STDERR should be:
       """
       Error: No alias found with key '@otherfoo'.
