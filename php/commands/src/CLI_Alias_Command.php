@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Manages WP-CLI aliases.
+ */
 use Mustangostang\Spyc;
 
 /**
@@ -16,6 +19,7 @@ use Mustangostang\Spyc;
  *     $ wp cli alias list
  *     list
  *     ---
+ *
  *     @all: Run command against every registered alias.
  *     @local:
  *       user: wpcli
@@ -67,6 +71,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     # List all available aliases.
 	 *     $ wp cli alias list
 	 *     ---
+	 *
 	 *     @all: Run command against every registered alias.
 	 *     @prod:
 	 *       ssh: runcommand@runcommand.io~/webapps/production
@@ -379,13 +384,13 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *
 	 * @param array  $aliases     Current aliases data.
 	 * @param string $alias       Name of alias.
-	 * @param array  $key_args    Associative arguments
+	 * @param array  $key_args    Associative arguments.
 	 * @param bool   $is_grouping Check if its a grouping operation.
 	 * @param string $grouping    Grouping value.
 	 *
 	 * @return mixed
 	 */
-	private function build_aliases( $aliases, $alias, $key_args, $is_grouping, $grouping = ''  ) {
+	private function build_aliases( $aliases, $alias, $key_args, $is_grouping, $grouping = '' ) {
 		if ( ! $is_grouping ) {
 			foreach ( $key_args as $key => $value ) {
 				if ( strpos( $key, 'set-' ) !== false ) {
@@ -408,9 +413,12 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 			if ( ! empty( $grouping ) ) {
 				$group_alias_list  = explode( ',', $grouping );
-				$group_alias       = array_map( function ( $current_alias ) {
-					return '@' . $current_alias;
-				}, $group_alias_list );
+				$group_alias       = array_map(
+					function ( $current_alias ) {
+							return '@' . $current_alias;
+					},
+					$group_alias_list
+				);
 				$aliases[ $alias ] = $group_alias;
 			}
 		}
