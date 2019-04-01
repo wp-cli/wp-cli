@@ -179,6 +179,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		$alias    = $args[0];
 		$grouping = \WP_CLI\Utils\get_flag_value( $assoc_args, 'grouping' );
 
+		$this->validate_input( $assoc_args, $grouping );
+
 		if ( ! isset( $aliases[ $alias ] ) ) {
 			if ( null === $grouping ) {
 				$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, false );
@@ -304,12 +306,14 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$this->validate_config_file( $config_path );
 
+		$this->validate_input( $assoc_args, $grouping );
+
 		if ( ! empty( $aliases[ $alias ] ) ) {
 
 			if ( null === $grouping ) {
-				$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, false );
+				$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, false, '', true );
 			} else {
-				$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, true, $grouping );
+				$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, true, $grouping, true );
 			}
 
 			// Convert data to YAML string.
@@ -390,32 +394,40 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *
 	 * @return mixed
 	 */
-	private function build_aliases( $aliases, $alias, $key_args, $is_grouping, $grouping = '' ) {
-		if ( ! $is_grouping ) {
-			foreach ( $key_args as $key => $value ) {
-				if ( strpos( $key, 'set-' ) !== false ) {
-					$alias_key_info = explode( '-', $key );
-					$alias_key      = empty( $alias_key_info[1] ) ? '' : $alias_key_info[1];
-					if ( ! empty( $alias_key ) ) {
-						$aliases[ $alias ][ $alias_key ] = $value;
-					}
-				}
-			}
-		} else {
+	private function build_aliases( $aliases, $alias, $assoc_args, $is_grouping, $grouping = '', $is_update = false ) {
+
+		if ( $is_grouping ) {
 			$valid_assoc_args = array( 'config', 'grouping' );
-			$invalid_args     = array_diff( array_keys( $key_args ), $valid_assoc_args );
+			$invalid_args     = array_diff( array_keys( $assoc_args ), $valid_assoc_args );
 
 			// Check for invalid args.
 			if ( ! empty( $invalid_args ) ) {
 				$args_info = implode( ',', $invalid_args );
 				WP_CLI::error( "--grouping argument works alone. Found invalid arg(s) '$args_info'." );
 			}
+		}
+
+		if ( $is_update ) {
+			$this->validate_alias_type( $aliases, $alias, $assoc_args, $grouping );
+		}
+
+		if ( ! $is_grouping ) {
+			foreach ( $assoc_args as $key => $value ) {
+				if ( strpos( $key, 'set-' ) !== false ) {
+					$alias_key_info = explode( '-', $key );
+					$alias_key      = empty( $alias_key_info[1] ) ? '' : $alias_key_info[1];
+					if ( ! empty( $alias_key ) && ! empty( $value ) ) {
+						$aliases[ $alias ][ $alias_key ] = $value;
+					}
+				}
+			}
+		} else {
 
 			if ( ! empty( $grouping ) ) {
 				$group_alias_list  = explode( ',', $grouping );
 				$group_alias       = array_map(
 					function ( $current_alias ) {
-							return '@' . $current_alias;
+							return '@' . ltrim( $current_alias, '@' );
 					},
 					$group_alias_list
 				);
@@ -424,5 +436,54 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		}
 
 		return $aliases;
+	}
+
+	/**
+	 * Validate input of passed arguments.
+	 *
+	 * @param array  $assoc_args  Arguments array.
+	 * @param string $grouping    Grouping argument value.
+	 *
+	 * @throws \WP_CLI\ExitException
+	 */
+	private function validate_input( $assoc_args, $grouping ) {
+		// Check if valid arguments were passed.
+		$arg_match = preg_grep ('/^set-(\w+)/i', array_keys( $assoc_args ) );
+
+		// Verify passed-arguments.
+		if ( empty( $grouping ) && empty( $arg_match ) ) {
+			WP_CLI::error( 'No valid arguments passed.' );
+		}
+
+		// Check whether passed arguments contain value or not.
+		$assoc_arg_values = array_filter( array_intersect_key( $assoc_args, array_flip( $arg_match ) ) );
+
+		if ( empty( $grouping ) && empty( $assoc_arg_values ) ) {
+			WP_CLI::error( 'No value passed to arguments.' );
+		}
+	}
+
+	/**
+	 * Validate alias type before update.
+	 *
+	 * @param array  $aliases     Existing aliases data.
+	 * @param string $alias       Alias Name.
+	 * @param array  $assoc_args  Arguments array.
+	 * @param string $grouping    Grouping argument value.
+	 *
+	 * @throws \WP_CLI\ExitException
+	 */
+	private function validate_alias_type( $aliases, $alias, $assoc_args, $grouping ) {
+
+		$alias_data = $aliases[ $alias ];
+
+		$group_aliases_match = preg_grep ('/^@(\w+)/i', $alias_data );
+		$arg_match = preg_grep ('/^set-(\w+)/i', array_keys( $assoc_args ) );
+
+		if ( ! empty( $group_aliases_match ) && ! empty( $arg_match ) ) {
+			WP_CLI::error( 'Trying to update group alias with invalid arguments.' );
+		} elseif ( empty( $group_aliases_match ) && ! empty( $grouping ) ) {
+			WP_CLI::error( 'Trying to update simple alias with invalid --grouping argument.' );
+		}
 	}
 }
