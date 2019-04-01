@@ -448,7 +448,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 */
 	private function validate_input( $assoc_args, $grouping ) {
 		// Check if valid arguments were passed.
-		$arg_match = preg_grep ('/^set-(\w+)/i', array_keys( $assoc_args ) );
+		$arg_match = preg_grep( '/^set-(\w+)/i', array_keys( $assoc_args ) );
 
 		// Verify passed-arguments.
 		if ( empty( $grouping ) && empty( $arg_match ) ) {
@@ -477,8 +477,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$alias_data = $aliases[ $alias ];
 
-		$group_aliases_match = preg_grep ('/^@(\w+)/i', $alias_data );
-		$arg_match = preg_grep ('/^set-(\w+)/i', array_keys( $assoc_args ) );
+		$group_aliases_match = preg_grep( '/^@(\w+)/i', $alias_data );
+		$arg_match           = preg_grep( '/^set-(\w+)/i', array_keys( $assoc_args ) );
 
 		if ( ! empty( $group_aliases_match ) && ! empty( $arg_match ) ) {
 			WP_CLI::error( 'Trying to update group alias with invalid arguments.' );
