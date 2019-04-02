@@ -391,6 +391,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @param array  $key_args    Associative arguments.
 	 * @param bool   $is_grouping Check if its a grouping operation.
 	 * @param string $grouping    Grouping value.
+	 * @param bool   $is_update   Is this an update operation?
 	 *
 	 * @return mixed
 	 */
