@@ -319,11 +319,29 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 	global $wpdb;
 
 	$tables = array();
+
+	// Pre-load tables SQL query with Views restriction if needed.
+	if ( get_flag_value( $assoc_args, 'base-tables-only' ) ) {
+		$tables_sql = $wpdb->prepare( 'SHOW FULL TABLES WHERE Table_Type = %s', 'BASE TABLE' );
+
+	} elseif ( get_flag_value( $assoc_args, 'views-only' ) ) {
+		$tables_sql = $wpdb->prepare( 'SHOW FULL TABLES WHERE Table_Type = %s', 'VIEW' );
+
+	}
+
 	if ( get_flag_value( $assoc_args, 'all-tables' ) ) {
-		$tables = $wpdb->get_col( 'SHOW TABLES' );
+		if ( empty( $tables_sql ) ) {
+			$tables_sql = 'SHOW TABLES';
+		}
+		$tables = $wpdb->get_col( $tables_sql, 0 ); // WPCS: unprepared SQL OK.
 
 	} elseif ( get_flag_value( $assoc_args, 'all-tables-with-prefix' ) ) {
-		$tables = $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', esc_like( $wpdb->get_blog_prefix() ) . '%' ) );
+		if ( empty( $tables_sql ) ) {
+			$tables_sql = $wpdb->prepare( 'SHOW TABLES LIKE %s', esc_like( $wpdb->get_blog_prefix() ) . '%' );
+		} else {
+			$tables_sql .= $wpdb->prepare( ' AND Tables_in_$wpdb->dbname LIKE %s', esc_like( $wpdb->get_blog_prefix() ) . '%' );
+		}
+		$tables = $wpdb->get_col( $tables_sql, 0 ); // WPCS: unprepared SQL OK.
 
 	} else {
 		$scope = get_flag_value( $assoc_args, 'scope', 'all' );
@@ -351,6 +369,12 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 		// Note: BC change 1.5.0, tables are sorted (via TABLES view).
 		// @codingStandardsIgnoreLine
 		$tables = $wpdb->get_col( sprintf( "SHOW TABLES WHERE %s IN ('%s')", esc_sql_ident( 'Tables_in_' . $wpdb->dbname ), implode( "', '", $wpdb->_escape( $wp_tables ) ) ) );
+
+		if ( get_flag_value( $assoc_args, 'base-tables-only' ) || get_flag_value( $assoc_args, 'views-only' ) ) {
+			// Apply Views restriction args if needed.
+			$views_query_tables = $wpdb->get_col( $tables_sql, 0 ); // WPCS: unprepared SQL OK.
+			$tables             = array_intersect( $tables, $views_query_tables );
+		}
 	}
 
 	// Filter by `$args`.
