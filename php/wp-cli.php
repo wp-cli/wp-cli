@@ -15,6 +15,8 @@ if ( file_exists( WP_CLI_ROOT . '/vendor/autoload.php' ) ) {
 	define( 'WP_CLI_VENDOR_DIR', WP_CLI_ROOT . '/vendor' );
 }
 
+require_once WP_CLI_ROOT . '/php/compat.php';
+
 // Set common headers, to prevent warnings from plugins
 $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
 $_SERVER['HTTP_USER_AGENT'] = '';

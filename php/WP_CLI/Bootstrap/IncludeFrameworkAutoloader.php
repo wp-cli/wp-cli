@@ -46,7 +46,6 @@ final class IncludeFrameworkAutoloader implements BootstrapStep {
 		}
 
 		include_once WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests.php';
-		include_once WP_CLI_VENDOR_DIR . '/ramsey/array_column/src/array_column.php';
 		include_once WP_CLI_VENDOR_DIR . '/wp-cli/mustangostang-spyc/Spyc.php';
 
 		$autoloader->register();

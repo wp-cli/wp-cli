@@ -22,7 +22,8 @@ class Formatter {
 	/**
 	 * @param array $assoc_args Output format arguments.
 	 * @param array $fields Fields to display of each item.
-	 * @param string $prefix Check if fields have a standard prefix.
+	 * @param string|bool $prefix Check if fields have a standard prefix.
+	 * False indicates empty prefix.
 	 */
 	public function __construct( &$assoc_args, $fields = null, $prefix = false ) {
 		$format_args = array(

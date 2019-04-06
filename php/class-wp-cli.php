@@ -4,6 +4,7 @@ use \WP_CLI\ExitException;
 use \WP_CLI\Dispatcher;
 use \WP_CLI\FileCache;
 use \WP_CLI\Process;
+use WP_CLI\ProcessRun;
 use \WP_CLI\WpHttpCacheManager;
 use \WP_CLI\Utils;
 use Mustangostang\Spyc;
@@ -533,6 +534,8 @@ class WP_CLI {
 			}
 		}
 
+		/* @var $leaf_command Dispatcher\Subcommand|Dispatcher\CompositeCommand|Dispatcher\CommandNamespace */
+
 		if ( ! $command->can_have_subcommands() ) {
 			throw new Exception(
 				sprintf(
@@ -745,7 +748,8 @@ class WP_CLI {
 	 * @category Output
 	 *
 	 * @param string $message Message to write to STDERR.
-	 * @param string $group Organize debug message to a specific group.
+	 * @param string|bool $group Organize debug message to a specific group.
+	 * Use `false` to not group the message.
 	 * @return null
 	 */
 	public static function debug( $message, $group = false ) {

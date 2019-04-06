@@ -167,7 +167,8 @@ class Extractor {
 	 * Return formatted ZipArchive error message from error code.
 	 *
 	 * @param int $error_code
-	 * @return string
+	 * @return string|int The error message corresponding to the specified code, if found;
+	 * Other wise the same error code, unmodified.
 	 */
 	public static function zip_error_msg( $error_code ) {
 		// From https://github.com/php/php-src/blob/php-5.3.0/ext/zip/php_zip.c#L2623-L2646
@@ -208,7 +209,8 @@ class Extractor {
 	 * Return formatted error message from ProcessRun of tar command.
 	 *
 	 * @param Processrun $process_run
-	 * @return string
+	 * @return string|int The error message of the process, if available;
+	 * otherwise the return code.
 	 */
 	public static function tar_error_msg( $process_run ) {
 		$stderr = trim( $process_run->stderr );

@@ -2,6 +2,10 @@
 
 namespace WP_CLI\Dispatcher;
 
+use ReflectionClass;
+use ReflectionFunction;
+use ReflectionMethod;
+
 /**
  * Creates CompositeCommand or Subcommand instances.
  *
@@ -23,10 +27,10 @@ class CommandFactory {
 
 		if ( ( is_object( $callable ) && ( $callable instanceof \Closure ) )
 			|| ( is_string( $callable ) && function_exists( $callable ) ) ) {
-			$reflection = new \ReflectionFunction( $callable );
+			$reflection = new ReflectionFunction( $callable );
 			$command    = self::create_subcommand( $parent, $name, $callable, $reflection );
 		} elseif ( is_array( $callable ) && is_callable( $callable ) ) {
-			$reflection = new \ReflectionClass( $callable[0] );
+			$reflection = new ReflectionClass( $callable[0] );
 			$command    = self::create_subcommand(
 				$parent,
 				$name,
@@ -34,7 +38,7 @@ class CommandFactory {
 				$reflection->getMethod( $callable[1] )
 			);
 		} else {
-			$reflection = new \ReflectionClass( $callable );
+			$reflection = new ReflectionClass( $callable );
 			if ( $reflection->isSubclassOf( '\WP_CLI\Dispatcher\CommandNamespace' ) ) {
 				$command = self::create_namespace( $parent, $name, $callable );
 			} elseif ( $reflection->hasMethod( '__invoke' ) ) {
@@ -64,7 +68,8 @@ class CommandFactory {
 	 * Create a new Subcommand instance.
 	 *
 	 * @param mixed $parent The new command's parent Composite command
-	 * @param string $name Represents how the command should be invoked
+	 * @param string|bool $name Represents how the command should be invoked.
+	 * If false, will be determined from the documented subject, represented by `$reflection`.
 	 * @param mixed $callable A callable function or closure, or class name and method
 	 * @param object $reflection Reflection instance, for doc parsing
 	 * @param string $class A subclass of WP_CLI_Command
@@ -107,7 +112,7 @@ class CommandFactory {
 	 * @param mixed $callable
 	 */
 	private static function create_composite_command( $parent, $name, $callable ) {
-		$reflection  = new \ReflectionClass( $callable );
+		$reflection  = new ReflectionClass( $callable );
 		$doc_comment = self::get_doc_comment( $reflection );
 		if ( ! $doc_comment ) {
 			\WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
@@ -140,7 +145,7 @@ class CommandFactory {
 	 * @param mixed $callable
 	 */
 	private static function create_namespace( $parent, $name, $callable ) {
-		$reflection  = new \ReflectionClass( $callable );
+		$reflection  = new ReflectionClass( $callable );
 		$doc_comment = self::get_doc_comment( $reflection );
 		if ( ! $doc_comment ) {
 			\WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );

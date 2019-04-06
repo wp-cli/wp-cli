@@ -52,7 +52,7 @@ class CompositeCommand {
 	 * set of contained subcommands.
 	 *
 	 * @param string $name Represents how subcommand should be invoked
-	 * @param \WP_CLI\Dispatcher\Subcommand
+	 * @param Subcommand|CompositeCommand
 	 */
 	public function add_subcommand( $name, $command ) {
 		$this->subcommands[ $name ] = $command;
