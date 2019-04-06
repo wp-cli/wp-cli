@@ -173,6 +173,7 @@ Feature: Utilities that depend on WordPress code
       wp_options
       wp_postmeta
       wp_posts
+      wp_posts_view
       wp_posts_xx
       wp_term_relationships
       wp_term_taxonomy
@@ -196,6 +197,7 @@ Feature: Utilities that depend on WordPress code
       wp_options
       wp_postmeta
       wp_posts
+      wp_posts_view
       wp_posts_xx
       wp_term_relationships
       wp_term_taxonomy
@@ -266,6 +268,7 @@ Feature: Utilities that depend on WordPress code
       """
       wp_postmeta
       wp_posts
+      wp_posts_view
       wp_posts_xx
       """
 
@@ -296,6 +299,7 @@ Feature: Utilities that depend on WordPress code
       """
       wp_postmeta
       wp_posts
+      wp_posts_view
       wp_posts_xx
       """
 
