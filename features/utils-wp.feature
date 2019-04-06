@@ -95,7 +95,26 @@ Feature: Utilities that depend on WordPress code
     When I run `wp --require=table_names.php get_table_names --all-tables --base-tables-only`
     Then STDOUT should not contain:
       """
-      posts_view
+      wp_posts_view
+      """
+    But STDOUT should contain:
+      """
+      wp_commentmeta
+      wp_comments
+      wp_links
+      wp_options
+      wp_postmeta
+      wp_posts
+      wp_posts_xx
+      wp_term_relationships
+      wp_term_taxonomy
+      """
+  # Leave out wp_termmeta for old WP compat.
+    But STDOUT should contain:
+      """
+      wp_terms
+      wp_usermeta
+      wp_users
       """
 
     When I run `wp --require=table_names.php get_table_names --scope=all`
