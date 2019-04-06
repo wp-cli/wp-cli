@@ -344,7 +344,7 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 		if ( empty( $tables_sql ) ) {
 			$tables_sql = $wpdb->prepare( 'SHOW TABLES LIKE %s', esc_like( $wpdb->get_blog_prefix() ) . '%' );
 		} else {
-			$tables_sql .= $wpdb->prepare( ' AND Tables_in_$wpdb->dbname LIKE %s', esc_like( $wpdb->get_blog_prefix() ) . '%' );
+			$tables_sql .= sprintf( " AND %s LIKE '%s'", esc_sql_ident( 'Tables_in_' . $wpdb->dbname ), esc_like( $wpdb->get_blog_prefix() ) . '%' );
 		}
 		$tables = $wpdb->get_col( $tables_sql, 0 ); // WPCS: unprepared SQL OK.
 
