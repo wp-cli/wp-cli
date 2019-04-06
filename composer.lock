@@ -3393,16 +3393,16 @@
         },
         {
             "name": "wp-cli/eval-command",
-            "version": "v2.0.1",
+            "version": "v2.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/eval-command.git",
-                "reference": "26d3e6f609dc60d62b55d65552a2d984eb722713"
+                "reference": "be12e607d6f1b0b0a8869d84ac5f076a34718bbc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/eval-command/zipball/26d3e6f609dc60d62b55d65552a2d984eb722713",
-                "reference": "26d3e6f609dc60d62b55d65552a2d984eb722713",
+                "url": "https://api.github.com/repos/wp-cli/eval-command/zipball/be12e607d6f1b0b0a8869d84ac5f076a34718bbc",
+                "reference": "be12e607d6f1b0b0a8869d84ac5f076a34718bbc",
                 "shasum": ""
             },
             "require": {
@@ -3443,7 +3443,7 @@
             ],
             "description": "Executes arbitrary PHP code or files.",
             "homepage": "https://github.com/wp-cli/eval-command",
-            "time": "2018-09-21T10:39:36+00:00"
+            "time": "2019-04-05T13:17:27+00:00"
         },
         {
             "name": "wp-cli/extension-command",
