@@ -86,10 +86,10 @@ Feature: Utilities that depend on WordPress code
       """
     And save STDOUT as {DEFAULT_STDOUT}
 
-    When I run `wp --require=table_names.php get_table_names --all-tables --views-only`
-    Then STDOUT should contain:
+    When I run `wp --require=table_names.php get_table_names --all-tables-with-prefix --views-only`
+    Then STDOUT should be:
       """
-      posts_view
+      wp_posts_view
       """
 
     When I run `wp --require=table_names.php get_table_names --all-tables --base-tables-only`
