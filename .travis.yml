@@ -73,4 +73,4 @@ jobs:
       env: WP_VERSION=trunk
     - stage: test
       php: 5.4
-      env: WP_VERSION=latest
+      env: WP_VERSION=5.1
