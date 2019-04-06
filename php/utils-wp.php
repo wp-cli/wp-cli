@@ -327,10 +327,10 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 
 	// Pre-load tables SQL query with Views restriction if needed.
 	if ( get_flag_value( $assoc_args, 'base-tables-only' ) ) {
-		$tables_sql = $wpdb->prepare( 'SHOW FULL TABLES WHERE Table_Type = %s', 'BASE TABLE' );
+		$tables_sql = 'SHOW FULL TABLES WHERE Table_Type = "BASE TABLE"';
 
 	} elseif ( get_flag_value( $assoc_args, 'views-only' ) ) {
-		$tables_sql = $wpdb->prepare( 'SHOW FULL TABLES WHERE Table_Type = %s', 'VIEW' );
+		$tables_sql = 'SHOW FULL TABLES WHERE Table_Type = "VIEW"';
 
 	}
 
