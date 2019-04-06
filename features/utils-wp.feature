@@ -27,7 +27,7 @@ Feature: Utilities that depend on WordPress code
     And I run `wp db query "CREATE TABLE wp_xx_posts ( id int );"`
     And I run `wp db query "CREATE TABLE wp_posts_xx ( id int );"`
     And I run `wp db query "CREATE TABLE wp_categories ( id int );"`
-    And I run `wp db query "CREATE VIEW posts_view AS ( SELECT ID from wp_posts );"`
+    And I run `wp db query "CREATE VIEW wp_posts_view AS ( SELECT ID from wp_posts );"`
     And a table_names.php file:
       """
       <?php
