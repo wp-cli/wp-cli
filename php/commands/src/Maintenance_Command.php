@@ -27,7 +27,8 @@ class Maintenance_Command extends WP_CLI_Command {
 			if ( ! class_exists( 'WP_Upgrader' ) ) {
 				require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 			}
-			self::$instance = new WP_Upgrader();
+			self::$instance = new WP_Upgrader( new \WP_CLI\UpgraderSkin() );
+			self::$instance->init();
 		}
 		return self::$instance;
 	}
