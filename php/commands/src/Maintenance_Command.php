@@ -6,9 +6,11 @@
  * ## EXAMPLES
  *
  *     $ wp maintenance on
+ *     Enabling Maintenance mode...
  *     Success: Enabled Maintenance mode.
  *
  *     $ wp maintenance off
+ *     Disabling Maintenance mode...
  *     Success: Disabled Maintenance mode.
  *
  *     $ wp maintenance status
@@ -42,6 +44,7 @@ class Maintenance_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp maintenance on
+	 *     Enabling Maintenance mode...
 	 *     Success: Enabled Maintenance mode.
 	 *
 	 * @subcommand on
@@ -61,6 +64,7 @@ class Maintenance_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp maintenance off
+	 *     Disabling Maintenance mode...
 	 *     Success: Disabled Maintenance mode.
 	 *
 	 * @subcommand off
