@@ -12,8 +12,9 @@ Feature: Manage maintenance mode of WordPress install.
       """
 
     When I run `wp maintenance on`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
+      Enabling Maintenance mode...
       Success: Enabled Maintenance mode.
       """
 
@@ -30,14 +31,16 @@ Feature: Manage maintenance mode of WordPress install.
       """
 
     When I run `wp maintenance on --force`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
+      Enabling Maintenance mode...
       Success: Enabled Maintenance mode.
       """
 
     When I run `wp maintenance off`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
+      Disabling Maintenance mode...
       Success: Disabled Maintenance mode.
       """
 
