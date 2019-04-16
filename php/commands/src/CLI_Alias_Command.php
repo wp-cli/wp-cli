@@ -1,18 +1,17 @@
 <?php
 
 /**
- * Retrieves, sets and update aliases for WordPress Installations.
+ * Retrieves, sets and updates aliases for WordPress Installations.
  */
 
 use Mustangostang\Spyc;
 
 /**
- * Retrieves, sets and update aliases for WordPress Installations.
+ * Retrieves, sets and updates aliases for WordPress Installations.
  *
  * Aliases are shorthand references to WordPress installs. For instance,
- * `@dev` could refer to a development install and `@prod` could refer to
- * a production install. This command gives you visibility in what
- * registered aliases you have available.
+ * `@dev` could refer to a development install and `@prod` could refer to a production install.
+ * This command gives you and option to add, update and delete, the registered aliases you have available.
  *
  * ## EXAMPLES
  *
@@ -20,8 +19,8 @@ use Mustangostang\Spyc;
  *     $ wp cli alias list
  *     list
  *     ---
- * @all     : Run command against every registered alias.
- * @local   :
+ *     @all: Run command against every registered alias.
+ *     @local:
  *       user: wpcli
  *       path: /Users/wpcli/sites/testsite
  *
@@ -66,12 +65,12 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     # List all available aliases.
 	 *     $ wp cli alias list
 	 *     ---
-	 * @all        : Run command against every registered alias.
-	 * @prod       :
+	 *     @all: Run command against every registered alias.
+	 *     @prod:
 	 *       ssh: runcommand@runcommand.io~/webapps/production
-	 * @dev        :
+	 *     @dev:
 	 *       ssh: vagrant@192.168.50.10/srv/www/runcommand.dev
-	 * @both       :
+	 *     @both:
 	 *       - @prod
 	 *       - @dev
 	 *
