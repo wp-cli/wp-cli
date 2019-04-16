@@ -1,12 +1,12 @@
 ---
-name: "\U0001F680 Regular Release Checklist"
-about: "\U0001F512 Maintainers only: create a checklist for a regular release process"
+name: "\U0001F527 Patch Release Checklist"
+about: "\U0001F512 Maintainers only: create a checklist for a patch release process"
 title: ''
 labels: 'i: scope:distribution'
 assignees: 'schlessera'
 
 ---
-# Regular Release Checklist - v2.x.x
+# Patch Release Checklist - v2.x.x
 
 ### Preparation
 
@@ -25,7 +25,23 @@ assignees: 'schlessera'
 
 ### Updating WP-CLI
 
-- [ ] Create a branch called `release-x-x-x` on `wp-cli/wp-cli-bundle` to prepare the release PR.
+- [ ] Create a new release branch from the last tagged patch release
+
+    ```
+    $ git checkout v1.4.0
+    Note: checking out 'v1.4.0'
+    You are in 'detached HEAD' state. You can look around, make experimental
+    changes and commit them, and you can discard any commits you make in this
+    state without impacting any branches by performing another checkout.
+    $ git checkout -b release-1-4-1
+    Switched to a new branch 'release-1-4-1'
+    ```
+
+- [ ] Cherry-pick existing commits and package versions to the new release branch.
+
+    Because patch releases should just be used for bug fixes, you should first fix the bug on master, and then cherry-pick the fix to the release branch. It's up to your discretion as to whether you cherry-pick the commits directly to the release branch *or* create a feature branch and pull request against the release branch.
+
+    If the bug existed in a package, you'll need to create a point release above the last bundled version for the package and update `composer.lock` to load that point release.
 
 - [ ] Ensure that the contents of [VERSION](https://github.com/wp-cli/wp-cli/blob/master/VERSION) in `wp-cli/wp-cli` are changed to latest.
 
