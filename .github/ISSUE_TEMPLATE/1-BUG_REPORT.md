@@ -86,7 +86,7 @@ If you happen to have a suggestion on how to fix this bug, please tell us in her
 
 Just leave this section out if you don't know how to fix it.
 
-**Provide additional context/Screenshots**
+**Provide additional context/screenshots**
 
 Add any other context about the problem here.
 
