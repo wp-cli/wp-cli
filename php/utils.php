@@ -1003,10 +1003,10 @@ function basename( $path, $suffix = '' ) {
  */
 // @codingStandardsIgnoreLine
 function isPiped() {
-	$shellPipe = getenv( 'SHELL_PIPE' );
+	$shell_pipe = getenv( 'SHELL_PIPE' );
 
-	if ( false !== $shellPipe ) {
-		return filter_var( $shellPipe, FILTER_VALIDATE_BOOLEAN );
+	if ( false !== $shell_pipe ) {
+		return filter_var( $shell_pipe, FILTER_VALIDATE_BOOLEAN );
 	}
 
 	return ( function_exists( 'posix_isatty' ) && ! posix_isatty( STDOUT ) );
