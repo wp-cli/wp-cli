@@ -43,7 +43,7 @@ Here's a quick overview to where each command lives:
 * `wp super-admin *` https://github.com/wp-cli/super-admin-command
 * `wp (widget|sidebar) *` https://github.com/wp-cli/widget-command
 
-If you are not in the correct repository right now, you can just close this issue/window without submitting and click through to the correct one.
+If you are not in the correct repository, you can just close this issue/window without submitting and navigate to the correct one.
 
 **Are you unsure about which repository to post the bug report into?**
 
