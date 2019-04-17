@@ -36,7 +36,7 @@ class Runner {
 
 	private $project_config_path_debug;
 
-	private $_required_files;
+	private $required_files;
 
 	public function __get( $key ) {
 		if ( '_' === $key[0] ) {
@@ -799,7 +799,7 @@ class Runner {
 	}
 
 	public function get_required_files() {
-		return $this->_required_files;
+		return $this->required_files;
 	}
 
 	/**
@@ -878,11 +878,11 @@ class Runner {
 			$this->project_config_path = $this->get_project_config_path();
 
 			$configurator->merge_yml( $this->global_config_path, $this->alias );
-			$config                          = $configurator->to_array();
-			$this->_required_files['global'] = $config[0]['require'];
+			$config                         = $configurator->to_array();
+			$this->required_files['global'] = $config[0]['require'];
 			$configurator->merge_yml( $this->project_config_path, $this->alias );
-			$config                           = $configurator->to_array();
-			$this->_required_files['project'] = $config[0]['require'];
+			$config                          = $configurator->to_array();
+			$this->required_files['project'] = $config[0]['require'];
 		}
 
 		// Runtime config and args
@@ -904,7 +904,7 @@ class Runner {
 			$this->aliases['@all'] = 'Run command against every registered alias.';
 			$this->aliases         = array_reverse( $this->aliases );
 		}
-		$this->_required_files['runtime'] = $this->config['require'];
+		$this->required_files['runtime'] = $this->config['require'];
 	}
 
 	private function check_root() {
