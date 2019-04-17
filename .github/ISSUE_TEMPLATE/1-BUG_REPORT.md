@@ -52,7 +52,7 @@ Just head over to the [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli) reposi
 --- ✅ If you are in the correct location now... --->
 
 - [ ] Yes, I reviewed the [contribution guidelines](https://make.wordpress.org/cli/handbook/contributing/).
-- [ ] Yes, more specifically, I reviewed the guidelines on [how to write clear bg reports](https://make.wordpress.org/cli/handbook/bug-reports/).
+- [ ] Yes, more specifically, I reviewed the guidelines on [how to write clear bug reports](https://make.wordpress.org/cli/handbook/bug-reports/).
 
 **Describe the current, buggy behavior**
 
