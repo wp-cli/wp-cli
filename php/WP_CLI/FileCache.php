@@ -215,8 +215,8 @@ class FileCache {
 			return false;
 		}
 
-		$ttl     = $this->ttl;
-		$maxSize = $this->maxSize;
+		$ttl      = $this->ttl;
+		$max_size = $this->maxSize;
 
 		// unlink expired files
 		if ( $ttl > 0 ) {
@@ -234,12 +234,12 @@ class FileCache {
 		}
 
 		// unlink older files if max cache size is exceeded
-		if ( $maxSize > 0 ) {
+		if ( $max_size > 0 ) {
 			$files = array_reverse( iterator_to_array( $this->get_finder()->sortByAccessedTime()->getIterator() ) );
 			$total = 0;
 
 			foreach ( $files as $file ) {
-				if ( ( $total + $file->getSize() ) <= $maxSize ) {
+				if ( ( $total + $file->getSize() ) <= $max_size ) {
 					$total += $file->getSize();
 				} else {
 					unlink( $file->getRealPath() );
