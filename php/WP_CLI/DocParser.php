@@ -16,12 +16,12 @@ class DocParser {
 	protected $docComment;
 
 	/**
-	 * @param string $docComment
+	 * @param string $doc_comment
 	 */
-	public function __construct( $docComment ) {
+	public function __construct( $doc_comment ) {
 		/* Make sure we have a known line ending in document */
-		$docComment       = str_replace( "\r\n", "\n", $docComment );
-		$this->docComment = self::remove_decorations( $docComment );
+		$doc_comment      = str_replace( "\r\n", "\n", $doc_comment );
+		$this->docComment = self::remove_decorations( $doc_comment );
 	}
 
 	/**
