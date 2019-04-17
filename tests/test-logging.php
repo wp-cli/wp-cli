@@ -31,13 +31,13 @@ class LoggingTests extends PHPUnit_Framework_TestCase {
 	public function testLogDebug() {
 		$message = 'This is a test message.';
 
-		$regularLogger = new MockRegularLogger( false );
+		$regular_logger = new MockRegularLogger( false );
 		$this->expectOutputRegex( "/Debug: {$message} \(\d+\.*\d*s\)/" );
-		$regularLogger->debug( $message );
+		$regular_logger->debug( $message );
 
-		$quietLogger = new MockQuietLogger();
+		$quiet_logger = new MockQuietLogger();
 		$this->expectOutputRegex( "/Debug: {$message} \(\d+\.*\d*s\)/" );
-		$quietLogger->debug( $message );
+		$quiet_logger->debug( $message );
 	}
 
 	public function testLogEscaping() {
