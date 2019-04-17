@@ -12,9 +12,13 @@ use \WP_CLI\Utils;
  */
 class CompositeCommand {
 
-	protected $name, $shortdesc, $synopsis, $docparser;
+	protected $name;
+	protected $shortdesc;
+	protected $synopsis;
+	protected $docparser;
 
-	protected $parent, $subcommands = array();
+	protected $parent;
+	protected $subcommands = array();
 
 	/**
 	 * Instantiate a new CompositeCommand
