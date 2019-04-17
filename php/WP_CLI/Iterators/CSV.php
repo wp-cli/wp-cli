@@ -14,7 +14,7 @@ class CSV implements \Iterator {
 	private $delimiter;
 	private $columns;
 
-	private $currentIndex;
+	private $current_index;
 	private $currentElement;
 
 	public function __construct( $filename, $delimiter = ',' ) {
@@ -31,7 +31,7 @@ class CSV implements \Iterator {
 
 		$this->columns = fgetcsv( $this->file_pointer, self::ROW_SIZE, $this->delimiter );
 
-		$this->currentIndex = -1;
+		$this->current_index = -1;
 		$this->next();
 	}
 
@@ -40,7 +40,7 @@ class CSV implements \Iterator {
 	}
 
 	public function key() {
-		return $this->currentIndex;
+		return $this->current_index;
 	}
 
 	public function next() {
@@ -64,7 +64,7 @@ class CSV implements \Iterator {
 
 			if ( ! empty( $element ) ) {
 				$this->currentElement = $element;
-				$this->currentIndex++;
+				$this->current_index++;
 
 				break;
 			}
