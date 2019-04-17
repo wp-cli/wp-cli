@@ -1358,7 +1358,7 @@ class WP_CLI {
 	}
 
 	// back-compat
-	// @codingStandardsIgnoreLine
+	// phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Deprecated method.
 	public static function addCommand( $name, $class ) {
 		trigger_error(
 			sprintf(

@@ -1160,7 +1160,8 @@ class Runner {
 			if ( array_key_exists( $key, $wp_cli_original_defined_vars ) || 'wp_cli_original_defined_vars' === $key ) {
 				continue;
 			}
-			// @codingStandardsIgnoreLine
+
+			// phpcs:ignore PHPCompatibility.Variables.ForbiddenGlobalVariableVariable.NonBareVariableFound
 			global ${$key};
 			${$key} = $var;
 		}

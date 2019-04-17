@@ -8,8 +8,9 @@
  *
  * @copyright Copyright (c) Ben Ramsey (http://benramsey.com)
  * @license http://opensource.org/licenses/MIT MIT
+ *
+ * @phpcs:disable -- Code from external source. Left as-is for easier compare.
  */
-// @codingStandardsIgnoreStart
 if (!function_exists('array_column')) {
     /**
      * Returns the values from a single column of the input array, identified by
@@ -114,4 +115,4 @@ if (!function_exists('array_column')) {
     }
 
 }
-// @codingStandardsIgnoreEnd
+// phpcs:enable
