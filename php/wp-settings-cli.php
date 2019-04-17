@@ -130,9 +130,7 @@ if ( ! empty( $wpdb->error ) ) {
 }
 
 // Set the database table prefix and the format specifiers for database table columns.
-// @codingStandardsIgnoreStart
 $GLOBALS['table_prefix'] = $table_prefix;
-// @codingStandardsIgnoreEnd
 wp_set_wpdb_vars();
 
 // Start the WordPress object cache, or an external object cache if the drop-in is present.
