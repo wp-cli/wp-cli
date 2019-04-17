@@ -84,7 +84,7 @@ class Runner {
 		foreach ( $this->early_invoke[ $when ] as $path ) {
 			if ( $this->cmd_starts_with( $path ) ) {
 				if ( empty( $real_when ) || ( $real_when && $real_when === $when ) ) {
-					$this->_run_command_and_exit();
+					$this->run_command_and_exit();
 				}
 			}
 		}
@@ -388,7 +388,7 @@ class Runner {
 		}
 	}
 
-	private function _run_command_and_exit( $help_exit_warning = '' ) {
+	private function run_command_and_exit( $help_exit_warning = '' ) {
 		$this->show_synopsis_if_composite_command();
 		$this->run_command( $this->arguments, $this->assoc_args );
 		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
@@ -1030,7 +1030,7 @@ class Runner {
 		// Protect 'cli info' from most of the runtime,
 		// except when the command will be run over SSH
 		if ( 'cli' === $this->arguments[0] && ! empty( $this->arguments[1] ) && 'info' === $this->arguments[1] && ! $this->config['ssh'] ) {
-			$this->_run_command_and_exit();
+			$this->run_command_and_exit();
 		}
 
 		if ( isset( $this->config['http'] ) && ! class_exists( '\WP_REST_CLI\Runner' ) ) {
@@ -1067,7 +1067,7 @@ class Runner {
 		$this->check_wp_version();
 
 		if ( $this->cmd_starts_with( array( 'config', 'create' ) ) ) {
-			$this->_run_command_and_exit();
+			$this->run_command_and_exit();
 		}
 
 		if ( ! Utils\locate_wp_config() ) {
@@ -1117,7 +1117,7 @@ class Runner {
 
 		$this->load_wordpress();
 
-		$this->_run_command_and_exit();
+		$this->run_command_and_exit();
 
 	}
 
@@ -1400,7 +1400,7 @@ class Runner {
 						if ( 'search-replace' === $run_on_site_not_found ) {
 							require_once ABSPATH . WPINC . '/formatting.php';
 						}
-						// PHP 5.3 compatible implementation of _run_command_and_exit().
+						// PHP 5.3 compatible implementation of run_command_and_exit().
 						$runner = WP_CLI::get_runner();
 						$runner->run_command( $runner->arguments, $runner->assoc_args );
 						exit;
@@ -1631,7 +1631,7 @@ class Runner {
 		} elseif ( is_string( $message ) ) {
 			$help_exit_warning = WP_CLI\Utils\wp_clean_error_message( $message );
 		}
-		$this->_run_command_and_exit( $help_exit_warning );
+		$this->run_command_and_exit( $help_exit_warning );
 	}
 
 	/**
