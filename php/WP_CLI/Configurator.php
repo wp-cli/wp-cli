@@ -324,17 +324,17 @@ class Configurator {
 		}
 
 		// Backwards compat
-		// 'core config' -> 'config create'
+		// Command 'core config' was moved to 'config create'.
 		if ( isset( $config['core config'] ) ) {
 			$config['config create'] = $config['core config'];
 			unset( $config['core config'] );
 		}
-		// 'checksum core' -> 'core verify-checksums'
+		// Command 'checksum core' was moved to 'core verify-checksums'.
 		if ( isset( $config['checksum core'] ) ) {
 			$config['core verify-checksums'] = $config['checksum core'];
 			unset( $config['checksum core'] );
 		}
-		// 'checksum plugin' -> 'plugin verify-checksums'
+		// Command 'checksum plugin' was moved to 'plugin verify-checksums'.
 		if ( isset( $config['checksum plugin'] ) ) {
 			$config['plugin verify-checksums'] = $config['checksum plugin'];
 			unset( $config['checksum plugin'] );
