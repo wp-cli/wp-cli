@@ -9,7 +9,7 @@ class CSV implements \Iterator {
 
 	const ROW_SIZE = 4096;
 
-	private $filePointer;
+	private $file_pointer;
 
 	private $delimiter;
 	private $columns;
@@ -18,8 +18,8 @@ class CSV implements \Iterator {
 	private $currentElement;
 
 	public function __construct( $filename, $delimiter = ',' ) {
-		$this->filePointer = fopen( $filename, 'rb' );
-		if ( ! $this->filePointer ) {
+		$this->file_pointer = fopen( $filename, 'rb' );
+		if ( ! $this->file_pointer ) {
 			\WP_CLI::error( sprintf( 'Could not open file: %s', $filename ) );
 		}
 
@@ -27,9 +27,9 @@ class CSV implements \Iterator {
 	}
 
 	public function rewind() {
-		rewind( $this->filePointer );
+		rewind( $this->file_pointer );
 
-		$this->columns = fgetcsv( $this->filePointer, self::ROW_SIZE, $this->delimiter );
+		$this->columns = fgetcsv( $this->file_pointer, self::ROW_SIZE, $this->delimiter );
 
 		$this->currentIndex = -1;
 		$this->next();
@@ -47,7 +47,7 @@ class CSV implements \Iterator {
 		$this->currentElement = false;
 
 		while ( true ) {
-			$str = fgets( $this->filePointer );
+			$str = fgets( $this->file_pointer );
 
 			if ( false === $str ) {
 				break;
