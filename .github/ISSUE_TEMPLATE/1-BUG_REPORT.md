@@ -15,7 +15,7 @@ assignees: ''
 
 If yes, make sure you create the issue in the correct repository.
 
-Here's a quick overview of where to find the different commands:
+Here's a quick overview to where each command lives:
 
 * `wp (cache|transient) *` https://github.com/wp-cli/cache-command
 * `wp checksum` https://github.com/wp-cli/checksum-command
