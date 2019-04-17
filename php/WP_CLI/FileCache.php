@@ -279,7 +279,7 @@ class FileCache {
 			return false;
 		}
 
-		/* @var Finder $finder */
+		/** @var Finder $finder */
 		$finder = $this->get_finder()->sortByName();
 
 		$files_to_delete = array();

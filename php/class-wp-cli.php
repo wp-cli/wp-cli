@@ -534,7 +534,7 @@ class WP_CLI {
 			}
 		}
 
-		/* @var $leaf_command Dispatcher\Subcommand|Dispatcher\CompositeCommand|Dispatcher\CommandNamespace */
+		/** @var $leaf_command Dispatcher\Subcommand|Dispatcher\CompositeCommand|Dispatcher\CommandNamespace */
 
 		if ( ! $command->can_have_subcommands() ) {
 			throw new Exception(
