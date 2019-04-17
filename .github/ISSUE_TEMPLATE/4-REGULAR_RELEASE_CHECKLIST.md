@@ -10,7 +10,7 @@ assignees: 'schlessera'
 
 ### Preparation
 
-- [ ] Write release post on the [Make.org CLI blog](https://make.wordpress.org/cli/wp-admin/post-new.php)
+- [ ] Draft release post on the [make.wordpress.org CLI blog](https://make.wordpress.org/cli/wp-admin/post-new.php)
 - [ ] Regenerate command and internal API docs
 
     Command and internal API docs need to be regenerated before every major release, because they're meant to correlate with the release.
