@@ -305,7 +305,7 @@ class Inflector {
 	 *
 	 * @var array
 	 */
-	private static $initialState = array();
+	private static $initial_state = array();
 
 	/**
 	 * Converts a word into the format for a Doctrine table name. Converts 'ModelName' to 'model_name'.
@@ -382,14 +382,14 @@ class Inflector {
 	 * @return void
 	 */
 	public static function reset() {
-		if ( empty( self::$initialState ) ) {
-			self::$initialState = get_class_vars( 'Inflector' );
+		if ( empty( self::$initial_state ) ) {
+			self::$initial_state = get_class_vars( 'Inflector' );
 
 			return;
 		}
 
-		foreach ( self::$initialState as $key => $val ) {
-			if ( 'initialState' !== $key ) {
+		foreach ( self::$initial_state as $key => $val ) {
+			if ( 'initial_state' !== $key ) {
 				self::${$key} = $val;
 			}
 		}
