@@ -13,7 +13,7 @@ assignees: ''
 
 **Is your bug report directly related to a specific command?**
 
-If yes, make sure you are in the correct repository that contains the command you are referring to, and only create the issue in that repository.
+If yes, make sure you create the issue in the correct repository.
 
 Here's a quick overview of where to find the different commands:
 
