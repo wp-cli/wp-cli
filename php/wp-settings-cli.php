@@ -3,7 +3,7 @@
  * A modified version of wp-settings.php, tailored for CLI use.
  */
 
-use \WP_CLI\Utils;
+use WP_CLI\Utils;
 
 /**
  * Stores the location of the WordPress directory of functions, classes, and core content.

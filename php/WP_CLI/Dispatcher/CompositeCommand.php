@@ -2,7 +2,7 @@
 
 namespace WP_CLI\Dispatcher;
 
-use \WP_CLI\Utils;
+use WP_CLI\Utils;
 
 /**
  * A non-leaf node in the command tree.
