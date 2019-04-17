@@ -32,7 +32,7 @@ class Runner {
 
 	private $early_invoke = array();
 
-	private $_global_config_path_debug;
+	private $global_config_path_debug;
 
 	private $_project_config_path_debug;
 
@@ -98,18 +98,18 @@ class Runner {
 	public function get_global_config_path() {
 
 		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
-			$config_path                     = getenv( 'WP_CLI_CONFIG_PATH' );
-			$this->_global_config_path_debug = 'Using global config from WP_CLI_CONFIG_PATH env var: ' . $config_path;
+			$config_path                    = getenv( 'WP_CLI_CONFIG_PATH' );
+			$this->global_config_path_debug = 'Using global config from WP_CLI_CONFIG_PATH env var: ' . $config_path;
 		} else {
-			$config_path                     = Utils\get_home_dir() . '/.wp-cli/config.yml';
-			$this->_global_config_path_debug = 'Using default global config: ' . $config_path;
+			$config_path                    = Utils\get_home_dir() . '/.wp-cli/config.yml';
+			$this->global_config_path_debug = 'Using default global config: ' . $config_path;
 		}
 
 		if ( is_readable( $config_path ) ) {
 			return $config_path;
 		}
 
-		$this->_global_config_path_debug = 'No readable global config found';
+		$this->global_config_path_debug = 'No readable global config found';
 
 		return false;
 	}
@@ -982,7 +982,7 @@ class Runner {
 			$this->enable_error_reporting();
 		}
 
-		WP_CLI::debug( $this->_global_config_path_debug, 'bootstrap' );
+		WP_CLI::debug( $this->global_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( $this->_project_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( 'argv: ' . implode( ' ', $GLOBALS['argv'] ), 'bootstrap' );
 
