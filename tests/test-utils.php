@@ -332,7 +332,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	public function testMysqlHostToCLIArgs() {
 		// Test hostname only, with and without 'p:' modifier
 		$expected = array(
-			'host' => 'hostname'
+			'host' => 'hostname',
 		);
 		$testcase = 'hostname';
 		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
@@ -342,9 +342,9 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// Test hostname with port number, with and without 'p:' modifier
 		$expected = array(
-			'host' => 'hostname',
-			'port' => 3306,
-			'protocol' => 'tcp'
+			'host'     => 'hostname',
+			'port'     => 3306,
+			'protocol' => 'tcp',
 		);
 		$testcase = 'hostname:3306';
 		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
@@ -354,8 +354,8 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// Test hostname with socket path, with and without 'p:' modifier
 		$expected = array(
-			'host' => 'hostname',
-			'socket' => '/path/to/socket'
+			'host'   => 'hostname',
+			'socket' => '/path/to/socket',
 		);
 		$testcase = 'hostname:/path/to/socket';
 		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );

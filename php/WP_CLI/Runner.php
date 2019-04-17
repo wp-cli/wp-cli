@@ -177,7 +177,7 @@ class Runner {
 		$wp_path_src = $matches[1] . $matches[2];
 		$wp_path_src = Utils\replace_path_consts( $wp_path_src, $index_path );
 
-		$wp_path     = eval( "return $wp_path_src;" ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- @codingStandardsIgnoreLine
+		$wp_path = eval( "return $wp_path_src;" ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- @codingStandardsIgnoreLine
 
 		if ( ! Utils\is_path_absolute( $wp_path ) ) {
 			$wp_path = dirname( $index_path ) . "/$wp_path";

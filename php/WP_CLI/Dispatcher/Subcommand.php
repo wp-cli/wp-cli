@@ -156,7 +156,6 @@ class Subcommand extends CompositeCommand {
 						// Only prompt for the positional arguments that are not
 						// yet provided, based purely on number.
 						return $arg_index++ >= count( $args );
-						break;
 					case 'generic':
 						// Always prompt for generic arguments.
 						return true;
