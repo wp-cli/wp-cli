@@ -14,15 +14,19 @@ use WP_CLI\Dispatcher\CompositeCommand;
  */
 class Runner {
 
-	private $global_config_path, $project_config_path;
+	private $global_config_path;
+	private $project_config_path;
 
-	private $config, $extra_config;
+	private $config;
+	private $extra_config;
 
 	private $alias;
 
 	private $aliases;
 
-	private $arguments, $assoc_args, $runtime_config;
+	private $arguments;
+	private $assoc_args;
+	private $runtime_config;
 
 	private $colorize = false;
 
