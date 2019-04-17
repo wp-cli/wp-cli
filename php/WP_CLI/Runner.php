@@ -26,7 +26,7 @@ class Runner {
 
 	private $colorize = false;
 
-	private $_early_invoke = array();
+	private $early_invoke = array();
 
 	private $_global_config_path_debug;
 
@@ -49,7 +49,7 @@ class Runner {
 	 * @param WP_CLI\Dispatcher\Subcommand $command
 	 */
 	public function register_early_invoke( $when, $command ) {
-		$this->_early_invoke[ $when ][] = array_slice( Dispatcher\get_path( $command ), 1 );
+		$this->early_invoke[ $when ][] = array_slice( Dispatcher\get_path( $command ), 1 );
 	}
 
 	/**
@@ -58,7 +58,7 @@ class Runner {
 	 * @param string $when Named execution hook
 	 */
 	private function do_early_invoke( $when ) {
-		if ( ! isset( $this->_early_invoke[ $when ] ) ) {
+		if ( ! isset( $this->early_invoke[ $when ] ) ) {
 			return;
 		}
 
@@ -68,7 +68,7 @@ class Runner {
 		if ( is_array( $r ) ) {
 			list( $command, $final_args, $cmd_path ) = $r;
 
-			foreach ( $this->_early_invoke as $_when => $_path ) {
+			foreach ( $this->early_invoke as $_when => $_path ) {
 				foreach ( $_path as $cmd ) {
 					if ( $cmd === $cmd_path ) {
 						$real_when = $_when;
@@ -77,7 +77,7 @@ class Runner {
 			}
 		}
 
-		foreach ( $this->_early_invoke[ $when ] as $path ) {
+		foreach ( $this->early_invoke[ $when ] as $path ) {
 			if ( $this->cmd_starts_with( $path ) ) {
 				if ( empty( $real_when ) || ( $real_when && $real_when === $when ) ) {
 					$this->_run_command_and_exit();
