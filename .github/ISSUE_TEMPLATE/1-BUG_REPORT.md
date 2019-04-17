@@ -45,7 +45,7 @@ Here's a quick overview of where to find the different commands:
 
 If you are not in the correct repository right now, you can just close this issue/window without submitting and click through to the correct one.
 
-**Are you unsure about what repository to post the bug report into?**
+**Are you unsure about which repository to post the bug report into?**
 
 Just head over to the [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli) repository and [create a new issue in that repository](https://github.com/wp-cli/wp-cli/issues/new). The maintainers can still move the bug report into the correct repository later on.
 
