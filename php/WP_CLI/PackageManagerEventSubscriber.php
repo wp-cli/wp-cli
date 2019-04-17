@@ -2,11 +2,11 @@
 
 namespace WP_CLI;
 
-use \Composer\DependencyResolver\Rule;
-use \Composer\EventDispatcher\EventSubscriberInterface;
-use \Composer\Installer\PackageEvent;
+use Composer\DependencyResolver\Rule;
+use Composer\EventDispatcher\EventSubscriberInterface;
+use Composer\Installer\PackageEvent;
 use Composer\Installer\PackageEvents;
-use \WP_CLI;
+use WP_CLI;
 
 /**
  * A Composer Event subscriber so we can keep track of what's happening inside Composer
