@@ -70,7 +70,7 @@ Remember: more information is better. Please provide context on how you're runni
 // You can also use code snippets if needed.
 ```
 
-**Describe what you would expect as the correct outcome**
+**Describe what you expect as the correct outcome**
 
 A clear and concise description of what you expected to happen (or code).
 
