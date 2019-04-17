@@ -58,7 +58,7 @@ Just head over to the [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli) reposi
 
 A clear and concise description of the behavior that produces an incorrect result or error.
 
-Remember to provide some context to make sure we're all on the same page when reasoning about this.
+Remember: more information is better. Please provide context on how you're running the command to make sure we're all on the same page when reasoning about this.
 
 **Describe how other contributors can replicate this bug**
 
