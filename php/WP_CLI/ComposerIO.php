@@ -2,8 +2,8 @@
 
 namespace WP_CLI;
 
-use \Composer\IO\NullIO;
-use \WP_CLI;
+use Composer\IO\NullIO;
+use WP_CLI;
 
 /**
  * A Composer IO class so we can provide some level of interactivity from WP-CLI
