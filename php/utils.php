@@ -1384,16 +1384,13 @@ function get_php_binary() {
 
 	// Available since PHP 5.4.
 	if ( defined( 'PHP_BINARY' ) ) {
-		// @codingStandardsIgnoreLine
 		return PHP_BINARY;
 	}
 
-	// @codingStandardsIgnoreLine
 	if ( @is_executable( PHP_BINDIR . '/php' ) ) {
 		return PHP_BINDIR . '/php';
 	}
 
-	// @codingStandardsIgnoreLine
 	if ( is_windows() && @is_executable( PHP_BINDIR . '/php.exe' ) ) {
 		return PHP_BINDIR . '/php.exe';
 	}
