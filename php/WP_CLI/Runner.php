@@ -34,7 +34,7 @@ class Runner {
 
 	private $global_config_path_debug;
 
-	private $_project_config_path_debug;
+	private $project_config_path_debug;
 
 	private $_required_files;
 
@@ -142,10 +142,10 @@ class Runner {
 			}
 		);
 
-		$this->_project_config_path_debug = 'No project config found';
+		$this->project_config_path_debug = 'No project config found';
 
 		if ( ! empty( $project_config_path ) ) {
-			$this->_project_config_path_debug = 'Using project config: ' . $project_config_path;
+			$this->project_config_path_debug = 'Using project config: ' . $project_config_path;
 		}
 
 		return $project_config_path;
@@ -983,7 +983,7 @@ class Runner {
 		}
 
 		WP_CLI::debug( $this->global_config_path_debug, 'bootstrap' );
-		WP_CLI::debug( $this->_project_config_path_debug, 'bootstrap' );
+		WP_CLI::debug( $this->project_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( 'argv: ' . implode( ' ', $GLOBALS['argv'] ), 'bootstrap' );
 
 		$this->check_root();
