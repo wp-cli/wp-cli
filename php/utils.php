@@ -4,12 +4,12 @@
 
 namespace WP_CLI\Utils;
 
-use \Composer\Semver\Comparator;
-use \Composer\Semver\Semver;
-use \WP_CLI;
-use \WP_CLI\Dispatcher;
-use \WP_CLI\Inflector;
-use \WP_CLI\Iterators\Transform;
+use Composer\Semver\Comparator;
+use Composer\Semver\Semver;
+use WP_CLI;
+use WP_CLI\Dispatcher;
+use WP_CLI\Inflector;
+use WP_CLI\Iterators\Transform;
 
 const PHAR_STREAM_PREFIX = 'phar://';
 

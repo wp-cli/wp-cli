@@ -1,7 +1,7 @@
 <?php
 
-use \Composer\Semver\Comparator;
-use \WP_CLI\Utils;
+use Composer\Semver\Comparator;
+use WP_CLI\Utils;
 
 /**
  * Review current WP-CLI info, check for updates, or see defined aliases.
