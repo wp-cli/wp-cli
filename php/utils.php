@@ -429,7 +429,7 @@ function mysql_host_to_cli_args( $raw_host ) {
 	 * If the host string begins with 'p:' for a persistent db connection,
 	 * replace 'p:' with nothing.
 	 */
-	if ( substr( $raw_host, 0, 2 ) == 'p:' ) {
+	if ( substr( $raw_host, 0, 2 ) === 'p:' ) {
 		$raw_host = substr_replace( $raw_host, '', 0, 2 );
 	}
 

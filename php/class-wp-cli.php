@@ -1027,7 +1027,7 @@ class WP_CLI {
 		$proc    = Process::create( $command );
 		$results = $proc->run();
 
-		if ( -1 == $results->return_code ) {
+		if ( -1 === $results->return_code ) {
 			self::warning( "Spawned process returned exit code {$results->return_code}, which could be caused by a custom compiled version of PHP that uses the --enable-sigchild option." );
 		}
 
@@ -1245,7 +1245,7 @@ class WP_CLI {
 				fclose( $pipes[2] );
 			}
 			$return_code = proc_close( $proc );
-			if ( -1 == $return_code ) {
+			if ( -1 === $return_code ) {
 				self::warning( 'Spawned process returned exit code -1, which could be caused by a custom compiled version of PHP that uses the --enable-sigchild option.' );
 			} elseif ( $return_code && $exit_error ) {
 				exit( $return_code );
