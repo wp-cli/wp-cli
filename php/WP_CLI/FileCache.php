@@ -42,15 +42,15 @@ class FileCache {
 	protected $whitelist;
 
 	/**
-	 * @param string $cacheDir   location of the cache
+	 * @param string $cache_dir  location of the cache
 	 * @param int    $ttl        cache files default time to live (expiration)
-	 * @param int    $maxSize    max total cache size
+	 * @param int    $max_size   max total cache size
 	 * @param string $whitelist  List of characters that are allowed in path names (used in a regex character class)
 	 */
-	public function __construct( $cacheDir, $ttl, $maxSize, $whitelist = 'a-z0-9._-' ) {
-		$this->root      = Utils\trailingslashit( $cacheDir );
+	public function __construct( $cache_dir, $ttl, $max_size, $whitelist = 'a-z0-9._-' ) {
+		$this->root      = Utils\trailingslashit( $cache_dir );
 		$this->ttl       = (int) $ttl;
-		$this->maxSize   = (int) $maxSize;
+		$this->maxSize   = (int) $max_size;
 		$this->whitelist = $whitelist;
 
 		if ( ! $this->ensure_dir_exists( $this->root ) ) {
