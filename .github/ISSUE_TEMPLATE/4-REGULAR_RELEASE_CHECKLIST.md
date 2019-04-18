@@ -1,7 +1,7 @@
 ---
 name: "\U0001F680 Regular Release Checklist"
 about: "\U0001F512 Maintainers only: create a checklist for a regular release process"
-title: ''
+title: 'Release checklist for release v2.x.x'
 labels: 'i: scope:distribution'
 assignees: 'schlessera'
 
