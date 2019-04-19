@@ -64,7 +64,7 @@ function wp_debug_mode() {
 		}
 	}
 
-	// XDebug already sends errors to STDERR
+	// XDebug already sends errors to STDERR.
 	ini_set( 'display_errors', function_exists( 'xdebug_debug_zval' ) ? false : 'STDERR' );
 }
 
@@ -184,8 +184,8 @@ function is_theme_skipped( $path ) {
 }
 
 /**
- * Register the sidebar for unused widgets
- * Core does this in /wp-admin/widgets.php, which isn't helpful
+ * Register the sidebar for unused widgets.
+ * Core does this in /wp-admin/widgets.php, which isn't helpful.
  */
 function wp_register_unused_sidebar() {
 
