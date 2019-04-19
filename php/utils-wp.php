@@ -106,7 +106,7 @@ function wp_clean_error_message( $message ) {
 		'</code>' => '`',
 	);
 	$message        = str_replace( array_keys( $search_replace ), array_values( $search_replace ), $message );
-	$message        = wp_strip_all_tags( $message );
+	$message        = strip_tags( $message );
 	$message        = html_entity_decode( $message, ENT_COMPAT, 'UTF-8' );
 
 	return $message;
@@ -379,4 +379,30 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 	}
 
 	return $tables;
+}
+
+/**
+ * Failsafe use of the WordPress wp_strip_all_tags() function.
+ *
+ * Automatically falls back to strip_tags() function if the WP function is not
+ * available.
+ *
+ * @param string $string String to strip the tags from.
+ * @return string String devoid of tags.
+ */
+function strip_tags( $string ) {
+	if ( function_exists( 'wp_strip_all_tags' ) ) {
+		return \wp_strip_all_tags( $string );
+	}
+
+	$string = preg_replace(
+		'@<(script|style)[^>]*?>.*?</\\1>@si',
+		'',
+		$string
+	);
+
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- Fallback.
+	$string = \strip_tags( $string );
+
+	return trim( $string );
 }
