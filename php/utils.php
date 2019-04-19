@@ -111,7 +111,7 @@ function load_command( $name ) {
  *
  * @param array|object Either a plain array or another iterator
  * @param callback     The function to apply to an element
- * @return object       An iterator that applies the given callback(s)
+ * @return object An iterator that applies the given callback(s)
  */
 function iterator_map( $it, $fn ) {
 	if ( is_array( $it ) ) {
@@ -134,7 +134,7 @@ function iterator_map( $it, $fn ) {
  * @param string|array The files (or file) to search for.
  * @param string|null  The directory to start searching from; defaults to CWD.
  * @param callable     Function which is passed the current dir each time a directory level is traversed.
- * @return null|string  Null if the file was not found.
+ * @return null|string Null if the file was not found.
  */
 function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	$files = (array) $files;
