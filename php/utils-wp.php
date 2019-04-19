@@ -349,7 +349,7 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 		}
 
 		// Note: BC change 1.5.0, tables are sorted (via TABLES view).
-		// @codingStandardsIgnoreLine
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- uses esc_sql_ident() and $wpdb->_escape().
 		$tables = $wpdb->get_col( sprintf( "SHOW TABLES WHERE %s IN ('%s')", esc_sql_ident( 'Tables_in_' . $wpdb->dbname ), implode( "', '", $wpdb->_escape( $wp_tables ) ) ) );
 	}
 
