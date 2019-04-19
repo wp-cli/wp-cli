@@ -68,8 +68,8 @@ function load_dependencies() {
 
 function get_vendor_paths() {
 	$vendor_paths        = array(
-		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project / installed via Composer (preferred)
-		WP_CLI_ROOT . '/vendor',           // top-level project / installed as Git clone
+		WP_CLI_ROOT . '/../../../vendor',  // Part of a larger project / installed via Composer (preferred)
+		WP_CLI_ROOT . '/vendor',           // Top-level project / installed as Git clone
 	);
 	$maybe_composer_json = WP_CLI_ROOT . '/../../../composer.json';
 	if ( file_exists( $maybe_composer_json ) && is_readable( $maybe_composer_json ) ) {
@@ -81,7 +81,7 @@ function get_vendor_paths() {
 	return $vendor_paths;
 }
 
-// Using require() directly inside a class grants access to private methods to the loaded code
+// Using require() directly inside a class grants access to private methods to the loaded code.
 function load_file( $path ) {
 	require_once $path;
 }
@@ -110,8 +110,8 @@ function load_command( $name ) {
  *     }
  *
  * @param array|object Either a plain array or another iterator
- * @param callback The function to apply to an element
- * @return object An iterator that applies the given callback(s)
+ * @param callback     The function to apply to an element
+ * @return object       An iterator that applies the given callback(s)
  */
 function iterator_map( $it, $fn ) {
 	if ( is_array( $it ) ) {
@@ -130,11 +130,11 @@ function iterator_map( $it, $fn ) {
 }
 
 /**
- * Search for file by walking up the directory tree until the first file is found or until $stop_check($dir) returns true
- * @param string|array The files (or file) to search for
- * @param string|null The directory to start searching from; defaults to CWD
- * @param callable Function which is passed the current dir each time a directory level is traversed
- * @return null|string Null if the file was not found
+ * Search for file by walking up the directory tree until the first file is found or until $stop_check($dir) returns true.
+ * @param string|array The files (or file) to search for.
+ * @param string|null  The directory to start searching from; defaults to CWD.
+ * @param callable     Function which is passed the current dir each time a directory level is traversed.
+ * @return null|string  Null if the file was not found.
  */
 function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	$files = (array) $files;
@@ -336,8 +336,8 @@ function write_csv( $fd, $rows, $headers = array() ) {
 /**
  * Pick fields from an associative array or object.
  *
- * @param array|object Associative array or object to pick fields from
- * @param array List of fields to pick
+ * @param  array|object Associative array or object to pick fields from.
+ * @param  array List of fields to pick.
  * @return array
  */
 function pick_fields( $item, $fields ) {
@@ -362,9 +362,9 @@ function pick_fields( $item, $fields ) {
  * @access public
  * @category Input
  *
- * @param  string  $content  Some form of text to edit (e.g. post content)
- * @param  string  $title    Title to display in the editor.
- * @param  string  $ext      Extension to use with the temp file.
+ * @param string  $content  Some form of text to edit (e.g. post content)
+ * @param string  $title    Title to display in the editor.
+ * @param string  $ext      Extension to use with the temp file.
  * @return string|bool       Edited text, if file is saved from editor; false, if no change to file.
  */
 function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
@@ -420,6 +420,7 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 
 /**
  * @param string MySQL host string, as defined in wp-config.php
+ *
  * @return array
  */
 function mysql_host_to_cli_args( $raw_host ) {
@@ -656,14 +657,14 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 }
 
 /**
- * Increments a version string using the "x.y.z-pre" format
+ * Increments a version string using the "x.y.z-pre" format.
  *
- * Can increment the major, minor or patch number by one
- * If $new_version == "same" the version string is not changed
- * If $new_version is not a known keyword, it will be used as the new version string directly
+ * Can increment the major, minor or patch number by one.
+ * If $new_version == "same" the version string is not changed.
+ * If $new_version is not a known keyword, it will be used as the new version string directly.
  *
- * @param  string $current_version
- * @param  string $new_version
+ * @param string $current_version
+ * @param string $new_version
  * @return string
  */
 function increment_version( $current_version, $new_version ) {
@@ -679,14 +680,14 @@ function increment_version( $current_version, $new_version ) {
 		case 'patch':
 			$current_version[0][2]++;
 
-			$current_version = array( $current_version[0] ); // drop possible pre-release info
+			$current_version = array( $current_version[0] ); // Drop possible pre-release info.
 			break;
 
 		case 'minor':
 			$current_version[0][1]++;
 			$current_version[0][2] = 0;
 
-			$current_version = array( $current_version[0] ); // drop possible pre-release info
+			$current_version = array( $current_version[0] ); // Drop possible pre-release info.
 			break;
 
 		case 'major':
@@ -694,7 +695,7 @@ function increment_version( $current_version, $new_version ) {
 			$current_version[0][1] = 0;
 			$current_version[0][2] = 0;
 
-			$current_version = array( $current_version[0] ); // drop possible pre-release info
+			$current_version = array( $current_version[0] ); // Drop possible pre-release info.
 			break;
 
 		default: // not a keyword
@@ -702,7 +703,7 @@ function increment_version( $current_version, $new_version ) {
 			break;
 	}
 
-	// reconstruct version string
+	// Reconstruct version string.
 	$current_version[0] = implode( '.', $current_version[0] );
 	$current_version    = implode( '-', $current_version );
 
@@ -1019,7 +1020,6 @@ function isPiped() {
  *
  * @param string|array $paths Single path as a string, or an array of paths.
  * @param int          $flags Optional. Flags to pass to glob. Defaults to GLOB_BRACE.
- *
  * @return array Expanded paths.
  */
 function expand_globs( $paths, $flags = 'default' ) {
@@ -1057,9 +1057,8 @@ function expand_globs( $paths, $flags = 'default' ) {
  * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  *
- * @param string $pattern Filename pattern.
- * @param void $dummy_flags Not used.
- *
+ * @param string $pattern     Filename pattern.
+ * @param void   $dummy_flags Not used.
  * @return array Array of paths.
  */
 function glob_brace( $pattern, $dummy_flags = null ) {
@@ -1157,7 +1156,6 @@ function glob_brace( $pattern, $dummy_flags = null ) {
  * @param string $target    Target term to get a suggestion for.
  * @param array  $options   Array with possible options.
  * @param int    $threshold Threshold above which to return an empty string.
- *
  * @return string
  */
 function get_suggestion( $target, array $options, $threshold = 2 ) {
@@ -1219,7 +1217,6 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
  * Use the __FILE__ or __DIR__ constants as a starting point.
  *
  * @param string $path An absolute path that might be within a Phar.
- *
  * @return string A Phar-safe version of the path.
  */
 function phar_safe_path( $path ) {
@@ -1243,7 +1240,6 @@ function phar_safe_path( $path ) {
  * well as an object that extends `WP_CLI\Dispatcher\CompositeCommand`.
  *
  * @param \WP_CLI\Dispatcher\CompositeCommand|string $command
- *
  * @return bool
  */
 function is_bundled_command( $command ) {
@@ -1273,7 +1269,6 @@ function is_bundled_command( $command ) {
  * Removes (if there) if Windows, adds (if not there) if not.
  *
  * @param string $command
- *
  * @return string
  */
 function force_env_on_nix_systems( $command ) {
@@ -1296,7 +1291,6 @@ function force_env_on_nix_systems( $command ) {
  *
  * @param string $context Optional. If set will appear in error message. Default null.
  * @param bool   $return  Optional. If set will return false rather than error out. Default false.
- *
  * @return bool
  */
 function check_proc_available( $context = null, $return = false ) {
@@ -1318,7 +1312,6 @@ function check_proc_available( $context = null, $return = false ) {
  * Returns past tense of verb, with limited accuracy. Only regular verbs catered for, apart from "reset".
  *
  * @param string $verb Verb to return past tense of.
- *
  * @return string
  */
 function past_tense_verb( $verb ) {
@@ -1386,13 +1379,12 @@ function get_php_binary() {
  *
  * @access public
  *
- * @param string $command Command to execute.
- * @param array $descriptorspec Indexed array of descriptor numbers and their values.
- * @param array &$pipes Indexed array of file pointers that correspond to PHP's end of any pipes that are created.
- * @param string $cwd Initial working directory for the command.
- * @param array $env Array of environment variables.
- * @param array $other_options Array of additional options (Windows only).
- *
+ * @param string $command        Command to execute.
+ * @param array  $descriptorspec Indexed array of descriptor numbers and their values.
+ * @param array  &$pipes         Indexed array of file pointers that correspond to PHP's end of any pipes that are created.
+ * @param string $cwd            Initial working directory for the command.
+ * @param array  $env            Array of environment variables.
+ * @param array  $other_options  Array of additional options (Windows only).
  * @return resource Command stripped of any environment variable settings.
  */
 function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = null, $other_options = null ) {
@@ -1411,7 +1403,6 @@ function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = n
  *
  * @param string $command Command to execute.
  * @param array &$env Array of existing environment variables. Will be modified if any settings in command.
- *
  * @return string Command stripped of any environment variable settings.
  */
 function _proc_open_compat_win_env( $cmd, &$env ) {
@@ -1449,7 +1440,7 @@ function esc_like( $text ) {
  * Escapes (backticks) MySQL identifiers (aka schema object names) - i.e. column names, table names, and database/index/alias/view etc names.
  * See https://dev.mysql.com/doc/refman/5.5/en/identifiers.html
  *
- * @param string|array $idents A single identifier or an array of identifiers.
+ * @param  string|array $idents A single identifier or an array of identifiers.
  * @return string|array An escaped string if given a string, or an array of escaped strings if given an array of strings.
  */
 function esc_sql_ident( $idents ) {
@@ -1469,7 +1460,6 @@ function esc_sql_ident( $idents ) {
  * @param string $argument       String to evaluate.
  * @param bool   $ignore_scalars Optional. Whether to ignore scalar values.
  *                               Defaults to true.
- *
  * @return bool Whether the provided string is a valid JSON representation.
  */
 function is_json( $argument, $ignore_scalars = true ) {
@@ -1492,7 +1482,6 @@ function is_json( $argument, $ignore_scalars = true ) {
  * @param array $assoc_args      Associative array of arguments.
  * @param array $array_arguments Array of argument keys that should receive an
  *                               array through the shell.
- *
  * @return array
  */
 function parse_shell_arrays( $assoc_args, $array_arguments ) {
@@ -1513,7 +1502,6 @@ function parse_shell_arrays( $assoc_args, $array_arguments ) {
  * Describe a callable as a string.
  *
  * @param callable $callable The callable to describe.
- *
  * @return string String description of the callable.
  */
 function describe_callable( $callable ) {
@@ -1549,7 +1537,6 @@ function describe_callable( $callable ) {
  * @param int|null $count Optional. Count of the nouns, to decide whether to
  *                        pluralize. Will pluralize unconditionally if none
  *                        provided.
- *
  * @return string Pluralized noun.
  */
 function pluralize( $noun, $count = null ) {
