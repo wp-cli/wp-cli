@@ -84,6 +84,7 @@ class WP_CLI {
 			$cache = new FileCache( $dir, 15552000, 314572800 );
 
 			// clean older files on shutdown with 1/50 probability
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand -- no crypto and WP not loaded.
 			if ( 0 === mt_rand( 0, 50 ) ) {
 				register_shutdown_function(
 					function () use ( $cache ) {
