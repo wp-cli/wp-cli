@@ -4,6 +4,7 @@ namespace WP_CLI;
 
 use Composer\IO\NullIO;
 use WP_CLI;
+use WP_CLI\Utils;
 
 /**
  * A Composer IO class so we can provide some level of interactivity from WP-CLI
@@ -33,8 +34,7 @@ class ComposerIO extends NullIO {
 
 	private static function output_clean_message( $message ) {
 		$message = preg_replace( '#<(https?)([^>]+)>#', '$1$2', $message );
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- WP not loaded yet.
-		WP_CLI::log( strip_tags( trim( $message ) ) );
+		WP_CLI::log( Utils\strip_tags( trim( $message ) ) );
 	}
 
 }
