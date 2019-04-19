@@ -18,7 +18,7 @@ final class IncludePackageAutoloader extends AutoloaderStep {
 	 *                        to skip.
 	 */
 	protected function get_autoloader_paths() {
-		if ( $this->state->getValue( BootstrapState::IS_PROTECTED_COMMAND, false ) ) {
+		if ( $this->state->get_value( BootstrapState::IS_PROTECTED_COMMAND, false ) ) {
 			return false;
 		}
 
