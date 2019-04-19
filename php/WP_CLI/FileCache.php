@@ -35,7 +35,7 @@ class FileCache {
 	/**
 	 * @var int max total size
 	 */
-	protected $maxSize;
+	protected $max_size;
 	/**
 	 * @var string key allowed chars (regex class)
 	 */
@@ -50,7 +50,7 @@ class FileCache {
 	public function __construct( $cache_dir, $ttl, $max_size, $whitelist = 'a-z0-9._-' ) {
 		$this->root      = Utils\trailingslashit( $cache_dir );
 		$this->ttl       = (int) $ttl;
-		$this->maxSize   = (int) $max_size;
+		$this->max_size  = (int) $max_size;
 		$this->whitelist = $whitelist;
 
 		if ( ! $this->ensure_dir_exists( $this->root ) ) {
@@ -216,7 +216,7 @@ class FileCache {
 		}
 
 		$ttl      = $this->ttl;
-		$max_size = $this->maxSize;
+		$max_size = $this->max_size;
 
 		// unlink expired files
 		if ( $ttl > 0 ) {
