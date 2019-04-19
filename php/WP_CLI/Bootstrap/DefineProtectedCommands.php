@@ -25,7 +25,7 @@ final class DefineProtectedCommands implements BootstrapStep {
 
 		foreach ( $commands as $command ) {
 			if ( 0 === strpos( $current_command, $command ) ) {
-				$state->setValue( BootstrapState::IS_PROTECTED_COMMAND, true );
+				$state->set_value( BootstrapState::IS_PROTECTED_COMMAND, true );
 			}
 		}
 
