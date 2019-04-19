@@ -33,6 +33,7 @@ class ComposerIO extends NullIO {
 
 	private static function output_clean_message( $message ) {
 		$message = preg_replace( '#<(https?)([^>]+)>#', '$1$2', $message );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- WP not loaded yet.
 		WP_CLI::log( strip_tags( trim( $message ) ) );
 	}
 

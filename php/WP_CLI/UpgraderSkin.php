@@ -51,7 +51,7 @@ class UpgraderSkin extends \WP_Upgrader_Skin {
 			return;
 		}
 
-		$string = str_replace( '&#8230;', '...', strip_tags( $string ) );
+		$string = str_replace( '&#8230;', '...', wp_strip_all_tags( $string ) );
 		$string = html_entity_decode( $string, ENT_QUOTES, get_bloginfo( 'charset' ) );
 
 		\WP_CLI::log( $string );

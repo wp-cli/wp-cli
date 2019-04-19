@@ -106,7 +106,7 @@ function wp_clean_error_message( $message ) {
 		'</code>' => '`',
 	);
 	$message        = str_replace( array_keys( $search_replace ), array_values( $search_replace ), $message );
-	$message        = strip_tags( $message );
+	$message        = wp_strip_all_tags( $message );
 	$message        = html_entity_decode( $message, ENT_COMPAT, 'UTF-8' );
 
 	return $message;
