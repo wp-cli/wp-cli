@@ -110,8 +110,7 @@ class Process {
 	public function run_check() {
 		$r = $this->run();
 
-		// $r->STDERR is incorrect, but kept incorrect for backwards-compat
-		if ( $r->return_code || ! empty( $r->STDERR ) ) {
+		if ( $r->return_code ) {
 			throw new \RuntimeException( $r );
 		}
 
