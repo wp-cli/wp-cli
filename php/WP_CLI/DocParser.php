@@ -13,15 +13,15 @@ class DocParser {
 	/**
 	 * @var string $docComment PHPdoc command for the command.
 	 */
-	protected $docComment;
+	protected $doc_comment;
 
 	/**
 	 * @param string $doc_comment
 	 */
 	public function __construct( $doc_comment ) {
 		/* Make sure we have a known line ending in document */
-		$doc_comment      = str_replace( "\r\n", "\n", $doc_comment );
-		$this->docComment = self::remove_decorations( $doc_comment );
+		$doc_comment       = str_replace( "\r\n", "\n", $doc_comment );
+		$this->doc_comment = self::remove_decorations( $doc_comment );
 	}
 
 	/**
@@ -44,7 +44,7 @@ class DocParser {
 	 * @return string
 	 */
 	public function get_shortdesc() {
-		if ( ! preg_match( '|^([^@][^\n]+)\n*|', $this->docComment, $matches ) ) {
+		if ( ! preg_match( '|^([^@][^\n]+)\n*|', $this->doc_comment, $matches ) ) {
 			return '';
 		}
 
@@ -62,7 +62,7 @@ class DocParser {
 			return '';
 		}
 
-		$longdesc = substr( $this->docComment, strlen( $shortdesc ) );
+		$longdesc = substr( $this->doc_comment, strlen( $shortdesc ) );
 
 		$lines = array();
 		foreach ( explode( "\n", $longdesc ) as $line ) {
@@ -84,7 +84,7 @@ class DocParser {
 	 * @return string
 	 */
 	public function get_tag( $name ) {
-		if ( preg_match( '|^@' . $name . '\s+([a-z-_0-9]+)|m', $this->docComment, $matches ) ) {
+		if ( preg_match( '|^@' . $name . '\s+([a-z-_0-9]+)|m', $this->doc_comment, $matches ) ) {
 			return $matches[1];
 		}
 
@@ -97,7 +97,7 @@ class DocParser {
 	 * @return string
 	 */
 	public function get_synopsis() {
-		if ( ! preg_match( '|^@synopsis\s+(.+)|m', $this->docComment, $matches ) ) {
+		if ( ! preg_match( '|^@synopsis\s+(.+)|m', $this->doc_comment, $matches ) ) {
 			return '';
 		}
 
@@ -112,7 +112,7 @@ class DocParser {
 	 */
 	public function get_arg_desc( $name ) {
 
-		if ( preg_match( "/\[?<{$name}>.+\n: (.+?)(\n|$)/", $this->docComment, $matches ) ) {
+		if ( preg_match( "/\[?<{$name}>.+\n: (.+?)(\n|$)/", $this->doc_comment, $matches ) ) {
 			return $matches[1];
 		}
 
@@ -138,7 +138,7 @@ class DocParser {
 	 */
 	public function get_param_desc( $key ) {
 
-		if ( preg_match( "/\[?--{$key}=.+\n: (.+?)(\n|$)/", $this->docComment, $matches ) ) {
+		if ( preg_match( "/\[?--{$key}=.+\n: (.+?)(\n|$)/", $this->doc_comment, $matches ) ) {
 			return $matches[1];
 		}
 
@@ -162,7 +162,7 @@ class DocParser {
 	 * @return array|null Interpreted YAML document, or null.
 	 */
 	private function get_arg_or_param_args( $regex ) {
-		$bits       = explode( "\n", $this->docComment );
+		$bits       = explode( "\n", $this->doc_comment );
 		$within_arg = false;
 		$within_doc = false;
 		$document   = array();
