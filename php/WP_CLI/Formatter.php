@@ -244,7 +244,7 @@ class Formatter {
 		}
 
 		foreach ( $data as $key => $value ) {
-			if ( ! in_array( $key, $true_fields ) ) {
+			if ( ! in_array( $key, $true_fields, true ) ) {
 				if ( is_array( $data ) ) {
 					unset( $data[ $key ] );
 				} elseif ( is_object( $data ) ) {
