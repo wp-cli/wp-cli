@@ -72,7 +72,7 @@ abstract class Base {
 	 * @param string $color Colorize label with a given color.
 	 * @param resource $handle Resource to write to. Defaults to STDOUT.
 	 */
-	protected function _line( $message, $label, $color, $handle = STDOUT ) {
+	protected function _line( $message, $label, $color, $handle = STDOUT ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Used in third party extensions.
 		if ( class_exists( 'cli\Colors' ) ) {
 			$label = \cli\Colors::colorize( "$color$label:%n", $this->in_color );
 		} else {
