@@ -7,7 +7,6 @@ namespace WP_CLI\Utils;
 use Composer\Semver\Comparator;
 use Composer\Semver\Semver;
 use WP_CLI;
-use WP_CLI\Dispatcher;
 use WP_CLI\Inflector;
 use WP_CLI\Iterators\Transform;
 
@@ -545,10 +544,15 @@ function make_progress_bar( $message, $count, $interval = 100 ) {
 }
 
 function parse_url( $url ) {
-	$url_parts = \parse_url( $url );
+	if ( function_exists( 'wp_parse_url' ) ) {
+		$url_parts = wp_parse_url( $url );
+	} else {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Fallback.
+		$url_parts = \parse_url( $url );
+	}
 
 	if ( ! isset( $url_parts['scheme'] ) ) {
-		$url_parts = parse_url( 'http://' . $url );
+		$url_parts = WP_CLI\Utils\parse_url( 'http://' . $url );
 	}
 
 	return $url_parts;
