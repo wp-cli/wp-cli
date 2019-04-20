@@ -560,7 +560,13 @@ function make_progress_bar( $message, $count, $interval = 100 ) {
  *               return values.
  */
 function parse_url( $url, $component = - 1 ) {
-	if ( function_exists( 'wp_parse_url' ) ) {
+	if (
+		function_exists( 'wp_parse_url' )
+		&& (
+			$component === -1
+			|| wp_version_compare( '4.7', '>=' )
+		)
+	) {
 		$url_parts = wp_parse_url( $url, $component );
 	} else {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Fallback.
