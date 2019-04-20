@@ -577,7 +577,7 @@ function parse_url( $url, $component = - 1, $auto_add_scheme = true ) {
 	}
 
 	if ( $auto_add_scheme && ! isset( $url_parts['scheme'] ) ) {
-		$url_parts = WP_CLI\Utils\parse_url( 'http://' . $url, $component );
+		$url_parts = namespace\parse_url( 'http://' . $url, $component, false );
 	}
 
 	return $url_parts;
