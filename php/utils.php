@@ -549,21 +549,24 @@ function make_progress_bar( $message, $count, $interval = 100 ) {
  *
  * Additionally, this adds 'http://' to the URL if no scheme was found.
  *
- * @param string $url       The URL to parse.
- * @param int    $component The specific component to retrieve. Use one of the
- *                          PHP predefined constants to specify which one.
- *                          Defaults to -1 (= return all parts as an array).
+ * @param string $url           The URL to parse.
+ * @param int $component        Optional. The specific component to retrieve.
+ *                              Use one of the PHP predefined constants to
+ *                              specify which one. Defaults to -1 (= return
+ *                              all parts as an array).
+ * @param bool $auto_add_scheme Optional. Automatically add an http:// scheme if
+ *                              none was found. Defaults to true.
  * @return mixed False on parse failure; Array of URL components on success;
  *               When a specific component has been requested: null if the
  *               component doesn't exist in the given URL; a string or - in the
  *               case of PHP_URL_PORT - integer when it does. See parse_url()'s
  *               return values.
  */
-function parse_url( $url, $component = - 1 ) {
+function parse_url( $url, $component = - 1, $auto_add_scheme = true ) {
 	if (
 		function_exists( 'wp_parse_url' )
 		&& (
-			$component === -1
+			-1 === $component
 			|| wp_version_compare( '4.7', '>=' )
 		)
 	) {
@@ -573,7 +576,7 @@ function parse_url( $url, $component = - 1 ) {
 		$url_parts = \parse_url( $url, $component );
 	}
 
-	if ( ! isset( $url_parts['scheme'] ) ) {
+	if ( $auto_add_scheme && ! isset( $url_parts['scheme'] ) ) {
 		$url_parts = WP_CLI\Utils\parse_url( 'http://' . $url, $component );
 	}
 
