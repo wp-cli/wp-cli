@@ -611,6 +611,8 @@ class Runner {
 			}
 		}
 
+		// phpcs:disable Squiz.PHP.CommentedOutCode.Found
+
 		// *-meta  ->  * meta
 		if ( ! empty( $args ) && preg_match( '/(post|comment|user|network)-meta/', $args[0], $matches ) ) {
 			array_shift( $args );
@@ -767,6 +769,8 @@ class Runner {
 				$args[1] = 'list';
 			}
 		}
+
+		// phpcs:enable
 
 		return array( $args, $assoc_args );
 	}
