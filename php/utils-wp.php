@@ -284,7 +284,7 @@ function wp_get_cache_type() {
 function wp_clear_object_cache() {
 	global $wpdb, $wp_object_cache;
 
-	$wpdb->queries = array(); // or define( 'WP_IMPORTING', true );
+	$wpdb->queries = array();
 
 	if ( ! is_object( $wp_object_cache ) ) {
 		return;
