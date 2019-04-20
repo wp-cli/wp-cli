@@ -357,10 +357,7 @@ class FileCache {
 	 * @return string relative filename
 	 */
 	protected function validate_key( $key ) {
-		$url_parts = function_exists( 'wp_parse_url' )
-			? wp_parse_url( $key )
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Fallback.
-			: parse_url( $key );
+		$url_parts = Utils\parse_url( $key, -1, false );
 		if ( ! empty( $url_parts['scheme'] ) ) { // is url
 			$parts   = array( 'misc' );
 			$parts[] = $url_parts['scheme'] . '-' . $url_parts['host'] .
