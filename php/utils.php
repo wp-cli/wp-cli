@@ -996,7 +996,7 @@ function basename( $path, $suffix = '' ) {
  * value. Strings like 1, 0, yes, no, that validate to booleans are accepted.
  *
  * To enable ASCII formatting even when the shell is piped, use the
- * ENV variable SHELL_PIPE=0
+ * ENV variable SHELL_PIPE=0.
  *
  * @access public
  *
