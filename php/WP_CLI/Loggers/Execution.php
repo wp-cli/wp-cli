@@ -20,7 +20,7 @@ class Execution extends Regular {
 	/**
 	 * @param bool $in_color Whether or not to Colorize strings.
 	 */
-	public function __construct( $in_color = false ) {
+	public function __construct( $in_color = false ) { // phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found -- Provides a default value.
 		parent::__construct( $in_color );
 	}
 
