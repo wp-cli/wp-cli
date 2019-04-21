@@ -83,7 +83,7 @@ class WP_CLI {
 			// 6 months, 300mb
 			$cache = new FileCache( $dir, 15552000, 314572800 );
 
-			// clean older files on shutdown with 1/50 probability
+			// Clean older files on shutdown with 1/50 probability.
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand -- no crypto and WP not loaded.
 			if ( 0 === mt_rand( 0, 50 ) ) {
 				register_shutdown_function(
@@ -145,7 +145,7 @@ class WP_CLI {
 	/**
 	 * Colorize a string for output.
 	 *
-	 * Yes, you too can change the color of command line text. For instance,
+	 * Yes, you can change the color of command line text too. For instance,
 	 * here's how `WP_CLI::success()` colorizes "Success: "
 	 *
 	 * ```
