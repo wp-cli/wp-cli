@@ -110,7 +110,7 @@ function load_command( $name ) {
  *     }
  *
  * @param array|object Either a plain array or another iterator
- * @param callback     The function to apply to an element
+ * @param callback     The function to apply to an element.
  * @return object An iterator that applies the given callback(s)
  */
 function iterator_map( $it, $fn ) {
