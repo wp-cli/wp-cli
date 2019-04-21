@@ -34,7 +34,8 @@ class BootstrapState {
 	 *
 	 * @return mixed
 	 */
-	public function get_value( $key, $fallback = null ) {
+	// @codingStandardsIgnoreLine
+	public function getValue( $key, $fallback = null ) {
 		return array_key_exists( $key, $this->state )
 			? $this->state[ $key ]
 			: $fallback;
@@ -48,7 +49,8 @@ class BootstrapState {
 	 *
 	 * @return void
 	 */
-	public function set_value( $key, $value ) {
+	// @codingStandardsIgnoreLine
+	public function setValue( $key, $value ) {
 		$this->state[ $key ] = $value;
 	}
 }
