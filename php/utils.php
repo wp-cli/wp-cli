@@ -69,7 +69,7 @@ function load_dependencies() {
 function get_vendor_paths() {
 	$vendor_paths        = array(
 		WP_CLI_ROOT . '/../../../vendor',  // Part of a larger project / installed via Composer (preferred).
-		WP_CLI_ROOT . '/vendor',           // Top-level project / installed as Git clone
+		WP_CLI_ROOT . '/vendor',           // Top-level project / installed as Git clone.
 	);
 	$maybe_composer_json = WP_CLI_ROOT . '/../../../composer.json';
 	if ( file_exists( $maybe_composer_json ) && is_readable( $maybe_composer_json ) ) {
