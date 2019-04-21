@@ -331,13 +331,13 @@ class Subcommand extends CompositeCommand {
 				if ( isset( $spec_args['options'] ) ) {
 					if ( ! empty( $spec['repeating'] ) ) {
 						do {
-							if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'], true ) ) {
+							if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) {
 								\WP_CLI::error( 'Invalid value specified for positional arg.' );
 							}
 							$i++;
 						} while ( isset( $args[ $i ] ) );
 					} else {
-						if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'], true ) ) {
+						if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) {
 							\WP_CLI::error( 'Invalid value specified for positional arg.' );
 						}
 					}
@@ -351,7 +351,7 @@ class Subcommand extends CompositeCommand {
 					}
 				}
 				if ( isset( $assoc_args[ $spec['name'] ] ) && isset( $spec_args['options'] ) ) {
-					if ( ! in_array( $assoc_args[ $spec['name'] ], $spec_args['options'], true ) ) {
+					if ( ! in_array( $assoc_args[ $spec['name'] ], $spec_args['options'] ) ) {
 						$errors['fatal'][ $spec['name'] ] = "Invalid value specified for '{$spec['name']}'";
 					}
 				}
