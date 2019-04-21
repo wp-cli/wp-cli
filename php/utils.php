@@ -362,7 +362,7 @@ function pick_fields( $item, $fields ) {
  * @access public
  * @category Input
  *
- * @param string  $content  Some form of text to edit (e.g. post content)
+ * @param string  $content  Some form of text to edit (e.g. post content).
  * @param string  $title    Title to display in the editor.
  * @param string  $ext      Extension to use with the temp file.
  * @return string|bool       Edited text, if file is saved from editor; false, if no change to file.
