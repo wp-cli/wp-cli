@@ -997,16 +997,16 @@
         },
         {
             "name": "phpcompatibility/php-compatibility",
-            "version": "8.2.0",
+            "version": "9.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPCompatibility/PHPCompatibility.git",
-                "reference": "eaf613c1a8265bcfd7b0ab690783f2aef519f78a"
+                "reference": "2b63c5d284ab8857f7b1d5c240ddb507a6b2293c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPCompatibility/PHPCompatibility/zipball/eaf613c1a8265bcfd7b0ab690783f2aef519f78a",
-                "reference": "eaf613c1a8265bcfd7b0ab690783f2aef519f78a",
+                "url": "https://api.github.com/repos/PHPCompatibility/PHPCompatibility/zipball/2b63c5d284ab8857f7b1d5c240ddb507a6b2293c",
+                "reference": "2b63c5d284ab8857f7b1d5c240ddb507a6b2293c",
                 "shasum": ""
             },
             "require": {
@@ -1024,75 +1024,34 @@
                 "roave/security-advisories": "dev-master || Helps prevent installing dependencies with known security issues."
             },
             "type": "phpcodesniffer-standard",
-            "autoload": {
-                "psr-4": {
-                    "PHPCompatibility\\": "PHPCompatibility/"
-                }
-            },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "LGPL-3.0-or-later"
             ],
             "authors": [
                 {
+                    "name": "Contributors",
+                    "homepage": "https://github.com/PHPCompatibility/PHPCompatibility/graphs/contributors"
+                },
+                {
                     "name": "Wim Godden",
+                    "homepage": "https://github.com/wimg",
+                    "role": "lead"
+                },
+                {
+                    "name": "Juliette Reinders Folmer",
+                    "homepage": "https://github.com/jrfnl",
                     "role": "lead"
                 }
             ],
-            "description": "A set of sniffs for PHP_CodeSniffer that checks for PHP version compatibility.",
+            "description": "A set of sniffs for PHP_CodeSniffer that checks for PHP cross-version compatibility.",
             "homepage": "http://techblog.wimgodden.be/tag/codesniffer/",
             "keywords": [
                 "compatibility",
                 "phpcs",
                 "standards"
             ],
-            "time": "2018-07-17T13:42:26+00:00"
-        },
-        {
-            "name": "phpcompatibility/phpcompatibility-wp",
-            "version": "1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/PHPCompatibility/PHPCompatibilityWP.git",
-                "reference": "b26c84df3ec1d4850d0f22264a4a16482a171996"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/PHPCompatibility/PHPCompatibilityWP/zipball/b26c84df3ec1d4850d0f22264a4a16482a171996",
-                "reference": "b26c84df3ec1d4850d0f22264a4a16482a171996",
-                "shasum": ""
-            },
-            "require": {
-                "phpcompatibility/php-compatibility": "^8.1"
-            },
-            "suggest": {
-                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3 || This Composer plugin will sort out the PHPCS 'installed_paths' automatically.",
-                "roave/security-advisories": "dev-master || Helps prevent installing dependencies with known security issues."
-            },
-            "type": "phpcodesniffer-standard",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPL-3.0-or-later"
-            ],
-            "authors": [
-                {
-                    "name": "Wim Godden",
-                    "role": "lead"
-                },
-                {
-                    "name": "Juliette Reinders Folmer",
-                    "role": "lead"
-                }
-            ],
-            "description": "A set of sniffs for PHP_CodeSniffer that checks for PHP version compatibility for WordPress projects.",
-            "homepage": "http://phpcompatibility.com/",
-            "keywords": [
-                "compatibility",
-                "phpcs",
-                "standards",
-                "wordpress"
-            ],
-            "time": "2018-07-16T22:10:02+00:00"
+            "time": "2018-12-30T23:16:27+00:00"
         },
         {
             "name": "phpdocumentor/reflection-docblock",
@@ -1636,12 +1595,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "9c6c45a2bf8825209fc18861ff666a90f4d878cf"
+                "reference": "7c567855e40e04d17e2b91f3fd1d8f6baf5bcca6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/9c6c45a2bf8825209fc18861ff666a90f4d878cf",
-                "reference": "9c6c45a2bf8825209fc18861ff666a90f4d878cf",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/7c567855e40e04d17e2b91f3fd1d8f6baf5bcca6",
+                "reference": "7c567855e40e04d17e2b91f3fd1d8f6baf5bcca6",
                 "shasum": ""
             },
             "conflict": {
@@ -1740,7 +1699,7 @@
                 "silverstripe/userforms": "<3",
                 "simple-updates/phpwhois": "<=1",
                 "simplesamlphp/saml2": "<1.10.6|>=2,<2.3.8|>=3,<3.1.4",
-                "simplesamlphp/simplesamlphp": "<1.16.3",
+                "simplesamlphp/simplesamlphp": "<1.15.2|>=1.16,<1.16.3",
                 "simplesamlphp/simplesamlphp-module-infocard": "<1.0.1",
                 "slim/slim": "<2.6",
                 "smarty/smarty": "<3.1.33",
@@ -1774,7 +1733,7 @@
                 "symfony/yaml": ">=2,<2.0.22|>=2.1,<2.1.7",
                 "tecnickcom/tcpdf": "<6.2.22",
                 "thelia/backoffice-default-template": ">=2.1,<2.1.2",
-                "thelia/thelia": ">=2.1,<2.1.2|>=2.1.0-beta1,<2.1.3",
+                "thelia/thelia": ">=2.1.0-beta1,<2.1.3|>=2.1,<2.1.2",
                 "theonedemon/phpwhois": "<=4.2.5",
                 "titon/framework": ">=0,<9.9.99",
                 "truckersmp/phpwhois": "<=4.3.1",
@@ -1833,7 +1792,7 @@
                 }
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-            "time": "2019-04-18T06:59:35+00:00"
+            "time": "2019-04-20T06:58:11+00:00"
         },
         {
             "name": "sebastian/comparator",
@@ -2744,7 +2703,7 @@
                 },
                 {
                     "name": "Gert de Pagter",
-                    "email": "backendtea@gmail.com"
+                    "email": "BackEndTea@gmail.com"
                 }
             ],
             "description": "Symfony polyfill for ctype functions",
@@ -3117,16 +3076,16 @@
         },
         {
             "name": "wp-cli/db-command",
-            "version": "v2.0.1",
+            "version": "v2.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/db-command.git",
-                "reference": "2ab6bd06619ef43cde96da47fa6c379be4fd79d2"
+                "reference": "c64cd5c08e46481e45736e76f126a9d46ee42be5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/db-command/zipball/2ab6bd06619ef43cde96da47fa6c379be4fd79d2",
-                "reference": "2ab6bd06619ef43cde96da47fa6c379be4fd79d2",
+                "url": "https://api.github.com/repos/wp-cli/db-command/zipball/c64cd5c08e46481e45736e76f126a9d46ee42be5",
+                "reference": "c64cd5c08e46481e45736e76f126a9d46ee42be5",
                 "shasum": ""
             },
             "require": {
@@ -3134,7 +3093,7 @@
             },
             "require-dev": {
                 "wp-cli/entity-command": "^1.3 || ^2",
-                "wp-cli/wp-cli-tests": "^2.0.7"
+                "wp-cli/wp-cli-tests": "^2.1"
             },
             "type": "wp-cli-package",
             "extra": {
@@ -3183,7 +3142,7 @@
             ],
             "description": "Performs basic database operations using credentials stored in wp-config.php.",
             "homepage": "https://github.com/wp-cli/db-command",
-            "time": "2018-12-17T08:15:29+00:00"
+            "time": "2019-04-21T04:54:20+00:00"
         },
         {
             "name": "wp-cli/entity-command",
@@ -3393,23 +3352,23 @@
         },
         {
             "name": "wp-cli/eval-command",
-            "version": "v2.0.3",
+            "version": "v2.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/eval-command.git",
-                "reference": "fc440912f9e89e1075082020594c5b301df025e5"
+                "reference": "47a4f1a910b6d88f090d776a80d893cf19ca2047"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/eval-command/zipball/fc440912f9e89e1075082020594c5b301df025e5",
-                "reference": "fc440912f9e89e1075082020594c5b301df025e5",
+                "url": "https://api.github.com/repos/wp-cli/eval-command/zipball/47a4f1a910b6d88f090d776a80d893cf19ca2047",
+                "reference": "47a4f1a910b6d88f090d776a80d893cf19ca2047",
                 "shasum": ""
             },
             "require": {
                 "wp-cli/wp-cli": "^2"
             },
             "require-dev": {
-                "wp-cli/wp-cli-tests": "^2.0.7"
+                "wp-cli/wp-cli-tests": "^2.1"
             },
             "type": "wp-cli-package",
             "extra": {
@@ -3443,20 +3402,20 @@
             ],
             "description": "Executes arbitrary PHP code or files.",
             "homepage": "https://github.com/wp-cli/eval-command",
-            "time": "2019-04-10T12:14:19+00:00"
+            "time": "2019-04-20T18:22:05+00:00"
         },
         {
             "name": "wp-cli/extension-command",
-            "version": "v2.0.3",
+            "version": "v2.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/extension-command.git",
-                "reference": "5c7fbd9593d735a23aaee99cecdc89223dc037ae"
+                "reference": "c8556c1eb6f8e8fc745cf99fc66c78b751c04ef4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/5c7fbd9593d735a23aaee99cecdc89223dc037ae",
-                "reference": "5c7fbd9593d735a23aaee99cecdc89223dc037ae",
+                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/c8556c1eb6f8e8fc745cf99fc66c78b751c04ef4",
+                "reference": "c8556c1eb6f8e8fc745cf99fc66c78b751c04ef4",
                 "shasum": ""
             },
             "require": {
@@ -3466,7 +3425,7 @@
             "require-dev": {
                 "wp-cli/entity-command": "^1.3 || ^2",
                 "wp-cli/scaffold-command": "^1.2 || ^2",
-                "wp-cli/wp-cli-tests": "^2.0.7"
+                "wp-cli/wp-cli-tests": "^2.1"
             },
             "type": "wp-cli-package",
             "extra": {
@@ -3530,7 +3489,7 @@
             ],
             "description": "Manages plugins and themes, including installs, activations, and updates.",
             "homepage": "https://github.com/wp-cli/extension-command",
-            "time": "2018-12-12T15:09:01+00:00"
+            "time": "2019-04-21T04:04:25+00:00"
         },
         {
             "name": "wp-cli/package-command",
@@ -3595,16 +3554,16 @@
         },
         {
             "name": "wp-cli/wp-cli-tests",
-            "version": "v2.0.13",
+            "version": "v2.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/wp-cli-tests.git",
-                "reference": "53232fac382df0655180d2adafacd764fe3f30f8"
+                "reference": "83b636fc7cb69ff257e025d1c855c190143a45db"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/53232fac382df0655180d2adafacd764fe3f30f8",
-                "reference": "53232fac382df0655180d2adafacd764fe3f30f8",
+                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/83b636fc7cb69ff257e025d1c855c190143a45db",
+                "reference": "83b636fc7cb69ff257e025d1c855c190143a45db",
                 "shasum": ""
             },
             "require": {
@@ -3613,17 +3572,17 @@
                 "jakub-onderka/php-console-highlighter": "^0.3.2",
                 "jakub-onderka/php-parallel-lint": "^1.0",
                 "php": ">=5.4",
-                "phpcompatibility/phpcompatibility-wp": "^1",
+                "phpcompatibility/php-compatibility": "^9",
                 "phpunit/phpunit": ">=4.8 <7",
                 "roave/security-advisories": "dev-master",
                 "wp-cli/config-command": "^1 || ^2",
                 "wp-cli/core-command": "^1 || ^2",
                 "wp-cli/eval-command": "^1 || ^2",
-                "wp-coding-standards/wpcs": "^1"
+                "wp-cli/wp-cli": "^2",
+                "wp-coding-standards/wpcs": "^2.1"
             },
             "require-dev": {
-                "wp-cli/regenerate-readme": "^2",
-                "wp-cli/wp-cli": "^2"
+                "wp-cli/regenerate-readme": "^2"
             },
             "bin": [
                 "bin/install-package-tests",
@@ -3633,7 +3592,7 @@
                 "bin/run-php-unit-tests",
                 "bin/run-phpcs-tests"
             ],
-            "type": "library",
+            "type": "phpcodesniffer-standard",
             "extra": {
                 "readme": {
                     "sections": [
@@ -3657,7 +3616,7 @@
                 "cli",
                 "wordpress"
             ],
-            "time": "2018-12-04T16:06:40+00:00"
+            "time": "2019-04-20T16:55:30+00:00"
         },
         {
             "name": "wp-cli/wp-config-transformer",
@@ -3702,27 +3661,29 @@
         },
         {
             "name": "wp-coding-standards/wpcs",
-            "version": "1.2.1",
+            "version": "2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards.git",
-                "reference": "f328bcafd97377e8e5e5d7b244d5ddbf301a3a5c"
+                "reference": "8c7a2e7682de9ef5955251874b639deda51ef470"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/WordPress-Coding-Standards/WordPress-Coding-Standards/zipball/f328bcafd97377e8e5e5d7b244d5ddbf301a3a5c",
-                "reference": "f328bcafd97377e8e5e5d7b244d5ddbf301a3a5c",
+                "url": "https://api.github.com/repos/WordPress-Coding-Standards/WordPress-Coding-Standards/zipball/8c7a2e7682de9ef5955251874b639deda51ef470",
+                "reference": "8c7a2e7682de9ef5955251874b639deda51ef470",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3",
-                "squizlabs/php_codesniffer": "^2.9.0 || ^3.0.2"
+                "php": ">=5.4",
+                "squizlabs/php_codesniffer": "^3.3.1"
             },
             "require-dev": {
-                "phpcompatibility/php-compatibility": "^9.0"
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.5.0",
+                "phpcompatibility/php-compatibility": "^9.0",
+                "phpunit/phpunit": "^4.0 || ^5.0 || ^6.0 || ^7.0"
             },
             "suggest": {
-                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3 || This Composer plugin will sort out the PHPCS 'installed_paths' automatically."
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.5.0 || This Composer plugin will sort out the PHPCS 'installed_paths' automatically."
             },
             "type": "phpcodesniffer-standard",
             "notification-url": "https://packagist.org/downloads/",
@@ -3741,7 +3702,7 @@
                 "standards",
                 "wordpress"
             ],
-            "time": "2018-12-18T09:43:51+00:00"
+            "time": "2019-04-08T10:53:57+00:00"
         }
     ],
     "aliases": [],
