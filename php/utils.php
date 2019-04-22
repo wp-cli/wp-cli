@@ -983,6 +983,7 @@ function parse_str_to_argv( $arguments ) {
  * @return string
  */
 function basename( $path, $suffix = '' ) {
+	// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.urlencode_urlencode -- Format required by wordpress.org API.
 	return urldecode( \basename( str_replace( array( '%2F', '%5C' ), '/', urlencode( $path ) ), $suffix ) );
 }
 
