@@ -14,6 +14,7 @@
 namespace WP_CLI;
 
 use Symfony\Component\Finder\Finder;
+use WP_CLI\Utils;
 
 /**
  * Reads/writes to a filesystem cache
@@ -356,7 +357,7 @@ class FileCache {
 	 * @return string relative filename
 	 */
 	protected function validate_key( $key ) {
-		$url_parts = parse_url( $key );
+		$url_parts = Utils\parse_url( $key, -1, false );
 		if ( ! empty( $url_parts['scheme'] ) ) { // is url
 			$parts   = array( 'misc' );
 			$parts[] = $url_parts['scheme'] . '-' . $url_parts['host'] .
