@@ -604,43 +604,4 @@ class CLI_Command extends WP_CLI_Command {
 
 		WP_CLI::halt( is_array( WP_CLI::get_runner()->find_command_to_run( $command ) ) ? 0 : 1 );
 	}
-
-	/**
-	 * List available WP-CLI aliases.
-	 *
-	 * ## OPTIONS
-	 *
-	 * [--format=<format>]
-	 * : Render output in a particular format.
-	 * ---
-	 * default: yaml
-	 * options:
-	 *   - yaml
-	 *   - json
-	 *   - var_export
-	 * ---
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     # List all available aliases.
-	 *     $ wp cli aliases
-	 *     ---
-	 *     @all: Run command against every registered alias.
-	 *     @prod:
-	 *       ssh: runcommand@runcommand.io~/webapps/production
-	 *     @dev:
-	 *       ssh: vagrant@192.168.50.10/srv/www/runcommand.dev
-	 *     @both:
-	 *       - @prod
-	 *       - @dev
-	 *
-	 */
-	public function aliases( $_, $assoc_args ) {
-		$format = Utils\get_flag_value( $assoc_args, 'format' );
-		if ( null === $format ) {
-			WP_CLI::runcommand( 'cli alias list' );
-		} else {
-			WP_CLI::runcommand( "cli alias list --format={$format}" );
-		}
-	}
 }

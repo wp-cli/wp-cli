@@ -77,28 +77,3 @@ Feature: `wp cli` tasks
       """
       Global configuration 'dummy' does not exist.
       """
-
-  Scenario: List available aliases
-    Given an empty directory
-    And a wp-cli.yml file:
-      """
-      @foo:
-        path: foo
-      """
-
-    When I run `wp eval --skip-wordpress 'echo realpath( getenv( "RUN_DIR" ) );'`
-    Then save STDOUT as {TEST_DIR}
-
-    When I run `wp cli aliases`
-    Then STDOUT should be YAML containing:
-      """
-      @all: Run command against every registered alias.
-      @foo:
-        path: {TEST_DIR}/foo
-      """
-
-    When I run `wp cli aliases --format=json`
-    Then STDOUT should be JSON containing:
-      """
-      {"@all":"Run command against every registered alias.","@foo":{"path":"{TEST_DIR}/foo"}}
-      """
