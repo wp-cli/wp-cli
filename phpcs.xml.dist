@@ -2,60 +2,114 @@
 <ruleset name="WP-CLI">
 	<description>Custom ruleset for WP-CLI</description>
 
-	<!-- For help in understanding this file: https://github.com/squizlabs/PHP_CodeSniffer/wiki/Annotated-ruleset.xml -->
-	<!-- For help in using PHPCS: https://github.com/squizlabs/PHP_CodeSniffer/wiki/Usage -->
+	<!--
+	#############################################################################
+	COMMAND LINE ARGUMENTS
+	For help understanding this file: https://github.com/squizlabs/PHP_CodeSniffer/wiki/Annotated-ruleset.xml
+	For help using PHPCS: https://github.com/squizlabs/PHP_CodeSniffer/wiki/Usage
+	#############################################################################
+	-->
 
-	<!-- What to scan -->
+	<!-- What to scan. -->
 	<file>.</file>
-	<!-- Ignoring Files and Folders:
-		https://github.com/squizlabs/PHP_CodeSniffer/wiki/Advanced-Usage#ignoring-files-and-folders -->
-	<exclude-pattern>*/.git/*</exclude-pattern>
-	<exclude-pattern>*/ci/*</exclude-pattern>
-	<exclude-pattern>*/features/*</exclude-pattern>
-	<exclude-pattern>*/packages/*</exclude-pattern>
-	<exclude-pattern>*/tests/*</exclude-pattern>
-	<exclude-pattern>*/utils/*</exclude-pattern>
-	<exclude-pattern>*/vendor/*</exclude-pattern>
 
-	<!-- How to scan -->
-	<arg value="sp"/> <!-- Show sniff and progress -->
-	<arg name="colors"/> <!-- Show results with colors -->
-	<arg name="extensions" value="php"/> <!-- Limit to PHP files -->
+	<!-- Ignoring select files/folders.
+		 https://github.com/squizlabs/PHP_CodeSniffer/wiki/Advanced-Usage#ignoring-files-and-folders -->
+	<exclude-pattern>*/tests/data/*</exclude-pattern>
 
-	<!-- Rules: Check PHP version compatibility - see
-		https://github.com/PHPCompatibility/PHPCompatibilityWP -->
-	<rule ref="PHPCompatibilityWP">
-		<!-- Polyfill package is used so array_column() is available for PHP 5.4- -->
-		<exclude name="PHPCompatibility.PHP.NewFunctions.array_columnFound"/>
-		<!-- Both magic quotes directives set in wp-settings-cli.php to provide consistent starting point. -->
-		<exclude name="PHPCompatibility.PHP.DeprecatedIniDirectives.magic_quotes_runtimeDeprecatedRemoved"/>
-		<exclude name="PHPCompatibility.PHP.DeprecatedIniDirectives.magic_quotes_sybaseDeprecatedRemoved"/>
+	<!-- Show progress. -->
+	<arg value="p"/>
+
+	<!-- Strip the filepaths down to the relevant bit. -->
+	<arg name="basepath" value="./"/>
+
+	<!-- Check up to 8 files simultaneously. -->
+	<arg name="parallel" value="8"/>
+
+	<!--
+	#############################################################################
+	USE THE WP_CLI_CS RULESET
+	#############################################################################
+	-->
+
+	<rule ref="WP_CLI_CS">
+		<!-- The `while` control structure is the only one where assignments in conditions are mostly valid. -->
+		<exclude name="WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition"/>
+
+		<!-- This is a bug in PHPCS. A fix for which has been pulled already and is expected to be
+			 merged in PHPCS 3.5.0. Once this repos upgrades to that version, this exclusion
+			 should be removed. -->
+		<exclude name="PSR2.Namespaces.NamespaceDeclaration.BlankLineAfter"/>
 	</rule>
 
-	<!-- For help in understanding this testVersion:
-		https://github.com/PHPCompatibility/PHPCompatibility#sniffing-your-code-for-compatibility-with-specific-php-versions -->
+	<!--
+	#############################################################################
+	PROJECT SPECIFIC CONFIGURATION FOR SNIFFS
+	#############################################################################
+	-->
+
+	<!-- For help understanding the `testVersion` configuration setting:
+		 https://github.com/PHPCompatibility/PHPCompatibility#sniffing-your-code-for-compatibility-with-specific-php-versions -->
 	<config name="testVersion" value="5.4-"/>
 
-	<!-- Ignore php_uname mode issue, we're conditionally providing a callback -->
-	<rule ref="PHPCompatibility.PHP.NewFunctionParameters.php_uname_modeFound">
-		<exclude-pattern>*/php/commands/src/CLI_Command.php</exclude-pattern>
-	</rule>
-
-	<!-- Rules: WordPress Coding Standards - see
-		https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards -->
-	<rule ref="WordPress-Core">
-		<exclude name="Squiz.PHP.DisallowMultipleAssignments.Found" />
-		<exclude name="WordPress.NamingConventions.ValidVariableName.NotSnakeCaseMemberVar" />
-		<exclude name="WordPress.NamingConventions.ValidVariableName.MemberNotSnakeCase" />
-		<exclude name="WordPress.NamingConventions.ValidVariableName.NotSnakeCase" />
-	</rule>
-
-	<!-- For help in understanding these custom sniff properties:
-		https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/wiki/Customizable-sniff-properties -->
-	<rule ref="WordPress.Files.FileName">
+	<!-- Verify that everything in the global namespace is either namespaced or prefixed.
+		 The default prefixes `WP_CLI` (for namespaces and classes) and `wpcli` (for variables) are inherited
+		 from the ruleset. This adds one additional allowed prefix specifically for hooks (though
+		 not automatically limited to them).
+		 See: https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/wiki/Customizable-sniff-properties#naming-conventions-prefix-everything-in-the-global-namespace -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<properties>
-			<property name="strict_class_file_names" value="false"/>
+			<property name="prefixes" type="array" extend="true">
+				<element value="cli_"/><!-- Hooks. -->
+			</property>
 		</properties>
-		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase" />
 	</rule>
+
+	<!-- Whitelist the Utils\mysql_host_to_cli_args() method.
+		 See: https://github.com/phpcompatibility/phpcompatibility#phpcompatibility-specific-options -->
+	<rule ref="PHPCompatibility.Extensions.RemovedExtensions">
+		<properties>
+			<property name="functionWhitelist" type="array">
+				<element value="mysql_host_to_cli_args"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Allow for back-compat conversion comments to be explained in logical shorthand.
+		 See: https://github.com/squizlabs/PHP_CodeSniffer/wiki/Customisable-Sniff-Properties#squizphpcommentedoutcode -->
+	<rule ref="Squiz.PHP.CommentedOutCode">
+		<properties>
+			<property name="maxPercentage" value="45"/>
+		</properties>
+	</rule>
+
+	<!--
+	#############################################################################
+	SELECTIVE EXCLUSIONS
+	#############################################################################
+	-->
+
+	<!-- Exclude existing classes from the prefix rule as it would break BC to prefix them now. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound">
+		<exclude-pattern>*/php/commands/src/CLI_(Cache_)?Command\.php$</exclude-pattern>
+		<exclude-pattern>*/php/commands/src/Help_Command\.php$</exclude-pattern>
+		<exclude-pattern>*/utils/contrib-list\.php$</exclude-pattern>
+	</rule>
+
+	<!-- These are all to do with file-system related tests. Just ignore them. -->
+	<rule ref="WordPress.WP.CapitalPDangit">
+		<exclude-pattern>*/tests/test-(extractor|utils)\.php$</exclude-pattern>
+	</rule>
+
+	<!-- Allow for select data providers for tests to use single-line associative arrays. -->
+	<rule ref="WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound">
+		<exclude-pattern>*/tests/test-(process|utils)\.php$</exclude-pattern>
+	</rule>
+
+	<!-- This is a procedural stand-alone file that is never loaded in a WordPress context,
+		 so this file does not have to comply with WP naming conventions. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<exclude-pattern>*/utils/get-package-require-from-composer\.php$</exclude-pattern>
+	</rule>
+
 </ruleset>

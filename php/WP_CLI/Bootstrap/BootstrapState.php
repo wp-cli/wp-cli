@@ -8,6 +8,10 @@ namespace WP_CLI\Bootstrap;
  * Represents the state that is passed from one bootstrap step to the next.
  *
  * @package WP_CLI\Bootstrap
+ *
+ * Maintain BC: Changing the method names in this class breaks autoload interactions between Phar
+ * & framework/commands you use outside of Phar (like when running the Phar WP inside of a command folder).
+ * @phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
  */
 class BootstrapState {
 
@@ -34,7 +38,6 @@ class BootstrapState {
 	 *
 	 * @return mixed
 	 */
-	// @codingStandardsIgnoreLine
 	public function getValue( $key, $fallback = null ) {
 		return array_key_exists( $key, $this->state )
 			? $this->state[ $key ]
@@ -49,7 +52,6 @@ class BootstrapState {
 	 *
 	 * @return void
 	 */
-	// @codingStandardsIgnoreLine
 	public function setValue( $key, $value ) {
 		$this->state[ $key ] = $value;
 	}

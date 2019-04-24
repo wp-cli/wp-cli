@@ -1,4 +1,6 @@
 <?php
+// phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound -- Ignoring test doubles.
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound -- Ignoring test doubles.
 
 class MockRegularLogger extends WP_CLI\Loggers\Regular {
 
