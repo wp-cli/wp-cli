@@ -320,7 +320,7 @@ class FileCache {
 				return false;
 			}
 
-			if ( ! @mkdir( $dir, 0777, true ) ) { // @codingStandardsIgnoreLine
+			if ( ! @mkdir( $dir, 0777, true ) ) {
 				$error = error_get_last();
 				\WP_CLI::warning( sprintf( "Failed to create directory '%s': %s.", $dir, $error['message'] ) );
 				return false;

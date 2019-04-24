@@ -327,7 +327,9 @@ class WP_CLI {
 		if ( function_exists( 'add_filter' ) ) {
 			add_filter( $tag, $function_to_add, $priority, $accepted_args );
 		} else {
-			$idx                                    = self::wp_hook_build_unique_id( $tag, $function_to_add, $priority );
+			$idx = self::wp_hook_build_unique_id( $tag, $function_to_add, $priority );
+
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- This is intentional & the purpose of this function.
 			$wp_filter[ $tag ][ $priority ][ $idx ] = array(
 				'function'      => $function_to_add,
 				'accepted_args' => $accepted_args,
@@ -1358,7 +1360,7 @@ class WP_CLI {
 	}
 
 	// back-compat
-	// @codingStandardsIgnoreLine
+	// phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Deprecated method.
 	public static function addCommand( $name, $class ) {
 		trigger_error(
 			sprintf(

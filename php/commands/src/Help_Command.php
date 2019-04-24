@@ -124,6 +124,7 @@ class Help_Command extends WP_CLI_Command {
 		if ( 'more' === $pager && defined( 'PHP_WINDOWS_VERSION_MAJOR' ) && PHP_WINDOWS_VERSION_MAJOR < 10 && function_exists( 'sapi_windows_cp_set' ) ) {
 			// Note will also apply to Windows 8 (see http://msdn.microsoft.com/en-us/library/windows/desktop/ms724832.aspx) but probably harmless anyway.
 			$cp = getenv( 'WP_CLI_WINDOWS_CODE_PAGE' ) ?: 1252; // Code page 1252 is the most used so probably the most compat.
+			// phpcs:ignore PHPCompatibility.FunctionUse.NewFunctions -- Wrapped in function_exists() call.
 			sapi_windows_cp_set( $cp ); // `sapi_windows_cp_set()` introduced PHP 7.1.
 		}
 

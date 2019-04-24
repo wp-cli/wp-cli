@@ -44,6 +44,8 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 		}
 
 		if ( strpos( $string, '%' ) !== false ) {
+			// Only looking at the arguments from the second one onwards, so this is "safe".
+			// phpcs:ignore PHPCompatibility.FunctionUse.ArgumentFunctionsReportCurrentValue.Changed
 			$args = func_get_args();
 			$args = array_splice( $args, 1 );
 			if ( ! empty( $args ) ) {

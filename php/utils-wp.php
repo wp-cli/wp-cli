@@ -34,6 +34,7 @@ function wp_not_installed() {
 	}
 }
 
+// phpcs:disable WordPress.PHP.IniSet -- Intentional & correct usage.
 function wp_debug_mode() {
 	if ( \WP_CLI::get_config( 'debug' ) ) {
 		if ( ! defined( 'WP_DEBUG' ) ) {
@@ -67,6 +68,7 @@ function wp_debug_mode() {
 	// XDebug already sends errors to STDERR.
 	ini_set( 'display_errors', function_exists( 'xdebug_debug_zval' ) ? false : 'STDERR' );
 }
+// phpcs:enable
 
 function replace_wp_die_handler() {
 	\remove_filter( 'wp_die_handler', '_default_wp_die_handler' );
@@ -338,7 +340,9 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 		if ( empty( $tables_sql ) ) {
 			$tables_sql = 'SHOW TABLES';
 		}
-		$tables = $wpdb->get_col( $tables_sql, 0 ); // WPCS: unprepared SQL OK.
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is safe, see above.
+		$tables = $wpdb->get_col( $tables_sql, 0 );
 
 	} elseif ( get_flag_value( $assoc_args, 'all-tables-with-prefix' ) ) {
 		if ( empty( $tables_sql ) ) {
@@ -346,7 +350,9 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 		} else {
 			$tables_sql .= sprintf( " AND %s LIKE '%s'", esc_sql_ident( 'Tables_in_' . $wpdb->dbname ), esc_like( $wpdb->get_blog_prefix() ) . '%' );
 		}
-		$tables = $wpdb->get_col( $tables_sql, 0 ); // WPCS: unprepared SQL OK.
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared, see above.
+		$tables = $wpdb->get_col( $tables_sql, 0 );
 
 	} else {
 		$scope = get_flag_value( $assoc_args, 'scope', 'all' );
@@ -377,7 +383,8 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 
 		if ( get_flag_value( $assoc_args, 'base-tables-only' ) || get_flag_value( $assoc_args, 'views-only' ) ) {
 			// Apply Views restriction args if needed.
-			$views_query_tables = $wpdb->get_col( $tables_sql, 0 ); // WPCS: unprepared SQL OK.
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared, see above.
+			$views_query_tables = $wpdb->get_col( $tables_sql, 0 );
 			$tables             = array_intersect( $tables, $views_query_tables );
 		}
 	}

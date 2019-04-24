@@ -181,7 +181,7 @@ class Runner {
 		$wp_path_src = $matches[1] . $matches[2];
 		$wp_path_src = Utils\replace_path_consts( $wp_path_src, $index_path );
 
-		$wp_path = eval( "return $wp_path_src;" ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- @codingStandardsIgnoreLine
+		$wp_path = eval( "return $wp_path_src;" ); // phpcs:ignore Squiz.PHP.Eval.Discouraged
 
 		if ( ! Utils\is_path_absolute( $wp_path ) ) {
 			$wp_path = dirname( $index_path ) . "/$wp_path";
@@ -239,6 +239,7 @@ class Runner {
 	 */
 	private static function set_wp_root( $path ) {
 		if ( ! defined( 'ABSPATH' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Declaring a WP native constant.
 			define( 'ABSPATH', Utils\normalize_path( Utils\trailingslashit( $path ) ) );
 		} elseif ( ! is_null( $path ) ) {
 			WP_CLI::error_multi_line(
@@ -856,7 +857,6 @@ class Runner {
 
 		$minimum_version = '3.7';
 
-		// @codingStandardsIgnoreStart
 		if ( version_compare( $wp_version, $minimum_version, '<' ) ) {
 			WP_CLI::error(
 				"WP-CLI needs WordPress $minimum_version or later to work properly. " .
@@ -864,7 +864,6 @@ class Runner {
 				'Try running `wp core download --force`.'
 			);
 		}
-		// @codingStandardsIgnoreEnd
 	}
 
 	public function init_config() {
@@ -1082,6 +1081,8 @@ class Runner {
 			);
 		}
 
+		// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Declaring WP native constants.
+
 		if ( $this->cmd_starts_with( array( 'core', 'is-installed' ) )
 			|| $this->cmd_starts_with( array( 'core', 'update-db' ) ) ) {
 			define( 'WP_INSTALLING', true );
@@ -1119,6 +1120,7 @@ class Runner {
 		if ( $this->cmd_starts_with( array( 'cron', 'event', 'run' ) ) ) {
 			define( 'DOING_CRON', true );
 		}
+		// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
 
 		$this->load_wordpress();
 
@@ -1159,14 +1161,16 @@ class Runner {
 		// Load wp-config.php code, in the global scope
 		$wp_cli_original_defined_vars = get_defined_vars();
 
-		eval( $this->get_wp_config_code() ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- @codingStandardsIgnoreLine
+		eval( $this->get_wp_config_code() ); // phpcs:ignore Squiz.PHP.Eval.Discouraged
 
 		foreach ( get_defined_vars() as $key => $var ) {
 			if ( array_key_exists( $key, $wp_cli_original_defined_vars ) || 'wp_cli_original_defined_vars' === $key ) {
 				continue;
 			}
-			// @codingStandardsIgnoreLine
+
+			// phpcs:ignore PHPCompatibility.Variables.ForbiddenGlobalVariableVariable.NonBareVariableFound
 			global ${$key};
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 			${$key} = $var;
 		}
 
@@ -1203,6 +1207,7 @@ class Runner {
 		}
 
 		// Fix memory limit. See http://core.trac.wordpress.org/ticket/14889
+		// phpcs:ignore WordPress.PHP.IniSet.memory_limit_Blacklisted -- This is perfectly fine for CLI usage.
 		ini_set( 'memory_limit', -1 );
 
 		// Load all the admin APIs, for convenience
@@ -1233,6 +1238,7 @@ class Runner {
 			$url_parts['path'] = '/';
 		}
 
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Intentional override.
 		$current_site = (object) array(
 			'id'            => 1,
 			'blog_id'       => 1,
@@ -1242,6 +1248,10 @@ class Runner {
 			'site_name'     => 'Fake Site',
 		);
 
+		// Bug in WPCS {@link https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/pull/1693}
+		// which will be fixed in WPCS 2.1.1/2.2.0. Once the bug fix is in, this comment can be removed.
+		// However, it then need to be replaced with the GlobalVariableOverride ignore as used above.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 		$current_blog = (object) array(
 			'blog_id'  => 1,
 			'site_id'  => 1,
@@ -1753,6 +1763,6 @@ class Runner {
 			// Don't enable E_DEPRECATED as old versions of WP use PHP 4 style constructors and the mysql extension.
 			error_reporting( E_ALL & ~E_DEPRECATED );
 		}
-		ini_set( 'display_errors', 'stderr' );
+		ini_set( 'display_errors', 'stderr' ); // phpcs:ignore WordPress.PHP.IniSet.display_errors_Blacklisted
 	}
 }
