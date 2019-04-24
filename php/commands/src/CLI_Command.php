@@ -557,47 +557,6 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * List available WP-CLI aliases.
-	 *
-	 * Aliases are shorthand references to WordPress installations. For instance,
-	 * `@dev` could refer to a development installation and `@prod` could refer
-	 * to a production installation. This command gives you visibility in what
-	 * registered aliases you have available.
-	 *
-	 * ## OPTIONS
-	 *
-	 * [--format=<format>]
-	 * : Render output in a particular format.
-	 * ---
-	 * default: yaml
-	 * options:
-	 *   - yaml
-	 *   - json
-	 *   - var_export
-	 * ---
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     # List all available aliases.
-	 *     $ wp cli alias
-	 *     ---
-	 *
-	 *     @all: Run command against every registered alias.
-	 *     @prod:
-	 *       ssh: runcommand@runcommand.io~/webapps/production
-	 *     @dev:
-	 *       ssh: vagrant@192.168.50.10/srv/www/runcommand.dev
-	 *     @both:
-	 *       - @prod
-	 *       - @dev
-	 *
-	 * @alias aliases
-	 */
-	public function alias( $_, $assoc_args ) {
-		WP_CLI::print_value( WP_CLI::get_runner()->aliases, $assoc_args );
-	}
-
-	/**
 	 * Get a string representing the type of update being checked for.
 	 */
 	private function get_update_type_str( $assoc_args ) {
