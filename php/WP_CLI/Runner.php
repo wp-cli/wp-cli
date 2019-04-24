@@ -420,6 +420,11 @@ class Runner {
 
 		$pre_cmd = getenv( 'WP_CLI_SSH_PRE_CMD' );
 		if ( $pre_cmd ) {
+			$message = WP_CLI::colorize( "%yWP_CLI_SSH_PRE_CMD found, executing the following command(s) on the remote machine:%n\n" )
+				. WP_CLI::colorize( '%Y' ) . $pre_cmd . WP_CLI::colorize( '%n' );
+
+			WP_CLI::log( $message );
+
 			$pre_cmd = rtrim( $pre_cmd, ';' ) . '; ';
 		}
 		if ( ! empty( $bits['path'] ) ) {
