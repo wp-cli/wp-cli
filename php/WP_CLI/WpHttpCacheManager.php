@@ -4,7 +4,7 @@
 namespace WP_CLI;
 
 use WP_CLI;
-
+use WP_CLI\Utils;
 
 /**
  * Manage caching with whitelisting
@@ -102,7 +102,7 @@ class WpHttpCacheManager {
 	 * @param int    $ttl
 	 */
 	public function whitelist_package( $url, $group, $slug, $version, $ttl = null ) {
-		$ext = pathinfo( parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION );
+		$ext = pathinfo( Utils\parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION );
 		$key = "$group/$slug-$version.$ext";
 		$this->whitelist_url( $url, $key, $ttl );
 		wp_update_plugins();
