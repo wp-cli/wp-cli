@@ -519,10 +519,6 @@ class WP_CLI {
 
 		$leaf_command = Dispatcher\CommandFactory::create( $leaf_name, $callable, $command );
 
-		if ( $leaf_command instanceof Dispatcher\CommandNamespace && array_key_exists( $leaf_name, $command->get_subcommands() ) ) {
-			return false;
-		}
-
 		// Reattach commands attached to namespace to real command.
 		$subcommand_name  = (array) $leaf_name;
 		$existing_command = $command->find_subcommand( $subcommand_name );
@@ -535,6 +531,9 @@ class WP_CLI {
 					$leaf_command->add_subcommand( $subname, $subcommand );
 				}
 			}
+		} elseif ( false !== $existing_command ) {
+			// Command already registered, so abort to avoid double registration.
+			return false;
 		}
 
 		/** @var $leaf_command Dispatcher\Subcommand|Dispatcher\CompositeCommand|Dispatcher\CommandNamespace */
