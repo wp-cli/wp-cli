@@ -618,6 +618,11 @@ class Runner {
 			array_unshift( $args, $matches[1] );
 		}
 
+		// cli aliases  ->  cli alias list
+		if ( array( 'cli', 'aliases' ) === array_slice( $args, 0, 2 ) ) {
+			list( $args[0], $args[1], $args[2] ) = array( 'cli', 'alias', 'list' );
+		}
+
 		// core (multsite-)install --admin_name=  ->  --admin_user=
 		if ( count( $args ) > 0 && 'core' === $args[0] && isset( $assoc_args['admin_name'] ) ) {
 			$assoc_args['admin_user'] = $assoc_args['admin_name'];
