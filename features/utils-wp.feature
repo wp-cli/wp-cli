@@ -27,6 +27,7 @@ Feature: Utilities that depend on WordPress code
     And I run `wp db query "CREATE TABLE wp_xx_posts ( id int );"`
     And I run `wp db query "CREATE TABLE wp_posts_xx ( id int );"`
     And I run `wp db query "CREATE TABLE wp_categories ( id int );"`
+    And I run `wp db query "CREATE VIEW wp_posts_view AS ( SELECT ID from wp_posts );"`
     And a table_names.php file:
       """
       <?php
@@ -49,6 +50,12 @@ Feature: Utilities that depend on WordPress code
        *
        * [--all-tables]
        * : List all tables in the database, regardless of the prefix, and even if not registered on $wpdb. Overrides --all-tables-with-prefix.
+       *
+       * [--base-tables-only]
+       * : Restrict returned tables to those that are not views.
+       *
+       * [--views-only]
+       * : Restrict returned tables to those that are views.
        */
       function test_wp_get_table_names( $args, $assoc_args ) {
         if ( $tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args ) ) {
@@ -78,6 +85,37 @@ Feature: Utilities that depend on WordPress code
       wp_users
       """
     And save STDOUT as {DEFAULT_STDOUT}
+
+    When I run `wp --require=table_names.php get_table_names --all-tables-with-prefix --views-only`
+    Then STDOUT should be:
+      """
+      wp_posts_view
+      """
+
+    When I run `wp --require=table_names.php get_table_names --all-tables --base-tables-only`
+    Then STDOUT should not contain:
+      """
+      wp_posts_view
+      """
+    But STDOUT should contain:
+      """
+      wp_commentmeta
+      wp_comments
+      wp_links
+      wp_options
+      wp_postmeta
+      wp_posts
+      wp_posts_xx
+      wp_term_relationships
+      wp_term_taxonomy
+      """
+  # Leave out wp_termmeta for old WP compat.
+    But STDOUT should contain:
+      """
+      wp_terms
+      wp_usermeta
+      wp_users
+      """
 
     When I run `wp --require=table_names.php get_table_names --scope=all`
     Then STDOUT should be:
@@ -135,6 +173,7 @@ Feature: Utilities that depend on WordPress code
       wp_options
       wp_postmeta
       wp_posts
+      wp_posts_view
       wp_posts_xx
       wp_term_relationships
       wp_term_taxonomy
@@ -158,6 +197,7 @@ Feature: Utilities that depend on WordPress code
       wp_options
       wp_postmeta
       wp_posts
+      wp_posts_view
       wp_posts_xx
       wp_term_relationships
       wp_term_taxonomy
@@ -228,6 +268,7 @@ Feature: Utilities that depend on WordPress code
       """
       wp_postmeta
       wp_posts
+      wp_posts_view
       wp_posts_xx
       """
 
@@ -258,6 +299,7 @@ Feature: Utilities that depend on WordPress code
       """
       wp_postmeta
       wp_posts
+      wp_posts_view
       wp_posts_xx
       """
 
