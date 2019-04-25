@@ -3149,16 +3149,16 @@
         },
         {
             "name": "wp-cli/entity-command",
-            "version": "v2.0.5",
+            "version": "v2.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/entity-command.git",
-                "reference": "81741bc989bdbee3b919e56bf3371c7ea77c8587"
+                "reference": "250ed0da61162819f601fa110251c7e4c5173f27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/entity-command/zipball/81741bc989bdbee3b919e56bf3371c7ea77c8587",
-                "reference": "81741bc989bdbee3b919e56bf3371c7ea77c8587",
+                "url": "https://api.github.com/repos/wp-cli/entity-command/zipball/250ed0da61162819f601fa110251c7e4c5173f27",
+                "reference": "250ed0da61162819f601fa110251c7e4c5173f27",
                 "shasum": ""
             },
             "require": {
@@ -3351,7 +3351,7 @@
             ],
             "description": "Manage WordPress comments, menus, options, posts, sites, terms, and users.",
             "homepage": "https://github.com/wp-cli/entity-command",
-            "time": "2019-04-25T00:29:08+00:00"
+            "time": "2019-04-25T04:51:40+00:00"
         },
         {
             "name": "wp-cli/eval-command",
