@@ -18,7 +18,7 @@ assignees: 'schlessera'
     ```
     git clone git@github.com:wp-cli/handbook.git
     cd handbook
-    wp handbook gen-all
+    WP_CLI_PACKAGES_DIR=bin/packages ../wp-cli-bundle/vendor/bin/wp handbook gen-all
     ```
 
 - [ ] Verify results of [automated test suite](https://github.com/wp-cli/automated-tests)
