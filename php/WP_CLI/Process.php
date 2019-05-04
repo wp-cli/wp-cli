@@ -64,7 +64,7 @@ class Process {
 	/**
 	 * Run the command.
 	 *
-	 * @return ProcessRun
+	 * @return \WP_CLI\ProcessRun
 	 */
 	public function run() {
 		$start_time = microtime( true );
@@ -105,7 +105,7 @@ class Process {
 	/**
 	 * Run the command, but throw an Exception on error.
 	 *
-	 * @return ProcessRun
+	 * @return \WP_CLI\ProcessRun
 	 */
 	public function run_check() {
 		$r = $this->run();
@@ -121,7 +121,7 @@ class Process {
 	 * Run the command, but throw an Exception on error.
 	 * Same as `run_check()` above, but checks the correct stderr.
 	 *
-	 * @return ProcessRun
+	 * @return \WP_CLI\ProcessRun
 	 */
 	public function run_check_stderr() {
 		$r = $this->run();
