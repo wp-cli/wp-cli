@@ -1024,7 +1024,7 @@ class WP_CLI {
 	 * @param string $command External process to launch.
 	 * @param boolean $exit_on_error Whether to exit if the command returns an elevated return code.
 	 * @param boolean $return_detailed Whether to return an exit status (default) or detailed execution results.
-	 * @return int|ProcessRun The command exit status, or a ProcessRun object for full details.
+	 * @return int|\WP_CLI\ProcessRun The command exit status, or a ProcessRun object for full details.
 	 */
 	public static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
 		Utils\check_proc_available( 'launch' );
@@ -1066,7 +1066,7 @@ class WP_CLI {
 	 * @param bool $exit_on_error Whether to exit if the command returns an elevated return code.
 	 * @param bool $return_detailed Whether to return an exit status (default) or detailed execution results.
 	 * @param array $runtime_args Override one or more global args (path,url,user,allow-root)
-	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
+	 * @return int|\WP_CLI\ProcessRun The command exit status, or a ProcessRun instance
 	 */
 	public static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true, $return_detailed = false, $runtime_args = array() ) {
 		$reused_runtime_args = array(
