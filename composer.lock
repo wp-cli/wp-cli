@@ -1595,12 +1595,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "1dfa887a7e87ba9b7c635299462554b9ad241d5b"
+                "reference": "21ad2a8155dd437a0926a4d1fedb991bebd4810b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/1dfa887a7e87ba9b7c635299462554b9ad241d5b",
-                "reference": "1dfa887a7e87ba9b7c635299462554b9ad241d5b",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/21ad2a8155dd437a0926a4d1fedb991bebd4810b",
+                "reference": "21ad2a8155dd437a0926a4d1fedb991bebd4810b",
                 "shasum": ""
             },
             "conflict": {
@@ -1665,9 +1665,9 @@
                 "laravel/framework": ">=4,<4.0.99|>=4.1,<=4.1.31|>=4.2,<=4.2.22|>=5,<=5.0.35|>=5.1,<=5.1.46|>=5.2,<=5.2.45|>=5.3,<=5.3.31|>=5.4,<=5.4.36|>=5.5,<5.5.42|>=5.6,<5.6.30",
                 "laravel/socialite": ">=1,<1.0.99|>=2,<2.0.10",
                 "league/commonmark": "<0.18.3",
-                "magento/magento1ce": "<1.9.4",
-                "magento/magento1ee": ">=1.9,<1.14.4",
-                "magento/product-community-edition": ">=2,<2.2.7",
+                "magento/magento1ce": "<1.9.4.1",
+                "magento/magento1ee": ">=1.9,<1.14.4.1",
+                "magento/product-community-edition": ">=2,<2.2.8|>=2.3,<2.3.1",
                 "monolog/monolog": ">=1.8,<1.12",
                 "namshi/jose": "<2.2",
                 "onelogin/php-saml": "<2.10.4",
@@ -1795,7 +1795,7 @@
                 }
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-            "time": "2019-04-30T09:56:45+00:00"
+            "time": "2019-05-06T17:09:30+00:00"
         },
         {
             "name": "sebastian/comparator",
