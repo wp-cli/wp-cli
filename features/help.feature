@@ -153,20 +153,6 @@ Feature: Get help about WP-CLI commands
       """
     And STDOUT should be empty
 
-    # Bug: if `WP_DEBUG` (or `WP_DEBUG_DISPLAY') is defined falsey than a db error won't be trapped.
-    Given a define-wp-debug-false.php file:
-      """
-      <?php define( 'WP_DEBUG', false );
-      """
-
-    When I try `wp help core --require=define-wp-debug-false.php`
-    Then the return code should be 1
-    And STDERR should be:
-      """
-      Error: Can’t select database. We were able to connect to the database server (which means your username and password is okay) but not able to select the `wp_cli_test` database.
-      """
-    And STDOUT should be empty
-
   Scenario: Help for nonexistent commands
     Given a WP installation
 
