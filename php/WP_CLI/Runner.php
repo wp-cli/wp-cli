@@ -1253,10 +1253,7 @@ class Runner {
 			'site_name'     => 'Fake Site',
 		);
 
-		// Bug in WPCS {@link https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/pull/1693}
-		// which will be fixed in WPCS 2.1.1/2.2.0. Once the bug fix is in, this comment can be removed.
-		// However, it then need to be replaced with the GlobalVariableOverride ignore as used above.
-		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Intentional override.
 		$current_blog = (object) array(
 			'blog_id'  => 1,
 			'site_id'  => 1,
