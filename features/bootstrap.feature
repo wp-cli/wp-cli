@@ -253,6 +253,7 @@ Feature: Bootstrap WP-CLI
       Success: WP-Override-Eval
       """
 
+  @require-php-5.6
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (command line)
     Given a WP installation with Composer
     And a dependency on current wp-cli
@@ -264,7 +265,7 @@ Feature: Bootstrap WP-CLI
       WP CLI Site with both WordPress and wp-cli as Composer dependencies
       """
 
-  @require-php-5.4
+  @require-php-5.6
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (web)
     Given a WP installation with Composer
     And a dependency on current wp-cli
