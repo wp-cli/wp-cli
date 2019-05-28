@@ -94,6 +94,7 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
+  @require-php-5.6
   Scenario: Help when WordPress is downloaded but not installed
     Given an empty directory
 
