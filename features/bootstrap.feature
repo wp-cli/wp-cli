@@ -272,6 +272,7 @@ Feature: Bootstrap WP-CLI
     And a PHP built-in web server to serve 'WordPress'
     Then the HTTP status code should be 200
 
+  @require-php-5.6
   Scenario: Composer stack with both WordPress and wp-cli as dependencies and a custom vendor directory
     Given a WP installation with Composer and a custom vendor directory 'vendor-custom'
     And a dependency on current wp-cli
