@@ -164,3 +164,5 @@ assignees: 'schlessera'
     For instance, if the release version was `0.24.0`, the version should be bumped to `0.25.0-alpha`. Doing so ensure `wp cli update --nightly` works as expected.
 
 - [ ] Change the version constraint on `"wp-cli/wp-cli"` in `wp-cli/wp-cli-bundle`'s [`composer.json`](https://github.com/wp-cli/wp-cli-bundle/blob/master/composer.json) file back to `"dev-master"`.
+
+- [ ] Adapt the branch alias in `wp-cli/wp-cli`'s [`composer.json`](https://github.com/wp-cli/wp-cli/blob/master/composer.json) file to match the new alpha version.
