@@ -566,14 +566,14 @@ class Runner {
 
 			$command_args = [
 				$bits['port'] ? '-p ' . (int) $bits['port'] . ' ' : '',
-				$bits['key'] ? sprintf( '-i %s', $bits['key'] ) : '',
-				$is_tty ? '-t' : '-T',
+				$bits['key'] ? sprintf( '-i "%s"', $bits['key'] ) : '',
 			];
 
 			$escaped_command = sprintf(
 				$command,
 				implode( ' ', array_filter( $command_args ) ),
 				escapeshellarg( $bits['host'] ),
+				$is_tty ? '-t' : '-T',
 				escapeshellarg( $wp_command )
 			);
 		}
