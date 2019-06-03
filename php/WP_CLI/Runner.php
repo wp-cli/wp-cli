@@ -566,8 +566,8 @@ class Runner {
 
 			$command_args = [
 				$bits['port'] ? '-p ' . (int) $bits['port'] . ' ' : '',
-				$is_tty ? '-t' : '-T',
 				$bits['key'] ? sprintf( '-i %s', $bits['key'] ) : '',
+				$is_tty ? '-t' : '-T',
 			];
 
 			$escaped_command = sprintf(
