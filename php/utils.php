@@ -1571,3 +1571,13 @@ function pluralize( $noun, $count = null ) {
 
 	return Inflector::pluralize( $noun );
 }
+
+/**
+ * Normalizes a string by replacing \r\n and \n with \n
+ *
+ * @param string    $str    String to be normalized
+ * @return string|string[]|null Normalized string
+ */
+function normalize_data( $str) {
+    return preg_replace('/\r\n?/', "\n", $str);
+}

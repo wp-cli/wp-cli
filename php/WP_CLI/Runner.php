@@ -572,7 +572,7 @@ class Runner {
 	public function get_wp_config_code() {
 		$wp_config_path = Utils\locate_wp_config();
 
-		$wp_config_code = explode( "\n", file_get_contents( $wp_config_path ) );
+		$wp_config_code = explode( "\n", Utils\normalize_data(file_get_contents( $wp_config_path ) ) );
 
 		$found_wp_settings = false;
 
