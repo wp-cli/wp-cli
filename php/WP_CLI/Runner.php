@@ -487,7 +487,7 @@ class Runner {
 		$escaped_command = '';
 
 		// Set default values.
-		foreach ( array( 'scheme', 'user', 'host', 'port', 'path' ) as $bit ) {
+		foreach ( array( 'scheme', 'user', 'host', 'port', 'path', 'key' ) as $bit ) {
 			if ( ! isset( $bits[ $bit ] ) ) {
 				$bits[ $bit ] = null;
 			}
@@ -523,28 +523,57 @@ class Runner {
 
 		// Vagrant ssh-config.
 		if ( 'vagrant' === $bits['scheme'] ) {
-			$command = 'vagrant ssh -c %s %s';
+			$cache     = WP_CLI::get_cache();
+			$cache_key = 'vagrant:' . $this->project_config_path;
+			if ( $cache->has( $cache_key ) ) {
+				$cached = $cache->read( $cache_key );
+				$values = json_decode( $cached, true );
+			} else {
+				$ssh_config = shell_exec( 'vagrant ssh-config 2>/dev/null' );
+				if ( preg_match_all( '#\s*(?<NAME>[a-zA-Z]+)\s(?<VALUE>.+)\s*#', $ssh_config, $matches ) ) {
+					$values = array_combine( $matches['NAME'], $matches['VALUE'] );
+					$cache->write( $cache_key, json_encode( $values ) );
+				}
+			}
 
-			$escaped_command = sprintf(
-				$command,
-				escapeshellarg( $wp_command ),
-				escapeshellarg( $bits['host'] )
-			);
+			if ( empty( $bits['host'] ) || $bits['host'] === $values['Host'] ) {
+				$bits['scheme'] = 'ssh';
+				$bits['host']   = $values['HostName'];
+				$bits['port']   = $values['Port'];
+				$bits['user']   = $values['User'];
+				$bits['key']    = $values['IdentityFile'];
+			}
+
+			// If we could not resolve the bits still, fallback to just `vagrant ssh`
+			if ( 'vagrant' === $bits['scheme'] ) {
+				$command = 'vagrant ssh -c %s %s';
+
+				$escaped_command = sprintf(
+					$command,
+					escapeshellarg( $wp_command ),
+					escapeshellarg( $bits['host'] )
+				);
+			}
 		}
 
 		// Default scheme is SSH.
 		if ( 'ssh' === $bits['scheme'] || null === $bits['scheme'] ) {
-			$command = 'ssh -q %s%s %s %s';
+			$command = 'ssh -q %s %s %s';
 
 			if ( $bits['user'] ) {
 				$bits['host'] = $bits['user'] . '@' . $bits['host'];
 			}
 
+			$command_args = [
+				$bits['port'] ? '-p ' . (int) $bits['port'] . ' ' : '',
+				$bits['key'] ? sprintf( '-i %s', $bits['key'] ) : '',
+				$is_tty ? '-t' : '-T',
+			];
+
 			$escaped_command = sprintf(
 				$command,
-				$bits['port'] ? '-p ' . (int) $bits['port'] . ' ' : '',
+				implode( ' ', array_filter( $command_args ) ),
 				escapeshellarg( $bits['host'] ),
-				$is_tty ? '-t' : '-T',
 				escapeshellarg( $wp_command )
 			);
 		}
