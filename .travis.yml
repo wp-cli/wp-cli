@@ -2,7 +2,6 @@ sudo: false
 dist: trusty
 
 language: php
-php: 7.3
 
 notifications:
   email:
@@ -46,6 +45,7 @@ script:
 jobs:
   include:
     - stage: sniff
+      php: 7.3
       script:
         - composer lint
         - composer phpcs
