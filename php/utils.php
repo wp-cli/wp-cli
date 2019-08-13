@@ -576,8 +576,10 @@ function parse_url( $url, $component = - 1, $auto_add_scheme = true ) {
 		$url_parts = \parse_url( $url, $component );
 	}
 
-	if ( $auto_add_scheme && ! isset( $url_parts['scheme'] ) ) {
-		$url_parts = namespace\parse_url( 'http://' . $url, $component, false );
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Own version based on WP one.
+	if ( $auto_add_scheme && ! parse_url( $url, PHP_URL_SCHEME, false ) ) {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Own version based on WP one.
+		$url_parts = parse_url( 'http://' . $url, $component, false );
 	}
 
 	return $url_parts;
