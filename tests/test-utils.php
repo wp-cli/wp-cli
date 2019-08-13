@@ -219,13 +219,14 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		// vagrant scheme
 		$testcase = 'vagrant:/var/www/html';
 		$expected = array(
-			'host' => 'vagrant',
-			'path' => '/var/www/html',
+			'scheme' => 'vagrant',
+			'host'   => '',
+			'path'   => '/var/www/html',
 		);
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( 'vagrant', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( 'vagrant', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( '', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( '/var/www/html', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 

@@ -917,11 +917,8 @@ function parse_ssh_url( $url, $component = -1 ) {
 	// Find the hostname from `vagrant ssh-config` automatically.
 	if ( preg_match( '/^vagrant:?/', $url ) ) {
 		if ( 'vagrant' === $bits['host'] && empty( $bits['scheme'] ) ) {
-			$ssh_config = shell_exec( 'vagrant ssh-config 2>/dev/null' );
-			if ( preg_match( '/Host\s(.+)/', $ssh_config, $matches ) ) {
-				$bits['scheme'] = 'vagrant';
-				$bits['host']   = $matches[1];
-			}
+			$bits['scheme'] = 'vagrant';
+			$bits['host']   = '';
 		}
 	}
 
