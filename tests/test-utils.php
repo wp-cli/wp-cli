@@ -830,4 +830,18 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			array( array( 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ), array( 'keyA', 'keyB', 'keyC', 'keyD' ), array( 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC', 'keyD' => null ) ),
 		);
 	}
+
+	/** @dataProvider dataParseUrl */
+	public function testParseUrl( $url, $component, $auto_add_scheme, $expected ) {
+		$this->assertEquals( $expected, Utils\parse_url( $url, $component, $auto_add_scheme ) );
+	}
+
+	public function dataParseUrl() {
+		return [
+			[ 'http://user:pass@example.com:9090/path?arg=value#anchor', -1, true, [ 'scheme' => 'http', 'host' => 'example.com', 'port' => 9090, 'user' => 'user', 'pass' => 'pass', 'path' => '/path', 'query' => 'arg=value', 'fragment' => 'anchor' ] ],
+			[ 'example.com:9090/path?arg=value#anchor', -1, true, [ 'scheme' => 'http', 'host' => 'example.com', 'port' => 9090, 'path' => '/path', 'query' => 'arg=value', 'fragment' => 'anchor' ] ],
+			[ 'example.com:9090/path?arg=value#anchor', -1, false, [ 'host' => 'example.com', 'port' => 9090, 'path' => '/path', 'query' => 'arg=value', 'fragment' => 'anchor' ] ],
+			[ 'http://example.com', PHP_URL_HOST, true, 'example.com' ],
+		];
+	}
 }
