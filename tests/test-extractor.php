@@ -152,6 +152,7 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		} catch ( \Exception $e ) {
 			$msg = $e->getMessage();
 		}
+
 		$this->assertTrue( false !== strpos( $msg, 'no-such-tar' ) );
 		$this->assertTrue( 0 === strpos( self::$logger->stderr, 'Warning: PharData failed' ) );
 		$this->assertTrue( false !== strpos( self::$logger->stderr, 'no-such-tar' ) );
@@ -170,6 +171,7 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 			$msg = $e->getMessage();
 		}
 		unlink( $zero_tar );
+
 		$this->assertTrue( false !== strpos( $msg, 'zero-tar' ) );
 		$this->assertTrue( 0 === strpos( self::$logger->stderr, 'Warning: PharData failed' ) );
 		$this->assertTrue( false !== strpos( self::$logger->stderr, 'zero-tar' ) );
