@@ -995,7 +995,7 @@ class WP_CLI {
 			return '"' . $data . '"';
 		};
 
-		if ( is_object( $errors ) && is_a( $errors, 'WP_Error' ) ) {
+		if ( $errors instanceof \WP_Error ) {
 			foreach ( $errors->get_error_messages() as $message ) {
 				if ( $errors->get_error_data() ) {
 					return $message . ' ' . $render_data( $errors->get_error_data() );
