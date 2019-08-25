@@ -80,7 +80,7 @@ class Formatter {
 			}
 
 			if ( in_array( $this->args['format'], array( 'table', 'csv' ), true ) ) {
-				if ( is_object( $items ) && is_a( $items, 'Iterator' ) ) {
+				if ( $items instanceof \Iterator ) {
 					$items = \WP_CLI\Utils\iterator_map( $items, array( $this, 'transform_item_values_to_json' ) );
 				} else {
 					$items = array_map( array( $this, 'transform_item_values_to_json' ), $items );
