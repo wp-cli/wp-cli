@@ -220,14 +220,14 @@ function wp_get_cache_type() {
 
 	if ( ! empty( $_wp_using_ext_object_cache ) ) {
 		// Test for Memcached PECL extension memcached object cache (https://github.com/tollmanz/wordpress-memcached-backend)
-		if ( isset( $wp_object_cache->m ) && is_a( $wp_object_cache->m, 'Memcached' ) ) {
+		if ( isset( $wp_object_cache->m ) && $wp_object_cache->m instanceof \Memcached ) {
 			$message = 'Memcached';
 
 			// Test for Memcache PECL extension memcached object cache (http://wordpress.org/extend/plugins/memcached/)
 		} elseif ( isset( $wp_object_cache->mc ) ) {
 			$is_memcache = true;
 			foreach ( $wp_object_cache->mc as $bucket ) {
-				if ( ! is_a( $bucket, 'Memcache' ) && ! is_a( $bucket, 'Memcached' ) ) {
+				if ( ! $bucket instanceof \Memcache && ! $bucket instanceof \Memcached ) {
 					$is_memcache = false;
 				}
 			}
@@ -237,7 +237,7 @@ function wp_get_cache_type() {
 			}
 
 			// Test for Xcache object cache (http://plugins.svn.wordpress.org/xcache/trunk/object-cache.php)
-		} elseif ( is_a( $wp_object_cache, 'XCache_Object_Cache' ) ) {
+		} elseif ( $wp_object_cache instanceof \XCache_Object_Cache ) {
 			$message = 'Xcache';
 
 			// Test for WinCache object cache (http://wordpress.org/extend/plugins/wincache-object-cache-backend/)
@@ -249,11 +249,11 @@ function wp_get_cache_type() {
 			$message = 'APC';
 
 			// Test for Redis Object Cache (https://github.com/alleyinteractive/wp-redis)
-		} elseif ( isset( $wp_object_cache->redis ) && is_a( $wp_object_cache->redis, 'Redis' ) ) {
+		} elseif ( isset( $wp_object_cache->redis ) && $wp_object_cache->redis instanceof \Redis ) {
 			$message = 'Redis';
 
 			// Test for WP LCache Object cache (https://github.com/lcache/wp-lcache)
-		} elseif ( isset( $wp_object_cache->lcache ) && is_a( $wp_object_cache->lcache, '\LCache\Integrated' ) ) {
+		} elseif ( isset( $wp_object_cache->lcache ) && $wp_object_cache->lcache instanceof \LCache\Integrated ) {
 			$message = 'WP LCache';
 
 		} elseif ( function_exists( 'w3_instance' ) ) {
