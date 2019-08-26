@@ -104,7 +104,7 @@ class Help_Command extends WP_CLI_Command {
 		foreach ( $lines as &$line ) {
 			$line = $whitespace . $line;
 		}
-		return implode( $lines, "\n" );
+		return implode( "\n", $lines );
 	}
 
 	private static function pass_through_pager( $out ) {
