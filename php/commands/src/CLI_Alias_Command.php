@@ -29,7 +29,7 @@ use Mustangostang\Spyc;
  *     ssh: dev@somedeve.env:12345/home/dev/
  *
  *     # Add alias.
- *     $ wp cli alias add prod --set-ssh=login@host --set-path=/path/to/wordpress/install/ --set-user=wpcli
+ *     $ wp cli alias add @prod --set-ssh=login@host --set-path=/path/to/wordpress/install/ --set-user=wpcli
  *     Success: Added '@prod' alias.
  *
  *     # Update alias.
