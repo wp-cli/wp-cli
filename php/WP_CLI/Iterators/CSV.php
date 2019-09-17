@@ -19,7 +19,7 @@ class CSV implements \Countable, \Iterator {
 	private $current_element;
 
 	public function __construct( $filename, $delimiter = ',' ) {
-		$this->filename = $filename;
+		$this->filename     = $filename;
 		$this->file_pointer = fopen( $filename, 'rb' );
 		if ( ! $this->file_pointer ) {
 			\WP_CLI::error( sprintf( 'Could not open file: %s', $filename ) );
@@ -72,7 +72,7 @@ class CSV implements \Countable, \Iterator {
 			}
 		}
 	}
-	
+
 	public function count() {
 		$file = new \SplFileObject( $this->filename, 'r' );
 		$file->seek( PHP_INT_MAX );
