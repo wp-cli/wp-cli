@@ -5,10 +5,11 @@ namespace WP_CLI\Iterators;
 /**
  * Allows incrementally reading and parsing lines from a CSV file.
  */
-class CSV implements \Iterator {
+class CSV implements \Countable, \Iterator {
 
 	const ROW_SIZE = 4096;
 
+	private $filename;
 	private $file_pointer;
 
 	private $delimiter;
@@ -18,6 +19,7 @@ class CSV implements \Iterator {
 	private $current_element;
 
 	public function __construct( $filename, $delimiter = ',' ) {
+		$this->filename = $filename;
 		$this->file_pointer = fopen( $filename, 'rb' );
 		if ( ! $this->file_pointer ) {
 			\WP_CLI::error( sprintf( 'Could not open file: %s', $filename ) );
@@ -69,6 +71,12 @@ class CSV implements \Iterator {
 				break;
 			}
 		}
+	}
+	
+	public function count() {
+		$file = new \SplFileObject( $this->filename, 'r' );
+		$file->seek( PHP_INT_MAX );
+		return $file->key() + 1;
 	}
 
 	public function valid() {
