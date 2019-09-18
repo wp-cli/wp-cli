@@ -13,6 +13,8 @@ use WP_Upgrader_Skin;
  */
 class UpgraderSkin extends WP_Upgrader_Skin {
 
+	use WP_CLI\Compat\FeedbackMethodTrait;
+
 	public $api;
 
 	public function header() {}
@@ -33,7 +35,13 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 		WP_CLI::warning( $error );
 	}
 
-	public function feedback( $string ) {
+	/**
+	 * Process the feedback collected through the compat indirection.
+	 *
+	 * @param string $string String to use as feedback message.
+	 * @param array $args Array of additional arguments to process.
+	 */
+	public function process_feedback( $string, $args ) {
 
 		if ( 'parent_theme_prepare_install' === $string ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $this->api->download_link, 'theme', $this->api->slug, $this->api->version );
@@ -43,14 +51,8 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 			$string = $this->upgrader->strings[ $string ];
 		}
 
-		if ( strpos( $string, '%' ) !== false ) {
-			// Only looking at the arguments from the second one onwards, so this is "safe".
-			// phpcs:ignore PHPCompatibility.FunctionUse.ArgumentFunctionsReportCurrentValue.Changed
-			$args = func_get_args();
-			$args = array_splice( $args, 1 );
-			if ( ! empty( $args ) ) {
-				$string = vsprintf( $string, $args );
-			}
+		if ( ! empty( $args ) && strpos( $string, '%' ) !== false ) {
+			$string = vsprintf( $string, $args );
 		}
 
 		if ( empty( $string ) ) {
