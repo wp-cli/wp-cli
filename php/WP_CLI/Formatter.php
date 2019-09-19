@@ -69,7 +69,7 @@ class Formatter {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
-			if ( in_array( $this->args['format'], array( 'csv', 'json', 'table' ), true ) ) {
+			if ( in_array( $this->args['format'], array( 'csv', 'json', 'table', 'dotenv' ), true ) ) {
 				$item = is_array( $items ) && ! empty( $items ) ? array_shift( $items ) : false;
 				if ( $item && ! empty( $this->args['fields'] ) ) {
 					foreach ( $this->args['fields'] as &$field ) {
@@ -147,6 +147,14 @@ class Formatter {
 			case 'csv':
 				\WP_CLI\Utils\write_csv( STDOUT, $items, $fields );
 				break;
+
+            case 'dotenv':
+                foreach ($items as $item) {
+                    if (!isset($item['type']) || $item['type'] !== 'constant') continue;
+                    $item = \WP_CLI\Utils\pick_fields( $item, $fields );
+                    echo strtoupper($item['name']) . "=\"" . addslashes($item['value']) . "\"" . PHP_EOL;
+                }
+                break;
 
 			case 'json':
 			case 'yaml':
