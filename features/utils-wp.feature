@@ -373,10 +373,7 @@ Feature: Utilities that depend on WordPress code
 
     # With no subsite.
     When I run `wp --require=table_names.php get_table_names`
-    Then STDOUT should contain:
-      """
-      wp_blog_versions
-      """
+    # Leave out wp_blog_versions as it was never used and is removed with WP 5.3+.
     # Leave out wp_blogmeta for old WP compat.
     Then STDOUT should contain:
       """
@@ -428,10 +425,7 @@ Feature: Utilities that depend on WordPress code
       """
 
     When I run `wp --require=table_names.php get_table_names --scope=global`
-    Then STDOUT should contain:
-      """
-      wp_blog_versions
-      """
+    # Leave out wp_blog_versions as it was never used and is removed with WP 5.3+.
     # Leave out wp_blogmeta for old WP compat.
     Then STDOUT should contain:
       """
@@ -446,10 +440,7 @@ Feature: Utilities that depend on WordPress code
     And save STDOUT as {GLOBAL_STDOUT}
 
     When I run `wp --require=table_names.php get_table_names --scope=ms_global`
-    Then STDOUT should contain:
-      """
-      wp_blog_versions
-      """
+    # Leave out wp_blog_versions as it was never used and is removed with WP 5.3+.
     # Leave out wp_blogmeta for old WP compat.
     Then STDOUT should contain:
       """
@@ -538,8 +529,8 @@ Feature: Utilities that depend on WordPress code
       """
       wp_2_terms
       wp_2_xx_posts
-      wp_blog_versions
       """
+    # Leave out wp_blog_versions as it was never used and is removed with WP 5.3+.
     # Leave out wp_blogmeta for old WP compat.
     Then STDOUT should contain:
       """
@@ -759,16 +750,13 @@ Feature: Utilities that depend on WordPress code
 
     Given an enable_sitecategories.php file:
       """
-      <?php 
+      <?php
       WP_CLI::add_hook( 'after_wp_load', function () {
         add_filter( 'global_terms_enabled', '__return_true' );
       } );
       """
     When I run `wp --require=table_names.php --require=enable_sitecategories.php get_table_names`
-    Then STDOUT should contain:
-      """
-      wp_blog_versions
-      """
+    # Leave out wp_blog_versions as it was never used and is removed with WP 5.3+.
     # Leave out wp_blogmeta for old WP compat.
     Then STDOUT should contain:
       """
