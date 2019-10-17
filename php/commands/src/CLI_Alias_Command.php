@@ -46,7 +46,7 @@ use Mustangostang\Spyc;
 class CLI_Alias_Command extends WP_CLI_Command {
 
 	/**
-	 * List available WP-CLI aliases.
+	 * Lists available WP-CLI aliases.
 	 *
 	 * ## OPTIONS
 	 *
