@@ -4,7 +4,7 @@ use Composer\Semver\Comparator;
 use WP_CLI\Utils;
 
 /**
- * Review current WP-CLI info, check for updates, or see defined aliases.
+ * Reviews current WP-CLI info, checks for updates, or views defined aliases.
  *
  * ## EXAMPLES
  *
@@ -50,7 +50,7 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Print WP-CLI version.
+	 * Prints WP-CLI version.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -63,7 +63,7 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Print various details about the WP-CLI environment.
+	 * Prints various details about the WP-CLI environment.
 	 *
 	 * Helpful for diagnostic purposes, this command shares:
 	 *
@@ -162,7 +162,7 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Check to see if there is a newer version of WP-CLI available.
+	 * Checks to see if there is a newer version of WP-CLI available.
 	 *
 	 * Queries the Github releases API. Returns available versions if there are
 	 * updates available, or success message if using the latest release.
@@ -228,7 +228,7 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update WP-CLI to the latest release.
+	 * Updates WP-CLI to the latest release.
 	 *
 	 * Default behavior is to check the releases API for the newest stable
 	 * version, and prompt if one is available.
@@ -460,7 +460,7 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Dump the list of global parameters, as JSON or in var_export format.
+	 * Dumps the list of global parameters, as JSON or in var_export format.
 	 *
 	 * ## OPTIONS
 	 *
@@ -518,7 +518,7 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Dump the list of installed commands, as JSON.
+	 * Dumps the list of installed commands, as JSON.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -533,7 +533,7 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Generate tab completion strings.
+	 * Generates tab completion strings.
 	 *
 	 * ## OPTIONS
 	 *
