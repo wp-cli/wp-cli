@@ -18,7 +18,7 @@
 class CLI_Cache_Command extends WP_CLI_Command {
 
 	/**
-	 * Clear the internal cache.
+	 * Clears the internal cache.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -40,7 +40,7 @@ class CLI_Cache_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Prune the internal cache.
+	 * Prunes the internal cache.
 	 *
 	 * Removes all cached files except for the newest version of each one.
 	 *
