@@ -4,9 +4,19 @@
 
 namespace WP_CLI\Utils;
 
+use ArrayIterator;
+use cli;
+use Closure;
 use Composer\Semver\Comparator;
 use Composer\Semver\Semver;
+use Exception;
+use Mustache_Engine;
+use ReflectionFunction;
+use Requests;
+use Requests_Exception;
+use RuntimeException;
 use WP_CLI;
+use WP_CLI\Formatter;
 use WP_CLI\Inflector;
 use WP_CLI\Iterators\Transform;
 
@@ -114,7 +124,7 @@ function load_command( $name ) {
  */
 function iterator_map( $it, $fn ) {
 	if ( is_array( $it ) ) {
-		$it = new \ArrayIterator( $it );
+		$it = new ArrayIterator( $it );
 	}
 
 	if ( ! method_exists( $it, 'add_transform' ) ) {
@@ -305,7 +315,7 @@ function wp_version_compare( $since, $operator ) {
  */
 function format_items( $format, $items, $fields ) {
 	$assoc_args = compact( 'format', 'fields' );
-	$formatter  = new \WP_CLI\Formatter( $assoc_args );
+	$formatter  = new Formatter( $assoc_args );
 	$formatter->display_items( $items );
 }
 
@@ -388,10 +398,9 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 	} while ( ! $tmpfile );
 
 	if ( ! $tmpfile ) {
-		\WP_CLI::error( 'Error creating temporary file.' );
+		WP_CLI::error( 'Error creating temporary file.' );
 	}
 
-	$output = '';
 	file_put_contents( $tmpfile, $input );
 
 	$editor = getenv( 'EDITOR' );
@@ -496,7 +505,7 @@ function mustache_render( $template_name, $data = array() ) {
 
 	$template = file_get_contents( $template_name );
 
-	$m = new \Mustache_Engine(
+	$m = new Mustache_Engine(
 		array(
 			'escape' => function ( $val ) {
 				return $val; },
@@ -533,14 +542,14 @@ function mustache_render( $template_name, $data = array() ) {
  * @param string  $message  Text to display before the progress bar.
  * @param integer $count    Total number of ticks to be performed.
  * @param int     $interval Optional. The interval in milliseconds between updates. Default 100.
- * @return \cli\progress\Bar|\WP_CLI\NoOp
+ * @return cli\progress\Bar|WP_CLI\NoOp
  */
 function make_progress_bar( $message, $count, $interval = 100 ) {
-	if ( \cli\Shell::isPiped() ) {
-		return new \WP_CLI\NoOp();
+	if ( cli\Shell::isPiped() ) {
+		return new WP_CLI\NoOp();
 	}
 
-	return new \cli\progress\Bar( $message, $count, $interval );
+	return new cli\progress\Bar( $message, $count, $interval );
 }
 
 /**
@@ -600,6 +609,7 @@ function is_windows() {
  *
  * @param string $source The PHP code to manipulate.
  * @param string $path The path to use instead of the magic constants
+ * @return string Adapted PHP code.
  */
 function replace_path_consts( $source, $path ) {
 	$replacements = array(
@@ -634,6 +644,8 @@ function replace_path_consts( $source, $path ) {
  * @param array $headers    Add specific headers to the request.
  * @param array $options
  * @return object
+ * @throws RuntimeException If the request failed.
+ * @throws WP_CLI\ExitException If the request failed and $halt_on_error is true.
  */
 function http_request( $method, $url, $data = null, $headers = array(), $options = array() ) {
 
@@ -656,32 +668,37 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 			if ( $halt_on_error ) {
 				WP_CLI::error( $error_msg );
 			}
-			throw new \RuntimeException( $error_msg );
+			throw new RuntimeException( $error_msg );
 		}
 	}
 
+	if ( ! class_exists( 'Requests_Hooks' ) ) {
+		// Autoloader for the Requests library has not been registered yet.
+		Requests::register_autoloader();
+	}
+
 	try {
-		return \Requests::request( $url, $headers, $data, $method, $options );
-	} catch ( \Requests_Exception $ex ) {
+		return Requests::request( $url, $headers, $data, $method, $options );
+	} catch ( Requests_Exception $ex ) {
 		// CURLE_SSL_CACERT_BADFILE only defined for PHP >= 7.
 		if ( 'curlerror' !== $ex->getType() || ! in_array( curl_errno( $ex->getData() ), array( CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, 77 /*CURLE_SSL_CACERT_BADFILE*/ ), true ) ) {
 			$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $ex->getMessage() );
 			if ( $halt_on_error ) {
 				WP_CLI::error( $error_msg );
 			}
-			throw new \RuntimeException( $error_msg, null, $ex );
+			throw new RuntimeException( $error_msg, null, $ex );
 		}
 		// Handle SSL certificate issues gracefully
-		\WP_CLI::warning( sprintf( "Re-trying without verify after failing to get verified url '%s' %s.", $url, $ex->getMessage() ) );
+		WP_CLI::warning( sprintf( "Re-trying without verify after failing to get verified url '%s' %s.", $url, $ex->getMessage() ) );
 		$options['verify'] = false;
 		try {
-			return \Requests::request( $url, $headers, $data, $method, $options );
-		} catch ( \Requests_Exception $ex ) {
+			return Requests::request( $url, $headers, $data, $method, $options );
+		} catch ( Requests_Exception $ex ) {
 			$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $ex->getMessage() );
 			if ( $halt_on_error ) {
 				WP_CLI::error( $error_msg );
 			}
-			throw new \RuntimeException( $error_msg, null, $ex );
+			throw new RuntimeException( $error_msg, null, $ex );
 		}
 	}
 }
@@ -880,7 +897,7 @@ function get_temp_dir() {
 	$temp = trailingslashit( sys_get_temp_dir() );
 
 	if ( ! is_writable( $temp ) ) {
-		\WP_CLI::warning( "Temp directory isn't writable: {$temp}" );
+		WP_CLI::warning( "Temp directory isn't writable: {$temp}" );
 	}
 
 	return $temp;
@@ -1305,10 +1322,8 @@ function force_env_on_nix_systems( $command ) {
 		if ( 0 === strncmp( $command, $env_prefix, $env_prefix_len ) ) {
 			$command = substr( $command, $env_prefix_len );
 		}
-	} else {
-		if ( 0 !== strncmp( $command, $env_prefix, $env_prefix_len ) ) {
-			$command = $env_prefix . $command;
-		}
+	} elseif ( 0 !== strncmp( $command, $env_prefix, $env_prefix_len ) ) {
+		$command = $env_prefix . $command;
 	}
 	return $command;
 }
@@ -1468,7 +1483,7 @@ function esc_like( $text ) {
  * @return string|array An escaped string if given a string, or an array of escaped strings if given an array of strings.
  */
 function esc_sql_ident( $idents ) {
-	$backtick = function ( $v ) {
+	$backtick = static function ( $v ) {
 		// Escape any backticks in the identifier by doubling.
 		return '`' . str_replace( '`', '``', $v ) . '`';
 	};
@@ -1530,10 +1545,10 @@ function parse_shell_arrays( $assoc_args, $array_arguments ) {
  */
 function describe_callable( $callable ) {
 	try {
-		if ( $callable instanceof \Closure ) {
-			$reflection = new \ReflectionFunction( $callable );
+		if ( $callable instanceof Closure ) {
+			$reflection = new ReflectionFunction( $callable );
 
-			return (string) "Closure in file {$reflection->getFileName()} at line {$reflection->getStartLine()}";
+			return "Closure in file {$reflection->getFileName()} at line {$reflection->getStartLine()}";
 		}
 
 		if ( is_array( $callable ) ) {
@@ -1549,7 +1564,7 @@ function describe_callable( $callable ) {
 		}
 
 		return (string) gettype( $callable );
-	} catch ( \Exception $exception ) {
+	} catch ( Exception $exception ) {
 		return 'Callable of unknown type';
 	}
 }
