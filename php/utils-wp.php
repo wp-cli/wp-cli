@@ -130,6 +130,14 @@ function maybe_require( $since, $path ) {
 	}
 }
 
+function require_if_exists( $path ) {
+	if ( ! file_exists( $path ) ) {
+		return;
+	}
+
+	require $path;
+}
+
 function get_upgrader( $class ) {
 	if ( ! class_exists( '\WP_Upgrader' ) ) {
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
