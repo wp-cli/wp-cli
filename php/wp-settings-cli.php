@@ -192,8 +192,8 @@ if ( SHORTINIT ) {
 
 // Load the L10n library.
 require_once ABSPATH . WPINC . '/l10n.php';
-maybe_require( '4.6-alpha-38496', ABSPATH . WPINC . '/class-wp-locale.php' );
-maybe_require( '4.6-alpha-38961', ABSPATH . WPINC . '/class-wp-locale-switcher.php' );
+Utils\maybe_require( '4.6-alpha-38496', ABSPATH . WPINC . '/class-wp-locale.php' );
+Utils\maybe_require( '4.6-alpha-38961', ABSPATH . WPINC . '/class-wp-locale-switcher.php' );
 
 // WP-CLI: Permit Utils\wp_not_installed() to run on < WP 4.0
 apply_filters( 'nocache_headers', array() );
