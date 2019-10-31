@@ -130,7 +130,18 @@ function maybe_require( $since, $path ) {
 	}
 }
 
-function require_if_exists( $path ) {
+/**
+ * Require a file only if it exists.
+ *
+ * @param string      $path  Path to check for the file existence.
+ * @param string|null $class Optional. If provided, the file will only be
+ *                           required if the class is not declared yet.
+ */
+function require_if_exists( $path, $class = null ) {
+	if ( class_exists( $class ) ) {
+		return;
+	}
+
 	if ( ! file_exists( $path ) ) {
 		return;
 	}
