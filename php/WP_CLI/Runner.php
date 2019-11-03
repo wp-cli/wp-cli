@@ -1247,6 +1247,12 @@ class Runner {
 		// Load all the admin APIs, for convenience
 		require ABSPATH . 'wp-admin/includes/admin.php';
 
+		// Maybe load template functions, as they might be needed by starter
+		// content.
+		if ( ! function_exists( 'get_theme_file_uri' ) ) {
+			require_once ABSPATH . 'wp-includes/link-template.php';
+		}
+
 		add_filter(
 			'filesystem_method',
 			function() {
