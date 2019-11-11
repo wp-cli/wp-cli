@@ -2,6 +2,7 @@ sudo: false
 dist: trusty
 
 language: php
+php: 7.3
 
 notifications:
   email:
@@ -45,7 +46,6 @@ script:
 jobs:
   include:
     - stage: sniff
-      php: 7.3
       script:
         - composer lint
         - composer phpcs
@@ -76,6 +76,7 @@ jobs:
       env: WP_VERSION=trunk
     - stage: test
       php: 5.4
+      dist: precise
       env: WP_VERSION=5.1
   allow_failures:
     - stage: test
