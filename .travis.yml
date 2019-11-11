@@ -45,11 +45,14 @@ script:
 jobs:
   include:
     - stage: sniff
-      php: 7.3
+      php: 7.4
       script:
         - composer lint
         - composer phpcs
       env: BUILD=sniff
+    - stage: test
+      php: 7.4
+      env: WP_VERSION=latest
     - stage: test
       php: 7.3
       env: WP_VERSION=latest
