@@ -174,7 +174,7 @@ class CommandFactory {
 	private static function get_doc_comment( $reflection ) {
 		$doc_comment = $reflection->getDocComment();
 
-		if ( false !== $doc_comment || ! ( ini_get( 'opcache.enable_cli' ) && ! ini_get( 'opcache.save_comments' ) ) ) {
+		if ( false !== $doc_comment || ! ( ini_get( 'opcache.enable_cli' ) && ! ini_get( 'opcache.save_comments' ) ) ) { // phpcs:ignore PHPCompatibility.IniDirectives.NewIniDirectives
 			// Either have doc comment, or no doc comment and save comments enabled - standard situation.
 			if ( ! getenv( 'WP_CLI_TEST_GET_DOC_COMMENT' ) ) {
 				return $doc_comment;
