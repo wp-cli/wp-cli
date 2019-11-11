@@ -45,7 +45,7 @@ script:
 jobs:
   include:
     - stage: sniff
-      php: 7.4snapshot
+      php: 7.3
       script:
         - composer lint
         - composer phpcs
