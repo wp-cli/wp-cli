@@ -1252,6 +1252,14 @@ class Runner {
 			require_once ABSPATH . 'wp-includes/link-template.php';
 		}
 
+		// Polyfill is_customize_preview(), as it is needed by TwentyTwenty to
+		// check for starter content.
+		if ( ! function_exists( 'is_customize_preview' ) ) {
+			function is_customize_preview() {
+				return false;
+			}
+		}
+
 		add_filter(
 			'filesystem_method',
 			function() {
