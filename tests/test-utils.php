@@ -240,65 +240,24 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 	}
 
-	public function testParseStrToArgv() {
-		$this->assertEquals( array(), Utils\parse_str_to_argv( '' ) );
+	public function parseStrToArgvData() {
+		return [
+			[ [], '' ],
+			[ [ 'option', 'get', 'home' ], 'option get home' ],
+			[ [ 'core', 'download', '--path=/var/www/' ], 'core download --path=/var/www/' ],
+			[ [ 'eval', 'echo wp_get_current_user()->user_login;' ], 'eval "echo wp_get_current_user()->user_login;"' ],
+			[ [ 'post', 'create', '--post_title="Hello world!"' ], 'post create --post_title="Hello world!"' ],
+			[ [ 'post', 'create', '--post_title=\'Mixed "quotes are working" hopefully\'' ], 'post create --post_title=\'Mixed "quotes are working" hopefully\'' ],
+			[ [ 'post', 'create', '--post_title="Escaped \"double \"quotes!"' ], 'post create --post_title="Escaped \"double \"quotes!"' ],
+			[ [ 'post', 'create', "--post_title='Escaped \'single \'quotes!'" ], "post create --post_title='Escaped \'single \'quotes!'" ],
+			[ [ 'search-replace', '//old-domain.com', '//new-domain.com', 'specifictable', '--all-tables' ], 'search-replace "//old-domain.com" "//new-domain.com" "specifictable" --all-tables' ],
+			[ [ 'i18n', 'make-pot', '/home/wporgdev/co/wordpress/trunk', '/home/wporgdev/co/wp-pot/trunk/wordpress-continents-cities.pot', '--include="wp-admin/includes/continents-cities.php"', "--package-name='WordPress'", '--headers=\'{"Report-Msgid-Bugs-To":"https://core.trac.wordpress.org/"}\'', "--file-comment='Copyright (C) 2019 by the contributors\nThis file is distributed under the same license as the WordPress package.'", '--skip-js', '--skip-audit', '--ignore-domain' ], "i18n make-pot '/home/wporgdev/co/wordpress/trunk' '/home/wporgdev/co/wp-pot/trunk/wordpress-continents-cities.pot' --include=\"wp-admin/includes/continents-cities.php\" --package-name='WordPress' --headers='{\"Report-Msgid-Bugs-To\":\"https://core.trac.wordpress.org/\"}' --file-comment='Copyright (C) 2019 by the contributors\nThis file is distributed under the same license as the WordPress package.' --skip-js --skip-audit --ignore-domain" ],
+		];
+	}
 
-		$expected = array(
-			'option',
-			'get',
-			'home',
-		);
-		$this->assertEquals( $expected, Utils\parse_str_to_argv( 'option get home' ) );
-
-		$expected = array(
-			'core',
-			'download',
-			'--path=/var/www/',
-		);
-		$this->assertEquals( $expected, Utils\parse_str_to_argv( 'core download --path=/var/www/' ) );
-
-		$expected = array(
-			'eval',
-			'echo wp_get_current_user()->user_login;',
-		);
-		$this->assertEquals( $expected, Utils\parse_str_to_argv( 'eval "echo wp_get_current_user()->user_login;"' ) );
-
-		$expected = array(
-			'post',
-			'create',
-			'--post_title="Hello world!"',
-		);
-		$this->assertEquals( $expected, Utils\parse_str_to_argv( 'post create --post_title="Hello world!"' ) );
-
-		$expected = array(
-			'post',
-			'create',
-			'--post_title=\'Mixed "quotes are working" hopefully\'',
-		);
-		$this->assertEquals( $expected, Utils\parse_str_to_argv( 'post create --post_title=\'Mixed "quotes are working" hopefully\'' ) );
-
-		$expected = array(
-			'post',
-			'create',
-			'--post_title="Escaped \"double \"quotes!"',
-		);
-		$this->assertEquals( $expected, Utils\parse_str_to_argv( 'post create --post_title="Escaped \"double \"quotes!"' ) );
-
-		$expected = array(
-			'post',
-			'create',
-			"--post_title='Escaped \'single \'quotes!'",
-		);
-		$this->assertEquals( $expected, Utils\parse_str_to_argv( "post create --post_title='Escaped \'single \'quotes!'" ) );
-
-		$expected = array(
-			'search-replace',
-			'//old-domain.com',
-			'//new-domain.com',
-			'specifictable',
-			'--all-tables',
-		);
-		$this->assertEquals( $expected, Utils\parse_str_to_argv( 'search-replace "//old-domain.com" "//new-domain.com" "specifictable" --all-tables' ) );
+	/** @dataProvider parseStrToArgvData */
+	public function testParseStrToArgv( $expected, $parseable_string ) {
+		$this->assertEquals( $expected, Utils\parse_str_to_argv( $parseable_string ) );
 	}
 
 	public function testAssocArgsToString() {
