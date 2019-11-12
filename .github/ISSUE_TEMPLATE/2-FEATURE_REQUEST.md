@@ -47,7 +47,9 @@ If you are not in the correct repository right now, you can just close this issu
 
 **Is your feature request about a new command, or a more general idea?**
 
-If yes, head over to the [`wp-cli/ideas`](https://github.com/wp-cli/ideas) repository and [create a new issue in that repository](https://github.com/wp-cli/ideas/issues/new).
+If your feature request is not about making a change to one or more existing commands, but rather about adding functionality that doesn't naturally fit one of the existing commands, head over to the [`wp-cli/ideas`](https://github.com/wp-cli/ideas) repository and [create a new issue in that repository](https://github.com/wp-cli/ideas/issues/new).
+
+The issue tracker in that repository will collect ideas that are still vague and need fleshing out and/or preparatory work (like creating a new repository) before the actual development work can begin.
 
 --- ✅ If you are in the correct location now... ---> 
 
