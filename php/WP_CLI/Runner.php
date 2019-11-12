@@ -132,7 +132,7 @@ class Runner {
 		$project_config_path = Utils\find_file_upward(
 			$config_files,
 			getcwd(),
-			function ( $dir ) {
+			static function ( $dir ) {
 				static $wp_load_count = 0;
 				$wp_load_path         = $dir . DIRECTORY_SEPARATOR . 'wp-load.php';
 				if ( file_exists( $wp_load_path ) ) {
@@ -1246,23 +1246,9 @@ class Runner {
 		// Load all the admin APIs, for convenience
 		require ABSPATH . 'wp-admin/includes/admin.php';
 
-		// Maybe load template functions, as they might be needed by starter
-		// content.
-		if ( ! function_exists( 'get_theme_file_uri' ) ) {
-			require_once ABSPATH . 'wp-includes/link-template.php';
-		}
-
-		// Polyfill is_customize_preview(), as it is needed by TwentyTwenty to
-		// check for starter content.
-		if ( ! function_exists( 'is_customize_preview' ) ) {
-			function is_customize_preview() {
-				return false;
-			}
-		}
-
 		add_filter(
 			'filesystem_method',
-			function() {
+			static function () {
 				return 'direct';
 			},
 			99
@@ -1352,7 +1338,7 @@ class Runner {
 		} else {
 			WP_CLI::add_wp_hook(
 				'wp_die_handler',
-				function() {
+				static function () {
 					return '\WP_CLI\Utils\wp_die_handler';
 				}
 			);
@@ -1363,7 +1349,7 @@ class Runner {
 
 		WP_CLI::add_wp_hook(
 			'nocache_headers',
-			function( $headers ) {
+			static function ( $headers ) {
 				// WordPress might be calling nocache_headers() because of a dead db
 				global $wpdb;
 				if ( ! empty( $wpdb->error ) ) {
@@ -1375,11 +1361,25 @@ class Runner {
 			}
 		);
 
+		WP_CLI::add_wp_hook(
+			'setup_theme',
+			static function () {
+				// Polyfill is_customize_preview(), as it is needed by TwentyTwenty to
+				// check for starter content.
+				if ( ! function_exists( 'is_customize_preview' ) ) {
+					function is_customize_preview() {
+						return false;
+					}
+				}
+			},
+			0
+		);
+
 		// ALTERNATE_WP_CRON might trigger a redirect, which we can't handle
 		if ( defined( 'ALTERNATE_WP_CRON' ) && ALTERNATE_WP_CRON ) {
 			WP_CLI::add_wp_hook(
 				'muplugins_loaded',
-				function() {
+				static function () {
 					remove_action( 'init', 'wp_cron' );
 				}
 			);
@@ -1398,7 +1398,7 @@ class Runner {
 			foreach ( $values as $key => $value ) {
 				WP_CLI::add_wp_hook(
 					"pre_site_option_$key",
-					function () use ( $values, $key ) {
+					static function () use ( $values, $key ) {
 						return $values[ $key ];
 					}
 				);
@@ -1411,7 +1411,7 @@ class Runner {
 		// Always permit operations against WordPress, regardless of maintenance mode
 		WP_CLI::add_wp_hook(
 			'enable_maintenance_mode',
-			function() {
+			static function () {
 				return false;
 			}
 		);
@@ -1419,7 +1419,7 @@ class Runner {
 		// Use our own debug mode handling instead of WP core
 		WP_CLI::add_wp_hook(
 			'enable_wp_debug_mode_checks',
-			function( $ret ) {
+			static function ( $ret ) {
 				Utils\wp_debug_mode();
 				return false;
 			}
@@ -1428,7 +1428,7 @@ class Runner {
 		// Never load advanced-cache.php drop-in when WP-CLI is operating
 		WP_CLI::add_wp_hook(
 			'enable_loading_advanced_cache_dropin',
-			function() {
+			static function () {
 				return false;
 			}
 		);
@@ -1454,7 +1454,7 @@ class Runner {
 				&& Utils\wp_version_compare( '4.0', '>=' ) ) {
 				WP_CLI::add_wp_hook(
 					'ms_site_not_found',
-					function() use ( $run_on_site_not_found ) {
+					static function () use ( $run_on_site_not_found ) {
 						// esc_sql() isn't yet loaded, but needed.
 						if ( 'search-replace' === $run_on_site_not_found ) {
 							require_once ABSPATH . WPINC . '/formatting.php';
@@ -1469,7 +1469,7 @@ class Runner {
 			}
 			WP_CLI::add_wp_hook(
 				'ms_site_not_found',
-				function( $current_site, $domain, $path ) {
+				static function ( $current_site, $domain, $path ) {
 					$url         = $domain . $path;
 					$message     = $url ? "Site '{$url}' not found." : 'Site not found.';
 					$has_param   = isset( WP_CLI::get_runner()->config['url'] );
@@ -1497,7 +1497,7 @@ class Runner {
 		// The APC cache is not available on the command-line, so bail, to prevent cache poisoning
 		WP_CLI::add_wp_hook(
 			'muplugins_loaded',
-			function() {
+			static function () {
 				if ( $GLOBALS['_wp_using_ext_object_cache'] && class_exists( 'APC_Object_Cache' ) ) {
 					WP_CLI::warning( 'Running WP-CLI while the APC object cache is activated can result in cache corruption.' );
 					WP_CLI::confirm( 'Given the consequences, do you wish to continue?' );
@@ -1511,7 +1511,7 @@ class Runner {
 			$config = $this->config;
 			WP_CLI::add_wp_hook(
 				'init',
-				function() use ( $config ) {
+				static function () use ( $config ) {
 					if ( isset( $config['user'] ) ) {
 						$fetcher = new \WP_CLI\Fetchers\User();
 						$user    = $fetcher->get_check( $config['user'] );
@@ -1527,7 +1527,7 @@ class Runner {
 		// Avoid uncaught exception when using wp_mail() without defined $_SERVER['SERVER_NAME']
 		WP_CLI::add_wp_hook(
 			'wp_mail_from',
-			function( $from_email ) {
+			static function ( $from_email ) {
 				if ( 'wordpress@' === $from_email ) {
 					$sitename = strtolower( Utils\parse_url( site_url(), PHP_URL_HOST ) );
 					if ( substr( $sitename, 0, 4 ) === 'www.' ) {
@@ -1542,7 +1542,7 @@ class Runner {
 		// Don't apply set_url_scheme in get_site_url()
 		WP_CLI::add_wp_hook(
 			'site_url',
-			function( $url, $path, $scheme, $blog_id ) {
+			static function ( $url, $path, $scheme, $blog_id ) {
 				if ( empty( $blog_id ) || ! is_multisite() ) {
 					$url = get_option( 'siteurl' );
 				} else {
@@ -1562,7 +1562,7 @@ class Runner {
 		// Set up hook for plugins and themes to conditionally add WP-CLI commands.
 		WP_CLI::add_wp_hook(
 			'init',
-			function () {
+			static function () {
 				do_action( 'cli_init' );
 			}
 		);
@@ -1572,7 +1572,7 @@ class Runner {
 	 * Set up the filters to skip the loaded plugins
 	 */
 	private function setup_skip_plugins_filters() {
-		$wp_cli_filter_active_plugins = function( $plugins ) {
+		$wp_cli_filter_active_plugins = static function ( $plugins ) {
 			$skipped_plugins = WP_CLI::get_runner()->config['skip-plugins'];
 			if ( true === $skipped_plugins ) {
 				return array();
@@ -1607,7 +1607,7 @@ class Runner {
 		}
 		WP_CLI::add_wp_hook(
 			'plugins_loaded',
-			function() use ( $hooks, $wp_cli_filter_active_plugins ) {
+			static function () use ( $hooks, $wp_cli_filter_active_plugins ) {
 				foreach ( $hooks as $hook ) {
 					remove_filter( $hook, $wp_cli_filter_active_plugins, 999 );
 				}
@@ -1620,7 +1620,7 @@ class Runner {
 	 * Set up the filters to skip the loaded theme
 	 */
 	public function action_setup_theme_wp_cli_skip_themes() {
-		$wp_cli_filter_active_theme = function( $value ) {
+		$wp_cli_filter_active_theme = static function ( $value ) {
 			$skipped_themes = WP_CLI::get_runner()->config['skip-themes'];
 			if ( true === $skipped_themes ) {
 				return '';
@@ -1653,7 +1653,7 @@ class Runner {
 		// Clean up after the TEMPLATEPATH and STYLESHEETPATH constants are defined
 		WP_CLI::add_wp_hook(
 			'after_setup_theme',
-			function() use ( $hooks, $wp_cli_filter_active_theme ) {
+			static function () use ( $hooks, $wp_cli_filter_active_theme ) {
 				foreach ( $hooks as $hook ) {
 					remove_filter( $hook, $wp_cli_filter_active_theme, 999 );
 				}
