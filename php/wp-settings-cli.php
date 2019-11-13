@@ -52,7 +52,7 @@ ini_set( 'magic_quotes_sybase', 0 );
 // phpc:enable PHPCompatibility.IniDirectives.RemovedIniDirectives,WordPress.PHP.IniSet
 
 // WordPress calculates offsets from UTC.
-// phpcs:ignore WordPress.WP.TimezoneChange.timezone_change_date_default_timezone_set
+// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set
 date_default_timezone_set( 'UTC' );
 
 // Turn register_globals off.
