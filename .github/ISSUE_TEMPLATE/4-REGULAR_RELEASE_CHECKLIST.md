@@ -125,6 +125,10 @@ assignees: 'schlessera'
 - [ ] Trigger Travis CI build on [wp-cli/deb-build](https://github.com/wp-cli/deb-build)
 - [ ] Trigger Travis CI build on [wp-cli/rpm-build](https://github.com/wp-cli/rpm-build)
 
+    The two builds shouldn't be triggered at the same time, as one of them will then fail to push its build artifact due to the remote not being in the same state anymore.
+
+    Due to aggressive caching by the GitHub servers, the scripts might pull in cached version of the previous release instead of the new one. This seems to resolve automatically in a period of 24 hours.
+
 ### Updating the Homebrew formula (should happen automatically)
 
 - [ ] Update the url and sha256 here: https://github.com/Homebrew/homebrew-php/blob/master/Formula/wp-cli.rb#L8-L9
