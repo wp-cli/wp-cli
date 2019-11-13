@@ -143,7 +143,7 @@ assignees: 'schlessera'
 
 ### Updating the Homebrew formula (should happen automatically)
 
-- [ ] Update the url and sha256 here: https://github.com/Homebrew/homebrew-php/blob/master/Formula/wp-cli.rb#L8-L9
+- [ ] Update the url and sha256 here: https://github.com/Homebrew/homebrew-core/blob/master/Formula/wp-cli.rb#L4-L5
 
     WP-CLI's Homebrew formula is automatically updated with the [Homebrew updater application](https://github.com/BePsvPT/homebrew-updater). See [Homebrew/homebrew-php/pull/4195#issuecomment-305442172](https://github.com/Homebrew/homebrew-php/pull/4195#issuecomment-305442172).
 
