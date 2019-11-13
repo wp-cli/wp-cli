@@ -145,20 +145,11 @@ assignees: 'schlessera'
 
 - [ ] Update the url and sha256 here: https://github.com/Homebrew/homebrew-core/blob/master/Formula/wp-cli.rb#L4-L5
 
-    WP-CLI's Homebrew formula is automatically updated with the [Homebrew updater application](https://github.com/BePsvPT/homebrew-updater). See [Homebrew/homebrew-php/pull/4195#issuecomment-305442172](https://github.com/Homebrew/homebrew-php/pull/4195#issuecomment-305442172).
-
-    If the updater application doesn't work for some reason, a pull request must be submitted to the Homebrew repo.
-    
-    To generate the sha256 (replace `x` with the minor version):
+    The easiest way to do so is by using the following command:
 
     ```
-    wget https://github.com/wp-cli/wp-cli/archive/v1.x.0.tar.gz
-    shasum -a 256 v1.x.0.tar.gz
+    brew bump-formula-pr --strict wp-cli --url=https://github.com/wp-cli/wp-cli/releases/download/v2.x.x/wp-cli-2.x.x.phar --sha256=$(wget -qO- https://github.com/wp-cli/wp-cli/releases/download/v2.x.x/wp-cli-2.x.x.phar - | sha256sum | cut -d " " -f 1)
     ```
-
-    See <https://github.com/Homebrew/homebrew-php/pull/1687#issuecomment-98408399> and <https://github.com/Homebrew/homebrew-php/pull/3398#issuecomment-235896016> for background.
-
-- [ ] Make a commit with format "wp-cli 2.x.0"
 
 ### Updating the website
 
