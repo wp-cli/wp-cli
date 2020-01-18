@@ -11,10 +11,10 @@ class Completions {
 		// TODO: properly parse single and double quotes
 		$this->words = explode( ' ', $line );
 
-		// first word is always `wp`
+		// First word is always `wp`.
 		array_shift( $this->words );
 
-		// last word is either empty or an incomplete subcommand
+		// Last word is either empty or an incomplete subcommand.
 		$this->cur_word = end( $this->words );
 		if ( '' !== $this->cur_word && ! preg_match( '/^\-/', $this->cur_word ) ) {
 			array_pop( $this->words );
@@ -50,7 +50,7 @@ class Completions {
 		}
 
 		if ( $command->can_have_subcommands() ) {
-			// add completion when command is `wp` and alias isn't set.
+			// Add completion when command is `wp` and alias isn't set.
 			if ( 'wp' === $command->get_name() && false === $is_alias && false === $is_help ) {
 				$aliases = \WP_CLI::get_configurator()->get_aliases();
 				foreach ( $aliases as $name => $_ ) {

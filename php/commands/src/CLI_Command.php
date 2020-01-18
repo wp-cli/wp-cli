@@ -500,7 +500,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'with-values' ) ) {
 			$config = \WP_CLI::get_configurator()->to_array();
-			// Copy current config values to $spec
+			// Copy current config values to $spec.
 			foreach ( $spec as $key => $value ) {
 				$current = null;
 				if ( isset( $config[0][ $key ] ) ) {
