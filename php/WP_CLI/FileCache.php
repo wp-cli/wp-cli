@@ -97,7 +97,7 @@ class FileCache {
 			return false;
 		}
 
-		// use ttl param or global ttl
+		// Use ttl param or global ttl.
 		if ( null === $ttl ) {
 			$ttl = $this->ttl;
 		} elseif ( $this->ttl > 0 ) {
@@ -219,7 +219,7 @@ class FileCache {
 		$ttl      = $this->ttl;
 		$max_size = $this->max_size;
 
-		// unlink expired files
+		// Unlink expired files.
 		if ( $ttl > 0 ) {
 			try {
 				$expire = new \DateTime();
@@ -234,7 +234,7 @@ class FileCache {
 			}
 		}
 
-		// unlink older files if max cache size is exceeded
+		// Unlink older files if max cache size is exceeded.
 		if ( $max_size > 0 ) {
 			$files = array_reverse( iterator_to_array( $this->get_finder()->sortByAccessedTime()->getIterator() ) );
 			$total = 0;

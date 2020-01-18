@@ -56,7 +56,7 @@ class Regular extends Base {
 	 * @param  array $message Message to write.
 	 */
 	public function error_multi_line( $message_lines ) {
-		// convert tabs to four spaces, as some shells will output the tabs as variable-length
+		// Convert tabs to four spaces, as some shells will output the tabs as variable-length.
 		$message_lines = array_map(
 			function( $line ) {
 				return str_replace( "\t", '    ', $line );
@@ -66,7 +66,7 @@ class Regular extends Base {
 
 		$longest = max( array_map( 'strlen', $message_lines ) );
 
-		// write an empty line before the message
+		// Write an empty line before the message.
 		$empty_line = \cli\Colors::colorize( '%w%1 ' . str_repeat( ' ', $longest ) . ' %n' );
 		$this->write( STDERR, "\n\t$empty_line\n" );
 
@@ -76,7 +76,7 @@ class Regular extends Base {
 			$this->write( STDERR, "\t$line\n" );
 		}
 
-		// write an empty line after the message
+		// Write an empty line after the message.
 		$this->write( STDERR, "\t$empty_line\n\n" );
 	}
 }

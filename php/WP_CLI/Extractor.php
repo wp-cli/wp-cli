@@ -118,7 +118,7 @@ class Extractor {
 					"PharData failed, falling back to 'tar xz' ("
 					. $e->getMessage() . ')'
 				);
-				// Fall through to trying `tar xz` below
+				// Fall through to trying `tar xz` below.
 			}
 		}
 
@@ -242,7 +242,7 @@ class Extractor {
 	 *                    unmodified.
 	 */
 	public static function zip_error_msg( $error_code ) {
-		// From https://github.com/php/php-src/blob/php-5.3.0/ext/zip/php_zip.c#L2623-L2646
+		// From https://github.com/php/php-src/blob/php-5.3.0/ext/zip/php_zip.c#L2623-L2646.
 		static $zip_err_msgs = array(
 			ZipArchive::ER_OK          => 'No error',
 			ZipArchive::ER_MULTIDISK   => 'Multi-disk zip archives not supported',
