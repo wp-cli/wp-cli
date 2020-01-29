@@ -185,7 +185,7 @@ function is_path_absolute( $path ) {
 /**
  * Composes positional arguments into a command string.
  *
- * @param array $args Composes positional arguments.
+ * @param array $args Positional arguments to compose.
  * @return string
  */
 function args_to_str( $args ) {
@@ -195,7 +195,7 @@ function args_to_str( $args ) {
 /**
  * Composes associative arguments into a command string.
  *
- * @param array $assoc_args Composes associative arguments.
+ * @param array $assoc_args Associative arguments to compose.
  * @return string
  */
 function assoc_args_to_str( $assoc_args ) {
@@ -559,13 +559,13 @@ function make_progress_bar( $message, $count, $interval = 100 ) {
  *
  * Additionally, this adds 'http://' to the URL if no scheme was found.
  *
- * @param string $url           The URL to parse.
- * @param int    $component        Optional. The specific component to retrieve.
- *                              Use one of the PHP predefined constants to
- *                              specify which one. Defaults to -1 (= return
- *                              all parts as an array).
+ * @param string $url             The URL to parse.
+ * @param int    $component       Optional. The specific component to retrieve.
+ *                                Use one of the PHP predefined constants to
+ *                                specify which one. Defaults to -1 (= return
+ *                                all parts as an array).
  * @param bool   $auto_add_scheme Optional. Automatically add an http:// scheme if
- *                              none was found. Defaults to true.
+ *                                none was found. Defaults to true.
  * @return mixed False on parse failure; Array of URL components on success;
  *               When a specific component has been requested: null if the
  *               component doesn't exist in the given URL; a string or - in the
