@@ -1005,7 +1005,9 @@ class WP_CLI {
 			}
 		}
 
-		if ( $errors instanceof \Exception ) {
+		// PHP 7+: internal and user exceptions must implement Throwable interface.
+		// PHP 5: internal and user exceptions must extend Exception class.
+		if ( interface_exists( 'Throwable' ) && ( $errors instanceof \Throwable ) || ( $errors instanceof \Exception ) ) {
 			return $errors->getMessage();
 		}
 	}
