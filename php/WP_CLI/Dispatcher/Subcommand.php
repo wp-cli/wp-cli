@@ -459,17 +459,11 @@ class Subcommand extends CompositeCommand {
 				}
 			}
 
-			// Update key ( Append `--` to key ).
-			$prompt_args = [];
-			foreach ( $actual_args as $key => $value ) {
-				$prompt_args[ '--' . $key ] = $value;
-			}
-
 			WP_CLI::log(
 				sprintf(
 					'wp %s %s',
 					$cmd,
-					urldecode( http_build_query( $prompt_args, '', ' ' ) )
+					WP_CLI\Utils\assoc_args_to_str( $actual_args )
 				)
 			);
 
