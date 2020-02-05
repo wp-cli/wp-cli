@@ -118,8 +118,8 @@ function load_command( $name ) {
  *       var_dump($val);
  *     }
  *
- * @param array|object Either a plain array or another iterator.
- * @param callback     The function to apply to an element.
+ * @param array|object $it Either a plain array or another iterator.
+ * @param callback     $fn The function to apply to an element.
  * @return object An iterator that applies the given callback(s).
  */
 function iterator_map( $it, $fn ) {
@@ -140,9 +140,10 @@ function iterator_map( $it, $fn ) {
 
 /**
  * Search for file by walking up the directory tree until the first file is found or until $stop_check($dir) returns true.
- * @param string|array The files (or file) to search for.
- * @param string|null  The directory to start searching from; defaults to CWD.
- * @param callable     Function which is passed the current dir each time a directory level is traversed.
+ *
+ * @param string|array $files      The files (or file) to search for.
+ * @param string|null  $dir        The directory to start searching from; defaults to CWD.
+ * @param callable     $stop_check Function which is passed the current dir each time a directory level is traversed.
  * @return null|string Null if the file was not found.
  */
 function find_file_upward( $files, $dir = null, $stop_check = null ) {
@@ -184,7 +185,7 @@ function is_path_absolute( $path ) {
 /**
  * Composes positional arguments into a command string.
  *
- * @param array
+ * @param array $args Positional arguments to compose.
  * @return string
  */
 function args_to_str( $args ) {
@@ -194,7 +195,7 @@ function args_to_str( $args ) {
 /**
  * Composes associative arguments into a command string.
  *
- * @param array
+ * @param array $assoc_args Associative arguments to compose.
  * @return string
  */
 function assoc_args_to_str( $assoc_args ) {
@@ -308,9 +309,9 @@ function wp_version_compare( $since, $operator ) {
  * @access public
  * @category Output
  *
- * @param string        $format     Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count'
- * @param array         $items      An array of items to output.
- * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list.
+ * @param string       $format Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count'.
+ * @param array        $items  An array of items to output.
+ * @param array|string $fields Named fields for each item of data. Can be array or comma-separated list.
  * @return null
  */
 function format_items( $format, $items, $fields ) {
@@ -324,9 +325,9 @@ function format_items( $format, $items, $fields ) {
  *
  * @access public
  *
- * @param resource $fd         File descriptor
- * @param array    $rows       Array of rows to output
- * @param array    $headers    List of CSV columns (optional)
+ * @param resource $fd      File descriptor.
+ * @param array    $rows    Array of rows to output.
+ * @param array    $headers List of CSV columns (optional).
  */
 function write_csv( $fd, $rows, $headers = array() ) {
 	if ( ! empty( $headers ) ) {
@@ -345,8 +346,8 @@ function write_csv( $fd, $rows, $headers = array() ) {
 /**
  * Pick fields from an associative array or object.
  *
- * @param  array|object Associative array or object to pick fields from.
- * @param  array List of fields to pick.
+ * @param  array|object $item    Associative array or object to pick fields from.
+ * @param  array        $fields  List of fields to pick.
  * @return array
  */
 function pick_fields( $item, $fields ) {
@@ -371,10 +372,10 @@ function pick_fields( $item, $fields ) {
  * @access public
  * @category Input
  *
- * @param string  $content  Some form of text to edit (e.g. post content).
- * @param string  $title    Title to display in the editor.
- * @param string  $ext      Extension to use with the temp file.
- * @return string|bool       Edited text, if file is saved from editor; false, if no change to file.
+ * @param string $input Some form of text to edit (e.g. post content).
+ * @param string $title Title to display in the editor.
+ * @param string $ext   Extension to use with the temp file.
+ * @return string|bool  Edited text, if file is saved from editor; false, if no change to file.
  */
 function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 
@@ -427,7 +428,7 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 }
 
 /**
- * @param string MySQL host string, as defined in wp-config.php
+ * @param string MySQL host string, as defined in wp-config.php.
  *
  * @return array
  */
@@ -558,13 +559,13 @@ function make_progress_bar( $message, $count, $interval = 100 ) {
  *
  * Additionally, this adds 'http://' to the URL if no scheme was found.
  *
- * @param string $url           The URL to parse.
- * @param int $component        Optional. The specific component to retrieve.
- *                              Use one of the PHP predefined constants to
- *                              specify which one. Defaults to -1 (= return
- *                              all parts as an array).
- * @param bool $auto_add_scheme Optional. Automatically add an http:// scheme if
- *                              none was found. Defaults to true.
+ * @param string $url             The URL to parse.
+ * @param int    $component       Optional. The specific component to retrieve.
+ *                                Use one of the PHP predefined constants to
+ *                                specify which one. Defaults to -1 (= return
+ *                                all parts as an array).
+ * @param bool   $auto_add_scheme Optional. Automatically add an http:// scheme if
+ *                                none was found. Defaults to true.
  * @return mixed False on parse failure; Array of URL components on success;
  *               When a specific component has been requested: null if the
  *               component doesn't exist in the given URL; a string or - in the
@@ -608,7 +609,7 @@ function is_windows() {
  * Replace magic constants in some PHP source code.
  *
  * @param string $source The PHP code to manipulate.
- * @param string $path The path to use instead of the magic constants
+ * @param string $path The path to use instead of the magic constants.
  * @return string Adapted PHP code.
  */
 function replace_path_consts( $source, $path ) {
@@ -639,9 +640,9 @@ function replace_path_consts( $source, $path ) {
  *
  * @access public
  *
- * @param string $method    HTTP method (GET, POST, DELETE, etc.)
- * @param string $url       URL to make the HTTP request to.
- * @param array $headers    Add specific headers to the request.
+ * @param string $method  HTTP method (GET, POST, DELETE, etc.).
+ * @param string $url     URL to make the HTTP request to.
+ * @param array  $headers Add specific headers to the request.
  * @param array $options
  * @return object
  * @throws RuntimeException If the request failed.
@@ -803,9 +804,9 @@ function get_named_sem_ver( $new_version, $original_version ) {
  * @access public
  * @category Input
  *
- * @param array  $assoc_args  Arguments array.
- * @param string $flag        Flag to get the value.
- * @param mixed  $default     Default value for the flag. Default: NULL
+ * @param array  $assoc_args Arguments array.
+ * @param string $flag       Flag to get the value.
+ * @param mixed  $default    Default value for the flag. Default: NULL.
  * @return mixed
  */
 function get_flag_value( $assoc_args, $flag, $default = null ) {
@@ -961,8 +962,8 @@ function parse_ssh_url( $url, $component = -1 ) {
  * @access public
  * @category Input
  *
- * @param string       $noun      Resource being affected (e.g. plugin)
- * @param string       $verb      Type of action happening to the noun (e.g. activate)
+ * @param string       $noun      Resource being affected (e.g. plugin).
+ * @param string       $verb      Type of action happening to the noun (e.g. activate).
  * @param integer      $total     Total number of resource being affected.
  * @param integer      $successes Number of successful operations.
  * @param integer      $failures  Number of failures.
@@ -1095,11 +1096,11 @@ function expand_globs( $paths, $flags = 'default' ) {
  * Simulate a `glob()` with the `GLOB_BRACE` flag set. For systems (eg Alpine Linux) built against a libc library (eg https://www.musl-libc.org/) that lacks it.
  * Copied and adapted from Zend Framework's `Glob::fallbackGlob()` and Glob::nextBraceSub()`.
  *
- * Zend Framework (http://framework.zend.com/)
+ * Zend Framework (https://framework.zend.com/)
  *
- * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
- * @license   http://framework.zend.com/license/new-bsd New BSD License
+ * @link      https://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (https://www.zend.com)
+ * @license   https://framework.zend.com/license/new-bsd New BSD License
  *
  * @param string $pattern     Filename pattern.
  * @param void   $dummy_flags Not used.
@@ -1418,7 +1419,7 @@ function get_php_binary() {
  *
  * @access public
  *
- * @param string $command        Command to execute.
+ * @param string $cmd            Command to execute.
  * @param array  $descriptorspec Indexed array of descriptor numbers and their values.
  * @param array  &$pipes         Indexed array of file pointers that correspond to PHP's end of any pipes that are created.
  * @param string $cwd            Initial working directory for the command.
@@ -1440,7 +1441,7 @@ function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = n
  *
  * @access private
  *
- * @param string $command Command to execute.
+ * @param string $cmd Command to execute.
  * @param array &$env Array of existing environment variables. Will be modified if any settings in command.
  * @return string Command stripped of any environment variable settings.
  */
