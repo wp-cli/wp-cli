@@ -1239,7 +1239,7 @@ class Runner {
 			require WP_CLI_ROOT . '/php/wp-settings-cli.php';
 		}
 
-		// Fix memory limit. See http://core.trac.wordpress.org/ticket/14889
+		// Fix memory limit. See https://core.trac.wordpress.org/ticket/14889
 		// phpcs:ignore WordPress.PHP.IniSet.memory_limit_Blacklisted -- This is perfectly fine for CLI usage.
 		ini_set( 'memory_limit', -1 );
 
