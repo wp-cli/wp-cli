@@ -825,8 +825,8 @@ class WP_CLI {
 	 * @access public
 	 * @category Output
 	 *
-	 * @param string|WP_Error  $message Message to write to STDERR.
-	 * @param boolean|integer  $exit    True defaults to exit(1).
+	 * @param string|WP_Error|Exception  $message Message to write to STDERR.
+	 * @param boolean|integer            $exit    True defaults to exit(1).
 	 * @return null
 	 */
 	public static function error( $message, $exit = true ) {
@@ -976,7 +976,7 @@ class WP_CLI {
 	}
 
 	/**
-	 * Convert a wp_error into a string
+	 * Convert a WP_Error or Exception into a string
 	 *
 	 * @param mixed $errors
 	 * @return string
@@ -1003,6 +1003,12 @@ class WP_CLI {
 
 				return $message;
 			}
+		}
+
+		// PHP 7+: internal and user exceptions must implement Throwable interface.
+		// PHP 5: internal and user exceptions must extend Exception class.
+		if ( interface_exists( 'Throwable' ) && ( $errors instanceof \Throwable ) || ( $errors instanceof \Exception ) ) {
+			return get_class( $errors ) . ': ' . $errors->getMessage();
 		}
 	}
 
