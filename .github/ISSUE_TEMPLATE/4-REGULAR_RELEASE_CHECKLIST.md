@@ -125,24 +125,19 @@ assignees: 'schlessera'
 - [ ] Trigger Travis CI build on [wp-cli/deb-build](https://github.com/wp-cli/deb-build)
 - [ ] Trigger Travis CI build on [wp-cli/rpm-build](https://github.com/wp-cli/rpm-build)
 
+    The two builds shouldn't be triggered at the same time, as one of them will then fail to push its build artifact due to the remote not being in the same state anymore.
+
+    Due to aggressive caching by the GitHub servers, the scripts might pull in cached version of the previous release instead of the new one. This seems to resolve automatically in a period of 24 hours.
+
 ### Updating the Homebrew formula (should happen automatically)
 
-- [ ] Update the url and sha256 here: https://github.com/Homebrew/homebrew-php/blob/master/Formula/wp-cli.rb#L8-L9
+- [ ] Update the url and sha256 here: https://github.com/Homebrew/homebrew-core/blob/master/Formula/wp-cli.rb#L4-L5
 
-    WP-CLI's Homebrew formula is automatically updated with the [Homebrew updater application](https://github.com/BePsvPT/homebrew-updater). See [Homebrew/homebrew-php/pull/4195#issuecomment-305442172](https://github.com/Homebrew/homebrew-php/pull/4195#issuecomment-305442172).
-
-    If the updater application doesn't work for some reason, a pull request must be submitted to the Homebrew repo.
-    
-    To generate the sha256 (replace `x` with the minor version):
+    The easiest way to do so is by using the following command:
 
     ```
-    wget https://github.com/wp-cli/wp-cli/archive/v1.x.0.tar.gz
-    shasum -a 256 v1.x.0.tar.gz
+    brew bump-formula-pr --strict wp-cli --url=https://github.com/wp-cli/wp-cli/releases/download/v2.x.0/wp-cli-2.x.0.phar --sha256=$(wget -qO- https://github.com/wp-cli/wp-cli/releases/download/v2.x.0/wp-cli-2.x.0.phar - | sha256sum | cut -d " " -f 1)
     ```
-
-    See <https://github.com/Homebrew/homebrew-php/pull/1687#issuecomment-98408399> and <https://github.com/Homebrew/homebrew-php/pull/3398#issuecomment-235896016> for background.
-
-- [ ] Make a commit with format "wp-cli 2.x.0"
 
 ### Updating the website
 
