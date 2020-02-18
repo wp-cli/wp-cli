@@ -2,7 +2,7 @@
 #
 # This wrapper script has been adapted from the equivalent drush wrapper
 # and 99.9% of all credit should go to the authors of that project:
-# http://drupal.org/project/drush
+# https://www.drupal.org/project/drush
 # And 0.09% to the author of this project:
 # https://github.com/88mph/wpadmin/blob/master/wpadmin.php
 
@@ -27,7 +27,7 @@ if [ ! -z "$WP_CLI_PHP" ] ; then
 	php="$WP_CLI_PHP"
 else
 	# Default to using the php that we find on the PATH.
-	# Note that we need the full path to php here for Dreamhost, which behaves oddly.  See http://drupal.org/node/662926
+	# Note that we need the full path to php here for Dreamhost, which behaves oddly.  See https://www.drupal.org/node/662926
 	php="$(command -v php)"
 fi
 
