@@ -10,8 +10,7 @@
     "require": {
         "php": "^5.4 || ^7.0",
         "ext-curl": "*",
-        "cweagans/composer-patches": "^1.6",
-        "mustache/mustache": "~2.4",
+        "mustache/mustache": "~2.13",
         "rmccue/requests": "~1.6",
         "symfony/finder": ">2.7",
         "wp-cli/mustangostang-spyc": "^0.6.3",
@@ -39,11 +38,6 @@
     "extra": {
         "branch-alias": {
             "dev-master": "2.4.x-dev"
-        },
-        "patches": {
-            "mustache/mustache": {
-                "Avoid notices on PHP 7.4+": "https://patch-diff.githubusercontent.com/raw/bobthecow/mustache.php/pull/349.patch"
-            }
         }
     },
     "autoload": {
