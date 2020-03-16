@@ -613,9 +613,12 @@ function is_windows() {
  * @return string Adapted PHP code.
  */
 function replace_path_consts( $source, $path ) {
+	// Solve issue with Windows allowing single quotes in account names.
+	$file = addslashes( $path );
+
 	$replacements = array(
-		'__FILE__' => "'$path'",
-		'__DIR__'  => "'" . dirname( $path ) . "'",
+		'__FILE__' => "'$file'",
+		'__DIR__'  => "'" . dirname( $file ) . "'",
 	);
 
 	$old = array_keys( $replacements );
