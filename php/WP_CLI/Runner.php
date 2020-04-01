@@ -595,7 +595,8 @@ class Runner {
 	/**
 	 * Returns wp-config.php code, skipping the loading of wp-settings.php
 	 *
-	 * @param string $wp_config_file_path config file path
+	 * @param string $wp_config_file_path config file path Optional. Config file path. If left empty, it tries to
+	 * locate the wp-config.php file automatically.
 	 *
 	 * @return string
 	 */
