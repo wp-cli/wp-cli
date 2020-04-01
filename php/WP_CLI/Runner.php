@@ -600,7 +600,7 @@ class Runner {
 	 * @return string
 	 */
 	public function get_wp_config_code( $wp_config_path = '' ) {
-		if ( '' === $wp_config_path ) {
+		if ( empty( $wp_config_path ) ) {
 			$wp_config_path = Utils\locate_wp_config();
 		}
 
