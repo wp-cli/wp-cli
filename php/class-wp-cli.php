@@ -982,6 +982,10 @@ class WP_CLI {
 	 * @return string
 	 */
 	public static function error_to_string( $errors ) {
+		if ( ! is_string( $errors ) && ! $errors instanceof \WP_Error ) {
+			throw new InvalidArgumentException( sprintf( 'Unsupported argument type passed to WP_CLI::error_to_string(): %s', gettype( $errors ) ) );
+		}
+
 		if ( is_string( $errors ) ) {
 			return $errors;
 		}
