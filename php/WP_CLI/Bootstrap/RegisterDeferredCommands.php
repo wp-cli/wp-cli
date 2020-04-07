@@ -45,7 +45,7 @@ final class RegisterDeferredCommands implements BootstrapStep {
 			$addition_data = array();
 			foreach ( $addition as $addition_key => $addition_value ) {
 				// Describe the callable as a string instead of directly printing it
-				// for better debug info
+				// for better debug info.
 				if ( 'callable' === $addition_key ) {
 					$addition_value = \WP_CLI\Utils\describe_callable( $addition_value );
 

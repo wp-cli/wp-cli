@@ -13,7 +13,7 @@ class Quiet extends Base {
 	 * @param string $message Message to write.
 	 */
 	public function info( $message ) {
-		// nothing
+		// Nothing.
 	}
 
 	/**
@@ -22,7 +22,7 @@ class Quiet extends Base {
 	 * @param string $message Message to write.
 	 */
 	public function success( $message ) {
-		// nothing
+		// Nothing.
 	}
 
 	/**
@@ -31,7 +31,7 @@ class Quiet extends Base {
 	 * @param string $message Message to write.
 	 */
 	public function warning( $message ) {
-		// nothing
+		// Nothing.
 	}
 
 	/**
