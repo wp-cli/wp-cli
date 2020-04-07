@@ -1281,38 +1281,6 @@ function phar_safe_path( $path ) {
 }
 
 /**
- * Check whether a given Command object is part of the bundled set of
- * commands.
- *
- * This function accepts both a fully qualified class name as a string as
- * well as an object that extends `WP_CLI\Dispatcher\CompositeCommand`.
- *
- * @param \WP_CLI\Dispatcher\CompositeCommand|string $command
- * @return bool
- */
-function is_bundled_command( $command ) {
-	static $classes;
-
-	if ( null === $classes ) {
-		$classes = array();
-		// TODO: This needs to be rebuilt.
-		// $class_map = WP_CLI_VENDOR_DIR . '/composer/autoload_commands_classmap.php';
-		// if ( file_exists( WP_CLI_VENDOR_DIR . '/composer/' ) ) {
-		// 	$classes = include $class_map;
-		// }
-		$classes = array( 'CLI_Command' => true );
-	}
-
-	if ( is_object( $command ) ) {
-		$command = get_class( $command );
-	}
-
-	return is_string( $command )
-		? array_key_exists( $command, $classes )
-		: false;
-}
-
-/**
  * Maybe prefix command string with "/usr/bin/env".
  * Removes (if there) if Windows, adds (if not there) if not.
  *
