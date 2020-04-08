@@ -595,10 +595,15 @@ class Runner {
 	/**
 	 * Returns wp-config.php code, skipping the loading of wp-settings.php
 	 *
+	 * @param string $wp_config_file_path Optional. Config file path. If left empty, it tries to
+	 * locate the wp-config.php file automatically.
+	 *
 	 * @return string
 	 */
-	public function get_wp_config_code() {
-		$wp_config_path = Utils\locate_wp_config();
+	public function get_wp_config_code( $wp_config_path = '' ) {
+		if ( empty( $wp_config_path ) ) {
+			$wp_config_path = Utils\locate_wp_config();
+		}
 
 		$wp_config_code = explode( "\n", file_get_contents( $wp_config_path ) );
 
