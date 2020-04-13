@@ -74,6 +74,7 @@ jobs:
     - stage: test
       php: 5.6
       env: WP_VERSION=3.7.11
+      dist: trusty
     - stage: test
       php: 5.6
       env: WP_VERSION=trunk
