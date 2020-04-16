@@ -474,8 +474,9 @@ function mysql_host_to_cli_args( $raw_host ) {
  * @return array {
  *     Associative array containing STDOUT and STDERR output.
  *
- *     @type string $stdout Output that was sent to STDOUT.
- *     @type string $stderr Output that was sent to STDERR.
+ *     @type string $stdout    Output that was sent to STDOUT.
+ *     @type string $stderr    Output that was sent to STDERR.
+ *     @type int    $exit_code Exit code of the process.
  * }
  */
 function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true ) {
@@ -520,13 +521,13 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true 
 	if ( $send_to_shell ) {
 		fwrite( STDOUT, $stdout );
 		fwrite( STDERR, $stderr );
+
+		if ( $exit_code ) {
+			exit( $exit_code );
+		}
 	}
 
-	if ( $exit_code ) {
-		exit( $exit_code );
-	}
-
-	return compact( 'stdout', 'stderr' );
+	return compact( 'stdout', 'stderr', 'exit_code' );
 }
 
 /**
