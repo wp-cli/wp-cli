@@ -48,7 +48,7 @@ Feature: Utilities that do NOT depend on WordPress code
       """
 
   Scenario: Check that `Utils\run_mysql_command()` can return data and errors if requested
-    When I run `wp --skip-wordpress eval 'list( $stdout, $stderr ) = WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "SHOW DATABASES;", false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );'`
+    When I run `wp --skip-wordpress eval 'list( $stdout, $stderr, $exit_code ) = WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "SHOW DATABASES;", false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );'`
     Then STDOUT should not contain:
       """
       Database
@@ -67,7 +67,7 @@ Feature: Utilities that do NOT depend on WordPress code
       """
     And STDERR should be empty
 
-    When I run `wp --skip-wordpress eval 'list( $stdout, $stderr ) = WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "broken query", null, false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );'`
+    When I run `wp --skip-wordpress eval 'list( $stdout, $stderr, $exit_code ) = WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "broken query", null, false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );'`
     Then STDOUT should be empty
     And STDERR should not contain:
       """
