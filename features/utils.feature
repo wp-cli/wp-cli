@@ -29,7 +29,7 @@ Feature: Utilities that do NOT depend on WordPress code
       | proc_close |
 
   Scenario: Check that `Utils\run_mysql_command()` uses STDOUT and STDERR by default
-    When I run `wp --skip-wordpress eval 'WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "SHOW DATABASES;" );'`
+    When I run `wp --skip-wordpress eval 'WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [ "user" => "wp_cli_test", "pass" => "password1", "host" => "127.0.0.1", "execute" => "SHOW DATABASES;" ] );'`
     Then STDOUT should contain:
       """
       Database
@@ -40,7 +40,7 @@ Feature: Utilities that do NOT depend on WordPress code
       """
     And STDERR should be empty
 
-    When I run `wp --skip-wordpress eval 'WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "broken query");'`
+    When I try `wp --skip-wordpress eval 'WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [ "user" => "wp_cli_test", "pass" => "password1", "host" => "127.0.0.1", "execute" => "broken query" ]);'`
     Then STDOUT should be empty
     And STDERR should contain:
       """
@@ -48,7 +48,7 @@ Feature: Utilities that do NOT depend on WordPress code
       """
 
   Scenario: Check that `Utils\run_mysql_command()` can return data and errors if requested
-    When I run `wp --skip-wordpress eval 'list( $stdout, $stderr, $exit_code ) = WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "SHOW DATABASES;", false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );'`
+    When I run `wp --skip-wordpress eval 'list( $stdout, $stderr, $exit_code ) = WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [ "user" => "wp_cli_test", "pass" => "password1", "host" => "127.0.0.1", "execute" => "SHOW DATABASES;" ], null, false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );'`
     Then STDOUT should not contain:
       """
       Database
@@ -67,7 +67,7 @@ Feature: Utilities that do NOT depend on WordPress code
       """
     And STDERR should be empty
 
-    When I run `wp --skip-wordpress eval 'list( $stdout, $stderr, $exit_code ) = WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "broken query", null, false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );'`
+    When I try `wp --skip-wordpress eval 'list( $stdout, $stderr, $exit_code ) = WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [ "user" => "wp_cli_test", "pass" => "password1", "host" => "127.0.0.1", "execute" => "broken query" ], null, false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );'`
     Then STDOUT should be empty
     And STDERR should not contain:
       """
