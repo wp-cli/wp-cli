@@ -496,17 +496,20 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true 
 		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
 	}
 
-	$env = $_ENV;
-
 	if ( isset( $assoc_args['pass'] ) ) {
-		$password = $assoc_args['pass'];
+		$old_password = getenv( 'MYSQL_PWD' );
+		putenv( 'MYSQL_PWD=' . $assoc_args['pass'] );
 		unset( $assoc_args['pass'] );
-		$env['MYSQL_PWD'] = $password;
 	}
 
 	$final_cmd = force_env_on_nix_systems( $cmd ) . assoc_args_to_str( $assoc_args );
 
-	$process = proc_open_compat( $final_cmd, $descriptors, $pipes, null, $env );
+	$process = proc_open_compat( $final_cmd, $descriptors, $pipes );
+
+	if ( isset( $old_password ) ) {
+		putenv( 'MYSQL_PWD=' . $old_password );
+	}
+
 	if ( ! $process ) {
 		exit( 1 );
 	}
@@ -514,6 +517,9 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true 
 	if ( is_resource( $process ) ) {
 		$stdout = stream_get_contents( $pipes[1] );
 		$stderr = stream_get_contents( $pipes[2] );
+
+		fclose( $pipes[1] );
+		fclose( $pipes[2] );
 	}
 
 	$exit_code = proc_close( $process );
@@ -527,7 +533,11 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true 
 		}
 	}
 
-	return compact( 'stdout', 'stderr', 'exit_code' );
+	return [
+		$stdout,
+		$stderr,
+		$exit_code,
+	];
 }
 
 /**
