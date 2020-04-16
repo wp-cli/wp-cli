@@ -463,25 +463,32 @@ function mysql_host_to_cli_args( $raw_host ) {
 /**
  * Run a MySQL command and optionally return the output.
  *
- * @param string      $cmd        Command to run.
- * @param array       $assoc_args Associative array of arguments to use.
- * @param string|null $stdout     Optional. String passed by reference to
- *                                return output. If null, output gets passed to
- *                                STDOUT instead. Defaults to null.
- * @param string|null $stderr     Optional. String passed by reference to
- *                                return errors. If null, errors get passed to
- *                                STDERR instead. Defaults to null.
- *@since v2.5.0 Replaced &$descriptors with &$stdout and &$stderr.
+ * @since v2.5.0 Deprecated $descriptors argument.
  *
+ * @param string $cmd           Command to run.
+ * @param array  $assoc_args    Associative array of arguments to use.
+ * @param mixed  $_             Deprecated. Former $descriptors argument.
+ * @param bool   $send_to_shell Optional. Whether to send STDOUT and STDERR
+ *                              immediately to the shell. Defaults to true.
+ *
+ * @return array {
+ *     Associative array containing STDOUT and STDERR output.
+ *
+ *     @type string $stdout Output that was sent to STDOUT.
+ *     @type string $stderr Output that was sent to STDERR.
+ * }
  */
-function run_mysql_command( $cmd, $assoc_args, &$stdout = null, &$stderr = null ) {
+function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true ) {
 	check_proc_available( 'run_mysql_command' );
 
 	$descriptors = [
 		STDIN,
-		null === $stdout ? STDOUT : [ 'pipe', 'w' ],
-		null === $stderr ? STDERR : [ 'pipe', 'w' ],
+		[ 'pipe', 'w' ],
+		[ 'pipe', 'w' ],
 	];
+
+	$stdout = '';
+	$stderr = '';
 
 	if ( isset( $assoc_args['host'] ) ) {
 		// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysql_host_to_cli_args -- Misidentified as PHP native MySQL function.
@@ -502,20 +509,22 @@ function run_mysql_command( $cmd, $assoc_args, &$stdout = null, &$stderr = null 
 	}
 
 	if ( is_resource( $process ) ) {
-		if ( null !== $stdout ) {
-			$stdout = stream_get_contents( $pipes[1] );
-		}
-
-		if ( null !== $stderr ) {
-			$stderr = stream_get_contents( $pipes[2] );
-		}
+		$stdout = stream_get_contents( $pipes[1] );
+		$stderr = stream_get_contents( $pipes[2] );
 	}
 
 	$exit_code = proc_close( $process );
 
+	if ( $send_to_shell ) {
+		fwrite( STDOUT, $stdout );
+		fwrite( STDERR, $stderr );
+	}
+
 	if ( $exit_code ) {
 		exit( $exit_code );
 	}
+
+	return compact( 'stdout', 'stderr' );
 }
 
 /**

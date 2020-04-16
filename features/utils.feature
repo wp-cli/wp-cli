@@ -44,14 +44,22 @@ Feature: Utilities that do NOT depend on WordPress code
     Then STDOUT should be empty
     And STDERR should contain:
       """
-      YOU HAVE AN ERROR IN YOUR SQL SYNTAX
+      You have an error in your SQL syntax
       """
 
   Scenario: Check that `Utils\run_mysql_command()` can return data and errors if requested
-    When I run `wp --skip-wordpress eval '$stdout = ""; WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "SHOW DATABASES;", $stdout ); echo str_to_upper( $stdout );'`
-    Then STDOUT should contain:
+    When I run `wp --skip-wordpress eval 'list( $stdout, $stderr ) = WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "SHOW DATABASES;", false ); fwrite( STDOUT, str_to_upper( $stdout ) ); fwrite( STDERR, str_to_upper( $stderr ) );'`
+    Then STDOUT should not contain:
+      """
+      Database
+      """
+    And STDOUT should contain:
       """
       DATABASE
+      """
+    And STDOUT should not contain:
+      """
+      wp_cli_test
       """
     And STDOUT should contain:
       """
@@ -59,8 +67,12 @@ Feature: Utilities that do NOT depend on WordPress code
       """
     And STDERR should be empty
 
-    When I run `wp --skip-wordpress eval '$stderr = ""; WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "broken query", null, $stderr ); echo str_to_upper( $stderr );'`
+    When I run `wp --skip-wordpress eval 'list( $stdout, $stderr ) = WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "broken query", null, false ); fwrite( STDOUT, str_to_upper( $stdout ) ); fwrite( STDERR, str_to_upper( $stderr ) );'`
     Then STDOUT should be empty
+    And STDERR should not contain:
+      """
+      You have an error in your SQL syntax
+      """
     And STDERR should contain:
       """
       YOU HAVE AN ERROR IN YOUR SQL SYNTAX
