@@ -482,9 +482,9 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true 
 	check_proc_available( 'run_mysql_command' );
 
 	$descriptors = [
-		STDIN,
-		[ 'pipe', 'w' ],
-		[ 'pipe', 'w' ],
+		0 => STDIN,
+		1 => [ 'pipe', 'w' ],
+		2 => [ 'pipe', 'w' ],
 	];
 
 	$stdout = '';
