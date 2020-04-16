@@ -29,25 +29,6 @@ Feature: Utilities that do NOT depend on WordPress code
       | proc_close |
 
   Scenario: Check that `Utils\run_mysql_command()` uses STDOUT and STDERR by default
-    When I run `wp db query 'SELECT "column_data" as column_name;'`
-    Then STDOUT should contain:
-      """
-      column_name
-      """
-    And STDOUT should contain:
-      """
-      column_data
-      """
-    And STDERR should be empty
-
-    When I run `wp db query 'broken query'`
-    Then STDOUT should be empty
-    And STDERR should contain:
-      """
-      You have an error in your SQL syntax
-      """
-
-  Scenario: Check that `Utils\run_mysql_command()` can return data and errors if requested
     When I run `wp eval 'WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "SHOW DATABASES;" );'`
     Then STDOUT should contain:
       """
@@ -59,7 +40,15 @@ Feature: Utilities that do NOT depend on WordPress code
       """
     And STDERR should be empty
 
-    When I run `wp eval '$stdout = ""; WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "SHOW DATABASES;", $stdout ); echo str_to_upper( $stdout )'`
+    When I run `wp eval 'WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "broken query");'`
+    Then STDOUT should be empty
+    And STDERR should contain:
+      """
+      YOU HAVE AN ERROR IN YOUR SQL SYNTAX
+      """
+
+  Scenario: Check that `Utils\run_mysql_command()` can return data and errors if requested
+    When I run `wp eval '$stdout = ""; WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "SHOW DATABASES;", $stdout ); echo str_to_upper( $stdout );'`
     Then STDOUT should contain:
       """
       DATABASE
@@ -70,7 +59,7 @@ Feature: Utilities that do NOT depend on WordPress code
       """
     And STDERR should be empty
 
-    When I run `wp eval '$stderr = ""; WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "broken query", null, $stderr ); echo str_to_upper( $stderr )'`
+    When I run `wp eval '$stderr = ""; WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "broken query", null, $stderr ); echo str_to_upper( $stderr );'`
     Then STDOUT should be empty
     And STDERR should contain:
       """
