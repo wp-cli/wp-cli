@@ -460,12 +460,28 @@ function mysql_host_to_cli_args( $raw_host ) {
 	return $assoc_args;
 }
 
-function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
+/**
+ * Run a MySQL command and optionally return the output.
+ *
+ * @param string      $cmd        Command to run.
+ * @param array       $assoc_args Associative array of arguments to use.
+ * @param string|null $stdout     Optional. String passed by reference to
+ *                                return output. If null, output gets passed to
+ *                                STDOUT instead. Defaults to null.
+ * @param string|null $stderr     Optional. String passed by reference to
+ *                                return errors. If null, errors get passed to
+ *                                STDERR instead. Defaults to null.
+ *@since v2.5.0 Replaced &$descriptors with &$stdout and &$stderr.
+ *
+ */
+function run_mysql_command( $cmd, $assoc_args, &$stdout = null, &$stderr = null ) {
 	check_proc_available( 'run_mysql_command' );
 
-	if ( ! $descriptors ) {
-		$descriptors = array( STDIN, STDOUT, STDERR );
-	}
+	$descriptors = [
+		STDIN,
+		null === $stdout ? STDOUT : [ 'pipe', 'w' ],
+		null === $stderr ? STDERR : [ 'pipe', 'w' ],
+	];
 
 	if ( isset( $assoc_args['host'] ) ) {
 		// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysql_host_to_cli_args -- Misidentified as PHP native MySQL function.
@@ -475,22 +491,30 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 	$pass = $assoc_args['pass'];
 	unset( $assoc_args['pass'] );
 
-	$old_pass = getenv( 'MYSQL_PWD' );
-	putenv( 'MYSQL_PWD=' . $pass );
+	$env              = $_ENV;
+	$env['MYSQL_PWD'] = $pass;
 
 	$final_cmd = force_env_on_nix_systems( $cmd ) . assoc_args_to_str( $assoc_args );
 
-	$proc = proc_open_compat( $final_cmd, $descriptors, $pipes );
-	if ( ! $proc ) {
+	$process = proc_open_compat( $final_cmd, $descriptors, $pipes, null, $env );
+	if ( ! $process ) {
 		exit( 1 );
 	}
 
-	$r = proc_close( $proc );
+	if ( is_resource( $process ) ) {
+		if ( null !== $stdout ) {
+			$stdout = stream_get_contents( $pipes[1] );
+		}
 
-	putenv( 'MYSQL_PWD=' . $old_pass );
+		if ( null !== $stderr ) {
+			$stderr = stream_get_contents( $pipes[2] );
+		}
+	}
 
-	if ( $r ) {
-		exit( $r );
+	$exit_code = proc_close( $process );
+
+	if ( $exit_code ) {
+		exit( $exit_code );
 	}
 }
 
