@@ -495,11 +495,13 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true 
 		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
 	}
 
-	$pass = $assoc_args['pass'];
-	unset( $assoc_args['pass'] );
+	$env = $_ENV;
 
-	$env              = $_ENV;
-	$env['MYSQL_PWD'] = $pass;
+	if ( isset( $assoc_args['pass'] ) ) {
+		$password = $assoc_args['pass'];
+		unset( $assoc_args['pass'] );
+		$env['MYSQL_PWD'] = $password;
+	}
 
 	$final_cmd = force_env_on_nix_systems( $cmd ) . assoc_args_to_str( $assoc_args );
 
