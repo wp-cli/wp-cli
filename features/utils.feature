@@ -28,6 +28,55 @@ Feature: Utilities that do NOT depend on WordPress code
       | proc_open  |
       | proc_close |
 
+  Scenario: Check that `Utils\run_mysql_command()` uses STDOUT and STDERR by default
+    When I run `wp db query 'SELECT "column_data" as column_name;'`
+    Then STDOUT should contain:
+      """
+      column_name
+      """
+    And STDOUT should contain:
+      """
+      column_data
+      """
+    And STDERR should be empty
+
+    When I run `wp db query 'broken query'`
+    Then STDOUT should be empty
+    And STDERR should contain:
+      """
+      You have an error in your SQL syntax
+      """
+
+  Scenario: Check that `Utils\run_mysql_command()` can return data and errors if requested
+    When I run `wp eval 'WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "SHOW DATABASES;" );'`
+    Then STDOUT should contain:
+      """
+      Database
+      """
+    And STDOUT should contain:
+      """
+      wp_cli_test
+      """
+    And STDERR should be empty
+
+    When I run `wp eval '$stdout = ""; WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "SHOW DATABASES;", $stdout ); echo str_to_upper( $stdout )'`
+    Then STDOUT should contain:
+      """
+      DATABASE
+      """
+    And STDOUT should contain:
+      """
+      WP_CLI_TEST
+      """
+    And STDERR should be empty
+
+    When I run `wp eval '$stderr = ""; WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [], "broken query", null, $stderr ); echo str_to_upper( $stderr )'`
+    Then STDOUT should be empty
+    And STDERR should contain:
+      """
+      YOU HAVE AN ERROR IN YOUR SQL SYNTAX
+      """
+
   # INI directive `sys_temp_dir` introduced PHP 5.5.0.
   @require-php-5.5
   Scenario: Check `Utils\get_temp_dir()` when `sys_temp_dir` directive set
