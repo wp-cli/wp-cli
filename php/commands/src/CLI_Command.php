@@ -142,9 +142,9 @@ class CLI_Command extends WP_CLI_Command {
 				'php_binary_path'          => $php_bin,
 				'php_version'              => PHP_VERSION,
 				'php_ini_used'             => get_cfg_var( 'cfg_file_path' ),
-				'mysql_binary_path'        => $this->get_mysql_binary_path(),
-				'mysql_version'            => $this->get_mysql_version(),
-				'sql_modes'                => $this->get_sql_modes(),
+				'mysql_binary_path'        => Utils\get_mysql_binary_path(),
+				'mysql_version'            => Utils\get_mysql_version(),
+				'sql_modes'                => Utils\get_sql_modes(),
 				'wp_cli_dir_path'          => WP_CLI_ROOT,
 				'wp_cli_vendor_path'       => WP_CLI_VENDOR_DIR,
 				'wp_cli_phar_path'         => defined( 'WP_CLI_PHAR_PATH' ) ? WP_CLI_PHAR_PATH : '',
@@ -161,9 +161,9 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::line( "PHP binary:\t" . $php_bin );
 			WP_CLI::line( "PHP version:\t" . PHP_VERSION );
 			WP_CLI::line( "php.ini used:\t" . get_cfg_var( 'cfg_file_path' ) );
-			WP_CLI::line( "MySQL binary:\t" . $this->get_mysql_binary_path() );
-			WP_CLI::line( "MySQL version:\t" . $this->get_mysql_version() );
-			WP_CLI::line( "SQL modes:\t" . $this->get_sql_modes() );
+			WP_CLI::line( "MySQL binary:\t" . Utils\get_mysql_binary_path() );
+			WP_CLI::line( "MySQL version:\t" . Utils\get_mysql_version() );
+			WP_CLI::line( "SQL modes:\t" . implode( ',', Utils\get_sql_modes() ) );
 			WP_CLI::line( "WP-CLI root dir:\t" . WP_CLI_ROOT );
 			WP_CLI::line( "WP-CLI vendor dir:\t" . WP_CLI_VENDOR_DIR );
 			WP_CLI::line( "WP_CLI phar path:\t" . ( defined( 'WP_CLI_PHAR_PATH' ) ? WP_CLI_PHAR_PATH : '' ) );
@@ -616,90 +616,5 @@ class CLI_Command extends WP_CLI_Command {
 		$command = explode( ' ', implode( ' ', $_ ) );
 
 		WP_CLI::halt( is_array( WP_CLI::get_runner()->find_command_to_run( $command ) ) ? 0 : 1 );
-	}
-
-	/**
-	 * Get the path to the mysql binary.
-	 *
-	 * @return string Path to the mysql binary, or an empty string if not found.
-	 */
-	protected function get_mysql_binary_path() {
-		static $path = null;
-
-		if ( null === $path ) {
-			$result = Process::create( '/usr/bin/env which mysql', null, null )->run();
-
-			if ( 0 !== $result->return_code ) {
-				$path = '';
-			} else {
-				$path = trim( $result->stdout );
-			}
-		}
-
-		return $path;
-	}
-
-	/**
-	 * Get the version of the MySQL database.
-	 *
-	 * @return string Version of the MySQL database, or an empty string if not
-	 *                found.
-	 */
-	protected function get_mysql_version() {
-		static $version = null;
-
-		if ( null === $version ) {
-			$mysql_bin = $this->get_mysql_binary_path();
-
-			if ( ! empty( $mysql_bin ) ) {
-				$result = Process::create( '/usr/bin/env mysql --version', null, null )->run();
-
-				if ( 0 !== $result->return_code ) {
-					$version = '';
-				} else {
-					$version = trim( $result->stdout );
-				}
-			} else {
-				$version = '';
-			}
-		}
-
-		return $version;
-	}
-
-
-	/**
-	 * Get the SQL mode of the MySQL session.
-	 *
-	 * @return string SQL mode, or an empty string if not found.
-	 */
-	protected function get_sql_modes() {
-		static $sql_modes = null;
-
-		if ( null === $sql_modes ) {
-			$mysql_bin = $this->get_mysql_binary_path();
-
-			if ( ! empty( $mysql_bin ) ) {
-				$result = Process::create( '/usr/bin/env mysql --no-auto-rehash --batch --skip-column-names --execute="SELECT @@SESSION.sql_mode"', null, null )->run();
-
-				if ( 0 !== $result->return_code ) {
-					$sql_modes = '';
-				} else {
-					$sql_modes = implode(
-						', ',
-						array_filter(
-							array_map(
-								'trim',
-								preg_split( "/\r\n|\n|\r/", $result->stdout )
-							)
-						)
-					);
-				}
-			} else {
-				$sql_modes = '';
-			}
-		}
-
-		return $sql_modes;
 	}
 }
