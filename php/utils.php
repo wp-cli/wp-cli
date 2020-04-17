@@ -19,6 +19,7 @@ use WP_CLI;
 use WP_CLI\Formatter;
 use WP_CLI\Inflector;
 use WP_CLI\Iterators\Transform;
+use WP_CLI\Process;
 
 const PHAR_STREAM_PREFIX = 'phar://';
 
@@ -1602,4 +1603,74 @@ function pluralize( $noun, $count = null ) {
 	}
 
 	return Inflector::pluralize( $noun );
+}
+
+/**
+ * Get the path to the mysql binary.
+ *
+ * @return string Path to the mysql binary, or an empty string if not found.
+ */
+function get_mysql_binary_path() {
+	static $path = null;
+
+	if ( null === $path ) {
+		$result = Process::create( '/usr/bin/env which mysql', null, null )->run();
+
+		if ( 0 !== $result->return_code ) {
+			$path = '';
+		} else {
+			$path = trim( $result->stdout );
+		}
+	}
+
+	return $path;
+}
+
+/**
+ * Get the version of the MySQL database.
+ *
+ * @return string Version of the MySQL database, or an empty string if not
+ *                found.
+ */
+function get_mysql_version() {
+	static $version = null;
+
+	if ( null === $version ) {
+		$result = Process::create( '/usr/bin/env mysql --version', null, null )->run();
+
+		if ( 0 !== $result->return_code ) {
+			$version = '';
+		} else {
+			$version = trim( $result->stdout );
+		}
+	}
+
+	return $version;
+}
+
+/**
+ * Get the SQL modes of the MySQL session.
+ *
+ * @return string[] Array of SQL modes, or an empty array if they couldn't be
+ *                  read.
+ */
+function get_sql_modes() {
+	static $sql_modes = null;
+
+	if ( null === $sql_modes ) {
+		$result = Process::create( '/usr/bin/env mysql --no-auto-rehash --batch --skip-column-names --execute="SELECT @@SESSION.sql_mode"', null, null )->run();
+
+		if ( 0 !== $result->return_code ) {
+			$sql_modes = [];
+		} else {
+			$sql_modes = array_filter(
+				array_map(
+					'trim',
+					preg_split( "/\r\n|\n|\r/", $result->stdout )
+				)
+			);
+		}
+	}
+
+	return $sql_modes;
 }
