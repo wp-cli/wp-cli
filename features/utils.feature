@@ -36,7 +36,7 @@ Feature: Utilities that do NOT depend on WordPress code
       """
     And STDOUT should contain:
       """
-      wp_cli_test
+      information_schema
       """
     And STDERR should be empty
 
@@ -59,11 +59,11 @@ Feature: Utilities that do NOT depend on WordPress code
       """
     And STDOUT should not contain:
       """
-      wp_cli_test
+      information_schema
       """
     And STDOUT should contain:
       """
-      WP_CLI_TEST
+      INFORMATION_SCHEMA
       """
     And STDERR should be empty
 
