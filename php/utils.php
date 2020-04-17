@@ -19,6 +19,7 @@ use WP_CLI;
 use WP_CLI\Formatter;
 use WP_CLI\Inflector;
 use WP_CLI\Iterators\Transform;
+use WP_CLI\Process;
 
 const PHAR_STREAM_PREFIX = 'phar://';
 
@@ -460,38 +461,84 @@ function mysql_host_to_cli_args( $raw_host ) {
 	return $assoc_args;
 }
 
-function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
+/**
+ * Run a MySQL command and optionally return the output.
+ *
+ * @since v2.5.0 Deprecated $descriptors argument.
+ *
+ * @param string $cmd           Command to run.
+ * @param array  $assoc_args    Associative array of arguments to use.
+ * @param mixed  $_             Deprecated. Former $descriptors argument.
+ * @param bool   $send_to_shell Optional. Whether to send STDOUT and STDERR
+ *                              immediately to the shell. Defaults to true.
+ *
+ * @return array {
+ *     Associative array containing STDOUT and STDERR output.
+ *
+ *     @type string $stdout    Output that was sent to STDOUT.
+ *     @type string $stderr    Output that was sent to STDERR.
+ *     @type int    $exit_code Exit code of the process.
+ * }
+ */
+function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true ) {
 	check_proc_available( 'run_mysql_command' );
 
-	if ( ! $descriptors ) {
-		$descriptors = array( STDIN, STDOUT, STDERR );
-	}
+	$descriptors = [
+		0 => STDIN,
+		1 => [ 'pipe', 'w' ],
+		2 => [ 'pipe', 'w' ],
+	];
+
+	$stdout = '';
+	$stderr = '';
 
 	if ( isset( $assoc_args['host'] ) ) {
 		// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysql_host_to_cli_args -- Misidentified as PHP native MySQL function.
 		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
 	}
 
-	$pass = $assoc_args['pass'];
-	unset( $assoc_args['pass'] );
-
-	$old_pass = getenv( 'MYSQL_PWD' );
-	putenv( 'MYSQL_PWD=' . $pass );
+	if ( isset( $assoc_args['pass'] ) ) {
+		$old_password = getenv( 'MYSQL_PWD' );
+		putenv( 'MYSQL_PWD=' . $assoc_args['pass'] );
+		unset( $assoc_args['pass'] );
+	}
 
 	$final_cmd = force_env_on_nix_systems( $cmd ) . assoc_args_to_str( $assoc_args );
 
-	$proc = proc_open_compat( $final_cmd, $descriptors, $pipes );
-	if ( ! $proc ) {
+	$process = proc_open_compat( $final_cmd, $descriptors, $pipes );
+
+	if ( isset( $old_password ) ) {
+		putenv( 'MYSQL_PWD=' . $old_password );
+	}
+
+	if ( ! $process ) {
 		exit( 1 );
 	}
 
-	$r = proc_close( $proc );
+	if ( is_resource( $process ) ) {
+		$stdout = stream_get_contents( $pipes[1] );
+		$stderr = stream_get_contents( $pipes[2] );
 
-	putenv( 'MYSQL_PWD=' . $old_pass );
-
-	if ( $r ) {
-		exit( $r );
+		fclose( $pipes[1] );
+		fclose( $pipes[2] );
 	}
+
+	$exit_code = proc_close( $process );
+
+	if ( $send_to_shell ) {
+		fwrite( STDOUT, $stdout );
+		fwrite( STDERR, $stderr );
+
+		if ( $exit_code ) {
+			exit( $exit_code );
+		}
+	}
+
+	return [
+		$stdout,
+		$stderr,
+		$exit_code,
+	];
 }
 
 /**
@@ -613,9 +660,12 @@ function is_windows() {
  * @return string Adapted PHP code.
  */
 function replace_path_consts( $source, $path ) {
+	// Solve issue with Windows allowing single quotes in account names.
+	$file = addslashes( $path );
+
 	$replacements = array(
-		'__FILE__' => "'$path'",
-		'__DIR__'  => "'" . dirname( $path ) . "'",
+		'__FILE__' => "'$file'",
+		'__DIR__'  => "'" . dirname( $file ) . "'",
 	);
 
 	$old = array_keys( $replacements );
@@ -1278,38 +1328,6 @@ function phar_safe_path( $path ) {
 }
 
 /**
- * Check whether a given Command object is part of the bundled set of
- * commands.
- *
- * This function accepts both a fully qualified class name as a string as
- * well as an object that extends `WP_CLI\Dispatcher\CompositeCommand`.
- *
- * @param \WP_CLI\Dispatcher\CompositeCommand|string $command
- * @return bool
- */
-function is_bundled_command( $command ) {
-	static $classes;
-
-	if ( null === $classes ) {
-		$classes = array();
-		// TODO: This needs to be rebuilt.
-		// $class_map = WP_CLI_VENDOR_DIR . '/composer/autoload_commands_classmap.php';
-		// if ( file_exists( WP_CLI_VENDOR_DIR . '/composer/' ) ) {
-		// 	$classes = include $class_map;
-		// }
-		$classes = array( 'CLI_Command' => true );
-	}
-
-	if ( is_object( $command ) ) {
-		$command = get_class( $command );
-	}
-
-	return is_string( $command )
-		? array_key_exists( $command, $classes )
-		: false;
-}
-
-/**
  * Maybe prefix command string with "/usr/bin/env".
  * Removes (if there) if Windows, adds (if not there) if not.
  *
@@ -1585,4 +1603,74 @@ function pluralize( $noun, $count = null ) {
 	}
 
 	return Inflector::pluralize( $noun );
+}
+
+/**
+ * Get the path to the mysql binary.
+ *
+ * @return string Path to the mysql binary, or an empty string if not found.
+ */
+function get_mysql_binary_path() {
+	static $path = null;
+
+	if ( null === $path ) {
+		$result = Process::create( '/usr/bin/env which mysql', null, null )->run();
+
+		if ( 0 !== $result->return_code ) {
+			$path = '';
+		} else {
+			$path = trim( $result->stdout );
+		}
+	}
+
+	return $path;
+}
+
+/**
+ * Get the version of the MySQL database.
+ *
+ * @return string Version of the MySQL database, or an empty string if not
+ *                found.
+ */
+function get_mysql_version() {
+	static $version = null;
+
+	if ( null === $version ) {
+		$result = Process::create( '/usr/bin/env mysql --version', null, null )->run();
+
+		if ( 0 !== $result->return_code ) {
+			$version = '';
+		} else {
+			$version = trim( $result->stdout );
+		}
+	}
+
+	return $version;
+}
+
+/**
+ * Get the SQL modes of the MySQL session.
+ *
+ * @return string[] Array of SQL modes, or an empty array if they couldn't be
+ *                  read.
+ */
+function get_sql_modes() {
+	static $sql_modes = null;
+
+	if ( null === $sql_modes ) {
+		$result = Process::create( '/usr/bin/env mysql --no-auto-rehash --batch --skip-column-names --execute="SELECT @@SESSION.sql_mode"', null, null )->run();
+
+		if ( 0 !== $result->return_code ) {
+			$sql_modes = [];
+		} else {
+			$sql_modes = array_filter(
+				array_map(
+					'trim',
+					preg_split( "/\r\n|\n|\r/", $result->stdout )
+				)
+			);
+		}
+	}
+
+	return $sql_modes;
 }

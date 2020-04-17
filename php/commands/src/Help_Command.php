@@ -46,7 +46,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$out .= self::parse_reference_links( $command->get_longdesc() );
 
-		// definition lists
+		// Definition lists.
 		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', array( __CLASS__, 'rewrap_param_desc' ), $out );
 
 		// Ensure lines with no leading whitespace that aren't section headers are indented.
@@ -87,7 +87,7 @@ class Help_Command extends WP_CLI_Command {
 			$out = str_replace( $subcommands_header, $subcommands, $out );
 		}
 
-		// section headers
+		// Section headers.
 		$out = preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
 
 		self::pass_through_pager( $out );
@@ -128,7 +128,7 @@ class Help_Command extends WP_CLI_Command {
 			sapi_windows_cp_set( $cp ); // `sapi_windows_cp_set()` introduced PHP 7.1.
 		}
 
-		// convert string to file handle
+		// Convert string to file handle.
 		$fd = fopen( 'php://temp', 'r+b' );
 		fwrite( $fd, $out );
 		rewind( $fd );

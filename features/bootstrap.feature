@@ -7,7 +7,7 @@ Feature: Bootstrap WP-CLI
     And I run `rm -rf {PACKAGE_PATH}/composer.json`
     And I run `rm -rf {PACKAGE_PATH}/composer.lock`
 
-  @require-opcache-save-comments
+  @less-than-php-7.4 @require-opcache-save-comments
   Scenario: Basic Composer stack
     Given an empty directory
     And a composer.json file:
