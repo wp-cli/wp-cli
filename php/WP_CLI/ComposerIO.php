@@ -31,10 +31,12 @@ class ComposerIO extends NullIO {
 		self::output_clean_message( $messages );
 	}
 
-	private static function output_clean_message( $message ) {
-		$message = preg_replace( '#<(https?)([^>]+)>#', '$1$2', $message );
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags
-		WP_CLI::log( strip_tags( trim( $message ) ) );
+	private static function output_clean_message( $messages ) {
+		$messages = (array) preg_replace( '#<(https?)([^>]+)>#', '$1$2', $messages );
+		foreach ( $messages as $message ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags
+			WP_CLI::log( strip_tags( trim( $message ) ) );
+		}
 	}
 
 }
