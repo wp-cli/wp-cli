@@ -460,38 +460,84 @@ function mysql_host_to_cli_args( $raw_host ) {
 	return $assoc_args;
 }
 
-function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
+/**
+ * Run a MySQL command and optionally return the output.
+ *
+ * @since v2.5.0 Deprecated $descriptors argument.
+ *
+ * @param string $cmd           Command to run.
+ * @param array  $assoc_args    Associative array of arguments to use.
+ * @param mixed  $_             Deprecated. Former $descriptors argument.
+ * @param bool   $send_to_shell Optional. Whether to send STDOUT and STDERR
+ *                              immediately to the shell. Defaults to true.
+ *
+ * @return array {
+ *     Associative array containing STDOUT and STDERR output.
+ *
+ *     @type string $stdout    Output that was sent to STDOUT.
+ *     @type string $stderr    Output that was sent to STDERR.
+ *     @type int    $exit_code Exit code of the process.
+ * }
+ */
+function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true ) {
 	check_proc_available( 'run_mysql_command' );
 
-	if ( ! $descriptors ) {
-		$descriptors = array( STDIN, STDOUT, STDERR );
-	}
+	$descriptors = [
+		0 => STDIN,
+		1 => [ 'pipe', 'w' ],
+		2 => [ 'pipe', 'w' ],
+	];
+
+	$stdout = '';
+	$stderr = '';
 
 	if ( isset( $assoc_args['host'] ) ) {
 		// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysql_host_to_cli_args -- Misidentified as PHP native MySQL function.
 		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
 	}
 
-	$pass = $assoc_args['pass'];
-	unset( $assoc_args['pass'] );
-
-	$old_pass = getenv( 'MYSQL_PWD' );
-	putenv( 'MYSQL_PWD=' . $pass );
+	if ( isset( $assoc_args['pass'] ) ) {
+		$old_password = getenv( 'MYSQL_PWD' );
+		putenv( 'MYSQL_PWD=' . $assoc_args['pass'] );
+		unset( $assoc_args['pass'] );
+	}
 
 	$final_cmd = force_env_on_nix_systems( $cmd ) . assoc_args_to_str( $assoc_args );
 
-	$proc = proc_open_compat( $final_cmd, $descriptors, $pipes );
-	if ( ! $proc ) {
+	$process = proc_open_compat( $final_cmd, $descriptors, $pipes );
+
+	if ( isset( $old_password ) ) {
+		putenv( 'MYSQL_PWD=' . $old_password );
+	}
+
+	if ( ! $process ) {
 		exit( 1 );
 	}
 
-	$r = proc_close( $proc );
+	if ( is_resource( $process ) ) {
+		$stdout = stream_get_contents( $pipes[1] );
+		$stderr = stream_get_contents( $pipes[2] );
 
-	putenv( 'MYSQL_PWD=' . $old_pass );
-
-	if ( $r ) {
-		exit( $r );
+		fclose( $pipes[1] );
+		fclose( $pipes[2] );
 	}
+
+	$exit_code = proc_close( $process );
+
+	if ( $send_to_shell ) {
+		fwrite( STDOUT, $stdout );
+		fwrite( STDERR, $stderr );
+
+		if ( $exit_code ) {
+			exit( $exit_code );
+		}
+	}
+
+	return [
+		$stdout,
+		$stderr,
+		$exit_code,
+	];
 }
 
 /**

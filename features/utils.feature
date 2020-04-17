@@ -28,6 +28,56 @@ Feature: Utilities that do NOT depend on WordPress code
       | proc_open  |
       | proc_close |
 
+  Scenario: Check that `Utils\run_mysql_command()` uses STDOUT and STDERR by default
+    When I run `wp --skip-wordpress eval 'WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [ "user" => "wp_cli_test", "pass" => "password1", "host" => "127.0.0.1", "execute" => "SHOW DATABASES;" ] );'`
+    Then STDOUT should contain:
+      """
+      Database
+      """
+    And STDOUT should contain:
+      """
+      information_schema
+      """
+    And STDERR should be empty
+
+    When I try `wp --skip-wordpress eval 'WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [ "user" => "wp_cli_test", "pass" => "password1", "host" => "127.0.0.1", "execute" => "broken query" ]);'`
+    Then STDOUT should be empty
+    And STDERR should contain:
+      """
+      You have an error in your SQL syntax
+      """
+
+  Scenario: Check that `Utils\run_mysql_command()` can return data and errors if requested
+    When I run `wp --skip-wordpress eval 'list( $stdout, $stderr, $exit_code ) = WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [ "user" => "wp_cli_test", "pass" => "password1", "host" => "127.0.0.1", "execute" => "SHOW DATABASES;" ], null, false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );'`
+    Then STDOUT should not contain:
+      """
+      Database
+      """
+    And STDOUT should contain:
+      """
+      DATABASE
+      """
+    And STDOUT should not contain:
+      """
+      information_schema
+      """
+    And STDOUT should contain:
+      """
+      INFORMATION_SCHEMA
+      """
+    And STDERR should be empty
+
+    When I try `wp --skip-wordpress eval 'list( $stdout, $stderr, $exit_code ) = WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [ "user" => "wp_cli_test", "pass" => "password1", "host" => "127.0.0.1", "execute" => "broken query" ], null, false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );'`
+    Then STDOUT should be empty
+    And STDERR should not contain:
+      """
+      You have an error in your SQL syntax
+      """
+    And STDERR should contain:
+      """
+      YOU HAVE AN ERROR IN YOUR SQL SYNTAX
+      """
+
   # INI directive `sys_temp_dir` introduced PHP 5.5.0.
   @require-php-5.5
   Scenario: Check `Utils\get_temp_dir()` when `sys_temp_dir` directive set
