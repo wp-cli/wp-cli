@@ -2,7 +2,7 @@ os: linux
 dist: xenial
 
 language: php
-php: 7.3
+php: 7.4
 
 services:
   - mysql
@@ -54,7 +54,7 @@ jobs:
         - composer phpcs
       env: BUILD=sniff
     - stage: test
-      php: 7.4snapshot
+      php: 7.4
       env: WP_VERSION=latest
     - stage: test
       php: 7.3
@@ -82,7 +82,3 @@ jobs:
       php: 5.4
       dist: precise
       env: WP_VERSION=5.1
-  allow_failures:
-    - stage: test
-      php: 7.4snapshot
-      env: WP_VERSION=latest
