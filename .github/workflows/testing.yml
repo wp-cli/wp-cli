@@ -62,7 +62,7 @@ jobs:
       - name: Check out source code
         uses: actions/checkout@v2
 
-      - name: Check existence of composer.json & phpcs.xml.dist files
+      - name: Check existence of composer.json & behat.yml files
         id: check_files
         uses: andstor/file-existence-action@v1
         with:
@@ -97,7 +97,7 @@ jobs:
         run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
 
       - name: Prepare test database
-        run: composer prepare-tests
+        run: MYQSL_HOST=127.0.0.1 MYSQL_TCP_PORT=${{ job.services.mysql.ports['3306'] }} composer prepare-tests
 
       - name: Run Behat
         run: composer behat
