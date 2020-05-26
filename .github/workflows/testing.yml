@@ -49,6 +49,15 @@ jobs:
     name: Run functional tests
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
       - name: Check out source code
         uses: actions/checkout@v2
@@ -58,13 +67,6 @@ jobs:
         uses: andstor/file-existence-action@v1
         with:
           files: "composer.json, behat.yml"
-
-      - name: Set up customized database server
-        uses: mirromutth/mysql-action@v1.1
-        with:
-          character set server: 'utf8mb4'
-          collation server: 'utf8mb4_general_ci'
-          mysql version: '8.0'
 
       - name: Install MySQL client
         run: sudo apt-get install -y mysql-client
