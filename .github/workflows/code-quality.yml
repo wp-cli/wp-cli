@@ -27,13 +27,13 @@ jobs:
         if: steps.check_composer_file.outputs.files_exists == 'true'
         uses: actions/cache@v1
         with:
-          path: ${{ steps.composer-cache.outputs.dir }}
+          path: ${{ steps['composer-cache'].outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-
       - name: Install dependencies
         if: steps.check_composer_file.outputs.files_exists == 'true'
-        run: composer install --dev --prefer-dist --no-progress --no-suggest
+        run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
       - name: Check existence of vendor/bin/parallel-lint file
         id: check_linter_file
         uses: andstor/file-existence-action@v1
@@ -73,12 +73,12 @@ jobs:
             ${{ runner.os }}-composer-
       - name: Install dependencies
         if: steps.check_files.outputs.files_exists == 'true'
-        run: composer install --dev --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-progress --no-suggest
       - name: Check existence of vendor/bin/phpcs file
         id: check_phpcs_binary_file
         uses: andstor/file-existence-action@v1
         with:
-          files: "vendor/bin/parallel-lint"
+          files: "vendor/bin/phpcs"
       - name: Run PHPCS
         if: steps.check_phpcs_binary_file.outputs.files_exists == 'true'
         run: vendor/bin/phpcs -q --report=checkstyle | cs2pr --graceful-warnings
