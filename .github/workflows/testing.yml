@@ -71,6 +71,9 @@ jobs:
       - name: Install MySQL client
         run: sudo apt-get install -y mysql-client
 
+      - name: Start MySQL server
+        run: sudo service mysql start
+
       - name: Set up PHP envirnoment
         uses: shivammathur/setup-php@v2
         with:
