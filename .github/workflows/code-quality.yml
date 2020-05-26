@@ -42,7 +42,7 @@ jobs:
           files: "vendor/bin/parallel-lint"
       - name: Run Linter
         if: steps.check_linter_file.outputs.files_exists == 'true'
-        run: vendor/bin/parallel-lint -j 10 . --exclude vendor --checkstyle | cs2pr --graceful-warnings
+        run: vendor/bin/parallel-lint -j 10 . --exclude vendor --checkstyle | cs2pr
 
   phpcs:
     name: PHPCS
@@ -83,4 +83,4 @@ jobs:
           files: "vendor/bin/phpcs"
       - name: Run PHPCS
         if: steps.check_phpcs_binary_file.outputs.files_exists == 'true'
-        run: vendor/bin/phpcs -q --report=checkstyle | cs2pr --graceful-warnings
+        run: vendor/bin/phpcs -q --report=checkstyle | cs2pr
