@@ -75,7 +75,7 @@ jobs:
             ${{ runner.os }}-composer-
       - name: Install dependencies
         if: steps.check_files.outputs.files_exists == 'true'
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
       - name: Check existence of vendor/bin/phpcs file
         id: check_phpcs_binary_file
         uses: andstor/file-existence-action@v1
