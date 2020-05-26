@@ -53,6 +53,8 @@ jobs:
       mysql:
         image: mysql:5.7
         env:
+          MYSQL_DATABASE=wp_cli_test
+          MYSQL_USER=root
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
         ports:
           - 3306
