@@ -5,7 +5,7 @@ _wp_complete() {
 	local cur=${COMP_WORDS[COMP_CWORD]}
 	local command=${COMP_WORDS[1]}
 	local subcommand=${COMP_WORDS[2]}
-	
+ 
 	IFS=$'\n';  # want to preserve spaces at the end
 	COMPREPLY=""
 
