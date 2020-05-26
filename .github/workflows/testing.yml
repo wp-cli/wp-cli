@@ -1,4 +1,4 @@
-name: Code Quality Checks
+name: Testing
 
 on: pull_request
 
@@ -59,17 +59,21 @@ jobs:
         with:
           files: "composer.json, behat.yml"
 
+      - name: Set up customized database server
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          character set server: 'utf8mb4'
+          collation server: 'utf8mb4_general_ci'
+          mysql version: '8.0'
+
+      - name: Install MySQL client
+        run: sudo apt-get install -y mysql-client
+
       - name: Set up PHP envirnoment
         uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
           tools: cs2pr
-
-      - name: Install MySQL client
-        run: sudo apt-get install -y mysql-client
-
-      - name: Start MySQL server
-        run: sudo service mysql start
 
       - name: Get Composer cache Directory
         if: steps.check_files.outputs.files_exists == 'true'
