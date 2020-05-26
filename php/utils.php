@@ -682,7 +682,7 @@ function replace_path_consts( $source, $path ) {
 		$file = realpath( $file );
 	}
 
-	$dir  = dirname( $file );
+	$dir = dirname( $file );
 
 	// Replace __FILE__ and __DIR__ constants with value of $file or $dir.
 	return preg_replace_callback(
