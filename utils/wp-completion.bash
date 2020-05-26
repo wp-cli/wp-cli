@@ -13,14 +13,16 @@ _wp_complete() {
 	then
 		case "$subcommand" in
 		activate|deactivate|update|delete|get|is-active|path|status|uninstall|verify-checksums)
-			COMPREPLY=( $(cd $(wp plugin path); compgen -d -- "${cur}" ) )
+			local plugin_list=$(wp plugin list --field=name --format=csv)
+			COMPREPLY=( $(compgen -W "${plugin_list}" -- ${cur} ))
 			;;
 		esac
 	elif [[ "$command" = "theme" ]]
 	then
 		case "$subcommand" in
 		activate|delete|disable|enable|is-active|is-installed|path|status|update)
-			COMPREPLY=( $(cd $(wp theme path); compgen -d -- "${cur}" ) )
+			local theme_list=$(wp plugin list --field=name --format=csv)
+			COMPREPLY=( $(compgen -W "${theme_list}" -- ${cur} ))
 			;;
 		esac
 	fi
