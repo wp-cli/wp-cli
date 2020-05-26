@@ -68,12 +68,6 @@ jobs:
         with:
           files: "composer.json, behat.yml"
 
-      - name: Install MySQL client
-        run: sudo apt-get install -y mysql-client
-
-      - name: Start MySQL server
-        run: sudo service mysql start
-
       - name: Set up PHP envirnoment
         uses: shivammathur/setup-php@v2
         with:
@@ -98,6 +92,12 @@ jobs:
       - name: Install dependencies
         if: steps.check_files.outputs.files_exists == 'true'
         run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Show status of mysql service
+        run: sudo service mysql status
+
+      - name: Show journalctl status
+        run: sudo journalctl -xe
 
       - name: Prepare test database
         run: MYQSL_HOST=127.0.0.1 MYSQL_TCP_PORT=${{ job.services.mysql.ports['3306'] }} composer prepare-tests
