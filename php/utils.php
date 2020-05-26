@@ -23,6 +23,18 @@ use WP_CLI\Process;
 
 const PHAR_STREAM_PREFIX = 'phar://';
 
+/**
+ * Regular expression pattern to match __FILE__ and __DIR__ constants.
+ *
+ * We try to be smart and only replace the constants when they are not within quotes.
+ * Regular expressions being stateless, this is probably not 100% correct for edge cases.
+ *
+ * @see https://regex101.com/r/9hXp5d/4/
+ *
+ * @var string
+ */
+const FILE_DIR_PATTERN = '/(?>\'[^\']*?\')|(?>"[^"]*?")|(?<file>\b__FILE__\b)|(?<dir>\b__DIR__\b)/m';
+
 function inside_phar() {
 	return 0 === strpos( WP_CLI_ROOT, PHAR_STREAM_PREFIX );
 }
@@ -655,6 +667,9 @@ function is_windows() {
 /**
  * Replace magic constants in some PHP source code.
  *
+ * Replaces the __FILE__ and __DIR__ magic constants with the values they are
+ * supposed to represent at runtime.
+ *
  * @param string $source The PHP code to manipulate.
  * @param string $path The path to use instead of the magic constants.
  * @return string Adapted PHP code.
@@ -663,15 +678,28 @@ function replace_path_consts( $source, $path ) {
 	// Solve issue with Windows allowing single quotes in account names.
 	$file = addslashes( $path );
 
-	$replacements = array(
-		'__FILE__' => "'$file'",
-		'__DIR__'  => "'" . dirname( $file ) . "'",
+	if ( file_exists( $file ) ) {
+		$file = realpath( $file );
+	}
+
+	$dir = dirname( $file );
+
+	// Replace __FILE__ and __DIR__ constants with value of $file or $dir.
+	return preg_replace_callback(
+		FILE_DIR_PATTERN,
+		static function ( $matches ) use ( $file, $dir ) {
+			if ( ! empty( $matches['file'] ) ) {
+				return "'{$file}'";
+			}
+
+			if ( ! empty( $matches['dir'] ) ) {
+				return "'{$dir}'";
+			}
+
+			return $matches[0];
+		},
+		$source
 	);
-
-	$old = array_keys( $replacements );
-	$new = array_values( $replacements );
-
-	return str_replace( $old, $new, $source );
 }
 
 /**
