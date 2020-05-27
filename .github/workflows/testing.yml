@@ -95,9 +95,6 @@ jobs:
         if: steps.check_files.outputs.files_exists == 'true'
         run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
 
-      - name: Show status of mysql service
-        run: sudo service mysql status
-
       - name: Show journalctl status
         run: sudo journalctl -xe
 
