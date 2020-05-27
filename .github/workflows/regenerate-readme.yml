@@ -1,0 +1,101 @@
+name: Refresh
+
+on:
+  schedule:
+    - cron:  '0 1 * * *' # Run every day at 1am UTC.
+
+jobs:
+
+  regenerate-readme: #----------------------------------------------------------
+    name: Regenerate README.md file
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v2
+
+      - name: Check existence of composer.json file
+        id: check_files
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "composer.json, phpunit.xml.dist"
+
+      - name: Set up PHP envirnoment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          tools: cs2pr
+
+      - name: Get Composer cache Directory
+        if: steps.check_files.outputs.files_exists == 'true'
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Use Composer cache
+        if: steps.check_files.outputs.files_exists == 'true'
+        uses: actions/cache@master
+        with:
+          path: ${{ steps['composer-cache'].outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        if: steps.check_files.outputs.files_exists == 'true'
+        run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Install WP-CLI
+        run: |
+          curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+          sudo mv wp-cli.phar /usr/local/bin/wp
+          sudo chmod +x /usr/local/bin/wp
+
+      - name: Install scaffold-package command
+        run: |
+          wp package install wp-cli/scaffold-package-command
+
+      - name: Regenerate README.md file
+        run: |
+          wp scaffold-package --readme --force .
+
+      - name: Get current time
+          uses: 1466587594/get-current-time@v1
+          id: current-date
+          with:
+            format: YYYY-MM-DD
+
+      - name: Use current time
+        env:
+          TIME: "${{ steps.current-time.outputs.time }}"
+          F_TIME: "${{ steps.current-time.outputs.formattedTime }}"
+        run: echo $TIME $F_TIME
+
+      - name: Create git branch
+        env:
+          DATE: "${{ steps['current-date']outputs.formattedTime }}"
+        run: |
+          git checkout -b refresh-readme-$DATE
+
+      - name: Stage changes
+        run: |
+          git add README.md
+
+      - name: Commit changes
+        run: |
+          git commit -m 'Refresh README.md file'
+
+      - name: Push changes into remote branch
+        env:
+          DATE: "${{ steps.current-date.outputs.formattedTime }}"
+        run: |
+          git push -u origin refresh-readme-$DATE
+
+      - name: Create pull-request
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: "refresh-readme-${{ steps['current-date'].outputs.formattedTime }}"
+          destination_branch: "master"
+          pr_title: "Refresh `README.md` file"
+          pr_body: "**This is an automated pull-request**\n\nRefreshes the `README.md` file with the latest changes to the docblocks in the source code."
+          pr_label: "scope:documentation"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
