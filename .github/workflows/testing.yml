@@ -95,8 +95,8 @@ jobs:
         if: steps.check_files.outputs.files_exists == 'true'
         run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
 
-      - name: Show journalctl status
-        run: sudo journalctl -xe
+      - name: Start MySQL server
+        run: sudo service mysql start
 
       - name: Prepare test database
         run: MYQSL_HOST=127.0.0.1 MYSQL_TCP_PORT=${{ job.services.mysql.ports['3306'] }} composer prepare-tests
