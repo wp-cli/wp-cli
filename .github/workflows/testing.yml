@@ -2,11 +2,17 @@ name: Testing
 
 on: pull_request
 
+strategy:
+  matrix:
+    operating-system: [ubuntu-latest, windows-latest, macos-latest]
+    php-versions: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
+
 jobs:
 
   unit: #-----------------------------------------------------------------------
-    name: Run unit tests
-    runs-on: ubuntu-latest
+    name: Run unit tests on PHP ${{ matrix.php-versions }} (${{ matrix.operating-system }})
+    runs-on: ${{ matrix.operating-system }}
+
     steps:
       - name: Check out source code
         uses: actions/checkout@v2
@@ -17,10 +23,10 @@ jobs:
         with:
           files: "composer.json, phpunit.xml.dist"
 
-      - name: Set up PHP envirnoment
+      - name: Set up PHP environment
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4'
+          php-version: '${{ matrix.php-versions }}'
           coverage: none
 
       - name: Get Composer cache Directory
@@ -46,8 +52,8 @@ jobs:
         run: composer phpunit
 
   functional: #----------------------------------------------------------------------
-    name: Run functional tests
-    runs-on: ubuntu-latest
+    name: Run functional tests on PHP ${{ matrix.php-versions }} (${{ matrix.operating-system }})
+    runs-on: ${{ matrix.operating-system }}
 
     services:
       mysql:
@@ -73,7 +79,7 @@ jobs:
       - name: Set up PHP envirnoment
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4'
+          php-version: '${{ matrix.php-versions }}'
           coverage: none
 
       - name: Get Composer cache Directory
