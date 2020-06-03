@@ -2,15 +2,14 @@ name: Testing
 
 on: pull_request
 
-strategy:
-  matrix:
-    operating-system: [ubuntu-latest, windows-latest, macos-latest]
-    php-versions: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
-
 jobs:
 
   unit: #-----------------------------------------------------------------------
     name: Run unit tests on PHP ${{ matrix.php-versions }} (${{ matrix.operating-system }})
+    strategy:
+      matrix:
+        operating-system: [ubuntu-latest, windows-latest, macos-latest]
+        php-versions: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
     runs-on: ${{ matrix.operating-system }}
 
     steps:
@@ -53,6 +52,10 @@ jobs:
 
   functional: #----------------------------------------------------------------------
     name: Run functional tests on PHP ${{ matrix.php-versions }} (${{ matrix.operating-system }})
+    strategy:
+      matrix:
+        operating-system: [ubuntu-latest, windows-latest, macos-latest]
+        php-versions: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
     runs-on: ${{ matrix.operating-system }}
 
     services:
