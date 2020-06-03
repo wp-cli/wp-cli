@@ -5,12 +5,11 @@ on: pull_request
 jobs:
 
   unit: #-----------------------------------------------------------------------
-    name: Run unit tests on PHP ${{ matrix.php-versions }} (${{ matrix.operating-system }})
+    name: Run unit tests on PHP ${{ matrix.php-versions }}
     strategy:
       matrix:
-        operating-system: [ubuntu-latest, windows-latest, macos-latest]
         php-versions: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
-    runs-on: ${{ matrix.operating-system }}
+    runs-on: ubuntu-latest
 
     steps:
       - name: Check out source code
@@ -51,12 +50,11 @@ jobs:
         run: composer phpunit
 
   functional: #----------------------------------------------------------------------
-    name: Run functional tests on PHP ${{ matrix.php-versions }} (${{ matrix.operating-system }})
+    name: Run functional tests on PHP ${{ matrix.php-versions }}
     strategy:
       matrix:
-        operating-system: [ubuntu-latest, windows-latest, macos-latest]
         php-versions: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
-    runs-on: ${{ matrix.operating-system }}
+    runs-on: ubuntu-latest
 
     services:
       mysql:
