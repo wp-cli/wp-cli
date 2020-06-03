@@ -74,7 +74,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
-          tools: cs2pr
+          coverage: none
 
       - name: Get Composer cache Directory
         if: steps.check_files.outputs.files_exists == 'true'
