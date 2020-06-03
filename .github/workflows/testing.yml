@@ -55,7 +55,7 @@ jobs:
         env:
           MYSQL_DATABASE: wp_cli_test
           MYSQL_USER: root
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -99,7 +99,12 @@ jobs:
         run: sudo service mysql start
 
       - name: Prepare test database
-        run: MYQSL_HOST=127.0.0.1 MYSQL_TCP_PORT=${{ job.services.mysql.ports['3306'] }} composer prepare-tests
+        run: |
+          export MYQSL_HOST=127.0.0.1
+          export MYSQL_TCP_PORT=${{ job.services.mysql.ports['3306'] }}
+          mysql -e 'CREATE DATABASE IF NOT EXISTS wp_cli_test;' -uroot -proot
+          mysql -e 'GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"127.0.0.1" IDENTIFIED BY "password1"' -uroot -proot
+          mysql -e 'GRANT ALL PRIVILEGES ON wp_cli_test_scaffold.* TO "wp_cli_test"@"127.0.0.1" IDENTIFIED BY "password1"' -uroot -proot
 
       - name: Run Behat
         run: composer behat
