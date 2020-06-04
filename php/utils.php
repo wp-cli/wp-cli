@@ -1443,20 +1443,7 @@ function get_php_binary() {
 		return $wp_cli_php;
 	}
 
-	// Available since PHP 5.4.
-	if ( defined( 'PHP_BINARY' ) ) {
-		return PHP_BINARY;
-	}
-
-	if ( @is_executable( PHP_BINDIR . '/php' ) ) {
-		return PHP_BINDIR . '/php';
-	}
-
-	if ( is_windows() && @is_executable( PHP_BINDIR . '/php.exe' ) ) {
-		return PHP_BINDIR . '/php.exe';
-	}
-
-	return 'php';
+	return PHP_BINARY;
 }
 
 /**
