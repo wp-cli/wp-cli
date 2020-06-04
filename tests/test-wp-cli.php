@@ -8,6 +8,6 @@ class WP_CLI_Test extends PHPUnit_Framework_TestCase {
 
 	public function testErrorToString() {
 		$this->setExpectedException( 'InvalidArgumentException', "Unsupported argument type passed to WP_CLI::error_to_string(): 'boolean'" );
-		WP_CLI::error_to_string( (bool) true );
+		WP_CLI::error_to_string( true );
 	}
 }
