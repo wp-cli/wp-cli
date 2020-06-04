@@ -35,6 +35,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '${{ matrix.php-version }}'
+          extensions:
+            - mysql
+            - zip
           coverage: none
 
       - name: Get Composer cache Directory
@@ -103,7 +106,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '${{ matrix.php-version }}'
-          extensions: mysql
+          extensions:
+            - mysql
+            - zip
           coverage: none
 
       - name: Get Composer cache Directory
