@@ -979,6 +979,8 @@ class WP_CLI {
 	 * Convert a WP_Error or Exception into a string
 	 *
 	 * @param mixed $errors
+	 * @throws \InvalidArgumentException
+	 *
 	 * @return string
 	 */
 	public static function error_to_string( $errors ) {
@@ -1011,7 +1013,7 @@ class WP_CLI {
 			return get_class( $errors ) . ': ' . $errors->getMessage();
 		}
 
-		throw new InvalidArgumentException(
+		throw new \InvalidArgumentException(
 			sprintf(
 				"Unsupported argument type passed to WP_CLI::error_to_string(): '%s'",
 				gettype( $errors )
