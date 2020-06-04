@@ -50,7 +50,7 @@
 
 	<!-- For help understanding the `testVersion` configuration setting:
 		 https://github.com/PHPCompatibility/PHPCompatibility#sniffing-your-code-for-compatibility-with-specific-php-versions -->
-	<config name="testVersion" value="5.4-"/>
+	<config name="testVersion" value="5.6-"/>
 
 	<!-- Verify that everything in the global namespace is either namespaced or prefixed.
 		 The default prefixes `WP_CLI` (for namespaces and classes) and `wpcli` (for variables) are inherited
