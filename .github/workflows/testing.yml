@@ -5,19 +5,11 @@ on: pull_request
 jobs:
 
   unit: #-----------------------------------------------------------------------
-    name: Unit - WP ${{ matrix.wp-version }} on PHP ${{ matrix.php-version }}
+    name: Unit - PHP ${{ matrix.php-version }}
     strategy:
       fail-fast: false
       matrix:
         php-version: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
-        wp-version: ['latest']
-        include:
-          - php-version: '5.6'
-            wp-version: 'trunk'
-          - php-version: '7.4'
-            wp-version: 'trunk'
-          - php-version: '5.6'
-            wp-version: '3.7.11'
     runs-on: ubuntu-latest
 
     steps:
@@ -35,9 +27,6 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '${{ matrix.php-version }}'
-          extensions:
-            - mysql
-            - zip
           coverage: none
 
       - name: Get Composer cache Directory
@@ -61,8 +50,6 @@ jobs:
 
       - name: Run PHPUnit
         if: steps.check_files.outputs.files_exists == 'true'
-        env:
-          WP_VERSION: '${{ matrix.wp-version }}'
         run: composer phpunit
 
   functional: #----------------------------------------------------------------------
