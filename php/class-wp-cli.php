@@ -1010,6 +1010,13 @@ class WP_CLI {
 		if ( interface_exists( 'Throwable' ) && ( $errors instanceof \Throwable ) || ( $errors instanceof \Exception ) ) {
 			return get_class( $errors ) . ': ' . $errors->getMessage();
 		}
+
+		throw new InvalidArgumentException(
+			sprintf(
+				"Unsupported argument type passed to WP_CLI::error_to_string(): '%s'",
+				gettype( $errors )
+			)
+		);
 	}
 
 	/**
