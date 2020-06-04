@@ -7,8 +7,17 @@ jobs:
   unit: #-----------------------------------------------------------------------
     name: Unit - PHP ${{ matrix.php-versions }}
     strategy:
+      fail-fast: false
       matrix:
-        php-versions: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
+        php-version: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
+        wp-version: ['latest']
+        include:
+          - php-version: '5.6'
+            wp-version: 'trunk'
+          - php-version: '7.4'
+            wp-version: 'trunk'
+          - php-version: '5.6'
+            wp-version: '3.7.11'
     runs-on: ubuntu-latest
 
     steps:
@@ -25,7 +34,7 @@ jobs:
         if: steps.check_files.outputs.files_exists == 'true'
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '${{ matrix.php-versions }}'
+          php-version: '${{ matrix.php-version }}'
           coverage: none
 
       - name: Get Composer cache Directory
@@ -49,13 +58,24 @@ jobs:
 
       - name: Run PHPUnit
         if: steps.check_files.outputs.files_exists == 'true'
+        env:
+          WP_VERSION: '${{ matrix.wp-version }}'
         run: composer phpunit
 
   functional: #----------------------------------------------------------------------
     name: Functional - PHP ${{ matrix.php-versions }}
     strategy:
+      fail-fast: false
       matrix:
-        php-versions: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
+        php-version: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
+        wp-version: ['latest']
+        include:
+          - php-version: '5.6'
+            wp-version: 'trunk'
+          - php-version: '7.4'
+            wp-version: 'trunk'
+          - php-version: '5.6'
+            wp-version: '3.7.11'
     runs-on: ubuntu-latest
 
     services:
@@ -82,7 +102,7 @@ jobs:
       - name: Set up PHP envirnoment
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '${{ matrix.php-versions }}'
+          php-version: '${{ matrix.php-version }}'
           extensions: mysql
           coverage: none
 
@@ -120,4 +140,6 @@ jobs:
 
       - name: Run Behat
         if: steps.check_files.outputs.files_exists == 'true'
+        env:
+          WP_VERSION: '${{ matrix.wp-version }}'
         run: composer behat
