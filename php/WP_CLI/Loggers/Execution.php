@@ -57,8 +57,7 @@ class Execution extends Regular {
 	 * Starts output buffering, using a callback to capture output from `echo`, `print`, `printf` (which write to the output buffer 'php://output' rather than STDOUT).
 	 */
 	public function ob_start() {
-		// To ensure sequential output, give a chunk size of 1 (or 2 if PHP < 5.4 as 1 was a special value meaning a 4KB chunk) to `ob_start()`, so that each write gets flushed immediately.
-		ob_start( array( $this, 'ob_start_callback' ), version_compare( PHP_VERSION, '5.4.0', '<' ) ? 2 : 1 );
+		ob_start( array( $this, 'ob_start_callback' ), 1 );
 	}
 
 	/**
