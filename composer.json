@@ -42,8 +42,12 @@
     },
     "autoload": {
         "psr-0": {
-            "WP_CLI": "php"
-        }
+            "WP_CLI//": "php/"
+        },
+        "classmap": [
+            "php/class-wp-cli.php",
+            "php/class-wp-cli-command.php"
+        ]
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
