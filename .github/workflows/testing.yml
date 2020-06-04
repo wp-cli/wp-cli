@@ -59,14 +59,19 @@ jobs:
       matrix:
         php-version: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
         wp-version: ['latest']
+        allowed-to-fail: [false]
         include:
           - php-version: '5.6'
             wp-version: 'trunk'
+            allowed-to-fail: false
           - php-version: '7.4'
             wp-version: 'trunk'
+            allowed-to-fail: false
           - php-version: '5.6'
             wp-version: '3.7.11'
+            allowed-to-fail: true
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.allowed-to-fail }}
 
     services:
       mysql:
