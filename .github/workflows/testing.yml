@@ -5,7 +5,7 @@ on: pull_request
 jobs:
 
   unit: #-----------------------------------------------------------------------
-    name: Unit - PHP ${{ matrix.php-versions }}
+    name: Unit - WP ${{ matrix.wp-version }} on PHP ${{ matrix.php-version }}
     strategy:
       fail-fast: false
       matrix:
@@ -63,7 +63,7 @@ jobs:
         run: composer phpunit
 
   functional: #----------------------------------------------------------------------
-    name: Functional - PHP ${{ matrix.php-versions }}
+    name: Functional - WP ${{ matrix.wp-version }} on PHP ${{ matrix.php-version }}
     strategy:
       fail-fast: false
       matrix:
