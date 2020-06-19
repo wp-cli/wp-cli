@@ -240,10 +240,6 @@ Feature: Have a config file
     When I try `wp option get home --debug`
     Then STDERR should contain:
       """
-      No readable global config found
-      """
-    Then STDERR should contain:
-      """
       No project config found
       """
     And STDERR should contain:
