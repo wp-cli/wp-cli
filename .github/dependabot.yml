@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: composer
     directory: "/"
     schedule:
-      interval: daily
+      interval: live
     open-pull-requests-limit: 10
     labels:
       - scope:distribution
