@@ -393,6 +393,15 @@ Feature: WP-CLI Commands
       Invalid value specified for 'meal' (A type of meal.)
       """
 
+    When I try `wp foo hello --apple=fuji --meal=breakfast,lunch,dinner`
+    Then STDERR should be empty
+
+    When I try `wp foo hello --apple=fuji --meal=breakfast,snack,dinner`
+    Then STDERR should contain:
+      """
+      Invalid value specified for 'meal' (A type of meal.)
+      """
+
     When I run `wp foo hello --apple=fuji`
     Then STDOUT should be:
       """
