@@ -109,9 +109,7 @@ class Runner {
 
 		// If global config doesn't exist create one.
 		if ( true === $create_config_file && ! file_exists( $config_path ) ) {
-			$file_missing_message           = "Default global config doesn't exist, creating one in {$config_path}";
-			$this->global_config_path_debug = $file_missing_message;
-			WP_CLI::warning( $file_missing_message );
+			$this->global_config_path_debug = "Default global config doesn't exist, creating one in {$config_path}";
 			Process::create( Utils\esc_cmd( 'touch %s', $config_path ) )->run();
 		}
 
