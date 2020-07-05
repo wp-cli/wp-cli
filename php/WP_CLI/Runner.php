@@ -103,12 +103,12 @@ class Runner {
 		} else {
 			$config_path                    = Utils\get_home_dir() . '/.wp-cli/config.yml';
 			$this->global_config_path_debug = 'Using default global config: ' . $config_path;
+		}
 
-			// If global config doesn't exist create one.
-			if ( ! file_exists( $config_path ) ) {
-				$this->global_config_path_debug = "Default global config doesn't exist, creating one in {$config_path}";
-				Process::create( Utils\esc_cmd( 'touch %s', $config_path ) )->run();
-			}
+		// If global config doesn't exist create one.
+		if ( ! file_exists( $config_path ) ) {
+			$this->global_config_path_debug = "Default global config doesn't exist, creating one in {$config_path}";
+			Process::create( Utils\esc_cmd( 'touch %s', $config_path ) )->run();
 		}
 
 		if ( is_readable( $config_path ) ) {
