@@ -1,0 +1,3 @@
+# Configuration file for nektos/act.
+# See https://github.com/nektos/act#configuration
+-P ubuntu-latest=shivammathur/node:latest
