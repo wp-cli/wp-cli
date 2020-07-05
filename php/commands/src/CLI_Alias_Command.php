@@ -302,8 +302,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *
 	 * @param string $config             Type of config to get data from.
 	 * @param string $alias              Alias to be used for Add/Update/Delete.
-	 * @param bool $create_config_file Optional. If a config file doesn't exist,
-	 *                                 should it be created? Defaults to false.
+	 * @param bool   $create_config_file Optional. If a config file doesn't exist,
+	 *                                   should it be created? Defaults to false.
 	 *
 	 * @return array Config Path and Aliases in it.
 	 * @throws \WP_CLI\ExitException
