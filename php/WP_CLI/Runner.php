@@ -93,7 +93,8 @@ class Runner {
 	/**
 	 * Get the path to the global configuration YAML file.
 	 *
-	 * @param bool $create_config_file If a config file doesn't exist, should it be created?
+	 * @param bool $create_config_file Optional. If a config file doesn't exist,
+	 *                                 should it be created? Defaults to false.
 	 *
 	 * @return string|false
 	 */
