@@ -1,4 +1,7 @@
 Feature: Have a config file
+  Background:
+    When I run `rm -f "{HOME}/.wp-cli/config.yml"`
+    Then STDERR should be empty
 
   Scenario: No config file
     Given a WP installation
