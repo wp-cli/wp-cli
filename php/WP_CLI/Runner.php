@@ -93,9 +93,12 @@ class Runner {
 	/**
 	 * Get the path to the global configuration YAML file.
 	 *
+	 * @param bool $create_config_file Optional. If a config file doesn't exist,
+	 *                                 should it be created? Defaults to false.
+	 *
 	 * @return string|false
 	 */
-	public function get_global_config_path() {
+	public function get_global_config_path( $create_config_file = false ) {
 
 		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$config_path                    = getenv( 'WP_CLI_CONFIG_PATH' );
@@ -103,6 +106,12 @@ class Runner {
 		} else {
 			$config_path                    = Utils\get_home_dir() . '/.wp-cli/config.yml';
 			$this->global_config_path_debug = 'Using default global config: ' . $config_path;
+		}
+
+		// If global config doesn't exist create one.
+		if ( true === $create_config_file && ! file_exists( $config_path ) ) {
+			$this->global_config_path_debug = "Default global config doesn't exist, creating one in {$config_path}";
+			Process::create( Utils\esc_cmd( 'touch %s', $config_path ) )->run();
 		}
 
 		if ( is_readable( $config_path ) ) {

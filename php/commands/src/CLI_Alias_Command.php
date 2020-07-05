@@ -161,7 +161,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$config = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : 'global' );
 
-		list( $config_path, $aliases ) = $this->get_aliases_data( $config, '' );
+		list( $config_path, $aliases ) = $this->get_aliases_data( $config, '', true );
 
 		$this->validate_config_file( $config_path );
 
@@ -278,7 +278,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		$alias    = $args[0];
 		$grouping = WP_CLI\Utils\get_flag_value( $assoc_args, 'grouping' );
 
-		list( $config_path, $aliases ) = $this->get_aliases_data( $config, $alias );
+		list( $config_path, $aliases ) = $this->get_aliases_data( $config, $alias, true );
 
 		$this->validate_config_file( $config_path );
 
@@ -300,14 +300,17 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	/**
 	 * Get config path and aliases data based on config type.
 	 *
-	 * @param string $config Type of config to get data from.
-	 * @param string $alias  Alias to be used for Add/Update/Delete.
+	 * @param string $config             Type of config to get data from.
+	 * @param string $alias              Alias to be used for Add/Update/Delete.
+	 * @param bool   $create_config_file Optional. If a config file doesn't exist,
+	 *                                   should it be created? Defaults to false.
 	 *
 	 * @return array Config Path and Aliases in it.
+	 * @throws \WP_CLI\ExitException
 	 */
-	private function get_aliases_data( $config, $alias ) {
+	private function get_aliases_data( $config, $alias, $create_config_file = false ) {
 
-		$global_config_path = WP_CLI::get_runner()->get_global_config_path();
+		$global_config_path = WP_CLI::get_runner()->get_global_config_path( $create_config_file );
 		$global_aliases     = Spyc::YAMLLoad( $global_config_path );
 
 		$project_config_path = WP_CLI::get_runner()->get_project_config_path();
