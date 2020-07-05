@@ -359,17 +359,18 @@ class Subcommand extends CompositeCommand {
 					if ( ! in_array( $assoc_args[ $spec['name'] ], $spec_args['options'] ) ) {
 						// Try whether it might be a comma-separated list of multiple values.
 						$values = array_map( 'trim', explode( ',', $value ) );
-						var_dump( $values );
 						$count  = count( $values );
 						if (
 							$count > 1
 							&&
-							$count === count( array_filter(
-								$values,
-								static function ( $value ) use ( $options ) {
-									return in_array( $value, $options, true );
-								}
-							) )
+							count(
+								array_filter(
+									$values,
+									static function ( $value ) use ( $options ) {
+										return in_array( $value, $options, true );
+									}
+								)
+							) === $count
 						) {
 							continue;
 						}
