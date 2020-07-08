@@ -476,6 +476,8 @@ function mysql_host_to_cli_args( $raw_host ) {
 /**
  * Run a MySQL command and optionally return the output.
  *
+ * @since v2.5.0 Deprecated $descriptors argument.
+ *
  * @param string $cmd           Command to run.
  * @param array  $assoc_args    Associative array of arguments to use.
  * @param mixed  $_             Deprecated. Former $descriptors argument.
@@ -492,8 +494,6 @@ function mysql_host_to_cli_args( $raw_host ) {
  *     @type string $stderr    Output that was sent to STDERR.
  *     @type int    $exit_code Exit code of the process.
  * }
- *@since v2.5.0 Deprecated $descriptors argument.
- *
  */
 function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true, $interactive = false ) {
 	check_proc_available( 'run_mysql_command' );
