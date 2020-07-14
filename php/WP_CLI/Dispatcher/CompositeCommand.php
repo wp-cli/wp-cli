@@ -296,10 +296,14 @@ class CompositeCommand {
 				$synopsis = "--$key" . $details['runtime'];
 			}
 
-			$binding['parameters'][] = array(
-				'synopsis' => $synopsis,
-				'desc'     => $details['desc'],
-			);
+			// Check if global parameters synopsis should be displayed or not.
+			if ( true !== (bool) getenv( 'WP_CLI_SUPPRESS_GLOBAL_PARAMS' ) ) {
+				$binding['parameters'][]   = array(
+					'synopsis' => $synopsis,
+					'desc'     => $details['desc'],
+				);
+				$binding['has_parameters'] = true;
+			}
 		}
 
 		if ( $this->get_subcommands() ) {
