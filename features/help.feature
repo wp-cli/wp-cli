@@ -82,7 +82,7 @@ Feature: Get help about WP-CLI commands
       """
       --path
       """
-    And STDOUT should not  contain:
+    And STDOUT should not contain:
       """
       Path to the WordPress files.
       """
