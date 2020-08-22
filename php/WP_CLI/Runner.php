@@ -93,9 +93,12 @@ class Runner {
 	/**
 	 * Get the path to the global configuration YAML file.
 	 *
+	 * @param bool $create_config_file Optional. If a config file doesn't exist,
+	 *                                 should it be created? Defaults to false.
+	 *
 	 * @return string|false
 	 */
-	public function get_global_config_path() {
+	public function get_global_config_path( $create_config_file = false ) {
 
 		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$config_path                    = getenv( 'WP_CLI_CONFIG_PATH' );
@@ -103,6 +106,12 @@ class Runner {
 		} else {
 			$config_path                    = Utils\get_home_dir() . '/.wp-cli/config.yml';
 			$this->global_config_path_debug = 'Using default global config: ' . $config_path;
+		}
+
+		// If global config doesn't exist create one.
+		if ( true === $create_config_file && ! file_exists( $config_path ) ) {
+			$this->global_config_path_debug = "Default global config doesn't exist, creating one in {$config_path}";
+			Process::create( Utils\esc_cmd( 'touch %s', $config_path ) )->run();
 		}
 
 		if ( is_readable( $config_path ) ) {
@@ -595,10 +604,15 @@ class Runner {
 	/**
 	 * Returns wp-config.php code, skipping the loading of wp-settings.php
 	 *
+	 * @param string $wp_config_file_path Optional. Config file path. If left empty, it tries to
+	 * locate the wp-config.php file automatically.
+	 *
 	 * @return string
 	 */
-	public function get_wp_config_code() {
-		$wp_config_path = Utils\locate_wp_config();
+	public function get_wp_config_code( $wp_config_path = '' ) {
+		if ( empty( $wp_config_path ) ) {
+			$wp_config_path = Utils\locate_wp_config();
+		}
 
 		$wp_config_code = explode( "\n", file_get_contents( $wp_config_path ) );
 
@@ -1239,7 +1253,7 @@ class Runner {
 			require WP_CLI_ROOT . '/php/wp-settings-cli.php';
 		}
 
-		// Fix memory limit. See http://core.trac.wordpress.org/ticket/14889
+		// Fix memory limit. See https://core.trac.wordpress.org/ticket/14889
 		// phpcs:ignore WordPress.PHP.IniSet.memory_limit_Blacklisted -- This is perfectly fine for CLI usage.
 		ini_set( 'memory_limit', -1 );
 

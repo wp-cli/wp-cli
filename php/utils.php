@@ -19,8 +19,21 @@ use WP_CLI;
 use WP_CLI\Formatter;
 use WP_CLI\Inflector;
 use WP_CLI\Iterators\Transform;
+use WP_CLI\Process;
 
 const PHAR_STREAM_PREFIX = 'phar://';
+
+/**
+ * Regular expression pattern to match __FILE__ and __DIR__ constants.
+ *
+ * We try to be smart and only replace the constants when they are not within quotes.
+ * Regular expressions being stateless, this is probably not 100% correct for edge cases.
+ *
+ * @see https://regex101.com/r/9hXp5d/4/
+ *
+ * @var string
+ */
+const FILE_DIR_PATTERN = '/(?>\'[^\']*?\')|(?>"[^"]*?")|(?<file>\b__FILE__\b)|(?<dir>\b__DIR__\b)/m';
 
 function inside_phar() {
 	return 0 === strpos( WP_CLI_ROOT, PHAR_STREAM_PREFIX );
@@ -118,8 +131,8 @@ function load_command( $name ) {
  *       var_dump($val);
  *     }
  *
- * @param array|object Either a plain array or another iterator.
- * @param callback     The function to apply to an element.
+ * @param array|object $it Either a plain array or another iterator.
+ * @param callback     $fn The function to apply to an element.
  * @return object An iterator that applies the given callback(s).
  */
 function iterator_map( $it, $fn ) {
@@ -140,9 +153,10 @@ function iterator_map( $it, $fn ) {
 
 /**
  * Search for file by walking up the directory tree until the first file is found or until $stop_check($dir) returns true.
- * @param string|array The files (or file) to search for.
- * @param string|null  The directory to start searching from; defaults to CWD.
- * @param callable     Function which is passed the current dir each time a directory level is traversed.
+ *
+ * @param string|array $files      The files (or file) to search for.
+ * @param string|null  $dir        The directory to start searching from; defaults to CWD.
+ * @param callable     $stop_check Function which is passed the current dir each time a directory level is traversed.
  * @return null|string Null if the file was not found.
  */
 function find_file_upward( $files, $dir = null, $stop_check = null ) {
@@ -184,7 +198,7 @@ function is_path_absolute( $path ) {
 /**
  * Composes positional arguments into a command string.
  *
- * @param array
+ * @param array $args Positional arguments to compose.
  * @return string
  */
 function args_to_str( $args ) {
@@ -194,7 +208,7 @@ function args_to_str( $args ) {
 /**
  * Composes associative arguments into a command string.
  *
- * @param array
+ * @param array $assoc_args Associative arguments to compose.
  * @return string
  */
 function assoc_args_to_str( $assoc_args ) {
@@ -308,9 +322,9 @@ function wp_version_compare( $since, $operator ) {
  * @access public
  * @category Output
  *
- * @param string        $format     Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count'
- * @param array         $items      An array of items to output.
- * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list.
+ * @param string       $format Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count'.
+ * @param array        $items  An array of items to output.
+ * @param array|string $fields Named fields for each item of data. Can be array or comma-separated list.
  * @return null
  */
 function format_items( $format, $items, $fields ) {
@@ -324,9 +338,9 @@ function format_items( $format, $items, $fields ) {
  *
  * @access public
  *
- * @param resource $fd         File descriptor
- * @param array    $rows       Array of rows to output
- * @param array    $headers    List of CSV columns (optional)
+ * @param resource $fd      File descriptor.
+ * @param array    $rows    Array of rows to output.
+ * @param array    $headers List of CSV columns (optional).
  */
 function write_csv( $fd, $rows, $headers = array() ) {
 	if ( ! empty( $headers ) ) {
@@ -345,8 +359,8 @@ function write_csv( $fd, $rows, $headers = array() ) {
 /**
  * Pick fields from an associative array or object.
  *
- * @param  array|object Associative array or object to pick fields from.
- * @param  array List of fields to pick.
+ * @param  array|object $item    Associative array or object to pick fields from.
+ * @param  array        $fields  List of fields to pick.
  * @return array
  */
 function pick_fields( $item, $fields ) {
@@ -371,10 +385,10 @@ function pick_fields( $item, $fields ) {
  * @access public
  * @category Input
  *
- * @param string  $content  Some form of text to edit (e.g. post content).
- * @param string  $title    Title to display in the editor.
- * @param string  $ext      Extension to use with the temp file.
- * @return string|bool       Edited text, if file is saved from editor; false, if no change to file.
+ * @param string $input Some form of text to edit (e.g. post content).
+ * @param string $title Title to display in the editor.
+ * @param string $ext   Extension to use with the temp file.
+ * @return string|bool  Edited text, if file is saved from editor; false, if no change to file.
  */
 function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 
@@ -427,7 +441,7 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 }
 
 /**
- * @param string MySQL host string, as defined in wp-config.php
+ * @param string MySQL host string, as defined in wp-config.php.
  *
  * @return array
  */
@@ -459,38 +473,84 @@ function mysql_host_to_cli_args( $raw_host ) {
 	return $assoc_args;
 }
 
-function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
+/**
+ * Run a MySQL command and optionally return the output.
+ *
+ * @since v2.5.0 Deprecated $descriptors argument.
+ *
+ * @param string $cmd           Command to run.
+ * @param array  $assoc_args    Associative array of arguments to use.
+ * @param mixed  $_             Deprecated. Former $descriptors argument.
+ * @param bool   $send_to_shell Optional. Whether to send STDOUT and STDERR
+ *                              immediately to the shell. Defaults to true.
+ *
+ * @return array {
+ *     Associative array containing STDOUT and STDERR output.
+ *
+ *     @type string $stdout    Output that was sent to STDOUT.
+ *     @type string $stderr    Output that was sent to STDERR.
+ *     @type int    $exit_code Exit code of the process.
+ * }
+ */
+function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true ) {
 	check_proc_available( 'run_mysql_command' );
 
-	if ( ! $descriptors ) {
-		$descriptors = array( STDIN, STDOUT, STDERR );
-	}
+	$descriptors = [
+		0 => STDIN,
+		1 => [ 'pipe', 'w' ],
+		2 => [ 'pipe', 'w' ],
+	];
+
+	$stdout = '';
+	$stderr = '';
 
 	if ( isset( $assoc_args['host'] ) ) {
 		// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysql_host_to_cli_args -- Misidentified as PHP native MySQL function.
 		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
 	}
 
-	$pass = $assoc_args['pass'];
-	unset( $assoc_args['pass'] );
-
-	$old_pass = getenv( 'MYSQL_PWD' );
-	putenv( 'MYSQL_PWD=' . $pass );
+	if ( isset( $assoc_args['pass'] ) ) {
+		$old_password = getenv( 'MYSQL_PWD' );
+		putenv( 'MYSQL_PWD=' . $assoc_args['pass'] );
+		unset( $assoc_args['pass'] );
+	}
 
 	$final_cmd = force_env_on_nix_systems( $cmd ) . assoc_args_to_str( $assoc_args );
 
-	$proc = proc_open_compat( $final_cmd, $descriptors, $pipes );
-	if ( ! $proc ) {
+	$process = proc_open_compat( $final_cmd, $descriptors, $pipes );
+
+	if ( isset( $old_password ) ) {
+		putenv( 'MYSQL_PWD=' . $old_password );
+	}
+
+	if ( ! $process ) {
 		exit( 1 );
 	}
 
-	$r = proc_close( $proc );
+	if ( is_resource( $process ) ) {
+		$stdout = stream_get_contents( $pipes[1] );
+		$stderr = stream_get_contents( $pipes[2] );
 
-	putenv( 'MYSQL_PWD=' . $old_pass );
-
-	if ( $r ) {
-		exit( $r );
+		fclose( $pipes[1] );
+		fclose( $pipes[2] );
 	}
+
+	$exit_code = proc_close( $process );
+
+	if ( $send_to_shell ) {
+		fwrite( STDOUT, $stdout );
+		fwrite( STDERR, $stderr );
+
+		if ( $exit_code ) {
+			exit( $exit_code );
+		}
+	}
+
+	return [
+		$stdout,
+		$stderr,
+		$exit_code,
+	];
 }
 
 /**
@@ -558,13 +618,13 @@ function make_progress_bar( $message, $count, $interval = 100 ) {
  *
  * Additionally, this adds 'http://' to the URL if no scheme was found.
  *
- * @param string $url           The URL to parse.
- * @param int $component        Optional. The specific component to retrieve.
- *                              Use one of the PHP predefined constants to
- *                              specify which one. Defaults to -1 (= return
- *                              all parts as an array).
- * @param bool $auto_add_scheme Optional. Automatically add an http:// scheme if
- *                              none was found. Defaults to true.
+ * @param string $url             The URL to parse.
+ * @param int    $component       Optional. The specific component to retrieve.
+ *                                Use one of the PHP predefined constants to
+ *                                specify which one. Defaults to -1 (= return
+ *                                all parts as an array).
+ * @param bool   $auto_add_scheme Optional. Automatically add an http:// scheme if
+ *                                none was found. Defaults to true.
  * @return mixed False on parse failure; Array of URL components on success;
  *               When a specific component has been requested: null if the
  *               component doesn't exist in the given URL; a string or - in the
@@ -607,20 +667,39 @@ function is_windows() {
 /**
  * Replace magic constants in some PHP source code.
  *
+ * Replaces the __FILE__ and __DIR__ magic constants with the values they are
+ * supposed to represent at runtime.
+ *
  * @param string $source The PHP code to manipulate.
- * @param string $path The path to use instead of the magic constants
+ * @param string $path The path to use instead of the magic constants.
  * @return string Adapted PHP code.
  */
 function replace_path_consts( $source, $path ) {
-	$replacements = array(
-		'__FILE__' => "'$path'",
-		'__DIR__'  => "'" . dirname( $path ) . "'",
+	// Solve issue with Windows allowing single quotes in account names.
+	$file = addslashes( $path );
+
+	if ( file_exists( $file ) ) {
+		$file = realpath( $file );
+	}
+
+	$dir = dirname( $file );
+
+	// Replace __FILE__ and __DIR__ constants with value of $file or $dir.
+	return preg_replace_callback(
+		FILE_DIR_PATTERN,
+		static function ( $matches ) use ( $file, $dir ) {
+			if ( ! empty( $matches['file'] ) ) {
+				return "'{$file}'";
+			}
+
+			if ( ! empty( $matches['dir'] ) ) {
+				return "'{$dir}'";
+			}
+
+			return $matches[0];
+		},
+		$source
 	);
-
-	$old = array_keys( $replacements );
-	$new = array_values( $replacements );
-
-	return str_replace( $old, $new, $source );
 }
 
 /**
@@ -639,9 +718,9 @@ function replace_path_consts( $source, $path ) {
  *
  * @access public
  *
- * @param string $method    HTTP method (GET, POST, DELETE, etc.)
- * @param string $url       URL to make the HTTP request to.
- * @param array $headers    Add specific headers to the request.
+ * @param string $method  HTTP method (GET, POST, DELETE, etc.).
+ * @param string $url     URL to make the HTTP request to.
+ * @param array  $headers Add specific headers to the request.
  * @param array $options
  * @return object
  * @throws RuntimeException If the request failed.
@@ -803,9 +882,9 @@ function get_named_sem_ver( $new_version, $original_version ) {
  * @access public
  * @category Input
  *
- * @param array  $assoc_args  Arguments array.
- * @param string $flag        Flag to get the value.
- * @param mixed  $default     Default value for the flag. Default: NULL
+ * @param array  $assoc_args Arguments array.
+ * @param string $flag       Flag to get the value.
+ * @param mixed  $default    Default value for the flag. Default: NULL.
  * @return mixed
  */
 function get_flag_value( $assoc_args, $flag, $default = null ) {
@@ -961,8 +1040,8 @@ function parse_ssh_url( $url, $component = -1 ) {
  * @access public
  * @category Input
  *
- * @param string       $noun      Resource being affected (e.g. plugin)
- * @param string       $verb      Type of action happening to the noun (e.g. activate)
+ * @param string       $noun      Resource being affected (e.g. plugin).
+ * @param string       $verb      Type of action happening to the noun (e.g. activate).
  * @param integer      $total     Total number of resource being affected.
  * @param integer      $successes Number of successful operations.
  * @param integer      $failures  Number of failures.
@@ -1095,11 +1174,11 @@ function expand_globs( $paths, $flags = 'default' ) {
  * Simulate a `glob()` with the `GLOB_BRACE` flag set. For systems (eg Alpine Linux) built against a libc library (eg https://www.musl-libc.org/) that lacks it.
  * Copied and adapted from Zend Framework's `Glob::fallbackGlob()` and Glob::nextBraceSub()`.
  *
- * Zend Framework (http://framework.zend.com/)
+ * Zend Framework (https://framework.zend.com/)
  *
- * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
- * @license   http://framework.zend.com/license/new-bsd New BSD License
+ * @link      https://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (https://www.zend.com)
+ * @license   https://framework.zend.com/license/new-bsd New BSD License
  *
  * @param string $pattern     Filename pattern.
  * @param void   $dummy_flags Not used.
@@ -1277,38 +1356,6 @@ function phar_safe_path( $path ) {
 }
 
 /**
- * Check whether a given Command object is part of the bundled set of
- * commands.
- *
- * This function accepts both a fully qualified class name as a string as
- * well as an object that extends `WP_CLI\Dispatcher\CompositeCommand`.
- *
- * @param \WP_CLI\Dispatcher\CompositeCommand|string $command
- * @return bool
- */
-function is_bundled_command( $command ) {
-	static $classes;
-
-	if ( null === $classes ) {
-		$classes = array();
-		// TODO: This needs to be rebuilt.
-		// $class_map = WP_CLI_VENDOR_DIR . '/composer/autoload_commands_classmap.php';
-		// if ( file_exists( WP_CLI_VENDOR_DIR . '/composer/' ) ) {
-		// 	$classes = include $class_map;
-		// }
-		$classes = array( 'CLI_Command' => true );
-	}
-
-	if ( is_object( $command ) ) {
-		$command = get_class( $command );
-	}
-
-	return is_string( $command )
-		? array_key_exists( $command, $classes )
-		: false;
-}
-
-/**
  * Maybe prefix command string with "/usr/bin/env".
  * Removes (if there) if Windows, adds (if not there) if not.
  *
@@ -1396,20 +1443,7 @@ function get_php_binary() {
 		return $wp_cli_php;
 	}
 
-	// Available since PHP 5.4.
-	if ( defined( 'PHP_BINARY' ) ) {
-		return PHP_BINARY;
-	}
-
-	if ( @is_executable( PHP_BINDIR . '/php' ) ) {
-		return PHP_BINDIR . '/php';
-	}
-
-	if ( is_windows() && @is_executable( PHP_BINDIR . '/php.exe' ) ) {
-		return PHP_BINDIR . '/php.exe';
-	}
-
-	return 'php';
+	return PHP_BINARY;
 }
 
 /**
@@ -1418,7 +1452,7 @@ function get_php_binary() {
  *
  * @access public
  *
- * @param string $command        Command to execute.
+ * @param string $cmd            Command to execute.
  * @param array  $descriptorspec Indexed array of descriptor numbers and their values.
  * @param array  &$pipes         Indexed array of file pointers that correspond to PHP's end of any pipes that are created.
  * @param string $cwd            Initial working directory for the command.
@@ -1440,7 +1474,7 @@ function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = n
  *
  * @access private
  *
- * @param string $command Command to execute.
+ * @param string $cmd Command to execute.
  * @param array &$env Array of existing environment variables. Will be modified if any settings in command.
  * @return string Command stripped of any environment variable settings.
  */
@@ -1584,4 +1618,74 @@ function pluralize( $noun, $count = null ) {
 	}
 
 	return Inflector::pluralize( $noun );
+}
+
+/**
+ * Get the path to the mysql binary.
+ *
+ * @return string Path to the mysql binary, or an empty string if not found.
+ */
+function get_mysql_binary_path() {
+	static $path = null;
+
+	if ( null === $path ) {
+		$result = Process::create( '/usr/bin/env which mysql', null, null )->run();
+
+		if ( 0 !== $result->return_code ) {
+			$path = '';
+		} else {
+			$path = trim( $result->stdout );
+		}
+	}
+
+	return $path;
+}
+
+/**
+ * Get the version of the MySQL database.
+ *
+ * @return string Version of the MySQL database, or an empty string if not
+ *                found.
+ */
+function get_mysql_version() {
+	static $version = null;
+
+	if ( null === $version ) {
+		$result = Process::create( '/usr/bin/env mysql --version', null, null )->run();
+
+		if ( 0 !== $result->return_code ) {
+			$version = '';
+		} else {
+			$version = trim( $result->stdout );
+		}
+	}
+
+	return $version;
+}
+
+/**
+ * Get the SQL modes of the MySQL session.
+ *
+ * @return string[] Array of SQL modes, or an empty array if they couldn't be
+ *                  read.
+ */
+function get_sql_modes() {
+	static $sql_modes = null;
+
+	if ( null === $sql_modes ) {
+		$result = Process::create( '/usr/bin/env mysql --no-auto-rehash --batch --skip-column-names --execute="SELECT @@SESSION.sql_mode"', null, null )->run();
+
+		if ( 0 !== $result->return_code ) {
+			$sql_modes = [];
+		} else {
+			$sql_modes = array_filter(
+				array_map(
+					'trim',
+					preg_split( "/\r\n|\n|\r/", $result->stdout )
+				)
+			);
+		}
+	}
+
+	return $sql_modes;
 }
