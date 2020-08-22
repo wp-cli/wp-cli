@@ -223,7 +223,7 @@ function wp_get_cache_type() {
 		if ( isset( $wp_object_cache->m ) && $wp_object_cache->m instanceof \Memcached ) {
 			$message = 'Memcached';
 
-			// Test for Memcache PECL extension memcached object cache (http://wordpress.org/extend/plugins/memcached/)
+			// Test for Memcache PECL extension memcached object cache (https://wordpress.org/extend/plugins/memcached/)
 		} elseif ( isset( $wp_object_cache->mc ) ) {
 			$is_memcache = true;
 			foreach ( $wp_object_cache->mc as $bucket ) {
@@ -236,15 +236,15 @@ function wp_get_cache_type() {
 				$message = 'Memcache';
 			}
 
-			// Test for Xcache object cache (http://plugins.svn.wordpress.org/xcache/trunk/object-cache.php)
+			// Test for Xcache object cache (https://plugins.svn.wordpress.org/xcache/trunk/object-cache.php)
 		} elseif ( $wp_object_cache instanceof \XCache_Object_Cache ) {
 			$message = 'Xcache';
 
-			// Test for WinCache object cache (http://wordpress.org/extend/plugins/wincache-object-cache-backend/)
+			// Test for WinCache object cache (https://wordpress.org/extend/plugins/wincache-object-cache-backend/)
 		} elseif ( class_exists( 'WinCache_Object_Cache' ) ) {
 			$message = 'WinCache';
 
-			// Test for APC object cache (http://wordpress.org/extend/plugins/apc/)
+			// Test for APC object cache (https://wordpress.org/extend/plugins/apc/)
 		} elseif ( class_exists( 'APC_Object_Cache' ) ) {
 			$message = 'APC';
 

@@ -225,7 +225,7 @@ class Configurator {
 		if ( ! empty( $yaml['_']['inherit'] ) ) {
 			$this->merge_yml( $yaml['_']['inherit'], $current_alias );
 		}
-		// Prepare the base path for absolutized alias paths
+		// Prepare the base path for absolutized alias paths.
 		$yml_file_dir = $path ? dirname( $path ) : false;
 		foreach ( $yaml as $key => $value ) {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
@@ -240,7 +240,7 @@ class Configurator {
 						$is_alias                    = true;
 					}
 				}
-				// If it's not an alias, it might be a group of aliases
+				// If it's not an alias, it might be a group of aliases.
 				if ( ! $is_alias && is_array( $value ) ) {
 					$alias_group = array();
 					foreach ( $value as $i => $k ) {

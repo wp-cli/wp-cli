@@ -1,6 +1,8 @@
 <?php
 
 use Composer\Semver\Comparator;
+use WP_CLI\Formatter;
+use WP_CLI\Process;
 use WP_CLI\Utils;
 
 /**
@@ -32,11 +34,11 @@ use WP_CLI\Utils;
 class CLI_Command extends WP_CLI_Command {
 
 	private function command_to_array( $command ) {
-		$dump = array(
+		$dump = [
 			'name'        => $command->get_name(),
 			'description' => $command->get_shortdesc(),
 			'longdesc'    => $command->get_longdesc(),
-		);
+		];
 
 		foreach ( $command->get_subcommands() as $subcommand ) {
 			$dump['subcommands'][] = $this->command_to_array( $subcommand );
@@ -107,8 +109,6 @@ class CLI_Command extends WP_CLI_Command {
 	 *     WP-CLI version: 1.5.0
 	 */
 	public function info( $_, $assoc_args ) {
-		$php_bin = Utils\get_php_binary();
-
 		// php_uname() $mode argument was only added with PHP 7.0+. Fall back to
 		// entire string for older versions.
 		$system_os = PHP_MAJOR_VERSION < 7
@@ -126,23 +126,33 @@ class CLI_Command extends WP_CLI_Command {
 			$shell = getenv( 'ComSpec' );
 		}
 
+		$php_bin = Utils\get_php_binary();
+
 		$runner = WP_CLI::get_runner();
 
 		$packages_dir = $runner->get_packages_dir_path();
 		if ( ! is_dir( $packages_dir ) ) {
 			$packages_dir = null;
 		}
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
-			$info = array(
-				'php_binary_path'          => $php_bin,
-				'global_config_path'       => $runner->global_config_path,
-				'project_config_path'      => $runner->project_config_path,
-				'wp_cli_dir_path'          => WP_CLI_ROOT,
-				'wp_cli_packages_dir_path' => $packages_dir,
-				'wp_cli_version'           => WP_CLI_VERSION,
+
+		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
+			$info = [
 				'system_os'                => $system_os,
 				'shell'                    => $shell,
-			);
+				'php_binary_path'          => $php_bin,
+				'php_version'              => PHP_VERSION,
+				'php_ini_used'             => get_cfg_var( 'cfg_file_path' ),
+				'mysql_binary_path'        => Utils\get_mysql_binary_path(),
+				'mysql_version'            => Utils\get_mysql_version(),
+				'sql_modes'                => Utils\get_sql_modes(),
+				'wp_cli_dir_path'          => WP_CLI_ROOT,
+				'wp_cli_vendor_path'       => WP_CLI_VENDOR_DIR,
+				'wp_cli_phar_path'         => defined( 'WP_CLI_PHAR_PATH' ) ? WP_CLI_PHAR_PATH : '',
+				'wp_cli_packages_dir_path' => $packages_dir,
+				'global_config_path'       => $runner->global_config_path,
+				'project_config_path'      => $runner->project_config_path,
+				'wp_cli_version'           => WP_CLI_VERSION,
+			];
 
 			WP_CLI::line( json_encode( $info ) );
 		} else {
@@ -151,6 +161,9 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::line( "PHP binary:\t" . $php_bin );
 			WP_CLI::line( "PHP version:\t" . PHP_VERSION );
 			WP_CLI::line( "php.ini used:\t" . get_cfg_var( 'cfg_file_path' ) );
+			WP_CLI::line( "MySQL binary:\t" . Utils\get_mysql_binary_path() );
+			WP_CLI::line( "MySQL version:\t" . Utils\get_mysql_version() );
+			WP_CLI::line( "SQL modes:\t" . implode( ',', Utils\get_sql_modes() ) );
 			WP_CLI::line( "WP-CLI root dir:\t" . WP_CLI_ROOT );
 			WP_CLI::line( "WP-CLI vendor dir:\t" . WP_CLI_VENDOR_DIR );
 			WP_CLI::line( "WP_CLI phar path:\t" . ( defined( 'WP_CLI_PHAR_PATH' ) ? WP_CLI_PHAR_PATH : '' ) );
@@ -216,9 +229,9 @@ class CLI_Command extends WP_CLI_Command {
 		$updates = $this->get_updates( $assoc_args );
 
 		if ( $updates ) {
-			$formatter = new \WP_CLI\Formatter(
+			$formatter = new Formatter(
 				$assoc_args,
-				array( 'version', 'update_type', 'package_url' )
+				[ 'version', 'update_type', 'package_url' ]
 			);
 			$formatter->display_items( $updates );
 		} elseif ( empty( $assoc_args['format'] ) || 'table' === $assoc_args['format'] ) {
@@ -312,13 +325,13 @@ class CLI_Command extends WP_CLI_Command {
 
 		WP_CLI::log( sprintf( 'Downloading from %s...', $download_url ) );
 
-		$temp = \WP_CLI\Utils\get_temp_dir() . uniqid( 'wp_', true ) . '.phar';
+		$temp = Utils\get_temp_dir() . uniqid( 'wp_', true ) . '.phar';
 
-		$headers = array();
-		$options = array(
+		$headers = [];
+		$options = [
 			'timeout'  => 600,  // 10 minutes ought to be enough for everybody.
 			'filename' => $temp,
-		);
+		];
 
 		Utils\http_request( 'GET', $download_url, null, $headers, $options );
 
@@ -336,7 +349,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		$allow_root = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
 		$php_binary = Utils\get_php_binary();
-		$process    = WP_CLI\Process::create( "{$php_binary} $temp --info {$allow_root}" );
+		$process    = Process::create( "{$php_binary} $temp --info {$allow_root}" );
 		$result     = $process->run();
 		if ( 0 !== $result->return_code || false === stripos( $result->stdout, 'WP-CLI version' ) ) {
 			$multi_line = explode( PHP_EOL, $result->stderr );
@@ -374,13 +387,13 @@ class CLI_Command extends WP_CLI_Command {
 	private function get_updates( $assoc_args ) {
 		$url = 'https://api.github.com/repos/wp-cli/wp-cli/releases?per_page=100';
 
-		$options = array(
+		$options = [
 			'timeout' => 30,
-		);
+		];
 
-		$headers = array(
+		$headers = [
 			'Accept' => 'application/json',
-		);
+		];
 
 		$github_token = getenv( 'GITHUB_TOKEN' );
 		if ( false !== $github_token ) {
@@ -395,11 +408,11 @@ class CLI_Command extends WP_CLI_Command {
 
 		$release_data = json_decode( $response->body );
 
-		$updates = array(
+		$updates = [
 			'major' => false,
 			'minor' => false,
 			'patch' => false,
-		);
+		];
 		foreach ( $release_data as $release ) {
 
 			// Get rid of leading "v" if there is one set.
@@ -421,11 +434,11 @@ class CLI_Command extends WP_CLI_Command {
 				continue;
 			}
 
-			$updates[ $update_type ] = array(
+			$updates[ $update_type ] = [
 				'version'     => $release_version,
 				'update_type' => $update_type,
 				'package_url' => $release->assets[0]->browser_download_url,
-			);
+			];
 		}
 
 		foreach ( $updates as $type => $value ) {
@@ -434,9 +447,9 @@ class CLI_Command extends WP_CLI_Command {
 			}
 		}
 
-		foreach ( array( 'major', 'minor', 'patch' ) as $type ) {
+		foreach ( [ 'major', 'minor', 'patch' ] as $type ) {
 			if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, $type ) ) {
-				return ! empty( $updates[ $type ] ) ? array( $updates[ $type ] ) : false;
+				return ! empty( $updates[ $type ] ) ? [ $updates[ $type ] ] : false;
 			}
 		}
 
@@ -448,11 +461,11 @@ class CLI_Command extends WP_CLI_Command {
 			}
 			$nightly_version = trim( $response->body );
 			if ( WP_CLI_VERSION !== $nightly_version ) {
-				$updates['nightly'] = array(
+				$updates['nightly'] = [
 					'version'     => $nightly_version,
 					'update_type' => 'nightly',
 					'package_url' => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
-				);
+				];
 			}
 		}
 
@@ -500,7 +513,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'with-values' ) ) {
 			$config = \WP_CLI::get_configurator()->to_array();
-			// Copy current config values to $spec
+			// Copy current config values to $spec.
 			foreach ( $spec as $key => $value ) {
 				$current = null;
 				if ( isset( $config[0][ $key ] ) ) {
@@ -561,7 +574,7 @@ class CLI_Command extends WP_CLI_Command {
 	 */
 	private function get_update_type_str( $assoc_args ) {
 		$update_type = ' ';
-		foreach ( array( 'major', 'minor', 'patch' ) as $type ) {
+		foreach ( [ 'major', 'minor', 'patch' ] as $type ) {
 			if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, $type ) ) {
 				$update_type = ' ' . $type . ' ';
 				break;
