@@ -117,7 +117,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$pager = getenv( 'PAGER' );
 		if ( false === $pager ) {
-			$pager =  'more';
+			$pager = 'more';
 		}
 
 		// For Windows 7 need to set code page to something other than Unicode (65001) to get around "Not enough memory." error with `more.com` on PHP 7.1+.
