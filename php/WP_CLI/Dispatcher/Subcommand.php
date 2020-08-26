@@ -467,6 +467,25 @@ class Subcommand extends CompositeCommand {
 		}
 		WP_CLI::do_hook( "before_invoke:{$cmd}" );
 
+		// Check if `--prompt` arg passed or not.
+		if ( ! empty( $prompted_once ) && true === $prompted_once ) {
+			// Unset empty args.
+			$actual_args = $assoc_args;
+			foreach ( $actual_args as $key ) {
+				if ( empty( $actual_args[ $key ] ) ) {
+					unset( $actual_args[ $key ] );
+				}
+			}
+
+			WP_CLI::log(
+				sprintf(
+					'wp %s %s',
+					$cmd,
+					ltrim( WP_CLI\Utils\assoc_args_to_str( $actual_args ), ' ' )
+				)
+			);
+		}
+
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 
 		if ( $parent ) {
