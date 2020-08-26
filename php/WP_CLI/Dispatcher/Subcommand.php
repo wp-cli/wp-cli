@@ -469,7 +469,6 @@ class Subcommand extends CompositeCommand {
 
 		// Check if `--prompt` arg passed or not.
 		if ( ! empty( $prompted_once ) && true === $prompted_once ) {
-
 			// Unset empty args.
 			$actual_args = $assoc_args;
 			foreach ( $actual_args as $key ) {
@@ -485,7 +484,6 @@ class Subcommand extends CompositeCommand {
 					ltrim( WP_CLI\Utils\assoc_args_to_str( $actual_args ), ' ' )
 				)
 			);
-
 		}
 
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
