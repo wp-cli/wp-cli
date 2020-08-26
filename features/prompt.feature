@@ -165,3 +165,42 @@ Feature: Prompt user for input
       """
       flag3: value3
       """
+
+  Scenario: Prompt should show full command after inputs
+    Given a WP installation
+    And a value-file file:
+      """
+      post_type
+      post
+
+
+      post_title,post_name,post_status
+      csv
+      """
+    When I run `wp post create --post_title='Publish post' --post_content='Publish post content' --post_status='publish'`
+    Then STDOUT should not be empty
+
+    When I run `wp post create --post_title='Publish post 2' --post_content='Publish post content' --post_status='publish'`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --prompt < value-file`
+    Then STDOUT should contain:
+      """
+      wp post list --post_type='post' --fields='post_title,post_name,post_status' --format='csv'
+      """
+    And STDOUT should contain:
+      """
+      post_title,post_name,post_status
+      """
+    And STDOUT should contain:
+      """
+      "Publish post 2",publish-post-2,publish
+      """
+    And STDOUT should contain:
+      """
+      "Publish post",publish-post,publish
+      """
+    And STDOUT should contain:
+      """
+      "Hello world!",hello-world,publish
+      """
