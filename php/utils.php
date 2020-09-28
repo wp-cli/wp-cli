@@ -483,6 +483,9 @@ function mysql_host_to_cli_args( $raw_host ) {
  * @param mixed  $_             Deprecated. Former $descriptors argument.
  * @param bool   $send_to_shell Optional. Whether to send STDOUT and STDERR
  *                              immediately to the shell. Defaults to true.
+ * @param bool   $interactive   Optional. Whether MySQL is meant to be
+ *                              executed as an interactive process. Defaults
+ *                              to false.
  *
  * @return array {
  *     Associative array containing STDOUT and STDERR output.
@@ -492,14 +495,20 @@ function mysql_host_to_cli_args( $raw_host ) {
  *     @type int    $exit_code Exit code of the process.
  * }
  */
-function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true ) {
+function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true, $interactive = false ) {
 	check_proc_available( 'run_mysql_command' );
 
-	$descriptors = [
-		0 => STDIN,
-		1 => [ 'pipe', 'w' ],
-		2 => [ 'pipe', 'w' ],
-	];
+	$descriptors = $interactive ?
+		[
+			0 => STDIN,
+			1 => STDOUT,
+			2 => STDERR,
+		] :
+		[
+			0 => STDIN,
+			1 => [ 'pipe', 'w' ],
+			2 => [ 'pipe', 'w' ],
+		];
 
 	$stdout = '';
 	$stderr = '';
@@ -517,6 +526,7 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true 
 
 	$final_cmd = force_env_on_nix_systems( $cmd ) . assoc_args_to_str( $assoc_args );
 
+	WP_CLI::debug( 'Final MySQL command: ' . $final_cmd, 'db' );
 	$process = proc_open_compat( $final_cmd, $descriptors, $pipes );
 
 	if ( isset( $old_password ) ) {
@@ -527,7 +537,7 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true 
 		exit( 1 );
 	}
 
-	if ( is_resource( $process ) ) {
+	if ( ! $interactive && is_resource( $process ) ) {
 		$stdout = stream_get_contents( $pipes[1] );
 		$stderr = stream_get_contents( $pipes[2] );
 
@@ -536,6 +546,10 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true 
 	}
 
 	$exit_code = proc_close( $process );
+
+	if ( $interactive && $exit_code ) {
+		exit( $exit_code );
+	}
 
 	if ( $send_to_shell ) {
 		fwrite( STDOUT, $stdout );
