@@ -356,7 +356,7 @@ class Subcommand extends CompositeCommand {
 					$value   = $assoc_args[ $spec['name'] ];
 					$options = $spec_args['options'];
 					// phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
-					if ( ! in_array( $assoc_args[ $spec['name'] ], $spec_args['options'] ) ) {
+					if ( ! in_array( $value, $options ) ) {
 						// Try whether it might be a comma-separated list of multiple values.
 						$values = array_map( 'trim', explode( ',', $value ) );
 						$count  = count( $values );
