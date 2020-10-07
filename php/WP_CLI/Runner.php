@@ -959,7 +959,7 @@ class Runner {
 	}
 
 	private function check_root() {
-		if ( $this->config['allow-root'] ) {
+		if ( $this->config['allow-root'] || getenv( 'WP_CLI_ALLOW_ROOT' ) ) {
 			return; # they're aware of the risks!
 		}
 		if ( count( $this->arguments ) >= 2 && 'cli' === $this->arguments[0] && in_array( $this->arguments[1], array( 'update', 'info' ), true ) ) {
