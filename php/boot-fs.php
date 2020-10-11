@@ -2,7 +2,7 @@
 
 // This file needs to parse without error in PHP < 5.3
 
-if ( 'cli' !== PHP_SAPI ) {
+if ( 'cli' !== PHP_SAPI && 'phpdbg' !== PHP_SAPI ) {
 	echo "Only CLI access.\n";
 	die( -1 );
 }
