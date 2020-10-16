@@ -65,7 +65,7 @@ return array(
 		'default'  => array(),
 	),
 
-	'eval'              => array(
+	'exec'              => array(
 		'runtime'  => '=<php-code>',
 		'file'     => '<php-code>',
 		'desc'     => 'Execute PHP code before running the command (may be used more than once).',

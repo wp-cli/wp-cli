@@ -257,7 +257,7 @@ Feature: Bootstrap WP-CLI
 
     Given a WP installation
     
-    When I run `wp --eval="define( 'WP_ADMIN', true );" eval "echo WP_ADMIN;"`
+    When I run `wp --exec="define( 'WP_ADMIN', true );" eval "echo WP_ADMIN;"`
     Then STDOUT should contain:
       """
       1

@@ -8,11 +8,11 @@ use WP_CLI\Utils;
 /**
  * Class LoadExtraCommand.
  *
- * Loads a command that was passed through the `--eval=<php-code>` option.
+ * Loads a command that was passed through the `--exec=<php-code>` option.
  *
  * @package WP_CLI\Bootstrap
  */
-final class LoadEvalCommand implements BootstrapStep {
+final class LoadExecCommand implements BootstrapStep {
 
 	/**
 	 * Process this single bootstrapping step.
@@ -27,11 +27,11 @@ final class LoadEvalCommand implements BootstrapStep {
 		}
 
 		$runner = new RunnerInstance();
-		if ( ! isset( $runner()->config['eval'] ) ) {
+		if ( ! isset( $runner()->config['exec'] ) ) {
 			return $state;
 		}
 
-		foreach ( $runner()->config['eval'] as $php_code ) {
+		foreach ( $runner()->config['exec'] as $php_code ) {
 			eval( $php_code ); // phpcs:ignore Squiz.PHP.Eval.Discouraged
 		}
 
