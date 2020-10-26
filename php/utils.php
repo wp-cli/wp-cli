@@ -1403,7 +1403,7 @@ function get_php_binary() {
  *
  * @access public
  *
- * @param string $command        Command to execute.
+ * @param string $cmd            Command to execute.
  * @param array  $descriptorspec Indexed array of descriptor numbers and their values.
  * @param array  &$pipes         Indexed array of file pointers that correspond to PHP's end of any pipes that are created.
  * @param string $cwd            Initial working directory for the command.
