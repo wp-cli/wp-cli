@@ -297,7 +297,7 @@ class CompositeCommand {
 			}
 
 			// Check if global parameters synopsis should be displayed or not.
-			if ( true !== (bool) getenv( 'WP_CLI_SUPPRESS_GLOBAL_PARAMS' ) ) {
+			if ( 'true' !== getenv( 'WP_CLI_SUPPRESS_GLOBAL_PARAMS' ) ) {
 				$binding['parameters'][]   = array(
 					'synopsis' => $synopsis,
 					'desc'     => $details['desc'],
