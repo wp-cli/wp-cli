@@ -253,6 +253,16 @@ Feature: Bootstrap WP-CLI
       Success: WP-Override-Eval
       """
 
+  Scenario: Define constant before running a command
+
+    Given a WP installation
+    
+    When I run `wp --exec="define( 'WP_ADMIN', true );" eval "echo WP_ADMIN;"`
+    Then STDOUT should contain:
+      """
+      1
+      """
+
   @require-php-5.6
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (command line)
     Given a WP installation with Composer
