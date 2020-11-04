@@ -29,12 +29,12 @@ const PHAR_STREAM_PREFIX = 'phar://';
  * We try to be smart and only replace the constants when they are not within quotes.
  * Regular expressions being stateless, this is probably not 100% correct for edge cases.
  *
- * @see https://regex101.com/r/9hXp5d/7
+ * @see https://regex101.com/r/9hXp5d/11
  * @see https://stackoverflow.com/a/171499/933065
  *
  * @var string
  */
-const FILE_DIR_PATTERN = '/(["\'])(?:(?=(\\?))\2.)*?\1|(?<file>\b__FILE__\b)|(?<dir>\b__DIR__\b)/m';
+const FILE_DIR_PATTERN = '%(?>#.*?$)|(?>//.*?$)|(?>/\*.*?\*/)|(?>\'(?:(?=(\\\\?))\1.)*?\')|(?>"(?:(?=(\\\\?))\2.)*?")|(?<file>\b__FILE__\b)|(?<dir>\b__DIR__\b)%ms';
 
 function inside_phar() {
 	return 0 === strpos( WP_CLI_ROOT, PHAR_STREAM_PREFIX );
