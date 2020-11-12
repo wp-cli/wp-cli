@@ -5,6 +5,7 @@ namespace WP_CLI\Dispatcher;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
+use function WP_CLI\Utils\is_valid_class_and_method_pair;
 
 /**
  * Creates CompositeCommand or Subcommand instances.
@@ -29,7 +30,7 @@ class CommandFactory {
 			|| ( is_string( $callable ) && function_exists( $callable ) ) ) {
 			$reflection = new ReflectionFunction( $callable );
 			$command    = self::create_subcommand( $parent, $name, $callable, $reflection );
-		} elseif ( is_array( $callable ) && is_callable( $callable ) ) {
+		} elseif ( is_array( $callable ) && ( is_callable( $callable ) || is_valid_class_and_method_pair( $callable ) ) ) {
 			$reflection = new ReflectionClass( $callable[0] );
 			$command    = self::create_subcommand(
 				$parent,

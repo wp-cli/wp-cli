@@ -810,4 +810,22 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$actual   = Utils\replace_path_consts( $source, "C:\Users\\test's\site" );
 		$this->assertSame( $expected, $actual );
 	}
+
+	/** @dataProvider dataValidClassAndMethodPair */
+	public function testValidClassAndMethodPair( $pair, $is_valid ) {
+		$this->assertEquals( $pair, Utils\is_valid_class_and_method_pair( $is_valid ) );
+	}
+
+	public function dataValidClassAndMethodPair() {
+		return [
+			[ 'string', false ],
+			[ [], false ],
+			[ [ 'WP_CLI' ], false ],
+			[ [ true, false ], false ],
+			[ [ 'WP_CLI', 'invalid_method' ], false ],
+			[ [ 'Invalid_Class', 'invalid_method' ], false ],
+			[ [ 'WP_CLI', 'add_command' ], true ],
+			[ [ 'Exception', 'getMessage' ], true ],
+		];
+	}
 }
