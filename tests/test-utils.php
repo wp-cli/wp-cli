@@ -813,7 +813,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 	/** @dataProvider dataValidClassAndMethodPair */
 	public function testValidClassAndMethodPair( $pair, $is_valid ) {
-		$this->assertEquals( $pair, Utils\is_valid_class_and_method_pair( $is_valid ) );
+		$this->assertEquals( $is_valid, Utils\is_valid_class_and_method_pair( $pair ) );
 	}
 
 	public function dataValidClassAndMethodPair() {
