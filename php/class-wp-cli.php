@@ -451,6 +451,8 @@ class WP_CLI {
 			$valid = true;
 		} elseif ( is_object( $callable ) ) {
 			$valid = true;
+		} elseif ( Utils\is_valid_class_and_method_pair( $callable ) ) {
+			$valid = true;
 		}
 		if ( ! $valid ) {
 			if ( is_array( $callable ) ) {
