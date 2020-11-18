@@ -1619,6 +1619,35 @@ function describe_callable( $callable ) {
 }
 
 /**
+ * Checks if the given class and method pair is a valid callable.
+ *
+ * This accommodates changes to `is_callable()` in PHP 8 that mean an array of a
+ * classname and instance method is no longer callable.
+ *
+ * @param array $pair The class and method pair to check.
+ * @return bool
+ */
+function is_valid_class_and_method_pair( $pair ) {
+	if ( ! is_array( $pair ) || 2 !== count( $pair ) ) {
+		return false;
+	}
+
+	if ( ! is_string( $pair[0] ) || ! is_string( $pair[1] ) ) {
+		return false;
+	}
+
+	if ( ! class_exists( $pair[0] ) ) {
+		return false;
+	}
+
+	if ( ! method_exists( $pair[0], $pair[1] ) ) {
+		return false;
+	}
+
+	return true;
+}
+
+/**
  * Pluralizes a noun in a grammatically correct way.
  *
  * @param string   $noun  Noun to be pluralized. Needs to be in singular form.
