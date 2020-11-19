@@ -49,6 +49,9 @@ script:
 jobs:
   include:
     - stage: test
+      php: nightly
+      env: WP_VERSION=trunk
+    - stage: test
       php: 7.4
       env: WP_VERSION=latest
     - stage: test
@@ -72,4 +75,9 @@ jobs:
       dist: trusty
     - stage: test
       php: 5.6
+      env: WP_VERSION=trunk
+
+  allow_failures:
+    - stage: test
+      php: nightly
       env: WP_VERSION=trunk
