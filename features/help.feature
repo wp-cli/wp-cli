@@ -53,6 +53,55 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
+  Scenario: Hide Global parameters when requested
+    Given an empty directory
+
+    When I run `wp help`
+    Then STDOUT should contain:
+      """
+      GLOBAL PARAMETERS
+      """
+
+    And STDOUT should contain:
+      """
+      --path
+      """
+
+    And STDOUT should contain:
+      """
+      Path to the WordPress files.
+      """
+
+    When I run `WP_CLI_SUPPRESS_GLOBAL_PARAMS=true wp help`
+    Then STDOUT should not contain:
+      """
+      GLOBAL PARAMETERS
+      """
+
+    And STDOUT should not contain:
+      """
+      --path
+      """
+    And STDOUT should not contain:
+      """
+      Path to the WordPress files.
+      """
+
+    When I run `WP_CLI_SUPPRESS_GLOBAL_PARAMS=false wp help`
+    Then STDOUT should contain:
+      """
+      GLOBAL PARAMETERS
+      """
+
+    And STDOUT should contain:
+      """
+      --path
+      """
+    And STDOUT should contain:
+      """
+      Path to the WordPress files.
+      """
+
   # Prior to WP 4.3 widgets & others used PHP 4 style constructors and prior to WP 3.9 wpdb used the mysql extension which can all lead (depending on PHP version) to PHP Deprecated notices.
   @require-wp-4.3
   Scenario: Help for internal commands with WP
@@ -426,7 +475,7 @@ Feature: Get help about WP-CLI commands
         function __sleep() {}
         function __wakeup() {}
         function __toString() {}
-        function __set_state() {}
+        function __set_state( $properties ) {}
         function __clone() {}
         function __debugInfo() {}
       }

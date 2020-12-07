@@ -258,7 +258,7 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		$this->assertTrue( empty( self::$logger->stderr ) );
 	}
 
-	private function create_test_directory_structure() {
+	private static function create_test_directory_structure() {
 		$temp_dir = Utils\get_temp_dir() . uniqid( self::$copy_overwrite_files_prefix, true );
 		mkdir( $temp_dir );
 
@@ -279,7 +279,7 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		return array( $temp_dir, $src_dir, $wp_dir );
 	}
 
-	private function recursive_scandir( $dir, $prefix_dir = '' ) {
+	private static function recursive_scandir( $dir, $prefix_dir = '' ) {
 		$ret = array();
 		foreach ( array_diff( scandir( $dir ), array( '.', '..' ) ) as $file ) {
 			if ( is_dir( $dir . '/' . $file ) ) {

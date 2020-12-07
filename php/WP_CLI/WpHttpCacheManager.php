@@ -73,6 +73,7 @@ class WpHttpCacheManager {
 	 * @param array $response
 	 * @param array $args
 	 * @param string $url
+	 * @return array $response
 	 */
 	public function filter_http_response( $response, $args, $url ) {
 		// check if whitelisted

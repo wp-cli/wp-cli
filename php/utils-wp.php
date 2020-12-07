@@ -248,8 +248,12 @@ function wp_get_cache_type() {
 		} elseif ( class_exists( 'APC_Object_Cache' ) ) {
 			$message = 'APC';
 
-			// Test for Redis Object Cache (https://github.com/alleyinteractive/wp-redis)
+			// Test for WP Redis (https://wordpress.org/plugins/wp-redis/)
 		} elseif ( isset( $wp_object_cache->redis ) && $wp_object_cache->redis instanceof \Redis ) {
+			$message = 'Redis';
+
+			// Test for Redis Object Cache (https://wordpress.org/plugins/redis-cache/)
+		} elseif ( method_exists( $wp_object_cache, 'redis_instance' ) && method_exists( $wp_object_cache, 'redis_status' ) ) {
 			$message = 'Redis';
 
 			// Test for WP LCache Object cache (https://github.com/lcache/wp-lcache)
