@@ -5,11 +5,11 @@ on: pull_request
 jobs:
 
   unit: #-----------------------------------------------------------------------
-    name: Unit - PHP ${{ matrix.php-version }}
+    name: Unit test /  PHP ${{ matrix.php }}
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
+        php: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0']
     runs-on: ubuntu-latest
 
     steps:
@@ -26,8 +26,9 @@ jobs:
         if: steps.check_files.outputs.files_exists == 'true'
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '${{ matrix.php-version }}'
+          php-version: '${{ matrix.php }}'
           coverage: none
+          tools: composer,cs2pr
 
       - name: Get Composer cache Directory
         if: steps.check_files.outputs.files_exists == 'true'
@@ -48,27 +49,30 @@ jobs:
         if: steps.check_files.outputs.files_exists == 'true'
         run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
 
+      - name: Setup problem matcher to provide annotations for PHPUnit
+        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
       - name: Run PHPUnit
         if: steps.check_files.outputs.files_exists == 'true'
         run: composer phpunit
 
   functional: #----------------------------------------------------------------------
-    name: Functional - WP ${{ matrix.wp-version }} on PHP ${{ matrix.php-version }}
+    name: Functional - WP ${{ matrix.wp }} on PHP ${{ matrix.php }}
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
-        wp-version: ['latest']
+        php: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0']
+        wp: ['latest']
         allowed-to-fail: [false]
         include:
-          - php-version: '5.6'
-            wp-version: 'trunk'
+          - php: '5.6'
+            wp: 'trunk'
             allowed-to-fail: false
-          - php-version: '7.4'
-            wp-version: 'trunk'
+          - php: '7.4'
+            wp: 'trunk'
             allowed-to-fail: false
-          - php-version: '5.6'
-            wp-version: '3.7'
+          - php: '5.6'
+            wp: '3.7'
             allowed-to-fail: true
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.allowed-to-fail }}
@@ -97,9 +101,10 @@ jobs:
       - name: Set up PHP envirnoment
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '${{ matrix.php-version }}'
+          php-version: '${{ matrix.php }}'
           extensions: mysql, zip
           coverage: none
+          tools: composer
 
       - name: Get Composer cache Directory
         if: steps.check_files.outputs.files_exists == 'true'
@@ -136,5 +141,5 @@ jobs:
       - name: Run Behat
         if: steps.check_files.outputs.files_exists == 'true'
         env:
-          WP_VERSION: '${{ matrix.wp-version }}'
+          WP_VERSION: '${{ matrix.wp }}'
         run: composer behat
