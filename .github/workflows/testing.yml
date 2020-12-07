@@ -145,5 +145,5 @@ jobs:
         run: composer behat
 
       - name: Ignore test failure if the job is allowed to fail
-        if: always()
+        if: failure()
         run: ${{ matrix.allowed-to-fail }}
