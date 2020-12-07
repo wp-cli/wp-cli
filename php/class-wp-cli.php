@@ -451,6 +451,8 @@ class WP_CLI {
 			$valid = true;
 		} elseif ( is_object( $callable ) ) {
 			$valid = true;
+		} elseif ( Utils\is_valid_class_and_method_pair( $callable ) ) {
+			$valid = true;
 		}
 		if ( ! $valid ) {
 			if ( is_array( $callable ) ) {
@@ -979,6 +981,8 @@ class WP_CLI {
 	 * Convert a WP_Error or Exception into a string
 	 *
 	 * @param mixed $errors
+	 * @throws \InvalidArgumentException
+	 *
 	 * @return string
 	 */
 	public static function error_to_string( $errors ) {
@@ -1010,6 +1014,13 @@ class WP_CLI {
 		if ( interface_exists( 'Throwable' ) && ( $errors instanceof \Throwable ) || ( $errors instanceof \Exception ) ) {
 			return get_class( $errors ) . ': ' . $errors->getMessage();
 		}
+
+		throw new \InvalidArgumentException(
+			sprintf(
+				"Unsupported argument type passed to WP_CLI::error_to_string(): '%s'",
+				gettype( $errors )
+			)
+		);
 	}
 
 	/**

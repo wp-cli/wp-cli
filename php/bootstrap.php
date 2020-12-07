@@ -23,6 +23,7 @@ function get_bootstrap_steps() {
 		'WP_CLI\Bootstrap\InitializeColorization',
 		'WP_CLI\Bootstrap\InitializeLogger',
 		'WP_CLI\Bootstrap\DefineProtectedCommands',
+		'WP_CLI\Bootstrap\LoadExecCommand',
 		'WP_CLI\Bootstrap\LoadRequiredCommand',
 		'WP_CLI\Bootstrap\IncludePackageAutoloader',
 		'WP_CLI\Bootstrap\IncludeFallbackAutoloader',
