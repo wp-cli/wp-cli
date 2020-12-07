@@ -50,6 +50,7 @@ jobs:
         run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
 
       - name: Setup problem matcher to provide annotations for PHPUnit
+        if: steps.check_files.outputs.files_exists == 'true'
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
       - name: Run PHPUnit
@@ -63,17 +64,17 @@ jobs:
       matrix:
         php: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
         wp: ['latest']
-        test: ['composer behat || composer behat-rerun']
+        test: ["composer behat || composer behat-rerun"]
         include:
           - php: '5.6'
             wp: 'trunk'
-            test: ['composer behat || composer behat-rerun']
+            test: "composer behat || composer behat-rerun"
           - php: '7.4'
             wp: 'trunk'
-            test: ['composer behat || composer behat-rerun']
+            test: "composer behat || composer behat-rerun"
           - php: '5.6'
             wp: '3.7'
-            test: ['composer behat || composer behat-rerun || true']
+            test: "composer behat || composer behat-rerun || true"
     runs-on: ubuntu-latest
 
     services:
@@ -141,5 +142,5 @@ jobs:
         if: steps.check_files.outputs.files_exists == 'true'
         env:
           WP_VERSION: '${{ matrix.wp }}'
-        run: ${{ matrix.text }}
+        run: ${{ matrix.test }}
 
