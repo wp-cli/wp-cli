@@ -143,3 +143,7 @@ jobs:
         env:
           WP_VERSION: '${{ matrix.wp }}'
         run: composer behat
+
+      - name: Ignore test failure if the job is allowed to fail
+        if: ${{ matrix.allowed-to-fail }}
+        run: true
