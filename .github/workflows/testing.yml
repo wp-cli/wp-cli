@@ -1,0 +1,146 @@
+name: Testing
+
+on: pull_request
+
+jobs:
+
+  unit: #-----------------------------------------------------------------------
+    name: Unit test /  PHP ${{ matrix.php }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0']
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v2
+
+      - name: Check existence of composer.json file
+        id: check_files
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "composer.json, phpunit.xml.dist"
+
+      - name: Set up PHP environment
+        if: steps.check_files.outputs.files_exists == 'true'
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '${{ matrix.php }}'
+          coverage: none
+          tools: composer,cs2pr
+
+      - name: Get Composer cache Directory
+        if: steps.check_files.outputs.files_exists == 'true'
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Use Composer cache
+        if: steps.check_files.outputs.files_exists == 'true'
+        uses: actions/cache@master
+        with:
+          path: ${{ steps['composer-cache'].outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        if: steps.check_files.outputs.files_exists == 'true'
+        run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Setup problem matcher to provide annotations for PHPUnit
+        if: steps.check_files.outputs.files_exists == 'true'
+        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Run PHPUnit
+        if: steps.check_files.outputs.files_exists == 'true'
+        run: composer phpunit
+
+  functional: #----------------------------------------------------------------------
+    name: Functional - WP ${{ matrix.wp }} on PHP ${{ matrix.php }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
+        wp: ['latest']
+        test: ["composer behat || composer behat-rerun"]
+        include:
+          - php: '5.6'
+            wp: 'trunk'
+            test: "composer behat || composer behat-rerun"
+          - php: '7.4'
+            wp: 'trunk'
+            test: "composer behat || composer behat-rerun"
+          - php: '5.6'
+            wp: '3.7'
+            test: "composer behat || composer behat-rerun || true"
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: wp_cli_test
+          MYSQL_USER: root
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v2
+
+      - name: Check existence of composer.json & behat.yml files
+        id: check_files
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "composer.json, behat.yml"
+
+      - name: Set up PHP envirnoment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '${{ matrix.php }}'
+          extensions: mysql, zip
+          coverage: none
+          tools: composer
+
+      - name: Get Composer cache Directory
+        if: steps.check_files.outputs.files_exists == 'true'
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Use Composer cache
+        if: steps.check_files.outputs.files_exists == 'true'
+        uses: actions/cache@master
+        with:
+          path: ${{ steps['composer-cache'].outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        if: steps.check_files.outputs.files_exists == 'true'
+        run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Start MySQL server
+        if: steps.check_files.outputs.files_exists == 'true'
+        run: sudo service mysql start
+
+      - name: Prepare test database
+        if: steps.check_files.outputs.files_exists == 'true'
+        run: |
+          export MYQSL_HOST=127.0.0.1
+          export MYSQL_TCP_PORT=${{ job.services.mysql.ports['3306'] }}
+          mysql -e 'CREATE DATABASE IF NOT EXISTS wp_cli_test;' -uroot -proot
+          mysql -e 'GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"127.0.0.1" IDENTIFIED BY "password1"' -uroot -proot
+          mysql -e 'GRANT ALL PRIVILEGES ON wp_cli_test_scaffold.* TO "wp_cli_test"@"127.0.0.1" IDENTIFIED BY "password1"' -uroot -proot
+
+      - name: Run Behat
+        if: steps.check_files.outputs.files_exists == 'true'
+        env:
+          WP_VERSION: '${{ matrix.wp }}'
+        run: ${{ matrix.test }}
+

@@ -21,9 +21,13 @@ else
 	exit
 fi
 
-# create the pre-commit file or notify to add command if it already exists
-pre_commit_file="$(git rev-parse --git-dir)/hooks/pre-commit"
+if git --version &>/dev/null; then
+	pre_commit_file="$(git rev-parse --git-dir)/hooks/pre-commit"
+else
+	pre_commit_file=".git/hooks/pre-commit"
+fi
 
+# create the pre-commit file or notify to add command if it already exists
 if [[ ! -f "$pre_commit_file" ]]; then
 	cat utils/git-pre-commit-script | sed 's|{{PHPCS_BIN}}|'$phpcs_bin'|' > $pre_commit_file
 	chmod +x $pre_commit_file

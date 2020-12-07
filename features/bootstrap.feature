@@ -275,7 +275,7 @@ Feature: Bootstrap WP-CLI
       WP CLI Site with both WordPress and wp-cli as Composer dependencies
       """
 
-  @require-php-5.6
+  @require-php-5.6 @broken
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (web)
     Given a WP installation with Composer
     And a dependency on current wp-cli
