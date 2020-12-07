@@ -141,5 +141,5 @@ jobs:
         if: steps.check_files.outputs.files_exists == 'true'
         env:
           WP_VERSION: '${{ matrix.wp }}'
-        run: composer behat || composer behat-rerun
+        run: ${{ matrix.text }}
 
