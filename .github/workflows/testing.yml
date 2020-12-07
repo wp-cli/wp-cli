@@ -63,19 +63,18 @@ jobs:
       matrix:
         php: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
         wp: ['latest']
-        allowed-to-fail: [false]
+        test: ['composer behat || composer behat-rerun']
         include:
           - php: '5.6'
             wp: 'trunk'
-            allowed-to-fail: false
+            test: ['composer behat || composer behat-rerun']
           - php: '7.4'
             wp: 'trunk'
-            allowed-to-fail: false
+            test: ['composer behat || composer behat-rerun']
           - php: '5.6'
             wp: '3.7'
-            allowed-to-fail: true
+            test: ['composer behat || composer behat-rerun || true']
     runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.allowed-to-fail }}
 
     services:
       mysql:
@@ -142,8 +141,5 @@ jobs:
         if: steps.check_files.outputs.files_exists == 'true'
         env:
           WP_VERSION: '${{ matrix.wp }}'
-        run: composer behat
+        run: composer behat || composer behat-rerun
 
-      - name: Ignore test failure if the job is allowed to fail
-        if: failure()
-        run: ${{ matrix.allowed-to-fail }}
