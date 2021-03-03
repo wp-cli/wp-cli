@@ -1,4 +1,7 @@
 default:
-  paths:
-    features: features
-    bootstrap: vendor/wp-cli/wp-cli-tests/features/bootstrap
+  suites:
+    default:
+      contexts:
+        - WP_CLI\Tests\Context\FeatureContext
+      paths:
+        - features
