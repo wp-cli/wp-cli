@@ -65,40 +65,31 @@ jobs:
         php: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0']
         wp: ['latest']
         mysql: ['8.0']
-        test: ["composer behat || composer behat-rerun"]
         include:
           - php: '5.6'
             wp: 'trunk'
             mysql: '8.0'
-            test: "composer behat || composer behat-rerun"
           - php: '5.6'
             wp: 'trunk'
             mysql: '5.7'
-            test: "composer behat || composer behat-rerun"
           - php: '5.6'
             wp: 'trunk'
             mysql: '5.6'
-            test: "composer behat || composer behat-rerun"
           - php: '7.4'
             wp: 'trunk'
             mysql: '8.0'
-            test: "composer behat || composer behat-rerun"
           - php: '8.0'
             wp: 'trunk'
             mysql: '8.0'
-            test: "composer behat || composer behat-rerun"
           - php: '8.0'
             wp: 'trunk'
             mysql: '5.7'
-            test: "composer behat || composer behat-rerun"
           - php: '8.0'
             wp: 'trunk'
             mysql: '5.6'
-            test: "composer behat || composer behat-rerun"
           - php: '5.6'
             wp: '3.7'
             mysql: '5.6'
-            test: "composer behat || composer behat-rerun"
     runs-on: ubuntu-20.04
 
     services:
@@ -165,8 +156,12 @@ jobs:
         if: steps.check_files.outputs.files_exists == 'true'
         run: composer prepare-tests
 
+      - name: Check Behat environment
+        if: steps.check_files.outputs.files_exists == 'true'
+        run: WP_CLI_TEST_DEBUG_BEHAT_ENV=1 composer behat
+
       - name: Run Behat
         if: steps.check_files.outputs.files_exists == 'true'
         env:
           WP_VERSION: '${{ matrix.wp }}'
-        run: ${{ matrix.test }}
+        run: composer behat || composer behat-rerun
