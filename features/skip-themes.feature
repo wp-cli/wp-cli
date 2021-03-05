@@ -2,10 +2,10 @@ Feature: Skipping themes
 
   Scenario: Skipping themes via global flag
     Given a WP installation
-    And I run `wp theme install classic`
-    And I run `wp theme install default --activate`
+    And I run `wp theme install twentysixteen`
+    And I run `wp theme install twentyseventeen --activate`
 
-    When I run `wp eval 'var_export( function_exists( "kubrick_head" ) );'`
+    When I run `wp eval 'var_export( function_exists( "twentyseventeen_body_classes" ) );'`
     Then STDOUT should be:
       """
       true
@@ -13,31 +13,31 @@ Feature: Skipping themes
     And STDERR should be empty
 
     # The specified theme should be skipped
-    When I run `wp --skip-themes=default eval 'var_export( function_exists( "kubrick_head" ) );'`
+    When I run `wp --skip-themes=twentyseventeen eval 'var_export( function_exists( "twentyseventeen_body_classes" ) );'`
     Then STDOUT should be:
       """
       false
       """
     And STDERR should be empty
-    
+
     # All themes should be skipped
-    When I run `wp --skip-themes eval 'var_export( function_exists( "kubrick_head" ) );'`
+    When I run `wp --skip-themes eval 'var_export( function_exists( "twentyseventeen_body_classes" ) );'`
     Then STDOUT should be:
       """
       false
       """
     And STDERR should be empty
-    
+
     # Skip another theme
-    When I run `wp --skip-themes=classic eval 'var_export( function_exists( "kubrick_head" ) );'`
+    When I run `wp --skip-themes=twentysixteen eval 'var_export( function_exists( "twentyseventeen_body_classes" ) );'`
     Then STDOUT should be:
       """
       true
       """
     And STDERR should be empty
-    
+
     # The specified theme should still show up as an active theme
-    When I run `wp --skip-themes theme status default`
+    When I run `wp --skip-themes theme status twentyseventeen`
     Then STDOUT should contain:
       """
       Active
@@ -45,7 +45,7 @@ Feature: Skipping themes
     And STDERR should be empty
 
     # Skip several themes
-    When I run `wp --skip-themes=classic,default eval 'var_export( function_exists( "kubrick_head" ) );'`
+    When I run `wp --skip-themes=twentysixteen,twentyseventeen eval 'var_export( function_exists( "twentyseventeen_body_classes" ) );'`
     Then STDOUT should be:
       """
       false
@@ -57,12 +57,12 @@ Feature: Skipping themes
     And I run `wp theme install stargazer buntu`
 
     When I run `wp theme activate stargazer`
-    When I run `wp eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
+    # Expect a warning for this theme on PHP 8+.
+    When I try `wp eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
     Then STDOUT should be:
       """
       true
       """
-    And STDERR should be empty
 
     When I run `wp --skip-themes=stargazer eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
     Then STDOUT should be:
@@ -71,20 +71,21 @@ Feature: Skipping themes
       """
     And STDERR should be empty
 
-    When I run `wp theme activate buntu`
-    When I run `wp eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
+    # Expect a warning for this theme on PHP 8+.
+    When I try `wp theme activate buntu`
+    # Expect a warning for this theme on PHP 8+.
+    When I try `wp eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
     Then STDOUT should be:
       """
       true
       """
-    And STDERR should be empty
 
-    When I run `wp eval 'var_export( function_exists( "buntu_theme_setup" ) );'`
+    # Expect a warning for this theme on PHP 8+.
+    When I try `wp eval 'var_export( function_exists( "buntu_theme_setup" ) );'`
     Then STDOUT should be:
       """
       true
       """
-    And STDERR should be empty
 
     When I run `wp --skip-themes=buntu eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
     Then STDOUT should be:
@@ -124,7 +125,7 @@ Feature: Skipping themes
       """
     And I run `wp theme install classic --activate`
     And I run `wp theme install default`
-    
+
     # The classic theme should show up as an active theme
     When I run `wp theme status`
     Then STDOUT should contain:
@@ -140,7 +141,7 @@ Feature: Skipping themes
       I default
       """
     And STDERR should be empty
-    
+
     And I run `wp theme activate default`
 
     # The default theme should be skipped

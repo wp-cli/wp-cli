@@ -22,13 +22,9 @@ Feature: wp-config
       """
 
     When I try `wp eval "echo 'TEST_CONFIG_OVERRIDE => ' . TEST_CONFIG_OVERRIDE;"`
-    Then STDOUT should contain:
-      """
-      TEST_CONFIG_OVERRIDE => TEST_CONFIG_OVERRIDE
-      """
     And STDERR should contain:
       """
-      Use of undefined constant TEST_CONFIG_OVERRIDE
+      TEST_CONFIG_OVERRIDE
       """
 
     When I run `WP_CONFIG_PATH=wp-config-override.php wp eval "echo 'TEST_CONFIG_OVERRIDE => ' . TEST_CONFIG_OVERRIDE;"`

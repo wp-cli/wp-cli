@@ -475,7 +475,7 @@ Feature: Get help about WP-CLI commands
         function __sleep() {}
         function __wakeup() {}
         function __toString() {}
-        function __set_state( $properties ) {}
+        static function __set_state( $properties ) {}
         function __clone() {}
         function __debugInfo() {}
       }
