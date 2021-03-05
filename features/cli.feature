@@ -1,5 +1,6 @@
 Feature: `wp cli` tasks
 
+  @less-than-php-8
   Scenario: Ability to detect a WP-CLI registered command
     Given a WP installation
 

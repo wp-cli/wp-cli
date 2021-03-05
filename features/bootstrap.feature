@@ -256,8 +256,9 @@ Feature: Bootstrap WP-CLI
   Scenario: Define constant before running a command
 
     Given a WP installation
-    
-    When I run `wp --exec="define( 'WP_ADMIN', true );" eval "echo WP_ADMIN;"`
+
+    # Expect a warning from WP core for PHP 8+.
+    When I try `wp --exec="define( 'WP_ADMIN', true );" eval "echo WP_ADMIN;"`
     Then STDOUT should contain:
       """
       1

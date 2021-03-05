@@ -96,6 +96,11 @@
 		<exclude-pattern>*/utils/contrib-list\.php$</exclude-pattern>
 	</rule>
 
+	<!-- Exclude existing classes from the prefix rule as it would break BC to prefix them now. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound">
+		<exclude-pattern>php/wp-settings-cli\.php$</exclude-pattern>
+	</rule>
+
 	<!-- These are all to do with file-system related tests. Just ignore them. -->
 	<rule ref="WordPress.WP.CapitalPDangit">
 		<exclude-pattern>*/tests/test-(extractor|utils)\.php$</exclude-pattern>
