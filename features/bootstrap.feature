@@ -426,3 +426,9 @@ Feature: Bootstrap WP-CLI
       Success:
       """
     And the return code should be 0
+
+  Scenario: Allow disabling ini_set()
+    Given an empty directory
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=ini_set} cli info`
+    Then the return code should be 0
+    And STDERR should be empty
