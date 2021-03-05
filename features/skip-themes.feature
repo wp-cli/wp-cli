@@ -1,5 +1,6 @@
 Feature: Skipping themes
 
+  @requires-wp-4
   Scenario: Skipping themes via global flag
     Given a WP installation
     And I run `wp theme install twentysixteen`
