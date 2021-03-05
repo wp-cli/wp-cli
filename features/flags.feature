@@ -136,6 +136,7 @@ Feature: Global flags
           }
 
           ini_set( 'xdebug.force_display_errors', 'Off' );
+          ini_set( 'log_errors', 0 );
       """
 
     When I run `wp core config {CORE_CONFIG_SETTINGS}`
