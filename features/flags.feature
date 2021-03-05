@@ -58,6 +58,7 @@ Feature: Global flags
       Error: 'non-existing-command' is not a registered wp command. See 'wp help' for available commands.
       """
 
+  @less-than-php-8
   Scenario: Debug run
     Given a WP installation
 
