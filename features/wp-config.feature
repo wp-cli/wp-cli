@@ -6,9 +6,9 @@ Feature: wp-config
       """
       <?php
       define('DB_NAME', 'wp_cli_test');
-      define('DB_USER', 'wp_cli_test');
-      define('DB_PASSWORD', 'password1');
-      define('DB_HOST', '127.0.0.1');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
       define('DB_CHARSET', 'utf8');
       define('DB_COLLATE', '');
       $table_prefix = 'wp_';
