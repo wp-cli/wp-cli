@@ -338,7 +338,8 @@ Feature: Load WP-CLI
       """
 
     # This will work as finds blog with empty domain and thus uses `home` option.
-    When I run `wp option get home`
+    # Expect a warning from WP core for PHP 8+.
+    When I try `wp option get home`
     Then STDOUT should be:
       """
       http://example.com

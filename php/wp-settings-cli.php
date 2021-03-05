@@ -2,6 +2,8 @@
 /**
  * A modified version of wp-settings.php, tailored for CLI use.
  *
+ * Note: This is not being used anymore from WordPress 4.6-alpha-37575 onwards.
+ *
  * @phpcs:disable WordPress.WP.GlobalVariablesOverride -- Setting the globals is the point of this file.
  * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- These are WP native constants which are needed.
  * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- All hook calls in this file are to WP native hooks.
@@ -334,6 +336,13 @@ do_action( 'plugins_loaded' );
 
 // Define constants which affect functionality if not already defined.
 wp_functionality_constants();
+
+if ( ! function_exists( 'get_magic_quotes_gpc' ) ) {
+	// Provide compat fallback for newer PHP version (7.4+) on older WordPress core versions.
+	function get_magic_quotes_gpc() {
+		return false;
+	}
+}
 
 // Add magic quotes and set up $_REQUEST ( $_GET + $_POST )
 wp_magic_quotes();

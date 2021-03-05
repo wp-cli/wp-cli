@@ -235,6 +235,7 @@ Feature: Run a WP-CLI command
       | --no-launch |
       | --launch    |
 
+    @less-than-php-8
   Scenario Outline: Installed packages work as expected
     Given a WP installation
 
