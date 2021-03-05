@@ -1,6 +1,6 @@
 Feature: Skipping themes
 
-  @requires-wp-4
+  @require-wp-4.7
   Scenario: Skipping themes via global flag
     Given a WP installation
     # Themes will already be installed on WP core trunk.
