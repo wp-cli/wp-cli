@@ -14,6 +14,7 @@ use WP_CLI\Bootstrap\BootstrapState;
  */
 function get_bootstrap_steps() {
 	return array(
+		'WP_CLI\Bootstrap\DeclareFallbackFunctions',
 		'WP_CLI\Bootstrap\LoadUtilityFunctions',
 		'WP_CLI\Bootstrap\LoadDispatcher',
 		'WP_CLI\Bootstrap\DeclareMainClass',
