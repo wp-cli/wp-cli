@@ -3,8 +3,9 @@ Feature: Skipping themes
   @requires-wp-4
   Scenario: Skipping themes via global flag
     Given a WP installation
-    And I run `wp theme install twentysixteen`
-    And I run `wp theme install twentyseventeen --activate`
+    # Themes will already be installed on WP core trunk.
+    And I try `wp theme install twentysixteen`
+    And I try `wp theme install twentyseventeen --activate`
 
     When I run `wp eval 'var_export( function_exists( "twentyseventeen_body_classes" ) );'`
     Then STDOUT should be:
