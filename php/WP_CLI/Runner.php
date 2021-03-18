@@ -10,6 +10,21 @@ use WP_CLI\Dispatcher\CompositeCommand;
 /**
  * Performs the execution of a command.
  *
+ * @property-read string $global_config_path
+ * @property-read string $project_config_path
+ * @property-read array  $config
+ * @property-read array  $extra_config
+ * @property-read string $alias
+ * @property-read array  $aliases
+ * @property-read array  $arguments
+ * @property-read array  $assoc_args
+ * @property-read array  $runtime_config
+ * @property-read bool   $colorize
+ * @property-read array  $early_invoke
+ * @property-read string $global_config_path_debug
+ * @property-read string $project_config_path_debug
+ * @property-read array  $required_files
+ *
  * @package WP_CLI
  */
 class Runner {
