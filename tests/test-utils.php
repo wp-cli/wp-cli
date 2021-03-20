@@ -3,6 +3,7 @@
 use WP_CLI\Utils;
 
 require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
+require_once __DIR__ . '/mock-requests-transport.php';
 
 class UtilsTest extends PHPUnit_Framework_TestCase {
 
@@ -504,6 +505,49 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// Restore.
 		$class_wp_cli_logger->setValue( $prev_logger );
+	}
+
+	/**
+	 * @dataProvider dataHttpRequestVerify
+	 */
+	public function testHttpRequestVerify( $expected, $options ) {
+		$transport_spy = new Mock_Requests_Transport();
+		$options['transport'] = $transport_spy;
+
+		Utils\http_request( 'GET', 'https://wordpress.org', null /*data*/, array() /*headers*/, $options );
+
+		$this->assertCount( 1, $transport_spy->requests );
+		$this->assertEquals( $expected, $transport_spy->requests[0]['options']['verify'] );
+	}
+
+	public function dataHttpRequestVerify() {
+		return array(
+			'not passed' => array(
+				Utils\get_default_cacert(),
+				array(),
+			),
+			'true' => array(
+				Utils\get_default_cacert(),
+				array( 'verify' => true ),
+			),
+			'false' => array(
+				false,
+				array( 'verify' => false ),
+			),
+			'custom cacert' => array(
+				__FILE__,
+				array( 'verify' => __FILE__ ),
+			)
+		);
+	}
+
+	public function testGetDefaultCaCert() {
+		$default_cert = Utils\get_default_cacert();
+		$this->assertStringEndsWith(
+			'/rmccue/requests/library/Requests/Transport/cacert.pem',
+			$default_cert
+		);
+		$this->assertFileExists( $default_cert );
 	}
 
 	/**
