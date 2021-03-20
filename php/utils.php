@@ -813,6 +813,36 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 }
 
 /**
+ * Gets the full path to the default CA cert.
+ *
+ * @param bool $halt_on_error Whether or not command execution should be halted on error. Default: false
+ * @return string Absolute path to the default CA cert.
+ * @throws RuntimeException If unable to locate the cert.
+ * @throws WP_CLI\ExitException If unable to locate the cert and $halt_on_error is true.
+ */
+function get_default_cacert( $halt_on_error = false ) {
+	$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
+	$error_msg = 'Cannot find SSL certificate.';
+
+	if ( inside_phar() ) {
+		// cURL can't read Phar archives
+		return extract_from_phar( WP_CLI_VENDOR_DIR . $cert_path );
+	}
+
+	foreach ( get_vendor_paths() as $vendor_path ) {
+		if ( file_exists( $vendor_path . $cert_path ) ) {
+			return $vendor_path . $cert_path;
+		}
+	}
+
+	if ( $halt_on_error ) {
+		WP_CLI::error( $error_msg );
+	}
+
+	throw new RuntimeException( $error_msg );
+}
+
+/**
  * Increments a version string using the "x.y.z-pre" format.
  *
  * Can increment the major, minor or patch number by one.
