@@ -763,28 +763,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 				throw $ex;
 			}
 
-			// Fallback to the embedded CA file.
-			$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
-			if ( inside_phar() ) {
-				// cURL can't read Phar archives.
-				$options['verify'] = extract_from_phar(
-					WP_CLI_VENDOR_DIR . $cert_path
-				);
-			} else {
-				foreach ( get_vendor_paths() as $vendor_path ) {
-					if ( file_exists( $vendor_path . $cert_path ) ) {
-						$options['verify'] = $vendor_path . $cert_path;
-						break;
-					}
-				}
-				if ( empty( $options['verify'] ) ) {
-					$error_msg = 'Cannot find SSL certificate.';
-					if ( $halt_on_error ) {
-						WP_CLI::error( $error_msg );
-					}
-					throw new RuntimeException( $error_msg );
-				}
-			}
+			$options['verify'] = get_default_cacert( $halt_on_error );
 
 			return Requests::request( $url, $headers, $data, $method, $options );
 		}
