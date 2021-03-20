@@ -1,5 +1,6 @@
 <?php
 
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
 class Mock_Requests_Transport implements Requests_Transport {
 	public $requests = array();
 

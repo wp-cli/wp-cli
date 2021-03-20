@@ -511,7 +511,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	 * @dataProvider dataHttpRequestVerify
 	 */
 	public function testHttpRequestVerify( $expected, $options ) {
-		$transport_spy = new Mock_Requests_Transport();
+		$transport_spy        = new Mock_Requests_Transport();
 		$options['transport'] = $transport_spy;
 
 		Utils\http_request( 'GET', 'https://wordpress.org', null /*data*/, array() /*headers*/, $options );
@@ -522,22 +522,22 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 	public function dataHttpRequestVerify() {
 		return array(
-			'not passed' => array(
+			'not passed'    => array(
 				Utils\get_default_cacert(),
 				array(),
 			),
-			'true' => array(
+			'true'          => array(
 				Utils\get_default_cacert(),
 				array( 'verify' => true ),
 			),
-			'false' => array(
+			'false'         => array(
 				false,
 				array( 'verify' => false ),
 			),
 			'custom cacert' => array(
 				__FILE__,
 				array( 'verify' => __FILE__ ),
-			)
+			),
 		);
 	}
 
