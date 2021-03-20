@@ -736,7 +736,14 @@ function replace_path_consts( $source, $path ) {
  * @param string $method  HTTP method (GET, POST, DELETE, etc.).
  * @param string $url     URL to make the HTTP request to.
  * @param array  $headers Add specific headers to the request.
- * @param array $options
+ * @param array  $options {
+ *     Optional. An associative array of additional request options.
+ *
+ *     @type bool $halt_on_error Whether or not command execution should be halted on error. Default: true
+ *     @type bool|string $verify A boolean to use enable/disable SSL verification
+ *                               or string absolute path to CA cert to use.
+ *                               Defaults to detected CA cert bundled with the Requests library.
+ * }
  * @return object
  * @throws RuntimeException If the request failed.
  * @throws WP_CLI\ExitException If the request failed and $halt_on_error is true.
