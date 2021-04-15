@@ -52,9 +52,17 @@ function wp_debug_mode() {
 				ini_set( 'display_errors', 0 );
 			}
 
-			if ( WP_DEBUG_LOG ) {
+			if ( in_array( strtolower( (string) WP_DEBUG_LOG ), array( 'true', '1' ), true ) ) {
+				$log_path = WP_CONTENT_DIR . '/debug.log';
+			} elseif ( is_string( WP_DEBUG_LOG ) ) {
+				$log_path = WP_DEBUG_LOG;
+			} else {
+				$log_path = false;
+			}
+
+			if ( $log_path ) {
 				ini_set( 'log_errors', 1 );
-				ini_set( 'error_log', WP_CONTENT_DIR . '/debug.log' );
+				ini_set( 'error_log', $log_path );
 			}
 		} else {
 			error_reporting( E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_ERROR | E_WARNING | E_PARSE | E_USER_ERROR | E_USER_WARNING | E_RECOVERABLE_ERROR );
