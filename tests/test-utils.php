@@ -490,7 +490,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$logger = new \WP_CLI\Loggers\Execution();
 		WP_CLI::set_logger( $logger );
 
-		Utils\http_request( 'GET', 'https://example.com' );
+		Utils\http_request( 'GET', 'https://example.com', null, array(), array( 'verify' => $bad_cacert_path ) );
 
 		// Undo bad CAcert hack before asserting.
 		unlink( $bad_cacert_path );
