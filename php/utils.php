@@ -747,10 +747,10 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 		// Autoloader for the Requests library has not been registered yet.
 		Requests::register_autoloader();
 	}
-	
+
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
 
-	if ( ! isset($options['verify'] ) ) {
+	if ( ! isset( $options['verify'] ) ) {
 		// 'curl.cainfo' enforces the CA file to use, otherwise fallback to system-wide defaults then use the embedded CA file.
 		$options['verify'] = ini_get( 'curl.cainfo' ) ? ini_get( 'curl.cainfo' ) : true;
 	}
