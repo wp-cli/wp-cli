@@ -747,6 +747,8 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 		// Autoloader for the Requests library has not been registered yet.
 		Requests::register_autoloader();
 	}
+	
+	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
 
 	if ( ! isset($options['verify'])) {
 		// 'curl.cainfo' enforces the CA file to use, otherwise fallback to system-wide defaults then use the embedded CA file.
@@ -763,7 +765,6 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 
 			// Fallback to the embedded CA file.
 			$cert_path     = '/rmccue/requests/library/Requests/Transport/cacert.pem';
-			$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
 			if ( inside_phar() ) {
 				// cURL can't read Phar archives
 				$options['verify'] = extract_from_phar(
