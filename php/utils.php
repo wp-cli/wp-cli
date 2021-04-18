@@ -750,21 +750,21 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 	
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
 
-	if ( ! isset($options['verify'])) {
+	if ( ! isset($options['verify'] ) ) {
 		// 'curl.cainfo' enforces the CA file to use, otherwise fallback to system-wide defaults then use the embedded CA file.
-		$options['verify'] = ini_get('curl.cainfo') ? ini_get('curl.cainfo') : True;
+		$options['verify'] = ini_get( 'curl.cainfo' ) ? ini_get( 'curl.cainfo' ) : true;
 	}
 
 	try {
 		try {
 			return Requests::request( $url, $headers, $data, $method, $options );
 		} catch ( Requests_Exception $ex ) {
-			if ( True !== $options['verify'] || 'curlerror' !== $ex->getType() || curl_errno( $ex->getData() ) !== CURLE_SSL_CACERT ) {
+			if ( true !== $options['verify'] || 'curlerror' !== $ex->getType() || curl_errno( $ex->getData() ) !== CURLE_SSL_CACERT ) {
 				throw $ex;
 			}
 
 			// Fallback to the embedded CA file.
-			$cert_path     = '/rmccue/requests/library/Requests/Transport/cacert.pem';
+			$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
 			if ( inside_phar() ) {
 				// cURL can't read Phar archives
 				$options['verify'] = extract_from_phar(
@@ -785,7 +785,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 					throw new RuntimeException( $error_msg );
 				}
 			}
-		
+
 			return Requests::request( $url, $headers, $data, $method, $options );
 		}
 	} catch ( Requests_Exception $ex ) {
