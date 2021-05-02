@@ -756,7 +756,7 @@ class WP_CLI {
 	 * @access public
 	 * @category Output
 	 *
-	 * @param string $message Message to write to STDERR.
+	 * @param string|WP_Error|Exception|Throwable $message Message to write to STDERR.
 	 * @param string|bool $group Organize debug message to a specific group.
 	 * Use `false` to not group the message.
 	 * @return null
@@ -801,7 +801,7 @@ class WP_CLI {
 	 * @access public
 	 * @category Output
 	 *
-	 * @param string $message Message to write to STDERR.
+	 * @param string|WP_Error|Exception|Throwable $message Message to write to STDERR.
 	 * @return null
 	 */
 	public static function warning( $message ) {
@@ -827,7 +827,7 @@ class WP_CLI {
 	 * @access public
 	 * @category Output
 	 *
-	 * @param string|WP_Error|Exception  $message Message to write to STDERR.
+	 * @param string|WP_Error|Exception|Throwable $message Message to write to STDERR.
 	 * @param boolean|integer            $exit    True defaults to exit(1).
 	 * @return null
 	 */
@@ -980,7 +980,7 @@ class WP_CLI {
 	/**
 	 * Convert a WP_Error or Exception into a string
 	 *
-	 * @param mixed $errors
+	 * @param string|WP_Error|Exception|Throwable $errors
 	 * @throws \InvalidArgumentException
 	 *
 	 * @return string
