@@ -743,36 +743,51 @@ function replace_path_consts( $source, $path ) {
  */
 function http_request( $method, $url, $data = null, $headers = array(), $options = array() ) {
 
-	$cert_path     = '/rmccue/requests/library/Requests/Transport/cacert.pem';
-	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
-	if ( inside_phar() ) {
-		// cURL can't read Phar archives
-		$options['verify'] = extract_from_phar(
-			WP_CLI_VENDOR_DIR . $cert_path
-		);
-	} else {
-		foreach ( get_vendor_paths() as $vendor_path ) {
-			if ( file_exists( $vendor_path . $cert_path ) ) {
-				$options['verify'] = $vendor_path . $cert_path;
-				break;
-			}
-		}
-		if ( empty( $options['verify'] ) ) {
-			$error_msg = 'Cannot find SSL certificate.';
-			if ( $halt_on_error ) {
-				WP_CLI::error( $error_msg );
-			}
-			throw new RuntimeException( $error_msg );
-		}
-	}
-
 	if ( ! class_exists( 'Requests_Hooks' ) ) {
 		// Autoloader for the Requests library has not been registered yet.
 		Requests::register_autoloader();
 	}
 
+	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
+
+	if ( ! isset( $options['verify'] ) ) {
+		// 'curl.cainfo' enforces the CA file to use, otherwise fallback to system-wide defaults then use the embedded CA file.
+		$options['verify'] = ini_get( 'curl.cainfo' ) ? ini_get( 'curl.cainfo' ) : true;
+	}
+
 	try {
-		return Requests::request( $url, $headers, $data, $method, $options );
+		try {
+			return Requests::request( $url, $headers, $data, $method, $options );
+		} catch ( Requests_Exception $ex ) {
+			if ( true !== $options['verify'] || 'curlerror' !== $ex->getType() || curl_errno( $ex->getData() ) !== CURLE_SSL_CACERT ) {
+				throw $ex;
+			}
+
+			// Fallback to the embedded CA file.
+			$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
+			if ( inside_phar() ) {
+				// cURL can't read Phar archives.
+				$options['verify'] = extract_from_phar(
+					WP_CLI_VENDOR_DIR . $cert_path
+				);
+			} else {
+				foreach ( get_vendor_paths() as $vendor_path ) {
+					if ( file_exists( $vendor_path . $cert_path ) ) {
+						$options['verify'] = $vendor_path . $cert_path;
+						break;
+					}
+				}
+				if ( empty( $options['verify'] ) ) {
+					$error_msg = 'Cannot find SSL certificate.';
+					if ( $halt_on_error ) {
+						WP_CLI::error( $error_msg );
+					}
+					throw new RuntimeException( $error_msg );
+				}
+			}
+
+			return Requests::request( $url, $headers, $data, $method, $options );
+		}
 	} catch ( Requests_Exception $ex ) {
 		// CURLE_SSL_CACERT_BADFILE only defined for PHP >= 7.
 		if ( 'curlerror' !== $ex->getType() || ! in_array( curl_errno( $ex->getData() ), array( CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, 77 /*CURLE_SSL_CACERT_BADFILE*/ ), true ) ) {
