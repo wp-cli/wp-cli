@@ -736,7 +736,14 @@ function replace_path_consts( $source, $path ) {
  * @param string $method  HTTP method (GET, POST, DELETE, etc.).
  * @param string $url     URL to make the HTTP request to.
  * @param array  $headers Add specific headers to the request.
- * @param array $options
+ * @param array  $options {
+ *     Optional. An associative array of additional request options.
+ *
+ *     @type bool $halt_on_error Whether or not command execution should be halted on error. Default: true
+ *     @type bool|string $verify A boolean to use enable/disable SSL verification
+ *                               or string absolute path to CA cert to use.
+ *                               Defaults to detected CA cert bundled with the Requests library.
+ * }
  * @return object
  * @throws RuntimeException If the request failed.
  * @throws WP_CLI\ExitException If the request failed and $halt_on_error is true.
@@ -763,28 +770,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 				throw $ex;
 			}
 
-			// Fallback to the embedded CA file.
-			$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
-			if ( inside_phar() ) {
-				// cURL can't read Phar archives.
-				$options['verify'] = extract_from_phar(
-					WP_CLI_VENDOR_DIR . $cert_path
-				);
-			} else {
-				foreach ( get_vendor_paths() as $vendor_path ) {
-					if ( file_exists( $vendor_path . $cert_path ) ) {
-						$options['verify'] = $vendor_path . $cert_path;
-						break;
-					}
-				}
-				if ( empty( $options['verify'] ) ) {
-					$error_msg = 'Cannot find SSL certificate.';
-					if ( $halt_on_error ) {
-						WP_CLI::error( $error_msg );
-					}
-					throw new RuntimeException( $error_msg );
-				}
-			}
+			$options['verify'] = get_default_cacert( $halt_on_error );
 
 			return Requests::request( $url, $headers, $data, $method, $options );
 		}
@@ -810,6 +796,36 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 			throw new RuntimeException( $error_msg, null, $ex );
 		}
 	}
+}
+
+/**
+ * Gets the full path to the default CA cert.
+ *
+ * @param bool $halt_on_error Whether or not command execution should be halted on error. Default: false
+ * @return string Absolute path to the default CA cert.
+ * @throws RuntimeException If unable to locate the cert.
+ * @throws WP_CLI\ExitException If unable to locate the cert and $halt_on_error is true.
+ */
+function get_default_cacert( $halt_on_error = false ) {
+	$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
+	$error_msg = 'Cannot find SSL certificate.';
+
+	if ( inside_phar() ) {
+		// cURL can't read Phar archives
+		return extract_from_phar( WP_CLI_VENDOR_DIR . $cert_path );
+	}
+
+	foreach ( get_vendor_paths() as $vendor_path ) {
+		if ( file_exists( $vendor_path . $cert_path ) ) {
+			return $vendor_path . $cert_path;
+		}
+	}
+
+	if ( $halt_on_error ) {
+		WP_CLI::error( $error_msg );
+	}
+
+	throw new RuntimeException( $error_msg );
 }
 
 /**
