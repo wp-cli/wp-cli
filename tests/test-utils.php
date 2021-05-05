@@ -523,11 +523,11 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	public function dataHttpRequestVerify() {
 		return array(
 			'not passed'    => array(
-				Utils\get_default_cacert(),
+				true,
 				array(),
 			),
 			'true'          => array(
-				Utils\get_default_cacert(),
+				true,
 				array( 'verify' => true ),
 			),
 			'false'         => array(
