@@ -766,7 +766,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 			// Fallback to the embedded CA file.
 			$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
 			if ( inside_phar() ) {
-				// cURL can't read Phar archives
+				// cURL can't read Phar archives.
 				$options['verify'] = extract_from_phar(
 					WP_CLI_VENDOR_DIR . $cert_path
 				);
