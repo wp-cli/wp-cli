@@ -14,6 +14,7 @@
 namespace WP_CLI;
 
 use Symfony\Component\Finder\Finder;
+use WP_CLI;
 use WP_CLI\Utils;
 
 /**
@@ -224,7 +225,7 @@ class FileCache {
 			try {
 				$expire = new \DateTime();
 			} catch ( \Exception $e ) {
-				\WP_CLI::error( $e->getMessage() );
+				WP_CLI::error( $e->getMessage() );
 			}
 			$expire->modify( '-' . $ttl . ' seconds' );
 
@@ -321,8 +322,12 @@ class FileCache {
 			}
 
 			if ( ! @mkdir( $dir, 0777, true ) ) {
-				$error = error_get_last();
-				\WP_CLI::warning( sprintf( "Failed to create directory '%s': %s.", $dir, $error['message'] ) );
+				$message = "Failed to create directory '{$dir}'";
+				$error   = error_get_last();
+				if ( is_array( $error ) && array_key_exists( 'message', $error ) ) {
+					$message .= ": {$error['message']}";
+				}
+				WP_CLI::warning( "{$message}." );
 				return false;
 			}
 		}
