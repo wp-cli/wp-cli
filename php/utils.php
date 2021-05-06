@@ -744,6 +744,7 @@ function replace_path_consts( $source, $path ) {
  *     @type bool|string $verify A boolean to use enable/disable SSL verification
  *                               or string absolute path to CA cert to use.
  *                               Defaults to detected CA cert bundled with the Requests library.
+ *     @type bool $insecure      Whether to retry automatically without certificate validation.
  * }
  * @return object
  * @throws RuntimeException If the request failed.
@@ -784,17 +785,18 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 			}
 			throw new RuntimeException( $error_msg, null, $ex );
 		}
-		// Handle SSL certificate issues gracefully
-		WP_CLI::warning( sprintf( "Re-trying without verify after failing to get verified url '%s' %s.", $url, $ex->getMessage() ) );
-		$options['verify'] = false;
-		try {
-			return Requests::request( $url, $headers, $data, $method, $options );
-		} catch ( Requests_Exception $ex ) {
-			$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $ex->getMessage() );
-			if ( $halt_on_error ) {
-				WP_CLI::error( $error_msg );
+		if ( array_key_exists( 'insecure', $options ) && true === $options['insecure'] ) {
+			WP_CLI::warning( sprintf( "Re-trying without verify after failing to get verified url '%s' %s.", $url, $ex->getMessage() ) );
+			$options['verify'] = false;
+			try {
+				return Requests::request( $url, $headers, $data, $method, $options );
+			} catch ( Requests_Exception $ex ) {
+				$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $ex->getMessage() );
+				if ( $halt_on_error ) {
+					WP_CLI::error( $error_msg );
+				}
+				throw new RuntimeException( $error_msg, null, $ex );
 			}
-			throw new RuntimeException( $error_msg, null, $ex );
 		}
 	}
 }
