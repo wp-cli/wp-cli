@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\ExitException;
+use WP_CLI\Loggers;
 use WP_CLI\Utils;
 
 require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
@@ -425,13 +427,13 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		// Enable exit exception.
 		$class_wp_cli_capture_exit->setValue( true );
 
-		$logger = new \WP_CLI\Loggers\Execution();
+		$logger = new Loggers\Execution();
 		WP_CLI::set_logger( $logger );
 
 		$exception = null;
 		try {
 			Utils\http_request( 'GET', 'https://nosuchhost_asdf_asdf_asdf.com', null /*data*/, array() /*headers*/, array( 'timeout' => 0.01 ) );
-		} catch ( \WP_CLI\ExitException $ex ) {
+		} catch ( ExitException $ex ) {
 			$exception = $ex;
 		}
 		$this->assertTrue( null !== $exception );
@@ -488,10 +490,20 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			$this->markTestSkipped( 'Unable to create bad CAcert.' );
 		}
 
-		$logger = new \WP_CLI\Loggers\Execution();
-		WP_CLI::set_logger( $logger );
-
+		// Execute a default request. This request should be the same as the secure one.
+		$logger_default = new Loggers\Execution();
+		WP_CLI::set_logger( $logger_default );
 		Utils\http_request( 'GET', 'https://example.com', null, array(), array( 'verify' => $bad_cacert_path ) );
+
+		// Execute a secure request.
+		$logger_secure = new Loggers\Execution();
+		WP_CLI::set_logger( $logger_secure );
+		Utils\http_request( 'GET', 'https://example.com', null, array(), array( 'verify' => $bad_cacert_path, 'insecure' => false ) );
+
+		// Execute an insecure request, i.e. retrying without certificate validation.
+		$logger_insecure = new Loggers\Execution();
+		WP_CLI::set_logger( $logger_insecure );
+		Utils\http_request( 'GET', 'https://example.com', null, array(), array( 'verify' => $bad_cacert_path, 'insecure' => true ) );
 
 		// Undo bad CAcert hack before asserting.
 		unlink( $bad_cacert_path );
@@ -499,9 +511,17 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			rmdir( $created_dir );
 		}
 
-		$this->assertTrue( empty( $logger->stdout ) );
-		$this->assertTrue( 0 === strpos( $logger->stderr, 'Warning: Re-trying without verify after failing to get verified url' ) );
-		$this->assertFalse( strpos( $logger->stderr, 'Error' ) );
+		$this->assertTrue( empty( $logger_default->stdout ), 'default request should not have output' );
+		$this->assertFalse( strpos( $logger_default->stderr, 'Warning: Re-trying without verify after failing to get verified url' ), 'default request should not show a retry warning' );
+		$this->assertNotFalse( strpos( $logger_default->stderr, 'Error' ), 'default request should throw an error' );
+
+		$this->assertTrue( empty( $logger_secure->stdout ), 'secure request should not have output' );
+		$this->assertFalse( strpos( $logger_secure->stderr, 'Warning: Re-trying without verify after failing to get verified url' ), 'secure request should not show a retry warning' );
+		$this->assertNotFalse( strpos( $logger_secure->stderr, 'Error' ), 'secure request should throw an error' );
+
+		$this->assertTrue( empty( $logger_insecure->stdout ), 'insecure request should not have output' );
+		$this->assertNotFalse( strpos( $logger_insecure->stderr, 'Warning: Re-trying without verify after failing to get verified url' ), 'insecure request should show a retry warning' );
+		$this->assertFalse( strpos( $logger_insecure->stderr, 'Error' ), 'insecure request should not throw an error' );
 
 		// Restore.
 		$class_wp_cli_logger->setValue( $prev_logger );
@@ -647,14 +667,14 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		// Enable exit exception.
 		$class_wp_cli_capture_exit->setValue( true );
 
-		$logger = new \WP_CLI\Loggers\Execution();
+		$logger = new Loggers\Execution();
 		WP_CLI::set_logger( $logger );
 
 		$exception = null;
 
 		try {
 			Utils\report_batch_operation_results( $noun, $verb, $total, $successes, $failures, $skips );
-		} catch ( \WP_CLI\ExitException $ex ) {
+		} catch ( ExitException $ex ) {
 			$exception = $ex;
 		}
 		$this->assertSame( $stdout, $logger->stdout );
