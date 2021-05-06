@@ -759,6 +759,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
+	unset( $options['insecure'], $options['halt_on_error'] );
 
 	if ( ! isset( $options['verify'] ) ) {
 		// 'curl.cainfo' enforces the CA file to use, otherwise fallback to system-wide defaults then use the embedded CA file.
@@ -779,25 +780,30 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 		}
 	} catch ( Requests_Exception $ex ) {
 		// CURLE_SSL_CACERT_BADFILE only defined for PHP >= 7.
-		if ( 'curlerror' !== $ex->getType() || ! in_array( curl_errno( $ex->getData() ), array( CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, 77 /*CURLE_SSL_CACERT_BADFILE*/ ), true ) ) {
+		if (
+			! $insecure
+			||
+			'curlerror' !== $ex->getType()
+			||
+			! in_array( curl_errno( $ex->getData() ), [ CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, 77 /*CURLE_SSL_CACERT_BADFILE*/ ], true )
+		) {
 			$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $ex->getMessage() );
 			if ( $halt_on_error ) {
 				WP_CLI::error( $error_msg );
 			}
 			throw new RuntimeException( $error_msg, null, $ex );
 		}
-		if ( $insecure ) {
-			WP_CLI::warning( sprintf( "Re-trying without verify after failing to get verified url '%s' %s.", $url, $ex->getMessage() ) );
-			$options['verify'] = false;
-			try {
-				return Requests::request( $url, $headers, $data, $method, $options );
-			} catch ( Requests_Exception $ex ) {
-				$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $ex->getMessage() );
-				if ( $halt_on_error ) {
-					WP_CLI::error( $error_msg );
-				}
-				throw new RuntimeException( $error_msg, null, $ex );
+
+		WP_CLI::warning( sprintf( "Re-trying without verify after failing to get verified url '%s' %s.", $url, $ex->getMessage() ) );
+		$options['verify'] = false;
+		try {
+			return Requests::request( $url, $headers, $data, $method, $options );
+		} catch ( Requests_Exception $ex ) {
+			$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $ex->getMessage() );
+			if ( $halt_on_error ) {
+				WP_CLI::error( $error_msg );
 			}
+			throw new RuntimeException( $error_msg, null, $ex );
 		}
 	}
 }
