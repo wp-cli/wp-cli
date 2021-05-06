@@ -701,6 +701,10 @@ class WP_CLI {
 	 * @param string $message Message to write to STDOUT.
 	 */
 	public static function log( $message ) {
+		if ( null === self::$logger ) {
+			return;
+		}
+
 		self::$logger->info( $message );
 	}
 
@@ -728,6 +732,10 @@ class WP_CLI {
 	 * @return null
 	 */
 	public static function success( $message ) {
+		if ( null === self::$logger ) {
+			return;
+		}
+
 		self::$logger->success( $message );
 	}
 
@@ -805,6 +813,10 @@ class WP_CLI {
 	 * @return null
 	 */
 	public static function warning( $message ) {
+		if ( null === self::$logger ) {
+			return;
+		}
+
 		self::$logger->warning( self::error_to_string( $message ) );
 	}
 
@@ -832,7 +844,7 @@ class WP_CLI {
 	 * @return null
 	 */
 	public static function error( $message, $exit = true ) {
-		if ( ! isset( self::get_runner()->assoc_args['completions'] ) ) {
+		if ( null !== self::$logger && ! isset( self::get_runner()->assoc_args['completions'] ) ) {
 			self::$logger->error( self::error_to_string( $message ) );
 		}
 
@@ -879,6 +891,10 @@ class WP_CLI {
 	 * @param array $message Multi-line error message to be displayed.
 	 */
 	public static function error_multi_line( $message_lines ) {
+		if ( null === self::$logger ) {
+			return;
+		}
+
 		if ( ! isset( self::get_runner()->assoc_args['completions'] ) && is_array( $message_lines ) ) {
 			self::$logger->error_multi_line( array_map( array( __CLASS__, 'error_to_string' ), $message_lines ) );
 		}
