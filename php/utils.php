@@ -757,6 +757,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 		Requests::register_autoloader();
 	}
 
+	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
 
 	if ( ! isset( $options['verify'] ) ) {
@@ -785,7 +786,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 			}
 			throw new RuntimeException( $error_msg, null, $ex );
 		}
-		if ( array_key_exists( 'insecure', $options ) && true === $options['insecure'] ) {
+		if ( $insecure ) {
 			WP_CLI::warning( sprintf( "Re-trying without verify after failing to get verified url '%s' %s.", $url, $ex->getMessage() ) );
 			$options['verify'] = false;
 			try {
