@@ -513,6 +513,7 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
 
 	$stdout = '';
 	$stderr = '';
+	$pipes  = [];
 
 	if ( isset( $assoc_args['host'] ) ) {
 		// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysql_host_to_cli_args -- Misidentified as PHP native MySQL function.
