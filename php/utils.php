@@ -763,7 +763,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 
 	if ( ! isset( $options['verify'] ) ) {
 		// 'curl.cainfo' enforces the CA file to use, otherwise fallback to system-wide defaults then use the embedded CA file.
-		$options['verify'] = ini_get( 'curl.cainfo' ) ? ini_get( 'curl.cainfo' ) : true;
+		$options['verify'] = ! empty( ini_get( 'curl.cainfo' ) ) ? ini_get( 'curl.cainfo' ) : true;
 	}
 
 	try {
@@ -794,8 +794,16 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 			throw new RuntimeException( $error_msg, null, $ex );
 		}
 
-		WP_CLI::warning( sprintf( "Re-trying without verify after failing to get verified url '%s' %s.", $url, $ex->getMessage() ) );
+		$warning = sprintf(
+			"Re-trying without verify after failing to get verified url '%s' %s.",
+			$url,
+			$ex->getMessage()
+		);
+		WP_CLI::warning( $warning );
+
+		// Disable certificate validation for the next try.
 		$options['verify'] = false;
+
 		try {
 			return Requests::request( $url, $headers, $data, $method, $options );
 		} catch ( Requests_Exception $ex ) {
