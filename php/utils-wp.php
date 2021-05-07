@@ -4,6 +4,9 @@
 
 namespace WP_CLI\Utils;
 
+use WP_CLI;
+use WP_CLI\UpgraderSkin;
+
 function wp_not_installed() {
 	global $wpdb, $table_prefix;
 	if ( ! is_blog_installed() && ! defined( 'WP_INSTALLING' ) ) {
@@ -20,13 +23,13 @@ function wp_not_installed() {
 		if ( count( $found_prefixes ) ) {
 			$prefix_list   = implode( ', ', $found_prefixes );
 			$install_label = count( $found_prefixes ) > 1 ? 'installations' : 'installation';
-			\WP_CLI::error(
+			WP_CLI::error(
 				"The site you have requested is not installed.\n" .
 				"Your table prefix is '{$table_prefix}'. Found {$install_label} with table prefix: {$prefix_list}.\n" .
 				'Or, run `wp core install` to create database tables.'
 			);
 		} else {
-			\WP_CLI::error(
+			WP_CLI::error(
 				"The site you have requested is not installed.\n" .
 				'Run `wp core install` to create database tables.'
 			);
@@ -36,7 +39,7 @@ function wp_not_installed() {
 
 // phpcs:disable WordPress.PHP.IniSet -- Intentional & correct usage.
 function wp_debug_mode() {
-	if ( \WP_CLI::get_config( 'debug' ) ) {
+	if ( WP_CLI::get_config( 'debug' ) ) {
 		if ( ! defined( 'WP_DEBUG' ) ) {
 			define( 'WP_DEBUG', true );
 		}
@@ -87,7 +90,7 @@ function wp_die_handler( $message ) {
 
 	$message = wp_clean_error_message( $message );
 
-	\WP_CLI::error( $message );
+	WP_CLI::error( $message );
 }
 
 /**
@@ -115,7 +118,7 @@ function wp_clean_error_message( $message ) {
 }
 
 function wp_redirect_handler( $url ) {
-	\WP_CLI::warning( 'Some code is trying to do a URL redirect. Backtrace:' );
+	WP_CLI::warning( 'Some code is trying to do a URL redirect. Backtrace:' );
 
 	ob_start();
 	debug_print_backtrace();
@@ -130,12 +133,12 @@ function maybe_require( $since, $path ) {
 	}
 }
 
-function get_upgrader( $class ) {
+function get_upgrader( $class, $insecure = false ) {
 	if ( ! class_exists( '\WP_Upgrader' ) ) {
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 	}
 
-	return new $class( new \WP_CLI\UpgraderSkin() );
+	return new $class( new UpgraderSkin(), $insecure );
 }
 
 /**
@@ -154,7 +157,7 @@ function get_plugin_name( $basename ) {
 function is_plugin_skipped( $file ) {
 	$name = get_plugin_name( str_replace( WP_PLUGIN_DIR . '/', '', $file ) );
 
-	$skipped_plugins = \WP_CLI::get_runner()->config['skip-plugins'];
+	$skipped_plugins = WP_CLI::get_runner()->config['skip-plugins'];
 	if ( true === $skipped_plugins ) {
 		return true;
 	}
@@ -173,7 +176,7 @@ function get_theme_name( $path ) {
 function is_theme_skipped( $path ) {
 	$name = get_theme_name( $path );
 
-	$skipped_themes = \WP_CLI::get_runner()->config['skip-themes'];
+	$skipped_themes = WP_CLI::get_runner()->config['skip-themes'];
 	if ( true === $skipped_themes ) {
 		return true;
 	}
@@ -328,7 +331,7 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 
 	// Abort if incompatible args supplied.
 	if ( get_flag_value( $assoc_args, 'base-tables-only' ) && get_flag_value( $assoc_args, 'views-only' ) ) {
-		\WP_CLI::error( 'You cannot supply --base-tables-only and --views-only at the same time.' );
+		WP_CLI::error( 'You cannot supply --base-tables-only and --views-only at the same time.' );
 	}
 
 	// Pre-load tables SQL query with Views restriction if needed.
@@ -414,7 +417,7 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 		$args_tables = array_values( array_unique( $args_tables ) );
 		$tables      = array_values( array_intersect( $tables, $args_tables ) );
 		if ( empty( $tables ) ) {
-			\WP_CLI::error( sprintf( "Couldn't find any tables matching: %s", implode( ' ', $args ) ) );
+			WP_CLI::error( sprintf( "Couldn't find any tables matching: %s", implode( ' ', $args ) ) );
 		}
 	}
 
