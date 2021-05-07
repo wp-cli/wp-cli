@@ -4,6 +4,8 @@
 
 namespace WP_CLI\Utils;
 
+use ReflectionClass;
+use ReflectionParameter;
 use WP_CLI;
 use WP_CLI\UpgraderSkin;
 
@@ -138,7 +140,28 @@ function get_upgrader( $class, $insecure = false ) {
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 	}
 
-	return new $class( new UpgraderSkin(), $insecure );
+	$uses_insecure_flag = false;
+
+	$reflection = new ReflectionClass( $class );
+	if ( $reflection ) {
+		$constructor = $reflection->getConstructor();
+		if ( $constructor ) {
+			$arguments = $constructor->getParameters();
+			/** @var ReflectionParameter $argument */
+			foreach ( $arguments as $argument ) {
+				if ( 'insecure' === $argument->name ) {
+					$uses_insecure_flag = true;
+					break;
+				}
+			}
+		}
+	}
+
+	if ( $uses_insecure_flag ) {
+		return new $class( new UpgraderSkin(), $insecure );
+	} else {
+		return new $class( new UpgraderSkin() );
+	}
 }
 
 /**
