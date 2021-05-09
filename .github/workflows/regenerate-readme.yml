@@ -1,12 +1,10 @@
 name: Regenerate README file
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
-  schedule:
-    # https://crontab.guru/every-night-at-midnight
-    - cron:  '0 0 * * *'
 
 jobs:
 
