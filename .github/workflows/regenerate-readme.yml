@@ -45,12 +45,9 @@ jobs:
           sudo mv wp-cli.phar /usr/local/bin/wp
           sudo chmod +x /usr/local/bin/wp
 
-      - name: Install scaffold-package command
-        run: |
-          wp package install wp-cli/scaffold-package-command
-
       - name: Regenerate README.md file
         run: |
+          wp package install wp-cli/scaffold-package-command
           wp scaffold-package --readme --force .
 
       - name: Check if there are changes
