@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\ExitException;
+use WP_CLI\Loggers;
 use WP_CLI\Utils;
 
 require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
@@ -425,13 +427,13 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		// Enable exit exception.
 		$class_wp_cli_capture_exit->setValue( true );
 
-		$logger = new \WP_CLI\Loggers\Execution();
+		$logger = new Loggers\Execution();
 		WP_CLI::set_logger( $logger );
 
 		$exception = null;
 		try {
 			Utils\http_request( 'GET', 'https://nosuchhost_asdf_asdf_asdf.com', null /*data*/, array() /*headers*/, array( 'timeout' => 0.01 ) );
-		} catch ( \WP_CLI\ExitException $ex ) {
+		} catch ( ExitException $ex ) {
 			$exception = $ex;
 		}
 		$this->assertTrue( null !== $exception );
@@ -445,66 +447,70 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$class_wp_cli_capture_exit->setValue( $prev_capture_exit );
 	}
 
-	public function testHttpRequestBadCAcert() {
+	public function dataHttpRequestBadCAcert() {
+		return [
+			'default request'  => [
+				[],
+				RuntimeException::class,
+				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate verify locations:',
+			],
+			'secure request'   => [
+				[ 'insecure' => false ],
+				RuntimeException::class,
+				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate verify locations:',
+			],
+			'insecure request' => [
+				[ 'insecure' => true ],
+				false,
+				'Warning: Re-trying without verify after failing to get verified url',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataHttpRequestBadCAcert()
+	 *
+	 * @param array  $additional_options Associative array of additional options to pass to http_request().
+	 * @param string $exception          Class of the exception to expect.
+	 * @param string $exception_message  Message of the exception to expect.
+	 */
+	public function testHttpRequestBadCAcert( $additional_options, $exception, $exception_message ) {
 		if ( ! extension_loaded( 'curl' ) ) {
 			$this->markTestSkipped( 'curl not available' );
 		}
 
-		// Save WP_CLI state.
-		$class_wp_cli_logger = new \ReflectionProperty( 'WP_CLI', 'logger' );
-		$class_wp_cli_logger->setAccessible( true );
+		// Create temporary file to use as a bad certificate file.
+		$bad_cacert_path = tempnam( sys_get_temp_dir(), 'wp-cli-badcacert-pem-' );
+		file_put_contents( $bad_cacert_path, "-----BEGIN CERTIFICATE-----\nasdfasdf\n-----END CERTIFICATE-----\n" );
 
-		$prev_logger = $class_wp_cli_logger->getValue();
+		$options = array_merge(
+			[
+				'halt_on_error' => false,
+				'verify'        => $bad_cacert_path,
+			],
+			$additional_options
+		);
 
-		$have_bad_cacert = false;
-		$created_dirs    = array();
+		if ( false !== $exception ) {
+			$this->expectException( $exception );
+			$this->expectExceptionMessage( $exception_message );
+		} else {
+			// Save WP_CLI state.
+			$class_wp_cli_logger = new \ReflectionProperty( 'WP_CLI', 'logger' );
+			$class_wp_cli_logger->setAccessible( true );
 
-		// Hack to create bad CAcert, using Utils\get_vendor_paths() preference for a path as part of a Composer-installed larger project.
-		$vendor_dir      = WP_CLI_ROOT . '/../../../vendor';
-		$cert_path       = '/rmccue/requests/library/Requests/Transport/cacert.pem';
-		$bad_cacert_path = $vendor_dir . $cert_path;
-		if ( ! file_exists( $bad_cacert_path ) ) {
-			// Capture any directories created so can clean up.
-			$dirs        = array_merge( array( 'vendor' ), array_filter( explode( '/', dirname( $cert_path ) ) ) );
-			$current_dir = dirname( $vendor_dir );
-			foreach ( $dirs as $dir ) {
-				if ( ! file_exists( $current_dir . '/' . $dir ) ) {
-					if ( ! @mkdir( $current_dir . '/' . $dir ) ) {
-						break;
-					}
-					$created_dirs[] = $current_dir . '/' . $dir;
-				}
-				$current_dir .= '/' . $dir;
-			}
-			if ( dirname( $bad_cacert_path ) === $current_dir && file_put_contents( $bad_cacert_path, "-----BEGIN CERTIFICATE-----\nasdfasdf\n-----END CERTIFICATE-----\n" ) ) {
-				$have_bad_cacert = true;
-			}
+			$prev_logger = $class_wp_cli_logger->getValue();
+			$logger      = new Loggers\Execution();
+			WP_CLI::set_logger( $logger );
 		}
 
-		if ( ! $have_bad_cacert ) {
-			foreach ( array_reverse( $created_dirs ) as $created_dir ) {
-				rmdir( $created_dir );
-			}
-			$this->markTestSkipped( 'Unable to create bad CAcert.' );
-		}
-
-		$logger = new \WP_CLI\Loggers\Execution();
-		WP_CLI::set_logger( $logger );
-
-		Utils\http_request( 'GET', 'https://example.com', null, array(), array( 'verify' => $bad_cacert_path ) );
-
-		// Undo bad CAcert hack before asserting.
-		unlink( $bad_cacert_path );
-		foreach ( array_reverse( $created_dirs ) as $created_dir ) {
-			rmdir( $created_dir );
-		}
-
-		$this->assertTrue( empty( $logger->stdout ) );
-		$this->assertTrue( 0 === strpos( $logger->stderr, 'Warning: Re-trying without verify after failing to get verified url' ) );
-		$this->assertFalse( strpos( $logger->stderr, 'Error' ) );
+		Utils\http_request( 'GET', 'https://example.com', null, [], $options );
 
 		// Restore.
 		$class_wp_cli_logger->setValue( $prev_logger );
+
+		$this->assertTrue( empty( $logger->stdout ) );
+		$this->assertNotFalse( strpos( $logger->stderr, $exception_message ) );
 	}
 
 	/**
@@ -647,14 +653,14 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		// Enable exit exception.
 		$class_wp_cli_capture_exit->setValue( true );
 
-		$logger = new \WP_CLI\Loggers\Execution();
+		$logger = new Loggers\Execution();
 		WP_CLI::set_logger( $logger );
 
 		$exception = null;
 
 		try {
 			Utils\report_batch_operation_results( $noun, $verb, $total, $successes, $failures, $skips );
-		} catch ( \WP_CLI\ExitException $ex ) {
+		} catch ( ExitException $ex ) {
 			$exception = $ex;
 		}
 		$this->assertSame( $stdout, $logger->stdout );
