@@ -25,18 +25,18 @@ jobs:
 
       - name: Check if remote branch exists
         id: remote-branch
-        run: echo ::set-output name=exists::$([[ -z $(git ls-remote --heads origin sync-spec-test-suite) ]] && echo "0" || echo "1")
+        run: echo ::set-output name=exists::$([[ -z $(git ls-remote --heads origin regenerate-readme) ]] && echo "0" || echo "1")
 
       - name: Create branch to base pull request on
         if: steps.remote-branch.outputs.exists == 0
         run: |
-          git checkout -b sync-spec-test-suite
+          git checkout -b regenerate-readme
 
       - name: Fetch existing branch to add commits to
         if: steps.remote-branch.outputs.exists == 1
         run: |
           git fetch --all --prune
-          git checkout sync-spec-test-suite
+          git checkout regenerate-readme
           git pull --no-rebase
 
       - name: Install WP-CLI
@@ -59,7 +59,7 @@ jobs:
         run: |
           git add --all .
           git commit -m "Regenerate README file - $(date +'%Y-%m-%d')"
-          git push origin sync-spec-test-suite
+          git push origin regenerate-readme
 
       - name: Create pull request
         if: |
