@@ -3,11 +3,9 @@ name: Regenerate README file
 on:
   workflow_dispatch:
   push:
-    if: ! contains(fromJson('["wp-cli", "php-cli-tools", "wp-config-transformer"]'), github.event.repository.name)
     branches:
-      - main
+      - master
     paths-ignore:
-      - '.github/**'
       - 'features/**'
       - 'README.md'
 
@@ -16,6 +14,7 @@ jobs:
   regenerate-readme: #----------------------------------------------------------
     name: Regenerate README.md file
     runs-on: ubuntu-latest
+    if: ${{ ! contains(fromJson('[".github", "wp-cli", "php-cli-tools", "wp-config-transformer"]'), github.event.repository.name) }}
     steps:
       - name: Check out source code
         uses: actions/checkout@v2
@@ -24,6 +23,31 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
+
+      - name: Check existence of composer.json file
+        id: check_composer_file
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "composer.json"
+
+      - name: Get Composer cache directory
+        if: steps.check_composer_file.outputs.files_exists == 'true'
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Use Composer cache
+        if: steps.check_composer_file.outputs.files_exists == 'true'
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps['composer-cache'].outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        if: steps.check_composer_file.outputs.files_exists == 'true'
+        run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
 
       - name: Configure git user
         run: |
