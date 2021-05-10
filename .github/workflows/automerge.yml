@@ -1,0 +1,19 @@
+name: Automatic Merge
+on:
+  workflow_dispatch:
+  schedule:
+    # https://crontab.guru/every-hour
+    - cron: 0 * * * *
+
+jobs:
+  merge:
+    name: Merge Pull Requests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Merge
+        uses: nucleos/auto-merge-action@1.0.0
+        env:
+          "GITHUB_TOKEN": ${{ secrets.GITHUB_TOKEN }}
+        with:
+          label: automerge
