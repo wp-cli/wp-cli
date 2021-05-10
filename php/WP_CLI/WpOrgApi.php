@@ -64,18 +64,11 @@ final class WpOrgApi {
 	const VERSION_CHECK_ENDPOINT = self::API_ROOT . '/core/version-check/1.7/';
 
 	/**
-	 * Whether to retry without certificate validation on TLS handshake failures.
+	 * Options to pass onto the Requests library for executing the remote calls.
 	 *
-	 * @var bool
+	 * @var array
 	 */
-	private $insecure = false;
-
-	/**
-	 * Timeout to use for remote requests.
-	 *
-	 * @var int
-	 */
-	private $timeout = 30;
+	private $options;
 
 	/**
 	 * WpOrgApi constructor.
@@ -83,13 +76,7 @@ final class WpOrgApi {
 	 * @param array $options Associative array of options to pass to the API abstraction.
 	 */
 	public function __construct( $options = [] ) {
-		if ( array_key_exists( 'insecure', $options ) ) {
-			$this->insecure = (bool) $options['insecure'];
-		}
-
-		if ( array_key_exists( 'timeout', $options ) ) {
-			$this->timeout = (int) $options['timeout'];
-		}
+		$this->options = $options;
 	}
 
 	/**
@@ -100,7 +87,7 @@ final class WpOrgApi {
 	 * @return bool|array False on failure. An array of checksums on success.
 	 * @throws RuntimeException If the remote request fails.
 	 */
-	public function get_core_checksums( $version, $locale ) {
+	public function get_core_checksums( $version, $locale = 'en_US' ) {
 		$url = sprintf(
 			'%s?%s',
 			self::CORE_CHECKSUMS_ENDPOINT,
@@ -127,7 +114,7 @@ final class WpOrgApi {
 	 * @return array|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
-	private function get_download_offer( $locale ) {
+	public function get_download_offer( $locale = 'en_US' ) {
 		$url = sprintf(
 			'%s?%s',
 			self::VERSION_CHECK_ENDPOINT,
@@ -235,10 +222,9 @@ final class WpOrgApi {
 	 */
 	private function get_request( $url, $headers = [], $options = [] ) {
 		$options = array_merge(
+			$this->options,
 			[
 				'halt_on_error' => false,
-				'insecure'      => $this->insecure,
-				'timeout'       => $this->timeout,
 			],
 			$options
 		);
