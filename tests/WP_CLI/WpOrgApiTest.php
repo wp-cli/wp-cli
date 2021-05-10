@@ -35,13 +35,6 @@ class WpOrgApiTest extends PHPUnit_Framework_TestCase {
 				'https://downloads.wordpress.org/plugin-checksums/hello-dolly/1.0.json',
 				[],
 			],
-			'can retrieve a download offer for core'   => [
-				'get_download_offer',
-				[],
-				[],
-				'https://api.wordpress.org/core/version-check/1.7/?locale=en_US',
-				[],
-			],
 			'can retrieve a core version check'        => [
 				'get_core_version_check',
 				[],
@@ -56,8 +49,15 @@ class WpOrgApiTest extends PHPUnit_Framework_TestCase {
 				'https://api.wordpress.org/core/version-check/1.7/?locale=de_DE',
 				[],
 			],
+			'can retrieve a download offer for core'   => [
+				'get_core_download_offer',
+				[],
+				[],
+				'https://api.wordpress.org/core/version-check/1.7/?locale=en_US',
+				[],
+			],
 			'can retrieve a download offer for core for a specific locale' => [
-				'get_download_offer',
+				'get_core_download_offer',
 				[ 'locale' => 'de_DE' ],
 				[],
 				'https://api.wordpress.org/core/version-check/1.7/?locale=de_DE',
