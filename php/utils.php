@@ -759,7 +759,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
-	unset( $options['insecure'], $options['halt_on_error'] );
+	unset( $options['halt_on_error'] );
 
 	if ( ! isset( $options['verify'] ) ) {
 		// 'curl.cainfo' enforces the CA file to use, otherwise fallback to system-wide defaults then use the embedded CA file.
