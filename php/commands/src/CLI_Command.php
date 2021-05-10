@@ -275,6 +275,9 @@ class CLI_Command extends WP_CLI_Command {
 	 * [--yes]
 	 * : Do not prompt for confirmation.
 	 *
+	 * [--insecure]
+	 * : Retry without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Update CLI.
@@ -331,11 +334,13 @@ class CLI_Command extends WP_CLI_Command {
 		$options = [
 			'timeout'  => 600,  // 10 minutes ought to be enough for everybody.
 			'filename' => $temp,
+			'insecure' => (bool) Utils\get_flag_value( $assoc_args, 'insecure', false ),
 		];
 
 		Utils\http_request( 'GET', $download_url, null, $headers, $options );
 
-		$md5_response = Utils\http_request( 'GET', $md5_url );
+		unset( $options['filename'] );
+		$md5_response = Utils\http_request( 'GET', $md5_url, null, $headers, $options );
 		if ( '20' !== substr( $md5_response->status_code, 0, 2 ) ) {
 			WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$md5_response->status_code})." );
 		}
@@ -371,9 +376,9 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $old_phar ) );
 		}
 
-		if ( Utils\get_flag_value( $assoc_args, 'nightly' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'nightly', false ) ) {
 			$updated_version = 'the latest nightly release';
-		} elseif ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
+		} elseif ( Utils\get_flag_value( $assoc_args, 'stable', false ) ) {
 			$updated_version = 'the latest stable release';
 		} else {
 			$updated_version = $newest['version'];
@@ -388,7 +393,8 @@ class CLI_Command extends WP_CLI_Command {
 		$url = 'https://api.github.com/repos/wp-cli/wp-cli/releases?per_page=100';
 
 		$options = [
-			'timeout' => 30,
+			'timeout'  => 30,
+			'insecure' => (bool) Utils\get_flag_value( $assoc_args, 'insecure', false ),
 		];
 
 		$headers = [
@@ -448,14 +454,14 @@ class CLI_Command extends WP_CLI_Command {
 		}
 
 		foreach ( [ 'major', 'minor', 'patch' ] as $type ) {
-			if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, $type ) ) {
+			if ( true === Utils\get_flag_value( $assoc_args, $type ) ) {
 				return ! empty( $updates[ $type ] ) ? [ $updates[ $type ] ] : false;
 			}
 		}
 
 		if ( empty( $updates ) && preg_match( '#-alpha-(.+)$#', WP_CLI_VERSION, $matches ) ) {
 			$version_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/NIGHTLY_VERSION';
-			$response    = Utils\http_request( 'GET', $version_url );
+			$response    = Utils\http_request( 'GET', $version_url, null, [], $options );
 			if ( ! $response->success || 200 !== $response->status_code ) {
 				WP_CLI::error( sprintf( 'Failed to get current nightly version (HTTP code %d)', $response->status_code ) );
 			}
