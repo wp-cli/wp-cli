@@ -3,6 +3,13 @@ name: Regenerate README file
 on:
   workflow_dispatch:
   push:
+    if: ! contains(fromJson('["wp-cli", "php-cli-tools", "wp-config-transformer"]'), github.event.repository.name)
+    branches:
+      - main
+    paths-ignore:
+      - '.github/**'
+      - 'features/**'
+      - 'README.md'
 
 jobs:
 
@@ -57,7 +64,7 @@ jobs:
       - name: Commit changes
         if: steps.changes.outputs.changed == 1
         run: |
-          git add --all .
+          git add README.md
           git commit -m "Regenerate README file - $(date +'%Y-%m-%d')"
           git push origin regenerate-readme
 
