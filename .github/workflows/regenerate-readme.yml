@@ -14,7 +14,7 @@ jobs:
   regenerate-readme: #----------------------------------------------------------
     name: Regenerate README.md file
     runs-on: ubuntu-latest
-    if: ${{ ! contains(fromJson('[".github", "wp-cli", "php-cli-tools", "wp-config-transformer"]'), github.event.repository.name) }}
+    if: ${{ ! contains(fromJson('[".github", "wp-cli", "wp-cli-bundle", "wp-super-cache-cli", "php-cli-tools", "wp-config-transformer"]'), github.event.repository.name) }}
     steps:
       - name: Check out source code
         uses: actions/checkout@v2
