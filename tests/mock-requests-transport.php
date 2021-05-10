@@ -5,6 +5,16 @@ class Mock_Requests_Transport implements Requests_Transport {
 	public $requests = array();
 
 	public function request( $url, $headers = array(), $data = array(), $options = array() ) {
+		// Simulate retrying.
+		if (
+			isset( $options['insecure'] )
+			&& $options['insecure']
+			&& isset( $options['verify'] )
+			&& false !== strpos( $options['verify'], sys_get_temp_dir() )
+		) {
+			$options['verify'] = false;
+		}
+
 		$this->requests[] = compact( 'url', 'headers', 'data', 'options' );
 
 		return 'HTTP/1.1 418' . "\r\n"
