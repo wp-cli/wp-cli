@@ -8,7 +8,7 @@ class WpOrgApiTest extends PHPUnit_Framework_TestCase {
 
 	public function data_http_request_verify() {
 		return [
-			'can retrieve core checksums' => [
+			'can retrieve core checksums'              => [
 				'get_core_checksums',
 				[ 'version' => 'trunk' ],
 				[],
@@ -25,7 +25,7 @@ class WpOrgApiTest extends PHPUnit_Framework_TestCase {
 				'https://api.wordpress.org/core/checksums/1.0/?version=4.5&locale=de_DE',
 				[],
 			],
-			'can retrieve plugin checksums' => [
+			'can retrieve plugin checksums'            => [
 				'get_plugin_checksums',
 				[
 					'plugin'  => 'hello-dolly',
@@ -35,7 +35,7 @@ class WpOrgApiTest extends PHPUnit_Framework_TestCase {
 				'https://downloads.wordpress.org/plugin-checksums/hello-dolly/1.0.json',
 				[],
 			],
-			'can retrieve a download offer for core' => [
+			'can retrieve a download offer for core'   => [
 				'get_download_offer',
 				[],
 				[],
@@ -49,21 +49,21 @@ class WpOrgApiTest extends PHPUnit_Framework_TestCase {
 				'https://api.wordpress.org/core/version-check/1.7/?locale=de_DE',
 				[],
 			],
-			'can retrieve salts' => [
+			'can retrieve salts'                       => [
 				'get_salts',
 				[],
 				[],
 				'https://api.wordpress.org/secret-key/1.1/salt/',
 				[],
 			],
-			'defaults to secure requests' => [
+			'defaults to secure requests'              => [
 				'get_salts',
 				[],
 				[],
 				'https://api.wordpress.org/secret-key/1.1/salt/',
 				[ 'verify' => true ],
 			],
-			'can explicitly request secure requests' => [
+			'can explicitly request secure requests'   => [
 				'get_salts',
 				[],
 				[ 'insecure' => false ],
@@ -89,9 +89,8 @@ class WpOrgApiTest extends PHPUnit_Framework_TestCase {
 	/**
 	 * @dataProvider data_http_request_verify()
 	 */
-	public function test_http_request_verify( $method, $arguments, $options, $expected_url, $expected_options )
-	{
-		if ( isset( $options['insecure'] ) && $options['insecure'] === true ) {
+	public function test_http_request_verify( $method, $arguments, $options, $expected_url, $expected_options ) {
+		if ( isset( $options['insecure'] ) && true === $options['insecure'] ) {
 			// Create temporary file to use as a bad certificate file.
 			$bad_cacert_path = tempnam( sys_get_temp_dir(), 'wp-cli-badcacert-pem-' );
 			file_put_contents(
@@ -109,7 +108,7 @@ class WpOrgApiTest extends PHPUnit_Framework_TestCase {
 		$wp_org_api = new WpOrgApi( $options );
 		try {
 			$wp_org_api->$method( ...$arguments );
-		} catch ( RuntimeException $exception ) {
+		} catch ( RuntimeException $exception ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 		}
 
 		// Undo bad CAcert hack before asserting.
