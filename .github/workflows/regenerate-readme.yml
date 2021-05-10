@@ -48,7 +48,7 @@ jobs:
       - name: Regenerate README.md file
         run: |
           wp package install "wp-cli/scaffold-package-command:^2"
-          wp scaffold-package --readme --force .
+          wp scaffold package-readme --force .
 
       - name: Check if there are changes
         id: changes
