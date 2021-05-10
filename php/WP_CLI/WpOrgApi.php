@@ -46,6 +46,20 @@ final class WpOrgApi {
 	const PLUGIN_CHECKSUMS_ENDPOINT = self::DOWNLOADS_ROOT . '/plugin-checksums/';
 
 	/**
+	 * Plugin info endpoint.
+	 *
+	 * @var string
+	 */
+	const PLUGIN_INFO_ENDPOINT = self::API_ROOT . '/plugins/info/1.2/';
+
+	/**
+	 * Theme info endpoint.
+	 *
+	 * @var string
+	 */
+	const THEME_INFO_ENDPOINT = self::API_ROOT . '/themes/info/1.2/';
+
+	/**
 	 * Salt endpoint.
 	 *
 	 * @see https://codex.wordpress.org/WordPress.org_API#Secret_Key
@@ -108,13 +122,13 @@ final class WpOrgApi {
 	}
 
 	/**
-	 * Gets a download offer
+	 * Gets a core version check.
 	 *
-	 * @param string $locale   Locale to request an offer from.
+	 * @param string $locale Locale to request an offer from.
 	 * @return array|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
-	public function get_download_offer( $locale = 'en_US' ) {
+	public function get_core_version_check( $locale = 'en_US' ) {
 		$url = sprintf(
 			'%s?%s',
 			self::VERSION_CHECK_ENDPOINT,
@@ -122,6 +136,23 @@ final class WpOrgApi {
 		);
 
 		$response = $this->json_get_request( $url );
+
+		if ( ! is_array( $response ) ) {
+			return false;
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Gets a download offer.
+	 *
+	 * @param string $locale Locale to request an offer from.
+	 * @return array|false False on failure. Associative array of the offer on success.
+	 * @throws RuntimeException If the remote request failed.
+	 */
+	public function get_download_offer( $locale = 'en_US' ) {
+		$response = $this->get_core_version_check( $locale );
 
 		if (
 			! is_array( $response )
@@ -143,8 +174,8 @@ final class WpOrgApi {
 	/**
 	 * Gets the checksums for the given version of plugin.
 	 *
+	 * @param string $plugin  Plugin slug to query.
 	 * @param string $version Version string to query.
-	 * @param string $plugin  Plugin string to query.
 	 * @return bool|array False on failure. An array of checksums on success.
 	 * @throws RuntimeException If the remote request fails.
 	 */
@@ -167,6 +198,66 @@ final class WpOrgApi {
 		}
 
 		return $response['files'];
+	}
+
+	/**
+	 * Gets a plugin's info.
+	 *
+	 * @param string $plugin Plugin slug to query.
+	 * @param string $locale Optional. Locale to request info for. Defaults to 'en_US'.
+	 * @return array|false False on failure. Associative array of the offer on success.
+	 * @throws RuntimeException If the remote request failed.
+	 */
+	public function get_plugin_info( $plugin, $locale = 'en_US' ) {
+		$action  = 'plugin_information';
+		$request = [
+			'locale' => $locale,
+			'slug'   => $plugin,
+		];
+
+		$url = sprintf(
+			'%s?%s',
+			self::PLUGIN_INFO_ENDPOINT,
+			http_build_query( compact( 'action', 'request' ), null, '&' )
+		);
+
+		$response = $this->json_get_request( $url );
+
+		if ( ! is_array( $response ) ) {
+			return false;
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Gets a theme's info.
+	 *
+	 * @param string $theme  Theme slug to query.
+	 * @param string $locale Optional. Locale to request info for. Defaults to 'en_US'.
+	 * @return array|false False on failure. Associative array of the offer on success.
+	 * @throws RuntimeException If the remote request failed.
+	 */
+	public function get_theme_info( $theme, $locale = 'en_US' ) {
+		$action  = 'theme_information';
+		$request = [
+			'locale' => $locale,
+			'slug'   => $theme,
+		];
+
+		$url = sprintf(
+			'%s?%s',
+			self::THEME_INFO_ENDPOINT,
+			http_build_query( compact( 'action', 'request' ), null, '&' )
+		);
+
+		$response = $this->json_get_request( $url );
+
+		if ( ! is_array( $response ) ) {
+			return false;
+		}
+
+		return $response;
 	}
 
 	/**
