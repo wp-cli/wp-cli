@@ -145,7 +145,7 @@ class WpOrgApiTest extends PHPUnit_Framework_TestCase {
 
 		$wp_org_api = new WpOrgApi( $options );
 		try {
-			$wp_org_api->$method( ...$arguments );
+			$wp_org_api->$method( ...array_values( $arguments ) );
 		} catch ( RuntimeException $exception ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 		}
 
