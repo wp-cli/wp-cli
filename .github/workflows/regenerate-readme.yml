@@ -1,0 +1,83 @@
+name: Regenerate README file
+
+on:
+  workflow_dispatch:
+  push:
+    if: ! contains(fromJson('["wp-cli", "php-cli-tools", "wp-config-transformer"]'), github.event.repository.name)
+    branches:
+      - main
+    paths-ignore:
+      - '.github/**'
+      - 'features/**'
+      - 'README.md'
+
+jobs:
+
+  regenerate-readme: #----------------------------------------------------------
+    name: Regenerate README.md file
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v2
+
+      - name: Set up PHP envirnoment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+
+      - name: Configure git user
+        run: |
+          git config --global user.email "alain.schlesser@gmail.com"
+          git config --global user.name "Alain Schlesser"
+
+      - name: Check if remote branch exists
+        id: remote-branch
+        run: echo ::set-output name=exists::$([[ -z $(git ls-remote --heads origin regenerate-readme) ]] && echo "0" || echo "1")
+
+      - name: Create branch to base pull request on
+        if: steps.remote-branch.outputs.exists == 0
+        run: |
+          git checkout -b regenerate-readme
+
+      - name: Fetch existing branch to add commits to
+        if: steps.remote-branch.outputs.exists == 1
+        run: |
+          git fetch --all --prune
+          git checkout regenerate-readme
+          git pull --no-rebase
+
+      - name: Install WP-CLI
+        run: |
+          curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar
+          sudo mv wp-cli-nightly.phar /usr/local/bin/wp
+          sudo chmod +x /usr/local/bin/wp
+
+      - name: Regenerate README.md file
+        run: |
+          wp package install "wp-cli/scaffold-package-command:^2"
+          wp scaffold package-readme --force .
+
+      - name: Check if there are changes
+        id: changes
+        run: echo ::set-output name=changed::$([[ -z $(git status --porcelain) ]] && echo "0" || echo "1")
+
+      - name: Commit changes
+        if: steps.changes.outputs.changed == 1
+        run: |
+          git add README.md
+          git commit -m "Regenerate README file - $(date +'%Y-%m-%d')"
+          git push origin regenerate-readme
+
+      - name: Create pull request
+        if: |
+          steps.changes.outputs.changed == 1 &&
+          steps.remote-branch.outputs.exists == 0
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: regenerate-readme
+          destination_branch: master
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_title: Regenerate README file
+          pr_body: "**This is an automated pull-request**\n\nRefreshes the `README.md` file with the latest changes to the docblocks in the source code."
+          pr_reviewer: schlessera
+          pr_label: scope:documentation
