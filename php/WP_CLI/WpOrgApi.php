@@ -97,7 +97,7 @@ final class WpOrgApi {
 	 * Gets the checksums for the given version of WordPress core.
 	 *
 	 * @param string $version Version string to query.
-	 * @param string $locale  Locale to query.
+	 * @param string $locale  Optional. Locale to query. Defaults to 'en_US'.
 	 * @return bool|array False on failure. An array of checksums on success.
 	 * @throws RuntimeException If the remote request fails.
 	 */
@@ -124,7 +124,7 @@ final class WpOrgApi {
 	/**
 	 * Gets a core version check.
 	 *
-	 * @param string $locale Locale to request an offer from.
+	 * @param string $locale Optional. Locale to request a version check for. Defaults to 'en_US'.
 	 * @return array|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
@@ -147,7 +147,7 @@ final class WpOrgApi {
 	/**
 	 * Gets a download offer.
 	 *
-	 * @param string $locale Locale to request an offer from.
+	 * @param string $locale Optional. Locale to request an offer from. Defaults to 'en_US'.
 	 * @return array|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
