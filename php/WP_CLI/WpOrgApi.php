@@ -151,7 +151,7 @@ final class WpOrgApi {
 	 * @return array|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
-	public function get_download_offer( $locale = 'en_US' ) {
+	public function get_core_download_offer( $locale = 'en_US' ) {
 		$response = $this->get_core_version_check( $locale );
 
 		if (
