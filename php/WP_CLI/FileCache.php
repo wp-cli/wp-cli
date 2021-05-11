@@ -13,9 +13,10 @@
 
 namespace WP_CLI;
 
+use DateTime;
+use Exception;
 use Symfony\Component\Finder\Finder;
 use WP_CLI;
-use WP_CLI\Utils;
 
 /**
  * Reads/writes to a filesystem cache
@@ -223,15 +224,15 @@ class FileCache {
 		// Unlink expired files.
 		if ( $ttl > 0 ) {
 			try {
-				$expire = new \DateTime();
-			} catch ( \Exception $e ) {
-				WP_CLI::error( $e->getMessage() );
-			}
-			$expire->modify( '-' . $ttl . ' seconds' );
+				$expire = new DateTime();
+				$expire->modify( '-' . $ttl . ' seconds' );
 
-			$finder = $this->get_finder()->date( 'until ' . $expire->format( 'Y-m-d H:i:s' ) );
-			foreach ( $finder as $file ) {
-				unlink( $file->getRealPath() );
+				$finder = $this->get_finder()->date( 'until ' . $expire->format( 'Y-m-d H:i:s' ) );
+				foreach ( $finder as $file ) {
+					unlink( $file->getRealPath() );
+				}
+			} catch ( Exception $e ) {
+				WP_CLI::error( $e->getMessage() );
 			}
 		}
 
@@ -284,7 +285,7 @@ class FileCache {
 		/** @var Finder $finder */
 		$finder = $this->get_finder()->sortByName();
 
-		$files_to_delete = array();
+		$files_to_delete = [];
 
 		foreach ( $finder as $file ) {
 			$pieces    = explode( '-', $file->getBasename( $file->getExtension() ) );

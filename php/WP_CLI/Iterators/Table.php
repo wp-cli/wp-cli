@@ -28,7 +28,6 @@ class Table extends Query {
 	 * }
 	 * </code>
 	 *
-	 *
 	 * @param array $args Supported arguments:
 	 *      table – the name of the database table
 	 *      fields – an array of columns to get from the table, '*' is a valid value and the default
@@ -38,14 +37,14 @@ class Table extends Query {
 	 *                it's a key/value pair. In the latter case the value is automatically quoted and escaped
 	 *      append - add arbitrary extra SQL
 	 */
-	public function __construct( $args = array() ) {
-		$defaults = array(
+	public function __construct( $args = [] ) {
+		$defaults = [
 			'fields'     => '*',
-			'where'      => array(),
+			'where'      => [],
 			'append'     => '',
 			'table'      => null,
 			'chunk_size' => 500,
-		);
+		];
 		$table    = $args['table'];
 		$args     = array_merge( $defaults, $args );
 
@@ -76,7 +75,7 @@ class Table extends Query {
 	private static function build_where_conditions( $where ) {
 		global $wpdb;
 		if ( is_array( $where ) ) {
-			$conditions = array();
+			$conditions = [];
 			foreach ( $where as $key => $value ) {
 				if ( is_array( $value ) ) {
 					$conditions[] = $key . ' IN (' . esc_sql( implode( ',', $value ) ) . ')';

@@ -1,8 +1,10 @@
 <?php
+
+use PHPUnit\Runner\Version;
+
 // From core "tests/phpunit/includes/phpunit6-compat.php" without `getTickets()` (see https://core.trac.wordpress.org/ticket/39822).
 // phpcs:disable Generic.Functions.FunctionCallArgumentSpacing.TooMuchSpaceAfterComma
-
-if ( class_exists( 'PHPUnit\Runner\Version' ) && version_compare( PHPUnit\Runner\Version::id(), '6.0', '>=' ) ) {
+if ( class_exists( 'PHPUnit\Runner\Version' ) && version_compare( Version::id(), '6.0', '>=' ) ) {
 
 	class_alias( 'PHPUnit\Framework\TestCase',                   'PHPUnit_Framework_TestCase' );
 	class_alias( 'PHPUnit\Framework\Exception',                  'PHPUnit_Framework_Exception' );

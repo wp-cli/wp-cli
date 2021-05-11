@@ -33,7 +33,7 @@ class RootCommand extends CompositeCommand {
 	 * command.
 	 *
 	 * @param array $args
-	 * @return \WP_CLI\Dispatcher\Subcommand|false
+	 * @return Subcommand|false
 	 */
 	public function find_subcommand( &$args ) {
 		$command = array_shift( $args );

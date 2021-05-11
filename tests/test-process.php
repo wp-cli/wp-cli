@@ -18,12 +18,12 @@ class ProcessTests extends PHPUnit_Framework_TestCase {
 	}
 
 	public function data_process_env() {
-		return array(
-			array( '', array(), array(), '' ),
-			array( 'ENV=blah', array(), array( 'ENV' ), 'blah' ),
-			array( 'ENV="blah blah"', array(), array( 'ENV' ), 'blah blah' ),
-			array( 'ENV_1="blah1 blah1" ENV_2="blah2" ENV_3=blah3', array( 'ENV' => 'in' ), array( 'ENV', 'ENV_1', 'ENV_2', 'ENV_3' ), 'inblah1 blah1blah2blah3' ),
-			array( 'ENV=blah', array( 'ENV_1' => 'in1', 'ENV_2' => 'in2' ), array( 'ENV_1', 'ENV_2', 'ENV' ), 'in1in2blah' ),
-		);
+		return [
+			[ '', [], [], '' ],
+			[ 'ENV=blah', [], [ 'ENV' ], 'blah' ],
+			[ 'ENV="blah blah"', [], [ 'ENV' ], 'blah blah' ],
+			[ 'ENV_1="blah1 blah1" ENV_2="blah2" ENV_3=blah3', [ 'ENV' => 'in' ], [ 'ENV', 'ENV_1', 'ENV_2', 'ENV_3' ], 'inblah1 blah1blah2blah3' ],
+			[ 'ENV=blah', [ 'ENV_1' => 'in1', 'ENV_2' => 'in2' ], [ 'ENV_1', 'ENV_2', 'ENV' ], 'in1in2blah' ],
+		];
 	}
 }

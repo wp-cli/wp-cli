@@ -2,9 +2,9 @@
 
 // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
 class Mock_Requests_Transport implements Requests_Transport {
-	public $requests = array();
+	public $requests = [];
 
-	public function request( $url, $headers = array(), $data = array(), $options = array() ) {
+	public function request( $url, $headers = [], $data = [], $options = [] ) {
 		// Simulate retrying.
 		if (
 			isset( $options['insecure'] )

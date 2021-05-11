@@ -2,12 +2,14 @@
 
 namespace WP_CLI\Iterators;
 
+use IteratorIterator;
+
 /**
  * Applies one or more callbacks to an item before returning it.
  */
-class Transform extends \IteratorIterator {
+class Transform extends IteratorIterator {
 
-	private $transformers = array();
+	private $transformers = [];
 
 	public function add_transform( $fn ) {
 		$this->transformers[] = $fn;

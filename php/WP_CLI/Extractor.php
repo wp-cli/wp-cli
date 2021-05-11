@@ -2,13 +2,12 @@
 
 namespace WP_CLI;
 
+use DirectoryIterator;
 use Exception;
 use PharData;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use DirectoryIterator;
 use WP_CLI;
-use WP_CLI\Utils;
 use ZipArchive;
 
 /**
@@ -243,7 +242,7 @@ class Extractor {
 	 */
 	public static function zip_error_msg( $error_code ) {
 		// From https://github.com/php/php-src/blob/php-5.3.0/ext/zip/php_zip.c#L2623-L2646.
-		static $zip_err_msgs = array(
+		static $zip_err_msgs = [
 			ZipArchive::ER_OK          => 'No error',
 			ZipArchive::ER_MULTIDISK   => 'Multi-disk zip archives not supported',
 			ZipArchive::ER_RENAME      => 'Renaming temporary file failed',
@@ -268,7 +267,7 @@ class Extractor {
 			ZipArchive::ER_INCONS      => 'Zip archive inconsistent',
 			ZipArchive::ER_REMOVE      => 'Can\'t remove file',
 			ZipArchive::ER_DELETED     => 'Entry has been deleted',
-		);
+		];
 
 		if ( isset( $zip_err_msgs[ $error_code ] ) ) {
 			return sprintf(

@@ -28,7 +28,7 @@ class BootstrapState {
 	 *
 	 * @var array
 	 */
-	private $state = array();
+	private $state = [];
 
 	/**
 	 * Get the state value for a given key.

@@ -1,6 +1,7 @@
 <?php
 
 use Composer\Semver\Comparator;
+use WP_CLI\Completions;
 use WP_CLI\Formatter;
 use WP_CLI\Process;
 use WP_CLI\Utils;
@@ -381,7 +382,7 @@ class CLI_Command extends WP_CLI_Command {
 		} elseif ( Utils\get_flag_value( $assoc_args, 'stable', false ) ) {
 			$updated_version = 'the latest stable release';
 		} else {
-			$updated_version = $newest['version'];
+			$updated_version = isset( $newest['version'] ) ? $newest['version'] : '<not provided>';
 		}
 		WP_CLI::success( sprintf( 'Updated WP-CLI to %s.', $updated_version ) );
 	}
@@ -515,10 +516,10 @@ class CLI_Command extends WP_CLI_Command {
 	 * @subcommand param-dump
 	 */
 	public function param_dump( $_, $assoc_args ) {
-		$spec = \WP_CLI::get_configurator()->get_spec();
+		$spec = WP_CLI::get_configurator()->get_spec();
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'with-values' ) ) {
-			$config = \WP_CLI::get_configurator()->to_array();
+		if ( Utils\get_flag_value( $assoc_args, 'with-values' ) ) {
+			$config = WP_CLI::get_configurator()->to_array();
 			// Copy current config values to $spec.
 			foreach ( $spec as $key => $value ) {
 				$current = null;
@@ -529,7 +530,7 @@ class CLI_Command extends WP_CLI_Command {
 			}
 		}
 
-		if ( 'var_export' === \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) ) {
+		if ( 'var_export' === Utils\get_flag_value( $assoc_args, 'format' ) ) {
 			var_export( $spec );
 		} else {
 			echo json_encode( $spec );
@@ -571,7 +572,7 @@ class CLI_Command extends WP_CLI_Command {
 	 */
 	public function completions( $_, $assoc_args ) {
 		$line  = substr( $assoc_args['line'], 0, $assoc_args['point'] );
-		$compl = new \WP_CLI\Completions( $line );
+		$compl = new Completions( $line );
 		$compl->render();
 	}
 
@@ -581,7 +582,7 @@ class CLI_Command extends WP_CLI_Command {
 	private function get_update_type_str( $assoc_args ) {
 		$update_type = ' ';
 		foreach ( [ 'major', 'minor', 'patch' ] as $type ) {
-			if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, $type ) ) {
+			if ( true === Utils\get_flag_value( $assoc_args, $type ) ) {
 				$update_type = ' ' . $type . ' ';
 				break;
 			}

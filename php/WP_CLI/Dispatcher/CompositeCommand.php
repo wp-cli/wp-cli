@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Dispatcher;
 
+use WP_CLI;
+use WP_CLI\DocParser;
 use WP_CLI\Utils;
 
 /**
@@ -18,14 +20,14 @@ class CompositeCommand {
 	protected $docparser;
 
 	protected $parent;
-	protected $subcommands = array();
+	protected $subcommands = [];
 
 	/**
 	 * Instantiate a new CompositeCommand
 	 *
 	 * @param mixed $parent Parent command (either Root or Composite)
 	 * @param string $name Represents how command should be invoked
-	 * @param \WP_CLI\DocParser
+	 * @param DocParser $docparser
 	 */
 	public function __construct( $parent, $name, $docparser ) {
 		$this->parent = $parent;
@@ -38,7 +40,7 @@ class CompositeCommand {
 
 		$when_to_invoke = $docparser->get_tag( 'when' );
 		if ( $when_to_invoke ) {
-			\WP_CLI::get_runner()->register_early_invoke( $when_to_invoke, $this );
+			WP_CLI::get_runner()->register_early_invoke( $when_to_invoke, $this );
 		}
 	}
 
@@ -56,7 +58,7 @@ class CompositeCommand {
 	 * set of contained subcommands.
 	 *
 	 * @param string $name Represents how subcommand should be invoked
-	 * @param Subcommand|CompositeCommand
+	 * @param Subcommand|CompositeCommand $command
 	 */
 	public function add_subcommand( $name, $command ) {
 		$this->subcommands[ $name ] = $command;
@@ -118,7 +120,7 @@ class CompositeCommand {
 	/**
 	 * Set the short description for this composite command.
 	 *
-	 * @param string
+	 * @param string $shortdesc
 	 */
 	public function set_shortdesc( $shortdesc ) {
 		$this->shortdesc = Utils\normalize_eols( $shortdesc );
@@ -137,7 +139,7 @@ class CompositeCommand {
 	/**
 	 * Set the long description for this composite command
 	 *
-	 * @param string
+	 * @param string $longdesc
 	 */
 	public function set_longdesc( $longdesc ) {
 		$this->longdesc = Utils\normalize_eols( $longdesc );
@@ -178,21 +180,21 @@ class CompositeCommand {
 
 		$i = 0;
 
-		foreach ( $methods as $name => $subcommand ) {
+		foreach ( $methods as $subcommand ) {
 			$prefix = ( 0 === $i ) ? 'usage: ' : '   or: ';
 			$i++;
 
-			if ( \WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
+			if ( WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
 				continue;
 			}
 
-			\WP_CLI::line( $subcommand->get_usage( $prefix ) );
+			WP_CLI::line( $subcommand->get_usage( $prefix ) );
 		}
 
 		$cmd_name = implode( ' ', array_slice( get_path( $this ), 1 ) );
 
-		\WP_CLI::line();
-		\WP_CLI::line( "See 'wp help $cmd_name <command>' for more information on a specific command." );
+		WP_CLI::line();
+		WP_CLI::line( "See 'wp help $cmd_name <command>' for more information on a specific command." );
 	}
 
 	/**
@@ -212,7 +214,7 @@ class CompositeCommand {
 	 * subcommand
 	 *
 	 * @param array $args
-	 * @return \WP_CLI\Dispatcher\Subcommand|false
+	 * @return Subcommand|false
 	 */
 	public function find_subcommand( &$args ) {
 		$name = array_shift( $args );
@@ -242,7 +244,7 @@ class CompositeCommand {
 	 * @return array
 	 */
 	private static function get_aliases( $subcommands ) {
-		$aliases = array();
+		$aliases = [];
 
 		foreach ( $subcommands as $name => $subcommand ) {
 			$alias = $subcommand->get_alias();
@@ -270,14 +272,14 @@ class CompositeCommand {
 	 * @return string
 	 */
 	protected function get_global_params( $root_command = false ) {
-		$binding                 = array();
+		$binding                 = [];
 		$binding['root_command'] = $root_command;
 
 		if ( ! $this->can_have_subcommands() || ( is_object( $this->parent ) && get_class( $this->parent ) === 'WP_CLI\Dispatcher\CompositeCommand' ) ) {
 			$binding['is_subcommand'] = true;
 		}
 
-		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
+		foreach ( WP_CLI::get_configurator()->get_spec() as $key => $details ) {
 			if ( false === $details['runtime'] ) {
 				continue;
 			}
@@ -298,10 +300,10 @@ class CompositeCommand {
 
 			// Check if global parameters synopsis should be displayed or not.
 			if ( 'true' !== getenv( 'WP_CLI_SUPPRESS_GLOBAL_PARAMS' ) ) {
-				$binding['parameters'][]   = array(
+				$binding['parameters'][]   = [
 					'synopsis' => $synopsis,
 					'desc'     => $details['desc'],
-				);
+				];
 				$binding['has_parameters'] = true;
 			}
 		}

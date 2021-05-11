@@ -10,13 +10,13 @@ namespace WP_CLI;
 class SynopsisParser {
 
 	/**
-	 * @param string A synopsis
+	 * @param string $synopsis A synopsis
 	 * @return array List of parameters
 	 */
 	public static function parse( $synopsis ) {
 		$tokens = array_filter( preg_split( '/[\s\t]+/', $synopsis ) );
 
-		$params = array();
+		$params = [];
 		foreach ( $tokens as $token ) {
 			$param = self::classify_token( $token );
 
@@ -116,10 +116,10 @@ class SynopsisParser {
 	 * Classify argument attributes based on its syntax.
 	 *
 	 * @param string $token
-	 * @return array $param
+	 * @return array
 	 */
 	private static function classify_token( $token ) {
-		$param = array();
+		$param = [];
 
 		list( $param['optional'], $token )  = self::is_optional( $token );
 		list( $param['repeating'], $token ) = self::is_repeating( $token );
@@ -148,9 +148,9 @@ class SynopsisParser {
 				if ( preg_match( "/^=<$p_value>$/", $value, $matches ) ) {
 					$param['value']['name'] = $matches[1];
 				} else {
-					$param = array(
+					$param = [
 						'type' => 'unknown',
-					);
+					];
 				}
 			}
 		} else {
@@ -168,10 +168,10 @@ class SynopsisParser {
 	 */
 	private static function is_optional( $token ) {
 		if ( '[' === substr( $token, 0, 1 ) && ']' === substr( $token, -1 ) ) {
-			return array( true, substr( $token, 1, -1 ) );
+			return [ true, substr( $token, 1, -1 ) ];
 		}
 
-		return array( false, $token );
+		return [ false, $token ];
 	}
 
 	/**
@@ -182,9 +182,9 @@ class SynopsisParser {
 	 */
 	private static function is_repeating( $token ) {
 		if ( '...' === substr( $token, -3 ) ) {
-			return array( true, substr( $token, 0, -3 ) );
+			return [ true, substr( $token, 0, -3 ) ];
 		}
 
-		return array( false, $token );
+		return [ false, $token ];
 	}
 }

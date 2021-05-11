@@ -7,7 +7,6 @@ trait FeedbackMethodTrait {
 	/**
 	 * @param string $string
 	 * @param mixed  ...$args Optional text replacements.
-	 *
 	 */
 	public function feedback( $string, ...$args ) { // phpcs:ignore PHPCompatibility.LanguageConstructs.NewLanguageConstructs.t_ellipsisFound
 		$args_array = [];

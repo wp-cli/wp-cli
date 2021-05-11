@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Loggers;
 
+use cli\Colors;
+use WP_CLI;
 use WP_CLI\Runner;
 
 /**
@@ -24,7 +26,7 @@ abstract class Base {
 	 * @return Runner Instance of the runner class
 	 */
 	protected function get_runner() {
-		return \WP_CLI::get_runner();
+		return WP_CLI::get_runner();
 	}
 
 	/**
@@ -74,7 +76,7 @@ abstract class Base {
 	 */
 	protected function _line( $message, $label, $color, $handle = STDOUT ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Used in third party extensions.
 		if ( class_exists( 'cli\Colors' ) ) {
-			$label = \cli\Colors::colorize( "$color$label:%n", $this->in_color );
+			$label = Colors::colorize( "$color$label:%n", $this->in_color );
 		} else {
 			$label = "$label:";
 		}

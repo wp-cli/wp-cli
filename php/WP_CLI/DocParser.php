@@ -11,7 +11,9 @@ use Mustangostang\Spyc;
 class DocParser {
 
 	/**
-	 * @var string $docComment PHPdoc command for the command.
+	 * PHPdoc command for the command.
+	 *
+	 * @var string
 	 */
 	protected $doc_comment;
 
@@ -64,7 +66,7 @@ class DocParser {
 
 		$longdesc = substr( $this->doc_comment, strlen( $shortdesc ) );
 
-		$lines = array();
+		$lines = [];
 		foreach ( explode( "\n", $longdesc ) as $line ) {
 			if ( 0 === strpos( $line, '@' ) ) {
 				break;
@@ -72,9 +74,8 @@ class DocParser {
 
 			$lines[] = $line;
 		}
-		$longdesc = trim( implode( "\n", $lines ) );
 
-		return $longdesc;
+		return trim( implode( "\n", $lines ) );
 	}
 
 	/**
@@ -165,7 +166,7 @@ class DocParser {
 		$bits       = explode( "\n", $this->doc_comment );
 		$within_arg = false;
 		$within_doc = false;
-		$document   = array();
+		$document   = [];
 		foreach ( $bits as $bit ) {
 			if ( preg_match( $regex, $bit ) ) {
 				$within_arg = true;

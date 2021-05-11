@@ -2,6 +2,9 @@
 
 namespace WP_CLI\Bootstrap;
 
+use WP_CLI;
+use WP_CLI\Runner;
+
 /**
  * Class RunnerInstance.
  *
@@ -16,7 +19,7 @@ final class RunnerInstance {
 	 *
 	 * Includes necessary class files first as needed.
 	 *
-	 * @return \WP_CLI\Runner
+	 * @return Runner
 	 */
 	public function __invoke() {
 		if ( ! class_exists( 'WP_CLI\Runner' ) ) {
@@ -27,6 +30,6 @@ final class RunnerInstance {
 			require_once WP_CLI_ROOT . '/php/WP_CLI/Configurator.php';
 		}
 
-		return \WP_CLI::get_runner();
+		return WP_CLI::get_runner();
 	}
 }

@@ -2,10 +2,12 @@
 
 namespace WP_CLI;
 
+use WP_CLI;
+
 class Completions {
 
 	private $words;
-	private $opts = array();
+	private $opts = [];
 
 	public function __construct( $line ) {
 		// TODO: properly parse single and double quotes
@@ -52,7 +54,7 @@ class Completions {
 		if ( $command->can_have_subcommands() ) {
 			// Add completion when command is `wp` and alias isn't set.
 			if ( 'wp' === $command->get_name() && false === $is_alias && false === $is_help ) {
-				$aliases = \WP_CLI::get_configurator()->get_aliases();
+				$aliases = WP_CLI::get_configurator()->get_aliases();
 				foreach ( $aliases as $name => $_ ) {
 					$this->add( "$name " );
 				}
@@ -62,7 +64,7 @@ class Completions {
 			}
 		} else {
 			foreach ( $spec as $arg ) {
-				if ( in_array( $arg['type'], array( 'flag', 'assoc' ), true ) ) {
+				if ( in_array( $arg['type'], [ 'flag', 'assoc' ], true ) ) {
 					if ( isset( $assoc_args[ $arg['name'] ] ) ) {
 						continue;
 					}
@@ -99,8 +101,8 @@ class Completions {
 	}
 
 	private function get_command( $words ) {
-		$positional_args = array();
-		$assoc_args      = array();
+		$positional_args = [];
+		$assoc_args      = [];
 
 		foreach ( $words as $arg ) {
 			if ( preg_match( '|^--([^=]+)=?|', $arg, $matches ) ) {
@@ -110,9 +112,9 @@ class Completions {
 			}
 		}
 
-		$r = \WP_CLI::get_runner()->find_command_to_run( $positional_args );
+		$r = WP_CLI::get_runner()->find_command_to_run( $positional_args );
 		if ( ! is_array( $r ) && array_pop( $positional_args ) === $this->cur_word ) {
-			$r = \WP_CLI::get_runner()->find_command_to_run( $positional_args );
+			$r = WP_CLI::get_runner()->find_command_to_run( $positional_args );
 		}
 
 		if ( ! is_array( $r ) ) {
@@ -121,12 +123,12 @@ class Completions {
 
 		list( $command, $args ) = $r;
 
-		return array( $command, $args, $assoc_args );
+		return [ $command, $args, $assoc_args ];
 	}
 
 	private function get_global_parameters() {
-		$params = array();
-		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
+		$params = [];
+		foreach ( WP_CLI::get_configurator()->get_spec() as $key => $details ) {
 			if ( false === $details['runtime'] ) {
 				continue;
 			}
@@ -161,7 +163,7 @@ class Completions {
 
 	public function render() {
 		foreach ( $this->opts as $opt ) {
-			\WP_CLI::line( $opt );
+			WP_CLI::line( $opt );
 		}
 	}
 }

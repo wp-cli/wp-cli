@@ -6,6 +6,8 @@ namespace WP_CLI\Utils;
 
 use ArrayIterator;
 use cli;
+use cli\progress\Bar;
+use cli\Shell;
 use Closure;
 use Composer\Semver\Comparator;
 use Composer\Semver\Semver;
@@ -16,9 +18,11 @@ use Requests;
 use Requests_Exception;
 use RuntimeException;
 use WP_CLI;
+use WP_CLI\ExitException;
 use WP_CLI\Formatter;
 use WP_CLI\Inflector;
 use WP_CLI\Iterators\Transform;
+use WP_CLI\NoOp;
 use WP_CLI\Process;
 
 const PHAR_STREAM_PREFIX = 'phar://';
@@ -90,10 +94,10 @@ function load_dependencies() {
 }
 
 function get_vendor_paths() {
-	$vendor_paths        = array(
+	$vendor_paths        = [
 		WP_CLI_ROOT . '/../../../vendor',  // Part of a larger project / installed via Composer (preferred).
 		WP_CLI_ROOT . '/vendor',           // Top-level project / installed as Git clone.
-	);
+	];
 	$maybe_composer_json = WP_CLI_ROOT . '/../../../composer.json';
 	if ( file_exists( $maybe_composer_json ) && is_readable( $maybe_composer_json ) ) {
 		$composer = json_decode( file_get_contents( $maybe_composer_json ) );
@@ -219,11 +223,11 @@ function assoc_args_to_str( $assoc_args ) {
 		if ( true === $value ) {
 			$str .= " --$key";
 		} elseif ( is_array( $value ) ) {
-			foreach ( $value as $_ => $v ) {
+			foreach ( $value as $v ) {
 				$str .= assoc_args_to_str(
-					array(
+					[
 						$key => $v,
-					)
+					]
 				);
 			}
 		} else {
@@ -326,7 +330,6 @@ function wp_version_compare( $since, $operator ) {
  * @param string       $format Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count'.
  * @param array        $items  An array of items to output.
  * @param array|string $fields Named fields for each item of data. Can be array or comma-separated list.
- * @return null
  */
 function format_items( $format, $items, $fields ) {
 	$assoc_args = compact( 'format', 'fields' );
@@ -343,7 +346,7 @@ function format_items( $format, $items, $fields ) {
  * @param array    $rows    Array of rows to output.
  * @param array    $headers List of CSV columns (optional).
  */
-function write_csv( $fd, $rows, $headers = array() ) {
+function write_csv( $fd, $rows, $headers = [] ) {
 	if ( ! empty( $headers ) ) {
 		fputcsv( $fd, $headers );
 	}
@@ -365,7 +368,7 @@ function write_csv( $fd, $rows, $headers = array() ) {
  * @return array
  */
 function pick_fields( $item, $fields ) {
-	$values = array();
+	$values = [];
 
 	if ( is_object( $item ) ) {
 		foreach ( $fields as $field ) {
@@ -423,7 +426,7 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 		$editor = is_windows() ? 'notepad' : 'vi';
 	}
 
-	$descriptorspec = array( STDIN, STDOUT, STDERR );
+	$descriptorspec = [ STDIN, STDOUT, STDERR ];
 	$process        = proc_open_compat( "$editor " . escapeshellarg( $tmpfile ), $descriptorspec, $pipes );
 	$r              = proc_close( $process );
 	if ( $r ) {
@@ -442,12 +445,12 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 }
 
 /**
- * @param string MySQL host string, as defined in wp-config.php.
+ * @param string $raw_host MySQL host string, as defined in wp-config.php.
  *
  * @return array
  */
 function mysql_host_to_cli_args( $raw_host ) {
-	$assoc_args = array();
+	$assoc_args = [];
 
 	/**
 	 * If the host string begins with 'p:' for a persistent db connection,
@@ -574,7 +577,7 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
  *
  * IMPORTANT: Automatic HTML escaping is disabled!
  */
-function mustache_render( $template_name, $data = array() ) {
+function mustache_render( $template_name, $data = [] ) {
 	if ( ! file_exists( $template_name ) ) {
 		$template_name = WP_CLI_ROOT . "/templates/$template_name";
 	}
@@ -582,10 +585,10 @@ function mustache_render( $template_name, $data = array() ) {
 	$template = file_get_contents( $template_name );
 
 	$m = new Mustache_Engine(
-		array(
+		[
 			'escape' => function ( $val ) {
 				return $val; },
-		)
+		]
 	);
 
 	return $m->render( $template, $data );
@@ -618,14 +621,14 @@ function mustache_render( $template_name, $data = array() ) {
  * @param string  $message  Text to display before the progress bar.
  * @param integer $count    Total number of ticks to be performed.
  * @param int     $interval Optional. The interval in milliseconds between updates. Default 100.
- * @return cli\progress\Bar|WP_CLI\NoOp
+ * @return cli\progress\Bar|NoOp
  */
 function make_progress_bar( $message, $count, $interval = 100 ) {
-	if ( cli\Shell::isPiped() ) {
-		return new WP_CLI\NoOp();
+	if ( Shell::isPiped() ) {
+		return new NoOp();
 	}
 
-	return new cli\progress\Bar( $message, $count, $interval );
+	return new Bar( $message, $count, $interval );
 }
 
 /**
@@ -748,9 +751,9 @@ function replace_path_consts( $source, $path ) {
  * }
  * @return object
  * @throws RuntimeException If the request failed.
- * @throws WP_CLI\ExitException If the request failed and $halt_on_error is true.
+ * @throws ExitException If the request failed and $halt_on_error is true.
  */
-function http_request( $method, $url, $data = null, $headers = array(), $options = array() ) {
+function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
 
 	if ( ! class_exists( 'Requests_Hooks' ) ) {
 		// Autoloader for the Requests library has not been registered yet.
@@ -822,7 +825,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
  * @param bool $halt_on_error Whether or not command execution should be halted on error. Default: false
  * @return string Absolute path to the default CA cert.
  * @throws RuntimeException If unable to locate the cert.
- * @throws WP_CLI\ExitException If unable to locate the cert and $halt_on_error is true.
+ * @throws ExitException If unable to locate the cert and $halt_on_error is true.
  */
 function get_default_cacert( $halt_on_error = false ) {
 	$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
@@ -870,14 +873,14 @@ function increment_version( $current_version, $new_version ) {
 		case 'patch':
 			$current_version[0][2]++;
 
-			$current_version = array( $current_version[0] ); // Drop possible pre-release info.
+			$current_version = [ $current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		case 'minor':
 			$current_version[0][1]++;
 			$current_version[0][2] = 0;
 
-			$current_version = array( $current_version[0] ); // Drop possible pre-release info.
+			$current_version = [ $current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		case 'major':
@@ -885,11 +888,11 @@ function increment_version( $current_version, $new_version ) {
 			$current_version[0][1] = 0;
 			$current_version[0][2] = 0;
 
-			$current_version = array( $current_version[0] ); // Drop possible pre-release info.
+			$current_version = [ $current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		default: // not a keyword
-			$current_version = array( array( $new_version ) );
+			$current_version = [ [ $new_version ] ];
 			break;
 	}
 
@@ -907,7 +910,7 @@ function increment_version( $current_version, $new_version ) {
  *
  * @param string $new_version
  * @param string $original_version
- * @return string $name 'major', 'minor', 'patch'
+ * @return string 'major', 'minor', 'patch'
  */
 function get_named_sem_ver( $new_version, $original_version ) {
 
@@ -925,7 +928,7 @@ function get_named_sem_ver( $new_version, $original_version ) {
 		$patch = $bits[2];
 	}
 
-	if ( ! is_null( $minor ) && Semver::satisfies( $new_version, "{$major}.{$minor}.x" ) ) {
+	if ( isset( $minor ) && Semver::satisfies( $new_version, "{$major}.{$minor}.x" ) ) {
 		return 'patch';
 	}
 
@@ -1061,14 +1064,14 @@ function get_temp_dir() {
  */
 function parse_ssh_url( $url, $component = -1 ) {
 	preg_match( '#^((docker|docker\-compose|ssh|vagrant):)?(([^@:]+)@)?([^:/~]+)(:([\d]*))?((/|~)(.+))?$#', $url, $matches );
-	$bits = array();
-	foreach ( array(
+	$bits = [];
+	foreach ( [
 		2 => 'scheme',
 		4 => 'user',
 		5 => 'host',
 		7 => 'port',
 		8 => 'path',
-	) as $i => $key ) {
+	] as $i => $key ) {
 		if ( ! empty( $matches[ $i ] ) ) {
 			$bits[ $key ] = $matches[ $i ];
 		}
@@ -1144,10 +1147,10 @@ function report_batch_operation_results( $noun, $verb, $total, $successes, $fail
  */
 function parse_str_to_argv( $arguments ) {
 	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches );
-	$argv = isset( $matches[0] ) ? $matches[0] : array();
-	$argv = array_map(
+	$argv = isset( $matches[0] ) ? $matches[0] : [];
+	return array_map(
 		static function ( $arg ) {
-			foreach ( array( '"', "'" ) as $char ) {
+			foreach ( [ '"', "'" ] as $char ) {
 				if ( substr( $arg, 0, 1 ) === $char && substr( $arg, -1 ) === $char ) {
 					$arg = substr( $arg, 1, -1 );
 					break;
@@ -1157,7 +1160,6 @@ function parse_str_to_argv( $arguments ) {
 		},
 		$argv
 	);
-	return $argv;
 }
 
 /**
@@ -1171,7 +1173,7 @@ function parse_str_to_argv( $arguments ) {
  */
 function basename( $path, $suffix = '' ) {
 	// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.urlencode_urlencode -- Format required by wordpress.org API.
-	return urldecode( \basename( str_replace( array( '%2F', '%5C' ), '/', urlencode( $path ) ), $suffix ) );
+	return urldecode( \basename( str_replace( [ '%2F', '%5C' ], '/', urlencode( $path ) ), $suffix ) );
 }
 
 /**
@@ -1197,7 +1199,7 @@ function isPiped() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionNa
 		return filter_var( $shell_pipe, FILTER_VALIDATE_BOOLEAN );
 	}
 
-	return ( function_exists( 'posix_isatty' ) && ! posix_isatty( STDOUT ) );
+	return function_exists( 'posix_isatty' ) && ! posix_isatty( STDOUT );
 }
 
 /**
@@ -1220,13 +1222,13 @@ function expand_globs( $paths, $flags = 'default' ) {
 		}
 	}
 
-	$expanded = array();
+	$expanded = [];
 
 	foreach ( (array) $paths as $path ) {
-		$matching = array( $path );
+		$matching = [ $path ];
 
 		if ( preg_match( '/[' . preg_quote( '*?[]{}!', '/' ) . ']/', $path ) ) {
-			$matching = $glob_func( $path, $flags ) ?: array();
+			$matching = $glob_func( $path, $flags ) ?: [];
 		}
 		$expanded = array_merge( $expanded, $matching );
 	}
@@ -1305,7 +1307,7 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 		}
 	}
 
-	$paths = array();
+	$paths = [];
 	$p     = $begin + 1;
 
 	// For each comma-separated subpattern.
@@ -1347,7 +1349,7 @@ function glob_brace( $pattern, $dummy_flags = null ) {
  */
 function get_suggestion( $target, array $options, $threshold = 2 ) {
 
-	$suggestion_map = array(
+	$suggestion_map = [
 		'add'        => 'create',
 		'check'      => 'check-update',
 		'capability' => 'cap',
@@ -1368,7 +1370,7 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
 		'repl'       => 'replace',
 		'trash'      => 'delete',
 		'v'          => 'version',
-	);
+	];
 
 	if ( array_key_exists( $target, $suggestion_map ) && in_array( $suggestion_map[ $target ], $options, true ) ) {
 		return $suggestion_map[ $target ];
@@ -1468,9 +1470,9 @@ function check_proc_available( $context = null, $return = false ) {
  * @return string
  */
 function past_tense_verb( $verb ) {
-	static $irregular = array(
+	static $irregular = [
 		'reset' => 'reset',
-	);
+	];
 	if ( isset( $irregular[ $verb ] ) ) {
 		return $irregular[ $verb ];
 	}
@@ -1547,7 +1549,7 @@ function _proc_open_compat_win_env( $cmd, &$env ) {
 		while ( preg_match( '/^([A-Za-z_][A-Za-z0-9_]*)=("[^"]*"|[^ ]*) /', $cmd, $matches ) ) {
 			$cmd = substr( $cmd, strlen( $matches[0] ) );
 			if ( null === $env ) {
-				$env = array();
+				$env = [];
 			}
 			$env[ $matches[1] ] = isset( $matches[2][0] ) && '"' === $matches[2][0] ? substr( $matches[2], 1, -1 ) : $matches[2];
 		}
@@ -1604,7 +1606,7 @@ function is_json( $argument, $ignore_scalars = true ) {
 		return false;
 	}
 
-	if ( $ignore_scalars && ! in_array( $argument[0], array( '{', '[' ), true ) ) {
+	if ( $ignore_scalars && ! in_array( $argument[0], [ '{', '[' ], true ) ) {
 		return false;
 	}
 
@@ -1651,17 +1653,17 @@ function describe_callable( $callable ) {
 
 		if ( is_array( $callable ) ) {
 			if ( is_object( $callable[0] ) ) {
-				return (string) sprintf(
+				return sprintf(
 					'%s->%s()',
 					get_class( $callable[0] ),
 					$callable[1]
 				);
 			}
 
-			return (string) sprintf( '%s::%s()', $callable[0], $callable[1] );
+			return sprintf( '%s::%s()', $callable[0], $callable[1] );
 		}
 
-		return (string) gettype( $callable );
+		return gettype( $callable );
 	} catch ( Exception $exception ) {
 		return 'Callable of unknown type';
 	}

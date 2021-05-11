@@ -5,11 +5,11 @@
 class MockRegularLogger extends WP_CLI\Loggers\Regular {
 
 	protected function get_runner() {
-		return (object) array(
-			'config' => array(
+		return (object) [
+			'config' => [
 				'debug' => true,
-			),
-		);
+			],
+		];
 	}
 
 	protected function write( $handle, $str ) {
@@ -20,11 +20,11 @@ class MockRegularLogger extends WP_CLI\Loggers\Regular {
 class MockQuietLogger extends WP_CLI\Loggers\Quiet {
 
 	protected function get_runner() {
-		return (object) array(
-			'config' => array(
+		return (object) [
+			'config' => [
 				'debug' => true,
-			),
-		);
+			],
+		];
 	}
 }
 
@@ -60,7 +60,7 @@ class LoggingTests extends PHPUnit_Framework_TestCase {
 		$prev_config = $runner_config->getValue( $runner );
 
 		// Set debug.
-		$runner_config->setValue( $runner, array( 'debug' => true ) );
+		$runner_config->setValue( $runner, [ 'debug' => true ] );
 
 		$logger = new WP_CLI\Loggers\Execution();
 
@@ -74,9 +74,9 @@ class LoggingTests extends PHPUnit_Framework_TestCase {
 		$logger->success( 'success2' );
 		$logger->warning( 'warning2' );
 		$logger->debug( 'debug', 'group' );
-		$logger->error_multi_line( array( 'line11', 'line12', 'line13' ) );
+		$logger->error_multi_line( [ 'line11', 'line12', 'line13' ] );
 		$logger->error( 'error2' );
-		$logger->error_multi_line( array( 'line21' ) );
+		$logger->error_multi_line( [ 'line21' ] );
 		$logger->debug( 'debug2', 'group2' );
 
 		$this->assertSame( "info\ninfo2\nSuccess: success\nSuccess: success2\n", $logger->stdout );

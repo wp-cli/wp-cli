@@ -2,7 +2,11 @@
 
 namespace WP_CLI;
 
+use cli\Colors;
+use cli\Table;
+use Iterator;
 use Mustangostang\Spyc;
+use WP_CLI;
 
 /**
  * Output one or more items in a given format (e.g. table, JSON).
@@ -10,12 +14,16 @@ use Mustangostang\Spyc;
 class Formatter {
 
 	/**
-	 * @var array $args How the items should be output.
+	 * How the items should be output.
+	 *
+	 * @var array
 	 */
 	private $args;
 
 	/**
-	 * @var string $prefix Standard prefix for object fields.
+	 * Standard prefix for object fields.
+	 *
+	 * @var string
 	 */
 	private $prefix;
 
@@ -26,13 +34,13 @@ class Formatter {
 	 * False indicates empty prefix.
 	 */
 	public function __construct( &$assoc_args, $fields = null, $prefix = false ) {
-		$format_args = array(
+		$format_args = [
 			'format' => 'table',
 			'fields' => $fields,
 			'field'  => null,
-		);
+		];
 
-		foreach ( array( 'format', 'fields', 'field' ) as $key ) {
+		foreach ( [ 'format', 'fields', 'field' ] as $key ) {
 			if ( isset( $assoc_args[ $key ] ) ) {
 				$format_args[ $key ] = $assoc_args[ $key ];
 				unset( $assoc_args[ $key ] );
@@ -62,14 +70,14 @@ class Formatter {
 	/**
 	 * Display multiple items according to the output arguments.
 	 *
-	 * @param array|\Iterator $items               The items to display.
+	 * @param array|Iterator $items The items to display.
 	 * @param bool|array      $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `format()` if items in the table are pre-colorized. Default false.
 	 */
 	public function display_items( $items, $ascii_pre_colorized = false ) {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
-			if ( in_array( $this->args['format'], array( 'csv', 'json', 'table' ), true ) ) {
+			if ( in_array( $this->args['format'], [ 'csv', 'json', 'table' ], true ) ) {
 				$item = is_array( $items ) && ! empty( $items ) ? array_shift( $items ) : false;
 				if ( $item && ! empty( $this->args['fields'] ) ) {
 					foreach ( $this->args['fields'] as &$field ) {
@@ -79,11 +87,11 @@ class Formatter {
 				}
 			}
 
-			if ( in_array( $this->args['format'], array( 'table', 'csv' ), true ) ) {
-				if ( $items instanceof \Iterator ) {
-					$items = \WP_CLI\Utils\iterator_map( $items, array( $this, 'transform_item_values_to_json' ) );
+			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
+				if ( $items instanceof Iterator ) {
+					$items = Utils\iterator_map( $items, [ $this, 'transform_item_values_to_json' ] );
 				} else {
-					$items = array_map( array( $this, 'transform_item_values_to_json' ), $items );
+					$items = array_map( [ $this, 'transform_item_values_to_json' ], $items );
 				}
 			}
 
@@ -102,14 +110,14 @@ class Formatter {
 			$item  = (object) $item;
 			$key   = $this->find_item_key( $item, $this->args['field'] );
 			$value = $item->$key;
-			if ( in_array( $this->args['format'], array( 'table', 'csv' ), true ) && ( is_object( $value ) || is_array( $value ) ) ) {
+			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) && ( is_object( $value ) || is_array( $value ) ) ) {
 				$value = json_encode( $value );
 			}
-			\WP_CLI::print_value(
+			WP_CLI::print_value(
 				$value,
-				array(
+				[
 					'format' => $this->args['format'],
-				)
+				]
 			);
 		} else {
 			$this->show_multiple_fields( $item, $this->args['format'], $ascii_pre_colorized );
@@ -145,14 +153,14 @@ class Formatter {
 				break;
 
 			case 'csv':
-				\WP_CLI\Utils\write_csv( STDOUT, $items, $fields );
+				Utils\write_csv( STDOUT, $items, $fields );
 				break;
 
 			case 'json':
 			case 'yaml':
-				$out = array();
+				$out = [];
 				foreach ( $items as $item ) {
-					$out[] = \WP_CLI\Utils\pick_fields( $item, $fields );
+					$out[] = Utils\pick_fields( $item, $fields );
 				}
 
 				if ( 'json' === $this->args['format'] ) {
@@ -168,19 +176,19 @@ class Formatter {
 				break;
 
 			default:
-				\WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
+				WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
 		}
 	}
 
 	/**
 	 * Show a single field from a list of items.
 	 *
-	 * @param array Array of objects to show fields from
-	 * @param string The field to show
+	 * @param array $items Array of objects to show fields from
+	 * @param string $field The field to show
 	 */
 	private function show_single_field( $items, $field ) {
 		$key    = null;
-		$values = array();
+		$values = [];
 
 		foreach ( $items as $item ) {
 			$item = (object) $item;
@@ -192,11 +200,11 @@ class Formatter {
 			if ( 'json' === $this->args['format'] ) {
 				$values[] = $item->$key;
 			} else {
-				\WP_CLI::print_value(
+				WP_CLI::print_value(
 					$item->$key,
-					array(
+					[
 						'format' => $this->args['format'],
-					)
+					]
 				);
 			}
 		}
@@ -212,10 +220,10 @@ class Formatter {
 	 *
 	 * @param object $item
 	 * @param string $field
-	 * @return string $key
+	 * @return string
 	 */
 	private function find_item_key( $item, $field ) {
-		foreach ( array( $field, $this->prefix . '_' . $field ) as $maybe_key ) {
+		foreach ( [ $field, $this->prefix . '_' . $field ] as $maybe_key ) {
 			if ( ( is_object( $item ) && ( property_exists( $item, $maybe_key ) || isset( $item->$maybe_key ) ) ) || ( is_array( $item ) && array_key_exists( $maybe_key, $item ) ) ) {
 				$key = $maybe_key;
 				break;
@@ -223,7 +231,7 @@ class Formatter {
 		}
 
 		if ( ! isset( $key ) ) {
-			\WP_CLI::error( "Invalid field: $field." );
+			WP_CLI::error( "Invalid field: $field." );
 		}
 
 		return $key;
@@ -238,7 +246,7 @@ class Formatter {
 	 */
 	private function show_multiple_fields( $data, $format, $ascii_pre_colorized = false ) {
 
-		$true_fields = array();
+		$true_fields = [];
 		foreach ( $this->args['fields'] as $field ) {
 			$true_fields[] = $this->find_item_key( $data, $field );
 		}
@@ -258,26 +266,26 @@ class Formatter {
 			case 'table':
 			case 'csv':
 				$rows   = $this->assoc_array_to_rows( $data );
-				$fields = array( 'Field', 'Value' );
+				$fields = [ 'Field', 'Value' ];
 				if ( 'table' === $format ) {
 					self::show_table( $rows, $fields, $ascii_pre_colorized );
 				} elseif ( 'csv' === $format ) {
-					\WP_CLI\Utils\write_csv( STDOUT, $rows, $fields );
+					Utils\write_csv( STDOUT, $rows, $fields );
 				}
 				break;
 
 			case 'yaml':
 			case 'json':
-				\WP_CLI::print_value(
+				WP_CLI::print_value(
 					$data,
-					array(
+					[
 						'format' => $format,
-					)
+					]
 				);
 				break;
 
 			default:
-				\WP_CLI::error( 'Invalid format: ' . $format );
+				WP_CLI::error( 'Invalid format: ' . $format );
 				break;
 
 		}
@@ -292,26 +300,26 @@ class Formatter {
 	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `Table::setAsciiPreColorized()` if items in the table are pre-colorized. Default false.
 	 */
 	private static function show_table( $items, $fields, $ascii_pre_colorized = false ) {
-		$table = new \cli\Table();
+		$table = new Table();
 
-		$enabled = \cli\Colors::shouldColorize();
+		$enabled = Colors::shouldColorize();
 		if ( $enabled ) {
-			\cli\Colors::disable( true );
+			Colors::disable( true );
 		}
 
 		$table->setAsciiPreColorized( $ascii_pre_colorized );
 		$table->setHeaders( $fields );
 
 		foreach ( $items as $item ) {
-			$table->addRow( array_values( \WP_CLI\Utils\pick_fields( $item, $fields ) ) );
+			$table->addRow( array_values( Utils\pick_fields( $item, $fields ) ) );
 		}
 
 		foreach ( $table->getDisplayLines() as $line ) {
-			\WP_CLI::line( $line );
+			WP_CLI::line( $line );
 		}
 
 		if ( $enabled ) {
-			\cli\Colors::enable( true );
+			Colors::enable( true );
 		}
 	}
 
@@ -319,10 +327,10 @@ class Formatter {
 	 * Format an associative array as a table.
 	 *
 	 * @param array     $fields    Fields and values to format
-	 * @return array    $rows
+	 * @return array
 	 */
 	private function assoc_array_to_rows( $fields ) {
-		$rows = array();
+		$rows = [];
 
 		foreach ( $fields as $field => $value ) {
 
@@ -330,10 +338,10 @@ class Formatter {
 				$value = json_encode( $value );
 			}
 
-			$rows[] = (object) array(
+			$rows[] = (object) [
 				'Field' => $field,
 				'Value' => $value,
-			);
+			];
 		}
 
 		return $rows;

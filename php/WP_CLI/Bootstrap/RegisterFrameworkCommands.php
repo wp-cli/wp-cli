@@ -2,6 +2,10 @@
 
 namespace WP_CLI\Bootstrap;
 
+use DirectoryIterator;
+use Exception;
+use WP_CLI;
+
 /**
  * Class RegisterFrameworkCommands.
  *
@@ -21,7 +25,7 @@ final class RegisterFrameworkCommands implements BootstrapStep {
 	public function process( BootstrapState $state ) {
 		$cmd_dir = WP_CLI_ROOT . '/php/commands';
 
-		$iterator = new \DirectoryIterator( $cmd_dir );
+		$iterator = new DirectoryIterator( $cmd_dir );
 
 		foreach ( $iterator as $filename ) {
 			if ( '.php' !== substr( $filename, - 4 ) ) {
@@ -29,7 +33,7 @@ final class RegisterFrameworkCommands implements BootstrapStep {
 			}
 
 			try {
-				\WP_CLI::debug(
+				WP_CLI::debug(
 					sprintf(
 						'Adding framework command: %s',
 						"$cmd_dir/$filename"
@@ -38,8 +42,8 @@ final class RegisterFrameworkCommands implements BootstrapStep {
 				);
 
 				include_once "$cmd_dir/$filename";
-			} catch ( \Exception $exception ) {
-				\WP_CLI::warning(
+			} catch ( Exception $exception ) {
+				WP_CLI::warning(
 					"Could not add command {$cmd_dir}/{$filename}. Reason: " . $exception->getMessage()
 				);
 			}
