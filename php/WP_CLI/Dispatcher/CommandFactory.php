@@ -3,11 +3,11 @@
 namespace WP_CLI\Dispatcher;
 
 use Closure;
-use WP_CLI\DocParser;
-use WP_CLI;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
+use WP_CLI;
+use WP_CLI\DocParser;
 use WP_CLI\Utils;
 
 /**

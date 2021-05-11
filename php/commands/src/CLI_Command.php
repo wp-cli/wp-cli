@@ -1,7 +1,7 @@
 <?php
 
-use WP_CLI\Completions;
 use Composer\Semver\Comparator;
+use WP_CLI\Completions;
 use WP_CLI\Formatter;
 use WP_CLI\Process;
 use WP_CLI\Utils;

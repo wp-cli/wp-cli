@@ -2,11 +2,11 @@
 
 namespace WP_CLI;
 
-use Iterator;
-use WP_CLI;
-use cli\Table;
 use cli\Colors;
+use cli\Table;
+use Iterator;
 use Mustangostang\Spyc;
+use WP_CLI;
 
 /**
  * Output one or more items in a given format (e.g. table, JSON).

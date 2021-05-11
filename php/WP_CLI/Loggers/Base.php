@@ -2,8 +2,8 @@
 
 namespace WP_CLI\Loggers;
 
-use WP_CLI;
 use cli\Colors;
+use WP_CLI;
 use WP_CLI\Runner;
 
 /**

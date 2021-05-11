@@ -2,8 +2,8 @@
 
 namespace WP_CLI\Dispatcher;
 
-use WP_CLI\DocParser;
 use WP_CLI;
+use WP_CLI\DocParser;
 use WP_CLI\Utils;
 
 /**
