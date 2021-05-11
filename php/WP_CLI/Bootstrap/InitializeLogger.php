@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Bootstrap;
 
+use DirectoryIterator;
+
 /**
  * Class InitializeLogger.
  *
@@ -31,7 +33,7 @@ final class InitializeLogger implements BootstrapStep {
 	 */
 	private function declare_loggers() {
 		$logger_dir = WP_CLI_ROOT . '/php/WP_CLI/Loggers';
-		$iterator   = new \DirectoryIterator( $logger_dir );
+		$iterator   = new DirectoryIterator( $logger_dir );
 
 		// Make sure the base class is declared first.
 		include_once "$logger_dir/Base.php";

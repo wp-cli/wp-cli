@@ -2,6 +2,9 @@
 
 namespace WP_CLI\Dispatcher;
 
+use WP_CLI\SynopsisParser;
+use WP_CLI\SynopsisValidator;
+use WP_CLI\DocParser;
 use WP_CLI;
 use WP_CLI\Utils;
 
@@ -149,7 +152,7 @@ class Subcommand extends CompositeCommand {
 		$arg_index = 0;
 
 		$spec = array_filter(
-			\WP_CLI\SynopsisParser::parse( $synopsis ),
+			SynopsisParser::parse( $synopsis ),
 			function( $spec_arg ) use ( $args, $assoc_args, &$arg_index ) {
 				switch ( $spec_arg['type'] ) {
 					case 'positional':
@@ -284,7 +287,7 @@ class Subcommand extends CompositeCommand {
 			return [ [], $args, $assoc_args, $extra_args ];
 		}
 
-		$validator = new \WP_CLI\SynopsisValidator( $synopsis );
+		$validator = new SynopsisValidator( $synopsis );
 
 		$cmd_path = implode( ' ', get_path( $this ) );
 		foreach ( $validator->get_unknown() as $token ) {
@@ -310,7 +313,7 @@ class Subcommand extends CompositeCommand {
 			);
 		}
 
-		$synopsis_spec = \WP_CLI\SynopsisParser::parse( $synopsis );
+		$synopsis_spec = SynopsisParser::parse( $synopsis );
 		$i             = 0;
 		$errors        = [
 			'fatal'   => [],
@@ -319,7 +322,7 @@ class Subcommand extends CompositeCommand {
 		$mock_doc      = [ $this->get_shortdesc(), '' ];
 		$mock_doc      = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
 		$mock_doc      = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
-		$docparser     = new \WP_CLI\DocParser( $mock_doc );
+		$docparser     = new DocParser( $mock_doc );
 		foreach ( $synopsis_spec as $spec ) {
 			if ( 'positional' === $spec['type'] ) {
 				$spec_args = $docparser->get_arg_args( $spec['name'] );
@@ -480,7 +483,7 @@ class Subcommand extends CompositeCommand {
 				sprintf(
 					'wp %s %s',
 					$cmd,
-					ltrim( WP_CLI\Utils\assoc_args_to_str( $actual_args ), ' ' )
+					ltrim( Utils\assoc_args_to_str( $actual_args ), ' ' )
 				)
 			);
 		}
@@ -504,7 +507,7 @@ class Subcommand extends CompositeCommand {
 	private function get_parameters( $spec = [] ) {
 		$local_parameters  = array_column( $spec, 'name' );
 		$global_parameters = array_column(
-			WP_CLI\SynopsisParser::parse( $this->get_global_params() ),
+			SynopsisParser::parse( $this->get_global_params() ),
 			'name'
 		);
 

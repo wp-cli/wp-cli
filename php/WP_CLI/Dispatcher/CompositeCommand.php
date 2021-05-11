@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Dispatcher;
 
+use WP_CLI\DocParser;
+use WP_CLI;
 use WP_CLI\Utils;
 
 /**
@@ -25,7 +27,7 @@ class CompositeCommand {
 	 *
 	 * @param mixed $parent Parent command (either Root or Composite)
 	 * @param string $name Represents how command should be invoked
-	 * @param \WP_CLI\DocParser $docparser
+	 * @param DocParser $docparser
 	 */
 	public function __construct( $parent, $name, $docparser ) {
 		$this->parent = $parent;
@@ -38,7 +40,7 @@ class CompositeCommand {
 
 		$when_to_invoke = $docparser->get_tag( 'when' );
 		if ( $when_to_invoke ) {
-			\WP_CLI::get_runner()->register_early_invoke( $when_to_invoke, $this );
+			WP_CLI::get_runner()->register_early_invoke( $when_to_invoke, $this );
 		}
 	}
 
@@ -182,17 +184,17 @@ class CompositeCommand {
 			$prefix = ( 0 === $i ) ? 'usage: ' : '   or: ';
 			$i++;
 
-			if ( \WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
+			if ( WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
 				continue;
 			}
 
-			\WP_CLI::line( $subcommand->get_usage( $prefix ) );
+			WP_CLI::line( $subcommand->get_usage( $prefix ) );
 		}
 
 		$cmd_name = implode( ' ', array_slice( get_path( $this ), 1 ) );
 
-		\WP_CLI::line();
-		\WP_CLI::line( "See 'wp help $cmd_name <command>' for more information on a specific command." );
+		WP_CLI::line();
+		WP_CLI::line( "See 'wp help $cmd_name <command>' for more information on a specific command." );
 	}
 
 	/**
@@ -212,7 +214,7 @@ class CompositeCommand {
 	 * subcommand
 	 *
 	 * @param array $args
-	 * @return \WP_CLI\Dispatcher\Subcommand|false
+	 * @return Subcommand|false
 	 */
 	public function find_subcommand( &$args ) {
 		$name = array_shift( $args );
@@ -277,7 +279,7 @@ class CompositeCommand {
 			$binding['is_subcommand'] = true;
 		}
 
-		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
+		foreach ( WP_CLI::get_configurator()->get_spec() as $key => $details ) {
 			if ( false === $details['runtime'] ) {
 				continue;
 			}

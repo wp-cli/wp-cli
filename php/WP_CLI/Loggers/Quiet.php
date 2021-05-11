@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Loggers;
 
+use WP_CLI;
+
 /**
  * Quiet logger only logs errors.
  */
@@ -40,7 +42,7 @@ class Quiet extends Base {
 	 * @param string $message Message to write.
 	 */
 	public function error( $message ) {
-		$this->write( STDERR, \WP_CLI::colorize( "%RError:%n $message\n" ) );
+		$this->write( STDERR, WP_CLI::colorize( "%RError:%n $message\n" ) );
 	}
 
 	/**
@@ -51,7 +53,7 @@ class Quiet extends Base {
 	public function error_multi_line( $message_lines ) {
 		$message = implode( "\n", $message_lines );
 
-		$this->write( STDERR, \WP_CLI::colorize( "%RError:%n\n$message\n" ) );
-		$this->write( STDERR, \WP_CLI::colorize( "%R---------%n\n\n" ) );
+		$this->write( STDERR, WP_CLI::colorize( "%RError:%n\n$message\n" ) );
+		$this->write( STDERR, WP_CLI::colorize( "%R---------%n\n\n" ) );
 	}
 }

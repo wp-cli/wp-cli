@@ -2,12 +2,14 @@
 
 namespace WP_CLI\Iterators;
 
+use Iterator;
+
 /**
  * Iterates over results of a query, split into many queries via LIMIT and OFFSET
  *
  * @source https://gist.github.com/4060005
  */
-class Query implements \Iterator {
+class Query implements Iterator {
 
 	private $chunk_size;
 	private $query       = '';

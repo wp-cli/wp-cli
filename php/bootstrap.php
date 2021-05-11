@@ -2,6 +2,7 @@
 
 namespace WP_CLI;
 
+use WP_CLI\Bootstrap\BootstrapStep;
 use WP_CLI\Bootstrap\BootstrapState;
 
 /**
@@ -71,7 +72,7 @@ function bootstrap() {
 	$state = initialize_bootstrap_state();
 
 	foreach ( get_bootstrap_steps() as $step ) {
-		/** @var \WP_CLI\Bootstrap\BootstrapStep $step_instance */
+		/** @var BootstrapStep $step_instance */
 		$step_instance = new $step();
 		$state         = $step_instance->process( $state );
 	}

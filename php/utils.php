@@ -4,6 +4,10 @@
 
 namespace WP_CLI\Utils;
 
+use WP_CLI\NoOp;
+use cli\Shell;
+use cli\progress\Bar;
+use WP_CLI\ExitException;
 use ArrayIterator;
 use cli;
 use Closure;
@@ -617,14 +621,14 @@ function mustache_render( $template_name, $data = [] ) {
  * @param string  $message  Text to display before the progress bar.
  * @param integer $count    Total number of ticks to be performed.
  * @param int     $interval Optional. The interval in milliseconds between updates. Default 100.
- * @return cli\progress\Bar|WP_CLI\NoOp
+ * @return cli\progress\Bar|NoOp
  */
 function make_progress_bar( $message, $count, $interval = 100 ) {
-	if ( cli\Shell::isPiped() ) {
-		return new WP_CLI\NoOp();
+	if ( Shell::isPiped() ) {
+		return new NoOp();
 	}
 
-	return new cli\progress\Bar( $message, $count, $interval );
+	return new Bar( $message, $count, $interval );
 }
 
 /**
@@ -747,7 +751,7 @@ function replace_path_consts( $source, $path ) {
  * }
  * @return object
  * @throws RuntimeException If the request failed.
- * @throws WP_CLI\ExitException If the request failed and $halt_on_error is true.
+ * @throws ExitException If the request failed and $halt_on_error is true.
  */
 function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
 
@@ -821,7 +825,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
  * @param bool $halt_on_error Whether or not command execution should be halted on error. Default: false
  * @return string Absolute path to the default CA cert.
  * @throws RuntimeException If unable to locate the cert.
- * @throws WP_CLI\ExitException If unable to locate the cert and $halt_on_error is true.
+ * @throws ExitException If unable to locate the cert and $halt_on_error is true.
  */
 function get_default_cacert( $halt_on_error = false ) {
 	$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';

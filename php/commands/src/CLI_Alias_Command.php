@@ -5,6 +5,8 @@
  */
 
 use Mustangostang\Spyc;
+use WP_CLI\ExitException;
+use WP_CLI\Utils;
 
 /**
  * Retrieves, sets and updates aliases for WordPress Installations.
@@ -166,7 +168,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		$this->validate_config_file( $config_path );
 
 		$alias    = $args[0];
-		$grouping = WP_CLI\Utils\get_flag_value( $assoc_args, 'grouping' );
+		$grouping = Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		$this->validate_input( $assoc_args, $grouping );
 
@@ -276,7 +278,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$config   = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
 		$alias    = $args[0];
-		$grouping = WP_CLI\Utils\get_flag_value( $assoc_args, 'grouping' );
+		$grouping = Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		list( $config_path, $aliases ) = $this->get_aliases_data( $config, $alias, true );
 
@@ -306,7 +308,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *                                   should it be created? Defaults to false.
 	 *
 	 * @return array Config Path and Aliases in it.
-	 * @throws \WP_CLI\ExitException
+	 * @throws ExitException
 	 */
 	private function get_aliases_data( $config, $alias, $create_config_file = false ) {
 
@@ -417,7 +419,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @param array  $assoc_args Arguments array.
 	 * @param string $grouping   Grouping argument value.
 	 *
-	 * @throws WP_CLI\ExitException
+	 * @throws ExitException
 	 */
 	private function validate_input( $assoc_args, $grouping ) {
 		// Check if valid arguments were passed.
@@ -444,7 +446,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @param array  $assoc_args Arguments array.
 	 * @param string $grouping   Grouping argument value.
 	 *
-	 * @throws WP_CLI\ExitException
+	 * @throws ExitException
 	 */
 	private function validate_alias_type( $aliases, $alias, $assoc_args, $grouping ) {
 

@@ -1,5 +1,6 @@
 <?php
 
+use cli\Shell;
 use WP_CLI\Dispatcher;
 use WP_CLI\Utils;
 
@@ -57,7 +58,7 @@ class Help_Command extends WP_CLI_Command {
 		// Need to de-tab for wordwrapping to work properly.
 		$out = str_replace( "\t", $tab, $out );
 
-		$wordwrap_width = \cli\Shell::columns();
+		$wordwrap_width = Shell::columns();
 
 		// Wordwrap with indent.
 		$out = preg_replace_callback(

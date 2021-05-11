@@ -1,5 +1,16 @@
 <?php
 
+use WP_CLI\Configurator;
+use WP_CLI\Dispatcher\RootCommand;
+use WP_CLI\Runner;
+use cli\Colors;
+use WP_CLI\Dispatcher\CommandAddition;
+use WP_CLI\Dispatcher\CompositeCommand;
+use WP_CLI\DocParser;
+use WP_CLI\Dispatcher\CommandFactory;
+use WP_CLI\Dispatcher\CommandNamespace;
+use WP_CLI\SynopsisParser;
+use WP_CLI\Loggers\Execution;
 use Mustangostang\Spyc;
 use WP_CLI\Dispatcher;
 use WP_CLI\ExitException;
@@ -36,13 +47,13 @@ class WP_CLI {
 	/**
 	 * Get the Configurator instance
 	 *
-	 * @return \WP_CLI\Configurator
+	 * @return Configurator
 	 */
 	public static function get_configurator() {
 		static $configurator;
 
 		if ( ! $configurator ) {
-			$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
+			$configurator = new Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
 		}
 
 		return $configurator;
@@ -52,7 +63,7 @@ class WP_CLI {
 		static $root;
 
 		if ( ! $root ) {
-			$root = new Dispatcher\RootCommand();
+			$root = new RootCommand();
 		}
 
 		return $root;
@@ -62,7 +73,7 @@ class WP_CLI {
 		static $runner;
 
 		if ( ! $runner ) {
-			$runner = new WP_CLI\Runner();
+			$runner = new Runner();
 		}
 
 		return $runner;
@@ -106,7 +117,7 @@ class WP_CLI {
 
 	private static function set_url_params( $url_parts ) {
 		$f = function( $key ) use ( $url_parts ) {
-			return \WP_CLI\Utils\get_flag_value( $url_parts, $key, '' );
+			return Utils\get_flag_value( $url_parts, $key, '' );
 		};
 
 		if ( isset( $url_parts['host'] ) ) {
@@ -123,7 +134,7 @@ class WP_CLI {
 		}
 
 		$_SERVER['REQUEST_URI']  = $f( 'path' ) . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
-		$_SERVER['SERVER_PORT']  = \WP_CLI\Utils\get_flag_value( $url_parts, 'port', '80' );
+		$_SERVER['SERVER_PORT']  = Utils\get_flag_value( $url_parts, 'port', '80' );
 		$_SERVER['QUERY_STRING'] = $f( 'query' );
 	}
 
@@ -194,7 +205,7 @@ class WP_CLI {
 	 * @return string Colorized string.
 	 */
 	public static function colorize( $string ) {
-		return \cli\Colors::colorize( $string, self::get_runner()->in_color() );
+		return Colors::colorize( $string, self::get_runner()->in_color() );
 	}
 
 	/**
@@ -460,7 +471,7 @@ class WP_CLI {
 			self::error( sprintf( 'Callable %s does not exist, and cannot be registered as `wp %s`.', json_encode( $callable ), $name ) );
 		}
 
-		$addition = new Dispatcher\CommandAddition();
+		$addition = new CommandAddition();
 		self::do_hook( "before_add_command:{$name}", $addition );
 
 		if ( $addition->was_aborted() ) {
@@ -489,10 +500,10 @@ class WP_CLI {
 			// needed.
 			if ( ! $subcommand ) {
 				if ( isset( $args['is_deferred'] ) && $args['is_deferred'] ) {
-					$subcommand = new Dispatcher\CompositeCommand(
+					$subcommand = new CompositeCommand(
 						$command,
 						$subcommand_name,
-						new \WP_CLI\DocParser( '' )
+						new DocParser( '' )
 					);
 
 					self::debug(
@@ -518,10 +529,10 @@ class WP_CLI {
 			$command = $subcommand;
 		}
 
-		$leaf_command = Dispatcher\CommandFactory::create( $leaf_name, $callable, $command );
+		$leaf_command = CommandFactory::create( $leaf_name, $callable, $command );
 
 		// Only add a command namespace if the command itself does not exist yet.
-		if ( $leaf_command instanceof Dispatcher\CommandNamespace
+		if ( $leaf_command instanceof CommandNamespace
 			&& array_key_exists( $leaf_name, $command->get_subcommands() ) ) {
 			return false;
 		}
@@ -532,7 +543,7 @@ class WP_CLI {
 		if ( false !== $existing_command ) {
 			$subcommands = $existing_command->get_subcommands();
 			if ( ! empty( $subcommands )
-				&& ( $leaf_command instanceof Dispatcher\CompositeCommand
+				&& ( $leaf_command instanceof CompositeCommand
 					|| $leaf_command->can_have_subcommands ) ) {
 				foreach ( $subcommands as $subname => $subcommand ) {
 					$leaf_command->add_subcommand( $subname, $subcommand );
@@ -546,7 +557,7 @@ class WP_CLI {
 			throw new Exception(
 				sprintf(
 					"'%s' can't have subcommands.",
-					implode( ' ', Dispatcher\get_path( $command ) )
+					implode( ' ', get_path( $command ) )
 				)
 			);
 		}
@@ -563,7 +574,7 @@ class WP_CLI {
 			if ( is_string( $args['synopsis'] ) ) {
 				$leaf_command->set_synopsis( $args['synopsis'] );
 			} elseif ( is_array( $args['synopsis'] ) ) {
-				$synopsis = \WP_CLI\SynopsisParser::render( $args['synopsis'] );
+				$synopsis = SynopsisParser::render( $args['synopsis'] );
 				$leaf_command->set_synopsis( $synopsis );
 				$long_desc = '';
 				$bits      = explode( ' ', $synopsis );
@@ -916,7 +927,7 @@ class WP_CLI {
 	 * @param array $assoc_args Skips prompt if 'yes' is provided.
 	 */
 	public static function confirm( $question, $assoc_args = [] ) {
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'yes' ) ) {
+		if ( ! Utils\get_flag_value( $assoc_args, 'yes' ) ) {
 			fwrite( STDOUT, $question . ' [y/n] ' );
 
 			$answer = strtolower( trim( fgets( STDIN ) ) );
@@ -960,7 +971,7 @@ class WP_CLI {
 	 * @param array $assoc_args
 	 */
 	public static function read_value( $raw_value, $assoc_args = [] ) {
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
+		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$value = json_decode( $raw_value, true );
 			if ( null === $value ) {
 				self::error( sprintf( 'Invalid JSON: %s', $raw_value ) );
@@ -979,9 +990,9 @@ class WP_CLI {
 	 * @param array $assoc_args Arguments passed to the command, determining format.
 	 */
 	public static function print_value( $value, $assoc_args = [] ) {
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
+		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$value = json_encode( $value );
-		} elseif ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'yaml' ) {
+		} elseif ( Utils\get_flag_value( $assoc_args, 'format' ) === 'yaml' ) {
 			$value = Spyc::YAMLDump( $value, 2, 0 );
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
 			$value = var_export( $value, true );
@@ -994,7 +1005,7 @@ class WP_CLI {
 	 * Convert a WP_Error or Exception into a string
 	 *
 	 * @param string|WP_Error|Exception|Throwable $errors
-	 * @throws \InvalidArgumentException
+	 * @throws InvalidArgumentException
 	 *
 	 * @return string
 	 */
@@ -1012,7 +1023,7 @@ class WP_CLI {
 			return '"' . $data . '"';
 		};
 
-		if ( $errors instanceof \WP_Error ) {
+		if ( $errors instanceof WP_Error ) {
 			foreach ( $errors->get_error_messages() as $message ) {
 				if ( $errors->get_error_data() ) {
 					return $message . ' ' . $render_data( $errors->get_error_data() );
@@ -1024,11 +1035,11 @@ class WP_CLI {
 
 		// PHP 7+: internal and user exceptions must implement Throwable interface.
 		// PHP 5: internal and user exceptions must extend Exception class.
-		if ( interface_exists( 'Throwable' ) && ( $errors instanceof \Throwable ) || ( $errors instanceof \Exception ) ) {
+		if ( interface_exists( 'Throwable' ) && ( $errors instanceof Throwable ) || ( $errors instanceof Exception ) ) {
 			return get_class( $errors ) . ': ' . $errors->getMessage();
 		}
 
-		throw new \InvalidArgumentException(
+		throw new InvalidArgumentException(
 			sprintf(
 				"Unsupported argument type passed to WP_CLI::error_to_string(): '%s'",
 				gettype( $errors )
@@ -1054,7 +1065,7 @@ class WP_CLI {
 	 * @param string $command External process to launch.
 	 * @param boolean $exit_on_error Whether to exit if the command returns an elevated return code.
 	 * @param boolean $return_detailed Whether to return an exit status (default) or detailed execution results.
-	 * @return int|\WP_CLI\ProcessRun The command exit status, or a ProcessRun object for full details.
+	 * @return int|ProcessRun The command exit status, or a ProcessRun object for full details.
 	 */
 	public static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
 		Utils\check_proc_available( 'launch' );
@@ -1096,7 +1107,7 @@ class WP_CLI {
 	 * @param bool $exit_on_error Whether to exit if the command returns an elevated return code.
 	 * @param bool $return_detailed Whether to return an exit status (default) or detailed execution results.
 	 * @param array $runtime_args Override one or more global args (path,url,user,allow-root)
-	 * @return int|\WP_CLI\ProcessRun The command exit status, or a ProcessRun instance
+	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
 	 */
 	public static function launch_self( $command, $args = [], $assoc_args = [], $exit_on_error = true, $return_detailed = false, $runtime_args = [] ) {
 		$reused_runtime_args = [
@@ -1130,7 +1141,7 @@ class WP_CLI {
 		$config_path = escapeshellarg( $config_path );
 
 		$args       = implode( ' ', array_map( 'escapeshellarg', $args ) );
-		$assoc_args = \WP_CLI\Utils\assoc_args_to_str( $assoc_args );
+		$assoc_args = Utils\assoc_args_to_str( $assoc_args );
 
 		$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$command} {$args} {$assoc_args}";
 
@@ -1305,7 +1316,7 @@ class WP_CLI {
 			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
 			if ( $return ) {
 				$existing_logger = self::$logger;
-				self::$logger    = new WP_CLI\Loggers\Execution();
+				self::$logger    = new Execution();
 				self::$logger->ob_start();
 			}
 			if ( ! $exit_error ) {
