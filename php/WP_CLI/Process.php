@@ -2,7 +2,6 @@
 
 namespace WP_CLI;
 
-use WP_CLI\Utils;
 
 /**
  * Run a system process, and learn what happened.

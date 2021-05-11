@@ -15,7 +15,6 @@ namespace WP_CLI;
 
 use Symfony\Component\Finder\Finder;
 use WP_CLI;
-use WP_CLI\Utils;
 
 /**
  * Reads/writes to a filesystem cache
