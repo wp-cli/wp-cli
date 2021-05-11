@@ -57,7 +57,7 @@ class CSV implements \Countable, \Iterator {
 
 			$row = str_getcsv( $str, $this->delimiter );
 
-			$element = array();
+			$element = [];
 			foreach ( $this->columns as $i => $key ) {
 				if ( isset( $row[ $i ] ) ) {
 					$element[ $key ] = $row[ $i ];

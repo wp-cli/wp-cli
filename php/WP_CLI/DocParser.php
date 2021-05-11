@@ -64,7 +64,7 @@ class DocParser {
 
 		$longdesc = substr( $this->doc_comment, strlen( $shortdesc ) );
 
-		$lines = array();
+		$lines = [];
 		foreach ( explode( "\n", $longdesc ) as $line ) {
 			if ( 0 === strpos( $line, '@' ) ) {
 				break;
@@ -165,7 +165,7 @@ class DocParser {
 		$bits       = explode( "\n", $this->doc_comment );
 		$within_arg = false;
 		$within_doc = false;
-		$document   = array();
+		$document   = [];
 		foreach ( $bits as $bit ) {
 			if ( preg_match( $regex, $bit ) ) {
 				$within_arg = true;

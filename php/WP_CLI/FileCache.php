@@ -284,7 +284,7 @@ class FileCache {
 		/** @var Finder $finder */
 		$finder = $this->get_finder()->sortByName();
 
-		$files_to_delete = array();
+		$files_to_delete = [];
 
 		foreach ( $finder as $file ) {
 			$pieces    = explode( '-', $file->getBasename( $file->getExtension() ) );

@@ -7,7 +7,7 @@ namespace WP_CLI\Iterators;
  */
 class Transform extends \IteratorIterator {
 
-	private $transformers = array();
+	private $transformers = [];
 
 	public function add_transform( $fn ) {
 		$this->transformers[] = $fn;

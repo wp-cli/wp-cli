@@ -9,7 +9,7 @@ namespace WP_CLI\Dispatcher;
  * @return string[]
  */
 function get_path( $command ) {
-	$path = array();
+	$path = [];
 
 	do {
 		array_unshift( $path, $command->get_name() );

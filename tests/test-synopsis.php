@@ -137,31 +137,31 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testRender() {
-		$a = array(
-			array(
+		$a = [
+			[
 				'name'        => 'message',
 				'type'        => 'positional',
 				'description' => 'A short message to display to the user.',
-			),
-			array(
+			],
+			[
 				'name'        => 'secrets',
 				'type'        => 'positional',
 				'description' => 'You may tell secrets, or you may not',
 				'optional'    => true,
 				'repeating'   => true,
-			),
-			array(
+			],
+			[
 				'name'        => 'meal',
 				'type'        => 'assoc',
 				'description' => 'A meal during the day or night.',
-			),
-			array(
+			],
+			[
 				'name'        => 'snack',
 				'type'        => 'assoc',
 				'description' => 'If you are hungry between meals, you should snack.',
 				'optional'    => true,
-			),
-		);
+			],
+		];
 		$this->assertEquals( '<message> [<secrets>...] --meal=<meal> [--snack=<snack>]', SynopsisParser::render( $a ) );
 	}
 

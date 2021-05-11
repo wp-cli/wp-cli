@@ -18,7 +18,7 @@ class CompositeCommand {
 	protected $docparser;
 
 	protected $parent;
-	protected $subcommands = array();
+	protected $subcommands = [];
 
 	/**
 	 * Instantiate a new CompositeCommand
@@ -242,7 +242,7 @@ class CompositeCommand {
 	 * @return array
 	 */
 	private static function get_aliases( $subcommands ) {
-		$aliases = array();
+		$aliases = [];
 
 		foreach ( $subcommands as $name => $subcommand ) {
 			$alias = $subcommand->get_alias();
@@ -270,7 +270,7 @@ class CompositeCommand {
 	 * @return string
 	 */
 	protected function get_global_params( $root_command = false ) {
-		$binding                 = array();
+		$binding                 = [];
 		$binding['root_command'] = $root_command;
 
 		if ( ! $this->can_have_subcommands() || ( is_object( $this->parent ) && get_class( $this->parent ) === 'WP_CLI\Dispatcher\CompositeCommand' ) ) {
@@ -298,10 +298,10 @@ class CompositeCommand {
 
 			// Check if global parameters synopsis should be displayed or not.
 			if ( 'true' !== getenv( 'WP_CLI_SUPPRESS_GLOBAL_PARAMS' ) ) {
-				$binding['parameters'][]   = array(
+				$binding['parameters'][]   = [
 					'synopsis' => $synopsis,
 					'desc'     => $details['desc'],
-				);
+				];
 				$binding['has_parameters'] = true;
 			}
 		}

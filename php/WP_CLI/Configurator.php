@@ -19,17 +19,17 @@ class Configurator {
 	/**
 	 * @var array $config Values for keys defined in Configurator spec.
 	 */
-	private $config = array();
+	private $config = [];
 
 	/**
 	 * @var array $extra_config Extra config values not specified in spec.
 	 */
-	private $extra_config = array();
+	private $extra_config = [];
 
 	/**
 	 * @var array $aliases Any aliases defined in config files.
 	 */
-	private $aliases = array();
+	private $aliases = [];
 
 	/**
 	 * @var string ALIAS_REGEX Regex pattern used to define an alias
@@ -39,13 +39,13 @@ class Configurator {
 	/**
 	 * @var array ALIAS_SPEC Arguments that can be used in an alias
 	 */
-	private static $alias_spec = array(
+	private static $alias_spec = [
 		'user',
 		'url',
 		'path',
 		'ssh',
 		'http',
-	);
+	];
 
 	/**
 	 * @param string $path Path to config spec file.
@@ -53,13 +53,13 @@ class Configurator {
 	public function __construct( $path ) {
 		$this->spec = include $path;
 
-		$defaults = array(
+		$defaults = [
 			'runtime'  => false,
 			'file'     => false,
 			'synopsis' => '',
 			'default'  => null,
 			'multiple' => false,
-		);
+		];
 
 		foreach ( $this->spec as $key => &$details ) {
 			$details = array_merge( $defaults, $details );
@@ -74,7 +74,7 @@ class Configurator {
 	 * @return array
 	 */
 	public function to_array() {
-		return array( $this->config, $this->extra_config );
+		return [ $this->config, $this->extra_config ];
 	}
 
 	/**
@@ -94,10 +94,10 @@ class Configurator {
 	public function get_aliases() {
 		$runtime_alias = getenv( 'WP_CLI_RUNTIME_ALIAS' );
 		if ( false !== $runtime_alias ) {
-			$returned_aliases = array();
+			$returned_aliases = [];
 			foreach ( json_decode( $runtime_alias, true ) as $key => $value ) {
 				if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
-					$returned_aliases[ $key ] = array();
+					$returned_aliases[ $key ] = [];
 					foreach ( self::$alias_spec as $i ) {
 						if ( isset( $value[ $i ] ) ) {
 							$returned_aliases[ $key ][ $i ] = $value[ $i ];
@@ -120,7 +120,7 @@ class Configurator {
 	public function parse_args( $arguments ) {
 		list( $positional_args, $mixed_args, $global_assoc, $local_assoc ) = self::extract_assoc( $arguments );
 		list( $assoc_args, $runtime_config )                               = $this->unmix_assoc_args( $mixed_args, $global_assoc, $local_assoc );
-		return array( $positional_args, $assoc_args, $runtime_config );
+		return [ $positional_args, $assoc_args, $runtime_config ];
 	}
 
 	/**
@@ -130,21 +130,21 @@ class Configurator {
 	 * @return array(array)
 	 */
 	public static function extract_assoc( $arguments ) {
-		$positional_args = array();
-		$assoc_args      = array();
-		$global_assoc    = array();
-		$local_assoc     = array();
+		$positional_args = [];
+		$assoc_args      = [];
+		$global_assoc    = [];
+		$local_assoc     = [];
 
 		foreach ( $arguments as $arg ) {
 			$positional_arg = null;
 			$assoc_arg      = null;
 
 			if ( preg_match( '|^--no-([^=]+)$|', $arg, $matches ) ) {
-				$assoc_arg = array( $matches[1], false );
+				$assoc_arg = [ $matches[1], false ];
 			} elseif ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
-				$assoc_arg = array( $matches[1], true );
+				$assoc_arg = [ $matches[1], true ];
 			} elseif ( preg_match( '|^--([^=]+)=(.*)|s', $arg, $matches ) ) {
-				$assoc_arg = array( $matches[1], $matches[2] );
+				$assoc_arg = [ $matches[1], $matches[2] ];
 			} else {
 				$positional = $arg;
 			}
@@ -161,7 +161,7 @@ class Configurator {
 			}
 		}
 
-		return array( $positional_args, $assoc_args, $global_assoc, $local_assoc );
+		return [ $positional_args, $assoc_args, $global_assoc, $local_assoc ];
 	}
 
 	/**
@@ -170,9 +170,9 @@ class Configurator {
 	 * @param array $mixed_args
 	 * @return array
 	 */
-	private function unmix_assoc_args( $mixed_args, $global_assoc = array(), $local_assoc = array() ) {
-		$assoc_args     = array();
-		$runtime_config = array();
+	private function unmix_assoc_args( $mixed_args, $global_assoc = [], $local_assoc = [] ) {
+		$assoc_args     = [];
+		$runtime_config = [];
 
 		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
 			foreach ( $global_assoc as $tmp ) {
@@ -196,7 +196,7 @@ class Configurator {
 			}
 		}
 
-		return array( $assoc_args, $runtime_config );
+		return [ $assoc_args, $runtime_config ];
 	}
 
 	/**
@@ -229,7 +229,7 @@ class Configurator {
 		$yml_file_dir = $path ? dirname( $path ) : false;
 		foreach ( $yaml as $key => $value ) {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
-				$this->aliases[ $key ] = array();
+				$this->aliases[ $key ] = [];
 				$is_alias              = false;
 				foreach ( self::$alias_spec as $i ) {
 					if ( isset( $value[ $i ] ) ) {
@@ -242,7 +242,7 @@ class Configurator {
 				}
 				// If it's not an alias, it might be a group of aliases.
 				if ( ! $is_alias && is_array( $value ) ) {
-					$alias_group = array();
+					$alias_group = [];
 					foreach ( $value as $i => $k ) {
 						if ( preg_match( '#' . self::ALIAS_REGEX . '#', $k ) ) {
 							$alias_group[] = $k;
@@ -303,7 +303,7 @@ class Configurator {
 	 */
 	private static function load_yml( $yml_file ) {
 		if ( ! $yml_file ) {
-			return array();
+			return [];
 		}
 
 		$config = Spyc::YAMLLoad( $yml_file );

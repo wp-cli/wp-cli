@@ -338,7 +338,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			}
 		}
 
-		return array( $config_path, $aliases );
+		return [ $config_path, $aliases ];
 
 	}
 
@@ -370,7 +370,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	private function build_aliases( $aliases, $alias, $assoc_args, $is_grouping, $grouping = '', $is_update = false ) {
 
 		if ( $is_grouping ) {
-			$valid_assoc_args = array( 'config', 'grouping' );
+			$valid_assoc_args = [ 'config', 'grouping' ];
 			$invalid_args     = array_diff( array_keys( $assoc_args ), $valid_assoc_args );
 
 			// Check for invalid args.

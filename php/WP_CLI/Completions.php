@@ -5,7 +5,7 @@ namespace WP_CLI;
 class Completions {
 
 	private $words;
-	private $opts = array();
+	private $opts = [];
 
 	public function __construct( $line ) {
 		// TODO: properly parse single and double quotes
@@ -62,7 +62,7 @@ class Completions {
 			}
 		} else {
 			foreach ( $spec as $arg ) {
-				if ( in_array( $arg['type'], array( 'flag', 'assoc' ), true ) ) {
+				if ( in_array( $arg['type'], [ 'flag', 'assoc' ], true ) ) {
 					if ( isset( $assoc_args[ $arg['name'] ] ) ) {
 						continue;
 					}
@@ -99,8 +99,8 @@ class Completions {
 	}
 
 	private function get_command( $words ) {
-		$positional_args = array();
-		$assoc_args      = array();
+		$positional_args = [];
+		$assoc_args      = [];
 
 		foreach ( $words as $arg ) {
 			if ( preg_match( '|^--([^=]+)=?|', $arg, $matches ) ) {
@@ -121,11 +121,11 @@ class Completions {
 
 		list( $command, $args ) = $r;
 
-		return array( $command, $args, $assoc_args );
+		return [ $command, $args, $assoc_args ];
 	}
 
 	private function get_global_parameters() {
-		$params = array();
+		$params = [];
 		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
 			if ( false === $details['runtime'] ) {
 				continue;

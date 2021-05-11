@@ -47,7 +47,7 @@ class Help_Command extends WP_CLI_Command {
 		$out .= self::parse_reference_links( $command->get_longdesc() );
 
 		// Definition lists.
-		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', array( __CLASS__, 'rewrap_param_desc' ), $out );
+		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', [ __CLASS__, 'rewrap_param_desc' ], $out );
 
 		// Ensure lines with no leading whitespace that aren't section headers are indented.
 		$out = preg_replace( '/^((?! |\t|##).)/m', "\t$1", $out );
@@ -133,11 +133,11 @@ class Help_Command extends WP_CLI_Command {
 		fwrite( $fd, $out );
 		rewind( $fd );
 
-		$descriptorspec = array(
+		$descriptorspec = [
 			0 => $fd,
 			1 => STDOUT,
 			2 => STDERR,
-		);
+		];
 
 		return proc_close( Utils\proc_open_compat( $pager, $descriptorspec, $pipes ) );
 	}
@@ -145,10 +145,10 @@ class Help_Command extends WP_CLI_Command {
 	private static function get_initial_markdown( $command ) {
 		$name = implode( ' ', Dispatcher\get_path( $command ) );
 
-		$binding = array(
+		$binding = [
 			'name'      => $name,
 			'shortdesc' => $command->get_shortdesc(),
-		);
+		];
 
 		$binding['synopsis'] = "$name " . $command->get_synopsis();
 
@@ -165,7 +165,7 @@ class Help_Command extends WP_CLI_Command {
 	}
 
 	private static function render_subcommands( $command ) {
-		$subcommands = array();
+		$subcommands = [];
 		foreach ( $command->get_subcommands() as $subcommand ) {
 
 			if ( WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
@@ -177,7 +177,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$max_len = self::get_max_len( array_keys( $subcommands ) );
 
-		$lines = array();
+		$lines = [];
 		foreach ( $subcommands as $name => $desc ) {
 			$lines[] = str_pad( $name, $max_len ) . "\t\t\t" . $desc;
 		}
@@ -214,7 +214,7 @@ class Help_Command extends WP_CLI_Command {
 
 		// Fires if it has description text at the head of `$longdesc`.
 		if ( $description ) {
-			$links   = array(); // An array of URLs from the description.
+			$links   = []; // An array of URLs from the description.
 			$pattern = '/\[.+?\]\((https?:\/\/.+?)\)/';
 			$newdesc = preg_replace_callback(
 				$pattern,
