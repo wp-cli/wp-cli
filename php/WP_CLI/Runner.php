@@ -610,7 +610,7 @@ class Runner {
 	}
 
 	/**
-	 * Check whether a given command is disabled by the config
+	 * Check whether a given command is disabled by the config.
 	 *
 	 * @return bool
 	 */
@@ -620,10 +620,10 @@ class Runner {
 	}
 
 	/**
-	 * Returns wp-config.php code, skipping the loading of wp-settings.php
+	 * Returns wp-config.php code, skipping the loading of wp-settings.php.
 	 *
-	 * @param string $wp_config_file_path Optional. Config file path. If left empty, it tries to
-	 * locate the wp-config.php file automatically.
+	 * @param string $wp_config_path Optional. Config file path. If left empty, it tries to
+	 *                               locate the wp-config.php file automatically.
 	 *
 	 * @return string
 	 */

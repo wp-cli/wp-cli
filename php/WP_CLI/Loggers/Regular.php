@@ -51,9 +51,9 @@ class Regular extends Base {
 	}
 
 	/**
-	 * Similar to error( $message ), but outputs $message in a red box
+	 * Similar to error( $message ), but outputs $message in a red box.
 	 *
-	 * @param  array $message Message to write.
+	 * @param  array $message_lines Message to write.
 	 */
 	public function error_multi_line( $message_lines ) {
 		// Convert tabs to four spaces, as some shells will output the tabs as variable-length.

@@ -73,8 +73,6 @@ class CommandFactory {
 	 * If false, will be determined from the documented subject, represented by `$reflection`.
 	 * @param mixed $callable A callable function or closure, or class name and method
 	 * @param object $reflection Reflection instance, for doc parsing
-	 * @param string $class A subclass of WP_CLI_Command
-	 * @param string $method Class method to be called upon invocation.
 	 */
 	private static function create_subcommand( $parent, $name, $callable, $reflection ) {
 		$doc_comment = self::get_doc_comment( $reflection );

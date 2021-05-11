@@ -8,9 +8,11 @@ namespace WP_CLI;
 class SynopsisValidator {
 
 	/**
-	 * @var array $spec Structured representation of command synopsis.
+	 * Structured representation of command synopsis.
+	 *
+	 * @var array
 	 */
-	private $spec = [];
+	private $spec;
 
 	/**
 	 * @param string $synopsis Command's synopsis.

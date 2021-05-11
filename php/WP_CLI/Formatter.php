@@ -10,12 +10,16 @@ use Mustangostang\Spyc;
 class Formatter {
 
 	/**
-	 * @var array $args How the items should be output.
+	 * How the items should be output.
+	 *
+	 * @var array
 	 */
 	private $args;
 
 	/**
-	 * @var string $prefix Standard prefix for object fields.
+	 * Standard prefix for object fields.
+	 *
+	 * @var string
 	 */
 	private $prefix;
 

@@ -28,7 +28,6 @@ class Table extends Query {
 	 * }
 	 * </code>
 	 *
-	 *
 	 * @param array $args Supported arguments:
 	 *      table – the name of the database table
 	 *      fields – an array of columns to get from the table, '*' is a valid value and the default

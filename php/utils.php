@@ -326,7 +326,6 @@ function wp_version_compare( $since, $operator ) {
  * @param string       $format Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count'.
  * @param array        $items  An array of items to output.
  * @param array|string $fields Named fields for each item of data. Can be array or comma-separated list.
- * @return null
  */
 function format_items( $format, $items, $fields ) {
 	$assoc_args = compact( 'format', 'fields' );

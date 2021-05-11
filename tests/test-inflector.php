@@ -4,7 +4,9 @@ use WP_CLI\Inflector;
 
 class InflectorTest extends PHPUnit_Framework_TestCase {
 
-	/** @dataProvider dataProviderPluralize */
+	/**
+	 * @dataProvider dataProviderPluralize
+	 */
 	public function testPluralize( $singular, $expected ) {
 		$this->assertEquals( $expected, Inflector::pluralize( $singular ) );
 	}
@@ -17,7 +19,9 @@ class InflectorTest extends PHPUnit_Framework_TestCase {
 		];
 	}
 
-	/** @dataProvider dataProviderSingularize */
+	/**
+	 * @dataProvider dataProviderSingularize
+	 */
 	public function testSingularize( $singular, $expected ) {
 		$this->assertEquals( $expected, Inflector::singularize( $singular ) );
 	}
