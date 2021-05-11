@@ -179,8 +179,8 @@ class Formatter {
 	/**
 	 * Show a single field from a list of items.
 	 *
-	 * @param array Array of objects to show fields from
-	 * @param string The field to show
+	 * @param array $items Array of objects to show fields from
+	 * @param string $field The field to show
 	 */
 	private function show_single_field( $items, $field ) {
 		$key    = null;
@@ -216,7 +216,7 @@ class Formatter {
 	 *
 	 * @param object $item
 	 * @param string $field
-	 * @return string $key
+	 * @return string
 	 */
 	private function find_item_key( $item, $field ) {
 		foreach ( [ $field, $this->prefix . '_' . $field ] as $maybe_key ) {
@@ -323,7 +323,7 @@ class Formatter {
 	 * Format an associative array as a table.
 	 *
 	 * @param array     $fields    Fields and values to format
-	 * @return array    $rows
+	 * @return array
 	 */
 	private function assoc_array_to_rows( $fields ) {
 		$rows = [];

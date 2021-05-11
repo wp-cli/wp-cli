@@ -10,7 +10,7 @@ namespace WP_CLI;
 class SynopsisParser {
 
 	/**
-	 * @param string A synopsis
+	 * @param string $synopsis A synopsis
 	 * @return array List of parameters
 	 */
 	public static function parse( $synopsis ) {
@@ -116,7 +116,7 @@ class SynopsisParser {
 	 * Classify argument attributes based on its syntax.
 	 *
 	 * @param string $token
-	 * @return array $param
+	 * @return array
 	 */
 	private static function classify_token( $token ) {
 		$param = [];

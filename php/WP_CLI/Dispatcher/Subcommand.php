@@ -64,7 +64,7 @@ class Subcommand extends CompositeCommand {
 	/**
 	 * Set the synopsis string for this subcommand.
 	 *
-	 * @param string
+	 * @param string $synopsis
 	 */
 	public function set_synopsis( $synopsis ) {
 		$this->synopsis = $synopsis;

@@ -126,7 +126,7 @@ class Configurator {
 	/**
 	 * Splits a list of arguments into positional, associative and config.
 	 *
-	 * @param array(string)
+	 * @param array(string) $arguments
 	 * @return array(array)
 	 */
 	public function parse_args( $arguments ) {
@@ -138,7 +138,7 @@ class Configurator {
 	/**
 	 * Splits positional args from associative args.
 	 *
-	 * @param array
+	 * @param array $arguments
 	 * @return array(array)
 	 */
 	public static function extract_assoc( $arguments ) {
@@ -311,7 +311,7 @@ class Configurator {
 	 * Load values from a YAML file.
 	 *
 	 * @param string $yml_file Path to the YAML file
-	 * @return array $config Declared configuration values
+	 * @return array Declared configuration values
 	 */
 	private static function load_yml( $yml_file ) {
 		if ( ! $yml_file ) {
