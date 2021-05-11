@@ -255,7 +255,7 @@ class Configurator {
 				// If it's not an alias, it might be a group of aliases.
 				if ( ! $is_alias && is_array( $value ) ) {
 					$alias_group = [];
-					foreach ( $value as $i => $k ) {
+					foreach ( $value as $k ) {
 						if ( preg_match( '#' . self::ALIAS_REGEX . '#', $k ) ) {
 							$alias_group[] = $k;
 						}
