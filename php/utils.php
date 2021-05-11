@@ -219,7 +219,7 @@ function assoc_args_to_str( $assoc_args ) {
 		if ( true === $value ) {
 			$str .= " --$key";
 		} elseif ( is_array( $value ) ) {
-			foreach ( $value as $_ => $v ) {
+			foreach ( $value as $v ) {
 				$str .= assoc_args_to_str(
 					[
 						$key => $v,
@@ -1144,7 +1144,7 @@ function report_batch_operation_results( $noun, $verb, $total, $successes, $fail
 function parse_str_to_argv( $arguments ) {
 	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches );
 	$argv = isset( $matches[0] ) ? $matches[0] : [];
-	$argv = array_map(
+	return array_map(
 		static function ( $arg ) {
 			foreach ( [ '"', "'" ] as $char ) {
 				if ( substr( $arg, 0, 1 ) === $char && substr( $arg, -1 ) === $char ) {
@@ -1156,7 +1156,6 @@ function parse_str_to_argv( $arguments ) {
 		},
 		$argv
 	);
-	return $argv;
 }
 
 /**
@@ -1650,17 +1649,17 @@ function describe_callable( $callable ) {
 
 		if ( is_array( $callable ) ) {
 			if ( is_object( $callable[0] ) ) {
-				return (string) sprintf(
+				return sprintf(
 					'%s->%s()',
 					get_class( $callable[0] ),
 					$callable[1]
 				);
 			}
 
-			return (string) sprintf( '%s::%s()', $callable[0], $callable[1] );
+			return sprintf( '%s::%s()', $callable[0], $callable[1] );
 		}
 
-		return (string) gettype( $callable );
+		return gettype( $callable );
 	} catch ( Exception $exception ) {
 		return 'Callable of unknown type';
 	}
