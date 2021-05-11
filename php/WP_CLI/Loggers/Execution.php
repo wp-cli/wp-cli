@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Loggers;
 
+use WP_CLI;
+
 /**
  * Execution logger captures all STDOUT and STDERR writes
  */
@@ -32,8 +34,8 @@ class Execution extends Regular {
 	public function error_multi_line( $message_lines ) {
 		$message = implode( "\n", $message_lines );
 
-		$this->write( STDERR, \WP_CLI::colorize( "%RError:%n\n$message\n" ) );
-		$this->write( STDERR, \WP_CLI::colorize( "%R---------%n\n\n" ) );
+		$this->write( STDERR, WP_CLI::colorize( "%RError:%n\n$message\n" ) );
+		$this->write( STDERR, WP_CLI::colorize( "%R---------%n\n\n" ) );
 	}
 
 	/**

@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Bootstrap;
 
+use WP_CLI;
+
 /**
  * Class IncludeFallbackAutoloader.
  *
@@ -31,7 +33,7 @@ final class IncludeFallbackAutoloader extends AutoloaderStep {
 			);
 		}
 
-		\WP_CLI::debug(
+		WP_CLI::debug(
 			sprintf(
 				'Fallback autoloader paths: %s',
 				implode( ', ', $autoloader_paths )

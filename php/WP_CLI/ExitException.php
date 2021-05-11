@@ -2,4 +2,6 @@
 
 namespace WP_CLI;
 
-class ExitException extends \Exception {}
+use Exception;
+
+class ExitException extends Exception {}

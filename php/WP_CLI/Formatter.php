@@ -2,6 +2,10 @@
 
 namespace WP_CLI;
 
+use Iterator;
+use WP_CLI;
+use cli\Table;
+use cli\Colors;
 use Mustangostang\Spyc;
 
 /**
@@ -66,7 +70,7 @@ class Formatter {
 	/**
 	 * Display multiple items according to the output arguments.
 	 *
-	 * @param array|\Iterator $items               The items to display.
+	 * @param array|Iterator $items The items to display.
 	 * @param bool|array      $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `format()` if items in the table are pre-colorized. Default false.
 	 */
 	public function display_items( $items, $ascii_pre_colorized = false ) {
@@ -84,8 +88,8 @@ class Formatter {
 			}
 
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
-				if ( $items instanceof \Iterator ) {
-					$items = \WP_CLI\Utils\iterator_map( $items, [ $this, 'transform_item_values_to_json' ] );
+				if ( $items instanceof Iterator ) {
+					$items = Utils\iterator_map( $items, [ $this, 'transform_item_values_to_json' ] );
 				} else {
 					$items = array_map( [ $this, 'transform_item_values_to_json' ], $items );
 				}
@@ -109,7 +113,7 @@ class Formatter {
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) && ( is_object( $value ) || is_array( $value ) ) ) {
 				$value = json_encode( $value );
 			}
-			\WP_CLI::print_value(
+			WP_CLI::print_value(
 				$value,
 				[
 					'format' => $this->args['format'],
@@ -149,14 +153,14 @@ class Formatter {
 				break;
 
 			case 'csv':
-				\WP_CLI\Utils\write_csv( STDOUT, $items, $fields );
+				Utils\write_csv( STDOUT, $items, $fields );
 				break;
 
 			case 'json':
 			case 'yaml':
 				$out = [];
 				foreach ( $items as $item ) {
-					$out[] = \WP_CLI\Utils\pick_fields( $item, $fields );
+					$out[] = Utils\pick_fields( $item, $fields );
 				}
 
 				if ( 'json' === $this->args['format'] ) {
@@ -172,7 +176,7 @@ class Formatter {
 				break;
 
 			default:
-				\WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
+				WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
 		}
 	}
 
@@ -196,7 +200,7 @@ class Formatter {
 			if ( 'json' === $this->args['format'] ) {
 				$values[] = $item->$key;
 			} else {
-				\WP_CLI::print_value(
+				WP_CLI::print_value(
 					$item->$key,
 					[
 						'format' => $this->args['format'],
@@ -227,7 +231,7 @@ class Formatter {
 		}
 
 		if ( ! isset( $key ) ) {
-			\WP_CLI::error( "Invalid field: $field." );
+			WP_CLI::error( "Invalid field: $field." );
 		}
 
 		return $key;
@@ -266,13 +270,13 @@ class Formatter {
 				if ( 'table' === $format ) {
 					self::show_table( $rows, $fields, $ascii_pre_colorized );
 				} elseif ( 'csv' === $format ) {
-					\WP_CLI\Utils\write_csv( STDOUT, $rows, $fields );
+					Utils\write_csv( STDOUT, $rows, $fields );
 				}
 				break;
 
 			case 'yaml':
 			case 'json':
-				\WP_CLI::print_value(
+				WP_CLI::print_value(
 					$data,
 					[
 						'format' => $format,
@@ -281,7 +285,7 @@ class Formatter {
 				break;
 
 			default:
-				\WP_CLI::error( 'Invalid format: ' . $format );
+				WP_CLI::error( 'Invalid format: ' . $format );
 				break;
 
 		}
@@ -296,26 +300,26 @@ class Formatter {
 	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `Table::setAsciiPreColorized()` if items in the table are pre-colorized. Default false.
 	 */
 	private static function show_table( $items, $fields, $ascii_pre_colorized = false ) {
-		$table = new \cli\Table();
+		$table = new Table();
 
-		$enabled = \cli\Colors::shouldColorize();
+		$enabled = Colors::shouldColorize();
 		if ( $enabled ) {
-			\cli\Colors::disable( true );
+			Colors::disable( true );
 		}
 
 		$table->setAsciiPreColorized( $ascii_pre_colorized );
 		$table->setHeaders( $fields );
 
 		foreach ( $items as $item ) {
-			$table->addRow( array_values( \WP_CLI\Utils\pick_fields( $item, $fields ) ) );
+			$table->addRow( array_values( Utils\pick_fields( $item, $fields ) ) );
 		}
 
 		foreach ( $table->getDisplayLines() as $line ) {
-			\WP_CLI::line( $line );
+			WP_CLI::line( $line );
 		}
 
 		if ( $enabled ) {
-			\cli\Colors::enable( true );
+			Colors::enable( true );
 		}
 	}
 

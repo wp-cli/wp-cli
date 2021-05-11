@@ -2,6 +2,9 @@
 
 namespace WP_CLI\Dispatcher;
 
+use Closure;
+use WP_CLI\DocParser;
+use WP_CLI;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
@@ -26,7 +29,7 @@ class CommandFactory {
 	 */
 	public static function create( $name, $callable, $parent ) {
 
-		if ( ( is_object( $callable ) && ( $callable instanceof \Closure ) )
+		if ( ( is_object( $callable ) && ( $callable instanceof Closure ) )
 			|| ( is_string( $callable ) && function_exists( $callable ) ) ) {
 			$reflection = new ReflectionFunction( $callable );
 			$command    = self::create_subcommand( $parent, $name, $callable, $reflection );
@@ -76,7 +79,7 @@ class CommandFactory {
 	 */
 	private static function create_subcommand( $parent, $name, $callable, $reflection ) {
 		$doc_comment = self::get_doc_comment( $reflection );
-		$docparser   = new \WP_CLI\DocParser( $doc_comment );
+		$docparser   = new DocParser( $doc_comment );
 
 		if ( is_array( $callable ) ) {
 			if ( ! $name ) {
@@ -88,7 +91,7 @@ class CommandFactory {
 			}
 		}
 		if ( ! $doc_comment ) {
-			\WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
+			WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
 		}
 
 		$when_invoked = function ( $args, $assoc_args ) use ( $callable ) {
@@ -114,9 +117,9 @@ class CommandFactory {
 		$reflection  = new ReflectionClass( $callable );
 		$doc_comment = self::get_doc_comment( $reflection );
 		if ( ! $doc_comment ) {
-			\WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
+			WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
 		}
-		$docparser = new \WP_CLI\DocParser( $doc_comment );
+		$docparser = new DocParser( $doc_comment );
 
 		$container = new CompositeCommand( $parent, $name, $docparser );
 
@@ -147,9 +150,9 @@ class CommandFactory {
 		$reflection  = new ReflectionClass( $callable );
 		$doc_comment = self::get_doc_comment( $reflection );
 		if ( ! $doc_comment ) {
-			\WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
+			WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
 		}
-		$docparser = new \WP_CLI\DocParser( $doc_comment );
+		$docparser = new DocParser( $doc_comment );
 
 		return new CommandNamespace( $parent, $name, $docparser );
 	}
@@ -197,7 +200,7 @@ class CommandFactory {
 			return self::extract_last_doc_comment( implode( "\n", array_slice( $contents, 0, $reflection->getStartLine() ) ) );
 		}
 
-		\WP_CLI::debug( "Could not read contents for filename '{$filename}'.", 'commandfactory' );
+		WP_CLI::debug( "Could not read contents for filename '{$filename}'.", 'commandfactory' );
 		return null;
 	}
 

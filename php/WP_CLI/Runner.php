@@ -2,6 +2,12 @@
 
 namespace WP_CLI;
 
+use WP_CLI\Dispatcher\Subcommand;
+use WP_CLI\Iterators\Exception;
+use WP_CLI\Loggers\Quiet;
+use WP_CLI\Loggers\Regular;
+use WP_CLI\Fetchers\User;
+use WP_Error;
 use WP_CLI;
 use WP_CLI\Fetchers;
 use WP_CLI\Utils;
@@ -68,7 +74,7 @@ class Runner {
 	 * Register a command for early invocation, generally before WordPress loads.
 	 *
 	 * @param string $when Named execution hook
-	 * @param WP_CLI\Dispatcher\Subcommand $command
+	 * @param Subcommand $command
 	 */
 	public function register_early_invoke( $when, $command ) {
 		$this->early_invoke[ $when ][] = array_slice( Dispatcher\get_path( $command ), 1 );
@@ -395,7 +401,7 @@ class Runner {
 		WP_CLI::debug( 'Running command: ' . $name, 'bootstrap' );
 		try {
 			$command->invoke( $final_args, $assoc_args, $extra_args );
-		} catch ( WP_CLI\Iterators\Exception $e ) {
+		} catch ( Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}
 	}
@@ -1545,7 +1551,7 @@ class Runner {
 				'init',
 				static function () use ( $config ) {
 					if ( isset( $config['user'] ) ) {
-						$fetcher = new Fetchers\User();
+						$fetcher = new User();
 						$user    = $fetcher->get_check( $config['user'] );
 						wp_set_current_user( $user->ID );
 					} else {

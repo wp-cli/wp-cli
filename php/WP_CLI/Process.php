@@ -2,6 +2,7 @@
 
 namespace WP_CLI;
 
+use RuntimeException;
 
 /**
  * Run a system process, and learn what happened.
@@ -63,7 +64,7 @@ class Process {
 	/**
 	 * Run the command.
 	 *
-	 * @return \WP_CLI\ProcessRun
+	 * @return ProcessRun
 	 */
 	public function run() {
 		$start_time = microtime( true );
@@ -105,13 +106,13 @@ class Process {
 	/**
 	 * Run the command, but throw an Exception on error.
 	 *
-	 * @return \WP_CLI\ProcessRun
+	 * @return ProcessRun
 	 */
 	public function run_check() {
 		$r = $this->run();
 
 		if ( $r->return_code ) {
-			throw new \RuntimeException( $r );
+			throw new RuntimeException( $r );
 		}
 
 		return $r;
@@ -121,13 +122,13 @@ class Process {
 	 * Run the command, but throw an Exception on error.
 	 * Same as `run_check()` above, but checks the correct stderr.
 	 *
-	 * @return \WP_CLI\ProcessRun
+	 * @return ProcessRun
 	 */
 	public function run_check_stderr() {
 		$r = $this->run();
 
 		if ( $r->return_code || ! empty( $r->stderr ) ) {
-			throw new \RuntimeException( $r );
+			throw new RuntimeException( $r );
 		}
 
 		return $r;

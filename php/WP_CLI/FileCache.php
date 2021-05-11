@@ -13,6 +13,8 @@
 
 namespace WP_CLI;
 
+use DateTime;
+use Exception;
 use Symfony\Component\Finder\Finder;
 use WP_CLI;
 
@@ -222,14 +224,14 @@ class FileCache {
 		// Unlink expired files.
 		if ( $ttl > 0 ) {
 			try {
-				$expire = new \DateTime();
+				$expire = new DateTime();
 				$expire->modify( '-' . $ttl . ' seconds' );
 
 				$finder = $this->get_finder()->date( 'until ' . $expire->format( 'Y-m-d H:i:s' ) );
 				foreach ( $finder as $file ) {
 					unlink( $file->getRealPath() );
 				}
-			} catch ( \Exception $e ) {
+			} catch ( Exception $e ) {
 				WP_CLI::error( $e->getMessage() );
 			}
 		}
