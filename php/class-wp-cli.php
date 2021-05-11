@@ -14,8 +14,6 @@ use WP_CLI\WpHttpCacheManager;
  */
 class WP_CLI {
 
-	private static $configurator;
-
 	private static $logger;
 
 	private static $hooks = [];
