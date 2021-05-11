@@ -2,18 +2,14 @@
 
 namespace WP_CLI;
 
-use WP_CLI\Dispatcher\Subcommand;
-use WP_CLI\Iterators\Exception;
-use WP_CLI\Loggers\Quiet;
-use WP_CLI\Loggers\Regular;
-use WP_CLI\Fetchers\User;
-use WP_Error;
 use WP_CLI;
-use WP_CLI\Fetchers;
-use WP_CLI\Utils;
 use WP_CLI\Dispatcher;
 use WP_CLI\Dispatcher\CompositeCommand;
+use WP_CLI\Dispatcher\Subcommand;
+use WP_CLI\Fetchers;
+use WP_CLI\Iterators\Exception;
 use WP_CLI\Loggers;
+use WP_CLI\Utils;
 use WP_Error;
 
 /**
@@ -1551,7 +1547,7 @@ class Runner {
 				'init',
 				static function () use ( $config ) {
 					if ( isset( $config['user'] ) ) {
-						$fetcher = new User();
+						$fetcher = new Fetchers\User();
 						$user    = $fetcher->get_check( $config['user'] );
 						wp_set_current_user( $user->ID );
 					} else {
