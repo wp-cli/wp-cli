@@ -3,9 +3,12 @@
 namespace WP_CLI;
 
 use WP_CLI;
+use WP_CLI\Fetchers;
 use WP_CLI\Utils;
 use WP_CLI\Dispatcher;
 use WP_CLI\Dispatcher\CompositeCommand;
+use WP_CLI\Loggers;
+use WP_Error;
 
 /**
  * Performs the execution of a command.
@@ -314,7 +317,7 @@ class Runner {
 	 * @return array|string Command, args, and path on success; error message on failure
 	 */
 	public function find_command_to_run( $args ) {
-		$command = \WP_CLI::get_root_command();
+		$command = WP_CLI::get_root_command();
 
 		WP_CLI::do_hook( 'find_command_to_run_pre' );
 
@@ -612,7 +615,7 @@ class Runner {
 	 * @return bool
 	 */
 	public function is_command_disabled( $command ) {
-		$path = implode( ' ', array_slice( \WP_CLI\Dispatcher\get_path( $command ), 1 ) );
+		$path = implode( ' ', array_slice( Dispatcher\get_path( $command ), 1 ) );
 		return in_array( $path, $this->config['disabled_commands'], true );
 	}
 
@@ -850,7 +853,7 @@ class Runner {
 
 	public function init_colorization() {
 		if ( 'auto' === $this->config['color'] ) {
-			$this->colorize = ( ! \WP_CLI\Utils\isPiped() && ! \WP_CLI\Utils\is_windows() );
+			$this->colorize = ( ! Utils\isPiped() && ! Utils\is_windows() );
 		} else {
 			$this->colorize = $this->config['color'];
 		}
@@ -858,9 +861,9 @@ class Runner {
 
 	public function init_logger() {
 		if ( $this->config['quiet'] ) {
-			$logger = new \WP_CLI\Loggers\Quiet();
+			$logger = new Loggers\Quiet();
 		} else {
-			$logger = new \WP_CLI\Loggers\Regular( $this->in_color() );
+			$logger = new Loggers\Regular( $this->in_color() );
 		}
 
 		WP_CLI::set_logger( $logger );
@@ -929,7 +932,7 @@ class Runner {
 	}
 
 	public function init_config() {
-		$configurator = \WP_CLI::get_configurator();
+		$configurator = WP_CLI::get_configurator();
 
 		$argv = array_slice( $GLOBALS['argv'], 1 );
 
@@ -1125,7 +1128,7 @@ class Runner {
 		// Handle --url parameter
 		$url = self::guess_url( $this->config );
 		if ( $url ) {
-			\WP_CLI::set_url( $url );
+			WP_CLI::set_url( $url );
 		}
 
 		$this->do_early_invoke( 'before_wp_load' );
@@ -1160,7 +1163,7 @@ class Runner {
 			// We really need a URL here
 			if ( ! isset( $_SERVER['HTTP_HOST'] ) ) {
 				$url = 'http://example.com';
-				\WP_CLI::set_url( $url );
+				WP_CLI::set_url( $url );
 			}
 
 			if ( 'multisite-install' === $this->arguments[1] ) {
@@ -1338,7 +1341,7 @@ class Runner {
 			if ( defined( 'PATH_CURRENT_SITE' ) ) {
 				$url .= PATH_CURRENT_SITE;
 			}
-			\WP_CLI::set_url( $url );
+			WP_CLI::set_url( $url );
 		}
 	}
 
@@ -1542,7 +1545,7 @@ class Runner {
 				'init',
 				static function () use ( $config ) {
 					if ( isset( $config['user'] ) ) {
-						$fetcher = new \WP_CLI\Fetchers\User();
+						$fetcher = new Fetchers\User();
 						$user    = $fetcher->get_check( $config['user'] );
 						wp_set_current_user( $user->ID );
 					} else {
@@ -1714,10 +1717,10 @@ class Runner {
 	 */
 	public function help_wp_die_handler( $message ) {
 		$help_exit_warning = 'Error during WordPress load.';
-		if ( $message instanceof \WP_Error ) {
-			$help_exit_warning = WP_CLI\Utils\wp_clean_error_message( $message->get_error_message() );
+		if ( $message instanceof WP_Error ) {
+			$help_exit_warning = Utils\wp_clean_error_message( $message->get_error_message() );
 		} elseif ( is_string( $message ) ) {
-			$help_exit_warning = WP_CLI\Utils\wp_clean_error_message( $message );
+			$help_exit_warning = Utils\wp_clean_error_message( $message );
 		}
 		$this->run_command_and_exit( $help_exit_warning );
 	}
@@ -1803,7 +1806,7 @@ class Runner {
 	 */
 	private function get_subcommand_suggestion( $entry, CompositeCommand $root_command = null ) {
 		$commands = array();
-		$this->enumerate_commands( $root_command ?: \WP_CLI::get_root_command(), $commands );
+		$this->enumerate_commands( $root_command ?: WP_CLI::get_root_command(), $commands );
 
 		return Utils\get_suggestion( $entry, $commands, $threshold = 2 );
 	}
