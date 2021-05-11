@@ -1029,6 +1029,7 @@ class Runner {
 			$assoc_args     = Utils\assoc_args_to_str( $this->assoc_args );
 			$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
 			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
+			$pipes          = [];
 			$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
 			proc_close( $proc );
 		}
@@ -1036,7 +1037,7 @@ class Runner {
 
 	private function set_alias( $alias ) {
 		$orig_config  = $this->config;
-		$alias_config = $this->aliases[ $this->alias ];
+		$alias_config = $this->aliases[ $alias ];
 		$this->config = array_merge( $orig_config, $alias_config );
 		foreach ( $alias_config as $key => $_ ) {
 			if ( isset( $orig_config[ $key ] ) && ! is_null( $orig_config[ $key ] ) ) {
