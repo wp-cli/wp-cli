@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Bootstrap;
 
+use WP_CLI;
+
 /**
  * Class IncludePackageAutoloader.
  *
@@ -25,7 +27,7 @@ final class IncludePackageAutoloader extends AutoloaderStep {
 		$runner        = new RunnerInstance();
 		$skip_packages = $runner()->config['skip-packages'];
 		if ( true === $skip_packages ) {
-			\WP_CLI::debug( 'Skipped loading packages.', 'bootstrap' );
+			WP_CLI::debug( 'Skipped loading packages.', 'bootstrap' );
 
 			return false;
 		}
@@ -33,14 +35,14 @@ final class IncludePackageAutoloader extends AutoloaderStep {
 		$autoloader_path = $runner()->get_packages_dir_path() . 'vendor/autoload.php';
 
 		if ( is_readable( $autoloader_path ) ) {
-			\WP_CLI::debug(
+			WP_CLI::debug(
 				'Loading packages from: ' . $autoloader_path,
 				'bootstrap'
 			);
 
-			return array(
+			return [
 				$autoloader_path,
-			);
+			];
 		}
 
 		return false;
@@ -52,6 +54,6 @@ final class IncludePackageAutoloader extends AutoloaderStep {
 	 * @return void
 	 */
 	protected function handle_failure() {
-		\WP_CLI::debug( 'No package autoload found to load.', 'bootstrap' );
+		WP_CLI::debug( 'No package autoload found to load.', 'bootstrap' );
 	}
 }

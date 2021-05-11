@@ -2,9 +2,12 @@
 
 namespace WP_CLI\Dispatcher;
 
+use Closure;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
+use WP_CLI;
+use WP_CLI\DocParser;
 use WP_CLI\Utils;
 
 /**
@@ -15,7 +18,7 @@ use WP_CLI\Utils;
 class CommandFactory {
 
 	// Cache of file contents, indexed by filename. Only used if opcache.save_comments is disabled.
-	private static $file_contents = array();
+	private static $file_contents = [];
 
 	/**
 	 * Create a new CompositeCommand (or Subcommand if class has __invoke())
@@ -26,7 +29,7 @@ class CommandFactory {
 	 */
 	public static function create( $name, $callable, $parent ) {
 
-		if ( ( is_object( $callable ) && ( $callable instanceof \Closure ) )
+		if ( ( is_object( $callable ) && ( $callable instanceof Closure ) )
 			|| ( is_string( $callable ) && function_exists( $callable ) ) ) {
 			$reflection = new ReflectionFunction( $callable );
 			$command    = self::create_subcommand( $parent, $name, $callable, $reflection );
@@ -35,7 +38,7 @@ class CommandFactory {
 			$command    = self::create_subcommand(
 				$parent,
 				$name,
-				array( $callable[0], $callable[1] ),
+				[ $callable[0], $callable[1] ],
 				$reflection->getMethod( $callable[1] )
 			);
 		} else {
@@ -47,7 +50,7 @@ class CommandFactory {
 				$command = self::create_subcommand(
 					$parent,
 					$name,
-					array( $class, '__invoke' ),
+					[ $class, '__invoke' ],
 					$reflection->getMethod( '__invoke' )
 				);
 			} else {
@@ -62,7 +65,7 @@ class CommandFactory {
 	 * Clear the file contents cache.
 	 */
 	public static function clear_file_contents_cache() {
-		self::$file_contents = array();
+		self::$file_contents = [];
 	}
 
 	/**
@@ -73,12 +76,10 @@ class CommandFactory {
 	 * If false, will be determined from the documented subject, represented by `$reflection`.
 	 * @param mixed $callable A callable function or closure, or class name and method
 	 * @param object $reflection Reflection instance, for doc parsing
-	 * @param string $class A subclass of WP_CLI_Command
-	 * @param string $method Class method to be called upon invocation.
 	 */
 	private static function create_subcommand( $parent, $name, $callable, $reflection ) {
 		$doc_comment = self::get_doc_comment( $reflection );
-		$docparser   = new \WP_CLI\DocParser( $doc_comment );
+		$docparser   = new DocParser( $doc_comment );
 
 		if ( is_array( $callable ) ) {
 			if ( ! $name ) {
@@ -90,13 +91,13 @@ class CommandFactory {
 			}
 		}
 		if ( ! $doc_comment ) {
-			\WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
+			WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
 		}
 
 		$when_invoked = function ( $args, $assoc_args ) use ( $callable ) {
 			if ( is_array( $callable ) ) {
 				$callable[0] = is_object( $callable[0] ) ? $callable[0] : new $callable[0]();
-				call_user_func( array( $callable[0], $callable[1] ), $args, $assoc_args );
+				call_user_func( [ $callable[0], $callable[1] ], $args, $assoc_args );
 			} else {
 				call_user_func( $callable, $args, $assoc_args );
 			}
@@ -116,9 +117,9 @@ class CommandFactory {
 		$reflection  = new ReflectionClass( $callable );
 		$doc_comment = self::get_doc_comment( $reflection );
 		if ( ! $doc_comment ) {
-			\WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
+			WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
 		}
-		$docparser = new \WP_CLI\DocParser( $doc_comment );
+		$docparser = new DocParser( $doc_comment );
 
 		$container = new CompositeCommand( $parent, $name, $docparser );
 
@@ -128,7 +129,7 @@ class CommandFactory {
 			}
 
 			$class      = is_object( $callable ) ? $callable : $reflection->name;
-			$subcommand = self::create_subcommand( $container, false, array( $class, $method->name ), $method );
+			$subcommand = self::create_subcommand( $container, false, [ $class, $method->name ], $method );
 
 			$subcommand_name = $subcommand->get_name();
 
@@ -149,9 +150,9 @@ class CommandFactory {
 		$reflection  = new ReflectionClass( $callable );
 		$doc_comment = self::get_doc_comment( $reflection );
 		if ( ! $doc_comment ) {
-			\WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
+			WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
 		}
-		$docparser = new \WP_CLI\DocParser( $doc_comment );
+		$docparser = new DocParser( $doc_comment );
 
 		return new CommandNamespace( $parent, $name, $docparser );
 	}
@@ -173,6 +174,7 @@ class CommandFactory {
 	 * @return string|false|null Doc comment string if any, false if none (same as `Reflection*::getDocComment()`), null if error.
 	 */
 	private static function get_doc_comment( $reflection ) {
+		$contents    = null;
 		$doc_comment = $reflection->getDocComment();
 
 		if ( false !== $doc_comment || ! ( ini_get( 'opcache.enable_cli' ) && ! ini_get( 'opcache.save_comments' ) ) ) { // phpcs:ignore PHPCompatibility.IniDirectives.NewIniDirectives
@@ -198,7 +200,7 @@ class CommandFactory {
 			return self::extract_last_doc_comment( implode( "\n", array_slice( $contents, 0, $reflection->getStartLine() ) ) );
 		}
 
-		\WP_CLI::debug( "Could not read contents for filename '{$filename}'.", 'commandfactory' );
+		WP_CLI::debug( "Could not read contents for filename '{$filename}'.", 'commandfactory' );
 		return null;
 	}
 

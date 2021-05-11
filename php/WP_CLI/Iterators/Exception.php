@@ -2,5 +2,7 @@
 
 namespace WP_CLI\Iterators;
 
-class Exception extends \RuntimeException {}
+use RuntimeException;
+
+class Exception extends RuntimeException {}
 

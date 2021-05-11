@@ -4,29 +4,33 @@ use WP_CLI\Inflector;
 
 class InflectorTest extends PHPUnit_Framework_TestCase {
 
-	/** @dataProvider dataProviderPluralize */
+	/**
+	 * @dataProvider dataProviderPluralize
+	 */
 	public function testPluralize( $singular, $expected ) {
 		$this->assertEquals( $expected, Inflector::pluralize( $singular ) );
 	}
 
 	public function dataProviderPluralize() {
-		return array(
-			array( 'string', 'strings' ), // regular
-			array( 'person', 'people' ),  // irregular
-			array( 'scissors', 'scissors' ), // uncountable
-		);
+		return [
+			[ 'string', 'strings' ], // regular
+			[ 'person', 'people' ],  // irregular
+			[ 'scissors', 'scissors' ], // uncountable
+		];
 	}
 
-	/** @dataProvider dataProviderSingularize */
+	/**
+	 * @dataProvider dataProviderSingularize
+	 */
 	public function testSingularize( $singular, $expected ) {
 		$this->assertEquals( $expected, Inflector::singularize( $singular ) );
 	}
 
 	public function dataProviderSingularize() {
-		return array(
-			array( 'strings', 'string' ), // regular
-			array( 'people', 'person' ),  // irregular
-			array( 'scissors', 'scissors' ), // uncountable
-		);
+		return [
+			[ 'strings', 'string' ], // regular
+			[ 'people', 'person' ],  // irregular
+			[ 'scissors', 'scissors' ], // uncountable
+		];
 	}
 }

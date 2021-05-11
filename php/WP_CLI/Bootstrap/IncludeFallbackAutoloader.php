@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Bootstrap;
 
+use WP_CLI;
+
 /**
  * Class IncludeFallbackAutoloader.
  *
@@ -19,9 +21,9 @@ final class IncludeFallbackAutoloader extends AutoloaderStep {
 	 *                        to skip.
 	 */
 	protected function get_autoloader_paths() {
-		$autoloader_paths = array(
+		$autoloader_paths = [
 			WP_CLI_VENDOR_DIR . '/autoload.php',
-		);
+		];
 
 		$custom_vendor = $this->get_custom_vendor_folder();
 		if ( false !== $custom_vendor ) {
@@ -31,7 +33,7 @@ final class IncludeFallbackAutoloader extends AutoloaderStep {
 			);
 		}
 
-		\WP_CLI::debug(
+		WP_CLI::debug(
 			sprintf(
 				'Fallback autoloader paths: %s',
 				implode( ', ', $autoloader_paths )

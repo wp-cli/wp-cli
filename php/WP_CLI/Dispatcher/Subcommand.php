@@ -3,6 +3,9 @@
 namespace WP_CLI\Dispatcher;
 
 use WP_CLI;
+use WP_CLI\DocParser;
+use WP_CLI\SynopsisParser;
+use WP_CLI\SynopsisValidator;
 use WP_CLI\Utils;
 
 /**
@@ -64,7 +67,7 @@ class Subcommand extends CompositeCommand {
 	/**
 	 * Set the synopsis string for this subcommand.
 	 *
-	 * @param string
+	 * @param string $synopsis
 	 */
 	public function set_synopsis( $synopsis ) {
 		$this->synopsis = $synopsis;
@@ -141,7 +144,7 @@ class Subcommand extends CompositeCommand {
 		$synopsis = $this->get_synopsis();
 
 		if ( ! $synopsis ) {
-			return array( $args, $assoc_args );
+			return [ $args, $assoc_args ];
 		}
 
 		// To skip the already provided positional arguments, we need to count
@@ -149,7 +152,7 @@ class Subcommand extends CompositeCommand {
 		$arg_index = 0;
 
 		$spec = array_filter(
-			\WP_CLI\SynopsisParser::parse( $synopsis ),
+			SynopsisParser::parse( $synopsis ),
 			function( $spec_arg ) use ( $args, $assoc_args, &$arg_index ) {
 				switch ( $spec_arg['type'] ) {
 					case 'positional':
@@ -178,7 +181,7 @@ class Subcommand extends CompositeCommand {
 
 		// 'positional' arguments are positional (aka zero-indexed)
 		// so $args needs to be reset before prompting for new arguments
-		$args = array();
+		$args = [];
 
 		foreach ( $spec as $key => $spec_arg ) {
 
@@ -211,7 +214,7 @@ class Subcommand extends CompositeCommand {
 
 					$key = $this->prompt( $key_prompt, $default );
 					if ( false === $key ) {
-						return array( $args, $assoc_args );
+						return [ $args, $assoc_args ];
 					}
 
 					if ( $key ) {
@@ -220,7 +223,7 @@ class Subcommand extends CompositeCommand {
 
 						$value = $this->prompt( $value_prompt, $default );
 						if ( false === $value ) {
-							return array( $args, $assoc_args );
+							return [ $args, $assoc_args ];
 						}
 
 						$assoc_args[ $key ] = $value;
@@ -239,7 +242,7 @@ class Subcommand extends CompositeCommand {
 
 				$response = $this->prompt( $prompt, $default );
 				if ( false === $response ) {
-					return array( $args, $assoc_args );
+					return [ $args, $assoc_args ];
 				}
 
 				if ( $response ) {
@@ -248,7 +251,7 @@ class Subcommand extends CompositeCommand {
 							if ( $spec_arg['repeating'] ) {
 								$response = explode( ' ', $response );
 							} else {
-								$response = array( $response );
+								$response = [ $response ];
 							}
 							$args = array_merge( $args, $response );
 							break;
@@ -265,7 +268,7 @@ class Subcommand extends CompositeCommand {
 			}
 		}
 
-		return array( $args, $assoc_args );
+		return [ $args, $assoc_args ];
 	}
 
 	/**
@@ -281,10 +284,10 @@ class Subcommand extends CompositeCommand {
 	private function validate_args( $args, $assoc_args, $extra_args ) {
 		$synopsis = $this->get_synopsis();
 		if ( ! $synopsis ) {
-			return array( array(), $args, $assoc_args, $extra_args );
+			return [ [], $args, $assoc_args, $extra_args ];
 		}
 
-		$validator = new \WP_CLI\SynopsisValidator( $synopsis );
+		$validator = new SynopsisValidator( $synopsis );
 
 		$cmd_path = implode( ' ', get_path( $this ) );
 		foreach ( $validator->get_unknown() as $token ) {
@@ -310,16 +313,16 @@ class Subcommand extends CompositeCommand {
 			);
 		}
 
-		$synopsis_spec = \WP_CLI\SynopsisParser::parse( $synopsis );
+		$synopsis_spec = SynopsisParser::parse( $synopsis );
 		$i             = 0;
-		$errors        = array(
-			'fatal'   => array(),
-			'warning' => array(),
-		);
-		$mock_doc      = array( $this->get_shortdesc(), '' );
+		$errors        = [
+			'fatal'   => [],
+			'warning' => [],
+		];
+		$mock_doc      = [ $this->get_shortdesc(), '' ];
 		$mock_doc      = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
 		$mock_doc      = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
-		$docparser     = new \WP_CLI\DocParser( $mock_doc );
+		$docparser     = new DocParser( $mock_doc );
 		foreach ( $synopsis_spec as $spec ) {
 			if ( 'positional' === $spec['type'] ) {
 				$spec_args = $docparser->get_arg_args( $spec['name'] );
@@ -383,7 +386,7 @@ class Subcommand extends CompositeCommand {
 		list( $returned_errors, $to_unset ) = $validator->validate_assoc(
 			array_merge( \WP_CLI::get_config(), $extra_args, $assoc_args )
 		);
-		foreach ( array( 'fatal', 'warning' ) as $error_type ) {
+		foreach ( [ 'fatal', 'warning' ] as $error_type ) {
 			$errors[ $error_type ] = array_merge( $errors[ $error_type ], $returned_errors[ $error_type ] );
 		}
 
@@ -418,7 +421,7 @@ class Subcommand extends CompositeCommand {
 
 		array_map( '\\WP_CLI::warning', $errors['warning'] );
 
-		return array( $to_unset, $args, $assoc_args, $extra_args );
+		return [ $to_unset, $args, $assoc_args, $extra_args ];
 	}
 
 	/**
@@ -430,10 +433,9 @@ class Subcommand extends CompositeCommand {
 	 * @param array $assoc_args
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) {
+		static $prompted_once = false;
 
 		if ( 'help' !== $this->name ) {
-			static $prompted_once = false;
-
 			if ( \WP_CLI::get_config( 'prompt' ) && ! $prompted_once ) {
 				list( $_args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
 				$args                       = array_merge( $args, $_args );
@@ -441,7 +443,7 @@ class Subcommand extends CompositeCommand {
 			}
 		}
 
-		$extra_positionals = array();
+		$extra_positionals = [];
 		foreach ( $extra_args as $k => $v ) {
 			if ( is_numeric( $k ) ) {
 				if ( ! isset( $args[ $k ] ) ) {
@@ -468,7 +470,7 @@ class Subcommand extends CompositeCommand {
 		WP_CLI::do_hook( "before_invoke:{$cmd}" );
 
 		// Check if `--prompt` arg passed or not.
-		if ( ! empty( $prompted_once ) && true === $prompted_once ) {
+		if ( $prompted_once ) {
 			// Unset empty args.
 			$actual_args = $assoc_args;
 			foreach ( $actual_args as $key ) {
@@ -481,7 +483,7 @@ class Subcommand extends CompositeCommand {
 				sprintf(
 					'wp %s %s',
 					$cmd,
-					ltrim( WP_CLI\Utils\assoc_args_to_str( $actual_args ), ' ' )
+					ltrim( Utils\assoc_args_to_str( $actual_args ), ' ' )
 				)
 			);
 		}
@@ -502,10 +504,10 @@ class Subcommand extends CompositeCommand {
 	 *
 	 * @return array Array of parameter names
 	 */
-	private function get_parameters( $spec = array() ) {
+	private function get_parameters( $spec = [] ) {
 		$local_parameters  = array_column( $spec, 'name' );
 		$global_parameters = array_column(
-			WP_CLI\SynopsisParser::parse( $this->get_global_params() ),
+			SynopsisParser::parse( $this->get_global_params() ),
 			'name'
 		);
 

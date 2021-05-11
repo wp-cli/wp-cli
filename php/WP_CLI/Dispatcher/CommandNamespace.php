@@ -27,7 +27,7 @@ class CommandNamespace extends CompositeCommand {
 		$i     = 0;
 		$count = 0;
 
-		foreach ( $methods as $name => $subcommand ) {
+		foreach ( $methods as $subcommand ) {
 			$prefix = ( 0 === $i ) ? 'usage: ' : '   or: ';
 			$i++;
 

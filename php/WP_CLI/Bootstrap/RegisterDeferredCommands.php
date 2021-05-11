@@ -2,6 +2,9 @@
 
 namespace WP_CLI\Bootstrap;
 
+use WP_CLI;
+use WP_CLI\Utils;
+
 /**
  * Class RegisterDeferredCommands.
  *
@@ -27,9 +30,9 @@ final class RegisterDeferredCommands implements BootstrapStep {
 
 		// Process deferred command additions for commands added through
 		// plugins.
-		\WP_CLI::add_hook(
+		WP_CLI::add_hook(
 			'before_run_command',
-			array( $this, 'add_deferred_commands' )
+			[ $this, 'add_deferred_commands' ]
 		);
 
 		return $state;
@@ -39,15 +42,15 @@ final class RegisterDeferredCommands implements BootstrapStep {
 	 * Add deferred commands that are still waiting to be processed.
 	 */
 	public function add_deferred_commands() {
-		$deferred_additions = \WP_CLI::get_deferred_additions();
+		$deferred_additions = WP_CLI::get_deferred_additions();
 
 		foreach ( $deferred_additions as $name => $addition ) {
-			$addition_data = array();
+			$addition_data = [];
 			foreach ( $addition as $addition_key => $addition_value ) {
 				// Describe the callable as a string instead of directly printing it
 				// for better debug info.
 				if ( 'callable' === $addition_key ) {
-					$addition_value = \WP_CLI\Utils\describe_callable( $addition_value );
+					$addition_value = Utils\describe_callable( $addition_value );
 
 				} elseif ( is_array( $addition_value ) ) {
 					$addition_value = json_encode( $addition_value );
@@ -60,7 +63,7 @@ final class RegisterDeferredCommands implements BootstrapStep {
 				);
 			}
 
-			\WP_CLI::debug(
+			WP_CLI::debug(
 				sprintf(
 					'Adding deferred command: %s (%s)',
 					$name,
@@ -69,7 +72,7 @@ final class RegisterDeferredCommands implements BootstrapStep {
 				'bootstrap'
 			);
 
-			\WP_CLI::add_command(
+			WP_CLI::add_command(
 				$name,
 				$addition['callable'],
 				$addition['args']

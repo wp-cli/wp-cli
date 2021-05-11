@@ -2,6 +2,9 @@
 
 namespace WP_CLI\Bootstrap;
 
+use Exception;
+use WP_CLI;
+
 /**
  * Abstract class AutoloaderStep.
  *
@@ -39,7 +42,7 @@ abstract class AutoloaderStep implements BootstrapStep {
 		foreach ( $autoloader_paths as $autoloader_path ) {
 			if ( is_readable( $autoloader_path ) ) {
 				try {
-					\WP_CLI::debug(
+					WP_CLI::debug(
 						sprintf(
 							'Loading detected autoloader: %s',
 							$autoloader_path
@@ -48,8 +51,8 @@ abstract class AutoloaderStep implements BootstrapStep {
 					);
 					require $autoloader_path;
 					$found_autoloader = true;
-				} catch ( \Exception $exception ) {
-					\WP_CLI::warning(
+				} catch ( Exception $exception ) {
+					WP_CLI::warning(
 						"Failed to load autoloader '{$autoloader_path}'. Reason: "
 						. $exception->getMessage()
 					);

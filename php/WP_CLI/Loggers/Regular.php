@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Loggers;
 
+use cli\Colors;
+
 /**
  * Default logger for success, warning, error, and standard messages.
  */
@@ -51,9 +53,9 @@ class Regular extends Base {
 	}
 
 	/**
-	 * Similar to error( $message ), but outputs $message in a red box
+	 * Similar to error( $message ), but outputs $message in a red box.
 	 *
-	 * @param  array $message Message to write.
+	 * @param  array $message_lines Message to write.
 	 */
 	public function error_multi_line( $message_lines ) {
 		// Convert tabs to four spaces, as some shells will output the tabs as variable-length.
@@ -67,12 +69,12 @@ class Regular extends Base {
 		$longest = max( array_map( 'strlen', $message_lines ) );
 
 		// Write an empty line before the message.
-		$empty_line = \cli\Colors::colorize( '%w%1 ' . str_repeat( ' ', $longest ) . ' %n' );
+		$empty_line = Colors::colorize( '%w%1 ' . str_repeat( ' ', $longest ) . ' %n' );
 		$this->write( STDERR, "\n\t$empty_line\n" );
 
 		foreach ( $message_lines as $line ) {
 			$padding = str_repeat( ' ', $longest - strlen( $line ) );
-			$line    = \cli\Colors::colorize( "%w%1 $line $padding%n" );
+			$line    = Colors::colorize( "%w%1 $line $padding%n" );
 			$this->write( STDERR, "\t$line\n" );
 		}
 

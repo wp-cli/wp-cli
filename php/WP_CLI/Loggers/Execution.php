@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Loggers;
 
+use WP_CLI;
+
 /**
  * Execution logger captures all STDOUT and STDERR writes
  */
@@ -25,15 +27,15 @@ class Execution extends Regular {
 	}
 
 	/**
-	 * Similar to error( $message ), but outputs $message in a red box
+	 * Similar to error( $message ), but outputs $message in a red box.
 	 *
-	 * @param  array $message Message to write.
+	 * @param array $message_lines Message to write.
 	 */
 	public function error_multi_line( $message_lines ) {
 		$message = implode( "\n", $message_lines );
 
-		$this->write( STDERR, \WP_CLI::colorize( "%RError:%n\n$message\n" ) );
-		$this->write( STDERR, \WP_CLI::colorize( "%R---------%n\n\n" ) );
+		$this->write( STDERR, WP_CLI::colorize( "%RError:%n\n$message\n" ) );
+		$this->write( STDERR, WP_CLI::colorize( "%R---------%n\n\n" ) );
 	}
 
 	/**
@@ -57,7 +59,7 @@ class Execution extends Regular {
 	 * Starts output buffering, using a callback to capture output from `echo`, `print`, `printf` (which write to the output buffer 'php://output' rather than STDOUT).
 	 */
 	public function ob_start() {
-		ob_start( array( $this, 'ob_start_callback' ), 1 );
+		ob_start( [ $this, 'ob_start_callback' ], 1 );
 	}
 
 	/**

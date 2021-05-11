@@ -2,12 +2,14 @@
 
 namespace WP_CLI\Iterators;
 
+use Iterator;
+
 /**
  * Iterates over results of a query, split into many queries via LIMIT and OFFSET
  *
  * @source https://gist.github.com/4060005
  */
-class Query implements \Iterator {
+class Query implements Iterator {
 
 	private $chunk_size;
 	private $query       = '';
@@ -15,7 +17,7 @@ class Query implements \Iterator {
 
 	private $global_index     = 0;
 	private $index_in_results = 0;
-	private $results          = array();
+	private $results          = [];
 	private $row_count        = 0;
 	private $offset           = 0;
 	private $db               = null;
@@ -100,7 +102,7 @@ class Query implements \Iterator {
 	}
 
 	public function rewind() {
-		$this->results          = array();
+		$this->results          = [];
 		$this->global_index     = 0;
 		$this->index_in_results = 0;
 		$this->offset           = 0;

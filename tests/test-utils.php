@@ -62,7 +62,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 	public function testParseSSHUrl() {
 		$testcase = 'foo';
-		$this->assertEquals( array( 'host' => 'foo' ), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( [ 'host' => 'foo' ], Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -70,7 +70,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com';
-		$this->assertEquals( array( 'host' => 'foo.com' ), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( [ 'host' => 'foo.com' ], Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -78,10 +78,10 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com:2222';
-		$expected = array(
+		$expected = [
 			'host' => 'foo.com',
 			'port' => 2222,
-		);
+		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -90,11 +90,11 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com:2222/path/to/dir';
-		$expected = array(
+		$expected = [
 			'host' => 'foo.com',
 			'port' => 2222,
 			'path' => '/path/to/dir',
-		);
+		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -103,10 +103,10 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( '/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com~/path/to/dir';
-		$expected = array(
+		$expected = [
 			'host' => 'foo.com',
 			'path' => '~/path/to/dir',
-		);
+		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -116,7 +116,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// No host
 		$testcase = '~/path/to/dir';
-		$this->assertEquals( array(), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( [], Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -125,10 +125,10 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// host and path, no port, with scp notation
 		$testcase = 'foo.com:~/path/to/dir';
-		$expected = array(
+		$expected = [
 			'host' => 'foo.com',
 			'path' => '~/path/to/dir',
-		);
+		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -137,11 +137,11 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com:2222~/path/to/dir';
-		$expected = array(
+		$expected = [
 			'host' => 'foo.com',
 			'path' => '~/path/to/dir',
 			'port' => '2222',
-		);
+		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -151,12 +151,12 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// explicit scheme, user, host, path, no port
 		$testcase = 'ssh:bar@foo.com:~/path/to/dir';
-		$expected = array(
+		$expected = [
 			'scheme' => 'ssh',
 			'user'   => 'bar',
 			'host'   => 'foo.com',
 			'path'   => '~/path/to/dir',
-		);
+		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'ssh', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -166,10 +166,10 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// container scheme
 		$testcase = 'docker:wordpress';
-		$expected = array(
+		$expected = [
 			'scheme' => 'docker',
 			'host'   => 'wordpress',
-		);
+		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'docker', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -179,11 +179,11 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// container scheme with user, and host
 		$testcase = 'docker:bar@wordpress';
-		$expected = array(
+		$expected = [
 			'scheme' => 'docker',
 			'user'   => 'bar',
 			'host'   => 'wordpress',
-		);
+		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'docker', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -193,12 +193,12 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// container scheme with user, host, and path
 		$testcase = 'docker-compose:bar@wordpress:~/path/to/dir';
-		$expected = array(
+		$expected = [
 			'scheme' => 'docker-compose',
 			'user'   => 'bar',
 			'host'   => 'wordpress',
 			'path'   => '~/path/to/dir',
-		);
+		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'docker-compose', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -208,10 +208,10 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// vagrant scheme
 		$testcase = 'vagrant:default';
-		$expected = array(
+		$expected = [
 			'scheme' => 'vagrant',
 			'host'   => 'default',
-		);
+		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'vagrant', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -221,11 +221,11 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// vagrant scheme
 		$testcase = 'vagrant:/var/www/html';
-		$expected = array(
+		$expected = [
 			'scheme' => 'vagrant',
 			'host'   => '',
 			'path'   => '/var/www/html',
-		);
+		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'vagrant', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -235,7 +235,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// unsupported scheme, should not match
 		$testcase = 'foo:bar';
-		$this->assertEquals( array(), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( [], Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -258,7 +258,9 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		];
 	}
 
-	/** @dataProvider parseStrToArgvData */
+	/**
+	 * @dataProvider parseStrToArgvData
+	 */
 	public function testParseStrToArgv( $expected, $parseable_string ) {
 		$this->assertEquals( $expected, Utils\parse_str_to_argv( $parseable_string ) );
 	}
@@ -266,37 +268,37 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	public function testAssocArgsToString() {
 		// Strip quotes for Windows compat.
 		$strip_quotes = function ( $str ) {
-			return str_replace( array( '"', "'" ), '', $str );
+			return str_replace( [ '"', "'" ], '', $str );
 		};
 
 		$expected = " --url='foo.dev' --porcelain --apple='banana'";
-		$input    = array(
+		$input    = [
 			'url'       => 'foo.dev',
 			'porcelain' => true,
 			'apple'     => 'banana',
-		);
+		];
 		$actual   = Utils\assoc_args_to_str( $input );
 		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
 
 		$expected = " --url='foo.dev' --require='file-a.php' --require='file-b.php' --porcelain --apple='banana'";
-		$input    = array(
+		$input    = [
 			'url'       => 'foo.dev',
-			'require'   => array(
+			'require'   => [
 				'file-a.php',
 				'file-b.php',
-			),
+			],
 			'porcelain' => true,
 			'apple'     => 'banana',
-		);
+		];
 		$actual   = Utils\assoc_args_to_str( $input );
 		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
 	}
 
 	public function testMysqlHostToCLIArgs() {
 		// Test hostname only, with and without 'p:' modifier
-		$expected = array(
+		$expected = [
 			'host' => 'hostname',
-		);
+		];
 		$testcase = 'hostname';
 		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
 
@@ -304,11 +306,11 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
 
 		// Test hostname with port number, with and without 'p:' modifier
-		$expected = array(
+		$expected = [
 			'host'     => 'hostname',
 			'port'     => 3306,
 			'protocol' => 'tcp',
-		);
+		];
 		$testcase = 'hostname:3306';
 		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
 
@@ -316,10 +318,10 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
 
 		// Test hostname with socket path, with and without 'p:' modifier
-		$expected = array(
+		$expected = [
 			'host'   => 'hostname',
 			'socket' => '/path/to/socket',
-		);
+		];
 		$testcase = 'hostname:/path/to/socket';
 		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
 
@@ -384,26 +386,26 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function dataNormalizePath() {
-		return array(
-			array( '', '' ),
+		return [
+			[ '', '' ],
 			// Windows paths
-			array( 'C:\\www\\path\\', 'C:/www/path/' ),
-			array( 'C:\\www\\\\path\\', 'C:/www/path/' ),
-			array( 'c:/www/path', 'C:/www/path' ),
-			array( 'c:\\www\\path\\', 'C:/www/path/' ), // uppercase drive letter
-			array( 'c:', 'C:' ),
-			array( 'c:\\', 'C:/' ),
-			array( 'c:\\\\www\\path\\', 'C:/www/path/' ),
-			array( '\\\\Domain\\DFSRoots\\share\\path\\', '//Domain/DFSRoots/share/path/' ),
-			array( '\\\\Server\\share\\path', '//Server/share/path' ),
-			array( '\\\\Server\\share', '//Server/share' ),
+			[ 'C:\\www\\path\\', 'C:/www/path/' ],
+			[ 'C:\\www\\\\path\\', 'C:/www/path/' ],
+			[ 'c:/www/path', 'C:/www/path' ],
+			[ 'c:\\www\\path\\', 'C:/www/path/' ], // uppercase drive letter
+			[ 'c:', 'C:' ],
+			[ 'c:\\', 'C:/' ],
+			[ 'c:\\\\www\\path\\', 'C:/www/path/' ],
+			[ '\\\\Domain\\DFSRoots\\share\\path\\', '//Domain/DFSRoots/share/path/' ],
+			[ '\\\\Server\\share\\path', '//Server/share/path' ],
+			[ '\\\\Server\\share', '//Server/share' ],
 			// Linux paths
-			array( '/', '/' ),
-			array( '/www/path/', '/www/path/' ),
-			array( '/www/path/////', '/www/path/' ),
-			array( '/www/path', '/www/path' ),
-			array( '/www/path', '/www/path' ),
-		);
+			[ '/', '/' ],
+			[ '/www/path/', '/www/path/' ],
+			[ '/www/path/////', '/www/path/' ],
+			[ '/www/path', '/www/path' ],
+			[ '/www/path', '/www/path' ],
+		];
 	}
 
 	public function testNormalizeEols() {
@@ -432,7 +434,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		$exception = null;
 		try {
-			Utils\http_request( 'GET', 'https://nosuchhost_asdf_asdf_asdf.com', null /*data*/, array() /*headers*/, array( 'timeout' => 0.01 ) );
+			Utils\http_request( 'GET', 'https://nosuchhost_asdf_asdf_asdf.com', null /*data*/, [] /*headers*/, [ 'timeout' => 0.01 ] );
 		} catch ( ExitException $ex ) {
 			$exception = $ex;
 		}
@@ -520,31 +522,31 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$transport_spy        = new Mock_Requests_Transport();
 		$options['transport'] = $transport_spy;
 
-		Utils\http_request( 'GET', 'https://wordpress.org', null /*data*/, array() /*headers*/, $options );
+		Utils\http_request( 'GET', 'https://wordpress.org', null /*data*/, [] /*headers*/, $options );
 
 		$this->assertCount( 1, $transport_spy->requests );
 		$this->assertEquals( $expected, $transport_spy->requests[0]['options']['verify'] );
 	}
 
 	public function dataHttpRequestVerify() {
-		return array(
-			'not passed'    => array(
+		return [
+			'not passed'    => [
 				true,
-				array(),
-			),
-			'true'          => array(
+				[],
+			],
+			'true'          => [
 				true,
-				array( 'verify' => true ),
-			),
-			'false'         => array(
+				[ 'verify' => true ],
+			],
+			'false'         => [
 				false,
-				array( 'verify' => false ),
-			),
-			'custom cacert' => array(
+				[ 'verify' => false ],
+			],
+			'custom cacert' => [
 				__FILE__,
-				array( 'verify' => __FILE__ ),
-			),
-		);
+				[ 'verify' => __FILE__ ],
+			],
+		];
 	}
 
 	public function testGetDefaultCaCert() {
@@ -564,33 +566,33 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function dataPastTenseVerb() {
-		return array(
+		return [
 			// Known to be used by commands.
-			array( 'activate', 'activated' ),
-			array( 'deactivate', 'deactivated' ),
-			array( 'delete', 'deleted' ),
-			array( 'import', 'imported' ),
-			array( 'install', 'installed' ),
-			array( 'network activate', 'network activated' ),
-			array( 'network deactivate', 'network deactivated' ),
-			array( 'regenerate', 'regenerated' ),
-			array( 'reset', 'reset' ),
-			array( 'spam', 'spammed' ),
-			array( 'toggle', 'toggled' ),
-			array( 'uninstall', 'uninstalled' ),
-			array( 'update', 'updated' ),
+			[ 'activate', 'activated' ],
+			[ 'deactivate', 'deactivated' ],
+			[ 'delete', 'deleted' ],
+			[ 'import', 'imported' ],
+			[ 'install', 'installed' ],
+			[ 'network activate', 'network activated' ],
+			[ 'network deactivate', 'network deactivated' ],
+			[ 'regenerate', 'regenerated' ],
+			[ 'reset', 'reset' ],
+			[ 'spam', 'spammed' ],
+			[ 'toggle', 'toggled' ],
+			[ 'uninstall', 'uninstalled' ],
+			[ 'update', 'updated' ],
 			// Some others.
-			array( 'call', 'called' ),
-			array( 'check', 'checked' ),
-			array( 'crop', 'cropped' ),
-			array( 'fix', 'fixed' ), // One vowel + final "x" excluded.
-			array( 'ah', 'ahed' ), // One vowel + final "h" excluded.
-			array( 'show', 'showed' ), // One vowel + final "w" excluded.
-			array( 'ski', 'skied' ),
-			array( 'slay', 'slayed' ), // One vowel + final "y" excluded (nearly all irregular anyway).
-			array( 'submit', 'submited' ), // BUG: multi-voweled verbs that double not catered for - should be "submitted".
-			array( 'try', 'tried' ),
-		);
+			[ 'call', 'called' ],
+			[ 'check', 'checked' ],
+			[ 'crop', 'cropped' ],
+			[ 'fix', 'fixed' ], // One vowel + final "x" excluded.
+			[ 'ah', 'ahed' ], // One vowel + final "h" excluded.
+			[ 'show', 'showed' ], // One vowel + final "w" excluded.
+			[ 'ski', 'skied' ],
+			[ 'slay', 'slayed' ], // One vowel + final "y" excluded (nearly all irregular anyway).
+			[ 'submit', 'submited' ], // BUG: multi-voweled verbs that double not catered for - should be "submitted".
+			[ 'try', 'tried' ],
+		];
 	}
 
 	/**
@@ -621,20 +623,20 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 	public function dataExpandGlobs() {
 		// Files in "data/expand_globs": foo.ab1, foo.ab2, foo.efg1, foo.efg2, bar.ab1, bar.ab2, baz.ab1, baz.ac1, baz.efg2.
-		return array(
-			array( 'foo.ab1', array( 'foo.ab1' ) ),
-			array( '{foo,bar}.ab1', array( 'foo.ab1', 'bar.ab1' ) ),
-			array( '{foo,baz}.a{b,c}1', array( 'foo.ab1', 'baz.ab1', 'baz.ac1' ) ),
-			array( '{foo,baz}.{ab,ac}1', array( 'foo.ab1', 'baz.ab1', 'baz.ac1' ) ),
-			array( '{foo,bar}.{ab1,efg1}', array( 'foo.ab1', 'foo.efg1', 'bar.ab1' ) ),
-			array( '{foo,bar,baz}.{ab,ac,efg}1', array( 'foo.ab1', 'foo.efg1', 'bar.ab1', 'baz.ab1', 'baz.ac1' ) ),
-			array( '{foo,ba{r,z}}.ab1', array( 'foo.ab1', 'bar.ab1', 'baz.ab1' ) ),
-			array( '{foo,ba{r,z}}.{ab1,efg1}', array( 'foo.ab1', 'foo.efg1', 'bar.ab1', 'baz.ab1' ) ),
-			array( '{foo,bar}.{ab{1,2},efg1}', array( 'foo.ab1', 'foo.ab2', 'foo.efg1', 'bar.ab1', 'bar.ab2' ) ),
-			array( '{foo,ba{r,z}}.{a{b,c}{1,2},efg{1,2}}', array( 'foo.ab1', 'foo.ab2', 'foo.efg1', 'foo.efg2', 'bar.ab1', 'bar.ab2', 'baz.ab1', 'baz.ac1', 'baz.efg2' ) ),
+		return [
+			[ 'foo.ab1', [ 'foo.ab1' ] ],
+			[ '{foo,bar}.ab1', [ 'foo.ab1', 'bar.ab1' ] ],
+			[ '{foo,baz}.a{b,c}1', [ 'foo.ab1', 'baz.ab1', 'baz.ac1' ] ],
+			[ '{foo,baz}.{ab,ac}1', [ 'foo.ab1', 'baz.ab1', 'baz.ac1' ] ],
+			[ '{foo,bar}.{ab1,efg1}', [ 'foo.ab1', 'foo.efg1', 'bar.ab1' ] ],
+			[ '{foo,bar,baz}.{ab,ac,efg}1', [ 'foo.ab1', 'foo.efg1', 'bar.ab1', 'baz.ab1', 'baz.ac1' ] ],
+			[ '{foo,ba{r,z}}.ab1', [ 'foo.ab1', 'bar.ab1', 'baz.ab1' ] ],
+			[ '{foo,ba{r,z}}.{ab1,efg1}', [ 'foo.ab1', 'foo.efg1', 'bar.ab1', 'baz.ab1' ] ],
+			[ '{foo,bar}.{ab{1,2},efg1}', [ 'foo.ab1', 'foo.ab2', 'foo.efg1', 'bar.ab1', 'bar.ab2' ] ],
+			[ '{foo,ba{r,z}}.{a{b,c}{1,2},efg{1,2}}', [ 'foo.ab1', 'foo.ab2', 'foo.efg1', 'foo.efg2', 'bar.ab1', 'bar.ab2', 'baz.ab1', 'baz.ac1', 'baz.efg2' ] ],
 
-			array( 'no_such_file', array( 'no_such_file' ) ), // Documenting this behaviour here, which is odd (though advertized) - more natural to return an empty array.
-		);
+			[ 'no_such_file', [ 'no_such_file' ] ], // Documenting this behaviour here, which is odd (though advertized) - more natural to return an empty array.
+		];
 	}
 
 	/**
@@ -672,21 +674,21 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function dataReportBatchOperationResults() {
-		return array(
-			array( "Success: Noun already verbed.\n", '', 'noun', 'verb', 1, 0, 0, null ),
-			array( "Success: Verbed 1 of 1 nouns.\n", '', 'noun', 'verb', 1, 1, 0, null ),
-			array( "Success: Verbed 1 of 2 nouns.\n", '', 'noun', 'verb', 2, 1, 0, null ),
-			array( "Success: Verbed 2 of 2 nouns.\n", '', 'noun', 'verb', 2, 2, 0, 0 ),
-			array( "Success: Verbed 1 of 2 nouns (1 skipped).\n", '', 'noun', 'verb', 2, 1, 0, 1 ),
-			array( "Success: Verbed 2 of 4 nouns (2 skipped).\n", '', 'noun', 'verb', 4, 2, 0, 2 ),
-			array( '', "Error: No nouns verbed.\n", 'noun', 'verb', 1, 0, 1, null ),
-			array( '', "Error: No nouns verbed.\n", 'noun', 'verb', 2, 0, 1, null ),
-			array( '', "Error: No nouns verbed (2 failed).\n", 'noun', 'verb', 3, 0, 2, 0 ),
-			array( '', "Error: No nouns verbed (2 failed, 1 skipped).\n", 'noun', 'verb', 3, 0, 2, 1 ),
-			array( '', "Error: Only verbed 1 of 2 nouns.\n", 'noun', 'verb', 2, 1, 1, null ),
-			array( '', "Error: Only verbed 1 of 3 nouns (2 failed).\n", 'noun', 'verb', 3, 1, 2, 0 ),
-			array( '', "Error: Only verbed 1 of 6 nouns (3 failed, 2 skipped).\n", 'noun', 'verb', 6, 1, 3, 2 ),
-		);
+		return [
+			[ "Success: Noun already verbed.\n", '', 'noun', 'verb', 1, 0, 0, null ],
+			[ "Success: Verbed 1 of 1 nouns.\n", '', 'noun', 'verb', 1, 1, 0, null ],
+			[ "Success: Verbed 1 of 2 nouns.\n", '', 'noun', 'verb', 2, 1, 0, null ],
+			[ "Success: Verbed 2 of 2 nouns.\n", '', 'noun', 'verb', 2, 2, 0, 0 ],
+			[ "Success: Verbed 1 of 2 nouns (1 skipped).\n", '', 'noun', 'verb', 2, 1, 0, 1 ],
+			[ "Success: Verbed 2 of 4 nouns (2 skipped).\n", '', 'noun', 'verb', 4, 2, 0, 2 ],
+			[ '', "Error: No nouns verbed.\n", 'noun', 'verb', 1, 0, 1, null ],
+			[ '', "Error: No nouns verbed.\n", 'noun', 'verb', 2, 0, 1, null ],
+			[ '', "Error: No nouns verbed (2 failed).\n", 'noun', 'verb', 3, 0, 2, 0 ],
+			[ '', "Error: No nouns verbed (2 failed, 1 skipped).\n", 'noun', 'verb', 3, 0, 2, 1 ],
+			[ '', "Error: Only verbed 1 of 2 nouns.\n", 'noun', 'verb', 2, 1, 1, null ],
+			[ '', "Error: Only verbed 1 of 3 nouns (2 failed).\n", 'noun', 'verb', 3, 1, 2, 0 ],
+			[ '', "Error: Only verbed 1 of 6 nouns (3 failed, 2 skipped).\n", 'noun', 'verb', 6, 1, 3, 2 ],
+		];
 	}
 
 	public function testGetPHPBinary() {
@@ -731,116 +733,126 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function dataProcOpenCompatWinEnv() {
-		return array(
-			array( 'echo', array(), 'echo', array() ),
-			array( 'ENV=blah echo', array(), 'echo', array( 'ENV' => 'blah' ) ),
-			array( 'ENV="blah blah" echo', array(), 'echo', array( 'ENV' => 'blah blah' ) ),
-			array( 'ENV_1="blah1 blah1" ENV_2="blah2" ENV_3=blah3 echo', array(), 'echo', array( 'ENV_1' => 'blah1 blah1', 'ENV_2' => 'blah2', 'ENV_3' => 'blah3' ) ),
-			array( 'ENV= echo', array(), 'echo', array( 'ENV' => '' ) ),
-			array( 'ENV=0 echo', array(), 'echo', array( 'ENV' => '0' ) ),
+		return [
+			[ 'echo', [], 'echo', [] ],
+			[ 'ENV=blah echo', [], 'echo', [ 'ENV' => 'blah' ] ],
+			[ 'ENV="blah blah" echo', [], 'echo', [ 'ENV' => 'blah blah' ] ],
+			[ 'ENV_1="blah1 blah1" ENV_2="blah2" ENV_3=blah3 echo', [], 'echo', [ 'ENV_1' => 'blah1 blah1', 'ENV_2' => 'blah2', 'ENV_3' => 'blah3' ] ],
+			[ 'ENV= echo', [], 'echo', [ 'ENV' => '' ] ],
+			[ 'ENV=0 echo', [], 'echo', [ 'ENV' => '0' ] ],
 
 			// With `$env` set.
-			array( 'echo', array( 'ENV' => 'in' ), 'echo', array( 'ENV' => 'in' ) ),
-			array( 'ENV=blah echo', array( 'ENV_1' => 'in1', 'ENV_2' => 'in2' ), 'echo', array( 'ENV_1' => 'in1', 'ENV_2' => 'in2', 'ENV' => 'blah' ) ),
-			array( 'ENV="blah blah" echo', array( 'ENV' => 'in' ), 'echo', array( 'ENV' => 'blah blah' ) ),
+			[ 'echo', [ 'ENV' => 'in' ], 'echo', [ 'ENV' => 'in' ] ],
+			[ 'ENV=blah echo', [ 'ENV_1' => 'in1', 'ENV_2' => 'in2' ], 'echo', [ 'ENV_1' => 'in1', 'ENV_2' => 'in2', 'ENV' => 'blah' ] ],
+			[ 'ENV="blah blah" echo', [ 'ENV' => 'in' ], 'echo', [ 'ENV' => 'blah blah' ] ],
 
 			// Special cases.
-			array( '1=1 echo', array(), '1=1 echo', array() ), // Must begin with alphabetic or underscore.
-			array( '_eNv=1 echo', array(), 'echo', array( '_eNv' => '1' ) ), // Mixed-case and beginning with underscore allowed.
-			array( 'ENV=\'blah blah\' echo', array(), 'blah\' echo', array( 'ENV' => '\'blah' ) ), // Unix escaping not supported, ie treated literally.
-		);
+			[ '1=1 echo', [], '1=1 echo', [] ], // Must begin with alphabetic or underscore.
+			[ '_eNv=1 echo', [], 'echo', [ '_eNv' => '1' ] ], // Mixed-case and beginning with underscore allowed.
+			[ 'ENV=\'blah blah\' echo', [], 'blah\' echo', [ 'ENV' => '\'blah' ] ], // Unix escaping not supported, ie treated literally.
+		];
 	}
 
 	/**
 	 * Copied from core "tests/phpunit/tests/db.php" (adapted to not use `$wpdb`).
 	 */
 	public function test_esc_like() {
-		$inputs   = array(
+		$inputs   = [
 			'howdy%', //Single Percent
 			'howdy_', //Single Underscore
 			'howdy\\', //Single slash
 			'howdy\\howdy%howdy_', //The works
 			'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?', //Plain text
-		);
-		$expected = array(
+		];
+		$expected = [
 			'howdy\\%',
 			'howdy\\_',
 			'howdy\\\\',
 			'howdy\\\\howdy\\%howdy\\_',
 			'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?',
-		);
+		];
 
 		foreach ( $inputs as $key => $input ) {
 			$this->assertEquals( $expected[ $key ], Utils\esc_like( $input ) );
 		}
 	}
 
-	/** @dataProvider dataIsJson */
+	/**
+	 * @dataProvider dataIsJson
+	 */
 	public function testIsJson( $argument, $ignore_scalars, $expected ) {
 		$this->assertEquals( $expected, Utils\is_json( $argument, $ignore_scalars ) );
 	}
 
 	public function dataIsJson() {
-		return array(
-			array( '42', true, false ),
-			array( '42', false, true ),
-			array( '"test"', true, false ),
-			array( '"test"', false, true ),
-			array( '{"key1":"value1","key2":"value2"}', true, true ),
-			array( '{"key1":"value1","key2":"value2"}', false, true ),
-			array( '["value1","value2"]', true, true ),
-			array( '["value1","value2"]', false, true ),
-			array( '0', true, false ),
-			array( '0', false, true ),
-			array( '', true, false ),
-			array( '', false, false ),
-		);
+		return [
+			[ '42', true, false ],
+			[ '42', false, true ],
+			[ '"test"', true, false ],
+			[ '"test"', false, true ],
+			[ '{"key1":"value1","key2":"value2"}', true, true ],
+			[ '{"key1":"value1","key2":"value2"}', false, true ],
+			[ '["value1","value2"]', true, true ],
+			[ '["value1","value2"]', false, true ],
+			[ '0', true, false ],
+			[ '0', false, true ],
+			[ '', true, false ],
+			[ '', false, false ],
+		];
 	}
 
-	/** @dataProvider dataParseShellArray */
+	/**
+	 * @dataProvider dataParseShellArray
+	 */
 	public function testParseShellArray( $assoc_args, $array_arguments, $expected ) {
 		$this->assertEquals( $expected, Utils\parse_shell_arrays( $assoc_args, $array_arguments ) );
 	}
 
 	public function dataParseShellArray() {
-		return array(
-			array( array( 'alpha' => '{"key":"value"}' ), array(), array( 'alpha' => '{"key":"value"}' ) ),
-			array( array( 'alpha' => '{"key":"value"}' ), array( 'alpha' ), array( 'alpha' => array( 'key' => 'value' ) ) ),
-			array( array( 'alpha' => '{"key":"value"}' ), array( 'beta' ), array( 'alpha' => '{"key":"value"}' ) ),
-		);
+		return [
+			[ [ 'alpha' => '{"key":"value"}' ], [], [ 'alpha' => '{"key":"value"}' ] ],
+			[ [ 'alpha' => '{"key":"value"}' ], [ 'alpha' ], [ 'alpha' => [ 'key' => 'value' ] ] ],
+			[ [ 'alpha' => '{"key":"value"}' ], [ 'beta' ], [ 'alpha' => '{"key":"value"}' ] ],
+		];
 	}
 
-	/** @dataProvider dataPluralize */
+	/**
+	 * @dataProvider dataPluralize
+	 */
 	public function testPluralize( $singular, $count, $expected ) {
 		$this->assertEquals( $expected, Utils\pluralize( $singular, $count ) );
 	}
 
 	public function dataPluralize() {
-		return array(
-			array( 'string', 1, 'string' ),
-			array( 'string', 2, 'strings' ),
-			array( 'string', null, 'strings' ),
-		);
+		return [
+			[ 'string', 1, 'string' ],
+			[ 'string', 2, 'strings' ],
+			[ 'string', null, 'strings' ],
+		];
 	}
 
-	/** @dataProvider dataPickFields */
+	/**
+	 * @dataProvider dataPickFields
+	 */
 	public function testPickFields( $data, $fields, $expected ) {
 		$this->assertEquals( $expected, Utils\pick_fields( $data, $fields ) );
 	}
 
 	public function dataPickFields() {
-		return array(
-			array( array( 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ), array( 'keyB' ), array( 'keyB' => 'valB' ) ),
-			array( array( '1' => 'valA', '2' => 'valB', '3' => 'valC' ), array( '2' ), array( '2' => 'valB' ) ),
-			array( array( 1 => 'valA', 2 => 'valB', 3 => 'valC' ), array( 2 ), array( 2 => 'valB' ) ),
-			array( (object) array( 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ), array( 'keyB' ), array( 'keyB' => 'valB' ) ),
-			array( array(), array( 'keyB' ), array( 'keyB' => null ) ),
-			array( array( 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ), array( 'keyD' ), array( 'keyD' => null ) ),
-			array( array( 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ), array( 'keyA', 'keyB', 'keyC', 'keyD' ), array( 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC', 'keyD' => null ) ),
-		);
+		return [
+			[ [ 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ], [ 'keyB' ], [ 'keyB' => 'valB' ] ],
+			[ [ '1' => 'valA', '2' => 'valB', '3' => 'valC' ], [ '2' ], [ '2' => 'valB' ] ],
+			[ [ 1 => 'valA', 2 => 'valB', 3 => 'valC' ], [ 2 ], [ 2 => 'valB' ] ],
+			[ (object) [ 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ], [ 'keyB' ], [ 'keyB' => 'valB' ] ],
+			[ [], [ 'keyB' ], [ 'keyB' => null ] ],
+			[ [ 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ], [ 'keyD' ], [ 'keyD' => null ] ],
+			[ [ 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ], [ 'keyA', 'keyB', 'keyC', 'keyD' ], [ 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC', 'keyD' => null ] ],
+		];
 	}
 
-	/** @dataProvider dataParseUrl */
+	/**
+	 * @dataProvider dataParseUrl
+	 */
 	public function testParseUrl( $url, $component, $auto_add_scheme, $expected ) {
 		$this->assertEquals( $expected, Utils\parse_url( $url, $component, $auto_add_scheme ) );
 	}
@@ -861,7 +873,9 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertSame( $expected, $actual );
 	}
 
-	/** @dataProvider dataValidClassAndMethodPair */
+	/**
+	 * @dataProvider dataValidClassAndMethodPair
+	 */
 	public function testValidClassAndMethodPair( $pair, $is_valid ) {
 		$this->assertEquals( $is_valid, Utils\is_valid_class_and_method_pair( $pair ) );
 	}

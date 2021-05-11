@@ -43,7 +43,7 @@ abstract class Base {
 	/**
 	 * Get multiple items.
 	 *
-	 * @param array The raw CLI arguments.
+	 * @param array $args The raw CLI arguments.
 	 * @return array The list of found items.
 	 */
 	public function get_many( $args ) {

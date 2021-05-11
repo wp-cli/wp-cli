@@ -1,6 +1,5 @@
 <?php
 
-use WP_CLI\Dispatcher\CommandFactory;
 
 require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
 
@@ -49,35 +48,35 @@ class CommandFactoryTests extends PHPUnit_Framework_TestCase {
 	}
 
 	public function dataProviderExtractLastDocComment() {
-		return array(
-			array( '', false ),
-			array( '*/', false ),
-			array( '/*/  ', false ),
-			array( '/**/', false ),
-			array( '/***/ */', false ),
-			array( '/***/', '/***/' ),
-			array( "\n /**\n  \n  \t\n  */ \t\n \n ", "/**\n  \n  \t\n  */" ),
-			array( "\r\n /**\r\n  \r\n  \t\r\n  */ \t\r\n \r\n ", "/**\r\n  \r\n  \t\r\n  */" ),
-			array( '/**/ /***/ /***/', '/***/' ),
-			array( 'asdfasdf/** /** */', '/** /** */' ),
-			array( '*//** /** */', '/** /** */' ),
-			array( '/** *//** /** */', '/** /** */' ),
-			array( '*//** */ /** /** */', '/** /** */' ),
-			array( '*//** *//** /** /** */', '/** /** /** */' ),
+		return [
+			[ '', false ],
+			[ '*/', false ],
+			[ '/*/  ', false ],
+			[ '/**/', false ],
+			[ '/***/ */', false ],
+			[ '/***/', '/***/' ],
+			[ "\n /**\n  \n  \t\n  */ \t\n \n ", "/**\n  \n  \t\n  */" ],
+			[ "\r\n /**\r\n  \r\n  \t\r\n  */ \t\r\n \r\n ", "/**\r\n  \r\n  \t\r\n  */" ],
+			[ '/**/ /***/ /***/', '/***/' ],
+			[ 'asdfasdf/** /** */', '/** /** */' ],
+			[ '*//** /** */', '/** /** */' ],
+			[ '/** *//** /** */', '/** /** */' ],
+			[ '*//** */ /** /** */', '/** /** */' ],
+			[ '*//** *//** /** /** */', '/** /** /** */' ],
 
-			array( '/** */class qwer', '/** */' ),
-			array( '/**1*/class qwer{}/**2*/class asdf', '/**2*/' ),
-			array( "/** */class qwer {}\nclass asdf", false ),
-			array( "/** */class qwer {}\r\nclass asdf", false ),
+			[ '/** */class qwer', '/** */' ],
+			[ '/**1*/class qwer{}/**2*/class asdf', '/**2*/' ],
+			[ "/** */class qwer {}\nclass asdf", false ],
+			[ "/** */class qwer {}\r\nclass asdf", false ],
 
-			array( '/** */function qwer', '/** */' ),
-			array( '/** */function qwer( $function ) {}', '/** */' ),
-			array( '/**1*/function qwer() {}/**2*/function asdf()', '/**2*/' ),
-			array( "/** */function qwer() {}\nfunction asdf()", false ),
-			array( "/** */function qwer() {}\r\nfunction asdf()", false ),
-			array( '/** */function qwer() {}function asdf()', false ),
-			array( '/** */function qwer() {};function asdf( $function )', false ),
-		);
+			[ '/** */function qwer', '/** */' ],
+			[ '/** */function qwer( $function ) {}', '/** */' ],
+			[ '/**1*/function qwer() {}/**2*/function asdf()', '/**2*/' ],
+			[ "/** */function qwer() {}\nfunction asdf()", false ],
+			[ "/** */function qwer() {}\r\nfunction asdf()", false ],
+			[ '/** */function qwer() {}function asdf()', false ],
+			[ '/** */function qwer() {};function asdf( $function )', false ],
+		];
 	}
 
 	public function testGetDocComment() {

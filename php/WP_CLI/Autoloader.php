@@ -20,7 +20,7 @@ class Autoloader {
 	 *
 	 * @var array
 	 */
-	protected $namespaces = array();
+	protected $namespaces = [];
 
 	/**
 	 * Destructor for the Autoloader class.
@@ -36,14 +36,14 @@ class Autoloader {
 	 * Registers the autoload callback with the SPL autoload system.
 	 */
 	public function register() {
-		spl_autoload_register( array( $this, 'autoload' ) );
+		spl_autoload_register( [ $this, 'autoload' ] );
 	}
 
 	/**
 	 * Unregisters the autoload callback with the SPL autoload system.
 	 */
 	public function unregister() {
-		spl_autoload_unregister( array( $this, 'autoload' ) );
+		spl_autoload_unregister( [ $this, 'autoload' ] );
 	}
 
 	/**
@@ -68,14 +68,14 @@ class Autoloader {
 		$lowercase = false,
 		$underscores = false
 	) {
-		$this->namespaces[] = array(
+		$this->namespaces[] = [
 			'root'        => $this->normalize_root( (string) $root ),
 			'base_dir'    => $this->add_trailing_slash( (string) $base_dir ),
 			'prefix'      => (string) $prefix,
 			'suffix'      => (string) $suffix,
 			'lowercase'   => (bool) $lowercase,
 			'underscores' => (bool) $underscores,
-		);
+		];
 
 		return $this;
 	}
@@ -99,8 +99,8 @@ class Autoloader {
 			// Remove namespace root level to correspond with root filesystem, and
 			// replace the namespace separator "\" by the system-dependent directory separator.
 			$filename = str_replace(
-				array( $namespace['root'], '\\' ),
-				array( '', DIRECTORY_SEPARATOR ),
+				[ $namespace['root'], '\\' ],
+				[ '', DIRECTORY_SEPARATOR ],
 				$class
 			);
 

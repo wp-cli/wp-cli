@@ -138,15 +138,15 @@ EOB;
 		$this->assertEquals( 'Start with one or more genres.', $doc->get_arg_desc( 'genre' ) );
 		$this->assertEquals( 'Sets the volume.', $doc->get_param_desc( 'volume' ) );
 
-		$expected = array(
-			'options' => array( 'rock', 'electronic' ),
+		$expected = [
+			'options' => [ 'rock', 'electronic' ],
 			'default' => 'rock',
-		);
+		];
 		$this->assertEquals( $expected, $doc->get_arg_args( 'genre' ) );
 
-		$expected = array(
+		$expected = [
 			'default' => 10,
-		);
+		];
 		$this->assertEquals( $expected, $doc->get_param_args( 'volume' ) );
 
 		$this->assertNull( $doc->get_param_args( 'artist' ) );
@@ -173,10 +173,10 @@ EOB;
 
 		$doc = new DocParser( $longdesc );
 
-		$expected = array(
+		$expected = [
 			'default' => 'table',
-			'options' => array( 'table', 'json', 'csv', 'yaml' ),
-		);
+			'options' => [ 'table', 'json', 'csv', 'yaml' ],
+		];
 		$this->assertEquals( $expected, $doc->get_param_args( 'format' ) );
 		$this->assertNull( $doc->get_arg_args( 'hook' ) );
 	}
@@ -202,10 +202,10 @@ EOB;
 
 		$doc = new DocParser( $longdesc );
 
-		$expected = array(
+		$expected = [
 			'default' => 'table',
-			'options' => array( 'table', 'json', 'csv', 'yaml' ),
-		);
+			'options' => [ 'table', 'json', 'csv', 'yaml' ],
+		];
 		$this->assertEquals( $expected, $doc->get_arg_args( 'format' ) );
 		$this->assertNull( $doc->get_arg_args( 'hook' ) );
 	}

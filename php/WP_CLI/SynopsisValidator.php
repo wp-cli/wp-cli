@@ -8,9 +8,11 @@ namespace WP_CLI;
 class SynopsisValidator {
 
 	/**
-	 * @var array $spec Structured representation of command synopsis.
+	 * Structured representation of command synopsis.
+	 *
+	 * @var array
 	 */
-	private $spec = array();
+	private $spec;
 
 	/**
 	 * @param string $synopsis Command's synopsis.
@@ -27,9 +29,9 @@ class SynopsisValidator {
 	public function get_unknown() {
 		return array_column(
 			$this->query_spec(
-				array(
+				[
 					'type' => 'unknown',
-				)
+				]
 			),
 			'token'
 		);
@@ -43,10 +45,10 @@ class SynopsisValidator {
 	 */
 	public function enough_positionals( $args ) {
 		$positional = $this->query_spec(
-			array(
+			[
 				'type'     => 'positional',
 				'optional' => false,
-			)
+			]
 		);
 
 		return count( $args ) >= count( $positional );
@@ -60,22 +62,22 @@ class SynopsisValidator {
 	 */
 	public function unknown_positionals( $args ) {
 		$positional_repeating = $this->query_spec(
-			array(
+			[
 				'type'      => 'positional',
 				'repeating' => true,
-			)
+			]
 		);
 
 		// At least one positional supports as many as possible.
 		if ( ! empty( $positional_repeating ) ) {
-			return array();
+			return [];
 		}
 
 		$positional = $this->query_spec(
-			array(
+			[
 				'type'      => 'positional',
 				'repeating' => false,
-			)
+			]
 		);
 
 		return array_slice( $args, count( $positional ) );
@@ -89,17 +91,17 @@ class SynopsisValidator {
 	 */
 	public function validate_assoc( $assoc_args ) {
 		$assoc_spec = $this->query_spec(
-			array(
+			[
 				'type' => 'assoc',
-			)
+			]
 		);
 
-		$errors = array(
-			'fatal'   => array(),
-			'warning' => array(),
-		);
+		$errors = [
+			'fatal'   => [],
+			'warning' => [],
+		];
 
-		$to_unset = array();
+		$to_unset = [];
 
 		foreach ( $assoc_spec as $param ) {
 			$key = $param['name'];
@@ -118,7 +120,7 @@ class SynopsisValidator {
 			}
 		}
 
-		return array( $errors, $to_unset );
+		return [ $errors, $to_unset ];
 	}
 
 	/**
@@ -129,19 +131,19 @@ class SynopsisValidator {
 	 */
 	public function unknown_assoc( $assoc_args ) {
 		$generic = $this->query_spec(
-			array(
+			[
 				'type' => 'generic',
-			)
+			]
 		);
 
 		if ( count( $generic ) ) {
-			return array();
+			return [];
 		}
 
-		$known_assoc = array();
+		$known_assoc = [];
 
 		foreach ( $this->spec as $param ) {
-			if ( in_array( $param['type'], array( 'assoc', 'flag' ), true ) ) {
+			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) ) {
 				$known_assoc[] = $param['name'];
 			}
 		}
@@ -159,7 +161,7 @@ class SynopsisValidator {
 	private function query_spec( $args, $operator = 'AND' ) {
 		$operator = strtoupper( $operator );
 		$count    = count( $args );
-		$filtered = array();
+		$filtered = [];
 
 		foreach ( $this->spec as $key => $to_match ) {
 			$matched = 0;

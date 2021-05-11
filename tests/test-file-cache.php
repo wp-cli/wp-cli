@@ -49,12 +49,12 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 		$method->setAccessible( true );
 
 		// Cache directory should be created.
-		$result = $method->invokeArgs( $cache, array( $cache_dir . '/test1' ) );
+		$result = $method->invokeArgs( $cache, [ $cache_dir . '/test1' ] );
 		$this->assertTrue( $result );
 		$this->assertTrue( is_dir( $cache_dir . '/test1' ) );
 
 		// Try to create the same directory again. it should return true.
-		$result = $method->invokeArgs( $cache, array( $cache_dir . '/test1' ) );
+		$result = $method->invokeArgs( $cache, [ $cache_dir . '/test1' ] );
 		$this->assertTrue( $result );
 
 		// `chmod()` doesn't work on Windows.
@@ -62,7 +62,7 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 			// It should be failed because permission denied.
 			$logger->stderr = '';
 			chmod( $cache_dir . '/test1', 0000 );
-			$result   = $method->invokeArgs( $cache, array( $cache_dir . '/test1/error' ) );
+			$result   = $method->invokeArgs( $cache, [ $cache_dir . '/test1/error' ] );
 			$expected = "/^Warning: Failed to create directory '.+': mkdir\(\): Permission denied\.$/";
 			$this->assertRegexp( $expected, $logger->stderr );
 		}
@@ -70,7 +70,7 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 		// It should be failed because file exists.
 		$logger->stderr = '';
 		file_put_contents( $cache_dir . '/test2', '' );
-		$result   = $method->invokeArgs( $cache, array( $cache_dir . '/test2' ) );
+		$result   = $method->invokeArgs( $cache, [ $cache_dir . '/test2' ] );
 		$expected = "/^Warning: Failed to create directory '.+': mkdir\(\): File exists\.$/";
 		$this->assertRegexp( $expected, $logger->stderr );
 

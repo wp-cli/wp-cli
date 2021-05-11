@@ -2,7 +2,7 @@
 
 namespace WP_CLI;
 
-use WP_CLI\Utils;
+use RuntimeException;
 
 /**
  * Run a system process, and learn what happened.
@@ -26,11 +26,11 @@ class Process {
 	/**
 	 * @var array Descriptor spec for `proc_open()`.
 	 */
-	private static $descriptors = array(
+	private static $descriptors = [
 		0 => STDIN,
-		1 => array( 'pipe', 'w' ),
-		2 => array( 'pipe', 'w' ),
-	);
+		1 => [ 'pipe', 'w' ],
+		2 => [ 'pipe', 'w' ],
+	];
 
 	/**
 	 * @var bool Whether to log run time info or not.
@@ -40,7 +40,7 @@ class Process {
 	/**
 	 * @var array Array of process run time info, keyed by process command, each a 2-element array containing run time and run count.
 	 */
-	public static $run_times = array();
+	public static $run_times = [];
 
 	/**
 	 * @param string $command Command to execute.
@@ -49,7 +49,7 @@ class Process {
 	 *
 	 * @return Process
 	 */
-	public static function create( $command, $cwd = null, $env = array() ) {
+	public static function create( $command, $cwd = null, $env = [] ) {
 		$proc = new self();
 
 		$proc->command = $command;
@@ -64,7 +64,7 @@ class Process {
 	/**
 	 * Run the command.
 	 *
-	 * @return \WP_CLI\ProcessRun
+	 * @return ProcessRun
 	 */
 	public function run() {
 		$start_time = microtime( true );
@@ -84,14 +84,14 @@ class Process {
 
 		if ( self::$log_run_times ) {
 			if ( ! isset( self::$run_times[ $this->command ] ) ) {
-				self::$run_times[ $this->command ] = array( 0, 0 );
+				self::$run_times[ $this->command ] = [ 0, 0 ];
 			}
 			self::$run_times[ $this->command ][0] += $run_time;
 			self::$run_times[ $this->command ][1]++;
 		}
 
 		return new ProcessRun(
-			array(
+			[
 				'stdout'      => $stdout,
 				'stderr'      => $stderr,
 				'return_code' => $return_code,
@@ -99,20 +99,20 @@ class Process {
 				'cwd'         => $this->cwd,
 				'env'         => $this->env,
 				'run_time'    => $run_time,
-			)
+			]
 		);
 	}
 
 	/**
 	 * Run the command, but throw an Exception on error.
 	 *
-	 * @return \WP_CLI\ProcessRun
+	 * @return ProcessRun
 	 */
 	public function run_check() {
 		$r = $this->run();
 
 		if ( $r->return_code ) {
-			throw new \RuntimeException( $r );
+			throw new RuntimeException( $r );
 		}
 
 		return $r;
@@ -122,13 +122,13 @@ class Process {
 	 * Run the command, but throw an Exception on error.
 	 * Same as `run_check()` above, but checks the correct stderr.
 	 *
-	 * @return \WP_CLI\ProcessRun
+	 * @return ProcessRun
 	 */
 	public function run_check_stderr() {
 		$r = $this->run();
 
 		if ( $r->return_code || ! empty( $r->stderr ) ) {
-			throw new \RuntimeException( $r );
+			throw new RuntimeException( $r );
 		}
 
 		return $r;
