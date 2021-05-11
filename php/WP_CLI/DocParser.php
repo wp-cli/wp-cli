@@ -11,7 +11,9 @@ use Mustangostang\Spyc;
 class DocParser {
 
 	/**
-	 * @var string $docComment PHPdoc command for the command.
+	 * PHPdoc command for the command.
+	 *
+	 * @var string
 	 */
 	protected $doc_comment;
 

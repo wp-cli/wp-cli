@@ -6,43 +6,60 @@ namespace WP_CLI;
  * Results of an executed command.
  */
 class ProcessRun {
+
 	/**
-	 * @var string The full command executed by the system.
+	 * The full command executed by the system.
+	 *
+	 * @var string
 	 */
 	public $command;
 
 	/**
-	 * @var string Captured output from the process' STDOUT.
+	 * Captured output from the process' STDOUT.
+	 *
+	 * @var string
 	 */
 	public $stdout;
 
 	/**
-	 * @var string Captured output from the process' STDERR.
+	 * Captured output from the process' STDERR.
+	 *
+	 * @var string
 	 */
 	public $stderr;
 
 	/**
-	 * @var string|null The path of the working directory for the process or NULL if not specified (defaults to current working directory).
+	 * The path of the working directory for the process or NULL if not specified.
+	 *
+	 * This defaults to current working directory.
+	 *
+	 * @var string|null
 	 */
 	public $cwd;
 
 	/**
-	 * @var array Environment variables set for this process.
+	 * Environment variables set for this process.
+	 *
+	 * @var array
 	 */
 	public $env;
 
 	/**
-	 * @var int Exit code of the process.
+	 * Exit code of the process.
+	 *
+	 * @var int
 	 */
 	public $return_code;
 
 	/**
-	 * @var float The run time of the process.
+	 * The run time of the process.
+	 *
+	 * @var float
 	 */
 	public $run_time;
 
 	/**
-	 * @var array $props Properties of executed command.
+	 * @param array $props Properties of executed command.
 	 */
 	public function __construct( $props ) {
 		foreach ( $props as $key => $value ) {
@@ -64,5 +81,4 @@ class ProcessRun {
 
 		return $out;
 	}
-
 }

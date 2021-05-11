@@ -25,9 +25,9 @@ class Execution extends Regular {
 	}
 
 	/**
-	 * Similar to error( $message ), but outputs $message in a red box
+	 * Similar to error( $message ), but outputs $message in a red box.
 	 *
-	 * @param  array $message Message to write.
+	 * @param array $message_lines Message to write.
 	 */
 	public function error_multi_line( $message_lines ) {
 		$message = implode( "\n", $message_lines );

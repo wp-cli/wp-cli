@@ -258,7 +258,9 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		];
 	}
 
-	/** @dataProvider parseStrToArgvData */
+	/**
+	 * @dataProvider parseStrToArgvData
+	 */
 	public function testParseStrToArgv( $expected, $parseable_string ) {
 		$this->assertEquals( $expected, Utils\parse_str_to_argv( $parseable_string ) );
 	}
@@ -775,7 +777,9 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		}
 	}
 
-	/** @dataProvider dataIsJson */
+	/**
+	 * @dataProvider dataIsJson
+	 */
 	public function testIsJson( $argument, $ignore_scalars, $expected ) {
 		$this->assertEquals( $expected, Utils\is_json( $argument, $ignore_scalars ) );
 	}
@@ -797,7 +801,9 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		];
 	}
 
-	/** @dataProvider dataParseShellArray */
+	/**
+	 * @dataProvider dataParseShellArray
+	 */
 	public function testParseShellArray( $assoc_args, $array_arguments, $expected ) {
 		$this->assertEquals( $expected, Utils\parse_shell_arrays( $assoc_args, $array_arguments ) );
 	}
@@ -810,7 +816,9 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		];
 	}
 
-	/** @dataProvider dataPluralize */
+	/**
+	 * @dataProvider dataPluralize
+	 */
 	public function testPluralize( $singular, $count, $expected ) {
 		$this->assertEquals( $expected, Utils\pluralize( $singular, $count ) );
 	}
@@ -823,7 +831,9 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		];
 	}
 
-	/** @dataProvider dataPickFields */
+	/**
+	 * @dataProvider dataPickFields
+	 */
 	public function testPickFields( $data, $fields, $expected ) {
 		$this->assertEquals( $expected, Utils\pick_fields( $data, $fields ) );
 	}
@@ -840,7 +850,9 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		];
 	}
 
-	/** @dataProvider dataParseUrl */
+	/**
+	 * @dataProvider dataParseUrl
+	 */
 	public function testParseUrl( $url, $component, $auto_add_scheme, $expected ) {
 		$this->assertEquals( $expected, Utils\parse_url( $url, $component, $auto_add_scheme ) );
 	}
@@ -861,7 +873,9 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertSame( $expected, $actual );
 	}
 
-	/** @dataProvider dataValidClassAndMethodPair */
+	/**
+	 * @dataProvider dataValidClassAndMethodPair
+	 */
 	public function testValidClassAndMethodPair( $pair, $is_valid ) {
 		$this->assertEquals( $is_valid, Utils\is_valid_class_and_method_pair( $pair ) );
 	}

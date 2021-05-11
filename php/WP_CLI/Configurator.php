@@ -12,32 +12,44 @@ use Mustangostang\Spyc;
 class Configurator {
 
 	/**
-	 * @var array $spec Configurator argument specification.
+	 * Configurator argument specification.
+	 *
+	 * @var array
 	 */
 	private $spec;
 
 	/**
-	 * @var array $config Values for keys defined in Configurator spec.
+	 * Values for keys defined in Configurator spec.
+	 *
+	 * @var array
 	 */
 	private $config = [];
 
 	/**
-	 * @var array $extra_config Extra config values not specified in spec.
+	 * Extra config values not specified in spec.
+	 *
+	 * @var array
 	 */
 	private $extra_config = [];
 
 	/**
-	 * @var array $aliases Any aliases defined in config files.
+	 * Any aliases defined in config files.
+	 *
+	 * @var array
 	 */
 	private $aliases = [];
 
 	/**
-	 * @var string ALIAS_REGEX Regex pattern used to define an alias
+	 * Regex pattern used to define an alias.
+	 *
+	 * @var string
 	 */
 	const ALIAS_REGEX = '^@[A-Za-z0-9-_\.\-]+$';
 
 	/**
-	 * @var array ALIAS_SPEC Arguments that can be used in an alias
+	 * Arguments that can be used in an alias.
+	 *
+	 * @var array
 	 */
 	private static $alias_spec = [
 		'user',
