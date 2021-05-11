@@ -543,7 +543,7 @@ class WP_CLI {
 			}
 		}
 
-		/** @var $leaf_command Dispatcher\Subcommand|Dispatcher\CompositeCommand|Dispatcher\CommandNamespace */
+		/** @var Dispatcher\Subcommand|Dispatcher\CompositeCommand|Dispatcher\CommandNamespace $leaf_command */
 
 		if ( ! $command->can_have_subcommands() ) {
 			throw new Exception(
@@ -888,7 +888,7 @@ class WP_CLI {
 	 * @access public
 	 * @category Output
 	 *
-	 * @param array $message Multi-line error message to be displayed.
+	 * @param array $message_lines Multi-line error message to be displayed.
 	 */
 	public static function error_multi_line( $message_lines ) {
 		if ( null === self::$logger ) {
@@ -959,7 +959,7 @@ class WP_CLI {
 	 * @access public
 	 * @category Input
 	 *
-	 * @param mixed $value
+	 * @param mixed $raw_value
 	 * @param array $assoc_args
 	 */
 	public static function read_value( $raw_value, $assoc_args = [] ) {

@@ -25,7 +25,7 @@ class CompositeCommand {
 	 *
 	 * @param mixed $parent Parent command (either Root or Composite)
 	 * @param string $name Represents how command should be invoked
-	 * @param \WP_CLI\DocParser
+	 * @param \WP_CLI\DocParser $docparser
 	 */
 	public function __construct( $parent, $name, $docparser ) {
 		$this->parent = $parent;
@@ -56,7 +56,7 @@ class CompositeCommand {
 	 * set of contained subcommands.
 	 *
 	 * @param string $name Represents how subcommand should be invoked
-	 * @param Subcommand|CompositeCommand
+	 * @param Subcommand|CompositeCommand $command
 	 */
 	public function add_subcommand( $name, $command ) {
 		$this->subcommands[ $name ] = $command;
@@ -118,7 +118,7 @@ class CompositeCommand {
 	/**
 	 * Set the short description for this composite command.
 	 *
-	 * @param string
+	 * @param string $shortdesc
 	 */
 	public function set_shortdesc( $shortdesc ) {
 		$this->shortdesc = Utils\normalize_eols( $shortdesc );
@@ -137,7 +137,7 @@ class CompositeCommand {
 	/**
 	 * Set the long description for this composite command
 	 *
-	 * @param string
+	 * @param string $longdesc
 	 */
 	public function set_longdesc( $longdesc ) {
 		$this->longdesc = Utils\normalize_eols( $longdesc );

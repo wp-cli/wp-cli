@@ -441,7 +441,7 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 }
 
 /**
- * @param string MySQL host string, as defined in wp-config.php.
+ * @param string $raw_host MySQL host string, as defined in wp-config.php.
  *
  * @return array
  */
@@ -906,7 +906,7 @@ function increment_version( $current_version, $new_version ) {
  *
  * @param string $new_version
  * @param string $original_version
- * @return string $name 'major', 'minor', 'patch'
+ * @return string 'major', 'minor', 'patch'
  */
 function get_named_sem_ver( $new_version, $original_version ) {
 
