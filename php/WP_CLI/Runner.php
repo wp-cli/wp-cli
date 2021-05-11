@@ -294,12 +294,11 @@ class Runner {
 
 		if ( isset( $assoc_args['url'] ) ) {
 			$url = $assoc_args['url'];
+
 			if ( true === $url ) {
 				WP_CLI::warning( 'The --url parameter expects a value.' );
 			}
-		}
 
-		if ( isset( $url ) ) {
 			return $url;
 		}
 
@@ -562,7 +561,7 @@ class Runner {
 				}
 			}
 
-			if ( empty( $bits['host'] ) || $bits['host'] === $values['Host'] ) {
+			if ( empty( $bits['host'] ) || ( isset( $values['Host'] ) && $bits['host'] === $values['Host'] ) ) {
 				$bits['scheme'] = 'ssh';
 				$bits['host']   = $values['HostName'];
 				$bits['port']   = $values['Port'];

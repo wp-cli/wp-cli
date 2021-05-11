@@ -477,7 +477,6 @@ class WP_CLI {
 		$path = preg_split( '/\s+/', $name );
 
 		$leaf_name = array_pop( $path );
-		$full_path = $path;
 
 		$command = self::get_root_command();
 
@@ -1272,7 +1271,8 @@ class WP_CLI {
 
 			$runcommand = "{$php_bin} {$script_path} {$runtime_config} {$command}";
 
-			$proc = Utils\proc_open_compat( $runcommand, $descriptors, $pipes, getcwd() );
+			$pipes = [];
+			$proc  = Utils\proc_open_compat( $runcommand, $descriptors, $pipes, getcwd() );
 
 			if ( $return ) {
 				$stdout = stream_get_contents( $pipes[1] );

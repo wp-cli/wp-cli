@@ -223,14 +223,14 @@ class FileCache {
 		if ( $ttl > 0 ) {
 			try {
 				$expire = new \DateTime();
+				$expire->modify( '-' . $ttl . ' seconds' );
+
+				$finder = $this->get_finder()->date( 'until ' . $expire->format( 'Y-m-d H:i:s' ) );
+				foreach ( $finder as $file ) {
+					unlink( $file->getRealPath() );
+				}
 			} catch ( \Exception $e ) {
 				WP_CLI::error( $e->getMessage() );
-			}
-			$expire->modify( '-' . $ttl . ' seconds' );
-
-			$finder = $this->get_finder()->date( 'until ' . $expire->format( 'Y-m-d H:i:s' ) );
-			foreach ( $finder as $file ) {
-				unlink( $file->getRealPath() );
 			}
 		}
 

@@ -171,6 +171,7 @@ class CommandFactory {
 	 * @return string|false|null Doc comment string if any, false if none (same as `Reflection*::getDocComment()`), null if error.
 	 */
 	private static function get_doc_comment( $reflection ) {
+		$contents    = null;
 		$doc_comment = $reflection->getDocComment();
 
 		if ( false !== $doc_comment || ! ( ini_get( 'opcache.enable_cli' ) && ! ini_get( 'opcache.save_comments' ) ) ) { // phpcs:ignore PHPCompatibility.IniDirectives.NewIniDirectives

@@ -430,10 +430,9 @@ class Subcommand extends CompositeCommand {
 	 * @param array $assoc_args
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) {
+		static $prompted_once = false;
 
 		if ( 'help' !== $this->name ) {
-			static $prompted_once = false;
-
 			if ( \WP_CLI::get_config( 'prompt' ) && ! $prompted_once ) {
 				list( $_args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
 				$args                       = array_merge( $args, $_args );
@@ -468,7 +467,7 @@ class Subcommand extends CompositeCommand {
 		WP_CLI::do_hook( "before_invoke:{$cmd}" );
 
 		// Check if `--prompt` arg passed or not.
-		if ( ! empty( $prompted_once ) && true === $prompted_once ) {
+		if ( $prompted_once ) {
 			// Unset empty args.
 			$actual_args = $assoc_args;
 			foreach ( $actual_args as $key ) {

@@ -381,7 +381,7 @@ class CLI_Command extends WP_CLI_Command {
 		} elseif ( Utils\get_flag_value( $assoc_args, 'stable', false ) ) {
 			$updated_version = 'the latest stable release';
 		} else {
-			$updated_version = $newest['version'];
+			$updated_version = isset( $newest['version'] ) ? $newest['version'] : '<not provided>';
 		}
 		WP_CLI::success( sprintf( 'Updated WP-CLI to %s.', $updated_version ) );
 	}
