@@ -924,7 +924,7 @@ function get_named_sem_ver( $new_version, $original_version ) {
 		$patch = $bits[2];
 	}
 
-	if ( ! is_null( $minor ) && Semver::satisfies( $new_version, "{$major}.{$minor}.x" ) ) {
+	if ( isset( $minor ) && Semver::satisfies( $new_version, "{$major}.{$minor}.x" ) ) {
 		return 'patch';
 	}
 
