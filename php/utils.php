@@ -1196,7 +1196,7 @@ function isPiped() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionNa
 		return filter_var( $shell_pipe, FILTER_VALIDATE_BOOLEAN );
 	}
 
-	return ( function_exists( 'posix_isatty' ) && ! posix_isatty( STDOUT ) );
+	return function_exists( 'posix_isatty' ) && ! posix_isatty( STDOUT );
 }
 
 /**
