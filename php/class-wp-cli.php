@@ -1,13 +1,13 @@
 <?php
 
-use WP_CLI\ExitException;
+use Mustangostang\Spyc;
 use WP_CLI\Dispatcher;
+use WP_CLI\ExitException;
 use WP_CLI\FileCache;
 use WP_CLI\Process;
 use WP_CLI\ProcessRun;
-use WP_CLI\WpHttpCacheManager;
 use WP_CLI\Utils;
-use Mustangostang\Spyc;
+use WP_CLI\WpHttpCacheManager;
 
 /**
  * Various utilities for WP-CLI commands.

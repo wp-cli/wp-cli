@@ -2,13 +2,12 @@
 
 namespace WP_CLI;
 
+use DirectoryIterator;
 use Exception;
 use PharData;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use DirectoryIterator;
 use WP_CLI;
-use WP_CLI\Utils;
 use ZipArchive;
 
 /**

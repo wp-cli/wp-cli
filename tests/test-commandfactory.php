@@ -1,6 +1,5 @@
 <?php
 
-use WP_CLI\Dispatcher\CommandFactory;
 
 require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
 

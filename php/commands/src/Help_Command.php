@@ -1,7 +1,7 @@
 <?php
 
-use WP_CLI\Utils;
 use WP_CLI\Dispatcher;
+use WP_CLI\Utils;
 
 class Help_Command extends WP_CLI_Command {
 
