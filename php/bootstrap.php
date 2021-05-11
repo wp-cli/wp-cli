@@ -13,7 +13,7 @@ use WP_CLI\Bootstrap\BootstrapState;
  * @return string[]
  */
 function get_bootstrap_steps() {
-	return array(
+	return [
 		'WP_CLI\Bootstrap\DeclareFallbackFunctions',
 		'WP_CLI\Bootstrap\LoadUtilityFunctions',
 		'WP_CLI\Bootstrap\LoadDispatcher',
@@ -31,7 +31,7 @@ function get_bootstrap_steps() {
 		'WP_CLI\Bootstrap\RegisterFrameworkCommands',
 		'WP_CLI\Bootstrap\RegisterDeferredCommands',
 		'WP_CLI\Bootstrap\LaunchRunner',
-	);
+	];
 }
 
 /**

@@ -15,7 +15,7 @@ class Query implements \Iterator {
 
 	private $global_index     = 0;
 	private $index_in_results = 0;
-	private $results          = array();
+	private $results          = [];
 	private $row_count        = 0;
 	private $offset           = 0;
 	private $db               = null;
@@ -100,7 +100,7 @@ class Query implements \Iterator {
 	}
 
 	public function rewind() {
-		$this->results          = array();
+		$this->results          = [];
 		$this->global_index     = 0;
 		$this->index_in_results = 0;
 		$this->offset           = 0;

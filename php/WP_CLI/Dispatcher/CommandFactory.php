@@ -15,7 +15,7 @@ use WP_CLI\Utils;
 class CommandFactory {
 
 	// Cache of file contents, indexed by filename. Only used if opcache.save_comments is disabled.
-	private static $file_contents = array();
+	private static $file_contents = [];
 
 	/**
 	 * Create a new CompositeCommand (or Subcommand if class has __invoke())
@@ -35,7 +35,7 @@ class CommandFactory {
 			$command    = self::create_subcommand(
 				$parent,
 				$name,
-				array( $callable[0], $callable[1] ),
+				[ $callable[0], $callable[1] ],
 				$reflection->getMethod( $callable[1] )
 			);
 		} else {
@@ -47,7 +47,7 @@ class CommandFactory {
 				$command = self::create_subcommand(
 					$parent,
 					$name,
-					array( $class, '__invoke' ),
+					[ $class, '__invoke' ],
 					$reflection->getMethod( '__invoke' )
 				);
 			} else {
@@ -62,7 +62,7 @@ class CommandFactory {
 	 * Clear the file contents cache.
 	 */
 	public static function clear_file_contents_cache() {
-		self::$file_contents = array();
+		self::$file_contents = [];
 	}
 
 	/**
@@ -96,7 +96,7 @@ class CommandFactory {
 		$when_invoked = function ( $args, $assoc_args ) use ( $callable ) {
 			if ( is_array( $callable ) ) {
 				$callable[0] = is_object( $callable[0] ) ? $callable[0] : new $callable[0]();
-				call_user_func( array( $callable[0], $callable[1] ), $args, $assoc_args );
+				call_user_func( [ $callable[0], $callable[1] ], $args, $assoc_args );
 			} else {
 				call_user_func( $callable, $args, $assoc_args );
 			}
@@ -128,7 +128,7 @@ class CommandFactory {
 			}
 
 			$class      = is_object( $callable ) ? $callable : $reflection->name;
-			$subcommand = self::create_subcommand( $container, false, array( $class, $method->name ), $method );
+			$subcommand = self::create_subcommand( $container, false, [ $class, $method->name ], $method );
 
 			$subcommand_name = $subcommand->get_name();
 

@@ -13,7 +13,7 @@ function wp_not_installed() {
 	global $wpdb, $table_prefix;
 	if ( ! is_blog_installed() && ! defined( 'WP_INSTALLING' ) ) {
 		$tables         = $wpdb->get_col( "SHOW TABLES LIKE '%_options'" );
-		$found_prefixes = array();
+		$found_prefixes = [];
 		if ( count( $tables ) ) {
 			foreach ( $tables as $table ) {
 				$maybe_prefix = substr( $table, 0, - strlen( 'options' ) );
@@ -108,10 +108,10 @@ function wp_clean_error_message( $message ) {
 		$message .= ' ' . $matches[1];
 	}
 
-	$search_replace = array(
+	$search_replace = [
 		'<code>'  => '`',
 		'</code>' => '`',
-	);
+	];
 	$message        = str_replace( array_keys( $search_replace ), array_values( $search_replace ), $message );
 	$message        = namespace\strip_tags( $message );
 	$message        = html_entity_decode( $message, ENT_COMPAT, 'UTF-8' );
@@ -218,7 +218,7 @@ function is_theme_skipped( $path ) {
 function wp_register_unused_sidebar() {
 
 	register_sidebar(
-		array(
+		[
 			'name'          => __( 'Inactive Widgets' ),
 			'id'            => 'wp_inactive_widgets',
 			'class'         => 'inactive-sidebar',
@@ -227,7 +227,7 @@ function wp_register_unused_sidebar() {
 			'after_widget'  => '',
 			'before_title'  => '',
 			'after_title'   => '',
-		)
+		]
 	);
 
 }
@@ -316,7 +316,7 @@ function wp_get_cache_type() {
 function wp_clear_object_cache() {
 	global $wpdb, $wp_object_cache;
 
-	$wpdb->queries = array();
+	$wpdb->queries = [];
 
 	if ( ! is_object( $wp_object_cache ) ) {
 		return;
@@ -324,17 +324,17 @@ function wp_clear_object_cache() {
 
 	// The following are Memcached (Redux) plugin specific (see https://core.trac.wordpress.org/ticket/31463).
 	if ( isset( $wp_object_cache->group_ops ) ) {
-		$wp_object_cache->group_ops = array();
+		$wp_object_cache->group_ops = [];
 	}
 	if ( isset( $wp_object_cache->stats ) ) {
-		$wp_object_cache->stats = array();
+		$wp_object_cache->stats = [];
 	}
 	if ( isset( $wp_object_cache->memcache_debug ) ) {
-		$wp_object_cache->memcache_debug = array();
+		$wp_object_cache->memcache_debug = [];
 	}
 	// Used by `WP_Object_Cache` also.
 	if ( isset( $wp_object_cache->cache ) ) {
-		$wp_object_cache->cache = array();
+		$wp_object_cache->cache = [];
 	}
 }
 
@@ -347,10 +347,10 @@ function wp_clear_object_cache() {
  * @param array $assoc_args Optional flags for groups of tables (e.g. --network)
  * @return array $tables
  */
-function wp_get_table_names( $args, $assoc_args = array() ) {
+function wp_get_table_names( $args, $assoc_args = [] ) {
 	global $wpdb;
 
-	$tables = array();
+	$tables = [];
 
 	// Abort if incompatible args supplied.
 	if ( get_flag_value( $assoc_args, 'base-tables-only' ) && get_flag_value( $assoc_args, 'views-only' ) ) {
@@ -389,9 +389,9 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 
 		// Note: BC change 1.5.0, taking scope into consideration for network also.
 		if ( get_flag_value( $assoc_args, 'network' ) && is_multisite() ) {
-			$network_global_scope = in_array( $scope, array( 'all', 'global', 'ms_global' ), true ) ? ( 'all' === $scope ? 'global' : $scope ) : '';
+			$network_global_scope = in_array( $scope, [ 'all', 'global', 'ms_global' ], true ) ? ( 'all' === $scope ? 'global' : $scope ) : '';
 			$wp_tables            = array_values( $wpdb->tables( $network_global_scope ) );
-			if ( in_array( $scope, array( 'all', 'blog' ), true ) ) {
+			if ( in_array( $scope, [ 'all', 'blog' ], true ) ) {
 				// Do directly for compat with old WP versions. Note: private, deleted, archived sites are not excluded.
 				$blog_ids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs WHERE site_id = $wpdb->siteid" );
 				foreach ( $blog_ids as $blog_id ) {
@@ -404,7 +404,7 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 
 		if ( ! global_terms_enabled() ) {
 			// Only include sitecategories when it's actually enabled.
-			$wp_tables = array_values( array_diff( $wp_tables, array( $wpdb->sitecategories ) ) );
+			$wp_tables = array_values( array_diff( $wp_tables, [ $wpdb->sitecategories ] ) );
 		}
 
 		// Note: BC change 1.5.0, tables are sorted (via TABLES view).
@@ -421,7 +421,7 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 
 	// Filter by `$args`.
 	if ( $args ) {
-		$args_tables = array();
+		$args_tables = [];
 		foreach ( $args as $arg ) {
 			if ( false !== strpos( $arg, '*' ) || false !== strpos( $arg, '?' ) ) {
 				$args_tables = array_merge(

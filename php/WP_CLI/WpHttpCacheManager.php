@@ -16,7 +16,7 @@ class WpHttpCacheManager {
 	/**
 	 * @var array map whitelisted urls to keys and ttls
 	 */
-	protected $whitelist = array();
+	protected $whitelist = [];
 
 	/**
 	 * @var FileCache
@@ -30,8 +30,8 @@ class WpHttpCacheManager {
 		$this->cache = $cache;
 
 		// hook into wp http api
-		add_filter( 'pre_http_request', array( $this, 'filter_pre_http_request' ), 10, 3 );
-		add_filter( 'http_response', array( $this, 'filter_http_response' ), 10, 3 );
+		add_filter( 'pre_http_request', [ $this, 'filter_pre_http_request' ], 10, 3 );
+		add_filter( 'http_response', [ $this, 'filter_http_response' ], 10, 3 );
 	}
 
 	/**
@@ -52,13 +52,13 @@ class WpHttpCacheManager {
 			WP_CLI::log( sprintf( 'Using cached file \'%s\'...', $filename ) );
 			if ( copy( $filename, $args['filename'] ) ) {
 				// simulate successful download response
-				return array(
-					'response' => array(
+				return [
+					'response' => [
 						'code'    => 200,
 						'message' => 'OK',
-					),
+					],
 					'filename' => $args['filename'],
-				);
+				];
 			}
 
 			WP_CLI::error( sprintf( 'Error copying cached file %s to %s', $filename, $url ) );

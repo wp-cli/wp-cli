@@ -10,11 +10,11 @@ class InflectorTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function dataProviderPluralize() {
-		return array(
-			array( 'string', 'strings' ), // regular
-			array( 'person', 'people' ),  // irregular
-			array( 'scissors', 'scissors' ), // uncountable
-		);
+		return [
+			[ 'string', 'strings' ], // regular
+			[ 'person', 'people' ],  // irregular
+			[ 'scissors', 'scissors' ], // uncountable
+		];
 	}
 
 	/** @dataProvider dataProviderSingularize */
@@ -23,10 +23,10 @@ class InflectorTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function dataProviderSingularize() {
-		return array(
-			array( 'strings', 'string' ), // regular
-			array( 'people', 'person' ),  // irregular
-			array( 'scissors', 'scissors' ), // uncountable
-		);
+		return [
+			[ 'strings', 'string' ], // regular
+			[ 'people', 'person' ],  // irregular
+			[ 'scissors', 'scissors' ], // uncountable
+		];
 	}
 }

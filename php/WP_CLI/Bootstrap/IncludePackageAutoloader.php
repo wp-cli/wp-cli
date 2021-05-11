@@ -38,9 +38,9 @@ final class IncludePackageAutoloader extends AutoloaderStep {
 				'bootstrap'
 			);
 
-			return array(
+			return [
 				$autoloader_path,
-			);
+			];
 		}
 
 		return false;

@@ -57,7 +57,7 @@ class Execution extends Regular {
 	 * Starts output buffering, using a callback to capture output from `echo`, `print`, `printf` (which write to the output buffer 'php://output' rather than STDOUT).
 	 */
 	public function ob_start() {
-		ob_start( array( $this, 'ob_start_callback' ), 1 );
+		ob_start( [ $this, 'ob_start_callback' ], 1 );
 	}
 
 	/**

@@ -170,7 +170,7 @@ if ( SHORTINIT ) {
 require_once ABSPATH . WPINC . '/l10n.php';
 
 // WP-CLI: Permit Utils\wp_not_installed() to run on < WP 4.0
-apply_filters( 'nocache_headers', array() );
+apply_filters( 'nocache_headers', [] );
 
 // Run the installer if WordPress is not installed.
 wp_not_installed();
@@ -268,7 +268,7 @@ wp_plugin_directory_constants();
 
 $symlinked_plugins_supported = function_exists( 'wp_register_plugin_realpath' );
 if ( $symlinked_plugins_supported ) {
-	$GLOBALS['wp_plugin_paths'] = array();
+	$GLOBALS['wp_plugin_paths'] = [];
 }
 
 // Load must-use plugins.

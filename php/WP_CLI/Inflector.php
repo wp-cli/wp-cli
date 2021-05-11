@@ -40,8 +40,8 @@ class Inflector {
 	 *
 	 * @var array
 	 */
-	private static $plural = array(
-		'rules'       => array(
+	private static $plural = [
+		'rules'       => [
 			'/(s)tatus$/i'                         => '\1\2tatuses',
 			'/(quiz)$/i'                           => '\1zes',
 			'/^(ox)$/i'                            => '\1\2en',
@@ -65,8 +65,8 @@ class Inflector {
 			'/s$/'                                 => 's',
 			'/^$/'                                 => '',
 			'/$/'                                  => 's',
-		),
-		'uninflected' => array(
+		],
+		'uninflected' => [
 			'.*[nrlm]ese',
 			'.*deer',
 			'.*fish',
@@ -76,8 +76,8 @@ class Inflector {
 			'.*sheep',
 			'people',
 			'cookie',
-		),
-		'irregular'   => array(
+		],
+		'irregular'   => [
 			'atlas'        => 'atlases',
 			'axe'          => 'axes',
 			'beef'         => 'beefs',
@@ -135,16 +135,16 @@ class Inflector {
 			'trilby'       => 'trilbys',
 			'turf'         => 'turfs',
 			'volcano'      => 'volcanoes',
-		),
-	);
+		],
+	];
 
 	/**
 	 * Singular inflector rules.
 	 *
 	 * @var array
 	 */
-	private static $singular = array(
-		'rules'       => array(
+	private static $singular = [
+		'rules'       => [
 			'/(s)tatuses$/i'                         => '\1\2tatus',
 			'/^(.*)(menu)s$/i'                       => '\1\2',
 			'/(quiz)zes$/i'                          => '\\1',
@@ -181,8 +181,8 @@ class Inflector {
 			'/eaus$/'                                => 'eau',
 			'/^(.*us)$/'                             => '\\1',
 			'/s$/i'                                  => '',
-		),
-		'uninflected' => array(
+		],
+		'uninflected' => [
 			'.*[nrlm]ese',
 			'.*deer',
 			'.*fish',
@@ -191,8 +191,8 @@ class Inflector {
 			'.*pox',
 			'.*sheep',
 			'.*ss',
-		),
-		'irregular'   => array(
+		],
+		'irregular'   => [
 			'criteria' => 'criterion',
 			'curves'   => 'curve',
 			'emphases' => 'emphasis',
@@ -202,15 +202,15 @@ class Inflector {
 			'neuroses' => 'neurosis',
 			'waves'    => 'wave',
 			'oases'    => 'oasis',
-		),
-	);
+		],
+	];
 
 	/**
 	 * Words that should not be inflected.
 	 *
 	 * @var array
 	 */
-	private static $uninflected = array(
+	private static $uninflected = [
 		'Amoyese',
 		'bison',
 		'Borghese',
@@ -291,21 +291,21 @@ class Inflector {
 		'whiting',
 		'wildebeest',
 		'Yengeese',
-	);
+	];
 
 	/**
 	 * Method cache array.
 	 *
 	 * @var array
 	 */
-	private static $cache = array();
+	private static $cache = [];
 
 	/**
 	 * The initial state of Inflector so reset() works.
 	 *
 	 * @var array
 	 */
-	private static $initial_state = array();
+	private static $initial_state = [];
 
 	/**
 	 * Converts a word into the format for a Doctrine table name. Converts 'ModelName' to 'model_name'.
@@ -437,10 +437,10 @@ class Inflector {
 			}
 
 			if ( 'plural' === $type ) {
-				self::$cache['pluralize'] = array();
-				self::$cache['tableize']  = array();
+				self::$cache['pluralize'] = [];
+				self::$cache['tableize']  = [];
 			} elseif ( 'singular' === $type ) {
-				self::$cache['singularize'] = array();
+				self::$cache['singularize'] = [];
 			}
 		}
 

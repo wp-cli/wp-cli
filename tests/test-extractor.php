@@ -7,7 +7,7 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 
 	public static $copy_overwrite_files_prefix = 'wp-cli-test-utils-copy-overwrite-files-';
 
-	public static $expected_wp = array(
+	public static $expected_wp = [
 		'index1.php',
 		'license2.php',
 		'wp-admin/',
@@ -19,7 +19,7 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		'wp-includes/',
 		'wp-includes/file7.php',
 		'xmlrpc8.php',
-	);
+	];
 
 	public static $logger      = null;
 	public static $prev_logger = null;
@@ -110,7 +110,7 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		$dest_dir = $temp_dir . '/dest';
 
 		// Create test tarball.
-		$output     = array();
+		$output     = [];
 		$return_var = -1;
 		// Need --force-local for Windows to avoid "C:" being interpreted as being on remote machine, and redirect for Mac as outputs verbosely on STDERR.
 		$cmd = 'tar czvf %1$s' . ( Utils\is_windows() ? ' --force-local' : '' ) . ' --directory=%2$s/src wordpress 2>&1';
@@ -276,12 +276,12 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 			}
 		}
 
-		return array( $temp_dir, $src_dir, $wp_dir );
+		return [ $temp_dir, $src_dir, $wp_dir ];
 	}
 
 	private static function recursive_scandir( $dir, $prefix_dir = '' ) {
-		$ret = array();
-		foreach ( array_diff( scandir( $dir ), array( '.', '..' ) ) as $file ) {
+		$ret = [];
+		foreach ( array_diff( scandir( $dir ), [ '.', '..' ] ) as $file ) {
 			if ( is_dir( $dir . '/' . $file ) ) {
 				$ret[] = ( $prefix_dir ? ( $prefix_dir . '/' . $file ) : $file ) . '/';
 				$ret   = array_merge( $ret, self::recursive_scandir( $dir . '/' . $file, $prefix_dir ? ( $prefix_dir . '/' . $file ) : $file ) );

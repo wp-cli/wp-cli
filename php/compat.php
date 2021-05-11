@@ -82,7 +82,7 @@ if (!function_exists('array_column')) {
             }
         }
 
-        $resultArray = array();
+        $resultArray = [];
 
         foreach ($paramsInput as $row) {
             $key = $value = null;

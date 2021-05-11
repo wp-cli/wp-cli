@@ -19,9 +19,9 @@ final class IncludeFallbackAutoloader extends AutoloaderStep {
 	 *                        to skip.
 	 */
 	protected function get_autoloader_paths() {
-		$autoloader_paths = array(
+		$autoloader_paths = [
 			WP_CLI_VENDOR_DIR . '/autoload.php',
-		);
+		];
 
 		$custom_vendor = $this->get_custom_vendor_folder();
 		if ( false !== $custom_vendor ) {
