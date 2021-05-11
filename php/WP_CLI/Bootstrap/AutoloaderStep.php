@@ -2,8 +2,8 @@
 
 namespace WP_CLI\Bootstrap;
 
-use WP_CLI;
 use Exception;
+use WP_CLI;
 
 /**
  * Abstract class AutoloaderStep.

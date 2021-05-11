@@ -4,8 +4,8 @@ namespace WP_CLI\Iterators;
 
 use Countable;
 use Iterator;
-use WP_CLI;
 use SplFileObject;
+use WP_CLI;
 
 /**
  * Allows incrementally reading and parsing lines from a CSV file.

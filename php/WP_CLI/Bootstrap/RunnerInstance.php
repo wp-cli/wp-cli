@@ -2,8 +2,8 @@
 
 namespace WP_CLI\Bootstrap;
 
-use WP_CLI\Runner;
 use WP_CLI;
+use WP_CLI\Runner;
 
 /**
  * Class RunnerInstance.

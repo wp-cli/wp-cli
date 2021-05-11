@@ -4,12 +4,10 @@
 
 namespace WP_CLI\Utils;
 
-use WP_CLI\NoOp;
-use cli\Shell;
-use cli\progress\Bar;
-use WP_CLI\ExitException;
 use ArrayIterator;
 use cli;
+use cli\progress\Bar;
+use cli\Shell;
 use Closure;
 use Composer\Semver\Comparator;
 use Composer\Semver\Semver;
@@ -20,9 +18,11 @@ use Requests;
 use Requests_Exception;
 use RuntimeException;
 use WP_CLI;
+use WP_CLI\ExitException;
 use WP_CLI\Formatter;
 use WP_CLI\Inflector;
 use WP_CLI\Iterators\Transform;
+use WP_CLI\NoOp;
 use WP_CLI\Process;
 
 const PHAR_STREAM_PREFIX = 'phar://';

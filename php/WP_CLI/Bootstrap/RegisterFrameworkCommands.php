@@ -3,8 +3,8 @@
 namespace WP_CLI\Bootstrap;
 
 use DirectoryIterator;
-use WP_CLI;
 use Exception;
+use WP_CLI;
 
 /**
  * Class RegisterFrameworkCommands.

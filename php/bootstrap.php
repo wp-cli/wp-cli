@@ -2,8 +2,8 @@
 
 namespace WP_CLI;
 
-use WP_CLI\Bootstrap\BootstrapStep;
 use WP_CLI\Bootstrap\BootstrapState;
+use WP_CLI\Bootstrap\BootstrapStep;
 
 /**
  * Get the list of ordered steps that need to be processed to bootstrap WP-CLI.

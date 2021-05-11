@@ -1,22 +1,22 @@
 <?php
 
-use WP_CLI\Configurator;
-use WP_CLI\Dispatcher\RootCommand;
-use WP_CLI\Runner;
 use cli\Colors;
+use Mustangostang\Spyc;
+use WP_CLI\Configurator;
+use WP_CLI\Dispatcher;
 use WP_CLI\Dispatcher\CommandAddition;
-use WP_CLI\Dispatcher\CompositeCommand;
-use WP_CLI\DocParser;
 use WP_CLI\Dispatcher\CommandFactory;
 use WP_CLI\Dispatcher\CommandNamespace;
-use WP_CLI\SynopsisParser;
-use WP_CLI\Loggers\Execution;
-use Mustangostang\Spyc;
-use WP_CLI\Dispatcher;
+use WP_CLI\Dispatcher\CompositeCommand;
+use WP_CLI\Dispatcher\RootCommand;
+use WP_CLI\DocParser;
 use WP_CLI\ExitException;
 use WP_CLI\FileCache;
+use WP_CLI\Loggers\Execution;
 use WP_CLI\Process;
 use WP_CLI\ProcessRun;
+use WP_CLI\Runner;
+use WP_CLI\SynopsisParser;
 use WP_CLI\Utils;
 use WP_CLI\WpHttpCacheManager;
 
