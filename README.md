@@ -52,7 +52,7 @@ Downloading the Phar file is our recommended installation method for most users.
 Before installing WP-CLI, please make sure your environment meets the minimum requirements:
 
 - UNIX-like environment (OS X, Linux, FreeBSD, Cygwin); limited support in Windows environment
-- PHP 5.4 or later
+- PHP 5.6 or later
 - WordPress 3.7 or later. Versions older than the latest WordPress release may have degraded functionality
 
 Once you've verified requirements, download the [wp-cli.phar](https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar) file using `wget` or `curl`:
