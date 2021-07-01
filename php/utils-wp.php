@@ -60,7 +60,7 @@ function wp_debug_mode() {
 				$log_path = false;
 			}
 
-			if ( $log_path ) {
+			if ( false !== $log_path ) {
 				ini_set( 'log_errors', 1 );
 				ini_set( 'error_log', $log_path );
 			}
