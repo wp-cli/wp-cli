@@ -52,7 +52,7 @@ function wp_debug_mode() {
 				ini_set( 'display_errors', 0 );
 			}
 
-			if ( in_array( strtolower( (string) WP_DEBUG_LOG ), array( 'true', '1' ), true ) ) {
+			if ( in_array( strtolower( (string) WP_DEBUG_LOG ), [ 'true', '1' ], true ) ) {
 				$log_path = WP_CONTENT_DIR . '/debug.log';
 			} elseif ( is_string( WP_DEBUG_LOG ) ) {
 				$log_path = WP_DEBUG_LOG;
