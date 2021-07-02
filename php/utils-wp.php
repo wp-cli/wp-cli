@@ -77,9 +77,7 @@ function wp_debug_mode() {
 			ini_set( 'display_errors', 0 );
 		}
 	}
-
-	// XDebug already sends errors to STDERR.
-	ini_set( 'display_errors', function_exists( 'xdebug_debug_zval' ) ? false : 'STDERR' );
+	ini_set( 'display_errors', 'STDERR' );
 }
 // phpcs:enable
 
