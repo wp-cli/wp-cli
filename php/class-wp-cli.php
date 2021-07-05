@@ -537,6 +537,10 @@ class WP_CLI {
 			return false;
 		}
 
+		if ( ! empty( $parent ) && $leaf_command instanceof Dispatcher\CommandNamespace ) {
+			self::debug( "Adding namespace: {$parent}", 'commands' );
+		}
+
 		// Reattach commands attached to namespace to real command.
 		$subcommand_name  = (array) $leaf_name;
 		$existing_command = $command->find_subcommand( $subcommand_name );
@@ -612,7 +616,8 @@ class WP_CLI {
 
 		if ( ! empty( $parent ) ) {
 			$sub_command = trim( str_replace( $parent, '', $name ) );
-			self::debug( "Adding command: {$sub_command} in {$parent} Namespace", 'commands' );
+
+			self::debug( "Adding command: {$sub_command} to namespace {$parent}", 'commands' );
 		} else {
 			self::debug( "Adding command: {$name}", 'commands' );
 		}
