@@ -453,11 +453,14 @@ class WP_CLI {
 			return false;
 		}
 
-		$valid = false;
+		$valid        = false;
+		$is_namespace = false;
+
 		if ( is_callable( $callable ) ) {
 			$valid = true;
 		} elseif ( is_string( $callable ) && class_exists( (string) $callable ) ) {
-			$valid = true;
+			$valid        = true;
+			$is_namespace = ( new ReflectionClass( $callable ) )->isSubclassOf( Dispatcher\CommandNamespace::class );
 		} elseif ( is_object( $callable ) ) {
 			$valid = true;
 		} elseif ( Utils\is_valid_class_and_method_pair( $callable ) ) {
@@ -614,7 +617,8 @@ class WP_CLI {
 			$sub_command = trim( str_replace( $parent, '', $name ) );
 			self::debug( "Adding command: {$sub_command} in {$parent} Namespace", 'commands' );
 		} else {
-			self::debug( "Adding command: {$name}", 'commands' );
+			$adding_kind = $is_namespace ? 'namespace' : 'command';
+			self::debug( "Adding {$adding_kind}: {$name}", 'commands' );
 		}
 
 		$command->add_subcommand( $leaf_name, $leaf_command );

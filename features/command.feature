@@ -1521,3 +1521,28 @@ Feature: WP-CLI Commands
     """
     wp custom
     """
+
+  Scenario: Differentiate between namespace and command whenn registering a new command
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+
+      use WP_CLI\Dispatcher\CommandNamespace;
+
+      class Command_Class1 {}
+      class Command_Class2 extends CommandNamespace {}
+
+      WP_CLI::add_command( 'command example 1', 'Command_Class1' );
+      WP_CLI::add_command( 'command example 2', 'Command_Class2' );
+      """
+
+    When I try `wp --require=custom-cmd.php --debug`
+    Then STDOUT should contain:
+      """
+      Adding command:
+      """
+    Then STDOUT should contain:
+      """
+      Adding namespace:
+      """
