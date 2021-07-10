@@ -57,7 +57,7 @@
     ],
     "scripts": {
         "post-install-cmd": [
-            "./utils/git-setup-pre-commit-hook"
+            "sh utils/git-setup-pre-commit-hook"
         ],
         "behat": "run-behat-tests",
         "behat-rerun": "rerun-behat-tests",
