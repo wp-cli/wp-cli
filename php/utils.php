@@ -1191,7 +1191,11 @@ function isPiped() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionNa
 		return filter_var( $shell_pipe, FILTER_VALIDATE_BOOLEAN );
 	}
 
-	return function_exists( 'posix_isatty' ) && ! posix_isatty( STDOUT );
+	if ( function_exists('stream_isatty') ) {
+		return !stream_isatty(STDOUT);
+	} else {
+		return (function_exists('posix_isatty') && !posix_isatty(STDOUT));
+	}
 }
 
 /**
@@ -1441,11 +1445,15 @@ function force_env_on_nix_systems( $command ) {
  * @return bool
  */
 function check_proc_available( $context = null, $return = false ) {
-	if ( ! function_exists( 'proc_open' ) || ! function_exists( 'proc_close' ) ) {
+	if ( 'cli' !== PHP_SAPI || ! function_exists( 'proc_open' ) || ! function_exists( 'proc_close' ) ) {
 		if ( $return ) {
 			return false;
 		}
-		$msg = 'The PHP functions `proc_open()` and/or `proc_close()` are disabled. Please check your PHP ini directive `disable_functions` or suhosin settings.';
+		if ( 'cli' !== PHP_SAPI ) {
+			$msg = 'This script is running with PHP_SAPI "' . PHP_SAPI . '". Standard input/output streams require the CLI SAPI.';
+		} else {
+			$msg = 'The PHP functions `proc_open()` and/or `proc_close()` are disabled. Please check your PHP ini directive `disable_functions` or suhosin settings.';
+		}
 		if ( $context ) {
 			WP_CLI::error( sprintf( "Cannot do '%s': %s", $context, $msg ) );
 		} else {
