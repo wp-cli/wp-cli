@@ -4,8 +4,49 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7883d960e7c3ae5bef4f9785452357db",
+    "content-hash": "bc5a4122d85f2196f5c64718130f9891",
     "packages": [
+        {
+            "name": "adoy/fastcgi-client",
+            "version": "1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/adoy/PHP-FastCGI-Client.git",
+                "reference": "6d9a552f0206a1db7feb442824540aa6c55e5b27"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/adoy/PHP-FastCGI-Client/zipball/6d9a552f0206a1db7feb442824540aa6c55e5b27",
+                "reference": "6d9a552f0206a1db7feb442824540aa6c55e5b27",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Adoy\\FastCGI\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Pierrick Charron",
+                    "email": "pierrick@adoy.net"
+                }
+            ],
+            "description": "Lightweight, single file FastCGI client for PHP.",
+            "keywords": [
+                "fastcgi",
+                "fcgi"
+            ],
+            "support": {
+                "issues": "https://github.com/adoy/PHP-FastCGI-Client/issues",
+                "source": "https://github.com/adoy/PHP-FastCGI-Client/tree/master"
+            },
+            "time": "2019-12-11T13:49:21+00:00"
+        },
         {
             "name": "mustache/mustache",
             "version": "v2.13.0",
