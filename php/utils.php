@@ -502,7 +502,7 @@ function mysql_host_to_cli_args( $raw_host ) {
 function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true, $interactive = false ) {
 	check_proc_available( 'run_mysql_command' );
 
-	$descriptors = $interactive ?
+	$descriptors = ( $interactive || $send_to_shell ) ?
 		[
 			0 => STDIN,
 			1 => STDOUT,
@@ -539,10 +539,11 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
 	}
 
 	if ( ! $process ) {
+		WP_CLI::debug( 'Failed to create a valid process using proc_open_compat()', 'db' );
 		exit( 1 );
 	}
 
-	if ( ! $interactive && is_resource( $process ) ) {
+	if ( is_resource( $process ) && ! $send_to_shell && ! $interactive ) {
 		$stdout = stream_get_contents( $pipes[1] );
 		$stderr = stream_get_contents( $pipes[2] );
 
@@ -552,17 +553,8 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
 
 	$exit_code = proc_close( $process );
 
-	if ( $interactive && $exit_code ) {
+	if ( $exit_code && ( $send_to_shell || $interactive ) ) {
 		exit( $exit_code );
-	}
-
-	if ( $send_to_shell ) {
-		fwrite( STDOUT, $stdout );
-		fwrite( STDERR, $stderr );
-
-		if ( $exit_code ) {
-			exit( $exit_code );
-		}
 	}
 
 	return [
