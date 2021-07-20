@@ -103,6 +103,7 @@ Feature: Utilities that do NOT depend on WordPress code
 
   Scenario: Ensure that Utils\run_mysql_command() passes through without reading full DB into memory
     Given a WP install
+
     And I run `printf '%*s' 1048576 | tr ' ' "."`
     And STDOUT should not be empty
     And save STDOUT as {ONE_MB_OF_DATA}
@@ -143,6 +144,13 @@ Feature: Utilities that do NOT depend on WordPress code
       --host
       """
     And save STDOUT as {DB_HOST_STRING}
+
+    # Added for debugging purposes.
+    When I try `mysql --max_allowed_packet=256M --database={DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING} -e "SHOW VARIABLES LIKE 'max_allowed_packet';"`
+    Then STDOUT should contain:
+      """
+      peeking into GHA from here
+      """
 
     # This throws a warning because of the password.
     When I try `mysql --max_allowed_packet=256M --database={DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING} < test_db.sql`
