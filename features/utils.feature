@@ -112,7 +112,7 @@ Feature: Utilities that do NOT depend on WordPress code
       echo "CREATE TABLE \`custom_table\` (\`key\` INT(5) UNSIGNED NOT NULL AUTO_INCREMENT, \`text\` LONGTEXT, PRIMARY KEY (\`key\`) );" > test_db.sql
       echo "INSERT INTO \`custom_table\` (\`text\`) VALUES" >> test_db.sql
       index=1
-      while [[ $index -le 20 ]];
+      while [[ $index -le 60 ]];
       do
         echo "('{ONE_MB_OF_DATA}')," >> test_db.sql
         index=`expr $index + 1`
@@ -146,7 +146,7 @@ Feature: Utilities that do NOT depend on WordPress code
     And I try `mysql --database={DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING} < test_db.sql`
 
     # This throws a warning because of the password.
-    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=10M -ddisable_functions=ini_set} eval "\\WP_CLI\\Utils\\run_mysql_command('/usr/bin/env mysqldump {DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING}', [], null, true);"`
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=50M -ddisable_functions=ini_set} eval "\\WP_CLI\\Utils\\run_mysql_command('/usr/bin/env mysqldump {DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING}', [], null, true);"`
     Then the return code should be 0
     And STDOUT should not be empty
     And STDOUT should contain:
