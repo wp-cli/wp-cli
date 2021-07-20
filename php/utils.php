@@ -502,7 +502,7 @@ function mysql_host_to_cli_args( $raw_host ) {
 function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true, $interactive = false ) {
 	check_proc_available( 'run_mysql_command' );
 
-	$descriptors = $interactive ?
+	$descriptors = ( $interactive || $send_to_shell ) ?
 		[
 			0 => STDIN,
 			1 => STDOUT,
@@ -543,14 +543,9 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
 		exit( 1 );
 	}
 
-	if ( is_resource( $process ) ) {
-		if ( $send_to_shell ) {
-			fpassthru( $pipes[1] );
-			fwrite( STDERR, stream_get_contents( $pipes[2] ) );
-		} elseif ( ! $interactive ) {
-			$stdout = stream_get_contents( $pipes[1] );
-			$stderr = stream_get_contents( $pipes[2] );
-		}
+	if ( is_resource( $process ) && ! $send_to_shell && ! $interactive ) {
+		$stdout = stream_get_contents( $pipes[1] );
+		$stderr = stream_get_contents( $pipes[2] );
 
 		fclose( $pipes[1] );
 		fclose( $pipes[2] );
