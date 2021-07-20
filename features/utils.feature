@@ -147,7 +147,7 @@ Feature: Utilities that do NOT depend on WordPress code
 
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=10M -ddisable_functions=ini_set} eval "\\WP_CLI\\Utils\\run_mysql_command('/usr/bin/env mysqldump {DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING}', []);"`
     Then the return code should not be 0
-    And STDERR should contain:
+    And STDERR should not contain:
       """
-      Out of memory
+      Fatal error:  Allowed memory size
       """
