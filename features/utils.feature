@@ -120,6 +120,7 @@ Feature: Utilities that do NOT depend on WordPress code
         echo "('{ONE_MB_OF_DATA}');" >> test_db.sql
       """
     And I run `bash create_sql_file.sh`
+    And I run `test $(wc -c < test_db.sql) -gt 52428800`
     And a calculate_host_string.sh file:
       """
       #!/bin/bash
@@ -142,8 +143,10 @@ Feature: Utilities that do NOT depend on WordPress code
       --host
       """
     And save STDOUT as {DB_HOST_STRING}
+
     # This throws a warning because of the password.
-    And I try `mysql --database={DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING} < test_db.sql`
+    When I try `mysql --database={DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING} < test_db.sql`
+    Then the return code should be 0
 
     # This throws a warning because of the password.
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=50M -ddisable_functions=ini_set} eval '\WP_CLI\Utils\run_mysql_command("/usr/bin/env mysqldump --skip-column-statistics --no-tablespaces {DB_NAME}", [ "user" => "{DB_USER}", "pass" => "{DB_PASSWORD}", "host" => "{DB_HOST}" ], null, true);'`
