@@ -100,3 +100,67 @@ Feature: Utilities that do NOT depend on WordPress code
     # `sys_temp_dir` unset.
     When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--dsys_temp_dir=} --skip-wordpress eval 'echo WP_CLI\Utils\get_temp_dir();'`
     Then STDOUT should match /\/$/
+
+  Scenario: Ensure that Utils\run_mysql_command() passes through without reading full DB into memory
+    Given a WP install
+
+    And I run `printf '%*s' 1048576 | tr ' ' "."`
+    And STDOUT should not be empty
+    And save STDOUT as {ONE_MB_OF_DATA}
+    And a create_sql_file.sh file:
+      """
+      #!/bin/bash
+      echo "CREATE TABLE \`custom_table\` (\`key\` INT(5) UNSIGNED NOT NULL AUTO_INCREMENT, \`text\` LONGTEXT, PRIMARY KEY (\`key\`) );" > test_db.sql
+      echo "INSERT INTO \`custom_table\` (\`text\`) VALUES" >> test_db.sql
+      index=1
+      while [[ $index -le 60 ]];
+      do
+        echo "('{ONE_MB_OF_DATA}')," >> test_db.sql
+        index=`expr $index + 1`
+      done
+        echo "('{ONE_MB_OF_DATA}');" >> test_db.sql
+      """
+    And I run `bash create_sql_file.sh`
+    And I run `test $(wc -c < test_db.sql) -gt 52428800`
+    And a calculate_host_string.sh file:
+      """
+      #!/bin/bash
+      FULL_HOST="{DB_HOST}"
+      PORT=""
+      HOST_STRING=""
+      case ${FULL_HOST##*[]]} in
+        (*:*) HOST=${FULL_HOST%:*} PORT=${FULL_HOST##*:};;
+        (*)   HOST=$FULL_HOST;;
+      esac
+      HOST_STRING="--host=$HOST"
+      if [ -n "$PORT" ]; then
+        HOST_STRING="$HOST_STRING --port=$PORT --protocol=tcp"
+      fi
+      echo "$HOST_STRING"
+      """
+    And I run `bash calculate_host_string.sh`
+    And STDOUT should contain:
+      """
+      --host
+      """
+    And save STDOUT as {DB_HOST_STRING}
+
+    When I try `mysql --database={DB_NAME} --user={DB_ROOT_USER} --password={DB_ROOT_PASSWORD} {DB_HOST_STRING} -e "SET GLOBAL max_allowed_packet=64*1024*1024;"`
+    Then the return code should be 0
+
+    # This throws a warning because of the password.
+    When I try `mysql --database={DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING} < test_db.sql`
+    Then the return code should be 0
+
+    # This throws a warning because of the password.
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=50M -ddisable_functions=ini_set} eval '\WP_CLI\Utils\run_mysql_command("/usr/bin/env mysqldump --skip-column-statistics --no-tablespaces {DB_NAME}", [ "user" => "{DB_USER}", "pass" => "{DB_PASSWORD}", "host" => "{DB_HOST}" ], null, true);'`
+    Then the return code should be 0
+    And STDOUT should not be empty
+    And STDOUT should contain:
+      """
+      CREATE TABLE
+      """
+    And STDOUT should contain:
+      """
+      {ONE_MB_OF_DATA}
+      """
