@@ -145,7 +145,7 @@ Feature: Utilities that do NOT depend on WordPress code
     And save STDOUT as {DB_HOST_STRING}
 
     # This throws a warning because of the password.
-    When I try `mysql --max_allowed_packet=64M --database={DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING} < test_db.sql`
+    When I try `mysql --max_allowed_packet=256M --database={DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING} < test_db.sql`
     Then the return code should be 0
 
     # This throws a warning because of the password.
