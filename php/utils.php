@@ -542,27 +542,20 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
 		exit( 1 );
 	}
 
-	if ( ! $interactive && is_resource( $process ) ) {
-		$stdout = stream_get_contents( $pipes[1] );
-		$stderr = stream_get_contents( $pipes[2] );
-
-		fclose( $pipes[1] );
-		fclose( $pipes[2] );
+	if ( is_resource( $process ) ) {
+		if ( $send_to_shell ) {
+			fpassthru( $pipes[1] );
+			fpassthru( $pipes[2] );
+		} elseif ( ! $interactive ) {
+			$stdout = stream_get_contents( $pipes[1] );
+			$stderr = stream_get_contents( $pipes[2] );
+		}
 	}
 
 	$exit_code = proc_close( $process );
 
-	if ( $interactive && $exit_code ) {
+	if ( $exit_code ) {
 		exit( $exit_code );
-	}
-
-	if ( $send_to_shell ) {
-		fwrite( STDOUT, $stdout );
-		fwrite( STDERR, $stderr );
-
-		if ( $exit_code ) {
-			exit( $exit_code );
-		}
 	}
 
 	return [
