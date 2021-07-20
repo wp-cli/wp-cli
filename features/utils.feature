@@ -145,9 +145,9 @@ Feature: Utilities that do NOT depend on WordPress code
     # This throws a warning because of the password.
     And I try `mysql --database={DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING} < test_db.sql`
 
-    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=10M -ddisable_functions=ini_set} eval "\\WP_CLI\\Utils\\run_mysql_command('/usr/bin/env mysqldump {DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING}', []);"`
+    # This throws a warning because of the password.
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=10M -ddisable_functions=ini_set} eval "\\WP_CLI\\Utils\\run_mysql_command('/usr/bin/env mysqldump {DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING}', []);"`
     Then the return code should be 0
-    And STDERR should be empty
     And STDOUT should not be empty
     And STDOUT should contain:
       """
