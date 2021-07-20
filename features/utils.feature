@@ -148,13 +148,6 @@ Feature: Utilities that do NOT depend on WordPress code
     When I try `mysql --database={DB_NAME} --user={DB_ROOT_USER} --password={DB_ROOT_PASSWORD} {DB_HOST_STRING} -e "SET GLOBAL max_allowed_packet=64*1024*1024;"`
     Then the return code should be 0
 
-    # Added for debugging purposes.
-    When I try `mysql --database={DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING} -e "SHOW VARIABLES LIKE 'max_allowed_packet';"`
-    Then STDOUT should contain:
-      """
-      peeking into GHA from here
-      """
-
     # This throws a warning because of the password.
     When I try `mysql --database={DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING} < test_db.sql`
     Then the return code should be 0
