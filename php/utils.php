@@ -545,11 +545,14 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
 	if ( is_resource( $process ) ) {
 		if ( $send_to_shell ) {
 			fpassthru( $pipes[1] );
-			fpassthru( $pipes[2] );
+			fwrite( STDERR, stream_get_contents( $pipes[2] ) );
 		} elseif ( ! $interactive ) {
 			$stdout = stream_get_contents( $pipes[1] );
 			$stderr = stream_get_contents( $pipes[2] );
 		}
+
+		fclose( $pipes[1] );
+		fclose( $pipes[2] );
 	}
 
 	$exit_code = proc_close( $process );
