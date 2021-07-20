@@ -539,6 +539,7 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
 	}
 
 	if ( ! $process ) {
+		WP_CLI::debug( 'Failed to create a valid process using proc_open_compat()', 'db' );
 		exit( 1 );
 	}
 
@@ -557,7 +558,7 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
 
 	$exit_code = proc_close( $process );
 
-	if ( $exit_code ) {
+	if ( $exit_code && ( $send_to_shell || $interactive ) ) {
 		exit( $exit_code );
 	}
 
