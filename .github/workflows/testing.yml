@@ -109,12 +109,18 @@ jobs:
         with:
           files: "composer.json, behat.yml"
 
+      - name: Install Ghostscript
+        if: steps.check_files.outputs.files_exists == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install ghostscript -y
+
       - name: Set up PHP envirnoment
         if: steps.check_files.outputs.files_exists == 'true'
         uses: shivammathur/setup-php@v2
         with:
           php-version: '${{ matrix.php }}'
-          extensions: mysql, zip
+          extensions: gd, imagick, mysql, zip
           coverage: none
           tools: composer
 
@@ -133,6 +139,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-composer-
 
+      - name: Change ImageMagick policy to allow pdf->png conversion.
+        if: steps.check_files.outputs.files_exists == 'true'
+        run: |
+          sudo sed -i 's/^.*policy.*coder.*none.*PDF.*//' /etc/ImageMagick-6/policy.xml
+
       - name: Install dependencies
         if: steps.check_files.outputs.files_exists == 'true'
         run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
@@ -148,6 +159,7 @@ jobs:
           export MYSQL_TCP_PORT=${{ job.services.mysql.ports['3306'] }}
           echo "WP_CLI_TEST_DBROOTUSER=root" >> $GITHUB_ENV
           echo "WP_CLI_TEST_DBROOTPASS=root" >> $GITHUB_ENV
+          echo "WP_CLI_TEST_DBNAME=wp_cli_test" >> $GITHUB_ENV
           echo "WP_CLI_TEST_DBUSER=wp_cli_test" >> $GITHUB_ENV
           echo "WP_CLI_TEST_DBPASS=password1" >> $GITHUB_ENV
           echo "WP_CLI_TEST_DBHOST=$MYSQL_HOST:$MYSQL_TCP_PORT" >> $GITHUB_ENV
