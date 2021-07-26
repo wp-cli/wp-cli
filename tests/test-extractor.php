@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\Extractor;
+use WP_CLI\Loggers;
 use WP_CLI\Utils;
 
 class Extractor_Test extends PHPUnit_Framework_TestCase {
@@ -27,12 +28,9 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 	public function setUp() {
 		parent::setUp();
 
-		// Save and set logger.
-		$class_wp_cli_logger = new \ReflectionProperty( 'WP_CLI', 'logger' );
-		$class_wp_cli_logger->setAccessible( true );
-		self::$prev_logger = $class_wp_cli_logger->getValue();
+		self::$prev_logger = WP_CLI::get_logger();
 
-		self::$logger = new \WP_CLI\Loggers\Execution();
+		self::$logger = new Loggers\Execution();
 		WP_CLI::set_logger( self::$logger );
 
 		// Remove any failed tests detritus.
