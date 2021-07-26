@@ -231,7 +231,7 @@ Feature: Global flags
       """
 
     When I try `wp --color non-existent-command`
-    Then STDERR should contain:
+    Then STDERR should strictly contain:
       """
       [31;1mError:
       """
