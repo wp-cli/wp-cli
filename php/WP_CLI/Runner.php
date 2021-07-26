@@ -862,7 +862,7 @@ class Runner {
 
 	public function init_logger() {
 		if ( $this->config['quiet'] ) {
-			$logger = new Loggers\Quiet();
+			$logger = new Loggers\Quiet( $this->in_color() );
 		} else {
 			$logger = new Loggers\Regular( $this->in_color() );
 		}

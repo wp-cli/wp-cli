@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\FileCache;
+use WP_CLI\Loggers;
 use WP_CLI\Utils;
 
 require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
@@ -32,11 +33,9 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function test_ensure_dir_exists() {
-		$class_wp_cli_logger = new ReflectionProperty( 'WP_CLI', 'logger' );
-		$class_wp_cli_logger->setAccessible( true );
-		$prev_logger = $class_wp_cli_logger->getValue();
+		$prev_logger = WP_CLI::get_logger();
 
-		$logger = new WP_CLI\Loggers\Execution();
+		$logger = new Loggers\Execution();
 		WP_CLI::set_logger( $logger );
 
 		$max_size  = 32;
@@ -79,7 +78,7 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 		rmdir( $cache_dir . '/test1' );
 		unlink( $cache_dir . '/test2' );
 		rmdir( $cache_dir );
-		$class_wp_cli_logger->setValue( $prev_logger );
+		WP_CLI::set_logger( $prev_logger );
 	}
 
 	public function test_export() {
