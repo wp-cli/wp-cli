@@ -10,6 +10,13 @@ use WP_CLI;
 class Quiet extends Base {
 
 	/**
+	 * @param bool $in_color Whether or not to Colorize strings.
+	 */
+	public function __construct( $in_color = false ) {
+		$this->in_color = $in_color;
+	}
+
+	/**
 	 * Informational messages aren't logged.
 	 *
 	 * @param string $message Message to write.
@@ -42,7 +49,7 @@ class Quiet extends Base {
 	 * @param string $message Message to write.
 	 */
 	public function error( $message ) {
-		$this->write( STDERR, WP_CLI::colorize( "%RError:%n $message\n" ) );
+		$this->_line( $message, 'Error', '%R', STDERR );
 	}
 
 	/**
@@ -53,7 +60,7 @@ class Quiet extends Base {
 	public function error_multi_line( $message_lines ) {
 		$message = implode( "\n", $message_lines );
 
-		$this->write( STDERR, WP_CLI::colorize( "%RError:%n\n$message\n" ) );
-		$this->write( STDERR, WP_CLI::colorize( "%R---------%n\n\n" ) );
+		$this->_line( $message, 'Error', '%R', STDERR );
+		$this->_line( '', '---------', '%R', STDERR );
 	}
 }

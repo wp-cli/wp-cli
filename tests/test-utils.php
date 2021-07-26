@@ -418,13 +418,11 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 	public function testHttpRequestBadAddress() {
 		// Save WP_CLI state.
-		$class_wp_cli_logger = new \ReflectionProperty( 'WP_CLI', 'logger' );
-		$class_wp_cli_logger->setAccessible( true );
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		$class_wp_cli_capture_exit->setAccessible( true );
-
-		$prev_logger       = $class_wp_cli_logger->getValue();
 		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
+
+		$prev_logger = WP_CLI::get_logger();
 
 		// Enable exit exception.
 		$class_wp_cli_capture_exit->setValue( true );
@@ -445,8 +443,8 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue( 0 === strpos( $logger->stderr, 'Error: Failed to get url' ) );
 
 		// Restore.
-		$class_wp_cli_logger->setValue( $prev_logger );
 		$class_wp_cli_capture_exit->setValue( $prev_capture_exit );
+		WP_CLI::set_logger( $prev_logger );
 	}
 
 	public function dataHttpRequestBadCAcert() {
@@ -498,10 +496,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			$this->expectExceptionMessage( $exception_message );
 		} else {
 			// Save WP_CLI state.
-			$class_wp_cli_logger = new \ReflectionProperty( 'WP_CLI', 'logger' );
-			$class_wp_cli_logger->setAccessible( true );
-
-			$prev_logger = $class_wp_cli_logger->getValue();
+			$prev_logger = WP_CLI::get_logger();
 			$logger      = new Loggers\Execution();
 			WP_CLI::set_logger( $logger );
 		}
@@ -509,7 +504,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		Utils\http_request( 'GET', 'https://example.com', null, [], $options );
 
 		// Restore.
-		$class_wp_cli_logger->setValue( $prev_logger );
+		WP_CLI::set_logger( $prev_logger );
 
 		$this->assertTrue( empty( $logger->stdout ) );
 		$this->assertNotFalse( strpos( $logger->stderr, $exception_message ) );
@@ -644,13 +639,11 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	 */
 	public function testReportBatchOperationResults( $stdout, $stderr, $noun, $verb, $total, $successes, $failures, $skips ) {
 		// Save WP_CLI state.
-		$class_wp_cli_logger = new \ReflectionProperty( 'WP_CLI', 'logger' );
-		$class_wp_cli_logger->setAccessible( true );
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		$class_wp_cli_capture_exit->setAccessible( true );
-
-		$prev_logger       = $class_wp_cli_logger->getValue();
 		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
+
+		$prev_logger = WP_CLI::get_logger();
 
 		// Enable exit exception.
 		$class_wp_cli_capture_exit->setValue( true );
@@ -669,8 +662,8 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertSame( $stderr, $logger->stderr );
 
 		// Restore.
-		$class_wp_cli_logger->setValue( $prev_logger );
 		$class_wp_cli_capture_exit->setValue( $prev_capture_exit );
+		WP_CLI::set_logger( $prev_logger );
 	}
 
 	public function dataReportBatchOperationResults() {
