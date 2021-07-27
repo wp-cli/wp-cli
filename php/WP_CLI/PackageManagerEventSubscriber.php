@@ -13,6 +13,11 @@ use WP_CLI;
  */
 class PackageManagerEventSubscriber implements EventSubscriberInterface {
 
+	/**
+	 * Get subscribed events.
+	 *
+	 * @return array
+	 */
 	public static function getSubscribedEvents() {
 
 		return [
@@ -21,11 +26,25 @@ class PackageManagerEventSubscriber implements EventSubscriberInterface {
 		];
 	}
 
+	/**
+	 * Pre install operation message.
+	 *
+	 * @param \Composer\Installer\PackageEvent $event
+	 *
+	 * @return void
+	 */
 	public static function pre_install( PackageEvent $event ) {
 		$operation_message = $event->getOperation()->__toString();
 		WP_CLI::log( ' - ' . $operation_message );
 	}
 
+	/**
+	 * Post install operation log.
+	 *
+	 * @param \Composer\Installer\PackageEvent $event
+	 *
+	 * @return void
+	 */
 	public static function post_install( PackageEvent $event ) {
 
 		$operation = $event->getOperation();
