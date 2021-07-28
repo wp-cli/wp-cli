@@ -1312,7 +1312,7 @@ class Runner {
 			'domain'        => $url_parts['host'],
 			'path'          => $url_parts['path'],
 			'cookie_domain' => $url_parts['host'],
-			'site_name'     => 'Fake Site',
+			'site_name'     => 'WordPress',
 		];
 
 		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Intentional override.
