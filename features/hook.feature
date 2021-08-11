@@ -71,3 +71,34 @@ Feature: Tests `WP_CLI::add_hook()`
       `add_hook()` to the `before_invoke` is working.
       """
     And the return code should be 0
+
+  Scenario: Add callback to the `before_run_command` with args
+    Given a WP installation
+    And a before-run-command.php file:
+      """
+      <?php
+      $callback = function( $args, $assoc_args, $options ) {
+        WP_CLI::log( '`add_hook()` to the `before_run_command` is working.');
+        if ( 'version' !== $args[0] ) {
+          WP_CLI::error( 'Arg context not being passed in to callback properly' );
+        }
+
+        if ( ! array_key_exists( 'extra', $assoc_args ) {
+          WP_CLI::error( 'Assoc arg context not being passed in to callback properly' );
+        }
+      };
+
+      WP_CLI::add_hook( 'before_run_command', $callback );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - before-run-command.php
+      """
+
+    When I run `wp core version --extra`
+    Then STDOUT should contain:
+      """
+      `add_hook()` to the `before_run_command` is working.
+      """
+    And the return code should be 0
