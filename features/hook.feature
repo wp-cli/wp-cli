@@ -78,12 +78,12 @@ Feature: Tests `WP_CLI::add_hook()`
       """
       <?php
       $callback = function( $args, $assoc_args, $options ) {
-        WP_CLI::log( '`add_hook()` to the `before_run_command` is working.');
+        WP_CLI::log( '`add_hook()` to the `before_run_command` is working.' );
         if ( 'version' !== $args[0] ) {
           WP_CLI::error( 'Arg context not being passed in to callback properly' );
         }
 
-        if ( ! array_key_exists( 'extra', $assoc_args ) {
+        if ( ! array_key_exists( 'extra', $assoc_args ) ) {
           WP_CLI::error( 'Assoc arg context not being passed in to callback properly' );
         }
       };
