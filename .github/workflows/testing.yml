@@ -1,6 +1,10 @@
 name: Testing
 
-on: pull_request
+on:
+  pull_request:
+  push:
+    branches:
+      - master
 
 jobs:
 
@@ -155,14 +159,14 @@ jobs:
       - name: Configure DB environment
         if: steps.check_files.outputs.files_exists == 'true'
         run: |
-          export MYSQL_HOST=127.0.0.1
-          export MYSQL_TCP_PORT=${{ job.services.mysql.ports['3306'] }}
+          echo "MYSQL_HOST=127.0.0.1" >> $GITHUB_ENV
+          echo "MYSQL_TCP_PORT=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
           echo "WP_CLI_TEST_DBROOTUSER=root" >> $GITHUB_ENV
           echo "WP_CLI_TEST_DBROOTPASS=root" >> $GITHUB_ENV
           echo "WP_CLI_TEST_DBNAME=wp_cli_test" >> $GITHUB_ENV
           echo "WP_CLI_TEST_DBUSER=wp_cli_test" >> $GITHUB_ENV
           echo "WP_CLI_TEST_DBPASS=password1" >> $GITHUB_ENV
-          echo "WP_CLI_TEST_DBHOST=$MYSQL_HOST:$MYSQL_TCP_PORT" >> $GITHUB_ENV
+          echo "WP_CLI_TEST_DBHOST=127.0.0.1:${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
 
       - name: Prepare test database
         if: steps.check_files.outputs.files_exists == 'true'
