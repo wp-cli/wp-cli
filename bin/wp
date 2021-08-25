@@ -4,7 +4,7 @@
 # and 99.9% of all credit should go to the authors of that project:
 # https://www.drupal.org/project/drush
 # And 0.09% to the author of this project:
-# https://github.com/88mph/wpadmin/blob/master/wpadmin.php
+# https://github.com/bROthersRockers/wpadmin/blob/master/wpadmin.php
 
 # Get the absolute path of this executable
 ORIGDIR="$(pwd)"
