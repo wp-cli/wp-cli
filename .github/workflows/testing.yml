@@ -34,24 +34,11 @@ jobs:
           coverage: none
           tools: composer,cs2pr
 
-      - name: Get Composer cache Directory
+      - name: Install Composer dependencies & cache dependencies
         if: steps.check_files.outputs.files_exists == 'true'
-        id: composer-cache
-        run: |
-          echo "::set-output name=dir::$(composer config cache-files-dir)"
-
-      - name: Use Composer cache
-        if: steps.check_files.outputs.files_exists == 'true'
-        uses: actions/cache@master
-        with:
-          path: ${{ steps['composer-cache'].outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-
-      - name: Install dependencies
-        if: steps.check_files.outputs.files_exists == 'true'
-        run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
+        uses: "ramsey/composer-install@v1"
+        env:
+          COMPOSER_ROOT_VERSION: 'dev-master'
 
       - name: Setup problem matcher to provide annotations for PHPUnit
         if: steps.check_files.outputs.files_exists == 'true'
@@ -128,29 +115,16 @@ jobs:
           coverage: none
           tools: composer
 
-      - name: Get Composer cache Directory
-        if: steps.check_files.outputs.files_exists == 'true'
-        id: composer-cache
-        run: |
-          echo "::set-output name=dir::$(composer config cache-files-dir)"
-
-      - name: Use Composer cache
-        if: steps.check_files.outputs.files_exists == 'true'
-        uses: actions/cache@master
-        with:
-          path: ${{ steps['composer-cache'].outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-
       - name: Change ImageMagick policy to allow pdf->png conversion.
         if: steps.check_files.outputs.files_exists == 'true'
         run: |
           sudo sed -i 's/^.*policy.*coder.*none.*PDF.*//' /etc/ImageMagick-6/policy.xml
 
-      - name: Install dependencies
+      - name: Install Composer dependencies & cache dependencies
         if: steps.check_files.outputs.files_exists == 'true'
-        run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
+        uses: "ramsey/composer-install@v1"
+        env:
+          COMPOSER_ROOT_VERSION: 'dev-master'
 
       - name: Start MySQL server
         if: steps.check_files.outputs.files_exists == 'true'
