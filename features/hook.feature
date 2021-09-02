@@ -77,7 +77,7 @@ Feature: Tests `WP_CLI::add_hook()`
     And a before-run-command.php file:
       """
       <?php
-      $callback = function( $args, $assoc_args, $options ) {
+      $callback = function ( $args, $assoc_args, $options ) {
         WP_CLI::log( '`add_hook()` to the `before_run_command` is working.' );
         if ( 'version' !== $args[1] ) {
           WP_CLI::error( 'Arg context not being passed in to callback properly' );
