@@ -30,24 +30,11 @@ jobs:
         with:
           files: "composer.json"
 
-      - name: Get Composer cache directory
+      - name: Install Composer dependencies & cache dependencies
         if: steps.check_composer_file.outputs.files_exists == 'true'
-        id: composer-cache
-        run: |
-          echo "::set-output name=dir::$(composer config cache-files-dir)"
-
-      - name: Use Composer cache
-        if: steps.check_composer_file.outputs.files_exists == 'true'
-        uses: actions/cache@v1
-        with:
-          path: ${{ steps['composer-cache'].outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-
-      - name: Install dependencies
-        if: steps.check_composer_file.outputs.files_exists == 'true'
-        run: COMPOSER_ROOT_VERSION=dev-master composer install --prefer-dist --no-progress --no-suggest
+        uses: "ramsey/composer-install@v1"
+        env:
+          COMPOSER_ROOT_VERSION: 'dev-master'
 
       - name: Configure git user
         run: |
