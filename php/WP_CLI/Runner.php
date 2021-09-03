@@ -374,7 +374,7 @@ class Runner {
 	 * @param array $options     Configuration options for the function.
 	 */
 	public function run_command( $args, $assoc_args = [], $options = [] ) {
-		WP_CLI::do_hook( 'before_run_command' );
+		WP_CLI::do_hook( 'before_run_command', $args, $assoc_args, $options );
 
 		if ( ! empty( $options['back_compat_conversions'] ) ) {
 			list( $args, $assoc_args ) = self::back_compat_conversions( $args, $assoc_args );
