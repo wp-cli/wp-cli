@@ -66,8 +66,7 @@ final class Context {
 	 * Fake the environment of an administration request running on the WP
 	 * backend.
 	 */
-	private function fake_admin_request()
-	{
+	private function fake_admin_request() {
 		if ( defined( 'WP_ADMIN' ) ) {
 			if ( ! WP_ADMIN ) {
 				WP_CLI::warning( 'Could not fake admin request.' );
@@ -88,23 +87,27 @@ final class Context {
 		$_SERVER['PHP_SELF'] = '/wp-admin/wp-cli-fake-admin-file.php';
 
 		// Bootstrap the WordPress administration area.
-		WP_CLI::add_wp_hook( 'admin_init', function () {
-			global $wp_db_version, $_wp_submenu_nopriv;
+		WP_CLI::add_wp_hook(
+			'admin_init',
+			function () {
+				global $wp_db_version, $_wp_submenu_nopriv;
 
-			// Make sure we don't trigger a DB upgrade as that tries to redirect
-			// the page.
-			$wp_db_version = (int) get_option( 'db_version' );
+				// Make sure we don't trigger a DB upgrade as that tries to redirect
+				// the page.
+				$wp_db_version = (int) get_option( 'db_version' );
 
-			// Ensure WP does not iterate over an undefined variable in
-			// `user_can_access_admin_page()`.
-			if ( ! isset( $_wp_submenu_nopriv ) ) {
-				$_wp_submenu_nopriv = [];
-			}
+				// Ensure WP does not iterate over an undefined variable in
+				// `user_can_access_admin_page()`.
+				if ( ! isset( $_wp_submenu_nopriv ) ) {
+					$_wp_submenu_nopriv = [];
+				}
 
-			$this->log_in_as_admin_user();
+				$this->log_in_as_admin_user();
 
-			require_once ABSPATH . 'wp-admin/admin.php';
-		}, 0 );
+				require_once ABSPATH . 'wp-admin/admin.php';
+			},
+			0
+		);
 	}
 
 	/**
@@ -112,7 +115,7 @@ final class Context {
 	 *
 	 * @return string Context to use.
 	 */
-	private function deduce_best_context(  ) {
+	private function deduce_best_context() {
 		if ( $this->is_command_to_run_as_admin() ) {
 			return self::ADMIN;
 		}
@@ -126,9 +129,8 @@ final class Context {
 	 *
 	 * @return bool Whether the current command should be run as admin.
 	 */
-	private function is_command_to_run_as_admin()
-	{
-		$command = WP_CLI::get_runner()->arguments;
+	private function is_command_to_run_as_admin() {
+		 $command = WP_CLI::get_runner()->arguments;
 
 		foreach ( self::COMMANDS_TO_RUN_AS_ADMIN as $command_to_run_as_admin ) {
 			if ( array_slice( $command, 0, count( $command_to_run_as_admin ) ) === $command_to_run_as_admin ) {
