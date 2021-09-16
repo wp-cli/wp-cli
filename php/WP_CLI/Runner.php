@@ -1209,6 +1209,9 @@ class Runner {
 
 		$wp_cli_is_loaded = true;
 
+		// Handle --context flag.
+		( new Context() )->process( $this->config );
+
 		WP_CLI::debug( 'Begin WordPress load', 'bootstrap' );
 		WP_CLI::do_hook( 'before_wp_load' );
 
