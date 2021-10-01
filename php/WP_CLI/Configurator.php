@@ -148,8 +148,8 @@ class Configurator {
 		$local_assoc     = [];
 
 		foreach ( $arguments as $arg ) {
-			$positional_arg = null;
-			$assoc_arg      = null;
+			$positional = null;
+			$assoc_arg  = null;
 
 			if ( preg_match( '|^--no-([^=]+)$|', $arg, $matches ) ) {
 				$assoc_arg = [ $matches[1], false ];
