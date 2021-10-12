@@ -6,6 +6,12 @@ on:
     branches:
       - master
 
+# Cancels all previous workflow runs for the same branch that have not yet completed.
+concurrency:
+  # The concurrency group contains the workflow name and the branch name.
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
 jobs:
 
   unit: #-----------------------------------------------------------------------
