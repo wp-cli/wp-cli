@@ -253,6 +253,59 @@ Feature: Bootstrap WP-CLI
       Success: WP-Override-Eval
       """
 
+  Scenario: Extend existing bundled command through package manager
+
+    Given a WP installation
+    And a override/override.php file:
+      """
+      <?php
+      if ( ! class_exists( 'WP_CLI' ) ) {
+        return;
+      }
+
+      WP_CLI::add_hook( 'before_wp_load', static function () {
+        WP_CLI::add_command( 'plugin', 'My_Extended_Plugin_Command' );
+      } );
+      """
+    And a override/src/My_Extended_Plugin_Command.php file:
+      """
+      <?php
+      class My_Extended_Plugin_Command extends Plugin_Command {
+        public function install( $args, $assoc_args ) {
+          WP_CLI::error( 'Plugin installation has been disabled.' );
+        }
+      }
+      """
+    And a override/composer.json file:
+      """
+      {
+        "name": "wp-cli/override",
+        "description": "A command that extends the bundled 'plugin' command.",
+        "autoload": {
+          "psr-4": { "": "src/" },
+          "files": [ "override.php" ]
+        },
+        "extra": {
+          "commands": [
+            "plugin"
+          ]
+        }
+      }
+      """
+    And I run `wp package install {RUN_DIR}/override`
+
+    When I try `wp plugin install duplicate-post`
+    Then STDERR should contain:
+      """
+      Error: Plugin installation has been disabled.
+      """
+
+    When I run `wp plugin list`
+    Then STDOUT should contain:
+      """
+      hello
+      """
+
   Scenario: Define constant before running a command
 
     Given a WP installation
@@ -264,7 +317,6 @@ Feature: Bootstrap WP-CLI
       1
       """
 
-  @require-php-5.6
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (command line)
     Given a WP installation with Composer
     And a dependency on current wp-cli
@@ -276,14 +328,13 @@ Feature: Bootstrap WP-CLI
       WP CLI Site with both WordPress and wp-cli as Composer dependencies
       """
 
-  @require-php-5.6 @broken
+  @broken
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (web)
     Given a WP installation with Composer
     And a dependency on current wp-cli
     And a PHP built-in web server to serve 'WordPress'
     Then the HTTP status code should be 200
 
-  @require-php-5.6
   Scenario: Composer stack with both WordPress and wp-cli as dependencies and a custom vendor directory
     Given a WP installation with Composer and a custom vendor directory 'vendor-custom'
     And a dependency on current wp-cli
