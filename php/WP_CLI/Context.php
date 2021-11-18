@@ -45,7 +45,7 @@ final class Context {
 
 		WP_CLI::debug( "Using context {$context}", self::DEBUG_GROUP );
 
-		if ( $context === self::AUTO ) {
+		if ( self::AUTO === $context ) {
 			$context = $this->deduce_best_context();
 		}
 
@@ -79,7 +79,7 @@ final class Context {
 
 		// Define `WP_ADMIN` as being true. This causes the helper method
 		// `is_admin()` to return true as well.
-		define( 'WP_ADMIN', true );
+		define( 'WP_ADMIN', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
 
 		// Set a fake entry point to ensure wp-includes/vars.php does not throw
 		// notices/errors. This will be reflected in the global `$pagenow`
@@ -94,12 +94,12 @@ final class Context {
 
 				// Make sure we don't trigger a DB upgrade as that tries to redirect
 				// the page.
-				$wp_db_version = (int) get_option( 'db_version' );
+				$wp_db_version = (int) get_option( 'db_version' ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 				// Ensure WP does not iterate over an undefined variable in
 				// `user_can_access_admin_page()`.
 				if ( ! isset( $_wp_submenu_nopriv ) ) {
-					$_wp_submenu_nopriv = [];
+					$_wp_submenu_nopriv = []; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				}
 
 				$this->log_in_as_admin_user();
@@ -130,7 +130,7 @@ final class Context {
 	 * @return bool Whether the current command should be run as admin.
 	 */
 	private function is_command_to_run_as_admin() {
-		 $command = WP_CLI::get_runner()->arguments;
+		$command = WP_CLI::get_runner()->arguments;
 
 		foreach ( self::COMMANDS_TO_RUN_AS_ADMIN as $command_to_run_as_admin ) {
 			if ( array_slice( $command, 0, count( $command_to_run_as_admin ) ) === $command_to_run_as_admin ) {
