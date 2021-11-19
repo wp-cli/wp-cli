@@ -15,20 +15,21 @@ use WP_Error;
 /**
  * Performs the execution of a command.
  *
- * @property-read string $global_config_path
- * @property-read string $project_config_path
- * @property-read array  $config
- * @property-read array  $extra_config
- * @property-read string $alias
- * @property-read array  $aliases
- * @property-read array  $arguments
- * @property-read array  $assoc_args
- * @property-read array  $runtime_config
- * @property-read bool   $colorize
- * @property-read array  $early_invoke
- * @property-read string $global_config_path_debug
- * @property-read string $project_config_path_debug
- * @property-read array  $required_files
+ * @property-read string         $global_config_path
+ * @property-read string         $project_config_path
+ * @property-read array          $config
+ * @property-read array          $extra_config
+ * @property-read ContextManager $context_manager
+ * @property-read string         $alias
+ * @property-read array          $aliases
+ * @property-read array          $arguments
+ * @property-read array          $assoc_args
+ * @property-read array          $runtime_config
+ * @property-read bool           $colorize
+ * @property-read array          $early_invoke
+ * @property-read string         $global_config_path_debug
+ * @property-read string         $project_config_path_debug
+ * @property-read array          $required_files
  *
  * @package WP_CLI
  */
@@ -39,6 +40,8 @@ class Runner {
 
 	private $config;
 	private $extra_config;
+
+	private $context_manager;
 
 	private $alias;
 
@@ -64,6 +67,10 @@ class Runner {
 		}
 
 		return $this->$key;
+	}
+
+	public function register_context_manager( ContextManager $context_manager ) {
+		$this->context_manager = $context_manager;
 	}
 
 	/**
@@ -1210,7 +1217,7 @@ class Runner {
 		$wp_cli_is_loaded = true;
 
 		// Handle --context flag.
-		( new Context() )->process( $this->config );
+		$this->context_manager->switch_context( $this->config );
 
 		WP_CLI::debug( 'Begin WordPress load', 'bootstrap' );
 		WP_CLI::do_hook( 'before_wp_load' );
