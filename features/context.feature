@@ -134,18 +134,23 @@ Feature: Context handling via --context global flag
     And a custom-contexts.php file:
       """
       <?php
+
+      final class OverriddenAdminContext implements \WP_CLI\Context {
+        public function process( $config ) {
+          \WP_CLI::log( 'admin context was overridden' );
+        }
+      }
+
+      final class CustomContext implements \WP_CLI\Context {
+        public function process( $config ) {
+          \WP_CLI::log( 'custom context was added' );
+        }
+      }
+
       WP_CLI::add_hook( 'before_registering_contexts', static function ( $contexts ) {
         unset( $contexts['frontend'] );
-        $contexts['admin'] = new class implements \WP_CLI\Context {
-          public function process($config) {
-            \WP_CLI::log( 'admin context was overridden' );
-          }
-        };
-        $contexts['custom_context'] = new class implements \WP_CLI\Context {
-          public function process($config) {
-            \WP_CLI::log( 'custom context was added' );
-          }
-        };
+        $contexts['admin']          = new OverriddenAdminContext();
+        $contexts['custom_context'] = new CustomContext();
         return $contexts;
       } );
       """
