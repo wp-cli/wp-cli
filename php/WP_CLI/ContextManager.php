@@ -48,14 +48,13 @@ final class ContextManager {
 			: $this->current_context;
 
 		if ( ! array_key_exists( $context, $this->contexts ) ) {
-			WP_CLI::error( "Unknown context: {$context}" );
+			WP_CLI::error( "Unknown context '{$context}'" );
 		}
 
-		WP_CLI::debug( "Using context {$context}", Context::DEBUG_GROUP );
-
-		$this->contexts[ $context ]->process( $config );
+		WP_CLI::debug( "Using context '{$context}'", Context::DEBUG_GROUP );
 
 		$this->current_context = $context;
+		$this->contexts[ $context ]->process( $config );
 	}
 
 	/**

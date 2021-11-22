@@ -311,34 +311,3 @@ Feature: Global flags
       """
       Running SSH command: docker exec --user 'user' 'wordpress' sh -c
       """
-
-  Scenario: Context run
-    Given a WP install
-
-    When I run `wp eval 'var_export( is_admin() );'`
-    Then the return code should be 0
-    And STDOUT should be:
-      """
-      false
-      """
-
-    When I run `wp --context=admin eval 'var_export( is_admin() );'`
-    Then the return code should be 0
-    And STDOUT should be:
-      """
-      true
-      """
-
-    When I run `wp eval 'var_export( function_exists( "media_handle_upload" ) );'`
-    Then the return code should be 0
-    And STDOUT should be:
-      """
-      true
-      """
-
-    When I run `wp --context=admin eval 'var_export( function_exists( "media_handle_upload" ) );'`
-    Then the return code should be 0
-    And STDOUT should be:
-      """
-      true
-      """
