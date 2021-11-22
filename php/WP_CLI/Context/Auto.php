@@ -42,11 +42,12 @@ final class Auto implements Context {
 	 *
 	 * @param array $config Associative array of configuration data.
 	 * @return void
+	 * @throws WP_CLI\ExitException If an invalid context was deduced.
 	 */
 	public function process( $config ) {
 		$config['context'] = $this->deduce_best_context();
 
-		$this->context_manager->switch( $config );
+		$this->context_manager->switch_context( $config );
 	}
 
 	/**
