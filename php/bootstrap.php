@@ -31,6 +31,7 @@ function get_bootstrap_steps() {
 		'WP_CLI\Bootstrap\IncludeFallbackAutoloader',
 		'WP_CLI\Bootstrap\RegisterFrameworkCommands',
 		'WP_CLI\Bootstrap\RegisterDeferredCommands',
+		'WP_CLI\Bootstrap\InitializeContexts',
 		'WP_CLI\Bootstrap\LaunchRunner',
 	];
 }

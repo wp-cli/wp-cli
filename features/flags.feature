@@ -87,10 +87,10 @@ Feature: Global flags
   Scenario: Setting the WP user
     Given a WP installation
 
-    When I run `wp eval 'echo (int) is_user_logged_in();'`
+    When I run `wp eval 'var_export( is_user_logged_in() );'`
     Then STDOUT should be:
       """
-      0
+      false
       """
 
     When I run `wp --user=admin eval 'echo wp_get_current_user()->user_login;'`
