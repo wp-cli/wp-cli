@@ -73,6 +73,13 @@ return [
 		'default'  => [],
 	],
 
+	'context'           => [
+		'runtime' => '=<context>',
+		'file'    => '<context>',
+		'default' => 'cli',
+		'desc'    => 'Load WordPress in a given context.',
+	],
+
 	'disabled_commands' => [
 		'file'    => '<list>',
 		'default' => [],

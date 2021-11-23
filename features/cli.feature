@@ -36,7 +36,7 @@ Feature: `wp cli` tasks
     When I run `wp cli param-dump --with-values | grep -o '"current":' | uniq -c | tr -d ' '`
     Then STDOUT should be:
       """
-      18"current":
+      19"current":
       """
     And STDERR should be empty
     And the return code should be 0
