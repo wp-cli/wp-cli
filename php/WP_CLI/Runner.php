@@ -1155,6 +1155,15 @@ class Runner {
 			);
 		}
 
+		/*
+		 * Set the MySQLi error reporting off because WordPress handles its own.
+		 * This is due to the default value change from `MYSQLI_REPORT_OFF`
+		 * to `MYSQLI_REPORT_ERROR|MYSQLI_REPORT_STRICT` in PHP 8.1.
+		 */
+		if ( function_exists( 'mysqli_report' ) ) {
+			mysqli_report( 0 ); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_report
+		}
+
 		// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Declaring WP native constants.
 
 		if ( $this->cmd_starts_with( [ 'core', 'is-installed' ] )
