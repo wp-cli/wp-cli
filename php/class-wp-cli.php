@@ -571,11 +571,16 @@ class WP_CLI {
 		// Reattach commands attached to namespace to real command.
 		$subcommand_name  = (array) $leaf_name;
 		$existing_command = $command->find_subcommand( $subcommand_name );
-		if ( $existing_command instanceof CommandNamespace ) {
+		if ( $existing_command instanceof CompositeCommand && $existing_command->can_have_subcommands() ) {
 			$subcommands = $existing_command->get_subcommands();
-			if ( ! empty( $subcommands )
-				&& ( $leaf_command instanceof CompositeCommand
-					|| $leaf_command->can_have_subcommands ) ) {
+			if (
+				! empty( $subcommands )
+				&& (
+					$leaf_command instanceof CompositeCommand
+					||
+					$leaf_command->can_have_subcommands()
+				)
+			) {
 				foreach ( $subcommands as $subname => $subcommand ) {
 					$leaf_command->add_subcommand( $subname, $subcommand );
 				}

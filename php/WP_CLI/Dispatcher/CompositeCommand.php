@@ -61,7 +61,9 @@ class CompositeCommand {
 	 * @param Subcommand|CompositeCommand $command
 	 */
 	public function add_subcommand( $name, $command ) {
-		$this->subcommands[ $name ] = $command;
+		if ( ! array_key_exists( $name, $this->subcommands ) ) {
+			$this->subcommands[ $name ] = $command;
+		}
 	}
 
 	/**
