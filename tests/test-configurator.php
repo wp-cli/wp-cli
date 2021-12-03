@@ -1,8 +1,9 @@
 <?php
 
 use WP_CLI\Configurator;
+use WP_CLI\Tests\TestCase;
 
-class ConfiguratorTest extends PHPUnit_Framework_TestCase {
+class ConfiguratorTest extends TestCase {
 
 	public function testExtractAssoc() {
 		$args = Configurator::extract_assoc( [ 'foo', '--bar', '--baz=text' ] );
@@ -58,8 +59,5 @@ class ConfiguratorTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertEquals( 'test', $args[1][0][0] );
 		$this->assertEquals( 'text--text', $args[1][0][1] );
-
 	}
-
-
 }

@@ -1,8 +1,9 @@
 <?php
 
+use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
-class WPVersionCompareTest extends PHPUnit_Framework_TestCase {
+class WPVersionCompareTest extends TestCase {
 
 	/**
 	 * Test basic functionality
@@ -74,5 +75,4 @@ class WPVersionCompareTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue( Utils\wp_version_compare( '4.9', '>=' ) );
 		$this->assertFalse( Utils\wp_version_compare( '4.9', '<' ) );
 	}
-
 }

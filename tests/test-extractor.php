@@ -2,9 +2,10 @@
 
 use WP_CLI\Extractor;
 use WP_CLI\Loggers;
+use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
-class Extractor_Test extends PHPUnit_Framework_TestCase {
+class Extractor_Test extends TestCase {
 
 	public static $copy_overwrite_files_prefix = 'wp-cli-test-utils-copy-overwrite-files-';
 
@@ -25,8 +26,8 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 	public static $logger      = null;
 	public static $prev_logger = null;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		self::$prev_logger = WP_CLI::get_logger();
 
@@ -40,11 +41,11 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		}
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		// Restore logger.
 		WP_CLI::set_logger( self::$prev_logger );
 
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	public function test_rmdir() {

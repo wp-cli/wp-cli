@@ -1,11 +1,12 @@
 <?php
 
+use WP_CLI\Tests\TestCase;
 
 require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
 require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
 require_once dirname( __DIR__ ) . '/php/commands/help.php';
 
-class HelpTest extends PHPUnit_Framework_TestCase {
+class HelpTest extends TestCase {
 
 	public function test_parse_reference_links() {
 		$test_class = new ReflectionClass( 'Help_Command' );
