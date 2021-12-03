@@ -572,19 +572,13 @@ class WP_CLI {
 		$subcommand_name  = (array) $leaf_name;
 		$existing_command = $command->find_subcommand( $subcommand_name );
 		if ( $existing_command instanceof CompositeCommand && $existing_command->can_have_subcommands() ) {
-			$subcommands = $existing_command->get_subcommands();
-			if (
-				! empty( $subcommands )
-				&& (
-					$leaf_command instanceof CompositeCommand
-					||
-					$leaf_command->can_have_subcommands()
-				)
-			) {
-				foreach ( $subcommands as $subname => $subcommand ) {
-					$leaf_command->add_subcommand( $subname, $subcommand );
-				}
+			if ( $leaf_command instanceof CommandNamespace || ! $leaf_command->can_have_subcommands() ) {
+				$command_to_keep = $existing_command;
+			} else {
+				$command_to_keep = $leaf_command;
 			}
+
+			self::merge_sub_commands( $command_to_keep, $existing_command, $leaf_command );
 		}
 
 		/** @var Dispatcher\Subcommand|Dispatcher\CompositeCommand|Dispatcher\CommandNamespace $leaf_command */
@@ -657,6 +651,24 @@ class WP_CLI {
 
 		self::do_hook( "after_add_command:{$name}" );
 		return true;
+	}
+
+	/**
+	 * Merge the sub-commands of two commands into a single command to keep.
+	 *
+	 * @param CompositeCommand $command_to_keep Command to merge the sub commands into. This is typically one of the
+	 *                                          two others.
+	 * @param CompositeCommand $old_command     Command that was already registered.
+	 * @param CompositeCommand $new_command     New command that is being added.
+	 */
+	private static function merge_sub_commands( $command_to_keep, $old_command, $new_command ) {
+		foreach ( $old_command->get_subcommands() as $subname => $subcommand ) {
+			$command_to_keep->add_subcommand( $subname, $subcommand, false );
+		}
+
+		foreach ( $new_command->get_subcommands() as $subname => $subcommand ) {
+			$command_to_keep->add_subcommand( $subname, $subcommand, true );
+		}
 	}
 
 	/**
