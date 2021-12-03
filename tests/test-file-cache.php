@@ -2,11 +2,12 @@
 
 use WP_CLI\FileCache;
 use WP_CLI\Loggers;
+use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
 require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
 
-class FileCacheTest extends PHPUnit_Framework_TestCase {
+class FileCacheTest extends TestCase {
 
 	/**
 	 * Test get_root() deals with backslashed directory.
@@ -63,7 +64,7 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 			chmod( $cache_dir . '/test1', 0000 );
 			$result   = $method->invokeArgs( $cache, [ $cache_dir . '/test1/error' ] );
 			$expected = "/^Warning: Failed to create directory '.+': mkdir\(\): Permission denied\.$/";
-			$this->assertRegexp( $expected, $logger->stderr );
+			$this->assertMatchesRegularExpression( $expected, $logger->stderr );
 		}
 
 		// It should be failed because file exists.
@@ -71,7 +72,7 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 		file_put_contents( $cache_dir . '/test2', '' );
 		$result   = $method->invokeArgs( $cache, [ $cache_dir . '/test2' ] );
 		$expected = "/^Warning: Failed to create directory '.+': mkdir\(\): File exists\.$/";
-		$this->assertRegexp( $expected, $logger->stderr );
+		$this->assertMatchesRegularExpression( $expected, $logger->stderr );
 
 		// Restore
 		chmod( $cache_dir . '/test1', 0755 );

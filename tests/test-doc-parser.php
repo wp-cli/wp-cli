@@ -1,8 +1,9 @@
 <?php
 
 use WP_CLI\DocParser;
+use WP_CLI\Tests\TestCase;
 
-class DocParserTests extends PHPUnit_Framework_TestCase {
+class DocParserTests extends TestCase {
 
 	public function test_empty() {
 		$doc = new DocParser( '' );
@@ -209,5 +210,4 @@ EOB;
 		$this->assertEquals( $expected, $doc->get_arg_args( 'format' ) );
 		$this->assertNull( $doc->get_arg_args( 'hook' ) );
 	}
-
 }

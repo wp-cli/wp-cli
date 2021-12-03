@@ -2,6 +2,8 @@
 // phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound -- Ignoring test doubles.
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound -- Ignoring test doubles.
 
+use WP_CLI\Tests\TestCase;
+
 class MockRegularLogger extends WP_CLI\Loggers\Regular {
 
 	protected function get_runner() {
@@ -28,7 +30,7 @@ class MockQuietLogger extends WP_CLI\Loggers\Quiet {
 	}
 }
 
-class LoggingTests extends PHPUnit_Framework_TestCase {
+class LoggingTests extends TestCase {
 
 	public function testLogDebug() {
 		$message = 'This is a test message.';

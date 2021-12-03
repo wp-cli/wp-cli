@@ -29,9 +29,6 @@
         "ext-zip": "Needed to support extraction of ZIP archives when doing downloads or updates"
     },
     "config": {
-        "platform": {
-            "php": "5.6"
-        },
         "process-timeout": 7200,
         "sort-packages": true
     },

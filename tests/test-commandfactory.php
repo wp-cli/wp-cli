@@ -1,9 +1,10 @@
 <?php
 
+use WP_CLI\Tests\TestCase;
 
 require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
 
-class CommandFactoryTests extends PHPUnit_Framework_TestCase {
+class CommandFactoryTests extends TestCase {
 
 	/**
 	 * @dataProvider dataProviderExtractLastDocComment

@@ -2,12 +2,13 @@
 
 use WP_CLI\ExitException;
 use WP_CLI\Loggers;
+use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
 require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
 require_once __DIR__ . '/mock-requests-transport.php';
 
-class UtilsTest extends PHPUnit_Framework_TestCase {
+class UtilsTest extends TestCase {
 
 	public function testIncrementVersion() {
 		// keyword increments
