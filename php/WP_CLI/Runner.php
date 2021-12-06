@@ -1180,7 +1180,7 @@ class Runner {
 
 			// We really need a URL here
 			if ( ! isset( $_SERVER['HTTP_HOST'] ) ) {
-				$url = 'http://example.com';
+				$url = 'https://example.com';
 				WP_CLI::set_url( $url );
 			}
 

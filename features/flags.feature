@@ -35,7 +35,7 @@ Feature: Global flags
     When I run `wp --url=example.com/foo option get home`
     Then STDOUT should be:
       """
-      http://example.com/foo
+      https://example.com/foo
       """
 
   @require-wp-3.9
