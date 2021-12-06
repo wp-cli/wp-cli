@@ -946,7 +946,6 @@ Feature: Get help about WP-CLI commands
                             longgg description.
 
       """
-    And STDERR should be empty
 
     # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
     When I try `TERM=vt100 COLUMNS=80 wp help test-wordwrap | awk '{print length, $0}' | sort -nr | head -1 | cut -f1 -d" "`
