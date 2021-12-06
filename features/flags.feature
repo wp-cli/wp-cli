@@ -33,9 +33,9 @@ Feature: Global flags
     And I run `wp site create --slug=foo`
 
     When I run `wp --url=example.com/foo option get home`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
-      https://example.com/foo
+      example.com/foo
       """
 
   @require-wp-3.9
