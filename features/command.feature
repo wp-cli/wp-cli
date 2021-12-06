@@ -546,7 +546,7 @@ Feature: WP-CLI Commands
 
       SYNOPSIS
 
-        wp foo
+        wp foo 
 
       EXAMPLES
 
