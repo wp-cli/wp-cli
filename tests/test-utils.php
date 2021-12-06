@@ -2,12 +2,13 @@
 
 use WP_CLI\ExitException;
 use WP_CLI\Loggers;
+use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
 require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
 require_once __DIR__ . '/mock-requests-transport.php';
 
-class UtilsTest extends PHPUnit_Framework_TestCase {
+class UtilsTest extends TestCase {
 
 	public function testIncrementVersion() {
 		// keyword increments
@@ -855,7 +856,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			[ 'http://user:pass@example.com:9090/path?arg=value#anchor', -1, true, [ 'scheme' => 'http', 'host' => 'example.com', 'port' => 9090, 'user' => 'user', 'pass' => 'pass', 'path' => '/path', 'query' => 'arg=value', 'fragment' => 'anchor' ] ],
 			[ 'example.com:9090/path?arg=value#anchor', -1, true, [ 'scheme' => 'http', 'host' => 'example.com', 'port' => 9090, 'path' => '/path', 'query' => 'arg=value', 'fragment' => 'anchor' ] ],
 			[ 'example.com:9090/path?arg=value#anchor', -1, false, [ 'host' => 'example.com', 'port' => 9090, 'path' => '/path', 'query' => 'arg=value', 'fragment' => 'anchor' ] ],
-			[ 'http://example.com', PHP_URL_HOST, true, 'example.com' ],
+			[ 'https://example.com', PHP_URL_HOST, true, 'example.com' ],
 		];
 	}
 

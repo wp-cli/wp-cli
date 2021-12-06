@@ -1,8 +1,9 @@
 <?php
 
 use WP_CLI\Inflector;
+use WP_CLI\Tests\TestCase;
 
-class InflectorTest extends PHPUnit_Framework_TestCase {
+class InflectorTest extends TestCase {
 
 	/**
 	 * @dataProvider dataProviderPluralize

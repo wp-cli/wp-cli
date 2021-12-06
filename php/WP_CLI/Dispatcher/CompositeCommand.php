@@ -57,11 +57,15 @@ class CompositeCommand {
 	 * Add a named subcommand to this composite command's
 	 * set of contained subcommands.
 	 *
-	 * @param string $name Represents how subcommand should be invoked
-	 * @param Subcommand|CompositeCommand $command
+	 * @param string                      $name     Represents how subcommand should be invoked
+	 * @param Subcommand|CompositeCommand $command  Cub-command to add.
+	 * @param bool                        $override Optional. Whether to override an existing subcommand of the same
+	 *                                              name.
 	 */
-	public function add_subcommand( $name, $command ) {
-		$this->subcommands[ $name ] = $command;
+	public function add_subcommand( $name, $command, $override = true ) {
+		if ( $override || ! array_key_exists( $name, $this->subcommands ) ) {
+			$this->subcommands[ $name ] = $command;
+		}
 	}
 
 	/**

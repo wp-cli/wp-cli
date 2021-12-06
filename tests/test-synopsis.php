@@ -1,8 +1,9 @@
 <?php
 
 use WP_CLI\SynopsisParser;
+use WP_CLI\Tests\TestCase;
 
-class SynopsisParserTest extends PHPUnit_Framework_TestCase {
+class SynopsisParserTest extends TestCase {
 
 	public function testEmpty() {
 		$r = SynopsisParser::parse( ' ' );
@@ -181,5 +182,4 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$r = SynopsisParser::render( $a );
 		$this->assertEquals( $o, $r );
 	}
-
 }

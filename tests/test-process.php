@@ -1,9 +1,10 @@
 <?php
 
 use WP_CLI\Process;
+use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
-class ProcessTests extends PHPUnit_Framework_TestCase {
+class ProcessTests extends TestCase {
 
 	/**
 	 * @dataProvider data_process_env
