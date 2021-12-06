@@ -107,41 +107,41 @@ Feature: Get help about WP-CLI commands
   Scenario: Help for internal commands with WP
     Given a WP installation
 
-    When I run `wp help`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help`
     Then STDOUT should contain:
       """
         Run 'wp help <command>' to get more information on a specific command.
 
       """
-    And STDERR should be empty
 
-    When I run `wp help core`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help core`
     Then STDOUT should contain:
       """
         wp core
       """
-    And STDERR should be empty
 
-    When I run `wp help core download`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help core download`
     Then STDOUT should contain:
       """
         wp core download
       """
-    And STDERR should be empty
 
-    When I run `wp help help`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help help`
     Then STDOUT should contain:
       """
         wp help
       """
-    And STDERR should be empty
 
-    When I run `wp help help`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help help`
     Then STDOUT should contain:
       """
       GLOBAL PARAMETERS
       """
-    And STDERR should be empty
 
   @require-php-5.6
   Scenario: Help when WordPress is downloaded but not installed
@@ -170,26 +170,26 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
-    When I run `wp help core`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help core`
     Then STDOUT should contain:
       """
       wp core
       """
-    And STDERR should be empty
 
-    When I run `wp help config`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help config`
     Then STDOUT should contain:
       """
       wp config
       """
-    And STDERR should be empty
 
-    When I run `wp help db`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help db`
     Then STDOUT should contain:
       """
       wp db
       """
-    And STDERR should be empty
 
     When I try `wp help non-existent-command`
     Then the return code should be 1
@@ -208,7 +208,7 @@ Feature: Get help about WP-CLI commands
 
     When I try `wp help non-existent-command`
     Then the return code should be 1
-    And STDERR should be:
+    And STDERR should contain:
       """
       Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
       """
@@ -216,7 +216,7 @@ Feature: Get help about WP-CLI commands
 
     When I try `wp help non-existent-command --path=/nowhere`
     Then the return code should be 1
-    And STDERR should be:
+    And STDERR should contain:
       """
       Warning: No WordPress installation found. If the command 'non-existent-command' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
@@ -225,7 +225,7 @@ Feature: Get help about WP-CLI commands
 
     When I try `wp help non-existent-command non-existent-subcommand`
     Then the return code should be 1
-    And STDERR should be:
+    And STDERR should contain:
       """
       Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
       """
@@ -233,7 +233,7 @@ Feature: Get help about WP-CLI commands
 
     When I try `wp help non-existent-command non-existent-subcommand --path=/nowhere`
     Then the return code should be 1
-    And STDERR should be:
+    And STDERR should contain:
       """
       Warning: No WordPress installation found. If the command 'non-existent-command non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
@@ -245,7 +245,7 @@ Feature: Get help about WP-CLI commands
 
     When I try `wp help non-existent-command`
     Then the return code should be 1
-    And STDERR should be:
+    And STDERR should contain:
       """
       Warning: No WordPress installation found. If the command 'non-existent-command' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
@@ -257,7 +257,7 @@ Feature: Get help about WP-CLI commands
 
     When I try `wp help config non-existent-subcommand`
     Then the return code should be 1
-    And STDERR should be:
+    And STDERR should contain:
       """
       Error: 'non-existent-subcommand' is not a registered subcommand of 'config'. See 'wp help config' for available subcommands.
       """
@@ -265,7 +265,7 @@ Feature: Get help about WP-CLI commands
 
     When I try `wp help config non-existent-subcommand --path=/nowhere`
     Then the return code should be 1
-    And STDERR should be:
+    And STDERR should contain:
       """
       Warning: No WordPress installation found. If the command 'config non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'non-existent-subcommand' is not a registered subcommand of 'config'. See 'wp help config' for available subcommands.
@@ -274,7 +274,7 @@ Feature: Get help about WP-CLI commands
 
     When I try `wp help core non-existent-subcommand`
     Then the return code should be 1
-    And STDERR should be:
+    And STDERR should contain:
       """
       Error: 'non-existent-subcommand' is not a registered subcommand of 'core'. See 'wp help core' for available subcommands.
       """
@@ -282,7 +282,7 @@ Feature: Get help about WP-CLI commands
 
     When I try `wp help core non-existent-subcommand --path=/nowhere`
     Then the return code should be 1
-    And STDERR should be:
+    And STDERR should contain:
       """
       Warning: No WordPress installation found. If the command 'core non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'non-existent-subcommand' is not a registered subcommand of 'core'. See 'wp help core' for available subcommands.
@@ -291,7 +291,7 @@ Feature: Get help about WP-CLI commands
 
     When I try `wp help db non-existent-subcommand`
     Then the return code should be 1
-    And STDERR should be:
+    And STDERR should contain:
       """
       Error: 'non-existent-subcommand' is not a registered subcommand of 'db'. See 'wp help db' for available subcommands.
       """
@@ -299,7 +299,7 @@ Feature: Get help about WP-CLI commands
 
     When I try `wp help db non-existent-subcommand --path=/nowhere`
     Then the return code should be 1
-    And STDERR should be:
+    And STDERR should contain:
       """
       Warning: No WordPress installation found. If the command 'db non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'non-existent-subcommand' is not a registered subcommand of 'db'. See 'wp help db' for available subcommands.
@@ -424,19 +424,19 @@ Feature: Get help about WP-CLI commands
       """
     And I run `wp plugin activate test-cli`
 
-    When I run `wp help`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help`
     Then STDOUT should contain:
       """
       A dummy command.
       """
-    And STDERR should be empty
 
-    When I run `wp help test-help`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help test-help`
     Then STDOUT should contain:
       """
       wp test-help
       """
-    And STDERR should be empty
 
   Scenario: Help for incomplete commands
     Given an empty directory
@@ -516,7 +516,8 @@ Feature: Get help about WP-CLI commands
       """
     And I run `wp plugin activate test-cli`
 
-    When I run `wp help site`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help site`
     Then STDOUT should contain:
       """
       test-extra
@@ -543,19 +544,22 @@ Feature: Get help about WP-CLI commands
       WP_CLI::add_command( 'db test-extra-db', 'Test_CLI_Extra_Command' );
       """
 
-    When I run `wp help config`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help config`
     Then STDOUT should contain:
       """
       test-extra-config
       """
 
-    When I run `wp help core`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help core`
     Then STDOUT should contain:
       """
       test-extra-core
       """
 
-    When I run `wp help db`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help db`
     Then STDOUT should contain:
       """
       test-extra-db
@@ -564,7 +568,8 @@ Feature: Get help about WP-CLI commands
   Scenario: Help renders global parameters correctly
     Given a WP installation
 
-    When I run `wp help core`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help core`
     Then STDOUT should contain:
       """
       GLOBAL PARAMETERS
@@ -574,7 +579,8 @@ Feature: Get help about WP-CLI commands
       ## GLOBAL PARAMETERS
       """
 
-    When I run `wp help option get`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help option get`
     Then STDOUT should contain:
       """
       GLOBAL PARAMETERS
@@ -584,7 +590,8 @@ Feature: Get help about WP-CLI commands
       ## GLOBAL PARAMETERS
       """
 
-    When I run `wp help option`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp help option`
     Then STDOUT should contain:
       """
       GLOBAL PARAMETERS
@@ -666,7 +673,8 @@ Feature: Get help about WP-CLI commands
       """
     And I run `wp plugin activate test-cli`
 
-    When I run `COLUMNS=80 wp help test-wordwrap my_command`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `COLUMNS=80 wp help test-wordwrap my_command`
     Then STDOUT should contain:
       """
         123456789 123456789 123456789 123456789 123456789 123456789 123456789 12345678
@@ -721,15 +729,16 @@ Feature: Get help about WP-CLI commands
             the target site is specified.
 
       """
-    And STDERR should be empty
 
-    When I run `COLUMNS=80 wp help test-wordwrap my_command | awk '{print length, $0}' | sort -nr | head -1 | cut -f1 -d" "`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `COLUMNS=80 wp help test-wordwrap my_command | awk '{print length, $0}' | sort -nr | head -1 | cut -f1 -d" "`
     Then STDOUT should be:
       """
       80
       """
 
-    When I run `TERM=vt100 COLUMNS=40 wp help test-wordwrap my_command`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `TERM=vt100 COLUMNS=40 wp help test-wordwrap my_command`
     Then STDOUT should contain:
       """
         123456789 123456789 123456789
@@ -797,15 +806,16 @@ Feature: Get help about WP-CLI commands
             specified.
 
       """
-    And STDERR should be empty
 
-    When I run `TERM=vt100 COLUMNS=40 wp help test-wordwrap my_command | sed '/\-\-ssh/d' | awk '{print length, $0}' | sort -nr | head -1 | cut -f1 -d" "`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `TERM=vt100 COLUMNS=40 wp help test-wordwrap my_command | sed '/\-\-ssh/d' | awk '{print length, $0}' | sort -nr | head -1 | cut -f1 -d" "`
     Then STDOUT should be:
       """
       40
       """
 
-    When I run `TERM=vt100 COLUMNS=1000 wp help test-wordwrap my_command`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `TERM=vt100 COLUMNS=1000 wp help test-wordwrap my_command`
     Then STDOUT should contain:
       """
         [--skip-delete]
@@ -830,7 +840,6 @@ Feature: Get help about WP-CLI commands
             Pretend request came from given URL. In multisite, this argument is how the target site is specified.
 
       """
-    And STDERR should be empty
 
   Scenario: Help for commands with subcommands should wordwrap well
     Given a WP installation
@@ -912,7 +921,8 @@ Feature: Get help about WP-CLI commands
       """
     And I run `wp plugin activate test-cli`
 
-    When I run `TERM=vt100 COLUMNS=80 wp help test-wordwrap`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `TERM=vt100 COLUMNS=80 wp help test-wordwrap`
     Then STDOUT should contain:
       """
       SUBCOMMANDS
@@ -938,7 +948,8 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
-    When I run `TERM=vt100 COLUMNS=80 wp help test-wordwrap | awk '{print length, $0}' | sort -nr | head -1 | cut -f1 -d" "`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `TERM=vt100 COLUMNS=80 wp help test-wordwrap | awk '{print length, $0}' | sort -nr | head -1 | cut -f1 -d" "`
     Then STDOUT should be:
       """
       80
@@ -975,7 +986,8 @@ Feature: Get help about WP-CLI commands
         - command.php
       """
 
-    When I run `TERM=vt100 COLUMNS=80 wp help reference-link`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `TERM=vt100 COLUMNS=80 wp help reference-link`
     Then STDOUT should contain:
       """
         This is a [reference link][1].
@@ -1016,7 +1028,8 @@ Feature: Get help about WP-CLI commands
         - command.php
       """
 
-    When I run `TERM=vt100 COLUMNS=80 wp help reference-link`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `TERM=vt100 COLUMNS=80 wp help reference-link`
     Then STDOUT should contain:
       """
         This is a [reference link][1]. Also, there is a [second link][2]. They should
@@ -1027,7 +1040,8 @@ Feature: Get help about WP-CLI commands
         [2] http://wp-cli.org/
       """
 
-    When I run `TERM=vt100 COLUMNS=60 wp help reference-link`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `TERM=vt100 COLUMNS=60 wp help reference-link`
     Then STDOUT should contain:
       """
         This is a [reference link][1]. Also, there is a [second

@@ -32,7 +32,8 @@ Feature: Have a config file
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
-    When I run `wp` from 'wp-content'
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `wp` from 'wp-content'
     Then STDOUT should not be empty
 
   Scenario: WP in a subdirectory
@@ -102,25 +103,28 @@ Feature: Have a config file
         - core multisite-convert
       """
 
-    When I run `WP_CLI_CONFIG_PATH=config.yml wp`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `WP_CLI_CONFIG_PATH=config.yml wp`
     Then STDOUT should not contain:
       """
       eval-file
       """
 
     When I try `WP_CLI_CONFIG_PATH=config.yml wp help eval-file`
-    Then STDERR should be:
+    Then STDERR should contain:
       """
       Error: The 'eval-file' command has been disabled from the config file.
       """
 
-    When I run `WP_CLI_CONFIG_PATH=config.yml wp core`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `WP_CLI_CONFIG_PATH=config.yml wp core`
     Then STDOUT should not contain:
       """
       or: wp core multisite-convert
       """
 
-    When I run `WP_CLI_CONFIG_PATH=config.yml wp help core`
+    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
+    When I try `WP_CLI_CONFIG_PATH=config.yml wp help core`
     Then STDOUT should not contain:
       """
       multisite-convert
