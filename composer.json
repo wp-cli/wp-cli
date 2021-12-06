@@ -22,16 +22,13 @@
         "wp-cli/entity-command": "^1.2 || ^2",
         "wp-cli/extension-command": "^1.1 || ^2",
         "wp-cli/package-command": "^1 || ^2",
-        "wp-cli/wp-cli-tests": "^3.0.7"
+        "wp-cli/wp-cli-tests": "^3.1"
     },
     "suggest": {
         "ext-readline": "Include for a better --prompt implementation",
         "ext-zip": "Needed to support extraction of ZIP archives when doing downloads or updates"
     },
     "config": {
-        "platform": {
-            "php": "5.6"
-        },
         "process-timeout": 7200,
         "sort-packages": true
     },
