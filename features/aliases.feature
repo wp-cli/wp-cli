@@ -57,7 +57,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp @foo option get home`
     Then STDOUT should be:
       """
-      http://example.com
+      https://example.com
       """
 
     When I try `wp @foo option get home --path=foo`
@@ -111,7 +111,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp @foo option get home`
     Then STDOUT should be:
       """
-      http://example.com
+      https://example.com
       """
     And STDERR should be empty
 
@@ -335,7 +335,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `WP_CLI_CONFIG_PATH=config.yml wp @foo option get home`
     Then STDOUT should be:
       """
-      http://example.com
+      https://example.com
       """
 
     Given a wp-cli.yml file:
@@ -473,9 +473,9 @@ Feature: Create shortcuts to specific WordPress installs
     Given a WP multisite subdomain installation
     And a wp-cli.yml file:
       """
-      url: example.com
+      url: https://example.com
       @subsite:
-        url: subsite.example.com
+        url: https://subsite.example.com
       """
 
     When I run `wp site create --slug=subsite`
@@ -484,9 +484,10 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp option get siteurl`
     Then STDOUT should be:
       """
-      http://example.com
+      https://example.com
       """
 
+    # TODO: The HTTPS default is currently not forwarded to subsite creation.
     When I run `wp @subsite option get siteurl`
     Then STDOUT should be:
       """

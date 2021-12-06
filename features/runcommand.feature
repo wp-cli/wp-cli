@@ -50,7 +50,7 @@ Feature: Run a WP-CLI command
     When I run `wp <flag> run 'option get home'`
     Then STDOUT should be:
       """
-      http://example.com
+      https://example.com
       returned: NULL
       """
     And STDERR should be empty
@@ -85,7 +85,7 @@ Feature: Run a WP-CLI command
     When I run `wp run <flag> --return 'option get home'`
     Then STDOUT should be:
       """
-      returned: 'http://example.com'
+      returned: 'https://example.com'
       """
     And STDERR should be empty
     And the return code should be 0
@@ -276,7 +276,7 @@ Feature: Run a WP-CLI command
     When I run `wp <flag> run 'term url category 1'`
     Then STDOUT should be:
       """
-      http://example.com/?cat=1
+      https://example.com/?cat=1
       returned: NULL
       """
     And STDERR should be empty

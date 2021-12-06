@@ -176,7 +176,7 @@ Feature: Load WP-CLI
     When I run `wp option get home`
     Then STDOUT should be:
       """
-      http://example.com
+      https://example.com
       """
 
   Scenario: Handle error when WordPress cannot connect to the database host
@@ -342,7 +342,7 @@ Feature: Load WP-CLI
     When I try `wp option get home`
     Then STDOUT should be:
       """
-      http://example.com
+      https://example.com
       """
 
     # Undo above.

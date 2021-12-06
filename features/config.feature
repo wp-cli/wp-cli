@@ -535,5 +535,5 @@ Feature: Have a config file
     When I run `wp option get home --url=example.com`
     Then STDOUT should be:
       """
-      http://example.com
+      https://example.com
       """
