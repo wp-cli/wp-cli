@@ -661,7 +661,11 @@ class WP_CLI {
 	 * @param CompositeCommand $old_command     Command that was already registered.
 	 * @param CompositeCommand $new_command     New command that is being added.
 	 */
-	private static function merge_sub_commands( $command_to_keep, $old_command, $new_command ) {
+	private static function merge_sub_commands(
+		CompositeCommand $command_to_keep,
+		CompositeCommand $old_command,
+		CompositeCommand $new_command
+	) {
 		foreach ( $old_command->get_subcommands() as $subname => $subcommand ) {
 			$command_to_keep->add_subcommand( $subname, $subcommand, false );
 		}
