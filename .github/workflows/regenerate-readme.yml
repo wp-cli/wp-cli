@@ -8,7 +8,7 @@ on:
     paths-ignore:
       - 'features/**'
       - 'README.md'
-      
+
 # Cancels all previous workflow runs for the same branch that have not yet completed.
 concurrency:
   # The concurrency group contains the workflow name and the branch name.
@@ -30,6 +30,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check existence of composer.json file
         id: check_composer_file
