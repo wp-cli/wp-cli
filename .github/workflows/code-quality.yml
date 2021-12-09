@@ -33,6 +33,8 @@ jobs:
         with:
           php-version: '7.4'
           tools: cs2pr
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Composer dependencies & cache dependencies
         if: steps.check_composer_file.outputs.files_exists == 'true'
@@ -70,6 +72,8 @@ jobs:
         with:
           php-version: '7.4'
           tools: cs2pr
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Composer dependencies & cache dependencies
         if: steps.check_files.outputs.files_exists == 'true'
