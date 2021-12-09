@@ -1125,15 +1125,13 @@ Feature: WP-CLI Commands
       sub-command
       """
 
-    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
-    When I try `wp test-command sub-command`
+    When I run `wp test-command sub-command`
     Then STDOUT should contain:
       """
       Success: test-command sub-command
       """
 
-    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
-    When I try `wp unknown-parent child-command`
+    When I run `wp unknown-parent child-command`
     Then STDOUT should contain:
       """
       Success: unknown-parent child-command
@@ -1174,15 +1172,13 @@ Feature: WP-CLI Commands
       sub-command
       """
 
-    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
-    When I try `wp test-command sub-command`
+    When I run `wp test-command sub-command`
     Then STDOUT should contain:
       """
       Success: test-command sub-command
       """
 
-    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
-    When I try `wp unknown-parent child-command`
+    When I run `wp unknown-parent child-command`
     Then STDOUT should contain:
       """
       Success: unknown-parent child-command
@@ -1225,15 +1221,13 @@ Feature: WP-CLI Commands
       sub-command
       """
 
-    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
-    When I try `wp test-command sub-command`
+    When I run `wp test-command sub-command`
     Then STDOUT should contain:
       """
       Success: test-command sub-command
       """
 
-    # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
-    When I try `wp unknown-parent child-command`
+    When I run `wp unknown-parent child-command`
     Then STDOUT should contain:
       """
       Success: unknown-parent child-command
