@@ -34,7 +34,10 @@ Feature: Have a config file
 
     # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
     When I try `wp` from 'wp-content'
-    Then STDOUT should not be empty
+    Then STDOUT should contain:
+      """
+      wp <command>
+      """
 
   Scenario: WP in a subdirectory
     Given a WP installation in 'foo'
