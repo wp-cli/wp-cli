@@ -576,14 +576,16 @@ function mustache_render( $template_name, $data = [] ) {
 
 	$template = file_get_contents( $template_name );
 
-	$m = new Mustache_Engine(
+	$mustache = new Mustache_Engine(
 		[
 			'escape' => function ( $val ) {
 				return $val; },
 		]
 	);
 
-	return $m->render( $template, $data );
+	$mustache->setTokenizer( new WP_CLI\Compat\MustacheTokenizer() );
+
+	return $mustache->render( $template, $data );
 }
 
 /**
