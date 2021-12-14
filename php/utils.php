@@ -583,8 +583,6 @@ function mustache_render( $template_name, $data = [] ) {
 		]
 	);
 
-	$mustache->setTokenizer( new WP_CLI\Compat\MustacheTokenizer() );
-
 	return $mustache->render( $template, $data );
 }
 
