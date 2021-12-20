@@ -9,7 +9,7 @@ jobs:
   merge:
     name: Merge Pull Requests
     runs-on: ubuntu-latest
-
+    if: ${{ github.repository_owner == 'wp-cli' }}
     steps:
       - name: Merge
         uses: nucleos/auto-merge-action@1.0.0
