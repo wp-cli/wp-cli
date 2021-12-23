@@ -29,6 +29,9 @@
         "ext-zip": "Needed to support extraction of ZIP archives when doing downloads or updates"
     },
     "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
         "process-timeout": 7200,
         "sort-packages": true
     },
