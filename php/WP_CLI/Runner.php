@@ -656,7 +656,7 @@ class Runner {
 		// Detect and strip byte-order marks (BOMs).
 		// This code assumes they can only be found on the first line.
 		foreach ( self::BYTE_ORDER_MARKS as $bom_name => $bom_sequence ) {
-			WP_CLI::debug( "Looking for {$bom_name} BOM", 'bom' );
+			WP_CLI::debug( "Looking for {$bom_name} BOM", 'bootstrap' );
 
 			$length = strlen( $bom_sequence );
 
