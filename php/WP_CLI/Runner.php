@@ -35,6 +35,17 @@ use WP_Error;
  */
 class Runner {
 
+	/**
+	 * List of byte-order marks (BOMs) to detect.
+	 *
+	 * @var array<string, string>
+	 */
+	const BYTE_ORDER_MARKS = [
+		'UTF-8'       => "\xEF\xBB\xBF",
+		'UTF-16 (BE)' => "\xFE\xFF",
+		'UTF-16 (LE)' => "\xFF\xFE",
+	];
+
 	private $global_config_path;
 	private $project_config_path;
 
@@ -641,6 +652,22 @@ class Runner {
 		}
 
 		$wp_config_code = explode( "\n", file_get_contents( $wp_config_path ) );
+
+		// Detect and strip byte-order marks (BOMs).
+		// This code assumes they can only be found on the first line.
+		foreach ( self::BYTE_ORDER_MARKS as $bom_name => $bom_sequence ) {
+			WP_CLI::debug( "Looking for {$bom_name} BOM", 'bom' );
+
+			$length = strlen( $bom_sequence );
+
+			while ( substr( $wp_config_code[0], 0, $length ) === $bom_sequence ) {
+				WP_CLI::warning(
+					"{$bom_name} byte-order mark (BOM) detected in wp-config.php file, stripping it for parsing."
+				);
+
+				$wp_config_code[0] = substr( $wp_config_code[0], $length );
+			}
+		}
 
 		$found_wp_settings = false;
 

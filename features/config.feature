@@ -493,7 +493,7 @@ Feature: Have a config file
 
       // ** MySQL settings ** //
       /** The name of the database for WordPress */
-      define('DB_NAME', 'wp_cli_test');
+      define('DB_NAME', '{DB_NAME}');
 
       /** MySQL database username */
       define('DB_USER', '{DB_USER}');
@@ -543,4 +543,34 @@ Feature: Have a config file
     Then STDOUT should be:
       """
       https://example.com
+      """
+
+  Scenario: BOM found in wp-config.php file
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      /* That's all, stop editing! Happy publishing. */
+
+      /** Sets up WordPress vars and included files. */
+      require_once(ABSPATH . 'wp-settings.php');
+      """
+    And I run `sed -i '1s/^\(\xef\xbb\xbf\)\?/\xef\xbb\xbf/' wp-config.php`
+
+    When I try `wp core is-installed`
+    Then STDERR should not contain:
+      """
+      PHP Parse error: syntax error, unexpected '?'
+      """
+    And STDERR should contain:
+      """
+      Warning: UTF-8 byte-order mark (BOM) detected in wp-config.php file, stripping it for parsing.
       """
