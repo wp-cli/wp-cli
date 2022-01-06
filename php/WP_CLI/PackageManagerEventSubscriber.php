@@ -27,7 +27,7 @@ class PackageManagerEventSubscriber implements EventSubscriberInterface {
 	}
 
 	/**
-	 * Pre install operation message.
+	 * Pre-install operation message.
 	 *
 	 * @param \Composer\Installer\PackageEvent $event
 	 *
@@ -39,7 +39,7 @@ class PackageManagerEventSubscriber implements EventSubscriberInterface {
 	}
 
 	/**
-	 * Post install operation log.
+	 * Post-install operation log.
 	 *
 	 * @param \Composer\Installer\PackageEvent $event
 	 *
