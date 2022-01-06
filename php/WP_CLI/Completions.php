@@ -10,9 +10,9 @@ class Completions {
 	private $opts = [];
 
 	/**
-	 * Completions constructor.
+	 * Instantiate a Completions object.
 	 *
-	 * @param string $line Command message.
+	 * @param string $line Line of shell input to compute a completion for.
 	 */
 	public function __construct( $line ) {
 		// TODO: properly parse single and double quotes
@@ -106,11 +106,11 @@ class Completions {
 	}
 
 	/**
-	 * Get command.
+	 * Get the specific WP-CLI command that is being referenced.
 	 *
-	 * @param array $words All Words.
+	 * @param array $words Individual input line words.
 	 *
-	 * @return array|string
+	 * @return array|mixed Array with command and arguments, or error result if command detection failed.
 	 */
 	private function get_command( $words ) {
 		$positional_args = [];
@@ -141,7 +141,7 @@ class Completions {
 	/**
 	 * Get global parameters.
 	 *
-	 * @return array
+	 * @return array Associative array of global parameters.
 	 */
 	private function get_global_parameters() {
 		$params = [];
@@ -169,9 +169,9 @@ class Completions {
 	}
 
 	/**
-	 * Add option.
+	 * Store individual option.
 	 *
-	 * @param string $opt Option.
+	 * @param string $opt Option to store.
 	 *
 	 * @return void
 	 */
@@ -186,7 +186,7 @@ class Completions {
 	}
 
 	/**
-	 * Render line.
+	 * Render the stored options.
 	 *
 	 * @return void
 	 */
