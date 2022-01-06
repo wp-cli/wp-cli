@@ -41,7 +41,7 @@ jobs:
 
       - name: Install Composer dependencies & cache dependencies
         if: steps.check_composer_file.outputs.files_exists == 'true'
-        uses: "ramsey/composer-install@v1"
+        uses: "ramsey/composer-install@v2"
         env:
           COMPOSER_ROOT_VERSION: 'dev-master'
 
