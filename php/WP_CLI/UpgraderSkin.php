@@ -21,6 +21,13 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 	public function bulk_header() {}
 	public function bulk_footer() {}
 
+	/**
+	 * Show error message.
+	 *
+	 * @param string $error Error message.
+	 *
+	 * @return void
+	 */
 	public function error( $error ) {
 		if ( ! $error ) {
 			return;

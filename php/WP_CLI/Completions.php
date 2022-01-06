@@ -9,6 +9,11 @@ class Completions {
 	private $words;
 	private $opts = [];
 
+	/**
+	 * Instantiate a Completions object.
+	 *
+	 * @param string $line Line of shell input to compute a completion for.
+	 */
 	public function __construct( $line ) {
 		// TODO: properly parse single and double quotes
 		$this->words = explode( ' ', $line );
@@ -100,6 +105,13 @@ class Completions {
 
 	}
 
+	/**
+	 * Get the specific WP-CLI command that is being referenced.
+	 *
+	 * @param array $words Individual input line words.
+	 *
+	 * @return array|mixed Array with command and arguments, or error result if command detection failed.
+	 */
 	private function get_command( $words ) {
 		$positional_args = [];
 		$assoc_args      = [];
@@ -126,6 +138,11 @@ class Completions {
 		return [ $command, $args, $assoc_args ];
 	}
 
+	/**
+	 * Get global parameters.
+	 *
+	 * @return array Associative array of global parameters.
+	 */
 	private function get_global_parameters() {
 		$params = [];
 		foreach ( WP_CLI::get_configurator()->get_spec() as $key => $details ) {
@@ -151,6 +168,13 @@ class Completions {
 		return $params;
 	}
 
+	/**
+	 * Store individual option.
+	 *
+	 * @param string $opt Option to store.
+	 *
+	 * @return void
+	 */
 	private function add( $opt ) {
 		if ( '' !== $this->cur_word ) {
 			if ( 0 !== strpos( $opt, $this->cur_word ) ) {
@@ -161,6 +185,11 @@ class Completions {
 		$this->opts[] = $opt;
 	}
 
+	/**
+	 * Render the stored options.
+	 *
+	 * @return void
+	 */
 	public function render() {
 		foreach ( $this->opts as $opt ) {
 			WP_CLI::line( $opt );
