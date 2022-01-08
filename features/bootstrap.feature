@@ -320,7 +320,8 @@ Feature: Bootstrap WP-CLI
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (command line)
     Given a WP installation with Composer
     And a dependency on current wp-cli
-    And I run `composer require wp-cli/entity-command --no-interaction`
+    # Redirect STDERR to STDOUT as Composer produces non-error output on STDERR
+    And I run `composer require wp-cli/entity-command --with-all-dependencies --no-interaction 2>&1`
 
     When I run `vendor/bin/wp option get blogname`
     Then STDOUT should contain:
@@ -338,7 +339,8 @@ Feature: Bootstrap WP-CLI
   Scenario: Composer stack with both WordPress and wp-cli as dependencies and a custom vendor directory
     Given a WP installation with Composer and a custom vendor directory 'vendor-custom'
     And a dependency on current wp-cli
-    And I run `composer require wp-cli/entity-command --no-interaction`
+    # Redirect STDERR to STDOUT as Composer produces non-error output on STDERR
+    And I run `composer require wp-cli/entity-command --with-all-dependencies --no-interaction 2>&1`
 
     When I run `vendor-custom/bin/wp option get blogname`
     Then STDOUT should contain:
