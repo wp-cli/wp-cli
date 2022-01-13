@@ -25,18 +25,23 @@ class User extends Base {
 	public function get( $arg ) {
 
 		if ( is_numeric( $arg ) ) {
-			$user = get_user_by( 'id', $arg );
+			$users = get_users( [ 'include' => [ (int) $arg ] ] );
 		} elseif ( is_email( $arg ) ) {
-			$user = get_user_by( 'email', $arg );
+			$users = get_users(
+				[
+					'search'         => $arg,
+					'search_columns' => 'user_email',
+				]
+			);
 			// Logins can be emails.
 			if ( ! $user ) {
-				$user = get_user_by( 'login', $arg );
+				$users = get_users( [ 'login' => $arg ] );
 			}
 		} else {
-			$user = get_user_by( 'login', $arg );
+			$users = get_users( [ 'login' => $arg ] );
 		}
 
-		return $user;
+		return is_array( $users ) ? $users[0] : false;
 	}
 }
 
