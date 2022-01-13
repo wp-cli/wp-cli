@@ -195,7 +195,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should contain:
       """
-      We were able to connect to the database server (which means your username and password is okay) but not able to select the `wp_cli_test` database.
+      Error establishing a database connection.
       """
     And STDERR should contain:
       """
