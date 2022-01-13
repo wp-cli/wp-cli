@@ -23,20 +23,42 @@ class User extends Base {
 	 * @return WP_User|false The item if found; false otherwise.
 	 */
 	public function get( $arg ) {
-
 		if ( is_numeric( $arg ) ) {
-			$user = get_user_by( 'id', $arg );
+			$users = get_users(
+				[
+					'include' => [ (int) $arg ],
+					'number'  => 1,
+				]
+			);
 		} elseif ( is_email( $arg ) ) {
-			$user = get_user_by( 'email', $arg );
+			$users = get_users(
+				[
+					'search'         => $arg,
+					'search_columns' => [ 'user_email' ],
+					'number'         => 1,
+				]
+			);
 			// Logins can be emails.
-			if ( ! $user ) {
-				$user = get_user_by( 'login', $arg );
+			if ( ! $users ) {
+				$users = get_users(
+					[
+						'search'         => $arg,
+						'search_columns' => [ 'user_login' ],
+						'number'         => 1,
+					]
+				);
 			}
 		} else {
-			$user = get_user_by( 'login', $arg );
+			$users = get_users(
+				[
+					'search'         => $arg,
+					'search_columns' => [ 'user_login' ],
+					'number'         => 1,
+				]
+			);
 		}
 
-		return $user;
+		return ( is_array( $users ) && count( $users ) > 0 ) ? $users[0] : false;
 	}
 }
 
