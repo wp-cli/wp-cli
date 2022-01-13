@@ -42,16 +42,18 @@ class User extends Base {
 			if ( ! $users ) {
 				$users = get_users(
 					[
-						'login'  => $arg,
-						'number' => 1,
+						'search'         => $arg,
+						'search_columns' => [ 'user_login' ],
+						'number'         => 1,
 					]
 				);
 			}
 		} else {
 			$users = get_users(
 				[
-					'login'  => $arg,
-					'number' => 1,
+					'search'         => $arg,
+					'search_columns' => [ 'user_login' ],
+					'number'         => 1,
 				]
 			);
 		}
