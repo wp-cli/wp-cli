@@ -30,7 +30,7 @@ class User extends Base {
 			$users = get_users(
 				[
 					'search'         => $arg,
-					'search_columns' => 'user_email',
+					'search_columns' => [ 'user_email' ],
 				]
 			);
 			// Logins can be emails.
