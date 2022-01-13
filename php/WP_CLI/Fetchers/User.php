@@ -34,7 +34,7 @@ class User extends Base {
 				]
 			);
 			// Logins can be emails.
-			if ( ! $user ) {
+			if ( ! $users ) {
 				$users = get_users( [ 'login' => $arg ] );
 			}
 		} else {
