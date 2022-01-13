@@ -56,7 +56,7 @@ class User extends Base {
 			);
 		}
 
-		return is_array( $users ) ? $users[0] : false;
+		return ( is_array( $users ) && count( $users ) > 0 ) ? $users[0] : false;
 	}
 }
 
