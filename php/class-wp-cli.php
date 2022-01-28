@@ -1294,6 +1294,9 @@ class WP_CLI {
 			'return'     => false, // Capture and return output, or render in realtime.
 			'parse'      => false, // Parse returned output as a particular format.
 		];
+		
+		$defaults   = WP_CLI::do_hook( 'runcommand_defaults', $defaults );
+
 		$options    = array_merge( $defaults, $options );
 		$launch     = $options['launch'];
 		$exit_error = $options['exit_error'];
