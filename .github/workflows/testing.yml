@@ -125,6 +125,7 @@ jobs:
           php-version: '${{ matrix.php }}'
           extensions: gd, imagick, mysql, zip
           coverage: none
+          ini-values: log_errors=Off
           tools: composer
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
