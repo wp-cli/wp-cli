@@ -58,7 +58,7 @@ jobs:
         run: composer phpunit
 
   functional: #----------------------------------------------------------------------
-    name: Functional - WP ${{ matrix.wp }} on PHP ${{ matrix.php }} with MySQL ${{ matrix.mysql }}
+    name: Functional Xdebug Off - WP ${{ matrix.wp }} on PHP ${{ matrix.php }} with MySQL ${{ matrix.mysql }}
     strategy:
       fail-fast: false
       matrix:
