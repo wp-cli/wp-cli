@@ -1194,8 +1194,9 @@ class WP_CLI {
 
 		$args       = implode( ' ', array_map( 'escapeshellarg', $args ) );
 		$assoc_args = Utils\assoc_args_to_str( $assoc_args );
+		$alias      = self::get_runner()->alias ?: '';
 
-		$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$command} {$args} {$assoc_args}";
+		$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$command} {$args} {$assoc_args}";
 
 		return self::launch( $full_command, $exit_on_error, $return_detailed );
 	}
@@ -1331,8 +1332,9 @@ class WP_CLI {
 				}
 			}
 			$runtime_config = Utils\assoc_args_to_str( $runtime_config );
+			$alias          = self::get_runner()->alias ?: '';
 
-			$runcommand = "{$php_bin} {$script_path} {$runtime_config} {$command}";
+			$runcommand = "{$php_bin} {$script_path} {$alias} {$runtime_config} {$command}";
 
 			$pipes = [];
 			$proc  = Utils\proc_open_compat( $runcommand, $descriptors, $pipes, getcwd() );
