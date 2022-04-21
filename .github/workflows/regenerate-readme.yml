@@ -17,9 +17,15 @@ concurrency:
   cancel-in-progress: true
 
 
+permissions:
+  contents: read
+
 jobs:
 
   regenerate-readme: #----------------------------------------------------------
+    permissions:
+      contents: write  # for Git to git push
+      pull-requests: write  # for repo-sync/pull-request to create pull requests
     name: Regenerate README.md file
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'wp-cli' && ! contains(fromJson('[".github", "wp-cli", "wp-cli-bundle", "wp-super-cache-cli", "php-cli-tools", "wp-config-transformer"]'), github.event.repository.name) }}
