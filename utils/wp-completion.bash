@@ -5,7 +5,7 @@ _wp_complete() {
 	local cur=${COMP_WORDS[COMP_CWORD]}
 
 	IFS=$'\n';  # want to preserve spaces at the end
-	local opts="$(wp cli completions --line="$COMP_LINE" --point="$COMP_POINT")"
+	local opts="$(wp cli completions --line="$COMP_LINE" --point="$COMP_POINT" --allow-root)"
 
 	if [[ "$opts" =~ \<file\>\s* ]]
 	then
