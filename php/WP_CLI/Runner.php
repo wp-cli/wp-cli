@@ -454,7 +454,7 @@ class Runner {
 
 	/**
 	 * Perform a command against a remote server over SSH (or a container using
-	 * scheme of "docker" or "docker-compose").
+	 * scheme of "docker", "docker-compose", or "docker-compose-run").
 	 *
 	 * @param string $connection_string Passed connection string.
 	 * @return void
