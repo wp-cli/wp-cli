@@ -932,6 +932,7 @@ class WP_CLI {
 	 * @category Output
 	 *
 	 * @param integer $return_code
+	 * @return never
 	 */
 	public static function halt( $return_code ) {
 		if ( self::$capture_exit ) {
