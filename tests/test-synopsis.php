@@ -162,12 +162,21 @@ class SynopsisParserTest extends TestCase {
 				'description' => 'If you are hungry between meals, you should snack.',
 				'optional'    => true,
 			],
+			[
+				'name'        => 'skip',
+				'type'        => 'assoc',
+				'description' => 'Skip all meals, or skip a single meal by name.',
+				'optional'    => true,
+				'value'       => [
+					'optional' => true,
+				],
+			],
 		];
-		$this->assertEquals( '<message> [<secrets>...] --meal=<meal> [--snack=<snack>]', SynopsisParser::render( $a ) );
+		$this->assertEquals( '<message> [<secrets>...] --meal=<meal> [--snack=<snack>] [--skip[=<skip>]]', SynopsisParser::render( $a ) );
 	}
 
 	public function testParseThenRender() {
-		$o = '<positional> --assoc=<assoc> --<field>=<value> [--flag]';
+		$o = '<positional> --assoc=<assoc> [--double[=<optional>]] --<field>=<value> [--flag]';
 		$a = SynopsisParser::parse( $o );
 		$r = SynopsisParser::render( $a );
 		$this->assertEquals( $o, $r );

@@ -73,8 +73,14 @@ class SynopsisParser {
 
 					$reordered_synopsis['positional'] [] = $arg;
 				} elseif ( 'assoc' === $key ) {
-					$arg_value    = isset( $arg['value']['name'] ) ? $arg['value']['name'] : $arg['name'];
-					$rendered_arg = "--{$arg['name']}=<{$arg_value}>";
+					$arg_value = isset( $arg['value']['name'] ) ? $arg['value']['name'] : $arg['name'];
+					$arg_value = "=<{$arg_value}>";
+
+					if ( ! empty( $arg['value']['optional'] ) ) {
+						$arg_value = "[{$arg_value}]";
+					}
+
+					$rendered_arg = "--{$arg['name']}{$arg_value}";
 
 					$reordered_synopsis['assoc'] [] = $arg;
 				} elseif ( 'generic' === $key ) {
