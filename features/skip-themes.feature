@@ -56,64 +56,61 @@ Feature: Skipping themes
 
   Scenario: Skip parent and child themes
     Given a WP installation
-    And I run `wp theme install stargazer buntu`
+    And I run `wp theme install moina moina-blog`
 
-    When I run `wp theme activate stargazer`
-    # Expect a warning for this theme on PHP 8+.
-    When I try `wp eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
+    When I run `wp theme activate moina`
+    When I run `wp eval 'var_export( function_exists( "moina_setup" ) );'`
     Then STDOUT should be:
       """
       true
       """
 
-    When I run `wp --skip-themes=stargazer eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
+    When I run `wp --skip-themes=moina eval 'var_export( function_exists( "moina_setup" ) );'`
     Then STDOUT should be:
       """
       false
       """
     And STDERR should be empty
 
-    # Expect a warning for this theme on PHP 8+.
-    When I try `wp theme activate buntu`
-    # Expect a warning for this theme on PHP 8+.
-    When I try `wp eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
+
+    When I run `wp theme activate moina-blog`
+    When I run `wp eval 'var_export( function_exists( "moina_setup" ) );'`
     Then STDOUT should be:
       """
       true
       """
 
-    # Expect a warning for this theme on PHP 8+.
-    When I try `wp eval 'var_export( function_exists( "buntu_theme_setup" ) );'`
+    When I run `wp eval 'var_export( function_exists( "moina_blog_scripts" ) );'`
     Then STDOUT should be:
       """
       true
       """
 
-    When I run `wp --skip-themes=buntu eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
+    When I run `wp --skip-themes=moina-blog eval 'var_export( function_exists( "moina_setup" ) );'`
     Then STDOUT should be:
       """
       false
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=buntu eval 'var_export( function_exists( "buntu_theme_setup" ) );'`
+    When I run `wp --skip-themes=moina-blog eval 'var_export( function_exists( "moina_blog_scripts" ) );'`
     Then STDOUT should be:
       """
       false
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=buntu eval 'echo get_template_directory();'`
+    When I run `wp --skip-themes=moina-blog eval 'echo get_template_directory();'`
     Then STDOUT should contain:
       """
-      wp-content/themes/stargazer
+      wp-content/themes/moina
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=buntu eval 'echo get_stylesheet_directory();'`
+    When I run `wp --skip-themes=moina-blog eval 'echo get_stylesheet_directory();'`
     Then STDOUT should contain:
       """
-      wp-content/themes/buntu
+      wp-content/themes/moina-blog
       """
     And STDERR should be empty
 
