@@ -11,3 +11,4 @@ phpunit.xml
 phpcs.xml
 .phpcs.xml
 composer.lock
+wordpress/
