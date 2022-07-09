@@ -96,7 +96,7 @@ jobs:
         uses: repo-sync/pull-request@v2
         with:
           source_branch: regenerate-readme
-          destination_branch: main
+          destination_branch: ${{ github.event.repository.default_branch }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pr_title: Regenerate README file
           pr_body: "**This is an automated pull-request**\n\nRefreshes the `README.md` file with the latest changes to the docblocks in the source code."
