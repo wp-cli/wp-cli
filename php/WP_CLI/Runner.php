@@ -512,7 +512,7 @@ class Runner {
 
 		$wp_command      = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) );
 
-		if ( isset( $bits['scheme']) && 'docker-compose-run' === $bits['scheme'] ) {
+		if ( isset( $bits['scheme'] ) && 'docker-compose-run' === $bits['scheme'] ) {
 			$wp_command = implode( ' ', $wp_args );
 		}
 
