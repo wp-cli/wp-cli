@@ -587,7 +587,7 @@ class WP_CLI {
 			throw new Exception(
 				sprintf(
 					"'%s' can't have subcommands.",
-					implode( ' ', get_path( $command ) )
+					implode( ' ', Dispatcher\get_path( $command ) )
 				)
 			);
 		}
