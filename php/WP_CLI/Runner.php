@@ -635,7 +635,7 @@ class Runner {
 	 */
 	public function is_command_disabled( $command ) {
 		$path = implode( ' ', array_slice( Dispatcher\get_path( $command ), 1 ) );
-		return in_array( $path, $this->config['disabled_commands'], true );
+		return ! empty( $this->config['disabled_commands'] ) && in_array( $path, $this->config['disabled_commands'], true );
 	}
 
 	/**
@@ -887,6 +887,9 @@ class Runner {
 	}
 
 	public function init_colorization() {
+		if ( ! isset( $this->config['color'] ) ) {
+			return;
+		}
 		if ( 'auto' === $this->config['color'] ) {
 			$this->colorize = ( ! Utils\isPiped() && ! Utils\is_windows() );
 		} else {
@@ -895,6 +898,9 @@ class Runner {
 	}
 
 	public function init_logger() {
+		if ( ! isset( $this->config['quiet'] ) ) {
+			return;
+		}
 		if ( $this->config['quiet'] ) {
 			$logger = new Loggers\Quiet( $this->in_color() );
 		} else {
@@ -983,10 +989,10 @@ class Runner {
 
 			$configurator->merge_yml( $this->global_config_path, $this->alias );
 			$config                         = $configurator->to_array();
-			$this->required_files['global'] = $config[0]['require'];
+			$this->required_files['global'] = isset( $config[0]['require'] ) ? $config[0]['require'] : [];
 			$configurator->merge_yml( $this->project_config_path, $this->alias );
 			$config                          = $configurator->to_array();
-			$this->required_files['project'] = $config[0]['require'];
+			$this->required_files['project'] = isset( $config[0]['require'] ) ? $config[0]['require'] : [];
 		}
 
 		// Runtime config and args
@@ -1008,11 +1014,11 @@ class Runner {
 			$this->aliases['@all'] = 'Run command against every registered alias.';
 			$this->aliases         = array_reverse( $this->aliases );
 		}
-		$this->required_files['runtime'] = $this->config['require'];
+		$this->required_files['runtime'] = isset( $this->config['require'] ) ? $this->config['require'] : [];
 	}
 
 	private function check_root() {
-		if ( $this->config['allow-root'] || getenv( 'WP_CLI_ALLOW_ROOT' ) ) {
+		if ( ! empty( $this->config['allow-root'] ) || getenv( 'WP_CLI_ALLOW_ROOT' ) ) {
 			return; # they're aware of the risks!
 		}
 		if ( count( $this->arguments ) >= 2 && 'cli' === $this->arguments[0] && in_array( $this->arguments[1], [ 'update', 'info' ], true ) ) {
@@ -1134,7 +1140,7 @@ class Runner {
 
 		// Protect 'cli info' from most of the runtime,
 		// except when the command will be run over SSH
-		if ( 'cli' === $this->arguments[0] && ! empty( $this->arguments[1] ) && 'info' === $this->arguments[1] && ! $this->config['ssh'] ) {
+		if ( 'cli' === $this->arguments[0] && ! empty( $this->arguments[1] ) && 'info' === $this->arguments[1] && empty( $this->config['ssh'] ) ) {
 			$this->run_command_and_exit();
 		}
 
@@ -1142,7 +1148,7 @@ class Runner {
 			WP_CLI::error( "RESTful WP-CLI needs to be installed. Try 'wp package install wp-cli/restful'." );
 		}
 
-		if ( $this->config['ssh'] ) {
+		if ( ! empty( $this->config['ssh'] ) ) {
 			$this->run_ssh_command( $this->config['ssh'] );
 			return;
 		}
@@ -1398,11 +1404,11 @@ class Runner {
 	 */
 	private function setup_bootstrap_hooks() {
 
-		if ( $this->config['skip-plugins'] ) {
+		if ( ! empty( $this->config['skip-plugins'] ) ) {
 			$this->setup_skip_plugins_filters();
 		}
 
-		if ( $this->config['skip-themes'] ) {
+		if ( ! empty( $this->config['skip-themes'] ) ) {
 			WP_CLI::add_wp_hook( 'setup_theme', [ $this, 'action_setup_theme_wp_cli_skip_themes' ], 999 );
 		}
 

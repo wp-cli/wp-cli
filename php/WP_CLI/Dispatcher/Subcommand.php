@@ -174,7 +174,7 @@ class Subcommand extends CompositeCommand {
 
 		$spec = array_values( $spec );
 
-		$prompt_args = WP_CLI::get_config( 'prompt' );
+		$prompt_args = ! empty( WP_CLI::get_runner()->config['prompt'] ) ? WP_CLI::get_runner()->config['prompt'] : false;
 		if ( true !== $prompt_args ) {
 			$prompt_args = explode( ',', $prompt_args );
 		}

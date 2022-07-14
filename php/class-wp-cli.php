@@ -62,7 +62,12 @@ class WP_CLI {
 		static $configurator;
 
 		if ( ! $configurator ) {
-			$configurator = new Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
+			if ( defined( 'WP_CLI_CONFIG_SPEC_PATH' ) ) {
+				$config_spec = WP_CLI_CONFIG_SPEC_PATH;
+			} else {
+				$config_spec = WP_CLI_ROOT . '/php/config-spec.php';
+			}
+			$configurator = new Configurator( $config_spec );
 		}
 
 		return $configurator;

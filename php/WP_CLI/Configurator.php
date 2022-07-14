@@ -2,6 +2,7 @@
 
 namespace WP_CLI;
 
+use Exception;
 use Mustangostang\Spyc;
 
 /**
@@ -63,6 +64,9 @@ class Configurator {
 	 * @param string $path Path to config spec file.
 	 */
 	public function __construct( $path ) {
+		if ( ! file_exists( $path ) ) {
+			throw new Exception( sprintf( 'Unable to load config spec: %s', $path ) );
+		}
 		$this->spec = include $path;
 
 		$defaults = [

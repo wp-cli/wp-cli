@@ -41,7 +41,7 @@ abstract class Base {
 		if ( null === $start_time ) {
 			$start_time = microtime( true );
 		}
-		$debug = $this->get_runner()->config['debug'];
+		$debug = isset( $this->get_runner()->config['debug'] ) && $this->get_runner()->config['debug'];
 		if ( ! $debug ) {
 			return;
 		}

@@ -25,7 +25,7 @@ final class IncludePackageAutoloader extends AutoloaderStep {
 		}
 
 		$runner        = new RunnerInstance();
-		$skip_packages = $runner()->config['skip-packages'];
+		$skip_packages = ! empty( $runner()->config['skip-packages'] );
 		if ( true === $skip_packages ) {
 			WP_CLI::debug( 'Skipped loading packages.', 'bootstrap' );
 
