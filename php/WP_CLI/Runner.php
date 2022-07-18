@@ -277,6 +277,8 @@ class Runner {
 			}
 			$dir = $parent_dir;
 		}
+
+		return getcwd();
 	}
 
 	/**
