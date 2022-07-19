@@ -285,30 +285,35 @@ class FileCache {
 		/** @var Finder $finder */
 		$finder = $this->get_finder()->sortByName();
 
-		$files_to_delete = [];
+		$files_maxversion = [];
+		$files_maxversionpath = [];
 
 		foreach ( $finder as $file ) {
 			$pieces    = explode( '-', $file->getBasename( $file->getExtension() ) );
-			$timestamp = end( $pieces );
-
-			// No way to compare versions, do nothing.
-			if ( ! is_numeric( $timestamp ) ) {
-				continue;
+			$version = end( $pieces );
+			$basename_without_version = str_replace( '-' . $version, '', $file->getBasename() );
+			
+			// There's a file with an older version, delete it.
+			if ( isset( $files_maxversion[ $basename_without_version ] ) ) {
+				$vcomp=version_compare($basename_without_version,$files_maxversion[ $basename_without_version ]);
+				if ($vcomp == -1) {
+					//this version is older, so delete this one
+					unlink($file->getRealPath());
+				} else {
+					//the other version is older, delete it and save this version
+					unlink( $files_maxversionpath[ $basename_without_version ] );
+					$files_maxversionpath[ $basename_without_version ] = $file->getRealPath();
+					$files_maxversion[ $basename_without_version ] = $version;
+				}
+			} else {
+					$files_maxversionpath[ $basename_without_version ] = $file->getRealPath();
+					$files_maxversion[ $basename_without_version ] = $version;
 			}
-
-			$basename_without_timestamp = str_replace( '-' . $timestamp, '', $file->getBasename() );
-
-			// There's a file with an older timestamp, delete it.
-			if ( isset( $files_to_delete[ $basename_without_timestamp ] ) ) {
-				unlink( $files_to_delete[ $basename_without_timestamp ] );
-			}
-
-			$files_to_delete[ $basename_without_timestamp ] = $file->getRealPath();
 		}
 
 		return true;
 	}
-
+	
 	/**
 	 * Ensure directory exists
 	 *
