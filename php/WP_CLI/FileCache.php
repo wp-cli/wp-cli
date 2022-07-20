@@ -283,7 +283,7 @@ class FileCache {
 		}
 
 		/** @var Finder $finder */
-		$finder = $this->get_finder()->sortByName();
+		$finder               = $this->get_finder()->sortByName();
 
 		$files_maxversion     = [];
 		$files_maxversionpath = [];
@@ -296,7 +296,7 @@ class FileCache {
 			// There's a file with an older version, delete it.
 			if ( isset( $files_maxversion[ $basename_without_version ] ) ) {
 				$vcomp = version_compare( $basename_without_version, $files_maxversion[ $basename_without_version ] );
-				if ( $vcomp == -1 ) {
+				if ( $vcomp === -1 ) {
 					//this version is older, so delete this one
 					unlink( $file->getRealPath() );
 				} else {
