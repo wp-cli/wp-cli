@@ -296,7 +296,7 @@ class FileCache {
 			// There's a file with an older version, delete it.
 			if ( isset( $files_maxversion[ $basename_without_version ] ) ) {
 				$vcomp = version_compare( $basename_without_version, $files_maxversion[ $basename_without_version ] );
-				if ( $vcomp === -1 ) {
+				if ( -1 === $vcomp ) {
 					//this version is older, so delete this one
 					unlink( $file->getRealPath() );
 				} else {
