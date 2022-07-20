@@ -294,25 +294,25 @@ class FileCache {
 			$basename_without_version = str_replace( '-' . $version, '', $file->getBasename() );
 			$extension                = $file->getExtension();
 
-			// Cache should only contain .zip files
-			if ( 'zip' !== $extension ) {
-				unlink( $file->getRealPath() );
-			// There's a file with an older version, delete it.
-			} elseif ( isset( $files_maxversion[ $basename_without_version ] ) ) {
-				$vcomp = version_compare( $basename_without_version, $files_maxversion[ $basename_without_version ] );
-				if ( -1 === $vcomp ) {
-					//this version is older, so delete this one
-					unlink( $file->getRealPath() );
+			// pruning Doesn't apply to tmp files
+			if ( 'tmp' !== $extension ) {
+				// There's a file with an older version, delete it.
+				if ( isset( $files_maxversion[ $basename_without_version ] ) ) {
+					$vcomp = version_compare( $basename_without_version, $files_maxversion[ $basename_without_version ] );
+					if ( -1 === $vcomp ) {
+						//this version is older, so delete this one
+						unlink( $file->getRealPath() );
+					} else {
+						//the other version is older, delete it and save this version
+						unlink( $files_maxversionpath[ $basename_without_version ] );
+						$files_maxversionpath[ $basename_without_version ] = $file->getRealPath();
+						$files_maxversion[ $basename_without_version ]     = $version;
+					}
+				// First version of this, so save it
 				} else {
-					//the other version is older, delete it and save this version
-					unlink( $files_maxversionpath[ $basename_without_version ] );
-					$files_maxversionpath[ $basename_without_version ] = $file->getRealPath();
-					$files_maxversion[ $basename_without_version ]     = $version;
+						$files_maxversionpath[ $basename_without_version ] = $file->getRealPath();
+						$files_maxversion[ $basename_without_version ]     = $version;
 				}
-			// First version of this, so save it
-			} else {
-					$files_maxversionpath[ $basename_without_version ] = $file->getRealPath();
-					$files_maxversion[ $basename_without_version ]     = $version;
 			}
 		}
 
