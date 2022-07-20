@@ -283,7 +283,7 @@ class FileCache {
 		}
 
 		/** @var Finder $finder */
-		$finder               = $this->get_finder()->sortByName();
+		$finder = $this->get_finder()->sortByName();
 
 		$files_maxversion     = [];
 		$files_maxversionpath = [];
