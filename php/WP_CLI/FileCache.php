@@ -308,8 +308,8 @@ class FileCache {
 						$files_maxversionpath[ $basename_without_version ] = $file->getRealPath();
 						$files_maxversion[ $basename_without_version ]     = $version;
 					}
-				// First version of this, so save it
 				} else {
+						// First version of this, so save it
 						$files_maxversionpath[ $basename_without_version ] = $file->getRealPath();
 						$files_maxversion[ $basename_without_version ]     = $version;
 				}
