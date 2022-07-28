@@ -978,6 +978,10 @@ function get_home_dir() {
  * @return string String with trailing slash added.
  */
 function trailingslashit( $string ) {
+	if ( ! is_string( $string ) ) {
+		return '/';
+	}
+
 	return rtrim( $string, '/\\' ) . '/';
 }
 
