@@ -39,7 +39,7 @@ final class Admin implements Context {
 
 		// Bootstrap the WordPress administration area.
 		WP_CLI::add_wp_hook(
-			'admin_init',
+			'plugins_loaded',
 			function () {
 				global $wp_db_version, $_wp_submenu_nopriv;
 
@@ -57,6 +57,7 @@ final class Admin implements Context {
 
 				require_once ABSPATH . 'wp-admin/admin.php';
 			},
+			PHP_INT_MIN,
 			0
 		);
 	}
