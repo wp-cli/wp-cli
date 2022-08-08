@@ -57,7 +57,7 @@ final class Admin implements Context {
 
 				require_once ABSPATH . 'wp-admin/admin.php';
 			},
-			defined( 'PHP_INT_MIN' ) ? PHP_INT_MIN : -2147483648
+			defined( 'PHP_INT_MIN' ) ? PHP_INT_MIN : -2147483648, // phpcs:ignore PHPCompatibility.Constants.NewConstants.php_int_minFound
 			0
 		);
 	}
