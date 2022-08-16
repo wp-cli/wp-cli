@@ -118,7 +118,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install ghostscript -y
 
-      - name: Set up PHP envirnoment
+      - name: Set up PHP environment
         if: steps.check_files.outputs.files_exists == 'true'
         uses: shivammathur/setup-php@v2
         with:
