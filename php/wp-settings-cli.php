@@ -29,7 +29,7 @@ require ABSPATH . WPINC . '/plugin.php';
  * we're including version.php from another installation and don't want
  * these values to be overridden if already set.
  */
-global $wp_version, $wp_db_version, $tinymce_version, $required_php_version, $required_mysql_version, $wp_local_package;
+global $wp_version, $wp_db_version, $tinymce_version, $required_php_version, $required_mysql_version, $wp_local_package, $upgrading;
 require ABSPATH . WPINC . '/version.php';
 
 /**
@@ -78,7 +78,7 @@ wp_fix_server_vars();
  * @param bool $enable_checks Whether to enable maintenance mode. Default true.
  * @param int  $upgrading     The timestamp set in the .maintenance file.
  */
-if ( apply_filters( 'enable_maintenance_mode', true ) ) {
+if ( apply_filters( 'enable_maintenance_mode', true, $upgrading ) ) {
 	wp_maintenance();
 }
 
