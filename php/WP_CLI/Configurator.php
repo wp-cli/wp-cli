@@ -63,7 +63,7 @@ class Configurator {
 	 * @param string $path Path to config spec file.
 	 */
 	public function __construct( $path ) {
-		$this->spec = include $path;
+		self::load_config_spec( $path );
 
 		$defaults = [
 			'runtime'  => false,
@@ -78,6 +78,22 @@ class Configurator {
 
 			$this->config[ $key ] = $details['default'];
 		}
+	}
+
+	/**
+	 * Loads the config spec file.
+	 *
+	 * @param string $path Path to the config spec file.
+	 */
+	private function load_config_spec( $path ) {
+		$config_spec = include $path;
+		// A way for platforms to modify $config_spec.
+		// Use with caution!
+		if ( getenv( 'WP_CLI_INCLUDE_AFTER_CONFIG_SPEC_LOAD' )
+			&& is_readable( getenv( 'WP_CLI_INCLUDE_AFTER_CONFIG_SPEC_LOAD' ) ) ) {
+			include getenv( 'WP_CLI_INCLUDE_AFTER_CONFIG_SPEC_LOAD' );
+		}
+		$this->spec = $config_spec;
 	}
 
 	/**
