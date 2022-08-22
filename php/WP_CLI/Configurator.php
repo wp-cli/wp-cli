@@ -63,7 +63,7 @@ class Configurator {
 	 * @param string $path Path to config spec file.
 	 */
 	public function __construct( $path ) {
-		self::load_config_spec( $path );
+		$this->load_config_spec( $path );
 
 		$defaults = [
 			'runtime'  => false,
