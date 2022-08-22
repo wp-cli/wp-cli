@@ -90,7 +90,7 @@ class Configurator {
 		// A way for platforms to modify $config_spec.
 		// Use with caution!
 		$config_spec_filter_callback = getenv( 'WP_CLI_CONFIG_SPEC_FILTER_CALLBACK' );
-		if ( callable( $config_spec_filter_callback ) ) {
+		if ( is_callable( $config_spec_filter_callback ) ) {
 			$config_spec = $config_spec_filter_callback( $config_spec );
 		}
 		$this->spec = $config_spec;
