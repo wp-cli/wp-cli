@@ -89,8 +89,8 @@ class Configurator {
 		$config_spec = include $path;
 		// A way for platforms to modify $config_spec.
 		// Use with caution!
-		$config_spec_filter_callback = getenv( 'WP_CLI_CONFIG_SPEC_FILTER_CALLBACK' );
-		if ( is_callable( $config_spec_filter_callback ) ) {
+		$config_spec_filter_callback = defined( 'WP_CLI_CONFIG_SPEC_FILTER_CALLBACK' ) ? constant( 'WP_CLI_CONFIG_SPEC_FILTER_CALLBACK' ) : false;
+		if ( $config_spec_filter_callback && is_callable( $config_spec_filter_callback ) ) {
 			$config_spec = $config_spec_filter_callback( $config_spec );
 		}
 		$this->spec = $config_spec;
