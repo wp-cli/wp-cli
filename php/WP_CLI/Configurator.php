@@ -63,7 +63,7 @@ class Configurator {
 	 * @param string $path Path to config spec file.
 	 */
 	public function __construct( $path ) {
-		$this->spec = include $path;
+		$this->load_config_spec( $path );
 
 		$defaults = [
 			'runtime'  => false,
@@ -78,6 +78,22 @@ class Configurator {
 
 			$this->config[ $key ] = $details['default'];
 		}
+	}
+
+	/**
+	 * Loads the config spec file.
+	 *
+	 * @param string $path Path to the config spec file.
+	 */
+	private function load_config_spec( $path ) {
+		$config_spec = include $path;
+		// A way for platforms to modify $config_spec.
+		// Use with caution!
+		$config_spec_filter_callback = defined( 'WP_CLI_CONFIG_SPEC_FILTER_CALLBACK' ) ? constant( 'WP_CLI_CONFIG_SPEC_FILTER_CALLBACK' ) : false;
+		if ( $config_spec_filter_callback && is_callable( $config_spec_filter_callback ) ) {
+			$config_spec = $config_spec_filter_callback( $config_spec );
+		}
+		$this->spec = $config_spec;
 	}
 
 	/**
