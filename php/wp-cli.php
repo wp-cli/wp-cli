@@ -24,4 +24,9 @@ $_SERVER['REQUEST_METHOD']  = 'GET';
 $_SERVER['REMOTE_ADDR']     = '127.0.0.1';
 
 require_once WP_CLI_ROOT . '/php/bootstrap.php';
+
+if ( getenv( 'WP_CLI_EARLY_REQUIRE' ) ) {
+	require_once getenv( 'WP_CLI_EARLY_REQUIRE' );
+}
+
 WP_CLI\bootstrap();
