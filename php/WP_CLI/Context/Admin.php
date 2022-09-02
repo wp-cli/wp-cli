@@ -41,21 +41,8 @@ final class Admin implements Context {
 		WP_CLI::add_wp_hook(
 			'plugins_loaded',
 			function () {
-				global $wp_db_version, $_wp_submenu_nopriv;
-
-				// Make sure we don't trigger a DB upgrade as that tries to redirect
-				// the page.
-				$wp_db_version = (int) get_option( 'db_version' ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-
-				// Ensure WP does not iterate over an undefined variable in
-				// `user_can_access_admin_page()`.
-				if ( ! isset( $_wp_submenu_nopriv ) ) {
-					$_wp_submenu_nopriv = []; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-				}
-
 				$this->log_in_as_admin_user();
-
-				require_once ABSPATH . 'wp-admin/admin.php';
+				$this->load_admin_environment();
 			},
 			defined( 'PHP_INT_MIN' ) ? PHP_INT_MIN : -2147483648, // phpcs:ignore PHPCompatibility.Constants.NewConstants.php_int_minFound
 			0
@@ -94,5 +81,48 @@ final class Admin implements Context {
 			'secure_auth',
 			$token
 		);
+	}
+
+	/**
+	 * Load the admin environment.
+	 *
+	 * This tries to load `wp-admin/admin.php` while trying to avoid issues
+	 * like re-loading the wp-config.php file (which redeclares constants).
+	 *
+	 * To make this work across WordPress versions, we use the actual file and
+	 * modify it on-the-fly.
+	 *
+	 * @return void
+	 */
+	private function load_admin_environment() {
+		global $wp_db_version, $_wp_submenu_nopriv;
+
+		// Make sure we don't trigger a DB upgrade as that tries to redirect
+		// the page.
+		$wp_db_version = (int) get_option( 'db_version' ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		// Ensure WP does not iterate over an undefined variable in
+		// `user_can_access_admin_page()`.
+		if ( ! isset( $_wp_submenu_nopriv ) ) {
+			$_wp_submenu_nopriv = []; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		}
+
+		$admin_php_file = file_get_contents( ABSPATH . 'wp-admin/admin.php' );
+
+		// First we remove the opening and closing PHP tags.
+		$admin_php_file = preg_replace( '/^<\?php\s+/', '', $admin_php_file );
+		$admin_php_file = preg_replace( '/\s+\?>$/', '', $admin_php_file );
+
+		// Then we remove the loading of either wp-config.php or wp-load.php.
+		$admin_php_file = preg_replace( '/^\s*(?:include|require).*[\'"]\/?wp-(?:load|config)\.php[\'"];$/m', '', $admin_php_file );
+
+		// We also remove the authentication redirect.
+		$admin_php_file = preg_replace( '/^\s*auth_redirect\(\);$/m', '', $admin_php_file );
+
+		// Finally, we avoid sending headers.
+		$admin_php_file   = preg_replace( '/^\s*nocache_headers\(\);$/m', '', $admin_php_file );
+		$_GET['noheader'] = true;
+
+		eval( $admin_php_file ); // phpcs:ignore Squiz.PHP.Eval.Discouraged
 	}
 }
