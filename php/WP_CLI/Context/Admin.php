@@ -39,7 +39,7 @@ final class Admin implements Context {
 
 		// Bootstrap the WordPress administration area.
 		WP_CLI::add_wp_hook(
-			'plugins_loaded',
+			'init',
 			function () {
 				$this->log_in_as_admin_user();
 				$this->load_admin_environment();
