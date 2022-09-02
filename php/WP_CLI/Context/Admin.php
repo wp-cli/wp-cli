@@ -65,21 +65,17 @@ final class Admin implements Context {
 		wp_set_current_user( $admin_user_id );
 
 		$expiration = time() + DAY_IN_SECONDS;
-		$manager    = WP_Session_Tokens::get_instance( $admin_user_id );
-		$token      = $manager->create( $expiration );
 
 		$_COOKIE[ AUTH_COOKIE ] = wp_generate_auth_cookie(
 			$admin_user_id,
 			$expiration,
-			'auth',
-			$token
+			'auth'
 		);
 
 		$_COOKIE[ SECURE_AUTH_COOKIE ] = wp_generate_auth_cookie(
 			$admin_user_id,
 			$expiration,
-			'secure_auth',
-			$token
+			'secure_auth'
 		);
 	}
 
@@ -95,7 +91,11 @@ final class Admin implements Context {
 	 * @return void
 	 */
 	private function load_admin_environment() {
-		global $wp_db_version, $_wp_submenu_nopriv;
+		global $hook_suffix, $pagenow, $wp_db_version, $_wp_submenu_nopriv;
+
+		if ( ! isset( $hook_suffix ) ) {
+			$hook_suffix = 'index'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		}
 
 		// Make sure we don't trigger a DB upgrade as that tries to redirect
 		// the page.
@@ -114,7 +114,7 @@ final class Admin implements Context {
 		$admin_php_file = preg_replace( '/\s+\?>$/', '', $admin_php_file );
 
 		// Then we remove the loading of either wp-config.php or wp-load.php.
-		$admin_php_file = preg_replace( '/^\s*(?:include|require).*[\'"]\/?wp-(?:load|config)\.php[\'"];$/m', '', $admin_php_file );
+		$admin_php_file = preg_replace( '/^\s*(?:include|require).*[\'"]\/?wp-(?:load|config)\.php[\'"]\s*\)?;$/m', '', $admin_php_file );
 
 		// We also remove the authentication redirect.
 		$admin_php_file = preg_replace( '/^\s*auth_redirect\(\);$/m', '', $admin_php_file );
