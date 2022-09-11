@@ -1495,6 +1495,11 @@ function past_tense_verb( $verb ) {
  * @return string
  */
 function get_php_binary() {
+	// PHAR installs always use PHP_BINARY.
+	if ( inside_phar() ) {
+		return PHP_BINARY;
+	}
+
 	$wp_cli_php_used = getenv( 'WP_CLI_PHP_USED' );
 	if ( false !== $wp_cli_php_used ) {
 		return $wp_cli_php_used;
