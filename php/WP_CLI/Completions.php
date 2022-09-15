@@ -27,6 +27,23 @@ class Completions {
 			array_pop( $this->words );
 		}
 
+		// Last word is an incomplete `--url` parameter
+		// todo maybe need php56 compat w/out wp polyfills?
+		if ( str_starts_with( $this->cur_word, '--url' ) ) {
+			$parameter      = explode( '=', $this->cur_word );
+				// todo maybe strip out the --
+			$this->cur_word = $parameter[1];
+			$urls           = $this->get_network_urls( 'foo' );
+
+			foreach ( $urls as $url ) {
+				$this->add( $url );
+				// todo parse out just the domain/path, no scheme
+				// or maybe accept 'http://foo', 'https://foo', and 'foo', and adjust output accordingly?
+			}
+
+			return;
+		}
+
 		$is_alias = false;
 		$is_help  = false;
 		if ( ! empty( $this->words[0] ) && preg_match( '/^@/', $this->words[0] ) ) {
@@ -166,6 +183,43 @@ class Completions {
 		}
 
 		return $params;
+	}
+
+	/**
+	 * Get URLs in the Multisite network matching the input.
+	 *
+	 * @param string $prefix Beginning of a domain. e.g., `foo` for `football.example.org`
+	 *
+	 * @return string[] All of the URLs that start with $prefix
+	 */
+	private function get_network_urls( $prefix ) {
+		$cache            = WP_CLI::get_cache();
+		$main_site_domain = 'example.org';
+			// todo get via WP_CLI::launch_self( 'wp option get homeurl' ) ?
+			// todo parse out just the domain/path, not scheme/etc
+			// maybe run through php/wp filter to sanitize filename
+		$cache_key        = sprintf( 'network-urls:%s', $main_site_domain );
+		$cached_urls      = json_decode( $cache->read( $cache_key ) ); //specify ttl?
+
+		if ( $cached_urls ) {
+			return $cached_urls;
+		}
+
+		// todo get via wp site list --format...
+		$urls = array(
+			'foo.example.org',
+			'foot.example.org',
+			'football.example.org',
+		);
+
+		// todo how to get it to autocomplete when there's only 1 match found?
+
+		// todo how to get it to fill up to the point where the matches differ? e.g., 'foo' should autocomplete to 'foo.example.org/' if the urls are
+		// 'foo.example.org/bar' and 'foo.example.org/quix'
+
+		// $cache->write( $cache_key, json_encode( $urls ) );
+
+		return $urls;
 	}
 
 	/**
