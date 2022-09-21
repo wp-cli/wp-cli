@@ -129,4 +129,12 @@ return [
 		'hidden'  => true,
 	],
 
+	'aliases'           => [
+		'runtime'  => '=<path>',
+		'file'     => '<path>',
+		'desc'     => 'List of remote connections defined by alias.',
+		'multiple' => true,
+		'default'  => [],
+	],
+
 ];
