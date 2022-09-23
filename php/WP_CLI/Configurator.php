@@ -106,6 +106,11 @@ class Configurator {
 	 * @return void
 	 */
 	private function add_alias( $key, $value, $yml_file_dir ) {
+		if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
+			// Remove the @ character from the alias name
+			$key = substr( $key, 1 );
+		}
+
 		$this->aliases[ $key ] = [];
 		$is_alias              = false;
 		foreach ( self::$alias_spec as $i ) {
@@ -123,6 +128,10 @@ class Configurator {
 			$alias_group = [];
 			foreach ( $value as $k ) {
 				if ( preg_match( '#' . self::ALIAS_REGEX . '#', $k ) ) {
+					// Remove the @ character from the alias name
+					$alias_group[] = substr( $k, 1 );
+				} else if ( array_key_exists( $k, $this->aliases ) ) {
+					// Check if the alias has been properly declared before adding it to the group
 					$alias_group[] = $k;
 				}
 			}

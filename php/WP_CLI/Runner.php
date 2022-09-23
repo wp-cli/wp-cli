@@ -516,6 +516,8 @@ class Runner {
 		foreach ( $wp_args as $k => $v ) {
 			if ( preg_match( '#--ssh=|--alias=#', $v ) ) {
 				unset( $wp_args[ $k ] );
+			} else if ( preg_match( '#' . Configurator::ALIAS_REGEX . '#', $v ) ) {
+				unset( $wp_args[ $k ] );
 			}
 		}
 
@@ -1073,16 +1075,22 @@ class Runner {
 		$config_path = escapeshellarg( $config_path );
 
 		foreach ( $aliases as $alias ) {
+			// Filter out @alias args (needed for Windows OS that need to quote "@alias" in cli)
+			$this->arguments = array_filter( $this->arguments, function ( $value ) {
+				return ! preg_match( '#' . Configurator::ALIAS_REGEX . '#', $value );
+			} );
+
 			WP_CLI::log( $alias );
 			$args = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
 
 			// Filter out --ssh and --alias args from the ssh command
 			$filtered_assoc_args = $this->assoc_args;
 			unset( $filtered_assoc_args[ 'ssh' ], $filtered_assoc_args[ 'alias' ] );
+
 			$assoc_args = Utils\assoc_args_to_str( $filtered_assoc_args );
 
 			$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
-			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
+			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} @{$alias} {$args}{$assoc_args}{$runtime_config}";
 			$pipes          = [];
 			$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
 			proc_close( $proc );
@@ -1122,6 +1130,11 @@ class Runner {
 				unset( $aliases[ $k ] );
 				$this->run_alias_group( $aliases );
 				exit;
+			}
+
+			if ( preg_match( '#' . Configurator::ALIAS_REGEX . '#', $this->alias ) ) {
+				// Remove the @ character from the alias name
+				$this->alias = substr( $this->alias, 1 );
 			}
 
 			if ( ! array_key_exists( $this->alias, $this->aliases ) ) {
