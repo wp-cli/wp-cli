@@ -998,8 +998,8 @@ class Runner {
 		$this->alias = null;
 		if ( ! empty( $argv[ 0 ] ) && preg_match( '#' . Configurator::ALIAS_REGEX . '#', $argv[ 0 ], $matches ) ) {
 			$this->alias = array_shift( $argv );
-		} else if ( ! empty( $assoc_args[ 'alias' ] ) ) {
-			$this->alias = $assoc_args[ 'alias' ];
+		} else if ( ! empty( $this->runtime_config[ 'alias' ] ) ) {
+			$this->alias = $this->runtime_config[ 'alias' ];
 		}
 
 		// File config
@@ -1074,6 +1074,7 @@ class Runner {
 		}
 		$config_path = escapeshellarg( $config_path );
 
+
 		foreach ( $aliases as $alias ) {
 			// Filter out @alias args (needed for Windows OS that need to quote "@alias" in cli)
 			$this->arguments = array_filter( $this->arguments, function ( $value ) {
@@ -1089,11 +1090,8 @@ class Runner {
 
 			$assoc_args = Utils\assoc_args_to_str( $filtered_assoc_args );
 
-			$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
-			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} @{$alias} {$args}{$assoc_args}{$runtime_config}";
-			$pipes          = [];
-			$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
-			proc_close( $proc );
+			// Trigger the sub command (no need to proc_open function)
+			WP_CLI::runcommand("{$args}{$assoc_args} --alias={$alias}");
 		}
 	}
 
