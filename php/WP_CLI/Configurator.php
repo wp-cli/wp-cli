@@ -115,7 +115,7 @@ class Configurator {
 		$is_alias              = false;
 		foreach ( self::$alias_spec as $i ) {
 			if ( isset( $value[ $i ] ) ) {
-				if ( 'path' === $i && ! isset( $value[ 'ssh' ] ) ) {
+				if ( 'path' === $i && ! isset( $value['ssh'] ) ) {
 					self::absolutize( $value[ $i ], $yml_file_dir );
 				}
 				$this->aliases[ $key ][ $i ] = $value[ $i ];
@@ -130,7 +130,7 @@ class Configurator {
 				if ( preg_match( '#' . self::ALIAS_REGEX . '#', $k ) ) {
 					// Remove the @ character from the alias name
 					$alias_group[] = substr( $k, 1 );
-				} else if ( array_key_exists( $k, $this->aliases ) ) {
+				} elseif ( array_key_exists( $k, $this->aliases ) ) {
 					// Check if the alias has been properly declared before adding it to the group
 					$alias_group[] = $k;
 				}
@@ -300,8 +300,8 @@ class Configurator {
 		$yml_file_dir = $path ? dirname( $path ) : false;
 		foreach ( $yaml as $key => $value ) {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
-				$this->add_alias($key, $value, $yml_file_dir);
-			} elseif ( $key === 'aliases' ) {
+				$this->add_alias( $key, $value, $yml_file_dir );
+			} elseif ( 'aliases' === $key ) {
 				foreach ( $value as $alias => $alias_config ) {
 					$this->add_alias( $alias, $alias_config, $yml_file_dir );
 				}

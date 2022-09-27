@@ -509,7 +509,7 @@ class Runner {
 		foreach ( $wp_args as $k => $v ) {
 			if ( preg_match( '#--ssh=|--alias=#', $v ) ) {
 				unset( $wp_args[ $k ] );
-			} else if ( preg_match( '#' . Configurator::ALIAS_REGEX . '#', $v ) ) {
+			} elseif ( preg_match( '#' . Configurator::ALIAS_REGEX . '#', $v ) ) {
 				unset( $wp_args[ $k ] );
 			}
 		}
@@ -977,7 +977,7 @@ class Runner {
 
 		// Extract config from CLI args
 		list( $args, $assoc_args, $this->runtime_config ) = $configurator->parse_args( $argv );
-		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
+		list( $this->arguments, $this->assoc_args )       = self::back_compat_conversions(
 			$args,
 			$assoc_args
 		);
@@ -986,7 +986,7 @@ class Runner {
 		$this->alias = null;
 		if ( ! empty( $argv[0] ) && preg_match( '#' . Configurator::ALIAS_REGEX . '#', $argv[0], $matches ) ) {
 			$this->alias = array_shift( $argv );
-		} else if ( ! empty( $this->runtime_config['alias'] ) ) {
+		} elseif ( ! empty( $this->runtime_config['alias'] ) ) {
 			$this->alias = $this->runtime_config['alias'];
 		}
 
@@ -1064,9 +1064,12 @@ class Runner {
 
 		foreach ( $aliases as $alias ) {
 			// Filter out @alias args (needed for Windows OS that need to quote "@alias" in cli)
-			$this->arguments = array_filter( $this->arguments, function ( $value ) {
-				return ! preg_match( '#' . Configurator::ALIAS_REGEX . '#', $value );
-			} );
+			$this->arguments = array_filter(
+				$this->arguments,
+				function ( $value ) {
+					return ! preg_match( '#' . Configurator::ALIAS_REGEX . '#', $value );
+				}
+			);
 
 			WP_CLI::log( $alias );
 			$args = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
@@ -1078,7 +1081,7 @@ class Runner {
 			$assoc_args = Utils\assoc_args_to_str( $filtered_assoc_args );
 
 			// Trigger the sub command (no need to proc_open function)
-			WP_CLI::runcommand("{$args}{$assoc_args} --alias={$alias}");
+			WP_CLI::runcommand( "{$args}{$assoc_args} --alias={$alias}" );
 		}
 	}
 
