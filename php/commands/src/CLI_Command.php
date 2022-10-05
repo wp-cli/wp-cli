@@ -136,6 +136,8 @@ class CLI_Command extends WP_CLI_Command {
 			$packages_dir = null;
 		}
 
+		$home_dir = Utils\get_home_dir();
+
 		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$info = [
 				'system_os'                => $system_os,
@@ -150,6 +152,7 @@ class CLI_Command extends WP_CLI_Command {
 				'wp_cli_vendor_path'       => WP_CLI_VENDOR_DIR,
 				'wp_cli_phar_path'         => defined( 'WP_CLI_PHAR_PATH' ) ? WP_CLI_PHAR_PATH : '',
 				'wp_cli_packages_dir_path' => $packages_dir,
+				'wp_cli_cache_dir_path'    => getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home_dir/.wp-cli/cache",
 				'global_config_path'       => $runner->global_config_path,
 				'project_config_path'      => $runner->project_config_path,
 				'wp_cli_version'           => WP_CLI_VERSION,
@@ -169,6 +172,7 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::line( "WP-CLI vendor dir:\t" . WP_CLI_VENDOR_DIR );
 			WP_CLI::line( "WP_CLI phar path:\t" . ( defined( 'WP_CLI_PHAR_PATH' ) ? WP_CLI_PHAR_PATH : '' ) );
 			WP_CLI::line( "WP-CLI packages dir:\t" . $packages_dir );
+			WP_CLI::line( "WP-CLI cache dir:\t" . ( getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home_dir/.wp-cli/cache" ) );
 			WP_CLI::line( "WP-CLI global config:\t" . $runner->global_config_path );
 			WP_CLI::line( "WP-CLI project config:\t" . $runner->project_config_path );
 			WP_CLI::line( "WP-CLI version:\t" . WP_CLI_VERSION );
