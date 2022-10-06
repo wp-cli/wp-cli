@@ -1785,3 +1785,13 @@ function get_sql_modes() {
 
 	return $sql_modes;
 }
+
+/**
+ * Get the WP-CLI cache directory.
+ *
+ * @return string
+ */
+function get_cache_dir() {
+	$home = get_home_dir();
+	return getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
+}
