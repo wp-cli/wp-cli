@@ -747,38 +747,3 @@ Feature: Utilities that depend on WordPress code
       wp_options
       wp_posts
       """
-
-    Given an enable_sitecategories.php file:
-      """
-      <?php
-      WP_CLI::add_hook( 'after_wp_load', function () {
-        add_filter( 'global_terms_enabled', '__return_true' );
-      } );
-      """
-    When I run `wp --require=table_names.php --require=enable_sitecategories.php get_table_names`
-    # Leave out wp_blog_versions as it was never used and is removed with WP 5.3+.
-    # Leave out wp_blogmeta for old WP compat.
-    Then STDOUT should contain:
-      """
-      wp_blogs
-      wp_commentmeta
-      wp_comments
-      wp_links
-      wp_options
-      wp_postmeta
-      wp_posts
-      wp_registration_log
-      wp_signups
-      wp_site
-      wp_sitecategories
-      wp_sitemeta
-      wp_term_relationships
-      wp_term_taxonomy
-      """
-	# Leave out wp_termmeta for old WP compat.
-    And STDOUT should contain:
-      """
-      wp_terms
-      wp_usermeta
-      wp_users
-      """
