@@ -162,6 +162,8 @@ jobs:
 
       - name: Check Behat environment
         if: steps.check_files.outputs.files_exists == 'true'
+        env:
+          WP_VERSION: '${{ matrix.wp }}'
         run: WP_CLI_TEST_DEBUG_BEHAT_ENV=1 composer behat
 
       - name: Run Behat
