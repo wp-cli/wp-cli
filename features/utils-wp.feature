@@ -748,13 +748,55 @@ Feature: Utilities that depend on WordPress code
       wp_posts
       """
 
-    Given an enable_sitecategories.php file:
+  @less-than-wp-6.1
+  Scenario: Get WP table names for multisite install (site_categories only)
+    Given a WP multisite install
+    And I run `wp db query "CREATE TABLE xx_wp_posts ( id int );"`
+    And I run `wp db query "CREATE TABLE xx_wp_2_posts ( id int );"`
+    And I run `wp db query "CREATE TABLE wp_xx_posts ( id int );"`
+    And I run `wp db query "CREATE TABLE wp_2_xx_posts ( id int );"`
+    And I run `wp db query "CREATE TABLE wp_posts_xx ( id int );"`
+    And I run `wp db query "CREATE TABLE wp_2_posts_xx ( id int );"`
+    And I run `wp db query "CREATE TABLE wp_categories ( id int );"`
+    And I run `wp db query "CREATE TABLE wp_sitecategories ( id int );"`
+    And a table_names.php file:
+      """
+      <?php
+      /**
+       * Test WP get table names.
+       *
+       * ## OPTIONS
+       *
+       * [<table>...]
+       * : List tables based on wildcard search, e.g. 'wp_*_options' or 'wp_post?'.
+       *
+       * [--scope=<scope>]
+       * : Can be all, global, ms_global, blog, or old tables. Defaults to all.
+       *
+       * [--network]
+       * : List all the tables in a multisite installation. Overrides --scope=<scope>.
+       *
+       * [--all-tables-with-prefix]
+       * : List all tables that match the table prefix even if not registered on $wpdb. Overrides --network.
+       *
+       * [--all-tables]
+       * : List all tables in the database, regardless of the prefix, and even if not registered on $wpdb. Overrides --all-tables-with-prefix.
+       */
+      function test_wp_get_table_names( $args, $assoc_args ) {
+        if ( $tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args ) ) {
+            echo implode( PHP_EOL, $tables ) . PHP_EOL;
+        }
+      }
+      WP_CLI::add_command( 'get_table_names', 'test_wp_get_table_names' );
+      """
+    And an enable_sitecategories.php file:
       """
       <?php
       WP_CLI::add_hook( 'after_wp_load', function () {
         add_filter( 'global_terms_enabled', '__return_true' );
       } );
       """
+
     When I run `wp --require=table_names.php --require=enable_sitecategories.php get_table_names`
     # Leave out wp_blog_versions as it was never used and is removed with WP 5.3+.
     # Leave out wp_blogmeta for old WP compat.
