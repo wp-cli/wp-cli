@@ -1059,7 +1059,7 @@ function get_temp_dir() {
  * @return mixed
  */
 function parse_ssh_url( $url, $component = -1 ) {
-	preg_match( '#^((docker|docker\-compose|ssh|vagrant):)?(([^@:]+)@)?([^:/~]+)(:([\d]*))?((/|~)(.+))?$#', $url, $matches );
+	preg_match( '#^((docker|docker\-compose|docker\-compose\-run|ssh|vagrant):)?(([^@:]+)@)?([^:/~]+)(:([\d]*))?((/|~)(.+))?$#', $url, $matches );
 	$bits = [];
 	foreach ( [
 		2 => 'scheme',
