@@ -207,6 +207,21 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
+		// container scheme with user, host, and path
+		$testcase = 'docker-compose-run:bar@wordpress:~/path/to/dir';
+		$expected = [
+			'scheme' => 'docker-compose-run',
+			'user'   => 'bar',
+			'host'   => 'wordpress',
+			'path'   => '~/path/to/dir',
+		];
+		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( 'docker-compose-run', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertEquals( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
 		// vagrant scheme
 		$testcase = 'vagrant:default';
 		$expected = [

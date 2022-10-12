@@ -456,7 +456,7 @@ class Runner {
 
 	/**
 	 * Perform a command against a remote server over SSH (or a container using
-	 * scheme of "docker" or "docker-compose").
+	 * scheme of "docker", "docker-compose", or "docker-compose-run").
 	 *
 	 * @param string $connection_string Passed connection string.
 	 * @return void
@@ -512,7 +512,12 @@ class Runner {
 			}
 		}
 
-		$wp_command      = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) );
+		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) );
+
+		if ( isset( $bits['scheme'] ) && 'docker-compose-run' === $bits['scheme'] ) {
+			$wp_command = implode( ' ', $wp_args );
+		}
+
 		$escaped_command = $this->generate_ssh_command( $bits, $wp_command );
 
 		passthru( $escaped_command, $exit_code );
@@ -565,6 +570,18 @@ class Runner {
 				$is_tty ? '' : '-T ',
 				escapeshellarg( $bits['host'] ),
 				escapeshellarg( $wp_command )
+			);
+		}
+
+		if ( 'docker-compose-run' === $bits['scheme'] ) {
+			$command = 'docker-compose run %s%s%s %s';
+
+			$escaped_command = sprintf(
+				$command,
+				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
+				$is_tty ? '' : '-T ',
+				escapeshellarg( $bits['host'] ),
+				$wp_command
 			);
 		}
 
