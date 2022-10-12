@@ -480,3 +480,39 @@ function strip_tags( $string ) {
 
 	return trim( $string );
 }
+
+/**
+ * Internalized version of global_terms_enabled() to get around a bug in WordPress Core.
+ *
+ * WP Core inadvertently removed the function instead of deprecating it during th 6.1 cycle.
+ *
+ * @see https://core.trac.wordpress.org/ticket/21734#comment:34
+ */
+function global_terms_enabled() {
+	if ( ! is_multisite() ) {
+		return false;
+	}
+
+	static $global_terms = null;
+	if ( is_null( $global_terms ) ) {
+
+		/**
+		 * Filters whether global terms are enabled.
+		 *
+		 * Returning a non-null value from the filter will effectively short-circuit the function
+		 * and return the value of the 'global_terms_enabled' site option instead.
+		 *
+		 * @since 3.0.0
+		 *
+		 * @param null $enabled Whether global terms are enabled.
+		 */
+		$filter = apply_filters( 'global_terms_enabled', null ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		if ( ! is_null( $filter ) ) {
+			$global_terms = (bool) $filter;
+		} else {
+			$global_terms = (bool) get_site_option( 'global_terms_enabled', false );
+		}
+	}
+
+	return $global_terms;
+}
