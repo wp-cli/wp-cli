@@ -789,6 +789,13 @@ Feature: Utilities that depend on WordPress code
       }
       WP_CLI::add_command( 'get_table_names', 'test_wp_get_table_names' );
       """
+    And an enable_sitecategories.php file:
+      """
+      <?php
+      WP_CLI::add_hook( 'after_wp_load', function () {
+        add_filter( 'global_terms_enabled', '__return_true' );
+      } );
+      """
 
     When I run `wp --require=table_names.php --require=enable_sitecategories.php get_table_names`
     # Leave out wp_blog_versions as it was never used and is removed with WP 5.3+.
