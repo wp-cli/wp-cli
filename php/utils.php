@@ -1529,8 +1529,7 @@ function get_php_binary() {
  */
 function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = null, $other_options = null ) {
 	if ( is_windows() ) {
-		// Need to encompass the whole command in double quotes - PHP bug https://bugs.php.net/bug.php?id=49139
-		$cmd = '"' . _proc_open_compat_win_env( $cmd, $env ) . '"';
+		$cmd = _proc_open_compat_win_env( $cmd, $env );
 	}
 	return proc_open( $cmd, $descriptorspec, $pipes, $cwd, $env, $other_options );
 }
