@@ -574,27 +574,3 @@ Feature: Have a config file
       """
       Warning: UTF-8 byte-order mark (BOM) detected in wp-config.php file, stripping it for parsing.
       """
-
-  Scenario: Customize config-spec with WP_CLI_CONFIG_SPEC_FILTER_CALLBACK
-    Given a WP installation
-    And a wp-cli-early-require.php file:
-      """
-      <?php
-      function wp_cli_remove_user_arg( $spec ) {
-        unset( $spec['user'] );
-        return $spec;
-      }
-      define( 'WP_CLI_CONFIG_SPEC_FILTER_CALLBACK', 'wp_cli_remove_user_arg' );
-      """
-
-    When I run `WP_CLI_EARLY_REQUIRE=wp-cli-early-require.php wp help`
-    Then STDOUT should not contain:
-      """
-      --user=<id|login|email>
-      """
-
-    When I run `wp help`
-    Then STDOUT should contain:
-      """
-      --user=<id|login|email>
-      """
