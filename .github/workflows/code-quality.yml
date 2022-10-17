@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Check existence of composer.json file
         id: check_composer_file
@@ -59,7 +59,7 @@ jobs:
 
     steps:
       - name: Check out source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Check existence of composer.json & phpcs.xml.dist files
         id: check_files
