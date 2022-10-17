@@ -7,3 +7,11 @@ updates:
     open-pull-requests-limit: 10
     labels:
       - scope:distribution
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - scope:distribution
+
