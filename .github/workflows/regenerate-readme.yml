@@ -52,16 +52,15 @@ jobs:
           git config --global user.name "Alain Schlesser"
 
       - name: Check if remote branch exists
-        id: remote-branch
-        run: echo ::set-output name=exists::$([[ -z $(git ls-remote --heads origin regenerate-readme) ]] && echo "0" || echo "1")
+        run: echo "REMOTE_BRANCH_EXISTS=$([[ -z $(git ls-remote --heads origin regenerate-readme) ]] && echo "0" || echo "1")" >> $GITHUB_ENV
 
       - name: Create branch to base pull request on
-        if: steps.remote-branch.outputs.exists == 0
+        if: env.REMOTE_BRANCH_EXISTS == 0
         run: |
           git checkout -b regenerate-readme
 
       - name: Fetch existing branch to add commits to
-        if: steps.remote-branch.outputs.exists == 1
+        if: env.REMOTE_BRANCH_EXISTS == 1
         run: |
           git fetch --all --prune
           git checkout regenerate-readme
@@ -79,11 +78,10 @@ jobs:
           wp scaffold package-readme --branch=${{ github.event.repository.default_branch }} --force .
 
       - name: Check if there are changes
-        id: changes
-        run: echo ::set-output name=changed::$([[ -z $(git status --porcelain) ]] && echo "0" || echo "1")
+        run: echo "CHANGES_DETECTED=$([[ -z $(git status --porcelain) ]] && echo "0" || echo "1")" >> $GITHUB_ENV
 
       - name: Commit changes
-        if: steps.changes.outputs.changed == 1
+        if: env.CHANGES_DETECTED == 1
         run: |
           git add README.md
           git commit -m "Regenerate README file - $(date +'%Y-%m-%d')"
@@ -91,8 +89,8 @@ jobs:
 
       - name: Create pull request
         if: |
-          steps.changes.outputs.changed == 1 &&
-          steps.remote-branch.outputs.exists == 0
+          env.CHANGES_DETECTED == 1 &&
+          env.REMOTE_BRANCH_EXISTS == 0
         uses: repo-sync/pull-request@v2
         with:
           source_branch: regenerate-readme
