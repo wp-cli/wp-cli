@@ -249,6 +249,8 @@ class Configurator {
 	 * @param string $path Path to YAML file.
 	 */
 	public function merge_yml( $path, $current_alias = null ) {
+		// Make path absolute, if necessary, before loading file.
+		$this->absolutize ($path,dirname($path));
 		$yaml = self::load_yml( $path );
 		if ( ! empty( $yaml['_']['inherit'] ) ) {
 			$this->merge_yml( $yaml['_']['inherit'], $current_alias );
@@ -388,7 +390,14 @@ class Configurator {
 	 */
 	private static function absolutize( &$path, $base ) {
 		if ( ! empty( $path ) && ! Utils\is_path_absolute( $path ) ) {
-			$path = $base . DIRECTORY_SEPARATOR . $path;
+			// Limit this to Unix operating systems?
+			$home_dir = getenv( 'HOME' ) ;
+			if ( substr( $path, 0, 2 ) === '~/' && isset( $home_dir ) ) {
+				$path = $home_dir . DIRECTORY_SEPARATOR . substr( $path, 2 );
+			}
+			else {
+				$path = $base . DIRECTORY_SEPARATOR . $path;
+			}
 		}
 	}
 
