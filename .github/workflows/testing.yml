@@ -29,7 +29,7 @@ jobs:
 
       - name: Check existence of composer.json file
         id: check_files
-        uses: andstor/file-existence-action@v1
+        uses: andstor/file-existence-action@v2
         with:
           files: "composer.json, phpunit.xml.dist"
 
@@ -108,7 +108,7 @@ jobs:
 
       - name: Check existence of composer.json & behat.yml files
         id: check_files
-        uses: andstor/file-existence-action@v1
+        uses: andstor/file-existence-action@v2
         with:
           files: "composer.json, behat.yml"
 
