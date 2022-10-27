@@ -24,7 +24,7 @@ jobs:
 
       - name: Check existence of composer.json file
         id: check_composer_file
-        uses: andstor/file-existence-action@v1
+        uses: andstor/file-existence-action@v2
         with:
           files: "composer.json"
 
@@ -45,7 +45,7 @@ jobs:
 
       - name: Check existence of vendor/bin/parallel-lint file
         id: check_linter_file
-        uses: andstor/file-existence-action@v1
+        uses: andstor/file-existence-action@v2
         with:
           files: "vendor/bin/parallel-lint"
 
@@ -63,7 +63,7 @@ jobs:
 
       - name: Check existence of composer.json & phpcs.xml.dist files
         id: check_files
-        uses: andstor/file-existence-action@v1
+        uses: andstor/file-existence-action@v2
         with:
           files: "composer.json, phpcs.xml.dist"
 
@@ -84,7 +84,7 @@ jobs:
 
       - name: Check existence of vendor/bin/phpcs file
         id: check_phpcs_binary_file
-        uses: andstor/file-existence-action@v1
+        uses: andstor/file-existence-action@v2
         with:
           files: "vendor/bin/phpcs"
 
