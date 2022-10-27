@@ -36,7 +36,7 @@ jobs:
 
       - name: Check existence of composer.json file
         id: check_composer_file
-        uses: andstor/file-existence-action@v1
+        uses: andstor/file-existence-action@v2
         with:
           files: "composer.json"
 
