@@ -41,7 +41,7 @@ const PHAR_STREAM_PREFIX = 'phar://';
 const FILE_DIR_PATTERN = '%(?>#.*?$)|(?>//.*?$)|(?>/\*.*?\*/)|(?>\'(?:(?=(\\\\?))\1.)*?\')|(?>"(?:(?=(\\\\?))\2.)*?")|(?<file>\b__FILE__\b)|(?<dir>\b__DIR__\b)%ms';
 
 function inside_phar() {
-	return 0 === strpos( WP_CLI_ROOT, PHAR_STREAM_PREFIX );
+	return defined( 'WP_CLI_ROOT' ) && 0 === strpos( WP_CLI_ROOT, PHAR_STREAM_PREFIX );
 }
 
 // Files that need to be read by external programs have to be extracted from the Phar archive.
