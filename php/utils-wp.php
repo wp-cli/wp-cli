@@ -290,6 +290,10 @@ function wp_get_cache_type() {
 		} elseif ( method_exists( $wp_object_cache, 'redis_instance' ) && method_exists( $wp_object_cache, 'redis_status' ) ) {
 			$message = 'Redis';
 
+			// Test for Object Cache Pro (https://objectcache.pro/)
+		} elseif ( method_exists( $wp_object_cache, 'config' ) && method_exists( $wp_object_cache, 'connection' ) ) {
+			$message = 'Redis';
+
 			// Test for WP LCache Object cache (https://github.com/lcache/wp-lcache)
 		} elseif ( isset( $wp_object_cache->lcache ) && $wp_object_cache->lcache instanceof \LCache\Integrated ) {
 			$message = 'WP LCache';
