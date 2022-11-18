@@ -38,7 +38,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.8.x-dev"
+            "dev-main": "2.8.x-dev"
         }
     },
     "autoload": {
