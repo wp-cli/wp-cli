@@ -325,3 +325,35 @@ Feature: `wp cli completions` tasks
       """
       --no-color
       """
+
+ Scenario: Bash Completion for global --url parameter
+    Given a WP multisite installation
+    And I run `wp site create --slug=foo.example.org`
+    And I run `wp site create --slug=foot.example.org`
+    And I run `wp site create --slug=football.example.org`
+    And I run `wp site create --slug=bar.example.org/quix`
+    And I run `wp site create --slug=bar.example.org/quiz`
+    And I run `wp site create --slug=waldo.example.org`
+
+    # show all matches
+    When I run `wp cli completions --line="wp plugin list --url=foo"
+    Then STDOUT should contain:
+      """
+      foo.example.org       foot.example.org      football.example.org
+      """
+
+    # autocomplete up to where the matches diverge
+    # todo probably needs to check in a different way than the others?
+    # todo not necessary if cant autocomplete when multiple
+    When I run `wp cli completions --line="wp plugin list --url=bar"
+        Then STDOUT should contain:
+          """
+          bar.example.org/qui
+          """
+
+    # autocomplete entirely when only 1 match
+    When I run `wp cli completions --line="wp plugin list --url=wal"
+            Then STDOUT should contain:
+              """
+              waldo.example.org
+              """
