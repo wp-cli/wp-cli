@@ -16,6 +16,7 @@ class CompositeCommand {
 
 	protected $name;
 	protected $shortdesc;
+	protected $longdesc;
 	protected $synopsis;
 	protected $docparser;
 
