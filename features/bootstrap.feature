@@ -49,7 +49,7 @@ Feature: Bootstrap WP-CLI
         ],
         "require": {
           "wp-cli/override": "*",
-          "wp-cli/wp-cli": "dev-master"
+          "wp-cli/wp-cli": "dev-main"
         }
       }
       """
