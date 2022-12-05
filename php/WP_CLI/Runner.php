@@ -973,7 +973,7 @@ class Runner {
 			}
 			WP_CLI::error(
 				"The path does not seem to be a WordPress installation.\n" .
-				'The used path is: ' . ABSPATH . "\n".
+				'The used path is: ' . ABSPATH . "\n" .
 				'Pass --path=`path/to/wordpress` or run `wp core download`.'
 			);
 		}
