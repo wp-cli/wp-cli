@@ -247,7 +247,7 @@ class Runner {
 		if ( isset( $this->config['path'] ) &&
 			( is_bool( $this->config['path'] ) || empty( $this->config['path'] ) )
 		) {
-			WP_CLI::error( 'The --path parameter cannot be empty when it is provided' );
+			WP_CLI::error( 'The --path parameter cannot be empty when provided' );
 		}
 
 		if ( ! empty( $this->config['path'] ) ) {
@@ -972,7 +972,8 @@ class Runner {
 				);
 			}
 			WP_CLI::error(
-				'This (' . ABSPATH . ") does not seem to be a WordPress installation.\n" .
+				"The path does not seem to be a WordPress installation.\n" .
+				'The used path is: ' . ABSPATH . "\n".
 				'Pass --path=`path/to/wordpress` or run `wp core download`.'
 			);
 		}

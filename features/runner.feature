@@ -54,17 +54,17 @@ Feature: Runner WP-CLI
   When I try `wp no-such-command --path`
   Then STDERR should contain:
     """
-     The --path parameter cannot be empty when it is provided
+     The --path parameter cannot be empty when provided
     """
 
   When I try `wp no-such-command --path=`
   Then STDERR should contain:
     """
-     The --path parameter cannot be empty when it is provided
+     The --path parameter cannot be empty when provided
     """
 
   When I try `wp no-such-command --path= some_path`
   Then STDERR should contain:
     """
-     The --path parameter cannot be empty when it is provided
+     The --path parameter cannot be empty when provided
     """
