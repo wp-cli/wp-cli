@@ -197,7 +197,7 @@ function is_path_absolute( $path ) {
 		return true;
 	}
 
-	return '/' === $path[0];
+	return isset( $path[0] ) && '/' === $path[0];
 }
 
 /**
