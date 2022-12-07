@@ -247,7 +247,7 @@ class Runner {
 		if ( isset( $this->config['path'] ) &&
 			( is_bool( $this->config['path'] ) || empty( $this->config['path'] ) )
 		) {
-			WP_CLI::error( 'The --path parameter cannot be empty when provided' );
+			WP_CLI::error( 'The --path parameter cannot be empty when provided.' );
 		}
 
 		if ( ! empty( $this->config['path'] ) ) {
