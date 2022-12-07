@@ -49,3 +49,22 @@ Feature: Runner WP-CLI
       """
       The --path parameter cannot be used when ABSPATH is already defined elsewhere
       """
+
+  Scenario: Empty path argument should be handled correctly
+  When I try `wp no-such-command --path`
+  Then STDERR should contain:
+    """
+     The --path parameter cannot be empty when provided
+    """
+
+  When I try `wp no-such-command --path=`
+  Then STDERR should contain:
+    """
+     The --path parameter cannot be empty when provided
+    """
+
+  When I try `wp no-such-command --path= some_path`
+  Then STDERR should contain:
+    """
+     The --path parameter cannot be empty when provided
+    """

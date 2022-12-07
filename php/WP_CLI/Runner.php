@@ -244,6 +244,12 @@ class Runner {
 	 * @return string An absolute path
 	 */
 	private function find_wp_root() {
+		if ( isset( $this->config['path'] ) &&
+			( is_bool( $this->config['path'] ) || empty( $this->config['path'] ) )
+		) {
+			WP_CLI::error( 'The --path parameter cannot be empty when provided.' );
+		}
+
 		if ( ! empty( $this->config['path'] ) ) {
 			$path = $this->config['path'];
 			if ( ! Utils\is_path_absolute( $path ) ) {
@@ -967,6 +973,7 @@ class Runner {
 			}
 			WP_CLI::error(
 				"This does not seem to be a WordPress installation.\n" .
+				'The used path is: ' . ABSPATH . "\n" .
 				'Pass --path=`path/to/wordpress` or run `wp core download`.'
 			);
 		}
