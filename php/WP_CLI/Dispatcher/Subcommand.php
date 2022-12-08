@@ -464,10 +464,10 @@ class Subcommand extends CompositeCommand {
 		$parent = implode( ' ', array_slice( $path, 1 ) );
 		$cmd    = $this->name;
 		if ( $parent ) {
-			WP_CLI::do_hook( "before_invoke:{$parent}" );
+			WP_CLI::do_hook( "before_invoke:{$parent}", $parent );
 			$cmd = $parent . ' ' . $cmd;
 		}
-		WP_CLI::do_hook( "before_invoke:{$cmd}" );
+		WP_CLI::do_hook( "before_invoke:{$cmd}", $cmd );
 
 		// Check if `--prompt` arg passed or not.
 		if ( $prompted_once ) {
@@ -491,9 +491,9 @@ class Subcommand extends CompositeCommand {
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 
 		if ( $parent ) {
-			WP_CLI::do_hook( "after_invoke:{$parent}" );
+			WP_CLI::do_hook( "after_invoke:{$parent}", $parent );
 		}
-		WP_CLI::do_hook( "after_invoke:{$cmd}" );
+		WP_CLI::do_hook( "after_invoke:{$cmd}", $cmd );
 	}
 
 	/**
