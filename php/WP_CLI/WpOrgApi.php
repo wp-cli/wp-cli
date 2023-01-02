@@ -105,7 +105,7 @@ final class WpOrgApi {
 		$url = sprintf(
 			'%s?%s',
 			self::CORE_CHECKSUMS_ENDPOINT,
-			http_build_query( compact( 'version', 'locale' ), null, '&' )
+			http_build_query( compact( 'version', 'locale' ), '', '&' )
 		);
 
 		$response = $this->json_get_request( $url );
@@ -132,7 +132,7 @@ final class WpOrgApi {
 		$url = sprintf(
 			'%s?%s',
 			self::VERSION_CHECK_ENDPOINT,
-			http_build_query( compact( 'locale' ), null, '&' )
+			http_build_query( compact( 'locale' ), '', '&' )
 		);
 
 		$response = $this->json_get_request( $url );
@@ -218,7 +218,7 @@ final class WpOrgApi {
 		$url = sprintf(
 			'%s?%s',
 			self::PLUGIN_INFO_ENDPOINT,
-			http_build_query( compact( 'action', 'request' ), null, '&' )
+			http_build_query( compact( 'action', 'request' ), '', '&' )
 		);
 
 		$response = $this->json_get_request( $url );
@@ -248,7 +248,7 @@ final class WpOrgApi {
 		$url = sprintf(
 			'%s?%s',
 			self::THEME_INFO_ENDPOINT,
-			http_build_query( compact( 'action', 'request' ), null, '&' )
+			http_build_query( compact( 'action', 'request' ), '', '&' )
 		);
 
 		$response = $this->json_get_request( $url );
