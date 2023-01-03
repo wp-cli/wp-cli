@@ -67,6 +67,8 @@ class Process {
 	 * @return ProcessRun
 	 */
 	public function run() {
+		Utils\check_proc_available( 'Process::run' );
+
 		$start_time = microtime( true );
 
 		$pipes = [];
