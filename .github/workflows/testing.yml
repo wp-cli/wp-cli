@@ -7,7 +7,7 @@ on:
       - main
       - master
   schedule:
-    - cron:  '0 0 * * *' # Run every day.
+    - cron:  '17 1 * * *' # Run every day on a seemly random time.
 
 jobs:
   test:
