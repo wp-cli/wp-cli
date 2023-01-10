@@ -1269,6 +1269,7 @@ class WP_CLI {
 	 * * Prevent halting script execution on error.
 	 * * Capture and return STDOUT, or full details about command execution.
 	 * * Parse JSON output if the command rendered it.
+	 * * Include additional runtime arguments to be used with command.
 	 *
 	 * ```
 	 * $options = array(
@@ -1276,6 +1277,7 @@ class WP_CLI {
 	 *   'parse'      => 'json', // Parse captured STDOUT to JSON array.
 	 *   'launch'     => false,  // Reuse the current process.
 	 *   'exit_error' => true,   // Halt script execution on error.
+	 *   'runtime_args' => array('--skip-themes'), // Additional runtime arguments to be used with $command
 	 * );
 	 * $plugins = WP_CLI::runcommand( 'plugin list --format=json', $options );
 	 * ```
@@ -1288,18 +1290,25 @@ class WP_CLI {
 	 * @return mixed
 	 */
 	public static function runcommand( $command, $options = [] ) {
-		$defaults   = [
-			'launch'     => true, // Launch a new process, or reuse the existing.
-			'exit_error' => true, // Exit on error by default.
-			'return'     => false, // Capture and return output, or render in realtime.
-			'parse'      => false, // Parse returned output as a particular format.
+		$defaults     = [
+			'launch'       => true, // Launch a new process, or reuse the existing.
+			'exit_error'   => true, // Exit on error by default.
+			'return'       => false, // Capture and return output, or render in realtime.
+			'parse'        => false, // Parse returned output as a particular format.
+			'runtime_args' => array(), //Include optional runtime arguments
 		];
-		$options    = array_merge( $defaults, $options );
-		$launch     = $options['launch'];
-		$exit_error = $options['exit_error'];
-		$return     = $options['return'];
-		$parse      = $options['parse'];
-		$retval     = null;
+		$options      = array_merge( $defaults, $options );
+		$launch       = $options['launch'];
+		$exit_error   = $options['exit_error'];
+		$return       = $options['return'];
+		$parse        = $options['parse'];
+		$runtime_args = $options['runtime_args'];
+
+		if ( ! empty( $runtime_args ) ) {
+			$command = $command . ' ' . implode( ' ', $runtime_args );
+		}
+
+		$retval = null;
 		if ( $launch ) {
 			Utils\check_proc_available( 'launch option' );
 
