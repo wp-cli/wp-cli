@@ -13,5 +13,3 @@ on:
 jobs:
   regenerate-readme:
     uses: wp-cli/.github/.github/workflows/reusable-regenerate-readme.yml@main
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
