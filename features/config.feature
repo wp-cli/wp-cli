@@ -563,7 +563,7 @@ Feature: Have a config file
       /** Sets up WordPress vars and included files. */
       require_once(ABSPATH . 'wp-settings.php');
       """
-    And I run `sed -i '1s/^\(\xef\xbb\xbf\)\?/\xef\xbb\xbf/' wp-config.php`
+    And I run `awk 'BEGIN {print "\xef\xbb\xbf"} {print}' wp-config.php > wp-config.php`
 
     When I try `wp core is-installed`
     Then STDERR should not contain:
