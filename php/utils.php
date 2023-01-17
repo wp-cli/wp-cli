@@ -1175,14 +1175,23 @@ function basename( $path, $suffix = '' ) {
 /**
  * Checks whether the output of the current script is a TTY or a pipe / redirect
  *
- * Returns true if STDOUT output is being redirected to a pipe or a file; false is
+ * Returns `true` if `STDOUT` output is being redirected to a pipe or a file; `false` is
  * output is being sent directly to the terminal.
  *
- * If an env variable SHELL_PIPE exists, returned result depends on its
- * value. Strings like 1, 0, yes, no, that validate to booleans are accepted.
+ * If an env variable `SHELL_PIPE` exists, the returned result depends on its
+ * value. Strings like `1`, `0`, `yes`, `no`, that validate to booleans are accepted.
  *
  * To enable ASCII formatting even when the shell is piped, use the
- * ENV variable SHELL_PIPE=0.
+ * ENV variable `SHELL_PIPE=0`.
+ * ```
+ * SHELL_PIPE=0 wp plugin list | cat
+ * ```
+ *
+ * Note that the db command forwards to the mysql client, which is unaware of the env
+ * variable. For db commands, pass the `--table` option instead.
+ * ```
+ * wp db query --table "SELECT 1" | cat
+ * ```
  *
  * @access public
  *
