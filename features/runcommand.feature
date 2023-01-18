@@ -301,3 +301,40 @@ Feature: Run a WP-CLI command
       | func       |
       | proc_open  |
       | proc_close |
+
+  Scenario: Check that command_args provided to runcommand are used in command
+    Given a WP installation
+    And a custom-cmd.php file:
+      """
+      <?php
+      class Custom_Command extends WP_CLI_Command {
+
+        /**
+         * Custom command to test passing command_args via runcommand options
+         *
+         * @when after_wp_load
+         */
+        public function echo_test( $args ) {
+          $cli_opts = array( 'command_args' => array( '--exec="echo \'test\' . PHP_EOL;"' ) );
+          WP_CLI::runcommand( 'option get home', $cli_opts);
+        }
+        public function bad_path( $args ) {
+          $cli_opts = array( 'command_args' => array('--path=/bad/path' ) );
+          WP_CLI::runcommand( 'option get home', $cli_opts);
+        }
+      }
+      WP_CLI::add_command( 'custom-command', 'Custom_Command' );
+      """
+
+    When I run `wp --require=custom-cmd.php custom-command echo_test`
+    Then STDOUT should be:
+      """
+      test
+      https://example.com
+      """
+
+    When I try `wp --require=custom-cmd.php custom-command bad_path`
+    Then STDERR should contain:
+      """
+      The used path is: /bad/path/
+      """
