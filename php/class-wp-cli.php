@@ -1277,7 +1277,7 @@ class WP_CLI {
 	 *   'parse'      => 'json', // Parse captured STDOUT to JSON array.
 	 *   'launch'     => false,  // Reuse the current process.
 	 *   'exit_error' => true,   // Halt script execution on error.
-	 *   'runtime_args' => array('--skip-themes'), // Additional runtime arguments to be used with $command
+	 *   'command_args' => array('--skip-themes'), // Additional command arguments to be used with $command
 	 * );
 	 * $plugins = WP_CLI::runcommand( 'plugin list --format=json', $options );
 	 * ```
@@ -1295,17 +1295,17 @@ class WP_CLI {
 			'exit_error'   => true, // Exit on error by default.
 			'return'       => false, // Capture and return output, or render in realtime.
 			'parse'        => false, // Parse returned output as a particular format.
-			'runtime_args' => array(), //Include optional runtime arguments
+			'command_args' => array(), //Include optional command arguments
 		];
 		$options      = array_merge( $defaults, $options );
 		$launch       = $options['launch'];
 		$exit_error   = $options['exit_error'];
 		$return       = $options['return'];
 		$parse        = $options['parse'];
-		$runtime_args = $options['runtime_args'];
+		$command_args = $options['command_args'];
 
-		if ( ! empty( $runtime_args ) ) {
-			$command .= ' ' . implode( ' ', $runtime_args );
+		if ( ! empty( $command_args ) ) {
+			$command .= ' ' . implode( ' ', $command_args );
 		}
 
 		$retval = null;

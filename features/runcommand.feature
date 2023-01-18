@@ -302,7 +302,7 @@ Feature: Run a WP-CLI command
       | proc_open  |
       | proc_close |
 
-  Scenario: Check that runtime_args provided to runcommand are used in command
+  Scenario: Check that command_args provided to runcommand are used in command
     Given a WP installation
     And a custom-cmd.php file:
       """
@@ -310,16 +310,16 @@ Feature: Run a WP-CLI command
       class Custom_Command extends WP_CLI_Command {
 
         /**
-         * Custom command to test passing runtime_args via runcommand options
+         * Custom command to test passing command_args via runcommand options
          *
          * @when after_wp_load
          */
         public function echo_test( $args ) {
-          $cli_opts = array( 'runtime_args' => array( '--exec="echo \'test\' . PHP_EOL;"' ) );
+          $cli_opts = array( 'command_args' => array( '--exec="echo \'test\' . PHP_EOL;"' ) );
           WP_CLI::runcommand( 'option get home', $cli_opts);
         }
         public function bad_path( $args ) {
-          $cli_opts = array( 'runtime_args' => array('--path=/bad/path' ) );
+          $cli_opts = array( 'command_args' => array('--path=/bad/path' ) );
           WP_CLI::runcommand( 'option get home', $cli_opts);
         }
       }
