@@ -1305,7 +1305,7 @@ class WP_CLI {
 		$runtime_args = $options['runtime_args'];
 
 		if ( ! empty( $runtime_args ) ) {
-			$command = $command . ' ' . implode( ' ', $runtime_args );
+			$command .= ' ' . implode( ' ', $runtime_args );
 		}
 
 		$retval = null;
