@@ -1269,15 +1269,15 @@ class WP_CLI {
 	 * * Prevent halting script execution on error.
 	 * * Capture and return STDOUT, or full details about command execution.
 	 * * Parse JSON output if the command rendered it.
-	 * * Include additional runtime arguments to be used with command.
+	 * * Include additional arguments that are passed to the command.
 	 *
 	 * ```
 	 * $options = array(
-	 *   'return'     => true,   // Return 'STDOUT'; use 'all' for full object.
-	 *   'parse'      => 'json', // Parse captured STDOUT to JSON array.
-	 *   'launch'     => false,  // Reuse the current process.
-	 *   'exit_error' => true,   // Halt script execution on error.
-	 *   'command_args' => array('--skip-themes'), // Additional command arguments to be used with $command
+	 *   'return'       => true,                // Return 'STDOUT'; use 'all' for full object.
+	 *   'parse'        => 'json',              // Parse captured STDOUT to JSON array.
+	 *   'launch'       => false,               // Reuse the current process.
+	 *   'exit_error'   => true,                // Halt script execution on error.
+	 *   'command_args' => [ '--skip-themes' ], // Additional arguments to be passed to the $command.
 	 * );
 	 * $plugins = WP_CLI::runcommand( 'plugin list --format=json', $options );
 	 * ```
@@ -1291,11 +1291,11 @@ class WP_CLI {
 	 */
 	public static function runcommand( $command, $options = [] ) {
 		$defaults     = [
-			'launch'       => true, // Launch a new process, or reuse the existing.
-			'exit_error'   => true, // Exit on error by default.
+			'launch'       => true,  // Launch a new process, or reuse the existing.
+			'exit_error'   => true,  // Exit on error by default.
 			'return'       => false, // Capture and return output, or render in realtime.
 			'parse'        => false, // Parse returned output as a particular format.
-			'command_args' => array(), //Include optional command arguments
+			'command_args' => [],    // Include optional command arguments.
 		];
 		$options      = array_merge( $defaults, $options );
 		$launch       = $options['launch'];
