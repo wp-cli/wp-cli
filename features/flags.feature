@@ -148,6 +148,19 @@ Feature: Global flags
       """
     And STDERR should be empty
 
+    When I run `wp --user=user1@example.com eval 'echo wp_get_current_user()->user_email;'`
+    Then STDOUT should be:
+      """
+      user1@example.com
+      """
+    And STDERR should be empty
+
+    When I try `WP_CLI_FORCE_USER_LOGIN=1 wp --user=user1@example.com eval 'echo wp_get_current_user()->user_email;'`
+    Then STDERR should be:
+      """
+      Error: Invalid user login: 'user1@example.com'
+      """
+
   Scenario: Using a custom logger
     Given an empty directory
     And a custom-logger.php file:

@@ -25,7 +25,12 @@ class User extends Base {
 	 */
 	public function get( $arg ) {
 
-		if ( is_numeric( $arg ) && ! getenv( 'WP_CLI_FORCE_USER_LOGIN' ) ) {
+		if ( getenv( 'WP_CLI_FORCE_USER_LOGIN' ) ) {
+			$this->msg = "Invalid user login: '%s'";
+			return get_user_by( 'login', $arg );
+		}
+
+		if ( is_numeric( $arg ) ) {
 			$check = get_user_by( 'login', $arg );
 			$user  = get_user_by( 'id', $arg );
 			if ( $check && $user ) {
