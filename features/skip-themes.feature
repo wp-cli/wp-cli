@@ -150,3 +150,38 @@ Feature: Skipping themes
       false
       """
     And STDERR should be empty
+
+  @require-wp-6.1
+  Scenario: Skip a theme using block patterns
+    Given a WP installation
+    And I run `wp theme install blockline --activate`
+
+    When I run `wp eval 'var_dump( function_exists( "blockline_support" ) );'`
+    Then STDOUT should be:
+      """
+      bool(true)
+      """
+
+    When I run `wp --skip-themes=blockline eval 'var_dump( function_exists( "blockline_support" ) );'`
+    Then STDOUT should be:
+      """
+      bool(false)
+      """
+
+  @require-wp-6.1
+  Scenario: Skip a theme using block patterns with Gutenberg active
+    Given a WP installation
+    And I run `wp plugin install gutenberg --activate`
+    And I run `wp theme install blockline --activate`
+
+    When I run `wp eval 'var_dump( function_exists( "blockline_support" ) );'`
+    Then STDOUT should be:
+      """
+      bool(true)
+      """
+
+    When I run `wp --skip-themes=blockline eval 'var_dump( function_exists( "blockline_support" ) );'`
+    Then STDOUT should be:
+      """
+      bool(false)
+      """
