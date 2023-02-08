@@ -1780,13 +1780,15 @@ class Runner {
 		}
 
 		// Remove theme-related actions not directly tied into the theme lifecycle.
-		$theme_related_actions = [
-			[ 'init', '_register_theme_block_patterns' ],          // Block patterns registration in WP Core.
-			[ 'init', 'gutenberg_register_theme_block_patterns' ], // Block patterns registration in the GB plugin.
-		];
-		foreach ( $theme_related_actions as $action ) {
-			list( $hook, $callback ) = $action;
-			remove_action( $hook, $callback );
+		if ( WP_CLI::get_runner()->config['skip-themes'] ) {
+			$theme_related_actions = [
+				[ 'init', '_register_theme_block_patterns' ],          // Block patterns registration in WP Core.
+				[ 'init', 'gutenberg_register_theme_block_patterns' ], // Block patterns registration in the GB plugin.
+			];
+			foreach ( $theme_related_actions as $action ) {
+				list( $hook, $callback ) = $action;
+				remove_action( $hook, $callback );
+			}
 		}
 
 		// Clean up after the TEMPLATEPATH and STYLESHEETPATH constants are defined
