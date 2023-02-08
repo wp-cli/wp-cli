@@ -2,6 +2,7 @@
 
 namespace WP_CLI\Fetchers;
 
+use WP_CLI;
 use WP_User;
 
 /**
@@ -24,8 +25,19 @@ class User extends Base {
 	 */
 	public function get( $arg ) {
 
-		if ( is_numeric( $arg ) ) {
-			$user = get_user_by( 'id', $arg );
+		if ( is_numeric( $arg ) && ! getenv( 'WP_CLI_FORCE_USER_LOGIN' ) ) {
+			$check = get_user_by( 'login', $arg );
+			$user  = get_user_by( 'id', $arg );
+			if ( $check && $user ) {
+				WP_CLI::warning(
+					sprintf(
+						'Ambigious user match (ID=%d and user_login=%d). Defaulting to ID. Force user_login with WP_CLI_FORCE_USER_LOGIN=1.',
+						$arg,
+						$arg,
+						$arg
+					)
+				);
+			}
 		} elseif ( is_email( $arg ) ) {
 			$user = get_user_by( 'email', $arg );
 			// Logins can be emails.
