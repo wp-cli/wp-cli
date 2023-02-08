@@ -36,7 +36,7 @@ class User extends Base {
 			if ( $check && $user ) {
 				WP_CLI::warning(
 					sprintf(
-						'Ambigious user match (ID=%d and user_login=%d). Defaulting to ID. Force user_login with WP_CLI_FORCE_USER_LOGIN=1.',
+						'Ambiguous user match (ID=%d and user_login=%d). Defaulting to ID. Force user_login with WP_CLI_FORCE_USER_LOGIN=1.',
 						$arg,
 						$arg,
 						$arg

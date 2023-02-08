@@ -115,7 +115,7 @@ Feature: Global flags
       Error: Invalid user ID, email or login: 'non-existing-user'
       """
 
-  Scenario: Warn when provided user is ambigious
+  Scenario: Warn when provided user is ambiguous
     Given a WP installation
 
     When I run `wp --user=1 eval 'echo wp_get_current_user()->user_email;'`
@@ -138,7 +138,7 @@ Feature: Global flags
       """
     And STDERR should be:
       """
-      Warning: Ambigious user match (ID=1 and user_login=1). Defaulting to ID. Force user_login with WP_CLI_FORCE_USER_LOGIN=1.
+      Warning: Ambiguous user match (ID=1 and user_login=1). Defaulting to ID. Force user_login with WP_CLI_FORCE_USER_LOGIN=1.
       """
 
     When I run `WP_CLI_FORCE_USER_LOGIN=1 wp --user=1 eval 'echo wp_get_current_user()->user_email;'`
