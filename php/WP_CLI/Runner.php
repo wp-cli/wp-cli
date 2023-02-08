@@ -1778,9 +1778,15 @@ class Runner {
 		foreach ( $hooks as $hook ) {
 			add_filter( $hook, $wp_cli_filter_active_theme, 999 );
 		}
-		// Remove block pattern loading
-		remove_action( 'init', '_register_theme_block_patterns' );
-		remove_action( 'init', 'gutenberg_register_theme_block_patterns' );
+
+		// Remove theme-related actions not directly tied into the theme lifecycle.
+		$theme_related_actions = [
+			'init' => '_register_theme_block_patterns',          // Block patterns registration in WP Core.
+			'init' => 'gutenberg_register_theme_block_patterns', // Block patterns registration in the GB plugin.
+		];
+		foreach ( $theme_related_actions as $action => $callback ) {
+			remove_action( $action, $callback );
+		}
 
 		// Clean up after the TEMPLATEPATH and STYLESHEETPATH constants are defined
 		WP_CLI::add_wp_hook(
