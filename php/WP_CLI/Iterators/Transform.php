@@ -3,6 +3,7 @@
 namespace WP_CLI\Iterators;
 
 use IteratorIterator;
+use ReturnTypeWillChange;
 
 /**
  * Applies one or more callbacks to an item before returning it.
@@ -15,6 +16,7 @@ class Transform extends IteratorIterator {
 		$this->transformers[] = $fn;
 	}
 
+	#[ReturnTypeWillChange]
 	public function current() {
 		$value = parent::current();
 
@@ -25,4 +27,3 @@ class Transform extends IteratorIterator {
 		return $value;
 	}
 }
-
