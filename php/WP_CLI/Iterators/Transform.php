@@ -3,7 +3,6 @@
 namespace WP_CLI\Iterators;
 
 use IteratorIterator;
-use ReturnTypeWillChange;
 
 /**
  * Applies one or more callbacks to an item before returning it.
