@@ -1,41 +1,15 @@
 <?php
-
-namespace WP_CLI;
-
-use Composer\IO\NullIO;
-use WP_CLI;
-
 /**
- * A Composer IO class so we can provide some level of interactivity from WP-CLI
+ * Due to PHP 5.6 compatibility, we have two different implementations of this class.
+ *
+ * See https://github.com/wp-cli/package-command/issues/172.
  */
-class ComposerIO extends NullIO {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function isVerbose() {
-		return true;
-	}
+use Composer\Semver\VersionParser;
+use Composer\InstalledVersions;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function write( $messages, $newline = true, $verbosity = self::NORMAL ) {
-		self::output_clean_message( $messages );
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function writeError( $messages, $newline = true, $verbosity = self::NORMAL ) {
-		self::output_clean_message( $messages );
-	}
-
-	private static function output_clean_message( $messages ) {
-		$messages = (array) preg_replace( '#<(https?)([^>]+)>#', '$1$2', $messages );
-		foreach ( $messages as $message ) {
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags
-			WP_CLI::log( strip_tags( trim( $message ) ) );
-		}
-	}
+if ( InstalledVersions::satisfies( new VersionParser(), 'composer/composer', '^2.3' ) ) {
+	require 'ComposerIOWithTypes.php';
+} else {
+	require 'ComposerIOWithoutTypes.php';
 }
