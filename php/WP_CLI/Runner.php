@@ -91,7 +91,13 @@ class Runner {
 	 * @param Subcommand $command
 	 */
 	public function register_early_invoke( $when, $command ) {
-		$this->early_invoke[ $when ][] = array_slice( Dispatcher\get_path( $command ), 1 );
+		$cmd_path                      = array_slice( Dispatcher\get_path( $command ), 1 );
+		$this->early_invoke[ $when ][] = $cmd_path;
+		if ( $command->get_alias() ) {
+			array_pop( $cmd_path );
+			$cmd_path[]                    = $command->get_alias();
+			$this->early_invoke[ $when ][] = $cmd_path;
+		}
 	}
 
 	/**

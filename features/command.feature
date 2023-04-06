@@ -1518,3 +1518,37 @@ Feature: WP-CLI Commands
     """
     wp custom
     """
+
+  Scenario: subcommand alias should respect @when definition
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      class Test_Command {
+        /**
+         * test
+         *
+         * @alias bar
+         *
+         * @when before_wp_load
+         *
+         */
+        public function foo( $args, $assoc_args ) {
+          echo 'Hello' . PHP_EOL;
+        }
+      }
+
+      WP_CLI::add_command( 'test', Test_Command::class );
+      """
+
+    When I run `wp --require=custom-cmd.php test foo`
+    Then STDOUT should contain:
+      """
+      Hello
+      """
+
+    When I run `wp --require=custom-cmd.php test bar`
+    Then STDOUT should contain:
+      """
+      Hello
+      """

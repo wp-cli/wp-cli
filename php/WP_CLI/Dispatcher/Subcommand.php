@@ -20,11 +20,11 @@ class Subcommand extends CompositeCommand {
 	private $when_invoked;
 
 	public function __construct( $parent, $name, $docparser, $when_invoked ) {
+		$this->alias = $docparser->get_tag( 'alias' );
+
 		parent::__construct( $parent, $name, $docparser );
 
 		$this->when_invoked = $when_invoked;
-
-		$this->alias = $docparser->get_tag( 'alias' );
 
 		$this->synopsis = $docparser->get_synopsis();
 		if ( ! $this->synopsis && $this->longdesc ) {
