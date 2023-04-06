@@ -6,6 +6,7 @@ use WP_CLI;
 
 class Completions {
 
+	private $cur_word;
 	private $words;
 	private $opts = [];
 

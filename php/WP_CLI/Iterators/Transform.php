@@ -15,6 +15,7 @@ class Transform extends IteratorIterator {
 		$this->transformers[] = $fn;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function current() {
 		$value = parent::current();
 
@@ -25,4 +26,3 @@ class Transform extends IteratorIterator {
 		return $value;
 	}
 }
-

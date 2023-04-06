@@ -92,24 +92,73 @@ Feature: Global flags
       """
       false
       """
+    And STDERR should be empty
 
     When I run `wp --user=admin eval 'echo wp_get_current_user()->user_login;'`
     Then STDOUT should be:
       """
       admin
       """
+    And STDERR should be empty
 
     When I run `wp --user=admin@example.com eval 'echo wp_get_current_user()->user_login;'`
     Then STDOUT should be:
       """
       admin
       """
+    And STDERR should be empty
 
     When I try `wp --user=non-existing-user eval 'echo wp_get_current_user()->user_login;'`
     Then the return code should be 1
     And STDERR should be:
       """
       Error: Invalid user ID, email or login: 'non-existing-user'
+      """
+
+  Scenario: Warn when provided user is ambiguous
+    Given a WP installation
+
+    When I run `wp --user=1 eval 'echo wp_get_current_user()->user_email;'`
+    Then STDOUT should be:
+      """
+      admin@example.com
+      """
+    And STDERR should be empty
+
+    When I run `wp user create 1 user1@example.com`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    When I try `wp --user=1 eval 'echo wp_get_current_user()->user_email;'`
+    Then STDOUT should be:
+      """
+      admin@example.com
+      """
+    And STDERR should be:
+      """
+      Warning: Ambiguous user match detected (both ID and user_login exist for identifier '1'). WP-CLI will default to the ID, but you can force user_login instead with WP_CLI_FORCE_USER_LOGIN=1.
+      """
+
+    When I run `WP_CLI_FORCE_USER_LOGIN=1 wp --user=1 eval 'echo wp_get_current_user()->user_email;'`
+    Then STDOUT should be:
+      """
+      user1@example.com
+      """
+    And STDERR should be empty
+
+    When I run `wp --user=user1@example.com eval 'echo wp_get_current_user()->user_email;'`
+    Then STDOUT should be:
+      """
+      user1@example.com
+      """
+    And STDERR should be empty
+
+    When I try `WP_CLI_FORCE_USER_LOGIN=1 wp --user=user1@example.com eval 'echo wp_get_current_user()->user_email;'`
+    Then STDERR should be:
+      """
+      Error: Invalid user login: 'user1@example.com'
       """
 
   Scenario: Using a custom logger
