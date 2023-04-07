@@ -300,6 +300,47 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Check whether an alias is a group.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <key>
+	 * : Key for the alias.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Checks whether the alias is a group; exit status 0 if it is, otherwise 1.
+	 *     $ wp cli alias is-group @prod
+	 *     $ echo $?
+	 *     1
+	 *
+	 * @subcommand is-group
+	 */
+	public function is_group( $args, $assoc_args = array() ) {
+		$alias = $args[0];
+
+		$aliases = WP_CLI::get_runner()->aliases;
+
+		if ( empty( $aliases[ $alias ] ) ) {
+			WP_CLI::error( "No alias found with key '{$alias}'." );
+		}
+
+		// how do we know the alias is a group?
+		// + array keys are numeric
+		// + array values begin with '@'
+
+		$first_item       = $aliases[ $alias ];
+		$first_item_key   = key( $first_item );
+		$first_item_value = $first_item[ $first_item_key ];
+
+		if ( is_numeric( $first_item_key ) && substr( $first_item_value, 0, 1 ) === '@' ) {
+			WP_CLI::halt( 0 );
+		}
+		WP_CLI::halt( 1 );
+
+	}
+
+	/**
 	 * Get config path and aliases data based on config type.
 	 *
 	 * @param string $config             Type of config to get data from.

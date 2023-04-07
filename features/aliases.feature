@@ -580,3 +580,30 @@ Feature: Create shortcuts to specific WordPress installs
       | func       |
       | proc_open  |
       | proc_close |
+
+  Scenario: An alias is a group of aliases
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      @bar:
+        path: bar
+      @both:
+       - @foo
+       - @bar
+      """
+
+    When I try `wp cli alias is-group @both`
+    Then the return code should be 0
+
+  Scenario: An alias is not a group of aliases
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      """
+
+    When I try `wp cli alias is-group @foo`
+    Then the return code should be 1
