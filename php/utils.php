@@ -821,7 +821,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
  * @throws ExitException If unable to locate the cert and $halt_on_error is true.
  */
 function get_default_cacert( $halt_on_error = false ) {
-	$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
+	$cert_path = '/rmccue/requests/certificates/cacert.pem';
 	$error_msg = 'Cannot find SSL certificate.';
 
 	if ( inside_phar() ) {

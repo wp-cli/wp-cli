@@ -563,7 +563,7 @@ class UtilsTest extends TestCase {
 	public function testGetDefaultCaCert() {
 		$default_cert = Utils\get_default_cacert();
 		$this->assertStringEndsWith(
-			'/rmccue/requests/library/Requests/Transport/cacert.pem',
+			'/rmccue/requests/certificates/cacert.pem',
 			$default_cert
 		);
 		$this->assertFileExists( $default_cert );
