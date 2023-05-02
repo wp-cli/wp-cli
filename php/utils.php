@@ -14,8 +14,6 @@ use Composer\Semver\Semver;
 use Exception;
 use Mustache_Engine;
 use ReflectionFunction;
-use Requests;
-use Requests_Exception;
 use RuntimeException;
 use WP_CLI;
 use WP_CLI\ExitException;
@@ -24,6 +22,9 @@ use WP_CLI\Inflector;
 use WP_CLI\Iterators\Transform;
 use WP_CLI\NoOp;
 use WP_CLI\Process;
+use WpOrg\Requests\Autoload as RequestsAutoload;
+use WpOrg\Requests\Requests;
+use WpOrg\Requests\Exception as RequestsException;
 
 const PHAR_STREAM_PREFIX = 'phar://';
 
@@ -747,9 +748,9 @@ function replace_path_consts( $source, $path ) {
  */
 function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
 
-	if ( ! class_exists( 'Requests_Hooks' ) ) {
+	if ( ! class_exists( 'WpOrg\Requests\Hooks' ) ) {
 		// Autoloader for the Requests library has not been registered yet.
-		Requests::register_autoloader();
+		RequestsAutoload::register();
 	}
 
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
@@ -764,7 +765,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 	try {
 		try {
 			return Requests::request( $url, $headers, $data, $method, $options );
-		} catch ( Requests_Exception $ex ) {
+		} catch ( RequestsException $ex ) {
 			if ( true !== $options['verify'] || 'curlerror' !== $ex->getType() || curl_errno( $ex->getData() ) !== CURLE_SSL_CACERT ) {
 				throw $ex;
 			}
@@ -773,7 +774,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 
 			return Requests::request( $url, $headers, $data, $method, $options );
 		}
-	} catch ( Requests_Exception $ex ) {
+	} catch ( RequestsException $ex ) {
 		// CURLE_SSL_CACERT_BADFILE only defined for PHP >= 7.
 		if (
 			! $insecure
@@ -801,7 +802,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 
 		try {
 			return Requests::request( $url, $headers, $data, $method, $options );
-		} catch ( Requests_Exception $ex ) {
+		} catch ( RequestsException $ex ) {
 			$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $ex->getMessage() );
 			if ( $halt_on_error ) {
 				WP_CLI::error( $error_msg );
