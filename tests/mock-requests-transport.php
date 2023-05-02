@@ -28,7 +28,7 @@ class Mock_Requests_Transport implements Transport {
 		throw new Exception( 'Method not implemented: ' . __METHOD__ );
 	}
 
-	public static function test($capabilities = []) {
+	public static function test( $capabilities = [] ) {
 		return true;
 	}
 }
