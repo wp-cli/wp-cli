@@ -762,6 +762,12 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		$options['verify'] = ! empty( ini_get( 'curl.cainfo' ) ) ? ini_get( 'curl.cainfo' ) : true;
 	}
 
+	// The certificate location provided by default by the Requests library could point to a file inside a Phar archive.
+	// This is not supported by cURL, so we need to extract the file to a temporary location.
+	if ( 0 === strpos( $options['verify'], PHAR_STREAM_PREFIX ) ) {
+		$options['verify'] = extract_from_phar( $options['verify'] );
+	}
+
 	try {
 		try {
 			return Requests::request( $url, $headers, $data, $method, $options );
