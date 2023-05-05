@@ -247,9 +247,14 @@ class Runner {
 	 * Find the directory that contains the WordPress files.
 	 * Defaults to the current working dir.
 	 *
-	 * @return string An absolute path
+	 * @return string An absolute path.
 	 */
-	private function find_wp_root() {
+	public function find_wp_root() {
+		static $wp_root = null;
+		if ( $wp_root !== null ) {
+			return $wp_root;
+		}
+
 		if ( isset( $this->config['path'] ) &&
 			( is_bool( $this->config['path'] ) || empty( $this->config['path'] ) )
 		) {
@@ -262,24 +267,28 @@ class Runner {
 				$path = getcwd() . '/' . $path;
 			}
 
-			return $path;
+			$wp_root = $path;
+			return $wp_root;
 		}
 
 		if ( $this->cmd_starts_with( [ 'core', 'download' ] ) ) {
-			return getcwd();
+			$wp_root = getcwd();
+			return $wp_root;
 		}
 
 		$dir = getcwd();
 
 		while ( is_readable( $dir ) ) {
 			if ( file_exists( "$dir/wp-load.php" ) ) {
-				return $dir;
+				$wp_root = $dir;
+				return $wp_root;
 			}
 
 			if ( file_exists( "$dir/index.php" ) ) {
 				$path = self::extract_subdir_path( "$dir/index.php" );
 				if ( ! empty( $path ) ) {
-					return $path;
+					$wp_root = $path;
+					return $wp_root;
 				}
 			}
 
@@ -290,7 +299,8 @@ class Runner {
 			$dir = $parent_dir;
 		}
 
-		return getcwd();
+		$wp_root = getcwd();
+		return $wp_root;
 	}
 
 	/**
