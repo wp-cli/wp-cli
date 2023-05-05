@@ -250,11 +250,6 @@ class Runner {
 	 * @return string An absolute path.
 	 */
 	public function find_wp_root() {
-		static $wp_root = null;
-		if ( null !== $wp_root ) {
-			return $wp_root;
-		}
-
 		if ( isset( $this->config['path'] ) &&
 			( is_bool( $this->config['path'] ) || empty( $this->config['path'] ) )
 		) {
@@ -267,28 +262,24 @@ class Runner {
 				$path = getcwd() . '/' . $path;
 			}
 
-			$wp_root = $path;
-			return $wp_root;
+			return $path;
 		}
 
 		if ( $this->cmd_starts_with( [ 'core', 'download' ] ) ) {
-			$wp_root = getcwd();
-			return $wp_root;
+			return getcwd();
 		}
 
 		$dir = getcwd();
 
 		while ( is_readable( $dir ) ) {
 			if ( file_exists( "$dir/wp-load.php" ) ) {
-				$wp_root = $dir;
-				return $wp_root;
+				return $dir;
 			}
 
 			if ( file_exists( "$dir/index.php" ) ) {
 				$path = self::extract_subdir_path( "$dir/index.php" );
 				if ( ! empty( $path ) ) {
-					$wp_root = $path;
-					return $wp_root;
+					return $path;
 				}
 			}
 
@@ -299,8 +290,7 @@ class Runner {
 			$dir = $parent_dir;
 		}
 
-		$wp_root = getcwd();
-		return $wp_root;
+		return getcwd();
 	}
 
 	/**
