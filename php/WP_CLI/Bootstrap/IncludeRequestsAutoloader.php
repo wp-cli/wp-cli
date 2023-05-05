@@ -80,7 +80,7 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 
 		$autoloader->register();
 
-        \WpOrg\Requests\Autoload::register();
+		\WpOrg\Requests\Autoload::register();
 
 		$this->store_requests_meta( RequestsLibrary::CLASS_NAME_V2, self::FROM_WP_CLI );
 
@@ -97,11 +97,11 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 	 * @param string $source	 The source of the Requests integration.
 	 */
 	private function store_requests_meta( $class_name, $source ) {
-        RequestsLibrary::set_version( $class_name === RequestsLibrary::CLASS_NAME_V2
-            ? RequestsLibrary::VERSION_V2
-            : RequestsLibrary::VERSION_V1
-        );
-        RequestsLibrary::set_source( $source );
-        RequestsLibrary::set_class_name( $class_name );
+		RequestsLibrary::set_version( $class_name === RequestsLibrary::CLASS_NAME_V2
+			? RequestsLibrary::VERSION_V2
+			: RequestsLibrary::VERSION_V1
+		);
+		RequestsLibrary::set_source( $source );
+		RequestsLibrary::set_class_name( $class_name );
 	}
 }
