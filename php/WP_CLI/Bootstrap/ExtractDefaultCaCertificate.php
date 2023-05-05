@@ -28,7 +28,7 @@ final class ExtractDefaultCaCertificate implements BootstrapStep {
 	 */
 	public function process( BootstrapState $state ) {
         // We're using the get_default_cacert() helper, which automatically
-        // checks and extract files inside Phar archives.
+        // checks and extracts files inside Phar archives.
 		Requests::set_certificate_path( Utils\get_default_cacert() );
 
 		return $state;
