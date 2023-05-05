@@ -330,6 +330,13 @@ function wp_clear_object_cache() {
 
 	$wpdb->queries = [];
 
+	if ( function_exists( 'wp_cache_flush_runtime' ) && function_exists( 'wp_cache_supports' ) ) {
+		if ( wp_cache_supports( 'flush_runtime' ) ) {
+			wp_cache_flush_runtime();
+			return;
+		}
+	}
+
 	if ( ! is_object( $wp_object_cache ) ) {
 		return;
 	}
