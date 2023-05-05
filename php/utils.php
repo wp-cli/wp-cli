@@ -762,7 +762,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		try {
 			return $request_method( $url, $headers, $data, $method, $options );
 		} catch ( Exception $exception ) {
-			if ( RequestsLibrary::isRequestsException( $exception ) ) {
+			if ( RequestsLibrary::is_requests_exception( $exception ) ) {
 				if (
 					true !== $options['verify']
 					|| 'curlerror' !== $exception->getType()
@@ -770,15 +770,15 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 				) {
 					throw $exception;
 				}
-		
+
 				$options['verify'] = get_default_cacert( $halt_on_error );
-		
+
 				return $request_method( $url, $headers, $data, $method, $options );
 			}
 			throw $exception;
 		}
 	} catch ( Exception $exception ) {
-		if ( RequestsLibrary::isRequestsException( $exception ) ) {
+		if ( RequestsLibrary::is_requests_exception( $exception ) ) {
 			// CURLE_SSL_CACERT_BADFILE only defined for PHP >= 7.
 			if (
 				! $insecure
@@ -807,7 +807,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 			try {
 				return $request_method( $url, $headers, $data, $method, $options );
 			} catch ( Exception $exception ) {
-				if ( RequestsLibrary::isRequestsException( $exception ) ) {
+				if ( RequestsLibrary::is_requests_exception( $exception ) ) {
 					$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $exception->getMessage() );
 					if ( $halt_on_error ) {
 						WP_CLI::error( $error_msg );

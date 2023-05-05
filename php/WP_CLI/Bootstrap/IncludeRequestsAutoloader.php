@@ -94,12 +94,13 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 	 * across multiple Requests versions.
 	 *
 	 * @param string $class_name The class name of the Requests integration.
-	 * @param string $source	 The source of the Requests integration.
+	 * @param string $source     The source of the Requests integration.
 	 */
 	private function store_requests_meta( $class_name, $source ) {
-		RequestsLibrary::set_version( $class_name === RequestsLibrary::CLASS_NAME_V2
-			? RequestsLibrary::VERSION_V2
-			: RequestsLibrary::VERSION_V1
+		RequestsLibrary::set_version(
+			RequestsLibrary::CLASS_NAME_V2 === $class_name
+				? RequestsLibrary::VERSION_V2
+				: RequestsLibrary::VERSION_V1
 		);
 		RequestsLibrary::set_source( $source );
 		RequestsLibrary::set_class_name( $class_name );

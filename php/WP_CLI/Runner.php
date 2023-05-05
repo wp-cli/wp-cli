@@ -251,7 +251,7 @@ class Runner {
 	 */
 	public function find_wp_root() {
 		static $wp_root = null;
-		if ( $wp_root !== null ) {
+		if ( null !== $wp_root ) {
 			return $wp_root;
 		}
 

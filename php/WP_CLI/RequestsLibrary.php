@@ -46,7 +46,7 @@ final class RequestsLibrary {
 	 *
 	 * @var string
 	 */
-	const SOURCE_WP_CLI  = 'wp-cli';
+	const SOURCE_WP_CLI = 'wp-cli';
 
 	/**
 	 * Array of valid source for the Requests library.
@@ -223,12 +223,13 @@ final class RequestsLibrary {
 	 * Check if a given exception was issued by the Requests library.
 	 *
 	 * This is used because we cannot easily catch multiple different exception
-	 * classes with PHP 5.6. Because of that, we catch generic exceptions, check if they match with 
+	 * classes with PHP 5.6. Because of that, we catch generic exceptions, check if
+	 * they match the Requests library, and re-throw them if they do not.
 	 *
 	 * @param Exception $exception Exception to check.
 	 * @return bool Whether the provided exception was issued by the Requests library.
 	 */
-	public static function isRequestsException( Exception $exception ) {
+	public static function is_requests_exception( Exception $exception ) {
 		return is_a( $exception, '\Requests_Exception' )
 			|| is_a( $exception, '\WpOrg\Requests\Exception' );
 	}
@@ -240,7 +241,7 @@ final class RequestsLibrary {
 	 * autoloader if it is still needed.
 	 */
 	public static function register_autoloader() {
-		if ( self::is_v1() && ! class_exists ( self::CLASS_NAME_V1 ) ) {
+		if ( self::is_v1() && ! class_exists( self::CLASS_NAME_V1 ) ) {
 			if ( self::is_core() ) {
 				require_once ABSPATH . WPINC . '/class-requests.php';
 			} else {
