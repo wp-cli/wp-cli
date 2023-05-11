@@ -22,7 +22,7 @@ function get_bootstrap_steps() {
 		Bootstrap\DeclareAbstractBaseCommand::class,
 		Bootstrap\IncludeFrameworkAutoloader::class,
 		Bootstrap\ConfigureRunner::class,
-		Bootstrap\ExtractDefaultCaCertificate::class,
+		Bootstrap\IncludeRequestsAutoloader::class,
 		Bootstrap\InitializeColorization::class,
 		Bootstrap\InitializeLogger::class,
 		Bootstrap\DefineProtectedCommands::class,
@@ -75,6 +75,10 @@ function bootstrap() {
 
 	foreach ( get_bootstrap_steps() as $step ) {
 		/** @var BootstrapStep $step_instance */
+		if ( class_exists( 'WP_CLI' ) ) {
+			\WP_CLI::debug( "Processing bootstrap step: {$step}", 'bootstrap' );
+		}
+
 		$step_instance = new $step();
 		$state         = $step_instance->process( $state );
 	}

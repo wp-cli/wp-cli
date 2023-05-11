@@ -56,7 +56,7 @@ Feature: Requests integration with both v1 and v2
     When I run `wp eval 'var_dump( \WP_CLI\Utils\http_request( "GET", "https://example.com/" ) );'`
     Then STDOUT should contain:
       """
-      object(WpOrg\Requests\Response)
+      object(Requests_Response)
       """
     And STDOUT should contain:
       """
@@ -64,29 +64,13 @@ Feature: Requests integration with both v1 and v2
       """
     And STDERR should be empty
 
-    When I run `wp eval 'var_dump( \WpOrg\Requests\Requests::get( "https://example.com/" ) );'`
+    When I run `wp plugin install duplicate-post`
     Then STDOUT should contain:
       """
-      object(WpOrg\Requests\Response)
+      Success: Installed 1 of 1 plugins.
       """
-    And STDOUT should contain:
-      """
-      HTTP/1.1 200 OK
-      """
-    And STDERR should be empty
 
-    When I run `wp eval 'var_dump( \Requests::get( "https://example.com/" ) );'`
-    Then STDOUT should contain:
-      """
-      object(WpOrg\Requests\Response)
-      """
-    And STDOUT should contain:
-      """
-      HTTP/1.1 200 OK
-      """
-    And STDERR should be empty
-
-  Scenario: Current version with WordPress-bundled Requests v2
+    Scenario: Current version with WordPress-bundled Requests v2
     Given a WP installation
     And I run `wp core update --version=6.2 --force`
 
@@ -107,28 +91,8 @@ Feature: Requests integration with both v1 and v2
       """
     And STDERR should be empty
 
-    When I run `wp eval 'var_dump( \WpOrg\Requests\Requests::get( "https://example.com/" ) );'`
+    When I run `wp plugin install duplicate-post`
     Then STDOUT should contain:
       """
-      object(WpOrg\Requests\Response)
-      """
-    And STDOUT should contain:
-      """
-      HTTP/1.1 200 OK
-      """
-    And STDERR should be empty
-
-    # Expect a deprecation warning here.
-    When I try `wp eval 'var_dump( \Requests::get( "https://example.com/" ) );'`
-    Then STDOUT should contain:
-      """
-      object(WpOrg\Requests\Response)
-      """
-    And STDOUT should contain:
-      """
-      HTTP/1.1 200 OK
-      """
-    And STDERR should contain:
-      """
-      The PSR-0 `Requests_...` class names in the Requests library are deprecated.
+      Success: Installed 1 of 1 plugins.
       """

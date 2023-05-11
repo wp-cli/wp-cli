@@ -247,9 +247,9 @@ class Runner {
 	 * Find the directory that contains the WordPress files.
 	 * Defaults to the current working dir.
 	 *
-	 * @return string An absolute path
+	 * @return string An absolute path.
 	 */
-	private function find_wp_root() {
+	public function find_wp_root() {
 		if ( isset( $this->config['path'] ) &&
 			( is_bool( $this->config['path'] ) || empty( $this->config['path'] ) )
 		) {
