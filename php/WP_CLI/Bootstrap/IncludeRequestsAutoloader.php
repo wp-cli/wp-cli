@@ -46,7 +46,16 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 			return;
 		}
 
-		$runner  = new RunnerInstance();
+		$runner = new RunnerInstance();
+
+		// Make sure we don't deal with an invalid `--path` value.
+		$config = $runner()->config;
+		if ( isset( $config['path'] ) &&
+			( is_bool( $config['path'] ) || empty( $config['path'] ) )
+		) {
+			return $state;
+		}
+
 		$wp_root = rtrim( $runner()->find_wp_root(), '/' );
 
 		// First try to detect a newer Requests version bundled with WordPress.
