@@ -838,10 +838,8 @@ function get_default_cacert( $halt_on_error = false ) {
 		return extract_from_phar( $cert_path );
 	}
 
-	foreach ( get_vendor_paths() as $vendor_path ) {
-		if ( file_exists( $vendor_path . $cert_path ) ) {
-			return $vendor_path . $cert_path;
-		}
+	if ( file_exists( $cert_path ) ) {
+		return $cert_path;
 	}
 
 	if ( $halt_on_error ) {
