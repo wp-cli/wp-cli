@@ -830,12 +830,12 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
  * @throws ExitException If unable to locate the cert and $halt_on_error is true.
  */
 function get_default_cacert( $halt_on_error = false ) {
-	$cert_path = '/rmccue/requests/certificates/cacert.pem';
+	$cert_path = RequestsLibrary::get_bundled_certificate_path();
 	$error_msg = 'Cannot find SSL certificate.';
 
-	if ( inside_phar() ) {
+	if ( 0 === strpos( $cert_path, PHAR_STREAM_PREFIX ) ) {
 		// cURL can't read Phar archives
-		return extract_from_phar( WP_CLI_VENDOR_DIR . $cert_path );
+		return extract_from_phar( $cert_path );
 	}
 
 	foreach ( get_vendor_paths() as $vendor_path ) {
