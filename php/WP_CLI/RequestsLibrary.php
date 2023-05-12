@@ -241,9 +241,11 @@ final class RequestsLibrary {
 	 * autoloader if it is still needed.
 	 */
 	public static function register_autoloader() {
+		$includes_path = defined( 'WPINC' ) ? WPINC : 'wp-includes';
+
 		if ( self::is_v1() && ! class_exists( self::CLASS_NAME_V1 ) ) {
 			if ( self::is_core() ) {
-				require_once ABSPATH . WPINC . '/class-requests.php';
+				require_once ABSPATH . $includes_path . '/class-requests.php';
 			} else {
 				require_once WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests.php';
 			}
@@ -252,7 +254,7 @@ final class RequestsLibrary {
 
 		if ( self::is_v2() && ! class_exists( self::CLASS_NAME_V2 ) ) {
 			if ( self::is_core() ) {
-				require_once ABSPATH . WPINC . '/Requests/Autoload.php';
+				require_once ABSPATH . $includes_path . '/Requests/Autoload.php';
 			} else {
 				require_once WP_CLI_VENDOR_DIR . '/rmccue/requests/src/Autoload.php';
 			}
@@ -267,7 +269,8 @@ final class RequestsLibrary {
 	 */
 	public static function get_bundled_certificate_path() {
 		if ( self::is_core() ) {
-			return ABSPATH . WPINC . '/certificates/ca-bundle.crt';
+			$includes_path = defined( 'WPINC' ) ? WPINC : 'wp-includes';
+			return ABSPATH . $includes_path . '/certificates/ca-bundle.crt';
 		} elseif ( self::is_v1() ) {
 			return WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests/Transport/cacert.pem';
 		} else {
