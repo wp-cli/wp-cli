@@ -24,6 +24,11 @@ use WP_CLI\NoOp;
 use WP_CLI\Process;
 use WP_CLI\RequestsLibrary;
 
+/**
+ * File stream wrapper prefix for Phar archives.
+ *
+ * @var string
+ */
 const PHAR_STREAM_PREFIX = 'phar://';
 
 /**
@@ -39,13 +44,37 @@ const PHAR_STREAM_PREFIX = 'phar://';
  */
 const FILE_DIR_PATTERN = '%(?>#.*?$)|(?>//.*?$)|(?>/\*.*?\*/)|(?>\'(?:(?=(\\\\?))\1.)*?\')|(?>"(?:(?=(\\\\?))\2.)*?")|(?<file>\b__FILE__\b)|(?<dir>\b__DIR__\b)%ms';
 
-function inside_phar() {
-	return defined( 'WP_CLI_ROOT' ) && 0 === strpos( WP_CLI_ROOT, PHAR_STREAM_PREFIX );
+/**
+ * Check if a certain path is within a Phar archive.
+ *
+ * If no path is provided, the function checks whether the current WP_CLI instance is
+ * running from within a Phar archive.
+ *
+ * @param string|null $path Optional. Path to check. Defaults to null, which checks WP_CLI_ROOT.
+ */
+function inside_phar( $path = null ) {
+	if ( null === $path ) {
+		if ( ! defined( 'WP_CLI_ROOT' ) ) {
+			return false;
+		}
+
+		$path = WP_CLI_ROOT;
+	}
+
+	return 0 === strpos( $path, PHAR_STREAM_PREFIX );
 }
 
-// Files that need to be read by external programs have to be extracted from the Phar archive.
+/**
+ * Extract a file from a Phar archive.
+ *
+ * Files that need to be read by external programs have to be extracted from the Phar archive.
+ * If the file is not within a Phar archive, the function returns the path unchanged.
+ *
+ * @param string $path Path to the file to extract.
+ * @return string Path to the extracted file.
+ */
 function extract_from_phar( $path ) {
-	if ( ! inside_phar() ) {
+	if ( ! inside_phar( $path ) ) {
 		return $path;
 	}
 
@@ -830,18 +859,16 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
  * @throws ExitException If unable to locate the cert and $halt_on_error is true.
  */
 function get_default_cacert( $halt_on_error = false ) {
-	$cert_path = '/rmccue/requests/certificates/cacert.pem';
+	$cert_path = RequestsLibrary::get_bundled_certificate_path();
 	$error_msg = 'Cannot find SSL certificate.';
 
-	if ( inside_phar() ) {
+	if ( inside_phar( $cert_path ) ) {
 		// cURL can't read Phar archives
-		return extract_from_phar( WP_CLI_VENDOR_DIR . $cert_path );
+		return extract_from_phar( $cert_path );
 	}
 
-	foreach ( get_vendor_paths() as $vendor_path ) {
-		if ( file_exists( $vendor_path . $cert_path ) ) {
-			return $vendor_path . $cert_path;
-		}
+	if ( file_exists( $cert_path ) ) {
+		return $cert_path;
 	}
 
 	if ( $halt_on_error ) {
@@ -1514,7 +1541,7 @@ function past_tense_verb( $verb ) {
  * @return string
  */
 function get_php_binary() {
-	// PHAR installs always use PHP_BINARY.
+	// Phar installs always use PHP_BINARY.
 	if ( inside_phar() ) {
 		return PHP_BINARY;
 	}

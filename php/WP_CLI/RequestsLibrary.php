@@ -245,7 +245,7 @@ final class RequestsLibrary {
 			if ( self::is_core() ) {
 				require_once ABSPATH . WPINC . '/class-requests.php';
 			} else {
-				require_once WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests.php';
+				require_once WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests.php';
 			}
 			\Requests::register_autoloader();
 		}
@@ -254,9 +254,24 @@ final class RequestsLibrary {
 			if ( self::is_core() ) {
 				require_once ABSPATH . WPINC . '/Requests/Autoload.php';
 			} else {
-				require_once WP_CLI_ROOT . '/vendor/rmccue/requests/src/Autoload.php';
+				require_once WP_CLI_VENDOR_DIR . '/rmccue/requests/src/Autoload.php';
 			}
 			\WpOrg\Requests\Autoload::register();
+		}
+	}
+
+	/**
+	 * Get the path to the bundled certificate.
+	 *
+	 * @return string The path to the bundled certificate.
+	 */
+	public static function get_bundled_certificate_path() {
+		if ( self::is_core() ) {
+			return ABSPATH . WPINC . '/certificates/ca-bundle.crt';
+		} elseif ( self::is_v1() ) {
+			return WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests/Transport/cacert.pem';
+		} else {
+			return WP_CLI_VENDOR_DIR . '/rmccue/requests/certificates/cacert.pem';
 		}
 	}
 }
