@@ -129,7 +129,27 @@ class Process {
 	public function run_check_stderr() {
 		$r = $this->run();
 
-		if ( $r->return_code || ! empty( $r->stderr ) ) {
+		if ( $r->return_code ) {
+			throw new RuntimeException( $r );
+		}
+
+		if ( ! empty( $r->stderr ) ) {
+			// If the only thing that STDERR caught was the Requests deprecated message, ignore it.
+			// This is a temporary fix until we have a better solution for dealing with Requests
+			// as a dependency shared between WP Core and WP-CLI.
+			$stderr_lines = array_filter( explode( "\n", $r->stderr ) );
+			if ( 1 === count( $stderr_lines ) ) {
+				$stderr_line = $stderr_lines[0];
+				if (
+					false !== strpos(
+						$stderr_line,
+						'The PSR-0 `Requests_...` class names in the Request library are deprecated.'
+					)
+				) {
+					return $r;
+				}
+			}
+
 			throw new RuntimeException( $r );
 		}
 
