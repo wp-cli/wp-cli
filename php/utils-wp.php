@@ -145,7 +145,15 @@ function maybe_require( $since, $path ) {
 
 function get_upgrader( $class, $insecure = false ) {
 	if ( ! class_exists( '\WP_Upgrader' ) ) {
-		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' ) ) {
+			include ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		}
+	}
+
+	if ( ! class_exists( '\WP_Upgrader_Skin' ) ) {
+		if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php' ) ) {
+			include ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php';
+		}
 	}
 
 	$uses_insecure_flag = false;
