@@ -145,7 +145,7 @@ function maybe_require( $since, $path ) {
 
 function get_upgrader( $class, $insecure = false ) {
 	if ( ! class_exists( '\WP_Upgrader' ) ) {
-		if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php' ) ) {
+		if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' ) ) {
 			include ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 		}
 	}
