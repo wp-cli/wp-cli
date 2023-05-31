@@ -145,7 +145,19 @@ function maybe_require( $since, $path ) {
 
 function get_upgrader( $class, $insecure = false ) {
 	if ( ! class_exists( '\WP_Upgrader' ) ) {
+		if ( ! file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php' ) ) {
+			WP_CLI::error( 'The WP_Upgrader class from WordPress Core is not available.' );
+		}
+
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+	}
+
+	if ( ! class_exists( '\WP_Upgrader_Skin' ) ) {
+		if ( ! file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php' ) ) {
+			WP_CLI::error( 'The WP_Upgrader_Skin class from WordPress Core is not available.' );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php';
 	}
 
 	$uses_insecure_flag = false;
