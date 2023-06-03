@@ -256,6 +256,7 @@ final class RequestsLibrary {
 			if ( self::is_core() ) {
 				require_once ABSPATH . $includes_path . '/Requests/Autoload.php';
 			} else {
+				self::maybe_define_wp_cli_root();
 				if ( file_exists( WP_CLI_ROOT . '/bundle/rmccue/requests/src/Autoload.php' ) ) {
 					require_once WP_CLI_ROOT . '/bundle/rmccue/requests/src/Autoload.php';
 				} else {
@@ -278,10 +279,20 @@ final class RequestsLibrary {
 		} elseif ( self::is_v1() ) {
 			return WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests/Transport/cacert.pem';
 		} else {
+			self::maybe_define_wp_cli_root();
 			if ( file_exists( WP_CLI_ROOT . '/bundle/rmccue/requests/certificates/cacert.pem' ) ) {
 				return WP_CLI_ROOT . '/bundle/rmccue/requests/certificates/cacert.pem';
 			}
 			return WP_CLI_VENDOR_DIR . '/rmccue/requests/certificates/cacert.pem';
+		}
+	}
+
+	/**
+	 * Define WP_CLI_ROOT if it is not already defined.
+	 */
+	private static function maybe_define_wp_cli_root() {
+		if ( ! defined( 'WP_CLI_ROOT' ) ) {
+			define( 'WP_CLI_ROOT', dirname( dirname( __DIR__ ) ) );
 		}
 	}
 }
