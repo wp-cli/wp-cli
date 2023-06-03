@@ -12,4 +12,6 @@ if ( file_exists( WP_CLI_ROOT . '/vendor/autoload.php' ) ) {
 
 require_once WP_CLI_VENDOR_DIR . '/autoload.php';
 require_once WP_CLI_ROOT . '/php/utils.php';
+require_once WP_CLI_ROOT . '/bundle/rmccue/requests/src/Autoload.php';
 
+\WpOrg\Requests\Autoload::register();
