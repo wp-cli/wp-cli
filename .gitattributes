@@ -1,3 +1,6 @@
 # Auto detect text files and perform EOL normalization
 * text=auto eol=lf
 tests/data/*-win.php eol=crlf
+
+# Don't show bundled libraries as source files in GitHub
+bundle/* linguist-vendored
