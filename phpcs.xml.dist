@@ -16,6 +16,7 @@
 	<!-- Ignoring select files/folders.
 		 https://github.com/squizlabs/PHP_CodeSniffer/wiki/Advanced-Usage#ignoring-files-and-folders -->
 	<exclude-pattern>*/tests/data/*</exclude-pattern>
+	<exclude-pattern>*/bundle/*</exclude-pattern>
 
 	<!-- Show progress. -->
 	<arg value="p"/>

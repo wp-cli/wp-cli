@@ -43,7 +43,7 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 	public function process( BootstrapState $state ) {
 		// If Requests is already loaded, don't do anything.
 		if ( class_exists( RequestsLibrary::CLASS_NAME_V2, false ) || class_exists( RequestsLibrary::CLASS_NAME_V1, false ) ) {
-			return;
+			return $state;
 		}
 
 		$runner = new RunnerInstance();
@@ -60,31 +60,35 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 
 		// First try to detect a newer Requests version bundled with WordPress.
 		if ( file_exists( $wp_root . '/wp-includes/Requests/src/Autoload.php' ) ) {
-			require_once $wp_root . '/wp-includes/Requests/src/Autoload.php';
+			if ( ! class_exists( '\\WpOrg\\Requests\\Autoload', false ) ) {
+				require_once $wp_root . '/wp-includes/Requests/src/Autoload.php';
+			}
 
-			\WpOrg\Requests\Autoload::register();
-
-			$this->store_requests_meta( RequestsLibrary::CLASS_NAME_V2, self::FROM_WP_CORE );
-
-			return $state;
+			if ( class_exists( '\\WpOrg\\Requests\\Autoload' ) ) {
+				\WpOrg\Requests\Autoload::register();
+				$this->store_requests_meta( RequestsLibrary::CLASS_NAME_V2, self::FROM_WP_CORE );
+				return $state;
+			}
 		}
 
 		// Then see if we can detect the older version bundled with WordPress.
 		if ( file_exists( $wp_root . '/wp-includes/class-requests.php' ) ) {
-			require_once $wp_root . '/wp-includes/class-requests.php';
+			if ( ! class_exists( '\\Requests', false ) ) {
+				require_once $wp_root . '/wp-includes/class-requests.php';
+			}
 
-			\Requests::register_autoloader();
-
-			$this->store_requests_meta( RequestsLibrary::CLASS_NAME_V1, self::FROM_WP_CORE );
-
-			return $state;
+			if ( class_exists( '\\Requests' ) ) {
+				\Requests::register_autoloader();
+				$this->store_requests_meta( RequestsLibrary::CLASS_NAME_V1, self::FROM_WP_CORE );
+				return $state;
+			}
 		}
 
 		// Finally, fall back to the Requests version bundled with WP-CLI.
 		$autoloader = new Autoloader();
 		$autoloader->add_namespace(
 			'WpOrg\Requests',
-			WP_CLI_VENDOR_DIR . '/rmccue/requests/src'
+			WP_CLI_ROOT . '/bundle/rmccue/requests/src'
 		);
 
 		$autoloader->register();
