@@ -3,4 +3,4 @@
 tests/data/*-win.php eol=crlf
 
 # Don't show bundled libraries as source files in GitHub
-bundle/* linguist-vendored
+bundle/**/* linguist-vendored
