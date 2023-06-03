@@ -256,7 +256,11 @@ final class RequestsLibrary {
 			if ( self::is_core() ) {
 				require_once ABSPATH . $includes_path . '/Requests/Autoload.php';
 			} else {
-				require_once WP_CLI_VENDOR_DIR . '/rmccue/requests/src/Autoload.php';
+				if ( file_exists( WP_CLI_ROOT . '/bundle/rmccue/requests/src/Autoload.php' ) ) {
+					require_once WP_CLI_ROOT . '/bundle/rmccue/requests/src/Autoload.php';
+				} else {
+					require_once WP_CLI_VENDOR_DIR . '/rmccue/requests/src/Autoload.php';
+				}
 			}
 			\WpOrg\Requests\Autoload::register();
 		}
@@ -274,6 +278,9 @@ final class RequestsLibrary {
 		} elseif ( self::is_v1() ) {
 			return WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests/Transport/cacert.pem';
 		} else {
+			if ( file_exists( WP_CLI_ROOT . '/bundle/rmccue/requests/certificates/cacert.pem' ) ) {
+				return WP_CLI_ROOT . '/bundle/rmccue/requests/certificates/cacert.pem';
+			}
 			return WP_CLI_VENDOR_DIR . '/rmccue/requests/certificates/cacert.pem';
 		}
 	}
