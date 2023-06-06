@@ -145,6 +145,8 @@ assignees: 'schlessera'
 
 - [ ] Update the [roadmap](https://make.wordpress.org/cli/handbook/roadmap/)
 
+- [ ] Update all version references on the homepage (and localized homepages).
+
 - [ ] Tag a release of the website
 
 ### Announcing
