@@ -650,9 +650,9 @@ class Runner {
 			}
 
 			$command_args = [
-				$bits['proxyjump'] ? sprintf( '-J %s ', $bits['proxyjump'] ) : '',
+				$bits['proxyjump'] ? sprintf( '-J %s ', escapeshellarg( $bits['proxyjump'] ) ) : '',
 				$bits['port'] ? '-p ' . (int) $bits['port'] . ' ' : '',
-				$bits['key'] ? sprintf( '-i %s', $bits['key'] ) : '',
+				$bits['key'] ? sprintf( '-i %s', escapeshellarg( $bits['key'] ) ) : '',
 				$is_tty ? '-t' : '-T',
 			];
 
