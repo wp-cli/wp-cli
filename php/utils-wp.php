@@ -97,7 +97,7 @@ function wp_die_handler( $message ) {
 
 	if ( $message instanceof \WP_Error ) {
 		$text_message = $message->get_error_message();
-		$error_data = $message->get_error_data( 'internal_server_error' );
+		$error_data   = $message->get_error_data( 'internal_server_error' );
 		if ( ! empty( $error_data['error']['file'] )
 			&& false !== stripos( $error_data['error']['file'], 'themes/functions.php' ) ) {
 			$text_message = 'There was an internal server error that may have been caused by an unexpected functions.php file in the themes directory.';
