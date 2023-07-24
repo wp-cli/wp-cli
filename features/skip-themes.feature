@@ -186,6 +186,7 @@ Feature: Skipping themes
       bool(false)
       """
 
+  @require-wp-5.2
   Scenario: Display a custom error message when themes/functions.php causes the fatal
     Given a WP installation
     And a wp-content/themes/functions.php file:
