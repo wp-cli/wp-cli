@@ -185,3 +185,17 @@ Feature: Skipping themes
       """
       bool(false)
       """
+
+  Scenario: Display a custom error message when themes/functions.php causes the fatal
+    Given a WP installation
+    And a wp-content/themes/functions.php file:
+      """
+      <?php
+      wp_cli_function_doesnt_exist_5240();
+      """
+
+    When I try `wp --skip-themes plugin list`
+    Then STDERR should contain:
+      """
+      Error: There was an internal server error that may have been caused by an unexpected functions.php file in the themes directory.
+      """
