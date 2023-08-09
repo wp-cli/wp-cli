@@ -143,7 +143,7 @@ Feature: Get help about WP-CLI commands
       GLOBAL PARAMETERS
       """
 
-  @require-php-5.6
+  @require-php-7.0
   Scenario: Help when WordPress is downloaded but not installed
     Given an empty directory
 
