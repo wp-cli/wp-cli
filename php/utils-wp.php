@@ -94,13 +94,21 @@ function replace_wp_die_handler() {
 }
 
 function wp_die_handler( $message ) {
+
 	if ( $message instanceof \WP_Error ) {
-		$message = $message->get_error_message();
+		$text_message = $message->get_error_message();
+		$error_data   = $message->get_error_data( 'internal_server_error' );
+		if ( ! empty( $error_data['error']['file'] )
+			&& false !== stripos( $error_data['error']['file'], 'themes/functions.php' ) ) {
+			$text_message = 'An unexpected functions.php file in the themes directory may have caused this internal server error.';
+		}
+	} else {
+		$text_message = $message;
 	}
 
-	$message = wp_clean_error_message( $message );
+	$text_message = wp_clean_error_message( $text_message );
 
-	WP_CLI::error( $message );
+	WP_CLI::error( $text_message );
 }
 
 /**
