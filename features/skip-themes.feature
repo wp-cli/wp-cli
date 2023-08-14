@@ -198,5 +198,5 @@ Feature: Skipping themes
     When I try `wp --skip-themes plugin list`
     Then STDERR should contain:
       """
-      Error: There was an internal server error that may have been caused by an unexpected functions.php file in the themes directory.
+      Error: An unexpected functions.php file in the themes directory may have caused this internal server error.
       """

@@ -100,7 +100,7 @@ function wp_die_handler( $message ) {
 		$error_data   = $message->get_error_data( 'internal_server_error' );
 		if ( ! empty( $error_data['error']['file'] )
 			&& false !== stripos( $error_data['error']['file'], 'themes/functions.php' ) ) {
-			$text_message = 'There was an internal server error that may have been caused by an unexpected functions.php file in the themes directory.';
+			$text_message = 'An unexpected functions.php file in the themes directory may have caused this internal server error.';
 		}
 	} else {
 		$text_message = $message;
