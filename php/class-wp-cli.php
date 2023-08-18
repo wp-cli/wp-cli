@@ -463,7 +463,7 @@ class WP_CLI {
 	 * @category Registration
 	 *
 	 * @param string   $name Name for the command (e.g. "post list" or "site empty").
-	 * @param callable $callable Command implementation as a class, function or closure.
+	 * @param callable|object|string $callable Command implementation as a class, function or closure.
 	 * @param array    $args {
 	 *    Optional. An associative array with additional registration parameters.
 	 *
