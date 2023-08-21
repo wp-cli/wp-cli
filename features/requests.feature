@@ -107,11 +107,11 @@ Feature: Requests integration with both v1 and v2
       """
 
     When I run `WP_CLI_RUNTIME_ALIAS='{"@foo":{"path":"foo"}}' wp @foo option get home --debug`
-    Then STDOUT should contain:
+    Then STDERR should contain:
       """
       Setting RequestsLibrary::$version to v1
       """
-    And STDOUT should contain:
+    And STDERR should contain:
       """
       Setting RequestsLibrary::$source to wp-core
       """
