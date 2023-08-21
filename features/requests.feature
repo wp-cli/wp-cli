@@ -96,3 +96,22 @@ Feature: Requests integration with both v1 and v2
       """
       Success: Installed 1 of 1 plugins.
       """
+
+  Scenario: Current version with WordPress-bundled Request v1 and an alias
+    Given a WP installation in 'foo'
+    And I run `wp --path=foo core download --version=5.8 --force`
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      """
+
+    When I run `WP_CLI_RUNTIME_ALIAS='{"@foo":{"path":"foo"}}' wp @foo option get home --debug`
+    Then STDOUT should contain:
+      """
+      Setting RequestsLibrary::$version to v1
+      """
+    And STDOUT should contain:
+      """
+      Setting RequestsLibrary::$source to wp-core
+      """
