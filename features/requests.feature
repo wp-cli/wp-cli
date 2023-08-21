@@ -106,7 +106,7 @@ Feature: Requests integration with both v1 and v2
         path: foo
       """
 
-    When I run `WP_CLI_RUNTIME_ALIAS='{"@foo":{"path":"foo"}}' wp @foo option get home --debug`
+    When I try `WP_CLI_RUNTIME_ALIAS='{"@foo":{"path":"foo"}}' wp @foo option get home --debug`
     Then STDERR should contain:
       """
       Setting RequestsLibrary::$version to v1
