@@ -187,7 +187,7 @@ class CompositeCommand {
 
 		foreach ( $methods as $subcommand ) {
 			$prefix = ( 0 === $i ) ? 'usage: ' : '   or: ';
-			$i++;
+			++$i;
 
 			if ( WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
 				continue;

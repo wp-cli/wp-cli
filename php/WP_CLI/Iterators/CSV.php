@@ -71,7 +71,7 @@ class CSV implements Countable, Iterator {
 
 			if ( ! empty( $element ) ) {
 				$this->current_element = $element;
-				$this->current_index++;
+				++$this->current_index;
 
 				break;
 			}
@@ -88,4 +88,3 @@ class CSV implements Countable, Iterator {
 		return is_array( $this->current_element );
 	}
 }
-

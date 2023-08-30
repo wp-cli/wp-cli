@@ -89,7 +89,7 @@ class Process {
 				self::$run_times[ $this->command ] = [ 0, 0 ];
 			}
 			self::$run_times[ $this->command ][0] += $run_time;
-			self::$run_times[ $this->command ][1]++;
+			++self::$run_times[ $this->command ][1];
 		}
 
 		return new ProcessRun(

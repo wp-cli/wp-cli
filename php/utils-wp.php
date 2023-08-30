@@ -87,7 +87,7 @@ function replace_wp_die_handler() {
 	\remove_filter( 'wp_die_handler', '_default_wp_die_handler' );
 	\add_filter(
 		'wp_die_handler',
-		function() {
+		function () {
 			return __NAMESPACE__ . '\\wp_die_handler';
 		}
 	);
@@ -253,7 +253,6 @@ function wp_register_unused_sidebar() {
 			'after_title'   => '',
 		]
 	);
-
 }
 
 /**

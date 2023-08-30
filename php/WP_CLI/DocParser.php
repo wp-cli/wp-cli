@@ -118,7 +118,6 @@ class DocParser {
 		}
 
 		return '';
-
 	}
 
 	/**
@@ -195,5 +194,4 @@ class DocParser {
 		}
 		return null;
 	}
-
 }

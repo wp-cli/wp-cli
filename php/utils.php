@@ -85,7 +85,7 @@ function extract_from_phar( $path ) {
 	copy( $path, $tmp_path );
 
 	register_shutdown_function(
-		function() use ( $tmp_path ) {
+		function () use ( $tmp_path ) {
 			if ( file_exists( $tmp_path ) ) {
 				unlink( $tmp_path );
 			}
@@ -900,20 +900,20 @@ function increment_version( $current_version, $new_version ) {
 			break;
 
 		case 'patch':
-			$current_version[0][2]++;
+			++$current_version[0][2];
 
 			$current_version = [ $current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		case 'minor':
-			$current_version[0][1]++;
+			++$current_version[0][1];
 			$current_version[0][2] = 0;
 
 			$current_version = [ $current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		case 'major':
-			$current_version[0][0]++;
+			++$current_version[0][0];
 			$current_version[0][1] = 0;
 			$current_version[0][2] = 0;
 
@@ -1306,14 +1306,14 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 					if ( ++$current === $length ) {
 						break;
 					}
-					$current++;
+					++$current;
 				} else {
 					if ( ( '}' === $pattern[ $current ] && 0 === $depth-- ) || ( ',' === $pattern[ $current ] && 0 === $depth ) ) {
 						break;
 					}
 
 					if ( '{' === $pattern[ $current++ ] ) {
-						$depth++;
+						++$depth;
 					}
 				}
 			}
@@ -1327,7 +1327,7 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 	// Find first opening brace.
 	for ( $begin = 0; $begin < $length; $begin++ ) {
 		if ( '\\' === $pattern[ $begin ] ) {
-			$begin++;
+			++$begin;
 		} elseif ( '{' === $pattern[ $begin ] ) {
 			break;
 		}

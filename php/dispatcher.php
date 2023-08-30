@@ -17,4 +17,3 @@ function get_path( $command ) {
 
 	return $path;
 }
-

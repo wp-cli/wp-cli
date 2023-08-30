@@ -189,7 +189,7 @@ class Runner {
 				static $wp_load_count = 0;
 				$wp_load_path         = $dir . DIRECTORY_SEPARATOR . 'wp-load.php';
 				if ( file_exists( $wp_load_path ) ) {
-					++ $wp_load_count;
+					++$wp_load_count;
 				}
 				return $wp_load_count > 1;
 			}
@@ -1277,7 +1277,6 @@ class Runner {
 		$this->load_wordpress();
 
 		$this->run_command_and_exit();
-
 	}
 
 	/**
@@ -1383,7 +1382,6 @@ class Runner {
 
 		WP_CLI::debug( 'Loaded WordPress', 'bootstrap' );
 		WP_CLI::do_hook( 'after_wp_load' );
-
 	}
 
 	private static function fake_current_site_blog( $url_parts ) {

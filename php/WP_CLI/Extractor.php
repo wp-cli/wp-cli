@@ -142,7 +142,7 @@ class Extractor {
 
 		$process_run = WP_CLI::launch(
 			$cmd,
-			false /*exit_on_error*/,
+			false, /*exit_on_error*/
 			true /*return_detailed*/
 		);
 
@@ -187,15 +187,13 @@ class Extractor {
 				if ( ! is_dir( $dest_path ) ) {
 					mkdir( $dest_path );
 				}
+			} elseif ( file_exists( $dest_path ) && is_writable( $dest_path ) ) {
+					copy( $item, $dest_path );
+			} elseif ( ! file_exists( $dest_path ) ) {
+				copy( $item, $dest_path );
 			} else {
-				if ( file_exists( $dest_path ) && is_writable( $dest_path ) ) {
-					copy( $item, $dest_path );
-				} elseif ( ! file_exists( $dest_path ) ) {
-					copy( $item, $dest_path );
-				} else {
-					$error = 1;
-					WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathName() . "' to current directory." );
-				}
+				$error = 1;
+				WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathName() . "' to current directory." );
 			}
 		}
 

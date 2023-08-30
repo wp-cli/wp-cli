@@ -110,13 +110,11 @@ class SynopsisValidator {
 				if ( ! $param['optional'] ) {
 					$errors['fatal'][ $key ] = "missing --$key parameter";
 				}
-			} else {
-				if ( true === $assoc_args[ $key ] && ! $param['value']['optional'] ) {
+			} elseif ( true === $assoc_args[ $key ] && ! $param['value']['optional'] ) {
 					$error_type                    = ( ! $param['optional'] ) ? 'fatal' : 'warning';
 					$errors[ $error_type ][ $key ] = "--$key parameter needs a value";
 
 					$to_unset[] = $key;
-				}
 			}
 		}
 
@@ -167,7 +165,7 @@ class SynopsisValidator {
 			$matched = 0;
 			foreach ( $args as $m_key => $m_value ) {
 				if ( array_key_exists( $m_key, $to_match ) && $m_value === $to_match[ $m_key ] ) {
-					$matched++;
+					++$matched;
 				}
 			}
 
@@ -180,5 +178,4 @@ class SynopsisValidator {
 
 		return $filtered;
 	}
-
 }

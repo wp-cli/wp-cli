@@ -393,5 +393,4 @@ class Configurator {
 			$path = $base . DIRECTORY_SEPARATOR . $path;
 		}
 	}
-
 }

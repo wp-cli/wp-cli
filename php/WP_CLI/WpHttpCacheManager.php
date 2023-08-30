@@ -128,5 +128,4 @@ class WpHttpCacheManager {
 	public function is_whitelisted( $url ) {
 		return isset( $this->whitelist[ $url ] );
 	}
-
 }

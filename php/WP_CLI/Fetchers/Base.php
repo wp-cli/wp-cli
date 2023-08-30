@@ -62,4 +62,3 @@ abstract class Base {
 		return $items;
 	}
 }
-

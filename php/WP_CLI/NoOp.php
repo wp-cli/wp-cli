@@ -15,4 +15,3 @@ final class NoOp {
 		// do nothing
 	}
 }
-

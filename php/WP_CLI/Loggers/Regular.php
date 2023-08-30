@@ -60,7 +60,7 @@ class Regular extends Base {
 	public function error_multi_line( $message_lines ) {
 		// Convert tabs to four spaces, as some shells will output the tabs as variable-length.
 		$message_lines = array_map(
-			function( $line ) {
+			function ( $line ) {
 				return str_replace( "\t", '    ', $line );
 			},
 			$message_lines

@@ -125,7 +125,7 @@ class WP_CLI {
 	}
 
 	private static function set_url_params( $url_parts ) {
-		$f = function( $key ) use ( $url_parts ) {
+		$f = function ( $key ) use ( $url_parts ) {
 			return Utils\get_flag_value( $url_parts, $key, '' );
 		};
 
@@ -1067,7 +1067,7 @@ class WP_CLI {
 		}
 
 		// Only json_encode() the data when it needs it
-		$render_data = function( $data ) {
+		$render_data = function ( $data ) {
 			if ( is_array( $data ) || is_object( $data ) ) {
 				return json_encode( $data );
 			}

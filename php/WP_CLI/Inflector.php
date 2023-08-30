@@ -368,7 +368,7 @@ class Inflector {
 	public static function ucwords( $string, $delimiters = " \n\t\r\0\x0B-" ) {
 		return preg_replace_callback(
 			'/[^' . preg_quote( $delimiters, '/' ) . ']+/',
-			function( $matches ) {
+			function ( $matches ) {
 				return ucfirst( $matches[0] );
 			},
 			$string

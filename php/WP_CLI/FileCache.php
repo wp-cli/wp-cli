@@ -59,7 +59,6 @@ class FileCache {
 		if ( ! $this->ensure_dir_exists( $this->root ) ) {
 			$this->enabled = false;
 		}
-
 	}
 
 	/**
