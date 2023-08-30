@@ -71,4 +71,3 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 		WP_CLI::log( $string );
 	}
 }
-

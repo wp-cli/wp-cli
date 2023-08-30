@@ -227,7 +227,6 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		unset( $aliases[ $alias ] );
 		$this->process_aliases( $aliases, $alias, $config_path, 'Deleted' );
-
 	}
 
 	/**
@@ -337,7 +336,6 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			WP_CLI::halt( 0 );
 		}
 		WP_CLI::halt( 1 );
-
 	}
 
 	/**
@@ -382,7 +380,6 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		}
 
 		return [ $config_path, $aliases ];
-
 	}
 
 	/**
@@ -437,9 +434,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 					}
 				}
 			}
-		} else {
+		} elseif ( ! empty( $grouping ) ) {
 
-			if ( ! empty( $grouping ) ) {
 				$group_alias_list  = explode( ',', $grouping );
 				$group_alias       = array_map(
 					function ( $current_alias ) {
@@ -448,7 +444,6 @@ class CLI_Alias_Command extends WP_CLI_Command {
 					$group_alias_list
 				);
 				$aliases[ $alias ] = $group_alias;
-			}
 		}
 
 		return $aliases;

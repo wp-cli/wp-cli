@@ -118,4 +118,21 @@
 		<exclude-pattern>*/utils/get-package-require-from-composer\.php$</exclude-pattern>
 	</rule>
 
+	<!-- Exclude existing classes from the protected parameter names rule as it would break BC to change these now. -->
+	<rule ref="Universal.NamingConventions.NoReservedKeywordParameterNames">
+		<exclude-pattern>*/php/WP_CLI/Iterators/Transform\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/Compat/Min_PHP_5_4/FeedbackMethodTrait\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/Compat/Min_PHP_5_6/FeedbackMethodTrait\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/Inflector\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/Autoloader\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/Dispatcher/CommandFactory\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/Dispatcher/CompositeCommand\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/Dispatcher/Subcommand\.php</exclude-pattern>
+		<exclude-pattern>*/php/utils\.php</exclude-pattern>
+		<exclude-pattern>*/php/utils-wp\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/Runner\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/UpgraderSkin\.php$</exclude-pattern>
+		<exclude-pattern>*/php/class-wp-cli\.php$</exclude-pattern>
+	</rule>
+
 </ruleset>

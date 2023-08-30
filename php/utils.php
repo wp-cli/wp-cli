@@ -85,7 +85,7 @@ function extract_from_phar( $path ) {
 	copy( $path, $tmp_path );
 
 	register_shutdown_function(
-		function() use ( $tmp_path ) {
+		function () use ( $tmp_path ) {
 			if ( file_exists( $tmp_path ) ) {
 				unlink( $tmp_path );
 			}
@@ -360,7 +360,10 @@ function wp_version_compare( $since, $operator ) {
  * @param array|string $fields Named fields for each item of data. Can be array or comma-separated list.
  */
 function format_items( $format, $items, $fields ) {
-	$assoc_args = compact( 'format', 'fields' );
+	$assoc_args = [
+		'format' => $format,
+		'fields' => $fields,
+	];
 	$formatter  = new Formatter( $assoc_args );
 	$formatter->display_items( $items );
 }
@@ -900,20 +903,20 @@ function increment_version( $current_version, $new_version ) {
 			break;
 
 		case 'patch':
-			$current_version[0][2]++;
+			++$current_version[0][2];
 
 			$current_version = [ $current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		case 'minor':
-			$current_version[0][1]++;
+			++$current_version[0][1];
 			$current_version[0][2] = 0;
 
 			$current_version = [ $current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		case 'major':
-			$current_version[0][0]++;
+			++$current_version[0][0];
 			$current_version[0][1] = 0;
 			$current_version[0][2] = 0;
 
@@ -1292,7 +1295,7 @@ function expand_globs( $paths, $flags = 'default' ) {
  * @param void   $dummy_flags Not used.
  * @return array Array of paths.
  */
-function glob_brace( $pattern, $dummy_flags = null ) {
+function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $dummy_flags is needed for compatibility with the libc implementation.
 
 	static $next_brace_sub;
 	if ( ! $next_brace_sub ) {
@@ -1306,14 +1309,14 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 					if ( ++$current === $length ) {
 						break;
 					}
-					$current++;
+					++$current;
 				} else {
 					if ( ( '}' === $pattern[ $current ] && 0 === $depth-- ) || ( ',' === $pattern[ $current ] && 0 === $depth ) ) {
 						break;
 					}
 
 					if ( '{' === $pattern[ $current++ ] ) {
-						$depth++;
+						++$depth;
 					}
 				}
 			}
@@ -1327,7 +1330,7 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 	// Find first opening brace.
 	for ( $begin = 0; $begin < $length; $begin++ ) {
 		if ( '\\' === $pattern[ $begin ] ) {
-			$begin++;
+			++$begin;
 		} elseif ( '{' === $pattern[ $begin ] ) {
 			break;
 		}

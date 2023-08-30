@@ -103,7 +103,6 @@ class Completions {
 				$this->add( $opt );
 			}
 		}
-
 	}
 
 	/**

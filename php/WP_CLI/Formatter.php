@@ -289,7 +289,6 @@ class Formatter {
 				break;
 
 		}
-
 	}
 
 	/**
@@ -367,5 +366,4 @@ class Formatter {
 		}
 		return $item;
 	}
-
 }

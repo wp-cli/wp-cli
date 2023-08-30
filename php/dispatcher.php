@@ -13,8 +13,8 @@ function get_path( $command ) {
 
 	do {
 		array_unshift( $path, $command->get_name() );
-	} while ( $command = $command->get_parent() );
+		$command = $command->get_parent();
+	} while ( $command );
 
 	return $path;
 }
-

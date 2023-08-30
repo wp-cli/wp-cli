@@ -18,7 +18,6 @@ class ConfiguratorTest extends TestCase {
 
 		$this->assertEquals( 'baz', $args[1][1][0] );
 		$this->assertEquals( 'text', $args[1][1][1] );
-
 	}
 
 	public function testExtractAssocNoValue() {
@@ -34,7 +33,6 @@ class ConfiguratorTest extends TestCase {
 
 		$this->assertEquals( 'baz', $args[1][1][0] );
 		$this->assertEquals( 'text', $args[1][1][1] );
-
 	}
 
 	public function testExtractAssocGlobalLocal() {

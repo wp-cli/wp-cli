@@ -100,8 +100,8 @@ class Query implements Iterator {
 
 	#[\ReturnTypeWillChange]
 	public function next() {
-		$this->index_in_results++;
-		$this->global_index++;
+		++$this->index_in_results;
+		++$this->global_index;
 	}
 
 	#[\ReturnTypeWillChange]
@@ -134,4 +134,3 @@ class Query implements Iterator {
 		return true;
 	}
 }
-

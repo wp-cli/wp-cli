@@ -219,7 +219,7 @@ class Help_Command extends WP_CLI_Command {
 			$pattern = '/\[.+?\]\((https?:\/\/.+?)\)/';
 			$newdesc = preg_replace_callback(
 				$pattern,
-				function( $matches ) use ( &$links ) {
+				function ( $matches ) use ( &$links ) {
 					static $count = 0;
 					$count++;
 					$links[] = $matches[1];

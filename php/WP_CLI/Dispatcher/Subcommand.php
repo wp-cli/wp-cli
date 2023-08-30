@@ -153,7 +153,7 @@ class Subcommand extends CompositeCommand {
 
 		$spec = array_filter(
 			SynopsisParser::parse( $synopsis ),
-			function( $spec_arg ) use ( $args, $assoc_args, &$arg_index ) {
+			function ( $spec_arg ) use ( $args, $assoc_args, &$arg_index ) {
 				switch ( $spec_arg['type'] ) {
 					case 'positional':
 						// Only prompt for the positional arguments that are not
@@ -338,16 +338,13 @@ class Subcommand extends CompositeCommand {
 							if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) {
 								\WP_CLI::error( 'Invalid value specified for positional arg.' );
 							}
-							$i++;
+							++$i;
 						} while ( isset( $args[ $i ] ) );
-					} else {
-						// phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
-						if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) {
-							\WP_CLI::error( 'Invalid value specified for positional arg.' );
-						}
+					} elseif ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) { // phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
+						\WP_CLI::error( 'Invalid value specified for positional arg.' );
 					}
 				}
-				$i++;
+				++$i;
 			} elseif ( 'assoc' === $spec['type'] ) {
 				$spec_args = $docparser->get_param_args( $spec['name'] );
 				if ( ! isset( $assoc_args[ $spec['name'] ] ) && ! isset( $extra_args[ $spec['name'] ] ) ) {

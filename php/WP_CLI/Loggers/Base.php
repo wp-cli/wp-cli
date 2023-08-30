@@ -82,5 +82,4 @@ abstract class Base {
 		}
 		$this->write( $handle, "$label $message\n" );
 	}
-
 }

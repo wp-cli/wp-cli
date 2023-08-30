@@ -33,4 +33,3 @@ class Comment extends Base {
 		return $comment;
 	}
 }
-

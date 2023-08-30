@@ -200,7 +200,6 @@ class Contrib_List_Command {
 		}
 		return array( json_decode( $response->body ), $response->headers );
 	}
-
 }
 
 WP_CLI::add_command( 'contrib-list', 'Contrib_List_Command' );

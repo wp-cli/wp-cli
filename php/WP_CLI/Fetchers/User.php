@@ -54,4 +54,3 @@ class User extends Base {
 		return $user;
 	}
 }
-

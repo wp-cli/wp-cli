@@ -90,4 +90,3 @@ class Table extends Query {
 		return $where;
 	}
 }
-
