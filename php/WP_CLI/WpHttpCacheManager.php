@@ -116,7 +116,10 @@ class WpHttpCacheManager {
 	 */
 	public function whitelist_url( $url, $key = null, $ttl = null ) {
 		$key                     = $key ? : $url;
-		$this->whitelist[ $url ] = compact( 'key', 'ttl' );
+		$this->whitelist[ $url ] = [
+			'key' => $key,
+			'ttl' => $ttl,
+		];
 	}
 
 	/**

@@ -436,7 +436,8 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 			$wp_tables = array_values( $wpdb->tables( $scope ) );
 		}
 
-		if ( ! global_terms_enabled() ) {
+		// The global_terms_enabled() function has been deprecated with WP 6.1+.
+		if ( wp_version_compare( '6.1', '>=' ) || ! global_terms_enabled() ) { // phpcs:ignore WordPress.WP.DeprecatedFunctions.global_terms_enabledFound
 			// Only include sitecategories when it's actually enabled.
 			$wp_tables = array_values( array_diff( $wp_tables, [ $wpdb->sitecategories ] ) );
 		}
@@ -505,40 +506,4 @@ function strip_tags( $string ) {
 	$string = \strip_tags( $string );
 
 	return trim( $string );
-}
-
-/**
- * Internalized version of global_terms_enabled() to get around a bug in WordPress Core.
- *
- * WP Core inadvertently removed the function instead of deprecating it during th 6.1 cycle.
- *
- * @see https://core.trac.wordpress.org/ticket/21734#comment:34
- */
-function global_terms_enabled() {
-	if ( ! is_multisite() ) {
-		return false;
-	}
-
-	static $global_terms = null;
-	if ( is_null( $global_terms ) ) {
-
-		/**
-		 * Filters whether global terms are enabled.
-		 *
-		 * Returning a non-null value from the filter will effectively short-circuit the function
-		 * and return the value of the 'global_terms_enabled' site option instead.
-		 *
-		 * @since 3.0.0
-		 *
-		 * @param null $enabled Whether global terms are enabled.
-		 */
-		$filter = apply_filters( 'global_terms_enabled', null ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
-		if ( ! is_null( $filter ) ) {
-			$global_terms = (bool) $filter;
-		} else {
-			$global_terms = (bool) get_site_option( 'global_terms_enabled', false );
-		}
-	}
-
-	return $global_terms;
 }

@@ -1361,7 +1361,7 @@ class Runner {
 		}
 
 		// Fix memory limit. See https://core.trac.wordpress.org/ticket/14889
-		// phpcs:ignore WordPress.PHP.IniSet.memory_limit_Blacklisted -- This is perfectly fine for CLI usage.
+		// phpcs:ignore WordPress.PHP.IniSet.memory_limit_Disallowed -- This is perfectly fine for CLI usage.
 		ini_set( 'memory_limit', -1 );
 
 		// Load all the admin APIs, for convenience
@@ -1539,7 +1539,7 @@ class Runner {
 		// Use our own debug mode handling instead of WP core
 		WP_CLI::add_wp_hook(
 			'enable_wp_debug_mode_checks',
-			static function ( $ret ) {
+			static function ( $ret ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- WP core hook.
 				Utils\wp_debug_mode();
 				return false;
 			}
@@ -1962,6 +1962,6 @@ class Runner {
 			// Don't enable E_DEPRECATED as old versions of WP use PHP 4 style constructors and the mysql extension.
 			error_reporting( E_ALL & ~E_DEPRECATED );
 		}
-		ini_set( 'display_errors', 'stderr' ); // phpcs:ignore WordPress.PHP.IniSet.display_errors_Blacklisted
+		ini_set( 'display_errors', 'stderr' ); // phpcs:ignore WordPress.PHP.IniSet.display_errors_Disallowed
 	}
 }

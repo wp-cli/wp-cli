@@ -210,7 +210,7 @@ class CompositeCommand {
 	 * @param array $assoc_args
 	 * @param array $extra_args
 	 */
-	public function invoke( $args, $assoc_args, $extra_args ) {
+	public function invoke( $args, $assoc_args, $extra_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- arguments not used, as only help displayed.
 		$this->show_usage();
 	}
 

@@ -102,10 +102,15 @@ final class WpOrgApi {
 	 * @throws RuntimeException If the remote request fails.
 	 */
 	public function get_core_checksums( $version, $locale = 'en_US' ) {
+		$data = [
+			'version' => $version,
+			'locale'  => $locale,
+		];
+
 		$url = sprintf(
 			'%s?%s',
 			self::CORE_CHECKSUMS_ENDPOINT,
-			http_build_query( compact( 'version', 'locale' ), '', '&' )
+			http_build_query( $data, '', '&' )
 		);
 
 		$response = $this->json_get_request( $url );
@@ -132,7 +137,7 @@ final class WpOrgApi {
 		$url = sprintf(
 			'%s?%s',
 			self::VERSION_CHECK_ENDPOINT,
-			http_build_query( compact( 'locale' ), '', '&' )
+			http_build_query( [ 'locale' => $locale ], '', '&' )
 		);
 
 		$response = $this->json_get_request( $url );

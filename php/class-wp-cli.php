@@ -1005,8 +1005,11 @@ class WP_CLI {
 			// We don't use file_get_contents() here because it doesn't handle
 			// Ctrl-D properly, when typing in the value interactively.
 			$raw_value = '';
-			while ( false !== ( $line = fgets( STDIN ) ) ) {
+			$line      = fgets( STDIN );
+
+			while ( false !== $line ) {
 				$raw_value .= $line;
+				$line       = fgets( STDIN );
 			}
 		}
 

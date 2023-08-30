@@ -340,11 +340,8 @@ class Subcommand extends CompositeCommand {
 							}
 							++$i;
 						} while ( isset( $args[ $i ] ) );
-					} else {
-						// phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
-						if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) {
-							\WP_CLI::error( 'Invalid value specified for positional arg.' );
-						}
+					} elseif ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) { // phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
+						\WP_CLI::error( 'Invalid value specified for positional arg.' );
 					}
 				}
 				++$i;

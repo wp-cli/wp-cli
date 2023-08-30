@@ -213,29 +213,40 @@ class CommandFactory {
 	private static function extract_last_doc_comment( $content ) {
 		$content         = trim( $content );
 		$comment_end_pos = strrpos( $content, '*/' );
+
 		if ( false === $comment_end_pos ) {
 			return false;
 		}
+
 		// Make sure comment end belongs to this class/function.
 		if ( preg_match_all( '/(?:^|[\s;}])(?:class|function)\s+/', substr( $content, $comment_end_pos + 2 ), $dummy /*needed for PHP 5.3*/ ) > 1 ) {
 			return false;
 		}
+
 		$content           = substr( $content, 0, $comment_end_pos + 2 );
 		$comment_start_pos = strrpos( $content, '/**' );
+
 		if ( false === $comment_start_pos || ( $comment_start_pos + 2 ) === $comment_end_pos ) {
 			return false;
 		}
+
 		// Make sure comment start belongs to this comment end.
 		$comment_end2_pos = strpos( substr( $content, $comment_start_pos ), '*/' );
+
 		if ( false !== $comment_end2_pos && ( $comment_start_pos + $comment_end2_pos ) < $comment_end_pos ) {
 			return false;
 		}
+
 		// Allow for '/**' within doc comment.
-		$subcontent = substr( $content, 0, $comment_start_pos );
-		while ( false !== ( $comment_start2_pos = strrpos( $subcontent, '/**' ) ) && false === strpos( $subcontent, '*/', $comment_start2_pos ) ) {
-			$comment_start_pos = $comment_start2_pos;
-			$subcontent        = substr( $subcontent, 0, $comment_start_pos );
+		$subcontent         = substr( $content, 0, $comment_start_pos );
+		$comment_start2_pos = strrpos( $subcontent, '/**' );
+
+		while ( false !== $comment_start2_pos && false === strpos( $subcontent, '*/', $comment_start2_pos ) ) {
+			$comment_start_pos  = $comment_start2_pos;
+			$subcontent         = substr( $subcontent, 0, $comment_start_pos );
+			$comment_start2_pos = strrpos( $subcontent, '/**' );
 		}
+
 		return substr( $content, $comment_start_pos, $comment_end_pos + 2 );
 	}
 }
