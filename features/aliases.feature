@@ -174,6 +174,36 @@ Feature: Create shortcuts to specific WordPress installs
       Error: No alias found with key '@someotherfoo'.
       """
 
+  Scenario: Adds proxyjump to ssh command
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        proxyjump: proxyhost
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -q -J 'proxyhost' 
+      """
+
+  Scenario: Adds key to ssh command
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        key: identityfile.key
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -q -i 'identityfile.key' 
+      """
+
   Scenario: Add an alias
     Given a WP installation in 'foo'
     And a wp-cli.yml file:

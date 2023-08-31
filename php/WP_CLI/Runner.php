@@ -551,7 +551,7 @@ class Runner {
 		$escaped_command = '';
 
 		// Set default values.
-		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key' ] as $bit ) {
+		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump' ] as $bit ) {
 			if ( ! isset( $bits[ $bit ] ) ) {
 				$bits[ $bit ] = null;
 			}
@@ -640,9 +640,19 @@ class Runner {
 				$bits['host'] = $bits['user'] . '@' . $bits['host'];
 			}
 
+			if ( ! empty( $this->alias ) ) {
+				$alias_config = isset( $this->aliases[ $this->alias ] ) ? $this->aliases[ $this->alias ] : false;
+
+				if ( is_array( $alias_config ) ) {
+					$bits['proxyjump'] = isset( $alias_config['proxyjump'] ) ? $alias_config['proxyjump'] : '';
+					$bits['key']       = isset( $alias_config['key'] ) ? $alias_config['key'] : '';
+				}
+			}
+
 			$command_args = [
+				$bits['proxyjump'] ? sprintf( '-J %s ', escapeshellarg( $bits['proxyjump'] ) ) : '',
 				$bits['port'] ? '-p ' . (int) $bits['port'] . ' ' : '',
-				$bits['key'] ? sprintf( '-i %s', $bits['key'] ) : '',
+				$bits['key'] ? sprintf( '-i %s', escapeshellarg( $bits['key'] ) ) : '',
 				$is_tty ? '-t' : '-T',
 			];
 
