@@ -4,6 +4,7 @@ namespace WP_CLI\Bootstrap;
 
 use WP_CLI\Autoloader;
 use WP_CLI\RequestsLibrary;
+use WP_CLI\Utils;
 
 /**
  * Class IncludeRequestsAutoloader.
@@ -48,15 +49,29 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 
 		$runner = new RunnerInstance();
 
-		// Make sure we don't deal with an invalid `--path` value.
-		$config = $runner()->config;
-		if ( isset( $config['path'] ) &&
-			( is_bool( $config['path'] ) || empty( $config['path'] ) )
-		) {
-			return $state;
+		// Use `--path` from the alias if one is matching.
+		$alias_path = null;
+		if ( $runner()->alias
+			&& isset( $runner()->aliases[ $runner()->alias ]['path'] ) ) {
+			$alias_path = $runner()->aliases[ $runner()->alias ]['path'];
+			// Make sure it isn't an invalid value.
+			if ( is_bool( $alias_path ) || empty( $alias_path ) ) {
+				return $state;
+			}
+			if ( ! Utils\is_path_absolute( $alias_path ) ) {
+				$alias_path = getcwd() . '/' . $alias_path;
+			}
+			$wp_root = rtrim( $alias_path, '/' );
+		} else {
+			// Make sure we don't deal with an invalid `--path` value.
+			$config = $runner()->config;
+			if ( isset( $config['path'] ) &&
+				( is_bool( $config['path'] ) || empty( $config['path'] ) )
+			) {
+				return $state;
+			}
+			$wp_root = rtrim( $runner()->find_wp_root(), '/' );
 		}
-
-		$wp_root = rtrim( $runner()->find_wp_root(), '/' );
 
 		// First try to detect a newer Requests version bundled with WordPress.
 		if ( file_exists( $wp_root . '/wp-includes/Requests/src/Autoload.php' ) ) {
