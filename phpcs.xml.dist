@@ -35,12 +35,7 @@
 
 	<rule ref="WP_CLI_CS">
 		<!-- The `while` control structure is the only one where assignments in conditions are mostly valid. -->
-		<exclude name="WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition"/>
-
-		<!-- This is a bug in PHPCS. A fix for which has been pulled already and is expected to be
-			 merged in PHPCS 3.5.0. Once this repos upgrades to that version, this exclusion
-			 should be removed. -->
-		<exclude name="PSR2.Namespaces.NamespaceDeclaration.BlankLineAfter"/>
+		<exclude name="Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition"/>
 	</rule>
 
 	<!--
