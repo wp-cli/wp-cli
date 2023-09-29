@@ -1793,6 +1793,12 @@ class Runner {
 			add_filter( $hook, $wp_cli_filter_active_theme, 999 );
 		}
 
+		// Noop memoization added in WP 6.4.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core global.
+		$GLOBALS['wp_stylesheet_path'] = null;
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core global.
+		$GLOBALS['wp_template_path'] = null;
+
 		// Remove theme-related actions not directly tied into the theme lifecycle.
 		if ( WP_CLI::get_runner()->config['skip-themes'] ) {
 			$theme_related_actions = [
@@ -1812,6 +1818,11 @@ class Runner {
 				foreach ( $hooks as $hook ) {
 					remove_filter( $hook, $wp_cli_filter_active_theme, 999 );
 				}
+				// Noop memoization added in WP 6.4 again.
+				// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core global.
+				$GLOBALS['wp_stylesheet_path'] = null;
+				// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core global.
+				$GLOBALS['wp_template_path'] = null;
 			},
 			0
 		);

@@ -25,6 +25,7 @@ Feature: Requests integration with both v1 and v2
 
     Given a WP installation
     And I run `vendor/bin/wp core update --version=5.8 --force`
+    And I run `rm -r wp-content/themes/*`
 
     When I run `vendor/bin/wp core version`
     Then STDOUT should contain:
@@ -46,6 +47,7 @@ Feature: Requests integration with both v1 and v2
   Scenario: Current version with WordPress-bundled Requests v1
     Given a WP installation
     And I run `wp core update --version=5.8 --force`
+    And I run `rm -r wp-content/themes/*`
 
     When I run `wp core version`
     Then STDOUT should contain:
