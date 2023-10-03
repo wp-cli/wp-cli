@@ -91,11 +91,15 @@ class Runner {
 	 * @param Subcommand $command
 	 */
 	public function register_early_invoke( $when, $command ) {
-		$cmd_path                      = array_slice( Dispatcher\get_path( $command ), 1 );
+		$cmd_path     = array_slice( Dispatcher\get_path( $command ), 1 );
+		$command_name = implode( ' ', $cmd_path );
+		WP_CLI::debug( "Attaching command '{$command_name}' to hook {$when}", 'bootstrap' );
 		$this->early_invoke[ $when ][] = $cmd_path;
 		if ( $command->get_alias() ) {
 			array_pop( $cmd_path );
-			$cmd_path[]                    = $command->get_alias();
+			$cmd_path[] = $command->get_alias();
+			$alias_name = implode( ' ', $cmd_path );
+			WP_CLI::debug( "Attaching command alias '{$alias_name}' to hook {$when}", 'bootstrap' );
 			$this->early_invoke[ $when ][] = $cmd_path;
 		}
 	}
@@ -106,6 +110,7 @@ class Runner {
 	 * @param string $when Named execution hook
 	 */
 	private function do_early_invoke( $when ) {
+		WP_CLI::debug( "Executing hook: {$when}", 'hooks' );
 		if ( ! isset( $this->early_invoke[ $when ] ) ) {
 			return;
 		}
