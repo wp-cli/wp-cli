@@ -155,7 +155,7 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
-    When I run `wp config create {CORE_CONFIG_SETTINGS}`
+    When I run `wp config create {CORE_CONFIG_SETTINGS} --skip-check`
     And I run `wp help core install`
     Then STDOUT should contain:
       """
