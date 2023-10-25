@@ -182,6 +182,7 @@ Feature: Load WP-CLI
       https://example.com
       """
 
+  @require-mysql
   Scenario: Handle error when WordPress cannot connect to the database host
     Given a WP installation
     And a invalid-host.php file:
