@@ -23,6 +23,7 @@ function wp_not_installed() {
 			}
 		}
 		if ( count( $found_prefixes ) ) {
+			sort( $found_prefixes );
 			$prefix_list   = implode( ', ', $found_prefixes );
 			$install_label = count( $found_prefixes ) > 1 ? 'installations' : 'installation';
 			WP_CLI::error(
