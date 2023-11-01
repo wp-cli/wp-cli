@@ -89,7 +89,6 @@
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound">
 		<exclude-pattern>*/php/commands/src/CLI_(Cache_)?Command\.php$</exclude-pattern>
 		<exclude-pattern>*/php/commands/src/Help_Command\.php$</exclude-pattern>
-		<exclude-pattern>*/utils/contrib-list\.php$</exclude-pattern>
 	</rule>
 
 	<!-- Exclude existing classes from the prefix rule as it would break BC to prefix them now. -->
