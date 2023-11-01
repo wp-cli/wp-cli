@@ -36,8 +36,8 @@ require ABSPATH . WPINC . '/version.php';
  * If not already configured, `$blog_id` will default to 1 in a single site
  * configuration. In multisite, it will be overridden by default in ms-settings.php.
  *
- * @global int $blog_id
  * @since 2.0.0
+ * @global int $blog_id
  */
 global $blog_id;
 
@@ -348,44 +348,44 @@ do_action( 'sanitize_comment_cookies' );
 
 /**
  * WordPress Query object
- * @global object $wp_the_query
  * @since 2.0.0
+ * @global object $wp_the_query
  */
 $GLOBALS['wp_the_query'] = new WP_Query();
 
 /**
  * Holds the reference to @see $wp_the_query
  * Use this global for WordPress queries
- * @global object $wp_query
  * @since 1.5.0
+ * @global object $wp_query
  */
 $GLOBALS['wp_query'] = $GLOBALS['wp_the_query'];
 
 /**
  * Holds the WordPress Rewrite object for creating pretty URLs
- * @global object $wp_rewrite
  * @since 1.5.0
+ * @global object $wp_rewrite
  */
 $GLOBALS['wp_rewrite'] = new WP_Rewrite();
 
 /**
  * WordPress Object
- * @global object $wp
  * @since 2.0.0
+ * @global object $wp
  */
 $GLOBALS['wp'] = new WP();
 
 /**
  * WordPress Widget Factory Object
- * @global object $wp_widget_factory
  * @since 2.8.0
+ * @global object $wp_widget_factory
  */
 $GLOBALS['wp_widget_factory'] = new WP_Widget_Factory();
 
 /**
  * WordPress User Roles
- * @global object $wp_roles
  * @since 2.0.0
+ * @global object $wp_roles
  */
 $GLOBALS['wp_roles'] = new WP_Roles();
 
@@ -409,8 +409,8 @@ require_once ABSPATH . WPINC . '/locale.php';
 
 /**
  * WordPress Locale object for loading locale domain date and various strings.
- * @global object $wp_locale
  * @since 2.1.0
+ * @global object $wp_locale
  */
 $GLOBALS['wp_locale'] = new WP_Locale();
 
