@@ -1,5 +1,6 @@
 Feature: Utilities that do NOT depend on WordPress code
 
+  @require-mysql
   Scenario Outline: Check that `proc_open()` and `proc_close()` aren't disabled for `Utils\run_mysql_command()`
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} --skip-wordpress eval 'WP_CLI\Utils\run_mysql_command( null, array() );'`
     Then STDERR should contain:
@@ -28,6 +29,7 @@ Feature: Utilities that do NOT depend on WordPress code
       | proc_open  |
       | proc_close |
 
+  @require-mysql
   Scenario: Check that `Utils\run_mysql_command()` uses STDOUT and STDERR by default
     When I run `wp --skip-wordpress eval 'WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [ "user" => "{DB_USER}", "pass" => "{DB_PASSWORD}", "host" => "{DB_HOST}", "execute" => "SHOW DATABASES;" ] );'`
     Then STDOUT should contain:
@@ -47,6 +49,7 @@ Feature: Utilities that do NOT depend on WordPress code
       You have an error in your SQL syntax
       """
 
+  @require-mysql
   Scenario: Check that `Utils\run_mysql_command()` can return data and errors if requested
     When I run `wp --skip-wordpress eval 'list( $stdout, $stderr, $exit_code ) = WP_CLI\Utils\run_mysql_command( "/usr/bin/env mysql --no-defaults", [ "user" => "{DB_USER}", "pass" => "{DB_PASSWORD}", "host" => "{DB_HOST}", "execute" => "SHOW DATABASES;" ], null, false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );'`
     Then STDOUT should not contain:
@@ -101,6 +104,7 @@ Feature: Utilities that do NOT depend on WordPress code
     When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--dsys_temp_dir=} --skip-wordpress eval 'echo WP_CLI\Utils\get_temp_dir();'`
     Then STDOUT should match /\/$/
 
+  @require-mysql
   Scenario: Ensure that Utils\run_mysql_command() passes through without reading full DB into memory
     Given a WP install
 

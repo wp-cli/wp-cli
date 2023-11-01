@@ -21,6 +21,9 @@ Feature: Utilities that depend on WordPress code
       1,,,
       """
 
+  # `wp db query` does not yet work on SQLite,
+  # See https://github.com/wp-cli/db-command/issues/234
+  @require-mysql
   Scenario: Get WP table names for single site install
     Given a WP installation
     And I run `wp db query "CREATE TABLE xx_wp_posts ( id int );"`
@@ -330,6 +333,9 @@ Feature: Utilities that depend on WordPress code
       wp_posts
       """
 
+  # `wp db query` does not yet work on SQLite,
+  # See https://github.com/wp-cli/db-command/issues/234
+  @require-mysql
   Scenario: Get WP table names for multisite install
     Given a WP multisite install
     And I run `wp db query "CREATE TABLE xx_wp_posts ( id int );"`

@@ -367,7 +367,7 @@ Feature: Bootstrap WP-CLI
           define( 'WP_CLI_TEST_CONSTANT', getenv( 'WP_CLI_TEST_ENV_VAR' ) );
       """
 
-    When I run `wp config create {CORE_CONFIG_SETTINGS}`
+    When I run `wp config create --skip-check {CORE_CONFIG_SETTINGS}`
     Then STDOUT should contain:
       """
       Success:
@@ -410,7 +410,9 @@ Feature: Bootstrap WP-CLI
       """
     And the return code should be 0
 
-  @require-wp-4.0
+  # `wp search-replace` does not yet support SQLite
+  # See https://github.com/wp-cli/search-replace-command/issues/190
+  @require-wp-4.0 @require-mysql
   Scenario: Run search-replace on ms_site_not_found
     Given a WP multisite installation
     And a wp-cli.yml file:
