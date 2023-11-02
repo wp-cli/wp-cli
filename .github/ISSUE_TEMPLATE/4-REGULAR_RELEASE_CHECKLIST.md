@@ -14,7 +14,7 @@ assignees: '@wp-cli/maintainers'
 
     People should wait with updating until the announcement. Before that, things are still in motion.
 
-- [ ] Verify results of [automated test suite](https://github.com/wp-cli/automated-tests)
+- [ ] Verify all tests pass in the [automated test suite](https://github.com/wp-cli/automated-tests)
 
 - [ ] Regenerate command and internal API docs
 
@@ -192,7 +192,7 @@ assignees: '@wp-cli/maintainers'
 
 - [ ] Bump [VERSION](https://github.com/wp-cli/wp-cli/blob/master/VERSION) in [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli) again.
 
-    For instance, if the release version was `0.24.0`, the version should be bumped to `0.25.0-alpha`. 
+    For instance, if the release version was `2.8.0`, the version should be bumped to `2.9.0-alpha`. 
 
     Doing so ensures `wp cli update --nightly` works as expected.
 
