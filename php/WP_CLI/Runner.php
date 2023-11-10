@@ -564,7 +564,10 @@ class Runner {
 			WP_CLI::debug( 'SSH ' . $bit . ': ' . $bits[ $bit ], 'bootstrap' );
 		}
 
-		$is_tty = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
+		$is_tty             = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
+		$docker_compose_cmd = ! empty( Process::create( Utils\esc_cmd( 'docker compose %s', 'version' ) )->run()->stdout )
+								? 'docker compose'
+								: 'docker-compose';
 
 		if ( 'docker' === $bits['scheme'] ) {
 			$command = 'docker exec %s%s%s sh -c %s';
@@ -579,10 +582,11 @@ class Runner {
 		}
 
 		if ( 'docker-compose' === $bits['scheme'] ) {
-			$command = 'docker-compose exec %s%s%s sh -c %s';
+			$command = '%s exec %s%s%s sh -c %s';
 
 			$escaped_command = sprintf(
 				$command,
+				$docker_compose_cmd,
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
 				$is_tty ? '' : '-T ',
 				escapeshellarg( $bits['host'] ),
@@ -591,10 +595,11 @@ class Runner {
 		}
 
 		if ( 'docker-compose-run' === $bits['scheme'] ) {
-			$command = 'docker-compose run %s%s%s %s';
+			$command = '%s run %s%s%s %s';
 
 			$escaped_command = sprintf(
 				$command,
+				$docker_compose_cmd,
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
 				$is_tty ? '' : '-T ',
 				escapeshellarg( $bits['host'] ),
