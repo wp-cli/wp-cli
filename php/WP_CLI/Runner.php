@@ -655,8 +655,8 @@ class Runner {
 			}
 
 			$command_args = [
-				$bits['proxyjump'] ? sprintf( '-J %s ', escapeshellarg( $bits['proxyjump'] ) ) : '',
-				$bits['port'] ? '-p ' . (int) $bits['port'] . ' ' : '',
+				$bits['proxyjump'] ? sprintf( '-J %s', escapeshellarg( $bits['proxyjump'] ) ) : '',
+				$bits['port'] ? sprintf( '-p %d', (int) $bits['port'] ) : '',
 				$bits['key'] ? sprintf( '-i %s', escapeshellarg( $bits['key'] ) ) : '',
 				$is_tty ? '-t' : '-T',
 				WP_CLI::get_config( 'debug' ) ? '-vvv' : '-q',
