@@ -480,7 +480,16 @@ class Subcommand extends CompositeCommand {
 				sprintf(
 					'wp %s %s',
 					$cmd,
-					ltrim( Utils\assoc_args_to_str( $actual_args ), ' ' )
+					ltrim(
+						implode(
+							' ',
+							[
+								ltrim( Utils\args_to_str( $args ), ' ' ),
+								ltrim( Utils\assoc_args_to_str( $actual_args ), ' ' ),
+							]
+						),
+						' '
+					)
 				)
 			);
 		}
