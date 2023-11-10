@@ -760,10 +760,12 @@ function replace_path_consts( $source, $path ) {
  *
  * @access public
  *
- * @param string $method  HTTP method (GET, POST, DELETE, etc.).
- * @param string $url     URL to make the HTTP request to.
- * @param array  $headers Add specific headers to the request.
- * @param array  $options {
+ * @param string     $method  HTTP method (GET, POST, DELETE, etc.).
+ * @param string     $url     URL to make the HTTP request to.
+ * @param array|null $data    Data to send either as a query string for GET/HEAD requests,
+ *                            or in the body for POST requests.
+ * @param array      $headers Add specific headers to the request.
+ * @param array      $options {
  *     Optional. An associative array of additional request options.
  *
  *     @type bool $halt_on_error Whether or not command execution should be halted on error. Default: true
