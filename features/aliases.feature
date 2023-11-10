@@ -184,7 +184,7 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
     When I try `wp @foo --debug --version`
-    And STDERR should contain:
+    Then STDERR should contain:
       """
       Running SSH command: ssh -J 'proxyhost' -T -vvv
       """
