@@ -56,9 +56,6 @@
         "bin/wp.bat"
     ],
     "scripts": {
-        "post-install-cmd": [
-            "./utils/git-setup-pre-commit-hook"
-        ],
         "behat": "run-behat-tests",
         "behat-rerun": "rerun-behat-tests",
         "lint": "run-linter-tests",
