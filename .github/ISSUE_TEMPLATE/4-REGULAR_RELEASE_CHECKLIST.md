@@ -152,6 +152,10 @@ assignees: ''
     md5 hash verified: 179fc8dacbfe3ebc2d00ba57a333c982
     New version works. Proceeding to replace.
     Success: Updated WP-CLI to 1.4.0.
+    $ wp cli version
+    WP-CLI 2.8.1
+    $wp eval 'echo \WP_CLI\Utils\http_request( "GET", "https://api.wordpress.org/core/version-check/1.6/" )->body;' --skip-wordpress
+    <PHP serialized string with version numbers>
     ```
 
 ### Verify the Debian and RPM builds
