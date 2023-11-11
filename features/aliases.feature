@@ -186,7 +186,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo --debug --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -q -J 'proxyhost' 
+      Running SSH command: ssh -J 'proxyhost' -T -vvv
       """
 
   Scenario: Adds key to ssh command
@@ -201,7 +201,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo --debug --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -q -i 'identityfile.key' 
+      Running SSH command: ssh -i 'identityfile.key' -T -vvv
       """
 
   Scenario: Add an alias
