@@ -1845,3 +1845,19 @@ function get_cache_dir() {
 	$home = get_home_dir();
 	return getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
 }
+
+/**
+ * Check whether any input is passed to STDIN.
+ *
+ * @return bool
+ */
+function has_stdin() {
+	$handle  = fopen( 'php://stdin', 'r' );
+	$read    = array( $handle );
+	$write   = null;
+	$except  = null;
+	$streams = stream_select( $read, $write, $except, 0 );
+	fclose( $handle );
+
+	return 1 === $streams;
+}
