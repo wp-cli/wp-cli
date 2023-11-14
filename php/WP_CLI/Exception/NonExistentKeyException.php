@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_CLI\Exceptions;
+namespace WP_CLI\Exception;
 
 use OutOfBoundsException;
 

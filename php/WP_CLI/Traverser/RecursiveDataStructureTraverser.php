@@ -1,9 +1,9 @@
 <?php
 
-namespace WP_CLI\Traversers;
+namespace WP_CLI\Traverser;
 
 use UnexpectedValueException;
-use WP_CLI\Exceptions\NonExistentKeyException;
+use WP_CLI\Exception\NonExistentKeyException;
 
 class RecursiveDataStructureTraverser {
 

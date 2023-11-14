@@ -1,9 +1,9 @@
 <?php
 
-namespace WP_CLI\Tests\Traversers;
+namespace WP_CLI\Tests\Traverser;
 
 use WP_CLI\Tests\TestCase;
-use WP_CLI\Traversers\RecursiveDataStructureTraverser;
+use WP_CLI\Traverser\RecursiveDataStructureTraverser;
 
 class RecursiveDataStructureTraverserTest extends TestCase {
 
