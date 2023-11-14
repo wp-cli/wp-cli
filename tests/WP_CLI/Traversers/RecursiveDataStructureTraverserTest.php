@@ -113,12 +113,12 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 				'bar' => 'baz',
 			),
 		);
-		$this->assertObjectHasAttribute( 'bar', $object->foo );
+		$this->assertObjectHasProperty( 'bar', $object->foo );
 
 		$traverser = new RecursiveDataStructureTraverser( $object );
 		$traverser->delete( array( 'foo', 'bar' ) );
 
-		$this->assertObjectNotHasAttribute( 'bar', $object->foo );
+		$this->assertObjectNotHasProperty( 'bar', $object->foo );
 	}
 
 	public function test_it_can_insert_a_key_into_a_nested_array() {
