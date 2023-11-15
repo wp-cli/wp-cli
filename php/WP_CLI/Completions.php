@@ -116,8 +116,14 @@ class Completions {
 		$positional_args = [];
 		$assoc_args      = [];
 
-		foreach ( $words as $arg ) {
+		# Avoid having to polyfill array_key_last().
+		end( $words );
+		$last_arg_i = key( $words );
+		foreach ( $words as $i => $arg ) {
 			if ( preg_match( '|^--([^=]+)=?|', $arg, $matches ) ) {
+				if ( $i === $last_arg_i ) {
+					continue;
+				}
 				$assoc_args[ $matches[1] ] = true;
 			} else {
 				$positional_args[] = $arg;
