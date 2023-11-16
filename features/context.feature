@@ -176,3 +176,20 @@ Feature: Context handling via --context global flag
       """
       custom context was added
       """
+
+  Scenario: Core wp-admin/admin.php with CRLF lines does not fail.
+    Given a WP install
+    And a modify-wp-admin.php file:
+    """
+    <?php
+    $admin_php_file = file( __DIR__ . '/wp-admin/admin.php' );
+    $admin_php_file = implode( "\r\n", array_map( 'trim', $admin_php_file ) );
+    file_put_contents( __DIR__ . '/wp-admin/admin.php', $admin_php_file );
+    unset( $admin_php_file );
+    """
+
+    When I run `wp --require=modify-wp-admin.php --context=admin eval 'var_export( is_admin() );'`
+    And STDOUT should be:
+    """
+    true
+    """

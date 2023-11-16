@@ -114,7 +114,7 @@ final class Admin implements Context {
 		$admin_php_file = preg_replace( '/\s+\?>$/', '', $admin_php_file );
 
 		// Then we remove the loading of either wp-config.php or wp-load.php.
-		$admin_php_file = preg_replace( '/^\s*(?:include|require).*[\'"]\/?wp-(?:load|config)\.php[\'"]\s*\)?;$/m', '', $admin_php_file );
+		$admin_php_file = preg_replace( '/^\s*(?:include|require).*[\'"]\/?wp-(?:load|config)\.php[\'"]\s*\)?;\s*$/m', '', $admin_php_file );
 
 		// We also remove the authentication redirect.
 		$admin_php_file = preg_replace( '/^\s*auth_redirect\(\);$/m', '', $admin_php_file );
