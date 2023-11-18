@@ -87,7 +87,7 @@ final class Admin implements Context {
 	 *
 	 * To make this work across WordPress versions, we use the actual file and
 	 * modify it on-the-fly.
-	 * 
+	 *
 	 * @global string $hook_suffix
 	 * @global string $pagenow
 	 * @global int    $wp_db_version
