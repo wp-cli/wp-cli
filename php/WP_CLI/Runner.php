@@ -372,6 +372,11 @@ class Runner {
 					$child       = array_pop( $cmd_path );
 					$parent_name = implode( ' ', $cmd_path );
 					$suggestion  = $this->get_subcommand_suggestion( $child, $command );
+
+					if ( 'network' === $parent_name && 'option' === $child ) {
+						$suggestion = 'meta';
+					}
+
 					return sprintf(
 						"'%s' is not a registered subcommand of '%s'. See 'wp help %s' for available subcommands.%s",
 						$child,
