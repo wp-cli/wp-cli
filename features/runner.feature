@@ -68,3 +68,14 @@ Feature: Runner WP-CLI
     """
      The --path parameter cannot be empty when provided
     """
+
+  Scenario: Suggest 'meta' when 'option' subcommand is run
+    Given a WP install
+
+    When I try `wp network option`
+    Then STDERR should contain:
+      """
+      Error: 'option' is not a registered subcommand of 'network'. See 'wp help network' for available subcommands.
+      Did you mean 'meta'?
+      """
+    And the return code should be 1
