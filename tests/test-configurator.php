@@ -83,6 +83,5 @@ class ConfiguratorTest extends TestCase {
 
 		// Restore
 		WP_CLI::set_logger( $prev_logger );
-
 	}
 }
