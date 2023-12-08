@@ -43,7 +43,7 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 	 * @param string $string
 	 * @param mixed  ...$args Optional text replacements.
 	 */
-	public function feedback( $string, ...$args ) { // phpcs:ignore PHPCompatibility.LanguageConstructs.NewLanguageConstructs.t_ellipsisFound
+	public function feedback( $string, ...$args ) {
 		$args_array = [];
 		foreach ( $args as $arg ) {
 			$args_array[] = $args;
