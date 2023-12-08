@@ -12,8 +12,6 @@ use WP_Upgrader_Skin;
  */
 class UpgraderSkin extends WP_Upgrader_Skin {
 
-	use WP_CLI\Compat\FeedbackMethodTrait;
-
 	public $api;
 
 	public function header() {}
@@ -39,6 +37,19 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 
 		// TODO: show all errors, not just the first one
 		WP_CLI::warning( $error );
+	}
+
+	/**
+	 * @param string $string
+	 * @param mixed  ...$args Optional text replacements.
+	 */
+	public function feedback( $string, ...$args ) {
+		$args_array = [];
+		foreach ( $args as $arg ) {
+			$args_array[] = $args;
+		}
+
+		$this->process_feedback( $string, $args );
 	}
 
 	/**
