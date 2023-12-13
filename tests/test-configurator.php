@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\Configurator;
+use WP_CLI\Loggers;
 use WP_CLI\Tests\TestCase;
 
 class ConfiguratorTest extends TestCase {
@@ -57,5 +58,30 @@ class ConfiguratorTest extends TestCase {
 
 		$this->assertEquals( 'test', $args[1][0][0] );
 		$this->assertEquals( 'text--text', $args[1][0][1] );
+	}
+
+	/**
+	 * WP_CLI::get_config does not show warnings for null values.
+	 */
+	public function testNullGetConfig() {
+		// Init config so there is a config to check.
+		$runner = WP_CLI::get_runner();
+		$runner->init_config();
+
+		// Previous
+		$prev_logger = WP_CLI::get_logger();
+
+		$logger = new Loggers\Execution();
+		WP_CLI::set_logger( $logger );
+
+		$has_config = WP_CLI::has_config( 'url' );
+		$get_config = WP_CLI::get_config( 'url' );
+
+		$this->assertTrue( $has_config, 'has_config() is not true' );
+		$this->assertTrue( false === strpos( $logger->stderr, 'Warning' ), 'Logger contains a "Warning"' );
+		$this->assertNull( $get_config, 'get_config() is not null' );
+
+		// Restore
+		WP_CLI::set_logger( $prev_logger );
 	}
 }

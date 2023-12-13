@@ -1254,7 +1254,7 @@ class WP_CLI {
 			return self::get_runner()->config;
 		}
 
-		if ( ! isset( self::get_runner()->config[ $key ] ) ) {
+		if ( ! self::has_config( $key ) ) {
 			self::warning( "Unknown config option '$key'." );
 			return null;
 		}
