@@ -210,15 +210,20 @@ final class WpOrgApi {
 	 *
 	 * @param string $plugin Plugin slug to query.
 	 * @param string $locale Optional. Locale to request info for. Defaults to 'en_US'.
+	 * @param array $fields Optional. Fields to include/omit from the response.
 	 * @return array|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
-	public function get_plugin_info( $plugin, $locale = 'en_US' ) {
+	public function get_plugin_info( $plugin, $locale = 'en_US', array $fields = [] ) {
 		$action  = 'plugin_information';
 		$request = [
 			'locale' => $locale,
 			'slug'   => $plugin,
 		];
+
+		if ( ! empty( $fields ) ) {
+			$request['fields'] = $fields;
+		}
 
 		$url = sprintf(
 			'%s?%s',
@@ -240,15 +245,20 @@ final class WpOrgApi {
 	 *
 	 * @param string $theme  Theme slug to query.
 	 * @param string $locale Optional. Locale to request info for. Defaults to 'en_US'.
+	 * @param array $fields Optional. Fields to include/omit from the response.
 	 * @return array|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
-	public function get_theme_info( $theme, $locale = 'en_US' ) {
+	public function get_theme_info( $theme, $locale = 'en_US', array $fields = [] ) {
 		$action  = 'theme_information';
 		$request = [
 			'locale' => $locale,
 			'slug'   => $theme,
 		];
+
+		if ( ! empty( $fields ) ) {
+			$request['fields'] = $fields;
+		}
 
 		$url = sprintf(
 			'%s?%s',
