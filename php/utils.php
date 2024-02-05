@@ -962,12 +962,16 @@ function get_named_sem_ver( $new_version, $original_version ) {
 		$patch = $bits[2];
 	}
 
-	if ( isset( $minor ) && Semver::satisfies( $new_version, "{$major}.{$minor}.x" ) ) {
-		return 'patch';
-	}
+	try {
+		if ( isset( $minor ) && Semver::satisfies( $new_version, "{$major}.{$minor}.x" ) ) {
+			return 'patch';
+		}
 
-	if ( Semver::satisfies( $new_version, "{$major}.x.x" ) ) {
-		return 'minor';
+		if ( Semver::satisfies( $new_version, "{$major}.x.x" ) ) {
+			return 'minor';
+		}
+	} catch ( \UnexpectedValueException $e ) {
+		return '';
 	}
 
 	return 'major';
