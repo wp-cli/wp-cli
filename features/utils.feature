@@ -156,8 +156,12 @@ Feature: Utilities that do NOT depend on WordPress code
     When I try `mysql --database={DB_NAME} --user={DB_USER} --password={DB_PASSWORD} {DB_HOST_STRING} < test_db.sql`
     Then the return code should be 0
 
+    # The --skip-column-statistics flag is not always present.
+    When I try `mysqldump --help | grep -q 'column-statistics' && echo '--skip-column-statistics'`
+    Then save STDOUT as {SKIP_COLUMN_STATISTICS_FLAG}
+
     # This throws a warning because of the password.
-    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=50M -ddisable_functions=ini_set} eval '\WP_CLI\Utils\run_mysql_command("/usr/bin/env mysqldump --skip-column-statistics --no-tablespaces {DB_NAME}", [ "user" => "{DB_USER}", "pass" => "{DB_PASSWORD}", "host" => "{DB_HOST}" ], null, true);'`
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=50M -ddisable_functions=ini_set} eval '\WP_CLI\Utils\run_mysql_command("/usr/bin/env mysqldump {SKIP_COLUMN_STATISTICS_FLAG} --no-tablespaces {DB_NAME}", [ "user" => "{DB_USER}", "pass" => "{DB_PASSWORD}", "host" => "{DB_HOST}" ], null, true);'`
     Then the return code should be 0
     And STDOUT should not be empty
     And STDOUT should contain:
