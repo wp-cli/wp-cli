@@ -43,6 +43,12 @@ class UtilsTest extends TestCase {
 		$original_version = '0.19.1';
 		$this->assertEmpty( Utils\get_named_sem_ver( '0.18.0', $original_version ) );
 		$this->assertEmpty( Utils\get_named_sem_ver( '0.19.1', $original_version ) );
+		$this->assertEmpty( Utils\get_named_sem_ver( 'nonsense', $original_version ) );
+		$this->assertEmpty( Utils\get_named_sem_ver( '0.18.1-beta3', $original_version ) );
+		$this->assertEmpty( Utils\get_named_sem_ver( '0.19.1-dev1', $original_version ) );
+		$this->assertEmpty( Utils\get_named_sem_ver( '0.19.1-beta3', $original_version ) );
+		$this->assertEmpty( Utils\get_named_sem_ver( '0.19.2-dev1', $original_version ) ); // -dev suffix not accepted by SemVer.
+		$this->assertEquals( 'patch', Utils\get_named_sem_ver( '0.19.2-beta3', $original_version ) );
 		$this->assertEquals( 'patch', Utils\get_named_sem_ver( '0.19.2', $original_version ) );
 		$this->assertEquals( 'minor', Utils\get_named_sem_ver( '0.20.0', $original_version ) );
 		$this->assertEquals( 'minor', Utils\get_named_sem_ver( '0.20.3', $original_version ) );
@@ -54,7 +60,14 @@ class UtilsTest extends TestCase {
 		$original_version = '3.0';
 		$this->assertEmpty( Utils\get_named_sem_ver( '2.8', $original_version ) );
 		$this->assertEmpty( Utils\get_named_sem_ver( '2.9.1', $original_version ) );
+		$this->assertEmpty( Utils\get_named_sem_ver( 'nonsense', $original_version ) );
+		$this->assertEmpty( Utils\get_named_sem_ver( '2.0-beta3', $original_version ) );
+		$this->assertEmpty( Utils\get_named_sem_ver( '3.0-dev1', $original_version ) );
+		$this->assertEmpty( Utils\get_named_sem_ver( '3.0-beta3', $original_version ) );
+		$this->assertEmpty( Utils\get_named_sem_ver( '3.0.1-dev1', $original_version ) ); // -dev suffix not accepted by SemVer.
+		$this->assertEquals( 'patch', Utils\get_named_sem_ver( '3.0.1-beta3', $original_version ) );
 		$this->assertEquals( 'patch', Utils\get_named_sem_ver( '3.0.1', $original_version ) );
+		$this->assertEquals( 'minor', Utils\get_named_sem_ver( '3.1-beta3', $original_version ) );
 		$this->assertEquals( 'minor', Utils\get_named_sem_ver( '3.1', $original_version ) );
 		$this->assertEquals( 'minor', Utils\get_named_sem_ver( '3.1.1', $original_version ) );
 		$this->assertEquals( 'major', Utils\get_named_sem_ver( '4.0', $original_version ) );
