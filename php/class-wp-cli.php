@@ -916,7 +916,7 @@ class WP_CLI {
 
 		if ( $return_code ) {
 			if ( self::$capture_exit ) {
-				throw new ExitException( null, $return_code );
+				throw new ExitException( '', $return_code );
 			}
 			exit( $return_code );
 		}
@@ -935,7 +935,7 @@ class WP_CLI {
 	 */
 	public static function halt( $return_code ) {
 		if ( self::$capture_exit ) {
-			throw new ExitException( null, $return_code );
+			throw new ExitException( '', $return_code );
 		}
 		exit( $return_code );
 	}
