@@ -180,7 +180,7 @@ class CLI_Command extends WP_CLI_Command {
 	/**
 	 * Checks to see if there is a newer version of WP-CLI available.
 	 *
-	 * Queries the Github releases API. Returns available versions if there are
+	 * Queries the GitHub releases API. Returns available versions if there are
 	 * updates available, or success message if using the latest release.
 	 *
 	 * ## OPTIONS
