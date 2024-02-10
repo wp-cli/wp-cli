@@ -155,7 +155,7 @@ Contribute
 ----------
 
 1. Check for open issues or open a new issue for a feature request or a bug.
-2. Fork [the repository][] on Github to start making your changes to the
+2. Fork [the repository][] on GitHub to start making your changes to the
     `develop` branch (or branch off of it).
 3. Write one or more tests which show that the bug was fixed or that the feature works as expected.
 4. Send in a pull request.

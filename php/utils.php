@@ -1384,7 +1384,7 @@ function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.C
 }
 
 /**
- * Get the closest suggestion for a mis-typed target term amongst a list of
+ * Get the closest suggestion for a mistyped target term amongst a list of
  * options.
  *
  * Uses the Levenshtein algorithm to calculate the relative "distance" between

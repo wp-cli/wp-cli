@@ -113,7 +113,7 @@ assignees: 'schlessera'
     git commit -m "Update stable to v1.x.0"
     ```
 
-- [ ] Create a release on Github: <https://github.com/wp-cli/wp-cli/releases>. Make sure to upload the Phar from the builds directory.
+- [ ] Create a release on GitHub: <https://github.com/wp-cli/wp-cli/releases>. Make sure to upload the Phar from the builds directory.
 
     ```
     cp wp-cli.phar wp-cli-1.x.0.phar
