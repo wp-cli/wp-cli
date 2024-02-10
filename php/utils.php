@@ -825,7 +825,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 				if ( $halt_on_error ) {
 					WP_CLI::error( $error_msg );
 				}
-				throw new RuntimeException( $error_msg, null, $exception );
+				throw new RuntimeException( $error_msg, 0, $exception );
 			}
 
 			$warning = sprintf(
@@ -846,7 +846,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 					if ( $halt_on_error ) {
 						WP_CLI::error( $error_msg );
 					}
-					throw new RuntimeException( $error_msg, null, $exception );
+					throw new RuntimeException( $error_msg, 0, $exception );
 				}
 				throw $exception;
 			}
