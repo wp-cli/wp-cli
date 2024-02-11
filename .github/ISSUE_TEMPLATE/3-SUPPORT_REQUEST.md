@@ -1,8 +1,8 @@
 ---
-name: "\U00002753 Support Request"
-about: "I have a question about how to use WP-CLI"
+name: "❓ Support Request"
+about: I have a question about how to use WP-CLI
 title: ''
-labels: 'i: state:unsupported'
+labels: ''
 assignees: ''
 
 ---

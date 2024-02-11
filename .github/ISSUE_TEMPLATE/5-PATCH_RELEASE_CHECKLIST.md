@@ -1,11 +1,12 @@
 ---
 name: "\U0001F527 Patch Release Checklist"
 about: "\U0001F512 Maintainers only: create a checklist for a patch release process"
-title: 'Release checklist for v2.x.x'
-labels: 'i: scope:distribution'
-assignees: 'schlessera'
+title: Release checklist for v2.x.x
+labels: ''
+assignees: ''
 
 ---
+
 # Patch Release Checklist - v2.x.x
 
 ### Preparation

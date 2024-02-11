@@ -1,11 +1,12 @@
 ---
 name: "\U0001F680 Regular Release Checklist"
 about: "\U0001F512 Maintainers only: create a checklist for a regular release process"
-title: 'Release checklist for v2.x.x'
-labels: 'i: scope:distribution'
+title: Release checklist for v2.x.x
+labels: ''
 assignees: ''
 
 ---
+
 # Regular Release Checklist - v2.x.x
 
 ### Preparation
