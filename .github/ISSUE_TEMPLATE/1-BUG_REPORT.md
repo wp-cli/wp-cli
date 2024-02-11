@@ -1,8 +1,8 @@
 ---
 name: "\U0001F41B Bug Report"
-about: "Something isn't working as expected"
+about: Something isn't working as expected
 title: ''
-labels: 'i: bug'
+labels: ''
 assignees: ''
 
 ---
