@@ -393,14 +393,14 @@ class WP_CLI {
 		}
 
 		if ( is_object( $function ) ) {
-			// Closures are currently implemented as objects
+			// Closures are currently implemented as objects.
 			$function = [ $function, '' ];
 		} else {
 			$function = (array) $function;
 		}
 
 		if ( is_object( $function[0] ) ) {
-			// Object Class Calling
+			// Object Class Calling.
 			if ( function_exists( 'spl_object_hash' ) ) {
 				return spl_object_hash( $function[0] ) . $function[1];
 			}
@@ -421,7 +421,7 @@ class WP_CLI {
 		}
 
 		if ( is_string( $function[0] ) ) {
-			// Static Calling
+			// Static Calling.
 			return $function[0] . '::' . $function[1];
 		}
 	}
@@ -1069,7 +1069,7 @@ class WP_CLI {
 			return $errors;
 		}
 
-		// Only json_encode() the data when it needs it
+		// Only json_encode() the data when it needs it.
 		$render_data = function ( $data ) {
 			if ( is_array( $data ) || is_object( $data ) ) {
 				return json_encode( $data );
@@ -1457,18 +1457,18 @@ class WP_CLI {
 
 
 
-	// DEPRECATED STUFF
+	// DEPRECATED STUFF.
 
 	public static function add_man_dir() {
 		trigger_error( 'WP_CLI::add_man_dir() is deprecated. Add docs inline.', E_USER_WARNING );
 	}
 
-	// back-compat
+	// back-compat.
 	public static function out( $str ) {
 		fwrite( STDOUT, $str );
 	}
 
-	// back-compat
+	// back-compat.
 	// phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Deprecated method.
 	public static function addCommand( $name, $class ) {
 		trigger_error(

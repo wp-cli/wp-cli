@@ -220,7 +220,7 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 }
 
 function is_path_absolute( $path ) {
-	// Windows
+	// Windows.
 	if ( isset( $path[1] ) && ':' === $path[1] ) {
 		return true;
 	}
@@ -868,7 +868,7 @@ function get_default_cacert( $halt_on_error = false ) {
 	$error_msg = 'Cannot find SSL certificate.';
 
 	if ( inside_phar( $cert_path ) ) {
-		// cURL can't read Phar archives
+		// cURL can't read Phar archives.
 		return extract_from_phar( $cert_path );
 	}
 
@@ -895,13 +895,13 @@ function get_default_cacert( $halt_on_error = false ) {
  * @return string
  */
 function increment_version( $current_version, $new_version ) {
-	// split version assuming the format is x.y.z-pre
+	// split version assuming the format is x.y.z-pre.
 	$current_version    = explode( '-', $current_version, 2 );
 	$current_version[0] = explode( '.', $current_version[0] );
 
 	switch ( $new_version ) {
 		case 'same':
-			// do nothing
+			// do nothing.
 			break;
 
 		case 'patch':
@@ -925,7 +925,7 @@ function increment_version( $current_version, $new_version ) {
 			$current_version = [ $current_version[0] ]; // Drop possible pre-release info.
 			break;
 
-		default: // not a keyword
+		default: // not a keyword.
 			$current_version = [ [ $new_version ] ];
 			break;
 	}
@@ -1007,7 +1007,7 @@ function get_flag_value( $assoc_args, $flag, $default = null ) {
 function get_home_dir() {
 	$home = getenv( 'HOME' );
 	if ( ! $home ) {
-		// In Windows $HOME may not be defined
+		// In Windows $HOME may not be defined.
 		$home = getenv( 'HOMEDRIVE' ) . getenv( 'HOMEPATH' );
 	}
 
