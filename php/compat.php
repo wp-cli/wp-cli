@@ -115,4 +115,4 @@ if (!function_exists('array_column')) {
     }
 
 }
-// phpcs:enable.
+// phpcs:enable
