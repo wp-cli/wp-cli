@@ -34,7 +34,7 @@ class SynopsisParserTest extends TestCase {
 		$this->assertEquals( 'flag', $param['type'] );
 		$this->assertTrue( $param['optional'] );
 
-		// flags can't be mandatory
+		// Flags can't be mandatory.
 		$r = SynopsisParser::parse( '--foo' );
 
 		$this->assertCount( 1, $r );

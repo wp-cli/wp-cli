@@ -68,7 +68,7 @@ class ConfiguratorTest extends TestCase {
 		$runner = WP_CLI::get_runner();
 		$runner->init_config();
 
-		// Previous
+		// Previous.
 		$prev_logger = WP_CLI::get_logger();
 
 		$logger = new Loggers\Execution();
@@ -81,7 +81,7 @@ class ConfiguratorTest extends TestCase {
 		$this->assertTrue( false === strpos( $logger->stderr, 'Warning' ), 'Logger contains a "Warning"' );
 		$this->assertNull( $get_config, 'get_config() is not null' );
 
-		// Restore
+		// Restore.
 		WP_CLI::set_logger( $prev_logger );
 	}
 }

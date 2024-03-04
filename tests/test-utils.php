@@ -11,7 +11,7 @@ require_once __DIR__ . '/mock-requests-transport.php';
 class UtilsTest extends TestCase {
 
 	public function testIncrementVersion() {
-		// keyword increments
+		// Keyword increments.
 		$this->assertEquals(
 			Utils\increment_version( '1.2.3-pre', 'same' ),
 			'1.2.3-pre'
@@ -32,7 +32,7 @@ class UtilsTest extends TestCase {
 			'2.0.0'
 		);
 
-		// custom version string
+		// Custom version string.
 		$this->assertEquals(
 			Utils\increment_version( '1.2.3-pre', '4.5.6-alpha1' ),
 			'4.5.6-alpha1'
@@ -128,7 +128,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
-		// No host
+		// No host.
 		$testcase = '~/path/to/dir';
 		$this->assertEquals( [], Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
@@ -137,7 +137,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
-		// host and path, no port, with scp notation
+		// Host and path, no port, with scp notation.
 		$testcase = 'foo.com:~/path/to/dir';
 		$expected = [
 			'host' => 'foo.com',
@@ -163,7 +163,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( '2222', Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
-		// explicit scheme, user, host, path, no port
+		// Explicit scheme, user, host, path, no port.
 		$testcase = 'ssh:bar@foo.com:~/path/to/dir';
 		$expected = [
 			'scheme' => 'ssh',
@@ -178,7 +178,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
-		// container scheme
+		// Container scheme
 		$testcase = 'docker:wordpress';
 		$expected = [
 			'scheme' => 'docker',
@@ -191,7 +191,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
-		// container scheme with user, and host
+		// Container scheme with user, and host.
 		$testcase = 'docker:bar@wordpress';
 		$expected = [
 			'scheme' => 'docker',
@@ -205,7 +205,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
-		// container scheme with user, host, and path
+		// Container scheme with user, host, and path.
 		$testcase = 'docker-compose:bar@wordpress:~/path/to/dir';
 		$expected = [
 			'scheme' => 'docker-compose',
@@ -220,7 +220,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
-		// container scheme with user, host, and path
+		// Container scheme with user, host, and path.
 		$testcase = 'docker-compose-run:bar@wordpress:~/path/to/dir';
 		$expected = [
 			'scheme' => 'docker-compose-run',
@@ -235,7 +235,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
-		// vagrant scheme
+		// Vagrant scheme.
 		$testcase = 'vagrant:default';
 		$expected = [
 			'scheme' => 'vagrant',
@@ -248,7 +248,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
-		// vagrant scheme
+		// Vagrant scheme.
 		$testcase = 'vagrant:/var/www/html';
 		$expected = [
 			'scheme' => 'vagrant',
@@ -262,7 +262,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( '/var/www/html', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
-		// unsupported scheme, should not match
+		// Unsupported scheme, should not match.
 		$testcase = 'foo:bar';
 		$this->assertEquals( [], Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
@@ -324,7 +324,7 @@ class UtilsTest extends TestCase {
 	}
 
 	public function testMysqlHostToCLIArgs() {
-		// Test hostname only, with and without 'p:' modifier
+		// Test hostname only, with and without 'p:' modifier.
 		$expected = [
 			'host' => 'hostname',
 		];
@@ -346,7 +346,7 @@ class UtilsTest extends TestCase {
 		$testcase = 'p:hostname:3306';
 		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
 
-		// Test hostname with socket path, with and without 'p:' modifier
+		// Test hostname with socket path, with and without 'p:' modifier.
 		$expected = [
 			'host'   => 'hostname',
 			'socket' => '/path/to/socket',
@@ -374,7 +374,7 @@ class UtilsTest extends TestCase {
 
 	public function testGetHomeDir() {
 
-		// save environments
+		// Save environments.
 		$home      = getenv( 'HOME' );
 		$homedrive = getenv( 'HOMEDRIVE' );
 		$homepath  = getenv( 'HOMEPATH' );
@@ -394,7 +394,7 @@ class UtilsTest extends TestCase {
 		putenv( 'HOMEPATH=\\Windows\\User\\HOGE\\' );
 		$this->assertSame( 'D:\\Windows\\User\\HOGE', Utils\get_home_dir() );
 
-		// restore environments
+		// Restore environments.
 		putenv( false === $home ? 'HOME' : "HOME=$home" );
 		putenv( false === $homedrive ? 'HOMEDRIVE' : "HOME=$homedrive" );
 		putenv( false === $homepath ? 'HOMEPATH' : "HOME=$homepath" );
@@ -417,18 +417,18 @@ class UtilsTest extends TestCase {
 	public function dataNormalizePath() {
 		return [
 			[ '', '' ],
-			// Windows paths
+			// Windows paths.
 			[ 'C:\\www\\path\\', 'C:/www/path/' ],
 			[ 'C:\\www\\\\path\\', 'C:/www/path/' ],
 			[ 'c:/www/path', 'C:/www/path' ],
-			[ 'c:\\www\\path\\', 'C:/www/path/' ], // uppercase drive letter
+			[ 'c:\\www\\path\\', 'C:/www/path/' ], // Uppercase drive letter.
 			[ 'c:', 'C:' ],
 			[ 'c:\\', 'C:/' ],
 			[ 'c:\\\\www\\path\\', 'C:/www/path/' ],
 			[ '\\\\Domain\\DFSRoots\\share\\path\\', '//Domain/DFSRoots/share/path/' ],
 			[ '\\\\Server\\share\\path', '//Server/share/path' ],
 			[ '\\\\Server\\share', '//Server/share' ],
-			// Linux paths
+			// Linux paths.
 			[ '/', '/' ],
 			[ '/www/path/', '/www/path/' ],
 			[ '/www/path/////', '/www/path/' ],
@@ -780,11 +780,11 @@ class UtilsTest extends TestCase {
 	 */
 	public function test_esc_like() {
 		$inputs   = [
-			'howdy%', //Single Percent
-			'howdy_', //Single Underscore
-			'howdy\\', //Single slash
-			'howdy\\howdy%howdy_', //The works
-			'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?', //Plain text
+			'howdy%', // Single Percent.
+			'howdy_', // Single Underscore.
+			'howdy\\', // Single slash.
+			'howdy\\howdy%howdy_', // The works.
+			'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?', // Plain text.
 		];
 		$expected = [
 			'howdy\\%',
