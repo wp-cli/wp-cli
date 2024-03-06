@@ -120,8 +120,8 @@ class Completions {
 		end( $words );
 		$last_arg_i = key( $words );
 		foreach ( $words as $i => $arg ) {
-			if ( preg_match( '|^--([^=]+)=?|', $arg, $matches ) ) {
-				if ( $i === $last_arg_i ) {
+			if ( preg_match( '|^--([^=]+)(=?)|', $arg, $matches ) ) {
+				if ( $i === $last_arg_i && '' === $matches[2] ) {
 					continue;
 				}
 				$assoc_args[ $matches[1] ] = true;
