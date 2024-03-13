@@ -43,6 +43,13 @@ return [
 		'default' => '',
 	],
 
+	'include-plugins'   => [
+		'runtime' => '[=<plugins>]',
+		'file'    => '<list>',
+		'desc'    => 'Skip loading plugins, except the ones specified by a comma-separated list. The inverse of "skip-plugins". Note: mu-plugins are still loaded.',
+		'default' => '',
+	],
+
 	'skip-themes'       => [
 		'runtime' => '[=<themes>]',
 		'file'    => '<list>',

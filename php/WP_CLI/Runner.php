@@ -34,7 +34,6 @@ use WP_Error;
  * @package WP_CLI
  */
 class Runner {
-
 	/**
 	 * List of byte-order marks (BOMs) to detect.
 	 *
@@ -148,7 +147,6 @@ class Runner {
 	 * @return string|false
 	 */
 	public function get_global_config_path( $create_config_file = false ) {
-
 		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$config_path                    = getenv( 'WP_CLI_CONFIG_PATH' );
 			$this->global_config_path_debug = 'Using global config from WP_CLI_CONFIG_PATH env var: ' . $config_path;
@@ -196,6 +194,7 @@ class Runner {
 				if ( file_exists( $wp_load_path ) ) {
 					++$wp_load_count;
 				}
+
 				return $wp_load_count > 1;
 			}
 		);
@@ -220,6 +219,7 @@ class Runner {
 		} else {
 			$packages_dir = Utils\get_home_dir() . '/.wp-cli/packages/';
 		}
+
 		return $packages_dir;
 	}
 
@@ -437,6 +437,7 @@ class Runner {
 		}
 
 		WP_CLI::debug( 'Running command: ' . $name, 'bootstrap' );
+
 		try {
 			$command->invoke( $final_args, $assoc_args, $extra_args );
 		} catch ( Exception $e ) {
@@ -484,7 +485,6 @@ class Runner {
 	 * @return void
 	 */
 	private function run_ssh_command( $connection_string ) {
-
 		WP_CLI::do_hook( 'before_ssh' );
 
 		$bits = Utils\parse_ssh_url( $connection_string );
@@ -692,6 +692,7 @@ class Runner {
 	 */
 	public function is_command_disabled( $command ) {
 		$path = implode( ' ', array_slice( Dispatcher\get_path( $command ), 1 ) );
+
 		return in_array( $path, $this->config['disabled_commands'], true );
 	}
 
@@ -733,6 +734,7 @@ class Runner {
 		foreach ( $wp_config_code as $line ) {
 			if ( preg_match( '/^\s*require.+wp-settings\.php/', $line ) ) {
 				$found_wp_settings = true;
+
 				continue;
 			}
 
@@ -745,6 +747,7 @@ class Runner {
 
 		$source = implode( "\n", $lines_to_run );
 		$source = Utils\replace_path_consts( $source, $wp_config_path );
+
 		return preg_replace( '|^\s*\<\?php\s*|', '', $source );
 	}
 
@@ -764,6 +767,7 @@ class Runner {
 			foreach ( $top_level_aliases as $old => $new ) {
 				if ( $old === $args[0] ) {
 					$args[0] = $new;
+
 					break;
 				}
 			}
@@ -865,6 +869,7 @@ class Runner {
 				if ( isset( $assoc_args[ $key ] ) ) {
 					$args = [ 'cli', $key ];
 					unset( $assoc_args[ $key ] );
+
 					break;
 				}
 			}
@@ -880,6 +885,7 @@ class Runner {
 					$assoc_args['post_type'] = 'any';
 					$assoc_args['orderby']   = 'post__in';
 					$assoc_args['field']     = 'url';
+
 					break;
 				case 'comment':
 					$comment_ids               = array_slice( $args, 2 );
@@ -887,12 +893,14 @@ class Runner {
 					$assoc_args['comment__in'] = implode( ',', $comment_ids );
 					$assoc_args['orderby']     = 'comment__in';
 					$assoc_args['field']       = 'url';
+
 					break;
 				case 'site':
 					$site_ids               = array_slice( $args, 2 );
 					$args                   = [ 'site', 'list' ];
 					$assoc_args['site__in'] = implode( ',', $site_ids );
 					$assoc_args['field']    = 'url';
+
 					break;
 				case 'term':
 					$taxonomy = '';
@@ -904,6 +912,7 @@ class Runner {
 					$assoc_args['include'] = implode( ',', $term_ids );
 					$assoc_args['orderby'] = 'include';
 					$assoc_args['field']   = 'url';
+
 					break;
 			}
 		}
@@ -1202,6 +1211,7 @@ class Runner {
 
 		if ( $this->config['ssh'] ) {
 			$this->run_ssh_command( $this->config['ssh'] );
+
 			return;
 		}
 
@@ -1210,7 +1220,8 @@ class Runner {
 
 		// First try at showing man page - if help command and either haven't found 'version.php' or 'wp-config.php' (so won't be loading WP & adding commands) or help on subcommand.
 		if ( $this->cmd_starts_with( [ 'help' ] )
-			&& ( ! $this->wp_exists()
+			&& (
+				! $this->wp_exists()
 				|| ! Utils\locate_wp_config()
 				|| count( $this->arguments ) > 2
 			) ) {
@@ -1453,9 +1464,12 @@ class Runner {
 	 * Set up hooks meant to run during the WordPress bootstrap process
 	 */
 	private function setup_bootstrap_hooks() {
-
 		if ( $this->config['skip-plugins'] ) {
 			$this->setup_skip_plugins_filters();
+		}
+
+		if ( $this->config['include-plugins'] ) {
+			$this->setup_include_plugins_filters();
 		}
 
 		if ( $this->config['skip-themes'] ) {
@@ -1493,6 +1507,7 @@ class Runner {
 				}
 				// Otherwise, WP might be calling nocache_headers() because WP isn't installed
 				Utils\wp_not_installed();
+
 				return $headers;
 			}
 		);
@@ -1557,6 +1572,7 @@ class Runner {
 			'enable_wp_debug_mode_checks',
 			static function ( $ret ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- WP core hook.
 				Utils\wp_debug_mode();
+
 				return false;
 			}
 		);
@@ -1671,6 +1687,7 @@ class Runner {
 					}
 					$from_email = 'wordpress@' . $sitename;
 				}
+
 				return $from_email;
 			}
 		);
@@ -1751,6 +1768,56 @@ class Runner {
 			if ( false !== strpos( current_filter(), 'active_plugins' ) ) {
 				$plugins = array_values( $plugins );
 			}
+
+			return $plugins;
+		};
+
+		$hooks = [
+			'pre_site_option_active_sitewide_plugins',
+			'site_option_active_sitewide_plugins',
+			'pre_option_active_plugins',
+			'option_active_plugins',
+		];
+		foreach ( $hooks as $hook ) {
+			WP_CLI::add_wp_hook( $hook, $wp_cli_filter_active_plugins, 999 );
+		}
+		WP_CLI::add_wp_hook(
+			'plugins_loaded',
+			static function () use ( $hooks, $wp_cli_filter_active_plugins ) {
+				foreach ( $hooks as $hook ) {
+					remove_filter( $hook, $wp_cli_filter_active_plugins, 999 );
+				}
+			},
+			0
+		);
+	}
+
+	/**
+	 * Set up the filters to skip plugins except the ones specified
+	 */
+	private function setup_include_plugins_filters() {
+		$wp_cli_filter_active_plugins = static function ( $plugins ) {
+			$included_plugins = WP_CLI::get_runner()->config['include-plugins'];
+			if ( true === $included_plugins ) {
+				return [];
+			}
+			if ( ! is_array( $plugins ) ) {
+				return $plugins;
+			}
+			foreach ( $plugins as $a => $b ) {
+				// active_sitewide_plugins stores plugin name as the key.
+				if ( false !== strpos( current_filter(), 'active_sitewide_plugins' ) && false === Utils\is_plugin_included( $a ) ) {
+					unset( $plugins[ $a ] );
+					// active_plugins stores plugin name as the value.
+				} elseif ( false !== strpos( current_filter(), 'active_plugins' ) && false === Utils\is_plugin_included( $b ) ) {
+					unset( $plugins[ $a ] );
+				}
+			}
+			// Reindex because active_plugins expects a numeric index.
+			if ( false !== strpos( current_filter(), 'active_plugins' ) ) {
+				$plugins = array_values( $plugins );
+			}
+
 			return $plugins;
 		};
 
@@ -1797,6 +1864,7 @@ class Runner {
 			if ( '' === $checked_value || in_array( $checked_value, $skipped_themes, true ) ) {
 				return '';
 			}
+
 			return $value;
 		};
 		$hooks                      = [
@@ -1879,7 +1947,6 @@ class Runner {
 	 * Check whether there's a WP-CLI update available, and suggest update if so.
 	 */
 	private function auto_check_update() {
-
 		// `wp cli update` only works with Phars at this time.
 		if ( ! Utils\inside_phar() ) {
 			return;
@@ -1912,6 +1979,7 @@ class Runner {
 		// Bail early on the first check, so we don't always check on an unwritable cache.
 		if ( ! $cache->has( $cache_key ) ) {
 			$cache->write( $cache_key, time() );
+
 			return;
 		}
 

@@ -217,6 +217,21 @@ function is_plugin_skipped( $file ) {
 	return in_array( $name, array_filter( $skipped_plugins ), true );
 }
 
+function is_plugin_included( $file ) {
+	$name = get_plugin_name( str_replace( WP_PLUGIN_DIR . '/', '', $file ) );
+
+	$included_plugins = WP_CLI::get_runner()->config['include-plugins'];
+	if ( true === $included_plugins ) {
+		return true;
+	}
+
+	if ( ! is_array( $included_plugins ) ) {
+		$included_plugins = explode( ',', $included_plugins );
+	}
+
+	return in_array( $name, array_filter( $included_plugins ), true );
+}
+
 function get_theme_name( $path ) {
 	return basename( $path );
 }
