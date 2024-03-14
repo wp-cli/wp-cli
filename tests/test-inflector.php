@@ -14,9 +14,9 @@ class InflectorTest extends TestCase {
 
 	public function dataProviderPluralize() {
 		return [
-			[ 'string', 'strings' ], // regular
-			[ 'person', 'people' ],  // irregular
-			[ 'scissors', 'scissors' ], // uncountable
+			[ 'string', 'strings' ], // Regular.
+			[ 'person', 'people' ],  // Irregular.
+			[ 'scissors', 'scissors' ], // Uncountable.
 		];
 	}
 
@@ -29,9 +29,9 @@ class InflectorTest extends TestCase {
 
 	public function dataProviderSingularize() {
 		return [
-			[ 'strings', 'string' ], // regular
-			[ 'people', 'person' ],  // irregular
-			[ 'scissors', 'scissors' ], // uncountable
+			[ 'strings', 'string' ], // Regular.
+			[ 'people', 'person' ],  // Irregular.
+			[ 'scissors', 'scissors' ], // Uncountable.
 		];
 	}
 }

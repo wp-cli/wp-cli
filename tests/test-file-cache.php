@@ -74,7 +74,7 @@ class FileCacheTest extends TestCase {
 		$expected = "/^Warning: Failed to create directory '.+': mkdir\(\): File exists\.$/";
 		$this->assertMatchesRegularExpression( $expected, $logger->stderr );
 
-		// Restore
+		// Restore.
 		chmod( $cache_dir . '/test1', 0755 );
 		rmdir( $cache_dir . '/test1' );
 		unlink( $cache_dir . '/test2' );
