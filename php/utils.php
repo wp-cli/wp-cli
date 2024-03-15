@@ -602,7 +602,7 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
  */
 function mustache_render( $template_name, $data = [] ) {
 	if ( ! file_exists( $template_name ) ) {
-		$template_name = WP_CLI_ROOT . "/templates/$template_name";
+		$template_name = phar_safe_path( WP_CLI_ROOT . "/templates/$template_name" );
 	}
 
 	$template = file_get_contents( $template_name );
