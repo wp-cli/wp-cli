@@ -157,6 +157,10 @@ class Help_Command extends WP_CLI_Command {
 		if ( $alias ) {
 			$binding['alias'] = $alias;
 		}
+		$hook = $command->get_hook();
+		if ( $hook ) {
+			$binding['hook'] = $hook;
+		}
 
 		if ( $command->can_have_subcommands() ) {
 			$binding['has-subcommands']['subcommands'] = self::render_subcommands( $command );
