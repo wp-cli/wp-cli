@@ -648,9 +648,9 @@ Feature: Create shortcuts to specific WordPress installs
 
     When I run `wp cli alias add hello --set-path=/path/to/wordpress`
     Then STDOUT should be:
-        """
-        Success: Added '@hello' alias.
-        """
+      """
+      Success: Added '@hello' alias.
+      """
 
     When I run `wp eval --skip-wordpress 'echo realpath( getenv( "RUN_DIR" ) );'`
     Then save STDOUT as {TEST_DIR}
