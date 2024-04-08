@@ -637,3 +637,30 @@ Feature: Create shortcuts to specific WordPress installs
 
     When I try `wp cli alias is-group @foo`
     Then the return code should be 1
+
+  Scenario: Automatically add "@" prefix to an alias
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      """
+
+    When I run `wp cli alias add hello --set-path=/path/to/wordpress`
+    Then STDOUT should be:
+      """
+      Success: Added '@hello' alias.
+      """
+
+    When I run `wp eval --skip-wordpress 'echo realpath( getenv( "RUN_DIR" ) );'`
+    Then save STDOUT as {TEST_DIR}
+
+    When I run `wp cli alias list`
+    Then STDOUT should be YAML containing:
+      """
+      @all: Run command against every registered alias.
+      @hello:
+        path: /path/to/wordpress
+      @foo:
+        path: {TEST_DIR}/foo
+      """

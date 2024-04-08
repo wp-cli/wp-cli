@@ -408,6 +408,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @return mixed
 	 */
 	private function build_aliases( $aliases, $alias, $assoc_args, $is_grouping, $grouping = '', $is_update = false ) {
+		$alias = $this->normalize_alias( $alias );
 
 		if ( $is_grouping ) {
 			$valid_assoc_args = [ 'config', 'grouping' ];
@@ -507,6 +508,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @param string $operation   Current operation string fro message.
 	 */
 	private function process_aliases( $aliases, $alias, $config_path, $operation = '' ) {
+		$alias = $this->normalize_alias( $alias );
+
 		// Convert data to YAML string.
 		$yaml_data = Spyc::YAMLDump( $aliases );
 
@@ -514,5 +517,22 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		if ( file_put_contents( $config_path, $yaml_data ) ) {
 			WP_CLI::success( "$operation '{$alias}' alias." );
 		}
+	}
+
+	/**
+	 * Normalize the alias to an expected format.
+	 *
+	 * - Add @ if not present.
+	 *
+	 * @param string $alias Name of alias.
+	 */
+	private function normalize_alias( $alias ) {
+		// Check if the alias starts with the @.
+		// See: https://github.com/wp-cli/wp-cli/issues/5391
+		if ( strpos( $alias, '@' ) !== 0 ) {
+			$alias = '@' . ltrim( $alias, '@' );
+		}
+
+		return $alias;
 	}
 }
