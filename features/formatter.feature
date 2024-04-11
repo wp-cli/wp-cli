@@ -153,3 +153,35 @@ Feature: Format output
       | [33mgaa/gaa-log[0m      | *          | [32m✔[0m      |
       | [33mgaa/gaa-nonsense[0m | v3.0.11    | [31m🛇[0m      |
       | [33mgaa/gaa-100%new[0m  | v100%new   | [32m✔[0m      |
+
+  Scenario: Format data with boolean value
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $items = array(
+        array(
+          'id' => 1,
+          'status' => true,
+        ),
+        array(
+          'id' => 2,
+          'status' => false,
+        ),
+      );
+      $iterator = \WP_CLI\Utils\iterator_map(
+          $items,
+          function (array $item) {
+              return $item;
+          }
+      );
+      $assoc_args = array( 'format' => 'table' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'id', 'status' ) );
+      $formatter->display_items($iterator);
+      """
+
+    When I run `wp eval-file file.php --skip-wordpress`
+    Then STDOUT should be a table containing rows:
+      | id | status |
+      | 1  | true   |
+      | 2  | false  |

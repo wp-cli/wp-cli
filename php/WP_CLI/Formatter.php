@@ -89,9 +89,9 @@ class Formatter {
 
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
 				if ( $items instanceof Iterator ) {
-					$items = Utils\iterator_map( $items, [ $this, 'transform_item_values_to_json' ] );
+					$items = Utils\iterator_map( $items, [ $this, 'transform_item_values' ] );
 				} else {
-					$items = array_map( [ $this, 'transform_item_values_to_json' ], $items );
+					$items = array_map( [ $this, 'transform_item_values' ], $items );
 				}
 			}
 
@@ -347,21 +347,37 @@ class Formatter {
 	}
 
 	/**
-	 * Transforms objects and arrays to JSON as necessary
+	 * Transforms into shell-friendly output, as necessary
 	 *
 	 * @param mixed $item
 	 * @return mixed
 	 */
-	public function transform_item_values_to_json( $item ) {
+	public function transform_item_values( $item ) {
 		foreach ( $this->args['fields'] as $field ) {
 			$true_field = $this->find_item_key( $item, $field );
 			$value      = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
+
+			// Transform into JSON.
 			if ( is_array( $value ) || is_object( $value ) ) {
 				if ( is_object( $item ) ) {
 					$item->$true_field = json_encode( $value );
 				} elseif ( is_array( $item ) ) {
 					$item[ $true_field ] = json_encode( $value );
 				}
+
+				return $item;
+			}
+
+			// Transform boolean.
+			// See: https://github.com/wp-cli/wp-cli/issues/5542
+			if ( is_bool( $value ) ) {
+				if ( is_object( $item ) ) {
+					$item->$true_field = $value ? 'true' : 'false';
+				} elseif ( is_array( $item ) ) {
+					$item[ $true_field ] = $value ? 'true' : 'false';
+				}
+
+				return $item;
 			}
 		}
 		return $item;
