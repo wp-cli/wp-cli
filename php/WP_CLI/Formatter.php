@@ -89,9 +89,9 @@ class Formatter {
 
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
 				if ( $items instanceof Iterator ) {
-					$items = Utils\iterator_map( $items, [ $this, 'transform_item_values' ] );
+					$items = Utils\iterator_map( $items, [ $this, 'transform_item_values_to_json' ] );
 				} else {
-					$items = array_map( [ $this, 'transform_item_values' ], $items );
+					$items = array_map( [ $this, 'transform_item_values_to_json' ], $items );
 				}
 			}
 
@@ -352,7 +352,7 @@ class Formatter {
 	 * @param mixed $item
 	 * @return mixed
 	 */
-	public function transform_item_values( $item ) {
+	public function transform_item_values_to_json( $item ) {
 		foreach ( $this->args['fields'] as $field ) {
 			$true_field = $this->find_item_key( $item, $field );
 			$value      = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
