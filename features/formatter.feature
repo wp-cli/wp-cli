@@ -163,10 +163,14 @@ Feature: Format output
         array(
           'id' => 1,
           'status' => true,
+          'object' => new stdClass(),
+          'number' => 10,
         ),
         array(
           'id' => 2,
           'status' => false,
+          'object' => new stdClass(),
+          'number' => 20,
         ),
       );
       $iterator = \WP_CLI\Utils\iterator_map(
@@ -176,12 +180,12 @@ Feature: Format output
           }
       );
       $assoc_args = array( 'format' => 'table' );
-      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'id', 'status' ) );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'id', 'status', 'data' ) );
       $formatter->display_items($iterator);
       """
 
     When I run `wp eval-file file.php --skip-wordpress`
     Then STDOUT should be a table containing rows:
-      | id | status |
-      | 1  | true   |
-      | 2  | false  |
+      | id | status | object | number |
+      | 1  | true   | {}     | 10     |
+      | 2  | false  | {}     | 20     |

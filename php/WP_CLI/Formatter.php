@@ -365,7 +365,7 @@ class Formatter {
 					$item[ $true_field ] = json_encode( $value );
 				}
 
-				return $item;
+				continue;
 			}
 
 			// Transform boolean.
@@ -377,7 +377,7 @@ class Formatter {
 					$item[ $true_field ] = $value ? 'true' : 'false';
 				}
 
-				return $item;
+				continue;
 			}
 		}
 		return $item;
