@@ -180,7 +180,7 @@ Feature: Format output
           }
       );
       $assoc_args = array( 'format' => 'table' );
-      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'id', 'status', 'data' ) );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'id', 'status', 'object', 'number' ) );
       $formatter->display_items($iterator);
       """
 
