@@ -257,6 +257,8 @@ class Configurator {
 	public function merge_yml( $path, $current_alias = null ) {
 		$yaml = self::load_yml( $path );
 		if ( ! empty( $yaml['_']['inherit'] ) ) {
+			// Refactor with the WP-CLI `Path` class, once it's available.
+			// See: https://github.com/wp-cli/wp-cli/issues/5007
 			$inherit_path = is_path_absolute( $yaml['_']['inherit'] )
 				? $yaml['_']['inherit']
 				: ( new SplFileInfo( normalize_path( dirname( $path ) . '/' . $yaml['_']['inherit'] ) ) )->getRealPath();
