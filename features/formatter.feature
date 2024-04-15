@@ -153,3 +153,59 @@ Feature: Format output
       | [33mgaa/gaa-log[0m      | *          | [32m✔[0m      |
       | [33mgaa/gaa-nonsense[0m | v3.0.11    | [31m🛇[0m      |
       | [33mgaa/gaa-100%new[0m  | v100%new   | [32m✔[0m      |
+
+  Scenario: Display ordered output for an object item
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $custom_obj = (object) [
+        'name'    => 'Custom Name',
+        'author'  => 'John Doe',
+        'version' => '1.0'
+      ];
+
+      $assoc_args = [
+        'format' => 'csv',
+        'fields' => [ 'version', 'author', 'name' ],
+      ];
+
+      $formatter = new WP_CLI\Formatter( $assoc_args );
+      $formatter->display_item( $custom_obj );
+      """
+
+    When I run `wp eval-file file.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      version,1.0
+      author,"John Doe"
+      name,"Custom Name"
+      """
+
+  Scenario: Display ordered output for an array item
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $custom_obj = [
+        'name'    => 'Custom Name',
+        'author'  => 'John Doe',
+        'version' => '1.0'
+      ];
+
+      $assoc_args = [
+        'format' => 'csv',
+        'fields' => [ 'version', 'author', 'name' ],
+      ];
+
+      $formatter = new WP_CLI\Formatter( $assoc_args );
+      $formatter->display_item( $custom_obj );
+      """
+
+    When I run `wp eval-file file.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      version,1.0
+      author,"John Doe"
+      name,"Custom Name"
+      """
