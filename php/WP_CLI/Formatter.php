@@ -38,9 +38,10 @@ class Formatter {
 			'format' => 'table',
 			'fields' => $fields,
 			'field'  => null,
+			'alignments' => [],
 		];
 
-		foreach ( [ 'format', 'fields', 'field' ] as $key ) {
+		foreach ( array_keys( $format_args ) as $key ) {
 			if ( isset( $assoc_args[ $key ] ) ) {
 				$format_args[ $key ] = $assoc_args[ $key ];
 				unset( $assoc_args[ $key ] );
@@ -149,7 +150,7 @@ class Formatter {
 				break;
 
 			case 'table':
-				self::show_table( $items, $fields, $ascii_pre_colorized );
+				$this->show_table( $items, $fields, $ascii_pre_colorized );
 				break;
 
 			case 'csv':
@@ -298,7 +299,7 @@ class Formatter {
 	 * @param array      $fields
 	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `Table::setAsciiPreColorized()` if items in the table are pre-colorized. Default false.
 	 */
-	private static function show_table( $items, $fields, $ascii_pre_colorized = false ) {
+	private function show_table( $items, $fields, $ascii_pre_colorized = false ) {
 		$table = new Table();
 
 		$enabled = WP_CLI::get_runner()->in_color();
@@ -308,6 +309,9 @@ class Formatter {
 
 		$table->setAsciiPreColorized( $ascii_pre_colorized );
 		$table->setHeaders( $fields );
+		$table->setAlignments(
+			array_key_exists( 'alignments', $this->args ) ? $this->args['alignments'] : []
+		);
 
 		foreach ( $items as $item ) {
 			$table->addRow( array_values( Utils\pick_fields( $item, $fields ) ) );
