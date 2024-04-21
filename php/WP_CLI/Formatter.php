@@ -35,9 +35,9 @@ class Formatter {
 	 */
 	public function __construct( &$assoc_args, $fields = null, $prefix = false ) {
 		$format_args = [
-			'format' => 'table',
-			'fields' => $fields,
-			'field'  => null,
+			'format'     => 'table',
+			'fields'     => $fields,
+			'field'      => null,
 			'alignments' => [],
 		];
 
