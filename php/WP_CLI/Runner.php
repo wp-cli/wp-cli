@@ -570,7 +570,7 @@ class Runner {
 		}
 
 		$is_tty             = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
-		$docker_compose_cmd = ! empty( Process::create( Utils\esc_cmd( 'docker compose %s', 'version' ) )->run()->stdout )
+		$docker_compose_cmd = ! empty( Process::create( Utils\esc_cmd( '/usr/bin/env docker compose %s', 'version' ) )->run()->stdout )
 								? 'docker compose'
 								: 'docker-compose';
 
