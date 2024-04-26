@@ -569,10 +569,11 @@ class Runner {
 			WP_CLI::debug( 'SSH ' . $bit . ': ' . $bits[ $bit ], 'bootstrap' );
 		}
 
-		$is_tty             = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
-		$docker_compose_cmd = ! empty( Process::create( Utils\esc_cmd( 'docker compose %s', 'version' ) )->run()->stdout )
-								? 'docker compose'
-								: 'docker-compose';
+		$is_tty                        = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
+		$docker_compose_v2_version_cmd = Utils\esc_cmd( Utils\force_env_on_nix_systems( 'docker' ) . ' compose %s', 'version' );
+		$docker_compose_cmd            = ! empty( Process::create( $docker_compose_v2_version_cmd )->run()->stdout )
+			? 'docker compose'
+			: 'docker-compose';
 
 		if ( 'docker' === $bits['scheme'] ) {
 			$command = 'docker exec %s%s%s sh -c %s';
