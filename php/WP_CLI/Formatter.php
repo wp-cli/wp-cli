@@ -347,7 +347,7 @@ class Formatter {
 	}
 
 	/**
-	 * Transforms objects and arrays to JSON as necessary
+	 * Transforms into shell-friendly output, as necessary
 	 *
 	 * @param mixed $item
 	 * @return mixed
@@ -356,12 +356,28 @@ class Formatter {
 		foreach ( $this->args['fields'] as $field ) {
 			$true_field = $this->find_item_key( $item, $field );
 			$value      = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
+
+			// Transform into JSON.
 			if ( is_array( $value ) || is_object( $value ) ) {
 				if ( is_object( $item ) ) {
 					$item->$true_field = json_encode( $value );
 				} elseif ( is_array( $item ) ) {
 					$item[ $true_field ] = json_encode( $value );
 				}
+
+				continue;
+			}
+
+			// Transform boolean.
+			// See: https://github.com/wp-cli/wp-cli/issues/5542
+			if ( is_bool( $value ) ) {
+				if ( is_object( $item ) ) {
+					$item->$true_field = $value ? 'true' : 'false';
+				} elseif ( is_array( $item ) ) {
+					$item[ $true_field ] = $value ? 'true' : 'false';
+				}
+
+				continue;
 			}
 		}
 		return $item;
