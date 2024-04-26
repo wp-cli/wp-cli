@@ -1865,3 +1865,27 @@ function has_stdin() {
 
 	return 1 === $streams;
 }
+
+/**
+ * Return description of WP_CLI hooks used in @when tag
+ *
+ *  @param string $hook Name of WP_CLI hook
+ *
+ * @return string|null
+ */
+
+function get_hook_description( $hook ) {
+	$events = [
+		'find_command_to_run_pre'     => 'just before WP-CLI finds the command to run.',
+		'before_registering_contexts' => 'before the contexts are registered.',
+		'before_wp_load'              => 'just before the WP load process begins.',
+		'before_wp_config_load'       => 'after wp-config.php has been located.',
+		'after_wp_config_load'        => 'after wp-config.php has been loaded into scope.',
+		'after_wp_load'               => 'just after the WP load process has completed.',
+	];
+
+	if ( array_key_exists( $hook, $events ) ) {
+		return $events[ $hook ];
+	}
+	return null;
+}
