@@ -51,7 +51,19 @@ Feature: Get help about WP-CLI commands
       """
       wp post list
       """
-    And STDERR should be empty
+      And STDERR should be empty
+
+    When I try `wp help db`
+    Then STDOUT should contain:
+      """
+      This command runs when the 'after_wp_config_load' hook is called, after wp-config.php has been loaded into scope.
+      """
+
+    When I try `wp help db size`
+    Then STDOUT should contain:
+      """
+      This command runs when the 'after_wp_load' hook is called, just after the WP load process has completed.
+      """
 
   Scenario: Hide Global parameters when requested
     Given an empty directory
