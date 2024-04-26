@@ -54,13 +54,11 @@ class CSV implements Countable, Iterator {
 		$this->current_element = false;
 
 		while ( true ) {
-			$str = fgets( $this->file_pointer );
+			$row = fgetcsv( $this->file_pointer, self::ROW_SIZE, $this->delimiter );
 
-			if ( false === $str ) {
+			if ( false === $row ) {
 				break;
 			}
-
-			$row = str_getcsv( $str, $this->delimiter );
 
 			$element = [];
 			foreach ( $this->columns as $i => $key ) {
