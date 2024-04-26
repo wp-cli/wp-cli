@@ -134,6 +134,7 @@ class CompositeCommand {
 	public function get_hook() {
 		return $this->hook;
 	}
+
 	/**
 	 * Set the short description for this composite command.
 	 *

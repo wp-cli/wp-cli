@@ -1873,7 +1873,6 @@ function has_stdin() {
  *
  * @return string|null
  */
-
 function get_hook_description( $hook ) {
 	$events = [
 		'find_command_to_run_pre'     => 'just before WP-CLI finds the command to run.',
