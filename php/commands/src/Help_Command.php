@@ -159,7 +159,7 @@ class Help_Command extends WP_CLI_Command {
 		}
 		$hook_name        = $command->get_hook();
 		$hook_description = $hook_name ? Utils\get_hook_description( $hook_name ) : null;
-		if ( $hook_description ) {
+		if ( $hook_description && 'after_wp_load' !== $hook_name ) {
 			if ( $command->can_have_subcommands() ) {
 				$binding['shortdesc'] .= "\n\nUnless overridden, these commands run on the '$hook_name' hook, $hook_description";
 			} else {

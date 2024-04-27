@@ -63,10 +63,16 @@ Feature: Get help about WP-CLI commands
         after wp-config.php has been loaded into scope.
       """
 
-    When I try `COLUMNS=150 wp help db size`
+    When I try `COLUMNS=150 wp help db check`
     Then STDOUT should contain:
       """
-      This command runs on the 'after_wp_load' hook, just after the WP load process has completed.
+      This command runs on the 'after_wp_config_load' hook, after wp-config.php has been loaded into scope.
+      """
+
+    When I try `COLUMNS=150 wp help db size`
+    Then STDOUT should not contain:
+      """
+      This command runs on the
       """
 
   Scenario: Hide Global parameters when requested
