@@ -56,20 +56,20 @@ Feature: Get help about WP-CLI commands
   Scenario: Include when the command is run if a non-standard hook.
     Given an empty directory
 
-    When I try `COLUMNS=80 wp help db`
+    When I run `COLUMNS=80 wp help db`
     Then STDOUT should contain:
       """
         Unless overridden, these commands run on the 'after_wp_config_load' hook,
         after wp-config.php has been loaded into scope.
       """
 
-    When I try `COLUMNS=150 wp help db check`
+    When I run `COLUMNS=150 wp help db check`
     Then STDOUT should contain:
       """
       This command runs on the 'after_wp_config_load' hook, after wp-config.php has been loaded into scope.
       """
 
-    When I try `COLUMNS=150 wp help db size`
+    When I run `COLUMNS=150 wp help db size`
     Then STDOUT should not contain:
       """
       This command runs on the
