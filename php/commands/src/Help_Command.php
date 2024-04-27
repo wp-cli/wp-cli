@@ -160,7 +160,11 @@ class Help_Command extends WP_CLI_Command {
 		$hook_name        = $command->get_hook();
 		$hook_description = $hook_name ? Utils\get_hook_description( $hook_name ) : null;
 		if ( $hook_description ) {
-				$binding['shortdesc'] .= "\n\nThis command runs when the '$hook_name' hook is called, $hook_description";
+			if ( $command->can_have_subcommands() ) {
+				$binding['shortdesc'] .= "\n\nUnless overridden, these commands run on the '$hook_name' hook, $hook_description";
+			} else {
+				$binding['shortdesc'] .= "\n\nThis command runs on the '$hook_name' hook, $hook_description";
+			}
 		}
 
 		if ( $command->can_have_subcommands() ) {

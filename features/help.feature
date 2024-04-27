@@ -53,17 +53,20 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
+  Scenario: Include when the command is run if a non-standard hook.
+    Given an empty directory
+
     When I try `COLUMNS=80 wp help db`
     Then STDOUT should contain:
       """
-        This command runs when the 'after_wp_config_load' hook is called, after
-        wp-config.php has been loaded into scope.
+        Unless overridden, these commands run on the 'after_wp_config_load' hook,
+        after wp-config.php has been loaded into scope.
       """
 
     When I try `COLUMNS=150 wp help db size`
     Then STDOUT should contain:
       """
-      This command runs when the 'after_wp_load' hook is called, just after the WP load process has completed.
+      This command runs on the 'after_wp_load' hook, just after the WP load process has completed.
       """
 
   Scenario: Hide Global parameters when requested
