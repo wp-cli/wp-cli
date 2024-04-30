@@ -2,6 +2,7 @@
 
 namespace WP_CLI;
 
+use WP;
 use WP_CLI;
 use WP_CLI\Dispatcher;
 use WP_CLI\Dispatcher\CompositeCommand;
@@ -342,6 +343,51 @@ class Runner {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Is URL a multisite network?
+	 *
+	 * @param string $domain Domain of the site.
+	 * @param string $path  Path of the site.
+	 *
+	 * @return bool
+	 */
+	private static function in_sites( $domain, $path ) {
+
+		$sites = get_sites();
+
+		foreach ( $sites as $site ) {
+
+			if ( $site->domain === $domain && $site->path === $path ) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Validate the URL parameter.
+	 *
+	 * @param string $url URL to validate.
+	 *
+	 * @return string URL.
+	 */
+	private static function validate_url( $url ) {
+
+		if ( ! empty( $url ) ) {
+
+			$parsed_url = wp_parse_url( trailingslashit( strpos( $url, 'https://' ) || 0 === strpos( $url, 'http://' ) ? $url : 'http://' . $url ) );
+
+			if ( ! self::in_sites( $parsed_url['host'], $parsed_url['path'] ) ) {
+
+				WP_CLI::error( "Site '{$url}' not found. Verify `--url=<url>` matches an existing site." );
+			}
+		}
+
+		return $url;
 	}
 
 	private function cmd_starts_with( $prefix ) {
@@ -1291,6 +1337,8 @@ class Runner {
 		// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
 
 		$this->load_wordpress();
+
+		$url = self::validate_url( $url );
 
 		$this->run_command_and_exit();
 	}
