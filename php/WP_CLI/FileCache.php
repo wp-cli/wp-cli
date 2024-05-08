@@ -157,12 +157,17 @@ class FileCache {
 	 *
 	 * @param string $key    cache key
 	 * @param string $source source filename
+	 *
 	 * @return bool
 	 */
 	public function import( $key, $source ) {
 		$filename = $this->prepare_write( $key );
 
 		if ( $filename ) {
+			$ext = pathinfo( $filename, PATHINFO_EXTENSION );
+			if ( '' === $ext ) {
+				return false;
+			}
 			return copy( $source, $filename ) && touch( $filename );
 		}
 
