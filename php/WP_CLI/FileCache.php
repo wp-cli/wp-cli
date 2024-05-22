@@ -162,6 +162,10 @@ class FileCache {
 	public function import( $key, $source ) {
 		$filename = $this->prepare_write( $key );
 
+		if ( ! is_readable( $source ) ) {
+			return false;
+		}
+
 		if ( $filename ) {
 			return copy( $source, $filename ) && touch( $filename );
 		}
