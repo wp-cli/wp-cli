@@ -130,6 +130,7 @@ class FileCacheTest extends TestCase {
 		// Clean up.
 		$cache->clear();
 		unlink( $fixture_filepath );
+		rmdir( $tmp_dir );
 	}
 
 	/**
