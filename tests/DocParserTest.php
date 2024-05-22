@@ -3,7 +3,7 @@
 use WP_CLI\DocParser;
 use WP_CLI\Tests\TestCase;
 
-class DocParserTests extends TestCase {
+class DocParserTest extends TestCase {
 
 	public function test_empty() {
 		$doc = new DocParser( '' );
