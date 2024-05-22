@@ -102,4 +102,30 @@ class FileCacheTest extends TestCase {
 		unlink( $target );
 		rmdir( $target_dir );
 	}
+
+	public function test_import() {
+		$max_size  = 32;
+		$ttl       = 60;
+		$cache_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache', true );
+		$cache     = new FileCache( $cache_dir, $ttl, $max_size );
+
+		// "$group/$slug-$version.$ext";
+		$key              = 'plugin/my-fixture-plugin-1.0.0.zip';
+		$fixture_filepath = sys_get_temp_dir() . '/my-downloaded-fixture-plugin-1.0.0.zip';
+
+		$zip = new ZipArchive();
+		$zip->open( $fixture_filepath, ZIPARCHIVE::CREATE );
+		$zip->addFile( __FILE__ );
+		$zip->close();
+
+		$result = $cache->import( $key, $fixture_filepath );
+
+		// Assert file is imported.
+		self::assertTrue( $result );
+		self::assertFileExists( "{$cache_dir}/{$key}" );
+
+		// Clean up.
+		$cache->clear();
+		unlink( $fixture_filepath );
+	}
 }
