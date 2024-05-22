@@ -156,7 +156,7 @@ class FileCache {
 	 * Copy a file into the cache
 	 *
 	 * @param string $key    cache key
-	 * @param string $source source filename
+	 * @param string $source source filename; tmp file filepath from HTTP response
 	 * @return bool
 	 */
 	public function import( $key, $source ) {
@@ -339,7 +339,7 @@ class FileCache {
 	 * Prepare cache write
 	 *
 	 * @param string $key cache key
-	 * @return bool|string filename or false
+	 * @return bool|string The destination filename or false when cache disabled, key invalid, or directory creation failed.
 	 */
 	protected function prepare_write( $key ) {
 		if ( ! $this->enabled ) {
@@ -381,7 +381,7 @@ class FileCache {
 	}
 
 	/**
-	 * Filename from key
+	 * Destination filename from key
 	 *
 	 * @param string $key
 	 * @return string filename

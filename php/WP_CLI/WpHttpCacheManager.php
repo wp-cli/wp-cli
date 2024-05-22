@@ -12,7 +12,7 @@ use WP_CLI;
 class WpHttpCacheManager {
 
 	/**
-	 * @var array map whitelisted urls to keys and ttls
+	 * @var array<string, array{key:string, ttl:int}> map whitelisted urls to keys and ttls
 	 */
 	protected $whitelist = [];
 
