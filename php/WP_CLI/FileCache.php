@@ -163,6 +163,10 @@ class FileCache {
 	public function import( $key, $source ) {
 		$filename = $this->prepare_write( $key );
 
+		if ( ! is_readable( $source ) ) {
+			return false;
+		}
+
 		if ( $filename ) {
 			$ext = pathinfo( $filename, PATHINFO_EXTENSION );
 			if ( '' === $ext ) {
