@@ -343,7 +343,7 @@ class FileCache {
 	 * Prepare cache write
 	 *
 	 * @param string $key cache key
-	 * @return bool|string The destination filename or false when cache disabled, key invalid, or directory creation failed.
+	 * @return bool|string The destination filename or false when cache disabled or directory creation fails.
 	 */
 	protected function prepare_write( $key ) {
 		if ( ! $this->enabled ) {
