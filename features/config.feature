@@ -476,6 +476,57 @@ Feature: Have a config file
       {"bar":"burrito","apple":"apple"}
       """
 
+  Scenario: Config inheritance in nested folders
+    Given an empty directory
+    And a wp-cli.local.yml file:
+      """
+      @dev:
+        ssh: vagrant@example.test/srv/www/example.com/current
+        path: web/wp
+      """
+    And a site/wp-cli.yml file:
+      """
+      _:
+        inherit: ../wp-cli.local.yml
+      @otherdev:
+        ssh: vagrant@otherexample.test/srv/www/otherexample.com/current
+      """
+    And a site/public/index.php file:
+      """
+      <?php
+      """
+
+    When I run `wp cli alias list`
+    Then STDOUT should contain:
+      """
+      @all: Run command against every registered alias.
+      @dev:
+        path: web/wp
+        ssh: vagrant@example.test/srv/www/example.com/current
+      """
+
+    When I run `cd site && wp cli alias list`
+    Then STDOUT should contain:
+      """
+      @all: Run command against every registered alias.
+      @dev:
+        path: web/wp
+        ssh: vagrant@example.test/srv/www/example.com/current
+      @otherdev:
+        ssh: vagrant@otherexample.test/srv/www/otherexample.com/current
+      """
+
+    When I run `cd site/public && wp cli alias list`
+    Then STDOUT should contain:
+      """
+      @all: Run command against every registered alias.
+      @dev:
+        path: web/wp
+        ssh: vagrant@example.test/srv/www/example.com/current
+      @otherdev:
+        ssh: vagrant@otherexample.test/srv/www/otherexample.com/current
+      """
+
   @require-wp-3.9
   Scenario: WordPress installation with local dev DOMAIN_CURRENT_SITE
     Given a WP multisite installation
