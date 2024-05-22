@@ -200,6 +200,6 @@ class FileCacheTest extends TestCase {
 		$result = $method->invoke( $cache, $key );
 
 		self::assertFalse( str_ends_with( $result, '.' ) );
-		self::assertEquals('plugin/advanced-sidebar-menu-pro-9.5.7', $result);
+		self::assertEquals( 'plugin/advanced-sidebar-menu-pro-9.5.7', $result );
 	}
 }
