@@ -175,4 +175,31 @@ class FileCacheTest extends TestCase {
 		unlink( $fixture_filepath );
 		rmdir( $tmp_dir );
 	}
+
+	/**
+	 * Windows filenames cannot end in periods.
+	 *
+	 * @covers \WP_CLI\FileCache::validate_key
+	 *
+	 * @see https://github.com/wp-cli/wp-cli/pull/5947
+	 * @see https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
+	 */
+	public function test_validate_key_ending_in_period() {
+		$max_size  = 32;
+		$ttl       = 60;
+		$cache_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache', true );
+		$cache     = new FileCache( $cache_dir, $ttl, $max_size );
+
+		$key = 'plugin/advanced-sidebar-menu-pro-9.5.7.';
+
+		$reflection = new ReflectionClass( $cache );
+
+		$method = $reflection->getMethod( 'validate_key' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( $cache, $key );
+
+		self::assertFalse( str_ends_with( $result, '.' ) );
+		self::assertEquals('plugin/advanced-sidebar-menu-pro-9.5.7', $result);
+	}
 }
