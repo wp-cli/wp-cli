@@ -109,9 +109,12 @@ class FileCacheTest extends TestCase {
 		$cache_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache', true );
 		$cache     = new FileCache( $cache_dir, $ttl, $max_size );
 
+		$tmp_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache-import', true );
+		mkdir( $tmp_dir );
+
 		// "$group/$slug-$version.$ext";
 		$key              = 'plugin/my-fixture-plugin-1.0.0.zip';
-		$fixture_filepath = sys_get_temp_dir() . '/my-downloaded-fixture-plugin-1.0.0.zip';
+		$fixture_filepath = $tmp_dir . '/my-downloaded-fixture-plugin-1.0.0.zip';
 
 		$zip = new ZipArchive();
 		$zip->open( $fixture_filepath, ZIPARCHIVE::CREATE );
