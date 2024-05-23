@@ -124,8 +124,8 @@ class FileCacheTest extends TestCase {
 		$result = $cache->import( $key, $fixture_filepath );
 
 		// Assert file is imported.
-		self::assertTrue( $result );
-		self::assertFileExists( "{$cache_dir}/{$key}" );
+		$this->assertTrue( $result );
+		$this->assertFileExists( "{$cache_dir}/{$key}" );
 
 		// Clean up.
 		$cache->clear();
@@ -167,8 +167,8 @@ class FileCacheTest extends TestCase {
 
 		restore_error_handler();
 
-		self::assertNull( $error );
-		self::assertFalse( $result );
+		$this->assertNull( $error );
+		$this->assertFalse( $result );
 
 		// Clean up.
 		$cache->clear();
@@ -199,7 +199,7 @@ class FileCacheTest extends TestCase {
 
 		$result = $method->invoke( $cache, $key );
 
-		self::assertFalse( str_ends_with( $result, '.' ) );
-		self::assertEquals( 'plugin/advanced-sidebar-menu-pro-9.5.7', $result );
+		$this->assertStringEndsNotWith( '.', $result );
+		$this->assertSame( 'plugin/advanced-sidebar-menu-pro-9.5.7', $result );
 	}
 }
