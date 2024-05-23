@@ -5,7 +5,7 @@ use WP_CLI\Loggers;
 use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
-class Extractor_Test extends TestCase {
+class ExtractorTest extends TestCase {
 
 	public static $copy_overwrite_files_prefix = 'wp-cli-test-utils-copy-overwrite-files-';
 

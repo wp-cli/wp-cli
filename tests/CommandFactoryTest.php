@@ -4,7 +4,7 @@ use WP_CLI\Tests\TestCase;
 
 require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
 
-class CommandFactoryTests extends TestCase {
+class CommandFactoryTest extends TestCase {
 
 	/**
 	 * @dataProvider dataProviderExtractLastDocComment
@@ -48,7 +48,7 @@ class CommandFactoryTests extends TestCase {
 		putenv( false === $is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$is_windows" );
 	}
 
-	public function dataProviderExtractLastDocComment() {
+	public static function dataProviderExtractLastDocComment() {
 		return [
 			[ '', false ],
 			[ '*/', false ],

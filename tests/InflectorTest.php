@@ -12,7 +12,7 @@ class InflectorTest extends TestCase {
 		$this->assertEquals( $expected, Inflector::pluralize( $singular ) );
 	}
 
-	public function dataProviderPluralize() {
+	public static function dataProviderPluralize() {
 		return [
 			[ 'string', 'strings' ], // Regular.
 			[ 'person', 'people' ],  // Irregular.
@@ -27,7 +27,7 @@ class InflectorTest extends TestCase {
 		$this->assertEquals( $expected, Inflector::singularize( $singular ) );
 	}
 
-	public function dataProviderSingularize() {
+	public static function dataProviderSingularize() {
 		return [
 			[ 'strings', 'string' ], // Regular.
 			[ 'people', 'person' ],  // Irregular.

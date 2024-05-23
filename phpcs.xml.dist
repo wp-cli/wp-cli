@@ -98,12 +98,12 @@
 
 	<!-- These are all to do with file-system related tests. Just ignore them. -->
 	<rule ref="WordPress.WP.CapitalPDangit">
-		<exclude-pattern>*/tests/test-(extractor|utils)\.php$</exclude-pattern>
+		<exclude-pattern>*/tests/(Extractor|Utils)Test\.php$</exclude-pattern>
 	</rule>
 
 	<!-- Allow for select data providers for tests to use single-line associative arrays. -->
 	<rule ref="WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound">
-		<exclude-pattern>*/tests/test-(process|utils)\.php$</exclude-pattern>
+		<exclude-pattern>*/tests/(Process|Utils)Test\.php$</exclude-pattern>
 	</rule>
 
 	<!-- This is a procedural stand-alone file that is never loaded in a WordPress context,

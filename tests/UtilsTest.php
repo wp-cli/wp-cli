@@ -272,7 +272,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 	}
 
-	public function parseStrToArgvData() {
+	public static function parseStrToArgvData() {
 		return [
 			[ [], '' ],
 			[ [ 'option', 'get', 'home' ], 'option get home' ],
@@ -414,7 +414,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( $expected, Utils\normalize_path( $path ) );
 	}
 
-	public function dataNormalizePath() {
+	public static function dataNormalizePath() {
 		return [
 			[ '', '' ],
 			// Windows paths.
@@ -476,7 +476,7 @@ class UtilsTest extends TestCase {
 		WP_CLI::set_logger( $prev_logger );
 	}
 
-	public function dataHttpRequestBadCAcert() {
+	public static function dataHttpRequestBadCAcert() {
 		return [
 			'default request'  => [
 				[],
@@ -552,7 +552,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( $expected, $transport_spy->requests[0]['options']['verify'] );
 	}
 
-	public function dataHttpRequestVerify() {
+	public static function dataHttpRequestVerify() {
 		return [
 			'not passed'    => [
 				true,
@@ -589,7 +589,7 @@ class UtilsTest extends TestCase {
 		$this->assertSame( $expected, Utils\past_tense_verb( $verb ) );
 	}
 
-	public function dataPastTenseVerb() {
+	public static function dataPastTenseVerb() {
 		return [
 			// Known to be used by commands.
 			[ 'activate', 'activated' ],
@@ -645,7 +645,7 @@ class UtilsTest extends TestCase {
 		putenv( false === $expand_globs_no_glob_brace ? 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE' : "WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE=$expand_globs_no_glob_brace" );
 	}
 
-	public function dataExpandGlobs() {
+	public static function dataExpandGlobs() {
 		// Files in "data/expand_globs": foo.ab1, foo.ab2, foo.efg1, foo.efg2, bar.ab1, bar.ab2, baz.ab1, baz.ac1, baz.efg2.
 		return [
 			[ 'foo.ab1', [ 'foo.ab1' ] ],
@@ -695,7 +695,7 @@ class UtilsTest extends TestCase {
 		WP_CLI::set_logger( $prev_logger );
 	}
 
-	public function dataReportBatchOperationResults() {
+	public static function dataReportBatchOperationResults() {
 		return [
 			[ "Success: Noun already verbed.\n", '', 'noun', 'verb', 1, 0, 0, null ],
 			[ "Success: Verbed 1 of 1 nouns.\n", '', 'noun', 'verb', 1, 1, 0, null ],
@@ -754,7 +754,7 @@ class UtilsTest extends TestCase {
 		putenv( false === $env_is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$env_is_windows" );
 	}
 
-	public function dataProcOpenCompatWinEnv() {
+	public static function dataProcOpenCompatWinEnv() {
 		return [
 			[ 'echo', [], 'echo', [] ],
 			[ 'ENV=blah echo', [], 'echo', [ 'ENV' => 'blah' ] ],
@@ -806,7 +806,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( $expected, Utils\is_json( $argument, $ignore_scalars ) );
 	}
 
-	public function dataIsJson() {
+	public static function dataIsJson() {
 		return [
 			[ '42', true, false ],
 			[ '42', false, true ],
@@ -830,7 +830,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( $expected, Utils\parse_shell_arrays( $assoc_args, $array_arguments ) );
 	}
 
-	public function dataParseShellArray() {
+	public static function dataParseShellArray() {
 		return [
 			[ [ 'alpha' => '{"key":"value"}' ], [], [ 'alpha' => '{"key":"value"}' ] ],
 			[ [ 'alpha' => '{"key":"value"}' ], [ 'alpha' ], [ 'alpha' => [ 'key' => 'value' ] ] ],
@@ -845,7 +845,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( $expected, Utils\pluralize( $singular, $count ) );
 	}
 
-	public function dataPluralize() {
+	public static function dataPluralize() {
 		return [
 			[ 'string', 1, 'string' ],
 			[ 'string', 2, 'strings' ],
@@ -860,7 +860,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( $expected, Utils\pick_fields( $data, $fields ) );
 	}
 
-	public function dataPickFields() {
+	public static function dataPickFields() {
 		return [
 			[ [ 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ], [ 'keyB' ], [ 'keyB' => 'valB' ] ],
 			[ [ '1' => 'valA', '2' => 'valB', '3' => 'valC' ], [ '2' ], [ '2' => 'valB' ] ],
@@ -879,7 +879,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( $expected, Utils\parse_url( $url, $component, $auto_add_scheme ) );
 	}
 
-	public function dataParseUrl() {
+	public static function dataParseUrl() {
 		return [
 			[ 'http://user:pass@example.com:9090/path?arg=value#anchor', -1, true, [ 'scheme' => 'http', 'host' => 'example.com', 'port' => 9090, 'user' => 'user', 'pass' => 'pass', 'path' => '/path', 'query' => 'arg=value', 'fragment' => 'anchor' ] ],
 			[ 'example.com:9090/path?arg=value#anchor', -1, true, [ 'scheme' => 'http', 'host' => 'example.com', 'port' => 9090, 'path' => '/path', 'query' => 'arg=value', 'fragment' => 'anchor' ] ],
@@ -902,7 +902,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( $is_valid, Utils\is_valid_class_and_method_pair( $pair ) );
 	}
 
-	public function dataValidClassAndMethodPair() {
+	public static function dataValidClassAndMethodPair() {
 		return [
 			[ 'string', false ],
 			[ [], false ],

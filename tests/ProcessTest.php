@@ -4,7 +4,7 @@ use WP_CLI\Process;
 use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
-class ProcessTests extends TestCase {
+class ProcessTest extends TestCase {
 
 	/**
 	 * @dataProvider data_process_env
@@ -18,7 +18,7 @@ class ProcessTests extends TestCase {
 		$this->assertSame( $process_run->stdout, $expected_out );
 	}
 
-	public function data_process_env() {
+	public static function data_process_env() {
 		return [
 			[ '', [], [], '' ],
 			[ 'ENV=blah', [], [ 'ENV' ], 'blah' ],
