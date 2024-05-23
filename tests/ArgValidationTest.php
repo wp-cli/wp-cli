@@ -3,7 +3,7 @@
 use WP_CLI\SynopsisValidator;
 use WP_CLI\Tests\TestCase;
 
-class ArgValidationTests extends TestCase {
+class ArgValidationTest extends TestCase {
 
 	public function testMissingPositional() {
 		$validator = new SynopsisValidator( '<foo> <bar> [<baz>]' );

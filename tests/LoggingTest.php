@@ -30,7 +30,7 @@ class MockQuietLogger extends WP_CLI\Loggers\Quiet {
 	}
 }
 
-class LoggingTests extends TestCase {
+class LoggingTest extends TestCase {
 
 	public function testLogDebug() {
 		$message = 'This is a test message.';

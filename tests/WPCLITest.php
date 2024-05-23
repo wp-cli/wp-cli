@@ -2,7 +2,7 @@
 
 use WP_CLI\Tests\TestCase;
 
-class WP_CLI_Test extends TestCase {
+class WPCLITest extends TestCase {
 
 	public function testGetPHPBinary() {
 		$this->assertSame( WP_CLI\Utils\get_php_binary(), WP_CLI::get_php_binary() );
