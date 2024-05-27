@@ -1263,7 +1263,7 @@ class WP_CLI {
 	}
 
 	/**
-	 * Run a WP-CLI command.
+	 * Run a WP-CLI command. Optionally modify the context in which the command runs and how the result is processed.
 	 *
 	 * Launches a new child process to run a specified WP-CLI command.
 	 * Optionally:
@@ -1289,7 +1289,14 @@ class WP_CLI {
 	 * @category Execution
 	 *
 	 * @param string $command WP-CLI command to run, including arguments.
-	 * @param array  $options Configuration options for command execution.
+	 * @param array  $options {
+	 *     Configuration options for command execution.
+	 *
+	 *     @type bool        $launch     Launch a new process, or reuse the existing. Defaults to true.
+	 *     @type bool        $exit_error Exit on error. Defaults to true.
+	 *     @type bool|string $return     Capture and return output, or render in realtime. Defaults to false.
+	 *     @type bool|string $parse      Parse returned output as a particular format. Defaults to false.
+	 * }
 	 * @return mixed
 	 */
 	public static function runcommand( $command, $options = [] ) {
