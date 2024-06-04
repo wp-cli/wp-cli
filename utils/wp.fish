@@ -15,7 +15,7 @@ function __wp_cli_complete
     if string match -qe "<file> " -- $opts
         command ls -1
     else
-        # Remove unnecesary double spaces that wp-cli splits options with
+        # Remove unnecessary double spaces that wp-cli splits options with
         string trim -- $opts
         # `string` echoes each result on a newline.
         # Which is then collected for use with the `-a` flag for `complete`.
