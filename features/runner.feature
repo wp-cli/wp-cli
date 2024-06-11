@@ -79,3 +79,27 @@ Feature: Runner WP-CLI
       Did you mean 'meta'?
       """
     And the return code should be 1
+
+  Scenario: Multisite url validation displays informative error message
+    Given a WP multisite installation
+
+    And I run `wp site create --slug=first --porcelain`
+    And save STDOUT as {FIRST_SITE_ID}
+
+    When I run `wp option get home --url=example.com/first`
+    Then STDOUT should contain:
+      """
+      https://example.com/first
+      """
+
+    When I try `wp option get home --url=example.com/second`
+    Then STDOUT should not contain:
+      """
+      https://example.com/second
+      """
+    Then STDERR should contain:
+      """
+      Site 'example.com/second' not found. Verify `--url=<url>` matches an existing site.
+      """
+
+

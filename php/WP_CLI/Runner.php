@@ -355,6 +355,9 @@ class Runner {
 	 */
 	private static function in_sites( $domain, $path ) {
 
+		require_once ABSPATH . '/wp-includes/ms-site.php';
+		require_once ABSPATH . '/wp-includes/class-wp-site-query.php';
+
 		$sites = get_sites();
 
 		foreach ( $sites as $site ) {
@@ -372,10 +375,12 @@ class Runner {
 	 * Validate the URL parameter.
 	 *
 	 * @param string $url URL to validate.
-	 *
-	 * @return string URL.
 	 */
 	private static function validate_url( $url ) {
+
+		if ( defined( 'WP_INSTALLING' ) && WP_INSTALLING ) {
+			return;
+		}
 
 		if ( ! empty( $url ) ) {
 
@@ -386,8 +391,6 @@ class Runner {
 				WP_CLI::error( "Site '{$url}' not found. Verify `--url=<url>` matches an existing site." );
 			}
 		}
-
-		return $url;
 	}
 
 	private function cmd_starts_with( $prefix ) {
@@ -1338,7 +1341,7 @@ class Runner {
 
 		$this->load_wordpress();
 
-		$url = self::validate_url( $url );
+		self::validate_url( $url );
 
 		$this->run_command_and_exit();
 	}
