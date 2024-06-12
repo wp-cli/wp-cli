@@ -384,7 +384,9 @@ class Runner {
 
 		if ( ! empty( $url ) ) {
 
-			$parsed_url = wp_parse_url( trailingslashit( strpos( $url, 'https://' ) || 0 === strpos( $url, 'http://' ) ? $url : 'http://' . $url ) );
+			$parsed_url = empty( wp_parse_url( $url, PHP_URL_SCHEME ) )
+				? wp_parse_url( Utils\trailingslashit( "http://$url" ) )
+				: wp_parse_url( Utils\trailingslashit( $url ) );
 
 			if ( ! self::in_sites( $parsed_url['host'], $parsed_url['path'] ) ) {
 
