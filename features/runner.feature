@@ -80,6 +80,7 @@ Feature: Runner WP-CLI
       """
     And the return code should be 1
 
+  @require-wp-4.4
   Scenario: Multisite url validation displays informative error message
     Given a WP multisite installation
 
