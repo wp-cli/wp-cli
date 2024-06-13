@@ -263,7 +263,7 @@ class Formatter {
 		$ordered_data = $this->reorder_array( $data, $this->args['fields'] );
 
 		if ( is_object( $data ) ) {
-			$ordered_data = (object)$ordered_data;
+			$ordered_data = (object) $ordered_data;
 		}
 
 		switch ( $format ) {
@@ -380,6 +380,6 @@ class Formatter {
 	 * @return array
 	 */
 	public function reorder_array( $data, $order ) {
-		return array_replace( array_flip( $order ), (array)$data );
+		return array_replace( array_flip( $order ), (array) $data );
 	}
 }
