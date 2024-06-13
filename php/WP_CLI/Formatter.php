@@ -263,14 +263,14 @@ class Formatter {
 		$ordered_data = $this->reorder_array( $data, $this->args['fields'] );
 
 		if ( is_object( $data ) ) {
-			$ordered_data = (object)$ordered_data;
+			$ordered_data = (object) $ordered_data;
 		}
 
 		switch ( $format ) {
 
 			case 'table':
 			case 'csv':
-				$rows   = $this->assoc_array_to_rows( $ordered_data );
+				$rows = $this->assoc_array_to_rows( $ordered_data );
 
 				$fields = [ 'Field', 'Value' ];
 				if ( 'table' === $format ) {
@@ -380,6 +380,6 @@ class Formatter {
 	 * @return array
 	 */
 	public function reorder_array( $data, $order ) {
-		return array_replace( array_flip( $order ), (array)$data );
+		return array_replace( array_flip( $order ), (array) $data );
 	}
 }
