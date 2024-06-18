@@ -2,6 +2,7 @@
 
 namespace WP_CLI;
 
+use WP;
 use WP_CLI;
 use WP_CLI\Dispatcher;
 use WP_CLI\Dispatcher\CompositeCommand;
@@ -342,6 +343,56 @@ class Runner {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Is URL a multisite network?
+	 *
+	 * @param string $domain Domain of the site.
+	 * @param string $path  Path of the site.
+	 *
+	 * @return bool
+	 */
+	private static function in_sites( $domain, $path ) {
+
+		require_once ABSPATH . '/wp-includes/ms-site.php';
+		require_once ABSPATH . '/wp-includes/class-wp-site-query.php';
+
+		$sites = get_sites();
+
+		foreach ( $sites as $site ) {
+
+			if ( $site->domain === $domain && $site->path === $path ) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Validate the URL parameter.
+	 *
+	 * @param string $url URL to validate.
+	 */
+	private static function validate_url( $url ) {
+
+		if ( defined( 'WP_INSTALLING' ) && WP_INSTALLING ) {
+			return;
+		}
+
+		if ( ! empty( $url ) ) {
+
+			$parsed_url = empty( wp_parse_url( $url, PHP_URL_SCHEME ) )
+				? wp_parse_url( Utils\trailingslashit( "http://$url" ) )
+				: wp_parse_url( Utils\trailingslashit( $url ) );
+
+			if ( ! self::in_sites( $parsed_url['host'], $parsed_url['path'] ) ) {
+
+				WP_CLI::error( "Site '{$url}' not found. Verify `--url=<url>` matches an existing site." );
+			}
+		}
 	}
 
 	private function cmd_starts_with( $prefix ) {
@@ -1292,6 +1343,8 @@ class Runner {
 		// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
 
 		$this->load_wordpress();
+
+		self::validate_url( $url );
 
 		$this->run_command_and_exit();
 	}

@@ -28,6 +28,7 @@ Feature: Global flags
       }
       """
 
+  @require-wp-4.4
   Scenario: Setting the URL on multisite
     Given a WP multisite installation
     And I run `wp site create --slug=foo`

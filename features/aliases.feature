@@ -499,6 +499,7 @@ Feature: Create shortcuts to specific WordPress installs
       Error: Cannot use '@all' when no aliases are registered.
       """
 
+  @require-wp-4.4
   Scenario: Alias for a subsite of a multisite install
     Given a WP multisite subdomain installation
     And a wp-cli.yml file:
