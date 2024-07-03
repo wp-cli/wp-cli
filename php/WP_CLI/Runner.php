@@ -346,7 +346,7 @@ class Runner {
 	}
 
 	/**
-	 * Is URL a multisite network?
+	 * Is URL a site in a multisite network?
 	 *
 	 * @param string $domain Domain of the site.
 	 * @param string $path  Path of the site.
@@ -358,17 +358,14 @@ class Runner {
 		require_once ABSPATH . '/wp-includes/ms-site.php';
 		require_once ABSPATH . '/wp-includes/class-wp-site-query.php';
 
-		$sites = get_sites();
-
-		foreach ( $sites as $site ) {
-
-			if ( $site->domain === $domain && $site->path === $path ) {
-
-				return true;
-			}
-		}
-
-		return false;
+		return ! empty(
+			get_sites(
+				[
+					'domain' => $domain,
+					'path'   => $path,
+				]
+			)
+		);
 	}
 
 	/**
