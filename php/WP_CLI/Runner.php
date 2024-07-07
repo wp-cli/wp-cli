@@ -1096,7 +1096,8 @@ class Runner {
 			"flag:  --allow-root\n" .
 			"\n" .
 			"If you'd like to run it as the user that this site is under, you can " .
-			"run the following to become the respective user:\n" .
+			"run the following to become the respective user (without -i in the case " .
+			"of system user):\n" .
 			"\n" .
 			"    sudo -u USER -i -- wp <command>\n" .
 			"\n"
