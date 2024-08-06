@@ -79,3 +79,46 @@ Feature: Runner WP-CLI
       Did you mean 'meta'?
       """
     And the return code should be 1
+
+  @require-wp-4.4
+  Scenario: Multisite (subdirectory) url validation displays informative error message
+    Given a WP multisite subdirectory installation
+
+    And I run `wp site create --slug=first --porcelain`
+    And I run `wp option get home --url=example.com/first`
+    Then STDOUT should contain:
+      """
+      https://example.com/first
+      """
+
+    When I try `wp option get home --url=example.com/second`
+    Then STDOUT should not contain:
+      """
+      https://example.com/second
+      """
+    Then STDERR should contain:
+      """
+      Site 'example.com/second' not found. Verify `--url=<url>` matches an existing site.
+      """
+
+  @require-wp-4.4
+  Scenario: Multisite (subdomain) url validation displays informative error message
+    Given a WP multisite subdomain installation
+
+    And I run `wp site create --slug=first --porcelain`
+    And I run `wp option get home --url=first.example.com`
+    Then STDOUT should contain:
+      """
+      http://first.example.com
+      """
+
+    When I try `wp option get home --url=second.example.com`
+    Then STDOUT should not contain:
+      """
+      http://second.example.com
+      """
+    Then STDERR should contain:
+      """
+      Site 'second.example.com' not found. Verify `--url=<url>` matches an existing site.
+      """
+
