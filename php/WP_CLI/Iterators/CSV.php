@@ -4,6 +4,7 @@ namespace WP_CLI\Iterators;
 
 use Countable;
 use Iterator;
+use ReturnTypeWillChange;
 use SplFileObject;
 use WP_CLI;
 
@@ -33,6 +34,7 @@ class CSV implements Countable, Iterator {
 		$this->delimiter = $delimiter;
 	}
 
+	#[ReturnTypeWillChange]
 	public function rewind() {
 		rewind( $this->file_pointer );
 
@@ -42,14 +44,17 @@ class CSV implements Countable, Iterator {
 		$this->next();
 	}
 
+	#[ReturnTypeWillChange]
 	public function current() {
 		return $this->current_element;
 	}
 
+	#[ReturnTypeWillChange]
 	public function key() {
 		return $this->current_index;
 	}
 
+	#[ReturnTypeWillChange]
 	public function next() {
 		$this->current_element = false;
 
@@ -76,12 +81,14 @@ class CSV implements Countable, Iterator {
 		}
 	}
 
+	#[ReturnTypeWillChange]
 	public function count() {
 		$file = new SplFileObject( $this->filename, 'r' );
 		$file->seek( PHP_INT_MAX );
 		return $file->key() + 1;
 	}
 
+	#[ReturnTypeWillChange]
 	public function valid() {
 		return is_array( $this->current_element );
 	}
