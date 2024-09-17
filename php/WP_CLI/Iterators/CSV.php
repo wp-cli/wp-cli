@@ -38,7 +38,7 @@ class CSV implements Countable, Iterator {
 	public function rewind() {
 		rewind( $this->file_pointer );
 
-		$this->columns = fgetcsv( $this->file_pointer, self::ROW_SIZE, $this->delimiter );
+		$this->columns = fgetcsv( $this->file_pointer, self::ROW_SIZE, $this->delimiter, '"', '\\' );
 
 		$this->current_index = -1;
 		$this->next();
@@ -59,7 +59,7 @@ class CSV implements Countable, Iterator {
 		$this->current_element = false;
 
 		while ( true ) {
-			$row = fgetcsv( $this->file_pointer, self::ROW_SIZE, $this->delimiter );
+			$row = fgetcsv( $this->file_pointer, self::ROW_SIZE, $this->delimiter, '"', '\\' );
 
 			if ( false === $row ) {
 				break;
