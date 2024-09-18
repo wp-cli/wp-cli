@@ -47,7 +47,7 @@ function wp_debug_mode() {
 			define( 'WP_DEBUG', true );
 		}
 
-		error_reporting( E_ALL & ~E_DEPRECATED & ~E_STRICT );
+		error_reporting( E_ALL & ~E_DEPRECATED );
 	} else {
 		if ( WP_DEBUG ) {
 			error_reporting( E_ALL );
