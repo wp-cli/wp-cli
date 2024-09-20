@@ -151,11 +151,29 @@ If you'd like to run a single set of tests, specify just the name:
 $ phpunit Transport/cURL
 ```
 
+Requests and PSR-7/PSR-18
+-------------------------
+
+[PSR-7][psr-7] describes common interfaces for representing HTTP messages.
+[PSR-18][psr-18] describes a common interface for sending HTTP requests and receiving HTTP responses.
+
+Both PSR-7 as well as PSR-18 were created after Requests' conception.
+At this time, there is no intention to add a native PSR-7/PSR-18 implementation to the Requests library.
+
+However, the amazing [Artur Weigandt][art4] has created a [package][requests-psr-18], which allows you to use Requests as a PSR-7 compatible PSR-18 HTTP Client.
+If you are interested in a PSR-7/PSR-18 compatible version of Requests, we highly recommend you check out [this package][requests-psr-18].
+
+[psr-7]:           https://www.php-fig.org/psr/psr-7/
+[psr-18]:          https://www.php-fig.org/psr/psr-18/
+[art4]:            https://github.com/Art4
+[requests-psr-18]: https://packagist.org/packages/art4/requests-psr18-adapter
+
+
 Contribute
 ----------
 
 1. Check for open issues or open a new issue for a feature request or a bug.
-2. Fork [the repository][] on GitHub to start making your changes to the
+2. Fork [the repository][] on Github to start making your changes to the
     `develop` branch (or branch off of it).
 3. Write one or more tests which show that the bug was fixed or that the feature works as expected.
 4. Send in a pull request.
