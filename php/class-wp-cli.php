@@ -1237,7 +1237,7 @@ class WP_CLI {
 	 * Get values of global configuration parameters.
 	 *
 	 * Provides access to `--path=<path>`, `--url=<url>`, and other values of
-	 * the [global configuration parameters](https://wp-cli.org/config/).
+	 * the [global configuration parameters](https://make.wordpress.org/cli/handbook/references/config/).
 	 *
 	 * ```
 	 * WP_CLI::log( 'The --url=<url> value is: ' . WP_CLI::get_config( 'url' ) );

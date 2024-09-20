@@ -1914,16 +1914,19 @@ class Runner {
 	 * Get a suggestion on similar (sub)commands when the user entered an
 	 * unknown (sub)command.
 	 *
-	 * @param string           $entry        User entry that didn't match an
-	 *                                       existing command.
-	 * @param CompositeCommand $root_command Root command to start search for
-	 *                                       suggestions at.
+	 * @param string                $entry        User entry that didn't match an
+	 *                                            existing command.
+	 * @param CompositeCommand|null $root_command Root command to start search for
+	 *                                            suggestions at.
 	 *
 	 * @return string Suggestion that fits the user entry, or an empty string.
 	 */
-	private function get_subcommand_suggestion( $entry, CompositeCommand $root_command = null ) {
+	private function get_subcommand_suggestion( $entry, $root_command = null ) {
 		$commands = [];
-		$this->enumerate_commands( $root_command ?: WP_CLI::get_root_command(), $commands );
+		if ( ( $root_command instanceof CompositeCommand ) === false ) {
+			$root_command = WP_CLI::get_root_command();
+		}
+		$this->enumerate_commands( $root_command, $commands );
 
 		return Utils\get_suggestion( $entry, $commands, $threshold = 2 );
 	}

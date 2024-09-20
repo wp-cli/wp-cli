@@ -454,7 +454,7 @@ class UtilsTest extends TestCase {
 		$prev_logger = WP_CLI::get_logger();
 
 		// Enable exit exception.
-		$class_wp_cli_capture_exit->setValue( true );
+		$class_wp_cli_capture_exit->setValue( null, true );
 
 		$logger = new Loggers\Execution();
 		WP_CLI::set_logger( $logger );
@@ -472,7 +472,7 @@ class UtilsTest extends TestCase {
 		$this->assertTrue( 0 === strpos( $logger->stderr, 'Error: Failed to get url' ) );
 
 		// Restore.
-		$class_wp_cli_capture_exit->setValue( $prev_capture_exit );
+		$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
 		WP_CLI::set_logger( $prev_logger );
 	}
 
@@ -675,7 +675,7 @@ class UtilsTest extends TestCase {
 		$prev_logger = WP_CLI::get_logger();
 
 		// Enable exit exception.
-		$class_wp_cli_capture_exit->setValue( true );
+		$class_wp_cli_capture_exit->setValue( null, true );
 
 		$logger = new Loggers\Execution();
 		WP_CLI::set_logger( $logger );
@@ -691,7 +691,7 @@ class UtilsTest extends TestCase {
 		$this->assertSame( $stderr, $logger->stderr );
 
 		// Restore.
-		$class_wp_cli_capture_exit->setValue( $prev_capture_exit );
+		$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
 		WP_CLI::set_logger( $prev_logger );
 	}
 

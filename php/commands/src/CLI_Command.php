@@ -81,7 +81,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * * WP-CLI project config: where the project config YAML file is located.
 	 * * WP-CLI version: currently installed version.
 	 *
-	 * See [config docs](https://wp-cli.org/config/) for more details on global
+	 * See [config docs](https://make.wordpress.org/cli/handbook/references/config/) for more details on global
 	 * and project config YAML files.
 	 *
 	 * ## OPTIONS
