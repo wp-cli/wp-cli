@@ -176,6 +176,7 @@ class Runner {
 	 * Get the path to the project-specific configuration
 	 * YAML file.
 	 * wp-cli.local.yml takes priority over wp-cli.yml.
+	 * .yml takes priority over .yaml.
 	 *
 	 * @return string|false
 	 */
@@ -183,6 +184,8 @@ class Runner {
 		$config_files = [
 			'wp-cli.local.yml',
 			'wp-cli.yml',
+			'wp-cli.local.yaml',
+			'wp-cli.yaml',
 		];
 
 		// Stop looking upward when we find we have emerged from a subdirectory
