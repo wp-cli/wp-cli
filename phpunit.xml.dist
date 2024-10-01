@@ -6,6 +6,10 @@
 		 beStrictAboutOutputDuringTests="true"
 		 beStrictAboutTestsThatDoNotTestAnything="true"
 		 beStrictAboutTodoAnnotatedTests="true"
+		 convertErrorsToExceptions="true"
+		 convertWarningsToExceptions="true"
+		 convertNoticesToExceptions="true"
+		 convertDeprecationsToExceptions="true"
 		 colors="true"
 		 verbose="true">
 	<testsuite name="wp-cli/wp-cli tests">
