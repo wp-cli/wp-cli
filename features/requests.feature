@@ -78,10 +78,10 @@ Feature: Requests integration with both v1 and v2
 
     Scenario: Current version with WordPress-bundled Requests v2
     Given a WP installation
-    And I run `wp core update --version=6.2 --force`
     # Switch themes because twentytwentyfive requires a version newer than 6.2
     # and it would otherwise cause a fatal error further down.
     And I run `wp theme activate twentytwentythree`
+    And I run `wp core update --version=6.2 --force`
 
     When I run `wp core version`
     Then STDOUT should contain:
