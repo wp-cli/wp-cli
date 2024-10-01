@@ -1465,11 +1465,24 @@ function phar_safe_path( $path ) {
 		return $path;
 	}
 
-	return str_replace(
+	$path = str_replace(
 		PHAR_STREAM_PREFIX . rtrim( WP_CLI_PHAR_PATH, '/' ) . '/',
 		PHAR_STREAM_PREFIX,
 		$path
 	);
+
+	if (
+		defined( 'WP_CLI_PHAR_HOST_FILENAME' ) &&
+		WP_CLI_PHAR_HOST_FILENAME &&
+		WP_CLI_PHAR_HOST_FILENAME !== 'wp-cli.phar'
+	) {
+		$parts = explode( '/' . WP_CLI_PHAR_HOST_FILENAME . '/', $path, 2 );
+		if ( count( $parts ) === 2 ) {
+			$path = $parts[0] . '/wp-cli.phar/' . $parts[1];
+		}
+	}
+
+	return $path;
 }
 
 /**
