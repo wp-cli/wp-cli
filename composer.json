@@ -33,7 +33,8 @@
             "johnpbloch/wordpress-core-installer": true
         },
         "process-timeout": 7200,
-        "sort-packages": true
+        "sort-packages": true,
+        "lock": false
     },
     "extra": {
         "branch-alias": {
