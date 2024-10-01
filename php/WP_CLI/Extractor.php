@@ -127,7 +127,7 @@ class Extractor {
 			$tarball = "./{$tarball}";
 		}
 
-		if (! file_exists( $tarball )
+		if ( ! file_exists( $tarball )
 			|| ! is_readable( $tarball )
 			|| filesize( $tarball ) <= 0 ) {
 			throw new Exception( "Invalid zip file '{$tarball}'." );
