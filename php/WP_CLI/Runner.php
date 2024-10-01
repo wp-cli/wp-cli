@@ -1070,39 +1070,6 @@ class Runner {
 		$this->required_files['runtime'] = $this->config['require'];
 	}
 
-	private function check_root() {
-		if ( $this->config['allow-root'] || getenv( 'WP_CLI_ALLOW_ROOT' ) ) {
-			return; # they're aware of the risks!
-		}
-		if ( count( $this->arguments ) >= 2 && 'cli' === $this->arguments[0] && in_array( $this->arguments[1], [ 'update', 'info' ], true ) ) {
-			return; # make it easier to update root-owned copies
-		}
-		if ( ! function_exists( 'posix_geteuid' ) ) {
-			return; # posix functions not available
-		}
-		if ( posix_geteuid() !== 0 ) {
-			return; # not root
-		}
-
-		WP_CLI::error(
-			"YIKES! It looks like you're running this as root. You probably meant to " .
-			"run this as the user that your WordPress installation exists under.\n" .
-			"\n" .
-			"If you REALLY mean to run this as root, we won't stop you, but just " .
-			'bear in mind that any code on this site will then have full control of ' .
-			"your server, making it quite DANGEROUS.\n" .
-			"\n" .
-			"If you'd like to continue as root, please run this again, adding this " .
-			"flag:  --allow-root\n" .
-			"\n" .
-			"If you'd like to run it as the user that this site is under, you can " .
-			"run the following to become the respective user:\n" .
-			"\n" .
-			"    sudo -u USER -i -- wp <command>\n" .
-			"\n"
-		);
-	}
-
 	private function run_alias_group( $aliases ) {
 		Utils\check_proc_available( 'group alias' );
 
@@ -1150,7 +1117,6 @@ class Runner {
 		WP_CLI::debug( $this->project_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( 'argv: ' . implode( ' ', $GLOBALS['argv'] ), 'bootstrap' );
 
-		$this->check_root();
 		if ( $this->alias ) {
 			if ( '@all' === $this->alias && ! isset( $this->aliases['@all'] ) ) {
 				WP_CLI::error( "Cannot use '@all' when no aliases are registered." );
