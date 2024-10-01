@@ -1,7 +1,8 @@
 Feature: Requests integration with both v1 and v2
 
   # This test downgrades to WordPress 5.8, but the SQLite plugin requires 6.0+
-  @require-mysql
+  # WP-CLI 2.7 causes deprecation warnings on PHP 8.2
+  @require-mysql @less-than-php-8.2
   Scenario: Composer stack with Requests v1
     Given an empty directory
     And a composer.json file:
