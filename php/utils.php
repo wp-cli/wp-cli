@@ -379,7 +379,7 @@ function format_items( $format, $items, $fields ) {
  */
 function write_csv( $fd, $rows, $headers = [] ) {
 	if ( ! empty( $headers ) ) {
-		fputcsv( $fd, $headers );
+		fputcsv( $fd, $headers, ',', '"', '\\' );
 	}
 
 	foreach ( $rows as $row ) {
@@ -387,7 +387,7 @@ function write_csv( $fd, $rows, $headers = [] ) {
 			$row = pick_fields( $row, $headers );
 		}
 
-		fputcsv( $fd, array_values( $row ) );
+		fputcsv( $fd, array_values( $row ), ',', '"', '\\' );
 	}
 }
 

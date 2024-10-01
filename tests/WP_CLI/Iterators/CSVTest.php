@@ -93,7 +93,7 @@ class CSVTest extends TestCase {
 		$fp = fopen( $filename, 'wb' );
 
 		foreach ( $data as $row ) {
-			fputcsv( $fp, $row, $delimiter );
+			fputcsv( $fp, $row, $delimiter, '"', '\\' );
 		}
 
 		fclose( $fp );
