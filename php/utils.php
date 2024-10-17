@@ -1888,3 +1888,47 @@ function get_hook_description( $hook ) {
 	}
 	return null;
 }
+
+/**
+ * Convert a size in bytes to a human-readable format.
+ *
+ * @param int    $bytes    Size in bytes.
+ * @param int    $decimals Optional. Number of decimal places to round to. Default 0.
+ * @param string $unit     Optional. Specific unit to use. Default is auto-detect.
+ * @return string Human-readable size.
+ */
+function get_size_string_from_bytes( $bytes, $decimals = 0, $unit = '' ) {
+	if ( 0 === $bytes ) {
+		return '0 B';
+	}
+
+	// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Backfilling WP native constants.
+	if ( ! defined( 'KB_IN_BYTES' ) ) {
+		define( 'KB_IN_BYTES', 1024 );
+	}
+	if ( ! defined( 'MB_IN_BYTES' ) ) {
+		define( 'MB_IN_BYTES', 1024 * KB_IN_BYTES );
+	}
+	if ( ! defined( 'GB_IN_BYTES' ) ) {
+		define( 'GB_IN_BYTES', 1024 * MB_IN_BYTES );
+	}
+	if ( ! defined( 'TB_IN_BYTES' ) ) {
+		define( 'TB_IN_BYTES', 1024 * GB_IN_BYTES );
+	}
+
+	$sizes    = [ 'B', 'KB', 'MB', 'GB', 'TB' ];
+	$size_key = 0;
+
+	if ( empty( $unit ) ) {
+		$size_key = floor( log( $bytes ) / log( 1000 ) );
+		$unit     = isset( $sizes[ $size_key ] ) ? $sizes[ $size_key ] : $sizes[0];
+	} else {
+		$unit     = strtoupper( $unit );
+		$size_key = array_search( $unit, $sizes, true );
+	}
+
+	$divisor             = pow( 1000, $size_key );
+	$size_format_display = preg_replace( '/IB$/u', 'iB', $unit );
+
+	return round( $bytes / $divisor, $decimals ) . ' ' . $size_format_display;
+}
