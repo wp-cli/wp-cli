@@ -1719,6 +1719,7 @@ class Runner {
 		);
 
 		// Don't apply set_url_scheme() in network_site_url() function.
+		// Converts HTTP to HTTPS in the response when triggered by CLI.
 		WP_CLI::add_wp_hook(
 			'network_site_url',
 			static function ( $path, $scheme ) {
