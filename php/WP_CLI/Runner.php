@@ -1734,7 +1734,7 @@ class Runner {
 				} else {
 					$url = 'https://' . $current_network->domain . $current_network->path;
 				}
-				
+
 				return $url;
 			},
 			0,
