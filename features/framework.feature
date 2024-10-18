@@ -269,6 +269,12 @@ Feature: Load WP-CLI
       https://example.com/
       """
 
+    When I run `wp eval "echo network_site_url();"`
+    Then STDOUT should be:
+      """
+      https://example.com/
+      """
+
   # `wp db reset` does not yet work on SQLite,
   # See https://github.com/wp-cli/db-command/issues/234
   @require-mysql
