@@ -43,8 +43,8 @@ final class Admin implements Context {
 			'plugins_loaded',
 			function () use ( $config ) {
 				if ( isset( $config['user'] ) ) {
-					$fetcher = new User();
-					$user    = $fetcher->get_check( $config['user'] );
+					$fetcher       = new User();
+					$user          = $fetcher->get_check( $config['user'] );
 					$admin_user_id = $user->ID;
 				} else {
 					// TODO: Add logic to find an administrator user.
