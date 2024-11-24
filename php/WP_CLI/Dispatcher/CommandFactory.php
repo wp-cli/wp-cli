@@ -23,8 +23,8 @@ class CommandFactory {
 	/**
 	 * Create a new CompositeCommand (or Subcommand if class has __invoke())
 	 *
-	 * @param string $name Represents how the command should be invoked
-	 * @param string $callable A subclass of WP_CLI_Command, a function, or a closure
+	 * @param string                                $name     Represents how the command should be invoked
+	 * @param string|callable-string|callable|array $callable A subclass of WP_CLI_Command, a function, or a closure
 	 * @param mixed $parent The new command's parent Composite (or Root) command
 	 */
 	public static function create( $name, $callable, $parent ) {
