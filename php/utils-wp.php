@@ -268,6 +268,8 @@ function wp_register_unused_sidebar() {
 function wp_get_cache_type() {
 	global $_wp_using_ext_object_cache, $wp_object_cache;
 
+	$message = 'Unknown';
+
 	if ( ! empty( $_wp_using_ext_object_cache ) ) {
 		// Test for Memcached PECL extension memcached object cache (https://github.com/tollmanz/wordpress-memcached-backend)
 		if ( isset( $wp_object_cache->m ) && $wp_object_cache->m instanceof \Memcached ) {
@@ -315,18 +317,16 @@ function wp_get_cache_type() {
 			$message = 'WP LCache';
 
 		} elseif ( function_exists( 'w3_instance' ) ) {
-			$config  = w3_instance( 'W3_Config' );
-			$message = 'Unknown';
+			$config = w3_instance( 'W3_Config' );
 
 			if ( $config->get_boolean( 'objectcache.enabled' ) ) {
 				$message = 'W3TC ' . $config->get_string( 'objectcache.engine' );
 			}
-		} else {
-			$message = 'Unknown';
 		}
 	} else {
 		$message = 'Default';
 	}
+
 	return $message;
 }
 

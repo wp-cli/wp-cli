@@ -630,10 +630,10 @@ class Runner {
 
 			if ( empty( $bits['host'] ) || ( isset( $values['Host'] ) && $bits['host'] === $values['Host'] ) ) {
 				$bits['scheme'] = 'ssh';
-				$bits['host']   = $values['HostName'];
-				$bits['port']   = $values['Port'];
-				$bits['user']   = $values['User'];
-				$bits['key']    = $values['IdentityFile'];
+				$bits['host']   = isset( $values['HostName'] ) ? $values['HostName'] : '';
+				$bits['port']   = isset( $values['Port'] ) ? $values['Port'] : '';
+				$bits['user']   = isset( $values['User'] ) ? $values['User'] : '';
+				$bits['key']    = isset( $values['IdentityFile'] ) ? $values['IdentityFile'] : '';
 			}
 
 			// If we could not resolve the bits still, fallback to just `vagrant ssh`

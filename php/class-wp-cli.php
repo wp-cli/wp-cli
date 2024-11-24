@@ -1349,6 +1349,9 @@ class WP_CLI {
 			$pipes = [];
 			$proc  = Utils\proc_open_compat( $runcommand, $descriptors, $pipes, getcwd() );
 
+			$stdout = '';
+			$stderr = '';
+
 			if ( $return ) {
 				$stdout = stream_get_contents( $pipes[1] );
 				fclose( $pipes[1] );
