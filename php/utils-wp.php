@@ -168,16 +168,14 @@ function get_upgrader( $class, $insecure = false ) {
 	$uses_insecure_flag = false;
 
 	$reflection = new ReflectionClass( $class );
-	if ( $reflection ) {
-		$constructor = $reflection->getConstructor();
-		if ( $constructor ) {
-			$arguments = $constructor->getParameters();
-			/** @var ReflectionParameter $argument */
-			foreach ( $arguments as $argument ) {
-				if ( 'insecure' === $argument->name ) {
-					$uses_insecure_flag = true;
-					break;
-				}
+	$constructor = $reflection->getConstructor();
+	if ( $constructor ) {
+		$arguments = $constructor->getParameters();
+		/** @var ReflectionParameter $argument */
+		foreach ( $arguments as $argument ) {
+			if ( 'insecure' === $argument->name ) {
+				$uses_insecure_flag = true;
+				break;
 			}
 		}
 	}
