@@ -838,7 +838,7 @@ class WP_CLI {
 			return;
 		}
 
-		if ( ! empty( $storage ) && self::$logger ) {
+		if ( ! empty( $storage ) ) {
 			foreach ( $storage as $entry ) {
 				list( $stored_message, $stored_group ) = $entry;
 				self::$logger->debug( self::error_to_string( $stored_message ), $stored_group );
