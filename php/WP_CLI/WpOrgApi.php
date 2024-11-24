@@ -278,7 +278,7 @@ final class WpOrgApi {
 	/**
 	 * Gets a set of salts in the format required by `wp-config.php`.
 	 *
-	 * @return bool|string False on failure. A string of PHP define() statements on success.
+	 * @return string A string of PHP define() statements.
 	 * @throws RuntimeException If the remote request fails.
 	 */
 	public function get_salts() {
