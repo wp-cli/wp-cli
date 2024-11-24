@@ -491,9 +491,7 @@ class Runner {
 
 		$pre_cmd = getenv( 'WP_CLI_SSH_PRE_CMD' );
 		if ( $pre_cmd ) {
-			$message = WP_CLI::warning( "WP_CLI_SSH_PRE_CMD found, executing the following command(s) on the remote machine:\n $pre_cmd" );
-
-			WP_CLI::log( $message );
+			WP_CLI::warning( "WP_CLI_SSH_PRE_CMD found, executing the following command(s) on the remote machine:\n $pre_cmd" );
 
 			$pre_cmd = rtrim( $pre_cmd, ';' ) . '; ';
 		}
