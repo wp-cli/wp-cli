@@ -27,6 +27,8 @@ class Site extends Base {
 	/**
 	 * Get site (blog) data for a given id.
 	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
 	 * @param string $arg The raw CLI argument.
 	 * @return array|false The item if found; false otherwise.
 	 */
