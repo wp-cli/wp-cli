@@ -101,12 +101,7 @@ class SynopsisParser {
 				$value .= "{$rendered_arg} ";
 			}
 		}
-		$rendered = '';
-		foreach ( $bits as $v ) {
-			if ( ! empty( $v ) ) {
-				$rendered .= $v;
-			}
-		}
+		$rendered = implode( '', $bits );
 
 		$synopsis = array_merge(
 			$reordered_synopsis['positional'],

@@ -164,7 +164,6 @@ final class RequestsLibrary {
 	 * Get the current class name.
 	 *
 	 * @return string The current class name.
-	 * @throws RuntimeException if the class name is not set.
 	 */
 	public static function get_class_name() {
 		return self::$class_name;
