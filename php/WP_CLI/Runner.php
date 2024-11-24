@@ -1619,9 +1619,7 @@ class Runner {
 							$explanation = 'Verify DOMAIN_CURRENT_SITE matches an existing site or use `--url=<url>` to override.';
 						}
 					}
-					if ( $explanation ) {
-						$message .= ' ' . $explanation;
-					}
+					$message .= ' ' . $explanation;
 					WP_CLI::error( $message );
 				},
 				10,
