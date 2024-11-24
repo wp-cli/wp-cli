@@ -1189,7 +1189,7 @@ function report_batch_operation_results( $noun, $verb, $total, $successes, $fail
  */
 function parse_str_to_argv( $arguments ) {
 	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches );
-	$argv = isset( $matches[0] ) ? $matches[0] : [];
+	$argv = $matches[0];
 	return array_map(
 		static function ( $arg ) {
 			foreach ( [ '"', "'" ] as $char ) {
