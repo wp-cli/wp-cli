@@ -497,9 +497,6 @@ class Runner {
 
 			$pre_cmd = rtrim( $pre_cmd, ';' ) . '; ';
 		}
-		if ( ! empty( $bits['path'] ) ) {
-			$pre_cmd .= 'cd ' . escapeshellarg( $bits['path'] ) . '; ';
-		}
 
 		$env_vars = '';
 		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
@@ -569,48 +566,65 @@ class Runner {
 			WP_CLI::debug( 'SSH ' . $bit . ': ' . $bits[ $bit ], 'bootstrap' );
 		}
 
-		$is_tty                        = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
+		/*
+		 * posix_isatty(STDIN) is generally true unless something was passed on stdin
+		 * If autodetection leads to false (fd on stdin), then `-i` is passed to `docker` cmd
+		 * (unless WP_CLI_DOCKER_NO_INTERACTIVE is set)
+		 */
+		$is_stdout_tty = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
+		$is_stdin_tty  = function_exists( 'posix_isatty' ) ? posix_isatty( STDIN ) : true;
+
 		$docker_compose_v2_version_cmd = Utils\esc_cmd( Utils\force_env_on_nix_systems( 'docker' ) . ' compose %s', 'version' );
 		$docker_compose_cmd            = ! empty( Process::create( $docker_compose_v2_version_cmd )->run()->stdout )
 			? 'docker compose'
 			: 'docker-compose';
 
 		if ( 'docker' === $bits['scheme'] ) {
-			$command = 'docker exec %s%s%s sh -c %s';
+			$command = 'docker exec %s%s%s%s%s sh -c %s';
 
 			$escaped_command = sprintf(
 				$command,
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
-				$is_tty ? '-t ' : '',
+				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
+				$is_stdout_tty && ! getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '-t  ' : '',
+				! $is_stdin_tty && ! getenv( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '-i ' : '',
 				escapeshellarg( $bits['host'] ),
 				escapeshellarg( $wp_command )
 			);
 		}
 
 		if ( 'docker-compose' === $bits['scheme'] ) {
-			$command = '%s exec %s%s%s sh -c %s';
+			$command = '%s exec %s%s%s%s sh -c %s';
 
 			$escaped_command = sprintf(
 				$command,
 				$docker_compose_cmd,
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
-				$is_tty ? '' : '-T ',
+				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
+				$is_stdout_tty || getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
 				escapeshellarg( $bits['host'] ),
 				escapeshellarg( $wp_command )
 			);
 		}
 
 		if ( 'docker-compose-run' === $bits['scheme'] ) {
-			$command = '%s run %s%s%s %s';
+			$command = '%s run %s%s%s%s%s %s';
 
 			$escaped_command = sprintf(
 				$command,
 				$docker_compose_cmd,
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
-				$is_tty ? '' : '-T ',
+				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
+				$is_stdout_tty || getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
+				! $is_stdin_tty && ! getenv( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '-i ' : '',
 				escapeshellarg( $bits['host'] ),
 				$wp_command
 			);
+		}
+
+		// For "vagrant" & "ssh" schemes which don't provide a working-directory option, use `cd`
+		if ( $bits['path'] ) {
+			$wp_command = 'cd ' . escapeshellarg( $bits['path'] ) . '; ' . $wp_command;
 		}
 
 		// Vagrant ssh-config.
@@ -669,7 +683,7 @@ class Runner {
 				$bits['proxyjump'] ? sprintf( '-J %s', escapeshellarg( $bits['proxyjump'] ) ) : '',
 				$bits['port'] ? sprintf( '-p %d', (int) $bits['port'] ) : '',
 				$bits['key'] ? sprintf( '-i %s', escapeshellarg( $bits['key'] ) ) : '',
-				$is_tty ? '-t' : '-T',
+				$is_stdout_tty ? '-t' : '-T',
 				WP_CLI::get_config( 'debug' ) ? '-vvv' : '-q',
 			];
 
