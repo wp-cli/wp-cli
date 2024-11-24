@@ -160,8 +160,8 @@ class Configurator {
 	/**
 	 * Splits positional args from associative args.
 	 *
-	 * @param array $arguments
-	 * @return array<array<string>>
+	 * @param array<string> $arguments
+	 * @return array{0: array<string>, 1: array<array{0: string, 1: string|bool}>, 2: array<array{0: string, 1: string|bool}>, 3: array<array{0: string, 1: string|bool}>}
 	 */
 	public static function extract_assoc( $arguments ) {
 		$positional_args = [];
