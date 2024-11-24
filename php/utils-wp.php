@@ -385,8 +385,6 @@ function wp_clear_object_cache() {
 function wp_get_table_names( $args, $assoc_args = [] ) {
 	global $wpdb;
 
-	$tables = [];
-
 	// Abort if incompatible args supplied.
 	if ( get_flag_value( $assoc_args, 'base-tables-only' ) && get_flag_value( $assoc_args, 'views-only' ) ) {
 		WP_CLI::error( 'You cannot supply --base-tables-only and --views-only at the same time.' );
