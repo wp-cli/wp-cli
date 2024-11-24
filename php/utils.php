@@ -165,7 +165,7 @@ function load_command( $name ) {
  *     }
  *
  * @param array|object $it Either a plain array or another iterator.
- * @param callback     $fn The function to apply to an element.
+ * @param callable     $fn The function to apply to an element.
  * @return object An iterator that applies the given callback(s).
  */
 function iterator_map( $it, $fn ) {
@@ -1258,8 +1258,8 @@ function isPiped() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionNa
  *
  * Has no effect on paths which do not use glob patterns.
  *
- * @param string|array $paths Single path as a string, or an array of paths.
- * @param int          $flags Optional. Flags to pass to glob. Defaults to GLOB_BRACE.
+ * @param string|array  $paths Single path as a string, or an array of paths.
+ * @param int|'default' $flags Optional. Flags to pass to glob. Defaults to GLOB_BRACE.
  * @return array Expanded paths.
  */
 function expand_globs( $paths, $flags = 'default' ) {

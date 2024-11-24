@@ -148,8 +148,8 @@ class Configurator {
 	/**
 	 * Splits a list of arguments into positional, associative and config.
 	 *
-	 * @param array(string) $arguments
-	 * @return array(array)
+	 * @param array<string> $arguments
+	 * @return array<array<string>>
 	 */
 	public function parse_args( $arguments ) {
 		list( $positional_args, $mixed_args, $global_assoc, $local_assoc ) = self::extract_assoc( $arguments );
@@ -161,7 +161,7 @@ class Configurator {
 	 * Splits positional args from associative args.
 	 *
 	 * @param array $arguments
-	 * @return array(array)
+	 * @return array<array<string>>
 	 */
 	public static function extract_assoc( $arguments ) {
 		$positional_args = [];

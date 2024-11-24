@@ -262,7 +262,7 @@ class WP_CLI {
 	 *
 	 * @param string $when Identifier for the hook.
 	 * @param mixed $callback Callback to execute when hook is called.
-	 * @return null
+	 * @return void
 	 */
 	public static function add_hook( $when, $callback ) {
 		if ( array_key_exists( $when, self::$hooks_passed ) ) {
@@ -591,6 +591,8 @@ class WP_CLI {
 			);
 		}
 
+		/** @var Dispatcher\Subcommand $leaf_command */
+
 		if ( isset( $args['shortdesc'] ) ) {
 			$leaf_command->set_shortdesc( $args['shortdesc'] );
 		}
@@ -738,7 +740,7 @@ class WP_CLI {
 	 * @category Output
 	 *
 	 * @param string $message Message to display to the end user.
-	 * @return null
+	 * @return void
 	 */
 	public static function line( $message = '' ) {
 		echo $message . "\n";
@@ -788,7 +790,7 @@ class WP_CLI {
 	 * @category Output
 	 *
 	 * @param string $message Message to write to STDOUT.
-	 * @return null
+	 * @return void
 	 */
 	public static function success( $message ) {
 		if ( null === self::$logger ) {
@@ -826,7 +828,7 @@ class WP_CLI {
 	 * @param string|WP_Error|Exception|Throwable $message Message to write to STDERR.
 	 * @param string|bool $group Organize debug message to a specific group.
 	 * Use `false` to not group the message.
-	 * @return null
+	 * @return void
 	 */
 	public static function debug( $message, $group = false ) {
 		static $storage = [];
@@ -869,7 +871,7 @@ class WP_CLI {
 	 * @category Output
 	 *
 	 * @param string|WP_Error|Exception|Throwable $message Message to write to STDERR.
-	 * @return null
+	 * @return void
 	 */
 	public static function warning( $message ) {
 		if ( null === self::$logger ) {
