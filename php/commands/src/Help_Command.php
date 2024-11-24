@@ -108,6 +108,12 @@ class Help_Command extends WP_CLI_Command {
 		return implode( "\n", $lines );
 	}
 
+	/**
+	 * Pass a given set of output through the system's terminal pager.
+	 *
+	 * @param string $out The output to be run through the pager.
+	 * @return mixed Termination status of the pager as reported by https://www.php.net/manual/en/function.proc-close.php
+	 */
 	private static function pass_through_pager( $out ) {
 
 		if ( ! Utils\check_proc_available( null /*context*/, true /*return*/ ) ) {
