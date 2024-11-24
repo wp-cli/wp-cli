@@ -323,7 +323,7 @@ final class WpOrgApi {
 	 * @param string $url     URL to execute the GET request on.
 	 * @param array  $headers Optional. Associative array of headers.
 	 * @param array  $options Optional. Associative array of options.
-	 * @return string|false False on failure. Response body string on success.
+	 * @return string Response body.
 	 * @throws RuntimeException If the remote request fails.
 	 */
 	private function get_request( $url, $headers = [], $options = [] ) {
