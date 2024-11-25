@@ -491,6 +491,10 @@ class Inflector {
 				return self::$cache['pluralize'][ $word ];
 			}
 		}
+
+		// Just so a string is always returned.
+		// This should never be reached.
+		return $word;
 	}
 
 	/**

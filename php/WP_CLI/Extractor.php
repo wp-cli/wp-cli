@@ -280,7 +280,7 @@ class Extractor {
 	/**
 	 * Return formatted error message from ProcessRun of tar command.
 	 *
-	 * @param Processrun $process_run
+	 * @param ProcessRun $process_run
 	 * @return string|int The error message of the process, if available;
 	 *                    otherwise the return code.
 	 */
