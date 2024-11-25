@@ -108,6 +108,12 @@ class Help_Command extends WP_CLI_Command {
 		return implode( "\n", $lines );
 	}
 
+	/**
+	 * Pass a given set of output through the system's terminal pager.
+	 *
+	 * @param string $out The output to be run through the pager.
+	 * @return mixed Termination status of the pager as reported by https://www.php.net/manual/en/function.proc-close.php
+	 */
 	private static function pass_through_pager( $out ) {
 
 		if ( ! Utils\check_proc_available( null /*context*/, true /*return*/ ) ) {
@@ -118,7 +124,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$pager = getenv( 'PAGER' );
 		if ( false === $pager ) {
-			$pager = Utils\is_windows() ? 'more' : 'less -R';
+			$pager = 'more';
 		}
 
 		// For Windows 7 need to set code page to something other than Unicode (65001) to get around "Not enough memory." error with `more.com` on PHP 7.1+.
