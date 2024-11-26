@@ -772,7 +772,7 @@ class WP_CLI {
 	/**
 	 * Display success message prefixed with "Success: ".
 	 *
-	 * Success message is written to STDOUT.
+	 * Success message is written to STDOUT, or discarded when `--quiet` flag is supplied.
 	 *
 	 * Typically recommended to inform user of successful script conclusion.
 	 *
@@ -852,7 +852,7 @@ class WP_CLI {
 	/**
 	 * Display warning message prefixed with "Warning: ".
 	 *
-	 * Warning message is written to STDERR.
+	 * Warning message is written to STDERR, or discarded when `--quiet` flag is supplied.
 	 *
 	 * Use instead of `WP_CLI::debug()` when script execution should be permitted
 	 * to continue.
