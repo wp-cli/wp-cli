@@ -18,7 +18,7 @@ abstract class Base {
 	protected $msg;
 
 	/**
-	 * @param string $arg The raw CLI argument.
+	 * @param string|int $arg The raw CLI argument.
 	 * @return mixed|false The item if found; false otherwise.
 	 */
 	abstract public function get( $arg );

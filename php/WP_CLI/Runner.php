@@ -491,9 +491,7 @@ class Runner {
 
 		$pre_cmd = getenv( 'WP_CLI_SSH_PRE_CMD' );
 		if ( $pre_cmd ) {
-			$message = WP_CLI::warning( "WP_CLI_SSH_PRE_CMD found, executing the following command(s) on the remote machine:\n $pre_cmd" );
-
-			WP_CLI::log( $message );
+			WP_CLI::warning( "WP_CLI_SSH_PRE_CMD found, executing the following command(s) on the remote machine:\n $pre_cmd" );
 
 			$pre_cmd = rtrim( $pre_cmd, ';' ) . '; ';
 		}
@@ -630,10 +628,10 @@ class Runner {
 
 			if ( empty( $bits['host'] ) || ( isset( $values['Host'] ) && $bits['host'] === $values['Host'] ) ) {
 				$bits['scheme'] = 'ssh';
-				$bits['host']   = $values['HostName'];
-				$bits['port']   = $values['Port'];
-				$bits['user']   = $values['User'];
-				$bits['key']    = $values['IdentityFile'];
+				$bits['host']   = isset( $values['HostName'] ) ? $values['HostName'] : '';
+				$bits['port']   = isset( $values['Port'] ) ? $values['Port'] : '';
+				$bits['user']   = isset( $values['User'] ) ? $values['User'] : '';
+				$bits['key']    = isset( $values['IdentityFile'] ) ? $values['IdentityFile'] : '';
 			}
 
 			// If we could not resolve the bits still, fallback to just `vagrant ssh`
@@ -1621,9 +1619,7 @@ class Runner {
 							$explanation = 'Verify DOMAIN_CURRENT_SITE matches an existing site or use `--url=<url>` to override.';
 						}
 					}
-					if ( $explanation ) {
-						$message .= ' ' . $explanation;
-					}
+					$message .= ' ' . $explanation;
 					WP_CLI::error( $message );
 				},
 				10,
