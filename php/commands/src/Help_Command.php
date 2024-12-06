@@ -163,8 +163,6 @@ class Help_Command extends WP_CLI_Command {
 			}
 		}
 
-		WP_CLI::log( var_export( $pager, true), 'help' );
-
 		return $pager;
 	}
 
