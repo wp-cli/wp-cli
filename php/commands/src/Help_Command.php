@@ -186,8 +186,6 @@ class Help_Command extends WP_CLI_Command {
 		if ( empty( $pager ) ) {
 			$pager = self::locate_pager();
 		}
-		WP_CLI::log( var_export( $pager, true), 'help' );
-
 
 		// For Windows 7 need to set code page to something other than Unicode (65001) to get around "Not enough memory." error with `more.com` on PHP 7.1+.
 		if ( 'more' === $pager && defined( 'PHP_WINDOWS_VERSION_MAJOR' ) && PHP_WINDOWS_VERSION_MAJOR < 10 && function_exists( 'sapi_windows_cp_set' ) ) {
