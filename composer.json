@@ -7,10 +7,16 @@
     ],
     "homepage": "https://wp-cli.org",
     "license": "MIT",
+    "repositories": [
+      {
+        "type": "vcs",
+        "url": "https://github.com/swissspidy/mustache.php"
+      }
+    ],
     "require": {
         "php": "^5.6 || ^7.0 || ^8.0",
         "ext-curl": "*",
-        "mustache/mustache": "^2.14.1",
+        "mustache/mustache": "dev-fix/php84",
         "symfony/finder": ">2.7",
         "wp-cli/mustangostang-spyc": "^0.6.3",
         "wp-cli/php-cli-tools": "~0.12.1"
