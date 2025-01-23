@@ -483,12 +483,12 @@ class UtilsTest extends TestCase {
 			'default request'  => [
 				[],
 				RuntimeException::class,
-				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate verify locations:',
+				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate',
 			],
 			'secure request'   => [
 				[ 'insecure' => false ],
 				RuntimeException::class,
-				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate verify locations:',
+				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate',
 			],
 			'insecure request' => [
 				[ 'insecure' => true ],
