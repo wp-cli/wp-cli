@@ -308,10 +308,12 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest nightly?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar';
 			$md5_url      = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.md5';
+			$sha512_url   = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.sha512';
 		} elseif ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest stable release?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
 			$md5_url      = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.md5';
+			$sha512_url   = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.sha512';
 		} else {
 
 			$updates = $this->get_updates( $assoc_args );
@@ -328,6 +330,7 @@ class CLI_Command extends WP_CLI_Command {
 
 			$download_url = $newest['package_url'];
 			$md5_url      = str_replace( '.phar', '.phar.md5', $download_url );
+			$sha512_url   = str_replace( '.phar', '.phar.sha512', $download_url );
 		}
 
 		WP_CLI::log( sprintf( 'Downloading from %s...', $download_url ) );
@@ -344,17 +347,8 @@ class CLI_Command extends WP_CLI_Command {
 		Utils\http_request( 'GET', $download_url, null, $headers, $options );
 
 		unset( $options['filename'] );
-		$md5_response = Utils\http_request( 'GET', $md5_url, null, $headers, $options );
-		if ( '20' !== substr( $md5_response->status_code, 0, 2 ) ) {
-			WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$md5_response->status_code})." );
-		}
-		$md5_file     = md5_file( $temp );
-		$release_hash = trim( $md5_response->body );
-		if ( $md5_file === $release_hash ) {
-			WP_CLI::log( 'md5 hash verified: ' . $release_hash );
-		} else {
-			WP_CLI::error( "md5 hash for download ({$md5_file}) is different than the release hash ({$release_hash})." );
-		}
+
+		$this->validate_hashes( $temp, $sha512_url, $md5_url );
 
 		$allow_root = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
 		$php_binary = Utils\get_php_binary();
@@ -388,6 +382,43 @@ class CLI_Command extends WP_CLI_Command {
 			$updated_version = isset( $newest['version'] ) ? $newest['version'] : '<not provided>';
 		}
 		WP_CLI::success( sprintf( 'Updated WP-CLI to %s.', $updated_version ) );
+	}
+
+	/**
+	 * @param string $file       Release file path.
+	 * @param string $sha512_url URL to sha512 hash.
+	 * @param string $md5_url    URL to md5 hash.
+	 *
+	 * @return void
+	 * @throws \WP_CLI\ExitException
+	 */
+	private function validate_hashes( $file, $sha512_url, $md5_url ) {
+		$headers = [];
+
+		$algos = [
+			'sha512' => $sha512_url,
+			'md5'    => $md5_url,
+		];
+
+		foreach ( $algos as $algo => $url ) {
+			$response = Utils\http_request( 'GET', $url, null, $headers, $options );
+			if ( '20' !== substr( $response->status_code, 0, 2 ) ) {
+				WP_CLI::log( "Couldn't access $algo hash for release (HTTP code {$response->status_code})." );
+				continue;
+			}
+
+			$file_hash = hash_file( $algo, $file );
+
+			$release_hash = trim( $response->body );
+			if ( $file_hash === $release_hash ) {
+				WP_CLI::log( "$algo hash verified: $release_hash" );
+				return;
+			} else {
+				WP_CLI::error( "$algo hash for download ($file_hash) is different than the release hash ($release_hash)." );
+			}
+		}
+
+		WP_CLI::error( 'Release hash verification failed.' );
 	}
 
 	/**
