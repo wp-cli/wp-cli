@@ -348,7 +348,7 @@ class Runner {
 	 * Checks if the command arguments start with a given prefix.
 	 *
 	 * @param array $prefix An array of strings representing the expected prefix of the command arguments.
-	 *                      For example, `['wp', 'user']` would check if the command starts with `wp user`.
+	 *                      For example, `['user', 'list']` would check if the command starts with `user list`.
 	 *
 	 * @return bool `true` if the command arguments start with the given prefix, `false` otherwise.
 	 */
