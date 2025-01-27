@@ -467,7 +467,35 @@ class CLI_Command extends WP_CLI_Command {
 				continue;
 			}
 
-			if ( ! isset( $release->assets[0]->browser_download_url ) ) {
+			$package_url = null;
+
+			foreach ( $release->assets as $asset ) {
+				if ( ! isset( $asset->browser_download_url ) ) {
+					continue;
+				}
+
+				if ( substr( $asset->browser_download_url, - strlen( '.phar' ) ) === '.phar' ) {
+					$package_url = $asset->browser_download_url;
+				}
+
+				// The manifest.json file, if it exists, contains information about PHP version requirements and similar.
+				if ( substr( $asset->browser_download_url, - strlen( 'manifest.json' ) ) === 'manifest.json' ) {
+					$response = Utils\http_request( 'GET', $asset->browser_download_url, null, $headers, $options );
+
+					if ( $response->success ) {
+						$manifest_data = json_decode( $response->body );
+
+						if (
+							isset( $manifest_data->requires_php ) &&
+							! Comparator::greaterThanOrEqualTo( PHP_VERSION, $manifest_data->requires_php )
+						) {
+							continue 2;
+						}
+					}
+				}
+			}
+
+			if ( ! $package_url ) {
 				continue;
 			}
 
