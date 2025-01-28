@@ -830,6 +830,8 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		$options['verify'] = ! empty( ini_get( 'curl.cainfo' ) ) ? ini_get( 'curl.cainfo' ) : true;
 	}
 
+	$options = WP_CLI::do_hook( 'http_request_options', $options );
+
 	RequestsLibrary::register_autoloader();
 
 	$request_method = [ RequestsLibrary::get_class_name(), 'request' ];
