@@ -707,7 +707,7 @@ class Runner {
 			$wp_config_path = Utils\locate_wp_config();
 		}
 
-		$wp_config_code = explode( "\n", file_get_contents( $wp_config_path ) );
+		$wp_config_code = file_get_contents( $wp_config_path );
 
 		// Detect and strip byte-order marks (BOMs).
 		// This code assumes they can only be found on the first line.
@@ -716,34 +716,26 @@ class Runner {
 
 			$length = strlen( $bom_sequence );
 
-			while ( substr( $wp_config_code[0], 0, $length ) === $bom_sequence ) {
+			while ( substr( $wp_config_code, 0, $length ) === $bom_sequence ) {
 				WP_CLI::warning(
 					"{$bom_name} byte-order mark (BOM) detected in wp-config.php file, stripping it for parsing."
 				);
 
-				$wp_config_code[0] = substr( $wp_config_code[0], $length );
+				$wp_config_code = substr( $wp_config_code, $length );
 			}
 		}
 
-		$found_wp_settings = false;
+		$matches = [];
 
-		$lines_to_run = [];
+		preg_match_all( '/\s*require(_once)?\s*.*wp-settings\.php/', $wp_config_code, $matches, PREG_OFFSET_CAPTURE );
 
-		foreach ( $wp_config_code as $line ) {
-			if ( preg_match( '/^\s*require.+wp-settings\.php/', $line ) ) {
-				$found_wp_settings = true;
-				continue;
-			}
-
-			$lines_to_run[] = $line;
-		}
-
-		if ( ! $found_wp_settings ) {
+		if ( empty( $matches[0] ) ) {
 			WP_CLI::error( 'Strange wp-config.php file: wp-settings.php is not loaded directly.' );
 		}
 
-		$source = implode( "\n", $lines_to_run );
-		$source = Utils\replace_path_consts( $source, $wp_config_path );
+		$wp_config_code = substr( $wp_config_code, 0, $matches[0][0][1] );
+
+		$source = Utils\replace_path_consts( $wp_config_code, $wp_config_path );
 		return preg_replace( '|^\s*\<\?php\s*|', '', $source );
 	}
 

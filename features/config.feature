@@ -625,3 +625,56 @@ Feature: Have a config file
       """
       Warning: UTF-8 byte-order mark (BOM) detected in wp-config.php file, stripping it for parsing.
       """
+
+  Scenario: Strange wp-config.php file with missing wp-settings.php call
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      /* That's all, stop editing! Happy publishing. */
+      """
+
+    When I try `wp core is-installed`
+    Then STDERR should contain:
+      """
+      Error: Strange wp-config.php file: wp-settings.php is not loaded directly.
+      """
+
+  Scenario: Strange wp-config.php file with multi-line wp-settings.php call
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      if ( 1 === 1 ) {
+        require_once ABSPATH . 'some-other-file.php';
+      }
+
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      /* That's all, stop editing! Happy publishing. */
+
+      /** Sets up WordPress vars and included files. */
+      require_once
+        ABSPATH . 'wp-settings.php'
+      ;
+      """
+
+    When I try `wp core is-installed`
+    Then STDERR should not contain:
+      """
+      Error: Strange wp-config.php file: wp-settings.php is not loaded directly.
+      """
