@@ -725,15 +725,13 @@ class Runner {
 			}
 		}
 
-		$matches = [];
+		$count = 0;
 
-		preg_match_all( '/\s*require(_once)?\s*.*wp-settings\.php/', $wp_config_code, $matches, PREG_OFFSET_CAPTURE );
+		$wp_config_code = preg_replace( '/\s*require(?:_once)?\s*.*wp-settings\.php.*\s*;/', '', $wp_config_code, -1, $count );
 
-		if ( empty( $matches[0] ) ) {
+		if ( 0 === $count ) {
 			WP_CLI::error( 'Strange wp-config.php file: wp-settings.php is not loaded directly.' );
 		}
-
-		$wp_config_code = substr( $wp_config_code, 0, $matches[0][0][1] );
 
 		$source = Utils\replace_path_consts( $wp_config_code, $wp_config_path );
 		return preg_replace( '|^\s*\<\?php\s*|', '', $source );

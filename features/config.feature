@@ -678,3 +678,47 @@ Feature: Have a config file
       """
       Error: Strange wp-config.php file: wp-settings.php is not loaded directly.
       """
+
+  Scenario: Code after wp-settings.php call should be loaded
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      if ( 1 === 1 ) {
+        require_once ABSPATH . 'some-other-file.php';
+      }
+
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      /* That's all, stop editing! Happy publishing. */
+
+      /** Sets up WordPress vars and included files. */
+      require_once
+        ABSPATH . 'wp-settings.php'
+      ;
+
+      require_once ABSPATH . 'includes-file.php';
+      """
+    And a includes-file.php file:
+      """
+      <?php
+      define( 'WP_INC_TRUTH', true );
+      """
+
+    When I try `wp core is-installed`
+    Then STDERR should not contain:
+      """
+      Error: Strange wp-config.php file: wp-settings.php is not loaded directly.
+      """
+
+    When I run `wp eval 'var_export( defined("WP_INC_TRUTH") );'`
+    Then STDOUT should be:
+      """
+      true
+      """
