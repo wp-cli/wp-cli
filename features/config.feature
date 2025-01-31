@@ -708,7 +708,12 @@ Feature: Have a config file
     And a includes-file.php file:
       """
       <?php
-      define( 'WP_INC_TRUTH', true );
+      define( 'MY_CONSTANT', true );
+      """
+    And a some-other-file.php file:
+      """
+      <?php
+      define( 'MY_OTHER_CONSTANT', true );
       """
 
     When I try `wp core is-installed`
@@ -717,7 +722,13 @@ Feature: Have a config file
       Error: Strange wp-config.php file: wp-settings.php is not loaded directly.
       """
 
-    When I run `wp eval 'var_export( defined("WP_INC_TRUTH") );'`
+    When I run `wp eval 'var_export( defined("MY_CONSTANT") );'`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+    When I run `wp eval 'var_export( defined("MY_OTHER_CONSTANT") );'`
     Then STDOUT should be:
       """
       true
