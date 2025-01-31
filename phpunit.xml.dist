@@ -20,7 +20,7 @@
 
 	<coverage processUncoveredFiles="false">
 		<include>
-			<directory suffix=".php">src</directory>
+			<directory suffix=".php">php</directory>
 		</include>
 	</coverage>
 </phpunit>
