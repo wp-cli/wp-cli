@@ -344,6 +344,14 @@ class Runner {
 		return false;
 	}
 
+	/**
+	 * Checks if the arguments passed to the WP-CLI binary start with the specified prefix.
+	 *
+	 * @param array $prefix An array of strings specifying the expected start of the arguments passed to the WP-CLI binary.
+	 *                      For example, `['user', 'list']` checks if the arguments passed to the WP-CLI binary start with `user list`.
+	 *
+	 * @return bool `true` if the arguments passed to the WP-CLI binary start with the specified prefix, `false` otherwise.
+	 */
 	private function cmd_starts_with( $prefix ) {
 		return array_slice( $this->arguments, 0, count( $prefix ) ) === $prefix;
 	}
