@@ -345,12 +345,12 @@ class Runner {
 	}
 
 	/**
-	 * Checks if the command arguments start with a given prefix.
+	 * Checks if the arguments passed to the WP-CLI binary start with the specified prefix.
 	 *
-	 * @param array $prefix An array of strings representing the expected prefix of the command arguments.
-	 *                      For example, `['user', 'list']` would check if the command starts with `user list`.
+	 * @param array $prefix An array of strings specifying the expected start of the arguments passed to the WP-CLI binary.
+	 *                      For example, `['user', 'list']` checks if the arguments passed to the WP-CLI binary start with `user list`.
 	 *
-	 * @return bool `true` if the command arguments start with the given prefix, `false` otherwise.
+	 * @return bool `true` if the arguments passed to the WP-CLI binary start with the specified prefix, `false` otherwise.
 	 */
 	private function cmd_starts_with( $prefix ) {
 		return array_slice( $this->arguments, 0, count( $prefix ) ) === $prefix;
