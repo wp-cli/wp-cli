@@ -1,7 +1,7 @@
 Feature: Check for updates
 
   Scenario: Ignores updates with a higher PHP version requirement
-    Given an HTTP request to https://api.github.com/repos/wp-cli/wp-cli/releases?per_page=100 with this response:
+    Given that HTTP requests to https://api.github.com/repos/wp-cli/wp-cli/releases?per_page=100 will respond with:
     """
     HTTP/1.1 200
     Content-Type: application/json
@@ -130,7 +130,7 @@ Feature: Check for updates
     ]
     """
 
-    And an HTTP request to wp-cli-999.9.9.manifest.json with this response:
+    And that HTTP requests to wp-cli-999.9.9.manifest.json will respond with:
     """
     HTTP/1.1 200
     Content-Type: application/json
@@ -140,7 +140,7 @@ Feature: Check for updates
     }
     """
 
-    And an HTTP request to wp-cli-777.7.7.manifest.json with this response:
+    And that HTTP requests to wp-cli-777.7.7.manifest.json will respond with:
     """
     HTTP/1.1 200
     Content-Type: application/json
