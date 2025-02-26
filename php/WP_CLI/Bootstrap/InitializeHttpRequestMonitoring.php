@@ -126,11 +126,11 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 	 *
 	 * @param array|\WP_Error $response HTTP response or WP_Error object.
 	 * @param string          $context  Context under which the hook is fired.
-	 * @param string          $class    HTTP transport used.
+	 * @param string          $transport    HTTP transport used.
 	 * @param array           $args     HTTP request arguments.
 	 * @param string          $url      The request URL.
 	 */
-	public function log_http_api_response( $response, $context, $class, $args, $url ) {
+	public function log_http_api_response( $response, $context, $transport, $args, $url ) {
 		// Only log if debug mode or http_log is enabled
 		$debug    = WP_CLI::get_config( 'debug' );
 		$http_log = WP_CLI::get_config( 'http_log' );
