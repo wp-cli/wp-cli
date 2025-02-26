@@ -114,6 +114,13 @@ return [
 		'desc'    => 'Include headers and body content in HTTP request and response logs. Only applicable when --http_log or --debug is enabled.',
 	],
 
+	'http_log_file'     => [
+		'runtime' => '=<path>',
+		'file'    => '<path>',
+		'default' => false,
+		'desc'    => 'Path to a file where HTTP request and response logs should be written. Enables logging regardless of --debug or --http_log.',
+	],
+
 	'prompt'            => [
 		'runtime' => '[=<assoc>]',
 		'file'    => false,
