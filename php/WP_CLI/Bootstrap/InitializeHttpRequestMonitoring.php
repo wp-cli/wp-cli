@@ -36,15 +36,17 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 				WP_CLI::warning( sprintf( 'Could not open HTTP log file %s for writing', $http_log_file ) );
 			} else {
 				// Write header to log file
-				fwrite( $this->log_file_handle, "=== HTTP Request Log Started at " . date( 'Y-m-d H:i:s' ) . " ===\n" );
+				fwrite( $this->log_file_handle, '=== HTTP Request Log Started at ' . gmdate( 'Y-m-d H:i:s' ) . " ===\n" );
 
 				// Ensure we close the file handle on shutdown
-				register_shutdown_function( function() {
-					if ( $this->log_file_handle ) {
-						fwrite( $this->log_file_handle, "=== HTTP Request Log Ended at " . date( 'Y-m-d H:i:s' ) . " ===\n" );
-						fclose( $this->log_file_handle );
+				register_shutdown_function(
+					function () {
+						if ( $this->log_file_handle ) {
+							fwrite( $this->log_file_handle, '=== HTTP Request Log Ended at ' . gmdate( 'Y-m-d H:i:s' ) . " ===\n" );
+							fclose( $this->log_file_handle );
+						}
 					}
-				} );
+				);
 			}
 		}
 
@@ -65,19 +67,19 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 	 */
 	public function log_http_request_args( $args, $url ) {
 		// Only log if debug mode or http_log is enabled
-		$debug = WP_CLI::get_config( 'debug' );
+		$debug    = WP_CLI::get_config( 'debug' );
 		$http_log = WP_CLI::get_config( 'http_log' );
 
 		if ( ! $debug && ! $http_log && ! $this->log_file_handle ) {
 			return $args;
 		}
 
-		$log_group = $http_log ? 'http' : ($debug === true ? 'http' : $debug);
+		$log_group = $http_log ? 'http' : ( true === $debug ? 'http' : $debug );
 		$log_level = $http_log ? 'info' : 'debug';
 
 		$log_data = [
 			'method' => isset( $args['method'] ) ? $args['method'] : 'GET',
-			'url' => $url,
+			'url'    => $url,
 		];
 
 		// Only include headers and data in verbose logging mode
@@ -102,7 +104,7 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 		$method = isset( $args['method'] ) ? $args['method'] : 'GET';
 		$log_message = "WordPress HTTP Request: {$method} {$url}";
 
-		if ( $log_level === 'debug' ) {
+		if ( 'debug' === $log_level ) {
 			WP_CLI::debug( $log_message . ' ' . json_encode( $log_data ), $log_group );
 		} else {
 			WP_CLI::log( $log_message );
@@ -110,7 +112,7 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 
 		// Write to log file if enabled
 		if ( $this->log_file_handle ) {
-			$timestamp = date( 'Y-m-d H:i:s' );
+			$timestamp = gmdate( 'Y-m-d H:i:s' );
 			$log_entry = "[{$timestamp}] REQUEST: {$method} {$url}\n";
 			$log_entry .= json_encode( $log_data, JSON_PRETTY_PRINT ) . "\n\n";
 			fwrite( $this->log_file_handle, $log_entry );
@@ -130,29 +132,29 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 	 */
 	public function log_http_api_response( $response, $context, $class, $args, $url ) {
 		// Only log if debug mode or http_log is enabled
-		$debug = WP_CLI::get_config( 'debug' );
+		$debug    = WP_CLI::get_config( 'debug' );
 		$http_log = WP_CLI::get_config( 'http_log' );
 
 		if ( ! $debug && ! $http_log && ! $this->log_file_handle ) {
 			return;
 		}
 
-		$log_group = $http_log ? 'http' : ($debug === true ? 'http' : $debug);
+		$log_group = $http_log ? 'http' : ( true === $debug ? 'http' : $debug );
 		$log_level = $http_log ? 'info' : 'debug';
 
 		$method = isset( $args['method'] ) ? $args['method'] : 'GET';
 
 		if ( is_wp_error( $response ) ) {
 			$log_data = [
-				'error_code' => $response->get_error_code(),
+				'error_code'    => $response->get_error_code(),
 				'error_message' => $response->get_error_message(),
 			];
 
 			$log_message = "WordPress HTTP Response Error: {$method} {$url} - " . $response->get_error_message();
 		} else {
 			$log_data = [
-				'status' => isset( $response['response']['code'] ) ? $response['response']['code'] : '?',
-				'success' => isset( $response['response']['code'] ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300,
+				'status'  => isset( $response['response']['code'] ) ? $response['response']['code'] : '?',
+				'success' => isset( $response['response']['code'] ) && 200 <= $response['response']['code'] && $response['response']['code'] < 300,
 			];
 
 			// Only include headers and body in verbose logging mode
@@ -172,7 +174,7 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 			$log_message = "WordPress HTTP Response: {$log_data['status']} for {$method} {$url}";
 		}
 
-		if ( $log_level === 'debug' ) {
+		if ( 'debug' === $log_level ) {
 			WP_CLI::debug( $log_message . ' ' . json_encode( $log_data ), $log_group );
 		} else {
 			WP_CLI::log( $log_message );
@@ -180,7 +182,7 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 
 		// Write to log file if enabled
 		if ( $this->log_file_handle ) {
-			$timestamp = date( 'Y-m-d H:i:s' );
+			$timestamp = gmdate( 'Y-m-d H:i:s' );
 			$log_entry = "[{$timestamp}] RESPONSE: {$method} {$url}\n";
 			$log_entry .= json_encode( $log_data, JSON_PRETTY_PRINT ) . "\n\n";
 			fwrite( $this->log_file_handle, $log_entry );

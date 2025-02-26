@@ -833,16 +833,16 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 	$options = WP_CLI::do_hook( 'http_request_options', $options );
 
 	// Log the HTTP request if debug mode is enabled or if http_log option is set
-	$debug = \WP_CLI::get_config( 'debug' );
+	$debug    = \WP_CLI::get_config( 'debug' );
 	$http_log = \WP_CLI::get_config( 'http_log' );
 
 	if ( $debug || $http_log ) {
-		$log_group = $http_log ? 'http' : ($debug === true ? 'http' : $debug);
+		$log_group = $http_log ? 'http' : ( true === $debug ? 'http' : $debug );
 		$log_level = $http_log ? 'info' : 'debug';
 
 		$log_data = [
 			'method' => $method,
-			'url' => $url,
+			'url'    => $url,
 		];
 
 		// Only include headers and data in verbose logging mode
@@ -863,7 +863,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		}
 
 		$log_message = "HTTP Request: {$method} {$url}";
-		if ( $log_level === 'debug' ) {
+		if ( 'debug' === $log_level ) {
 			\WP_CLI::debug( $log_message . ' ' . json_encode( $log_data ), $log_group );
 		} else {
 			\WP_CLI::log( $log_message );
@@ -880,11 +880,11 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 
 			// Log the HTTP response
 			if ( $debug || $http_log ) {
-				$log_group = $http_log ? 'http' : ($debug === true ? 'http' : $debug);
+				$log_group = $http_log ? 'http' : ( true === $debug ? 'http' : $debug );
 				$log_level = $http_log ? 'info' : 'debug';
 
 				$log_data = [
-					'status' => $response->status_code,
+					'status'  => $response->status_code,
 					'success' => $response->success,
 				];
 
@@ -893,7 +893,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 					$log_data['headers'] = $response->headers->getAll();
 
 					// Only log body if it's not too large
-					if ( strlen( $response->body ) < 1024 ) {
+					if ( 1024 > strlen( $response->body ) ) {
 						$log_data['body'] = $response->body;
 					} else {
 						$log_data['body'] = '[body too large to log]';
@@ -901,7 +901,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 				}
 
 				$log_message = "HTTP Response: {$response->status_code} for {$method} {$url}";
-				if ( $log_level === 'debug' ) {
+				if ( 'debug' === $log_level ) {
 					\WP_CLI::debug( $log_message . ' ' . json_encode( $log_data ), $log_group );
 				} else {
 					\WP_CLI::log( $log_message );
@@ -914,11 +914,11 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 				if (
 					true !== $options['verify']
 					|| 'curlerror' !== $exception->getType()
-					|| curl_errno( $exception->getData() ) !== CURLE_SSL_CACERT
+					|| CURLE_SSL_CACERT !== curl_errno( $exception->getData() )
 				) {
 					// Log HTTP request exception
 					if ( $debug || $http_log ) {
-						$log_group = $http_log ? 'http' : ($debug === true ? 'http' : $debug);
+						$log_group = $http_log ? 'http' : ( true === $debug ? 'http' : $debug );
 						$log_message = "HTTP Request Exception: {$method} {$url} - " . $exception->getMessage();
 						\WP_CLI::debug( $log_message, $log_group );
 					}
