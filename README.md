@@ -45,6 +45,31 @@ For a more complete introduction to using WP-CLI, read the [Quick Start guide](h
 
 Already feel comfortable with the basics? Jump into the [complete list of commands](https://developer.wordpress.org/cli/commands/) for detailed information on managing themes and plugins, importing and exporting data, performing database search-replace operations and more.
 
+### HTTP Request Logging
+
+WP-CLI includes support for logging HTTP requests made by WordPress, which can be useful for debugging, troubleshooting, and development. You can enable HTTP request logging in two ways:
+
+1. Using the `--debug` flag with the `http` group:
+   ```bash
+   $ wp --debug=http plugin install hello-dolly
+   Debug (http): HTTP Request: GET https://api.wordpress.org/plugins/info/1.0/hello-dolly.json {"method":"GET","url":"https://api.wordpress.org/plugins/info/1.0/hello-dolly.json"} (0.201s)
+   Debug (http): HTTP Response: 200 for GET https://api.wordpress.org/plugins/info/1.0/hello-dolly.json {"status":200,"success":true} (0.201s)
+   ```
+
+2. Using the dedicated `--http_log` flag:
+   ```bash
+   $ wp --http_log plugin install hello-dolly
+   HTTP Request: GET https://api.wordpress.org/plugins/info/1.0/hello-dolly.json
+   HTTP Response: 200 for GET https://api.wordpress.org/plugins/info/1.0/hello-dolly.json
+   ```
+
+For more detailed logging, including headers and response bodies, you can add the `--http_log_verbose` flag:
+```bash
+$ wp --http_log --http_log_verbose plugin install hello-dolly
+```
+
+This feature helps when troubleshooting issues with external APIs, debugging WordPress core functionality, or developing custom commands that interact with remote services.
+
 ## Installing
 
 Downloading the Phar file is our recommended installation method for most users. Should you need, see also our documentation on [alternative installation methods](https://make.wordpress.org/cli/handbook/installing/) ([Composer](https://make.wordpress.org/cli/handbook/installing/#installing-via-composer), [Homebrew](https://make.wordpress.org/cli/handbook/installing/#installing-via-homebrew), [Docker](https://make.wordpress.org/cli/handbook/installing/#installing-via-docker)).
@@ -182,11 +207,11 @@ WP-CLI comes with dozens of commands. It's easier than it looks to create a cust
 
 ## Contributing
 
-We appreciate you taking the initiative to contribute to WP-CLI. It’s because of you, and the community around you, that WP-CLI is such a great project.
+We appreciate you taking the initiative to contribute to WP-CLI. It's because of you, and the community around you, that WP-CLI is such a great project.
 
-**Contributing isn’t limited to just code.** We encourage you to contribute in the way that best fits your abilities, by writing tutorials, giving a demo at your local meetup, helping other users with their support questions, or revising our documentation.
+**Contributing isn't limited to just code.** We encourage you to contribute in the way that best fits your abilities, by writing tutorials, giving a demo at your local meetup, helping other users with their support questions, or revising our documentation.
 
-Read through our [contributing guidelines in the handbook](https://make.wordpress.org/cli/handbook/contributing/) for a thorough introduction to how you can get involved. Following these guidelines helps to communicate that you respect the time of other contributors on the project. In turn, they’ll do their best to reciprocate that respect when working with you, across timezones and around the world.
+Read through our [contributing guidelines in the handbook](https://make.wordpress.org/cli/handbook/contributing/) for a thorough introduction to how you can get involved. Following these guidelines helps to communicate that you respect the time of other contributors on the project. In turn, they'll do their best to reciprocate that respect when working with you, across timezones and around the world.
 
 ## Leadership
 
