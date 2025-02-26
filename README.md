@@ -68,6 +68,16 @@ For more detailed logging, including headers and response bodies, you can add th
 $ wp --http_log --http_log_verbose plugin install hello-dolly
 ```
 
+You can also log HTTP requests to a file using the `--http_log_file` option:
+```bash
+$ wp --http_log_file=/path/to/http-log.txt plugin install hello-dolly
+```
+
+This will write detailed HTTP request and response logs to the specified file, which is useful for:
+- Capturing logs for later analysis
+- Debugging in non-interactive environments
+- Keeping a permanent record of HTTP interactions
+
 This feature helps when troubleshooting issues with external APIs, debugging WordPress core functionality, or developing custom commands that interact with remote services.
 
 ## Installing
