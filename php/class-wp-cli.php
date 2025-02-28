@@ -1292,7 +1292,7 @@ class WP_CLI {
 	 * @param array  $options {
 	 *     Configuration options for command execution.
 	 *
-	 *     @type bool        $launch     Launch a new process, or reuse the existing. Defaults to true.
+	 *     @type bool        $launch     Launches a new process (true) or reuses the existing process (false). Default: true.
 	 *     @type bool        $exit_error Exit on error. Defaults to true.
 	 *     @type bool|string $return     Capture and return output, or render in realtime. Defaults to false.
 	 *     @type bool|string $parse      Parse returned output as a particular format. Defaults to false.
