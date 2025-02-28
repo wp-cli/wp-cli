@@ -1263,7 +1263,7 @@ class WP_CLI {
 	}
 
 	/**
-	 * Run a WP-CLI command. Optionally modify the context in which the command runs and how the result is processed.
+	 * Run a WP-CLI command.
 	 *
 	 * Launches a new child process to run a specified WP-CLI command.
 	 * Optionally:
