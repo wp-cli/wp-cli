@@ -1294,7 +1294,7 @@ class WP_CLI {
 	 *
 	 *     @type bool        $launch     Launches a new process (true) or reuses the existing process (false). Default: true.
 	 *     @type bool        $exit_error Halts the script on error. Default: true.
-	 *     @type bool|string $return     Capture and return output, or render in realtime. Defaults to false.
+	 *     @type bool|string $return     Returns output as an object when set to 'all' (string), return just the 'stdout', 'stderr', or 'return_code' (string) of command, or print directly to stdout/stderr (false). Default: false.
 	 *     @type bool|string $parse      Parse returned output as a particular format. Defaults to false.
 	 * }
 	 * @return mixed
