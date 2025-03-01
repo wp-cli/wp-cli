@@ -139,8 +139,8 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 
 		// Write to log file if enabled.
 		if ( $this->log_file_handle ) {
-			$timestamp = gmdate( 'Y-m-d H:i:s' );
-			$log_entry = "[{$timestamp}] REQUEST: {$method} {$url}\n";
+			$timestamp  = gmdate( 'Y-m-d H:i:s' );
+			$log_entry  = "[{$timestamp}] REQUEST: {$method} {$url}\n";
 			$log_entry .= $this->json_encode_compat( $log_data, true ) . "\n\n";
 			fwrite( $this->log_file_handle, $log_entry );
 		}
@@ -173,8 +173,8 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 
 		if ( is_wp_error( $response ) ) {
 			$log_data = array(
-				'error_code'      => $response->get_error_code(),
-				'error_message'   => $response->get_error_message(),
+				'error_code'    => $response->get_error_code(),
+				'error_message' => $response->get_error_message(),
 			);
 
 			$log_message = "WordPress HTTP Response Error: {$method} {$url} - " . $response->get_error_message();
@@ -209,8 +209,8 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 
 		// Write to log file if enabled.
 		if ( $this->log_file_handle ) {
-			$timestamp   = gmdate( 'Y-m-d H:i:s' );
-			$log_entry   = "[{$timestamp}] RESPONSE: {$method} {$url}\n";
+			$timestamp  = gmdate( 'Y-m-d H:i:s' );
+			$log_entry  = "[{$timestamp}] RESPONSE: {$method} {$url}\n";
 			$log_entry .= $this->json_encode_compat( $log_data, true ) . "\n\n";
 			fwrite( $this->log_file_handle, $log_entry );
 		}
