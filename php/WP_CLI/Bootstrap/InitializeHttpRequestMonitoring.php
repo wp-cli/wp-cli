@@ -173,8 +173,8 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 
 		if ( is_wp_error( $response ) ) {
 			$log_data = array(
-				'error_code'    => $response->get_error_code(),
-				'error_message' => $response->get_error_message(),
+				'error_code'      => $response->get_error_code(),
+				'error_message'   => $response->get_error_message(),
 			);
 
 			$log_message = "WordPress HTTP Response Error: {$method} {$url} - " . $response->get_error_message();
