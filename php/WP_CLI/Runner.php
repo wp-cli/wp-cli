@@ -431,6 +431,59 @@ class Runner {
 		}
 		$r = $this->find_command_to_run( $args );
 		if ( is_string( $r ) ) {
+			// Check if a suggestion was provided
+			if ( preg_match( "/Did you mean '([^']+)'\?/", $r, $matches ) ) {
+				$suggested_command = $matches[1];
+
+				// Modify error message to include prompt
+				$error_message = $r . PHP_EOL . "Run '{$suggested_command}' instead? [Y/n]";
+
+				// Display the error message without exiting
+				WP_CLI::error( $error_message, false );
+
+				// Read user input
+				$answer = strtolower( trim( fgets( STDIN ) ) );
+
+				// If user confirms (y/Y/yes or empty), run the suggested command
+				if ( '' === $answer || 'y' === $answer || 'yes' === $answer ) {
+					// Get the correct parent command if this is a subcommand
+					$parent_command = '';
+					if ( preg_match( "/not a registered subcommand of '([^']+)'/", $r, $parent_matches ) ) {
+						$parent_command = $parent_matches[1] . ' ';
+					}
+
+					// Construct the full corrected command
+					$corrected_command = $parent_command . $suggested_command;
+
+					// Get position of incorrect command in original args
+					$incorrect_cmd_path = [];
+					$cmd_index = 0;
+					foreach ( $args as $index => $arg ) {
+						$incorrect_cmd_path[] = $arg;
+						$cmd_index = $index;
+						// Stop if we've collected enough parts to match where the typo was
+						if ( count( $incorrect_cmd_path ) >= count( explode( ' ', $parent_command . $args[$cmd_index] ) ) ) {
+							break;
+						}
+					}
+
+					// Build the new command arguments
+					$new_args = explode( ' ', trim( $corrected_command ) );
+
+					// Add remaining arguments from original command
+					$remaining_args = array_slice( $args, $cmd_index + 1 );
+					if ( ! empty( $remaining_args ) ) {
+						$new_args = array_merge( $new_args, $remaining_args );
+					}
+
+					return $this->run_command( $new_args, $assoc_args, $options );
+				} else {
+					// User declined, exit with error code 1
+					exit(1);
+				}
+			}
+
+			// No suggestion or other error cases
 			WP_CLI::error( $r );
 		}
 
