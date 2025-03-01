@@ -319,7 +319,7 @@ class Formatter {
 						'meta_value' => $line,
 					);
 					$table->addRow( array_values( Utils\pick_fields( $line_item, $fields ) ) );
-					$c++;
+					++$c;
 				}
 			} else {
 				$table->addRow( array_values( Utils\pick_fields( $item, $fields ) ) );
