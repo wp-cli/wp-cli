@@ -442,7 +442,11 @@ class Runner {
 				WP_CLI::error( $error_message, false );
 
 				// Read user input
-				$answer = strtolower( trim( fgets( STDIN ) ) );
+				$answer = '';
+				// Only try to read from STDIN if it's defined (won't be in some test environments)
+				if ( defined( 'STDIN' ) ) {
+					$answer = strtolower( trim( fgets( STDIN ) ) );
+				}
 
 				// If user confirms (y/Y/yes or empty), run the suggested command
 				if ( '' === $answer || 'y' === $answer || 'yes' === $answer ) {
