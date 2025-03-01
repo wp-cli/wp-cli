@@ -309,7 +309,21 @@ class Formatter {
 		$table->setHeaders( $fields );
 
 		foreach ( $items as $item ) {
-			$table->addRow( array_values( Utils\pick_fields( $item, $fields ) ) );
+			if ( ! empty( $item->meta_value ) && ( false !== strpos( $item->meta_value, "\n" ) || false !== strpos( $item->meta_value, "\r\n" ) ) ) {
+				$lines = explode( "\n", $item->meta_value );
+				$c     = 0;
+				foreach ( $lines as $line ) {
+					$line_item = array(
+						'post_id'    => 0 === $c ? $item->post_id : '',
+						'meta_key'   => 0 === $c ? $item->meta_key : '',
+						'meta_value' => $line,
+					);
+					$table->addRow( array_values( Utils\pick_fields( $line_item, $fields ) ) );
+					$c++;
+				}
+			} else {
+				$table->addRow( array_values( Utils\pick_fields( $item, $fields ) ) );
+			}
 		}
 
 		foreach ( $table->getDisplayLines() as $line ) {
