@@ -31,7 +31,7 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 		// Initialize log file if http_log_file is set.
 		$http_log_file = WP_CLI::get_config( 'http_log_file' );
 		if ( $http_log_file ) {
-			$this->log_file_handle = @fopen( $http_log_file, 'a' );
+			$this->log_file_handle = fopen( $http_log_file, 'a' );
 			if ( ! $this->log_file_handle ) {
 				WP_CLI::warning( sprintf( 'Could not open HTTP log file %s for writing', $http_log_file ) );
 			} else {
@@ -71,10 +71,14 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 		}
 
 		// Handle PHP < 5.6 compatibility.
-		$json = @json_encode( $data, $options );
+		$json = json_encode( $data, $options );
 		if ( false === $json ) {
 			// If encoding fails, try a simpler version.
-			return @json_encode( 'Could not encode data' );
+			$fallback_json = json_encode( 'Could not encode data' );
+			if ( false === $fallback_json ) {
+				return '{"error": "JSON encoding failed"}';
+			}
+			return $fallback_json;
 		}
 
 		return $json;
@@ -101,8 +105,8 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 		$log_level = $http_log ? 'info' : 'debug';
 
 		$log_data = array(
-			'method' => isset( $args['method'] ) ? $args['method'] : 'GET',
-			'url'    => $url,
+			'method'  => isset( $args['method'] ) ? $args['method'] : 'GET',
+			'url'     => $url,
 		);
 
 		// Only include headers and data in verbose logging mode.
@@ -176,8 +180,8 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 			$log_message = "WordPress HTTP Response Error: {$method} {$url} - " . $response->get_error_message();
 		} else {
 			$log_data = array(
-				'status'  => isset( $response['response']['code'] ) ? $response['response']['code'] : '?',
-				'success' => isset( $response['response']['code'] ) && 200 <= $response['response']['code'] && $response['response']['code'] < 300,
+				'status'   => isset( $response['response']['code'] ) ? $response['response']['code'] : '?',
+				'success'  => isset( $response['response']['code'] ) && 200 <= $response['response']['code'] && $response['response']['code'] < 300,
 			);
 
 			// Only include headers and body in verbose logging mode.
@@ -205,8 +209,8 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 
 		// Write to log file if enabled.
 		if ( $this->log_file_handle ) {
-			$timestamp = gmdate( 'Y-m-d H:i:s' );
-			$log_entry = "[{$timestamp}] RESPONSE: {$method} {$url}\n";
+			$timestamp  = gmdate( 'Y-m-d H:i:s' );
+			$log_entry  = "[{$timestamp}] RESPONSE: {$method} {$url}\n";
 			$log_entry .= $this->json_encode_compat( $log_data, true ) . "\n\n";
 			fwrite( $this->log_file_handle, $log_entry );
 		}
