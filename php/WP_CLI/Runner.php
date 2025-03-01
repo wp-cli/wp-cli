@@ -435,6 +435,12 @@ class Runner {
 			if ( preg_match( "/Did you mean '([^']+)'\?/", $r, $matches ) ) {
 				$suggested_command = $matches[1];
 
+				// Skip interactive prompt in test environments
+				if ( defined( 'WP_CLI_TEST_MODE' ) && WP_CLI_TEST_MODE ) {
+					WP_CLI::error( $r );
+					return;
+				}
+
 				// Modify error message to include prompt
 				$error_message = $r . PHP_EOL . "Run '{$suggested_command}' instead? [Y/n]";
 
