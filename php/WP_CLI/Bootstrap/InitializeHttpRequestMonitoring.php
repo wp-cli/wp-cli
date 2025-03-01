@@ -209,8 +209,8 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 
 		// Write to log file if enabled.
 		if ( $this->log_file_handle ) {
-			$timestamp  = gmdate( 'Y-m-d H:i:s' );
-			$log_entry  = "[{$timestamp}] RESPONSE: {$method} {$url}\n";
+			$timestamp   = gmdate( 'Y-m-d H:i:s' );
+			$log_entry   = "[{$timestamp}] RESPONSE: {$method} {$url}\n";
 			$log_entry .= $this->json_encode_compat( $log_data, true ) . "\n\n";
 			fwrite( $this->log_file_handle, $log_entry );
 		}
