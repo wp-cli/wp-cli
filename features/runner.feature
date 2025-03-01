@@ -79,3 +79,30 @@ Feature: Runner WP-CLI
       Did you mean 'meta'?
       """
     And the return code should be 1
+
+  Scenario: Skip interactive prompt in test mode
+    Given a WP install
+
+    When I try `WP_CLI_TEST_MODE=1 wp network option`
+    Then STDERR should contain:
+      """
+      Error: 'option' is not a registered subcommand of 'network'. See 'wp help network' for available subcommands.
+      Did you mean 'meta'?
+      """
+    And STDERR should not contain:
+      """
+      Run 'meta' instead?
+      """
+    And the return code should be 1
+
+  Scenario: Show interactive prompt for misspelled commands
+    Given a WP install
+
+    When I try `echo "n" | wp network option`
+    Then STDERR should contain:
+      """
+      Error: 'option' is not a registered subcommand of 'network'. See 'wp help network' for available subcommands.
+      Did you mean 'meta'?
+      Run 'meta' instead? [Y/n]
+      """
+    And the return code should be 1
