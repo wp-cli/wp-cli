@@ -166,8 +166,8 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 			return;
 		}
 
-		$log_group = $http_log ? 'http' : ( true === $debug ? 'http' : $debug );
-		$log_level = $http_log ? 'info' : 'debug';
+		$log_group  = $http_log ? 'http' : ( true === $debug ? 'http' : $debug );
+		$log_level  = $http_log ? 'info' : 'debug';
 
 		$method = isset( $args['method'] ) ? $args['method'] : 'GET';
 

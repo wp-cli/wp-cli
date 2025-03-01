@@ -918,7 +918,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 				) {
 					// Log HTTP request exception
 					if ( $debug || $http_log ) {
-						$log_group  = $http_log ? 'http' : ( true === $debug ? 'http' : $debug );
+						$log_group   = $http_log ? 'http' : ( true === $debug ? 'http' : $debug );
 						$log_message = "HTTP Request Exception: {$method} {$url} - " . $exception->getMessage();
 						\WP_CLI::debug( $log_message, $log_group );
 					}
