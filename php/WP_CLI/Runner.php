@@ -457,12 +457,12 @@ class Runner {
 
 					// Get position of incorrect command in original args
 					$incorrect_cmd_path = [];
-					$cmd_index = 0;
+					$cmd_index          = 0;
 					foreach ( $args as $index => $arg ) {
 						$incorrect_cmd_path[] = $arg;
-						$cmd_index = $index;
+						$cmd_index            = $index;
 						// Stop if we've collected enough parts to match where the typo was
-						if ( count( $incorrect_cmd_path ) >= count( explode( ' ', $parent_command . $args[$cmd_index] ) ) ) {
+						if ( count( $incorrect_cmd_path ) >= count( explode( ' ', $parent_command . $args[ $cmd_index ] ) ) ) {
 							break;
 						}
 					}
@@ -479,7 +479,7 @@ class Runner {
 					return $this->run_command( $new_args, $assoc_args, $options );
 				} else {
 					// User declined, exit with error code 1
-					exit(1);
+					exit( 1 );
 				}
 			}
 
