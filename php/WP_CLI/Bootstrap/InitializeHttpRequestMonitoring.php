@@ -105,8 +105,8 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 		$log_level = $http_log ? 'info' : 'debug';
 
 		$log_data = array(
-			'method'  => isset( $args['method'] ) ? $args['method'] : 'GET',
-			'url'     => $url,
+			'method' => isset( $args['method'] ) ? $args['method'] : 'GET',
+			'url'    => $url,
 		);
 
 		// Only include headers and data in verbose logging mode.
@@ -180,8 +180,8 @@ class InitializeHttpRequestMonitoring implements BootstrapStep {
 			$log_message = "WordPress HTTP Response Error: {$method} {$url} - " . $response->get_error_message();
 		} else {
 			$log_data = array(
-				'status'   => isset( $response['response']['code'] ) ? $response['response']['code'] : '?',
-				'success'  => isset( $response['response']['code'] ) && 200 <= $response['response']['code'] && $response['response']['code'] < 300,
+				'status'  => isset( $response['response']['code'] ) ? $response['response']['code'] : '?',
+				'success' => isset( $response['response']['code'] ) && 200 <= $response['response']['code'] && $response['response']['code'] < 300,
 			);
 
 			// Only include headers and body in verbose logging mode.
