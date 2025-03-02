@@ -310,10 +310,12 @@ class Formatter {
 
 		foreach ( $items as $item ) {
 			if ( ! empty( $item->meta_value ) && ( false !== strpos( $item->meta_value, "\n" ) || false !== strpos( $item->meta_value, "\r\n" ) ) ) {
-				$lines     = explode( "\n", $item->meta_value );
+
+				$lines     = explode( "\n", $item->meta_value ); // Get all lines from linebreaks.
 				$c         = 0;
 				$line_item = array();
 
+				// Create separate lines in table for each line.
 				foreach ( $lines as $line ) {
 					foreach ( $fields as $field ) {
 						$field_value         = 0 === $c ? $item->$field : ''; // Set field value for 1st linebreak. Keep it blank for rest of the lines.
