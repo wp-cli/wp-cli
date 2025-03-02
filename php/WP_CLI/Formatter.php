@@ -310,14 +310,16 @@ class Formatter {
 
 		foreach ( $items as $item ) {
 			if ( ! empty( $item->meta_value ) && ( false !== strpos( $item->meta_value, "\n" ) || false !== strpos( $item->meta_value, "\r\n" ) ) ) {
-				$lines = explode( "\n", $item->meta_value );
-				$c     = 0;
+				$lines     = explode( "\n", $item->meta_value );
+				$c         = 0;
+				$line_item = array();
+
 				foreach ( $lines as $line ) {
-					$line_item = array(
-						'post_id'    => 0 === $c ? $item->post_id : '',
-						'meta_key'   => 0 === $c ? $item->meta_key : '',
-						'meta_value' => $line,
-					);
+					foreach ( $fields as $field ) {
+						$field_value         = 0 === $c ? $item->$field : ''; // Set field value for 1st linebreak. Keep it blank for rest of the lines.
+						$line_item[ $field ] = 'meta_value' === $field ? $line : $field_value;
+					}
+
 					$table->addRow( array_values( Utils\pick_fields( $line_item, $fields ) ) );
 					++$c;
 				}
