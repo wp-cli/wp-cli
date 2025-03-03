@@ -13,7 +13,7 @@
         "mustache/mustache": "^2.14.1",
         "symfony/finder": ">2.7",
         "wp-cli/mustangostang-spyc": "^0.6.3",
-        "wp-cli/php-cli-tools": "~0.12.1"
+        "wp-cli/php-cli-tools": "~0.12.2"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
