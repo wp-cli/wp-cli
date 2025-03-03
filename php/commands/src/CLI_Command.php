@@ -199,7 +199,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * : Prints the value of a single field for each update.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to version,update_type,package_url.
+	 * : Limit the output to specific object fields. Defaults to version,update_type,package_url,status,requires_php.
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
@@ -235,7 +235,7 @@ class CLI_Command extends WP_CLI_Command {
 		if ( $updates ) {
 			$formatter = new Formatter(
 				$assoc_args,
-				[ 'version', 'update_type', 'package_url' ]
+				[ 'version', 'update_type', 'package_url', 'status', 'requires_php' ]
 			);
 			$formatter->display_items( $updates );
 		} elseif ( empty( $assoc_args['format'] ) || 'table' === $assoc_args['format'] ) {
@@ -324,7 +324,12 @@ class CLI_Command extends WP_CLI_Command {
 				return;
 			}
 
-			$newest = $updates[0];
+			$newest = $this->array_find(
+				$updates,
+				static function ( $update ) {
+					return $update['available'];
+				}
+			);
 
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to %s?', WP_CLI_VERSION, $newest['version'] ), $assoc_args );
 
@@ -454,6 +459,9 @@ class CLI_Command extends WP_CLI_Command {
 			'minor' => false,
 			'patch' => false,
 		];
+
+		$updates_unavailable = [];
+
 		foreach ( $release_data as $release ) {
 
 			// Get rid of leading "v" if there is one set.
@@ -463,11 +471,18 @@ class CLI_Command extends WP_CLI_Command {
 			}
 
 			$update_type = Utils\get_named_sem_ver( $release_version, WP_CLI_VERSION );
+
 			if ( ! $update_type ) {
 				continue;
 			}
 
-			$package_url = null;
+			// Release is older than one we already have on file.
+			if ( ! empty( $updates[ $update_type ] ) && ! Comparator::greaterThan( $release_version, $updates[ $update_type ]['version'] ) ) {
+				continue;
+			}
+
+			$package_url   = null;
+			$manifest_data = null;
 
 			foreach ( $release->assets as $asset ) {
 				if ( ! isset( $asset->browser_download_url ) ) {
@@ -484,13 +499,6 @@ class CLI_Command extends WP_CLI_Command {
 
 					if ( $response->success ) {
 						$manifest_data = json_decode( $response->body );
-
-						if (
-							isset( $manifest_data->requires_php ) &&
-							! Comparator::greaterThanOrEqualTo( PHP_VERSION, $manifest_data->requires_php )
-						) {
-							continue 2;
-						}
 					}
 				}
 			}
@@ -499,15 +507,27 @@ class CLI_Command extends WP_CLI_Command {
 				continue;
 			}
 
-			if ( ! empty( $updates[ $update_type ] ) && ! Comparator::greaterThan( $release_version, $updates[ $update_type ]['version'] ) ) {
-				continue;
+			// Release requires a newer version of PHP.
+			if (
+				isset( $manifest_data->requires_php ) &&
+				! Comparator::greaterThanOrEqualTo( PHP_VERSION, $manifest_data->requires_php )
+			) {
+				$updates_unavailable[] = [
+					'version'      => $release_version,
+					'update_type'  => $update_type,
+					'package_url'  => $release->assets[0]->browser_download_url,
+					'status'       => 'unavailable',
+					'requires_php' => $manifest_data->requires_php,
+				];
+			} else {
+				$updates[ $update_type ] = [
+					'version'      => $release_version,
+					'update_type'  => $update_type,
+					'package_url'  => $release->assets[0]->browser_download_url,
+					'status'       => 'available',
+					'requires_php' => isset( $manifest_data->requires_php ) ? $manifest_data->requires_php : '',
+				];
 			}
-
-			$updates[ $update_type ] = [
-				'version'     => $release_version,
-				'update_type' => $update_type,
-				'package_url' => $release->assets[0]->browser_download_url,
-			];
 		}
 
 		foreach ( $updates as $type => $value ) {
@@ -529,16 +549,67 @@ class CLI_Command extends WP_CLI_Command {
 				WP_CLI::error( sprintf( 'Failed to get current nightly version (HTTP code %d)', $response->status_code ) );
 			}
 			$nightly_version = trim( $response->body );
+
 			if ( WP_CLI_VERSION !== $nightly_version ) {
-				$updates['nightly'] = [
-					'version'     => $nightly_version,
-					'update_type' => 'nightly',
-					'package_url' => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
-				];
+				$manifest_data = null;
+
+				// The manifest.json file, if it exists, contains information about PHP version requirements and similar.
+				$response = Utils\http_request( 'GET', 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.manifest.json', null, $headers, $options );
+
+				if ( $response->success ) {
+					$manifest_data = json_decode( $response->body );
+				}
+
+				// Release requires a newer version of PHP.
+				if (
+					isset( $manifest_data->requires_php ) &&
+					! Comparator::greaterThanOrEqualTo( PHP_VERSION, $manifest_data->requires_php )
+				) {
+					$updates_unavailable[] = [
+						'version'      => $nightly_version,
+						'update_type'  => 'nightly',
+						'package_url'  => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
+						'status'       => 'unvailable',
+						'requires_php' => $manifest_data->requires_php,
+					];
+				} else {
+					$updates['nightly'] = [
+						'version'      => $nightly_version,
+						'update_type'  => 'nightly',
+						'package_url'  => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
+						'status'       => 'available',
+						'requires_php' => isset( $manifest_data->requires_php ) ? $manifest_data->requires_php : '',
+					];
+				}
 			}
 		}
 
-		return array_values( $updates );
+		return array_merge( $updates_unavailable, array_values( $updates ) );
+	}
+
+	/**
+	 * Returns the the first element of the passed array for which the
+	 * callback returns true.
+	 *
+	 * Polyfill for the `array_find()` function introduced in PHP 8.3.
+	 *
+	 * @param array    $arr      Array to search.
+	 * @param callable $callback The callback function for each element in the array.
+	 * @return mixed First array element for which the callback returns true, null otherwise.
+	 */
+	private function array_find( $arr, $callback ) {
+		if ( function_exists( '\array_find' ) ) {
+			// phpcs:ignore PHPCompatibility.FunctionUse.NewFunctions.array_findFound
+			return \array_find( $arr, $callback );
+		}
+
+		foreach ( $arr as $key => $value ) {
+			if ( $callback( $value, $key ) ) {
+				return $value;
+			}
+		}
+
+		return null;
 	}
 
 	/**
