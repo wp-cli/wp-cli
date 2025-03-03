@@ -154,7 +154,7 @@ Feature: Format output
       | [33mgaa/gaa-nonsense[0m | v3.0.11    | [31m🛇[0m      |
       | [33mgaa/gaa-100%new[0m  | v100%new   | [32m✔[0m      |
 
-Scenario: Check metadata value with linebreaks
+Scenario: Table rows containing linebreaks
     Given an empty directory
     And a file.php file:
       """
