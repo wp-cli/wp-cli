@@ -593,7 +593,7 @@ class Runner {
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
 				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
 				$is_stdout_tty && ! getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '-t  ' : '',
-				$is_stdin_tty || getenv( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) || getenv( 'BEHAT_RUN' ) ? '' : '-i ',
+				$is_stdin_tty || getenv( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '' : '-i ',
 				escapeshellarg( $bits['host'] ),
 				escapeshellarg( $wp_command )
 			);
@@ -622,7 +622,7 @@ class Runner {
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
 				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
 				$is_stdout_tty || getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
-				$is_stdin_tty || getenv( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) || getenv( 'BEHAT_RUN' ) ? '' : '-i ',
+				$is_stdin_tty || getenv( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '' : '-i ',
 				escapeshellarg( $bits['host'] ),
 				$wp_command
 			);
