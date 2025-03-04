@@ -376,26 +376,12 @@ class Runner {
 			$subcommand = $command->find_subcommand( $args );
 
 			if ( ! $subcommand ) {
-				if ( count( $cmd_path ) > 1 ) {
-					$child       = array_pop( $cmd_path );
-					$parent_name = implode( ' ', $cmd_path );
-					$suggestion  = $this->get_subcommand_suggestion( $child, $command );
-
-					if ( 'network' === $parent_name && 'option' === $child ) {
-						$suggestion = 'meta';
-					}
-
-					return sprintf(
-						"'%s' is not a registered subcommand of '%s'. See 'wp help %s' for available subcommands.%s",
-						$child,
-						$parent_name,
-						$parent_name,
-						! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
-					);
+				// Suggest appropriate commands for taxonomy or post type.
+				if ( $this->is_taxonomy( $cmd_path[0] ) ) {
+					WP_CLI::error( "Did you mean 'wp term <command> ?" );
+				} elseif ( $this->is_post_type( $cmd_path[0] ) ) {
+					WP_CLI::error( "Did you mean 'wp post <command> ?" );
 				}
-
-				$suggestion = $this->get_subcommand_suggestion( $full_name, $command );
-
 				return sprintf(
 					"'%s' is not a registered wp command. See 'wp help' for available commands.%s",
 					$full_name,
@@ -1989,4 +1975,43 @@ class Runner {
 		}
 		ini_set( 'display_errors', 'stderr' ); // phpcs:ignore WordPress.PHP.IniSet.display_errors_Disallowed
 	}
+
+	/**
+	 * Check if the given name is a registered taxonomy.
+	 *
+	 * @param string $name The taxonomy name.
+	 * @return bool True if the taxonomy exists, false otherwise.
+	 */
+	private function is_taxonomy( $name ) {
+		// Ensure WordPress is loaded.
+		$this->load_wordpress();
+
+		// Check again after loading WordPress.
+		if ( function_exists( 'get_taxonomies' ) ) {
+			$taxonomies = get_taxonomies();
+			return in_array( $name, $taxonomies, true );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if the given name is a registered post type.
+	 *
+	 * @param string $name The post type name.
+	 * @return bool True if the post type exists, false otherwise.
+	 */
+	private function is_post_type( $name ) {
+		// Ensure WordPress is loaded.
+		$this->load_wordpress();
+
+		// Check again after loading WordPress.
+		if ( function_exists( 'get_post_types' ) ) {
+			$post_types = get_post_types();
+			return in_array( $name, $post_types, true );
+		}
+
+		return false;
+	}
+	
 }
