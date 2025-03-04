@@ -100,6 +100,27 @@ return [
 		'desc'    => 'Show all PHP errors and add verbosity to WP-CLI output. Built-in groups include: bootstrap, commandfactory, and help.',
 	],
 
+	'http_log'          => [
+		'runtime' => '',
+		'file'    => '<bool>',
+		'default' => false,
+		'desc'    => 'Log HTTP requests to STDOUT. Useful for debugging outgoing HTTP requests without using --debug.',
+	],
+
+	'http_log_verbose'  => [
+		'runtime' => '',
+		'file'    => '<bool>',
+		'default' => false,
+		'desc'    => 'Include headers and body content in HTTP request and response logs. Only applicable when --http_log or --debug is enabled.',
+	],
+
+	'http_log_file'     => [
+		'runtime' => '=<path>',
+		'file'    => '<path>',
+		'default' => false,
+		'desc'    => 'Path to a file where HTTP request and response logs should be written. Enables logging regardless of --debug or --http_log.',
+	],
+
 	'prompt'            => [
 		'runtime' => '[=<assoc>]',
 		'file'    => false,
