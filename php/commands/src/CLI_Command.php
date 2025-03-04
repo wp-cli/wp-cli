@@ -398,15 +398,13 @@ class CLI_Command extends WP_CLI_Command {
 	 * @throws \WP_CLI\ExitException
 	 */
 	private function validate_hashes( $file, $sha512_url, $md5_url ) {
-		$headers = [];
-
 		$algos = [
 			'sha512' => $sha512_url,
 			'md5'    => $md5_url,
 		];
 
 		foreach ( $algos as $algo => $url ) {
-			$response = Utils\http_request( 'GET', $url, null, $headers, $options );
+			$response = Utils\http_request( 'GET', $url );
 			if ( '20' !== substr( $response->status_code, 0, 2 ) ) {
 				WP_CLI::log( "Couldn't access $algo hash for release (HTTP code {$response->status_code})." );
 				continue;
