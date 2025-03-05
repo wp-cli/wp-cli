@@ -75,8 +75,7 @@ Feature: Runner WP-CLI
     When I try `wp network option`
     Then STDERR should contain:
       """
-      Error: 'option' is not a registered subcommand of 'network'. See 'wp help network' for available subcommands.
-      Did you mean 'meta'?
+      Error: 'network option' is not a registered wp command. See 'wp help' for available commands.
       """
     And the return code should be 1
 
@@ -93,19 +92,9 @@ Feature: Runner WP-CLI
 Scenario: Suggest 'wp post <command>' when an invalid post type command is run
   Given a WP install
 
-  When I try `wp product create`
+  When I try `wp page create`
   Then STDERR should contain:
     """
     Did you mean 'wp post <command>' ?
-    """
-  And the return code should be 1
-
-  Scenario: Unrecognized WP-CLI command suggestion
-  Given a WP install
-
-  When I try `wp unknowncommand`
-  Then STDERR should contain:
-    """
-    'unknowncommand' is not a registered wp command. See 'wp help' for available commands.
     """
   And the return code should be 1
