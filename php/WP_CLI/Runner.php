@@ -376,17 +376,22 @@ class Runner {
 			$subcommand = $command->find_subcommand( $args );
 
 			if ( ! $subcommand ) {
-				// Suggest appropriate commands for taxonomy or post type.
-				if ( $this->is_taxonomy( $cmd_path[0] ) ) {
-					WP_CLI::error( "Did you mean 'wp term <command> ?" );
-				} elseif ( $this->is_post_type( $cmd_path[0] ) ) {
-					WP_CLI::error( "Did you mean 'wp post <command> ?" );
+
+				if ( $this->wp_exists() && $this->wp_is_readable() ) {
+					$this->load_wordpress();
+
+					// Suggest appropriate commands for taxonomy or post type.
+					if ( $this->is_taxonomy( $cmd_path[0] ) ) {
+						WP_CLI::error( "Did you mean 'wp term <command>' ?" );
+					} elseif ( $this->is_post_type( $cmd_path[0] ) ) {
+						WP_CLI::error( "Did you mean 'wp post <command>' ?" );
+					}
+					return sprintf(
+						"'%s' is not a registered wp command. See 'wp help' for available commands.%s",
+						$full_name,
+						! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
+					);
 				}
-				return sprintf(
-					"'%s' is not a registered wp command. See 'wp help' for available commands.%s",
-					$full_name,
-					! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
-				);
 			}
 
 			if ( $this->is_command_disabled( $subcommand ) ) {
@@ -1983,9 +1988,6 @@ class Runner {
 	 * @return bool True if the taxonomy exists, false otherwise.
 	 */
 	private function is_taxonomy( $name ) {
-		// Ensure WordPress is loaded.
-		$this->load_wordpress();
-
 		// Check again after loading WordPress.
 		if ( function_exists( 'get_taxonomies' ) ) {
 			$taxonomies = get_taxonomies();
@@ -2002,9 +2004,6 @@ class Runner {
 	 * @return bool True if the post type exists, false otherwise.
 	 */
 	private function is_post_type( $name ) {
-		// Ensure WordPress is loaded.
-		$this->load_wordpress();
-
 		// Check again after loading WordPress.
 		if ( function_exists( 'get_post_types' ) ) {
 			$post_types = get_post_types();
