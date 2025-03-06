@@ -396,6 +396,16 @@ class Runner {
 
 				$suggestion = $this->get_subcommand_suggestion( $full_name, $command );
 
+				// If the functions are available, it means WordPress is available
+				// and has already been loaded.
+				if ( function_exists( '\taxonomy_exists' ) ) {
+					if ( \taxonomy_exists( $cmd_path[0] ) ) {
+						$suggestion = 'wp term <command>';
+					} elseif ( \post_type_exists( $cmd_path[0] ) ) {
+						$suggestion = "wp post --post_type={$cmd_path[0]} <command>";
+					}
+				}
+
 				return sprintf(
 					"'%s' is not a registered wp command. See 'wp help' for available commands.%s",
 					$full_name,

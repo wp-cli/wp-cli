@@ -79,3 +79,23 @@ Feature: Runner WP-CLI
       Did you mean 'meta'?
       """
     And the return code should be 1
+
+  Scenario: Suggest 'wp term <command>' when an invalid taxonomy command is run
+  Given a WP install
+
+  When I try `wp category list`
+  Then STDERR should contain:
+    """
+    Did you mean 'wp term <command>'?
+    """
+  And the return code should be 1
+
+Scenario: Suggest 'wp post <command>' when an invalid post type command is run
+  Given a WP install
+
+  When I try `wp page create`
+  Then STDERR should contain:
+    """
+    Did you mean 'wp post --post_type=page <command>'?
+    """
+  And the return code should be 1
