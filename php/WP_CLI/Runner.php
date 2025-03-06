@@ -207,7 +207,7 @@ class Runner {
 			}
 		);
 
-		if ( $project_config_path === null ) {
+		if ( null === $project_config_path ) {
 			$this->project_config_path_debug = 'No project config found';
 			return false;
 		}
