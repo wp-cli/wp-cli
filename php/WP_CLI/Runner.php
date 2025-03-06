@@ -213,7 +213,7 @@ class Runner {
 			$this->project_config_path_debug = 'Using project config: ' . $project_config_path;
 		}
 
-		return $project_config_path;
+		return false;
 	}
 
 	/**
