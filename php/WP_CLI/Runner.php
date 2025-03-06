@@ -160,7 +160,14 @@ class Runner {
 		// If global config doesn't exist create one.
 		if ( true === $create_config_file && ! file_exists( $config_path ) ) {
 			$this->global_config_path_debug = "Default global config doesn't exist, creating one in {$config_path}";
-			Process::create( Utils\esc_cmd( 'touch %s', $config_path ) )->run();
+
+			$dir = dirname( $config_path );
+
+			if ( ! is_dir( $dir ) ) {
+				mkdir( $dir, 0755, true );
+			}
+
+			touch( $config_path );
 		}
 
 		if ( is_readable( $config_path ) ) {
