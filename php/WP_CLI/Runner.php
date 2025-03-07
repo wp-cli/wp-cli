@@ -168,6 +168,10 @@ class Runner {
 			}
 
 			touch( $config_path );
+
+			if ( file_exists( $config_path ) ) {
+				WP_CLI::debug( "Default global config does not exist, creating one in $config_path" );
+			}
 		}
 
 		if ( is_readable( $config_path ) ) {
