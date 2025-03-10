@@ -364,8 +364,6 @@ class Runner {
 	 */
 	public function find_command_to_run( $args ) {
 
-		error_reporting(0);
-
 		$command = WP_CLI::get_root_command();
 
 		WP_CLI::do_hook( 'find_command_to_run_pre' );
