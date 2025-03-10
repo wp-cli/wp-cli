@@ -363,6 +363,9 @@ class Runner {
 	 * @return array|string Command, args, and path on success; error message on failure
 	 */
 	public function find_command_to_run( $args ) {
+
+		error_reporting(0);
+
 		$command = WP_CLI::get_root_command();
 
 		WP_CLI::do_hook( 'find_command_to_run_pre' );
@@ -406,11 +409,22 @@ class Runner {
 					}
 				}
 
+				$full_command = implode( ' ', array_merge( $cmd_path, $args ) );
+
+				if ( count( $cmd_path ) > 1 ) {
+					return sprintf(
+						"Error: '%s' is not a registered subcommand of '%s'. See 'wp help %s' for available subcommands.",
+						implode( ' ', $args ),
+						implode( ' ', array_slice( $cmd_path, 0, -1 ) ),
+						implode( ' ', array_slice( $cmd_path, 0, -1 ) )
+					);
+				}
+
 				return sprintf(
-					"'%s' is not a registered wp command. See 'wp help' for available commands.%s",
-					$full_name,
-					! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
+					"Error: '%s' is not a registered wp command. See 'wp help' for available commands.",
+					trim( implode( ' ', $cmd_path ) . ' ' . implode( ' ', $args ) )
 				);
+
 			}
 
 			if ( $this->is_command_disabled( $subcommand ) ) {
