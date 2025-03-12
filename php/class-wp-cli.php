@@ -1407,6 +1407,43 @@ class WP_CLI {
 						'back_compat_conversions' => true,
 					]
 				);
+
+				// Handle media attachment explicitly for 'media import' command.
+				if ( 'media' === $args[0] && 'import' === $args[1] ) {
+					$post_id        = isset( $assoc_args['post_id'] ) ? (int) $assoc_args['post_id'] : 0;
+					$featured_image = isset( $assoc_args['featured_image'] );
+
+					if ( $post_id ) {
+
+						// Get the attachment ID from the command output (if porcelain is used).
+						$attachment_id = null;
+						if ( isset( $assoc_args['porcelain'] ) ) {
+							$attachment_id = trim( self::$logger->stdout );
+						}
+
+						// If porcelain is not used, get the last inserted attachment ID.
+						if ( ! $attachment_id ) {
+							global $wpdb;
+							$attachment_id = $wpdb->get_var( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'attachment' ORDER BY ID DESC LIMIT 1" ); //phpcs:ignore
+						}
+
+						if ( $attachment_id ) {
+							// Attach the media to the post.
+							wp_update_post(
+								array(
+									'ID'          => $attachment_id,
+									'post_parent' => $post_id,
+								)
+							);
+
+							// Set as featured image if requested.
+							if ( $featured_image ) {
+								update_post_meta( $post_id, '_thumbnail_id', $attachment_id );
+							}
+						}
+					}
+				}
+
 				$return_code = 0;
 			} catch ( ExitException $e ) {
 				$return_code = $e->getCode();
