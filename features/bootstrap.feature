@@ -184,27 +184,27 @@ Feature: Bootstrap WP-CLI
         return;
       }
       $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
-      if ( file_exists( $autoload ) && ! class_exists( 'CLI_Command' ) ) {
+      if ( file_exists( $autoload ) && ! class_exists( 'Custom_CLI_Command' ) ) {
         require_once $autoload;
       }
       // Override framework command.
-      WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_command( 'cli', 'Custom_CLI_Command', array( 'when' => 'before_wp_load' ) );
       // Override bundled command.
-      WP_CLI::add_command( 'eval', 'Eval_Command', array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
       """
-    And a override/src/CLI_Command.php file:
+    And a override/src/Custom_CLI_Command.php file:
       """
       <?php
-      class CLI_Command extends WP_CLI_Command {
+      class Custom_CLI_Command extends WP_CLI_Command {
         public function version() {
           WP_CLI::success( "WP-Override-CLI" );
         }
       }
       """
-    And a override/src/Eval_Command.php file:
+    And a override/src/Custom_Eval_Command.php file:
       """
       <?php
-      class Eval_Command extends WP_CLI_Command {
+      class Custom_Eval_Command extends WP_CLI_Command {
         public function __invoke() {
           WP_CLI::success( "WP-Override-Eval" );
         }
