@@ -60,12 +60,12 @@ Feature: Bootstrap WP-CLI
         return;
       }
       // Override bundled command.
-      WP_CLI::add_command( 'eval', 'Eval_Command', array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
       """
-    And a override/src/Eval_Command.php file:
+    And a override/src/Custom_Eval_Command.php file:
       """
       <?php
-      class Eval_Command extends WP_CLI_Command {
+      class Custom_Eval_Command extends WP_CLI_Command {
         public function __invoke() {
           WP_CLI::success( "WP-Override-Eval" );
         }
