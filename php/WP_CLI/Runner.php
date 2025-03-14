@@ -160,7 +160,18 @@ class Runner {
 		// If global config doesn't exist create one.
 		if ( true === $create_config_file && ! file_exists( $config_path ) ) {
 			$this->global_config_path_debug = "Default global config doesn't exist, creating one in {$config_path}";
-			Process::create( Utils\esc_cmd( 'touch %s', $config_path ) )->run();
+
+			$dir = dirname( $config_path );
+
+			if ( ! is_dir( $dir ) ) {
+				mkdir( $dir, 0755, true );
+			}
+
+			touch( $config_path );
+
+			if ( file_exists( $config_path ) ) {
+				WP_CLI::debug( "Default global config does not exist, creating one in $config_path" );
+			}
 		}
 
 		if ( is_readable( $config_path ) ) {
@@ -200,12 +211,12 @@ class Runner {
 			}
 		);
 
-		$this->project_config_path_debug = 'No project config found';
-
-		if ( ! empty( $project_config_path ) ) {
-			$this->project_config_path_debug = 'Using project config: ' . $project_config_path;
+		if ( null === $project_config_path ) {
+			$this->project_config_path_debug = 'No project config found';
+			return false;
 		}
 
+		$this->project_config_path_debug = 'Using project config: ' . $project_config_path;
 		return $project_config_path;
 	}
 

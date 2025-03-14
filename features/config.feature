@@ -733,3 +733,10 @@ Feature: Have a config file
       """
       true
       """
+
+  Scenario: Be able to create a new global config file (including any new parent folders) when one doesn't exist
+    # Delete this folder or else a rerun of the test will fail since the folder/file now exists
+    When I run `[ -n "$HOME" ] && rm -rf "$HOME/doesnotexist"`
+    And I try `WP_CLI_CONFIG_PATH=$HOME/doesnotexist/wp-cli.yml wp cli alias add 1 --debug`
+    Then STDERR should match #Default global config does not exist, creating one in.+/doesnotexist/wp-cli.yml#
+
