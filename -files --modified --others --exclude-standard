@@ -1,0 +1,369 @@
+[1mdiff --git a/0001-Add-HTTP-request-file-logging-support-for-6044.patch b/0001-Add-HTTP-request-file-logging-support-for-6044.patch[m
+[1mnew file mode 100644[m
+[1mindex 00000000..2ea6202c[m
+[1m--- /dev/null[m
+[1m+++ b/0001-Add-HTTP-request-file-logging-support-for-6044.patch[m
+[36m@@ -0,0 +1,209 @@[m
+[32m+[m[32mFrom 343bd4f748a64510302732052eba191b0a97e5a0 Mon Sep 17 00:00:00 2001[m
+[32m+[m[32mFrom: Emmett Hoolahan <emmetthoolahan@gmail.com>[m
+[32m+[m[32mDate: Wed, 26 Feb 2025 15:37:30 +0800[m
+[32m+[m[32mSubject: [PATCH] Add HTTP request file logging support for #6044[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m[32m .../InitializeHttpRequestMonitoring.php       | 189 ++++++++++++++++++[m
+[32m+[m[32m 1 file changed, 189 insertions(+)[m
+[32m+[m[32m create mode 100644 php/WP_CLI/Bootstrap/InitializeHttpRequestMonitoring.php[m
+[32m+[m
+[32m+[m[32mdiff --git a/php/WP_CLI/Bootstrap/InitializeHttpRequestMonitoring.php b/php/WP_CLI/Bootstrap/InitializeHttpRequestMonitoring.php[m
+[32m+[m[32mnew file mode 100644[m
+[32m+[m[32mindex 00000000..e6b35c6c[m
+[32m+[m[32m--- /dev/null[m
+[32m+[m[32m+++ b/php/WP_CLI/Bootstrap/InitializeHttpRequestMonitoring.php[m
+[32m+[m[32m@@ -0,0 +1,189 @@[m
+[32m+[m[32m+<?php[m
+[32m+[m[32m+[m
+[32m+[m[32m+namespace WP_CLI\Bootstrap;[m
+[32m+[m[32m+[m
+[32m+[m[32m+use WP_CLI;[m
+[32m+[m[32m+[m
+[32m+[m[32m+/**[m
+[32m+[m[32m+ * Class InitializeHttpRequestMonitoring[m
+[32m+[m[32m+ *[m
+[32m+[m[32m+ * Initialize HTTP Request Monitoring by hooking into WordPress HTTP API filters.[m
+[32m+[m[32m+ *[m
+[32m+[m[32m+ * @package WP_CLI\Bootstrap[m
+[32m+[m[32m+ */[m
+[32m+[m[32m+class InitializeHttpRequestMonitoring implements BootstrapStep {[m
+[32m+[m[32m+[m
+[32m+[m[32m+	/**[m
+[32m+[m[32m+	 * Log file handle for HTTP requests/responses.[m
+[32m+[m[32m+	 *[m
+[32m+[m[32m+	 * @var resource|false[m
+[32m+[m[32m+	 */[m
+[32m+[m[32m+	private $log_file_handle = false;[m
+[32m+[m[32m+[m
+[32m+[m[32m+	/**[m
+[32m+[m[32m+	 * Process this single bootstrapping step.[m
+[32m+[m[32m+	 *[m
+[32m+[m[32m+	 * @param BootstrapState $state Contextual state to pass into the step.[m
+[32m+[m[32m+	 *[m
+[32m+[m[32m+	 * @return BootstrapState Modified state to pass to the next step.[m
+[32m+[m[32m+	 */[m
+[32m+[m[32m+	public function process( BootstrapState $state ) {[m
+[32m+[m[32m+		// Initialize log file if http_log_file is set[m
+[32m+[m[32m+		$http_log_file = WP_CLI::get_config( 'http_log_file' );[m
+[32m+[m[32m+		if ( $http_log_file ) {[m
+[32m+[m[32m+			$this->log_file_handle = @fopen( $http_log_file, 'a' );[m
+[32m+[m[32m+			if ( ! $this->log_file_handle ) {[m
+[32m+[m[32m+				WP_CLI::warning( sprintf( 'Could not open HTTP log file %s for writing', $http_log_file ) );[m
+[32m+[m[32m+			} else {[m
+[32m+[m[32m+				// Write header to log file[m
+[32m+[m[32m+				fwrite( $this->log_file_handle, "=== HTTP Request Log Started at " . date( 'Y-m-d H:i:s' ) . " ===\n" );[m
+[32m+[m[32m+[m
+[32m+[m[32m+				// Ensure we close the file handle on shutdown[m
+[32m+[m[32m+				register_shutdown_function( function() {[m
+[32m+[m[32m+					if ( $this->log_file_handle ) {[m
+[32m+[m[32m+						fwrite( $this->log_file_handle, "=== HTTP Request Log Ended at " . date( 'Y-m-d H:i:s' ) . " ===\n" );[m
+[32m+[m[32m+						fclose( $this->log_file_handle );[m
+[32m+[m[32m+					}[m
+[32m+[m[32m+				} );[m
+[32m+[m[32m+			}[m
+[32m+[m[32m+		}[m
+[32m+[m[32m+[m
+[32m+[m[32m+		// Register the WordPress hooks that will be applied once WordPress is loaded[m
+[32m+[m[32m+		WP_CLI::add_wp_hook( 'http_request_args', [ $this, 'log_http_request_args' ], 9999, 2 );[m
+[32m+[m[32m+		WP_CLI::add_wp_hook( 'http_api_debug', [ $this, 'log_http_api_response' ], 9999, 5 );[m
+[32m+[m[32m+[m
+[32m+[m[32m+		return $state;[m
+[32m+[m[32m+	}[m
+[32m+[m[32m+[m
+[32m+[m[32m+	/**[m
+[32m+[m[32m+	 * Log HTTP request arguments when HTTP request is made.[m
+[32m+[m[32m+	 *[m
+[32m+[m[32m+	 * @param array  $args HTTP request arguments.[m
+[32m+[m[32m+	 * @param string $url  Request URL.[m
+[32m+[m[32m+	 *[m
+[32m+[m[32m+	 * @return array Unmodified request arguments.[m
+[32m+[m[32m+	 */[m
+[32m+[m[32m+	public function log_http_request_args( $args, $url ) {[m
+[32m+[m[32m+		// Only log if debug mode or http_log is enabled[m
+[32m+[m[32m+		$debug = WP_CLI::get_config( 'debug' );[m
+[32m+[m[32m+		$http_log = WP_CLI::get_config( 'http_log' );[m
+[32m+[m[32m+[m
+[32m+[m[32m+		if ( ! $debug && ! $http_log && ! $this->log_file_handle ) {[m
+[32m+[m[32m+			return $args;[m
+[32m+[m[32m+		}[m
+[32m+[m[32m+[m
+[32m+[m[32m+		$log_group = $http_log ? 'http' : ($debug === true ? 'http' : $debug);[m
+[32m+[m[32m+		$log_level = $http_log ? 'info' : 'debug';[m
+[32m+[m[32m+[m
+[32m+[m[32m+		$log_data = [[m
+[32m+[m[32m+			'method' => isset( $args['method'] ) ? $args['method'] : 'GET',[m
+[32m+[m[32m+			'url' => $url,[m
+[32m+[m[32m+		];[m
+[32m+[m[32m+[m
+[32m+[m[32m+		// Only include headers and data in verbose logging mode[m
+[32m+[m[32m+		if ( WP_CLI::get_config( 'http_log_verbose' ) ) {[m
+[32m+[m[32m+			// Filter out sensitive headers (like Authorization)[m
+[32m+[m[32m+			if ( isset( $args['headers'] ) ) {[m
+[32m+[m[32m+				$log_headers = $args['headers'];[m
+[32m+[m[32m+				if ( isset( $log_headers['Authorization'] ) ) {[m
+[32m+[m[32m+					$log_headers['Authorization'] = 'REDACTED';[m
+[32m+[m[32m+				}[m
+[32m+[m[32m+				$log_data['headers'] = $log_headers;[m
+[32m+[m[32m+			}[m
+[32m+[m[32m+[m
+[32m+[m[32m+			// Only log body if it exists and isn't too large[m
+[32m+[m[32m+			if ( isset( $args['body'] ) && is_string( $args['body'] ) && strlen( $args['body'] ) < 1024 ) {[m
+[32m+[m[32m+				$log_data['body'] = $args['body'];[m
+[32m+[m[32m+			} elseif ( isset( $args['body'] ) ) {[m
+[32m+[m[32m+				$log_data['body'] = '[body too large to log]';[m
+[32m+[m[32m+			}[m
+[32m+[m[32m+		}[m
+[32m+[m[32m+[m
+[32m+[m[32m+		$method = isset( $args['method'] ) ? $args['method'] : 'GET';[m
+[32m+[m[32m+		$log_message = "WordPress HTTP Request: {$method} {$url}";[m
+[32m+[m[32m+[m
+[32m+[m[32m+		if ( $log_level === 'debug' ) {[m
+[32m+[m[32m+			WP_CLI::debug( $log_message . ' ' . json_encode( $log_data ), $log_group );[m
+[32m+[m[32m+		} else {[m
+[32m+[m[32m+			WP_CLI::log( $log_message );[m
+[32m+[m[32m+		}[m
+[32m+[m[32m+[m
+[32m+[m[32m+		// Write to log file if enabled[m
+[32m+[m[32m+		if ( $this->log_file_handle ) {[m
+[32m+[m[32m+			$timestamp = date( 'Y-m-d H:i:s' );[m
+[32m+[m[32m+			$log_entry = "[{$timestamp}] REQUEST: {$method} {$url}\n";[m
+[32m+[m[32m+			$log_entry .= json_encode( $log_data, JSON_PRETTY_PRINT ) . "\n\n";[m
+[32m+[m[32m+			fwrite( $this->log_file_handle, $log_entry );[m
+[32m+[m[32m+		}[m
+[32m+[m[32m+[m
+[32m+[m[32m+		return $args;[m
+[32m+[m[32m+	}[m
+[32m+[m[32m+[m
+[32m+[m[32m+	/**[m
+[32m+[m[32m+	 * Log HTTP API response.[m
+[32m+[m[32m+	 *[m
+[32m+[m[32m+	 * @param array|\WP_Error $response HTTP response or WP_Error object.[m
+[32m+[m[32m+	 * @param string          $context  Context under which the hook is fired.[m
+[32m+[m[32m+	 * @param string          $class    HTTP transport used.[m
+[32m+[m[32m+	 * @param array           $args     HTTP request arguments.[m
+[32m+[m[32m+	 * @param string          $url      The request URL.[m
+[32m+[m[32m+	 */[m
+[32m+[m[32m+	public function log_http_api_response( $response, $context, $class, $args, $url ) {[m
+[32m+[m[32m+		// Only log if debug mode or http_log is enabled[m
+[32m+[m[32m+		$debug = WP_CLI::get_config( 'debug' );[m
+[32m+[m[32m+		$http_log = WP_CLI::get_config( 'http_log' );[m
+[32m+[m[32m+[m
+[32m+[m[32m+		if ( ! $debug && ! $http_log && ! $this->log_file_handle ) {[m
+[32m+[m[32m+			return;[m
+[32m+[m[32m+		}[m
+[32m+[m[32m+[m
+[32m+[m[32m+		$log_group = $http_log ? 'http' : ($debug === true ? 'http' : $debug);[m
+[32m+[m[32m+		$log_level = $http_log ? 'info' : 'debug';[m
+[32m+[m[32m+[m
+[32m+[m[32m+		$method = isset( $args['method'] ) ? $args['method'] : 'GET';[m
+[32m+[m[32m+[m
+[32m+[m[32m+		if ( is_wp_error( $response ) ) {[m
+[32m+[m[32m+			$log_data = [[m
+[32m+[m[32m+				'error_code' => $response->get_error_code(),[m
+[32m+[m[32m+				'error_message' => $response->get_error_message(),[m
+[32m+[m[32m+			];[m
+[32m+[m[32m+[m
+[32m+[m[32m+			$log_message = "WordPress HTTP Response Error: {$method} {$url} - " . $response->get_error_message();[m
+[32m+[m[32m+		} else {[m
+[32m+[m[32m+			$log_data = [[m
+[32m+[m[32m+				'status' => isset( $response['response']['code'] ) ? $response['response']['code'] : '?',[m
+[32m+[m[32m+				'success' => isset( $response['response']['code'] ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300,[m
+[32m+[m[32m+			];[m
+[32m+[m[32m+[m
+[32m+[m[32m+			// Only include headers and body in verbose logging mode[m
+[32m+[m[32m+			if ( WP_CLI::get_config( 'http_log_verbose' ) ) {[m
+[32m+[m[32m+				if ( isset( $response['headers'] ) ) {[m
+[32m+[m[32m+					$log_data['headers'] = $response['headers'];[m
+[32m+[m[32m+				}[m
+[32m+[m[32m+[m
+[32m+[m[32m+				// Only log body if it's not too large[m
+[32m+[m[32m+				if ( isset( $response['body'] ) && is_string( $response['body'] ) && strlen( $response['body'] ) < 1024 ) {[m
+[32m+[m[32m+					$log_data['body'] = $response['body'];[m
+[32m+[m[32m+				} elseif ( isset( $response['body'] ) ) {[m
+[32m+[m[32m+					$log_data['body'] = '[body too large to log]';[m
+[32m+[m[32m+				}[m
+[32m+[m[32m+			}[m
+[32m+[m[32m+[m
+[32m+[m[32m+			$log_message = "WordPress HTTP Response: {$log_data['status']} for {$method} {$url}";[m
+[32m+[m[32m+		}[m
+[32m+[m[32m+[m
+[32m+[m[32m+		if ( $log_level === 'debug' ) {[m
+[32m+[m[32m+			WP_CLI::debug( $log_message . ' ' . json_encode( $log_data ), $log_group );[m
+[32m+[m[32m+		} else {[m
+[32m+[m[32m+			WP_CLI::log( $log_message );[m
+[32m+[m[32m+		}[m
+[32m+[m[32m+[m
+[32m+[m[32m+		// Write to log file if enabled[m
+[32m+[m[32m+		if ( $this->log_file_handle ) {[m
+[32m+[m[32m+			$timestamp = date( 'Y-m-d H:i:s' );[m
+[32m+[m[32m+			$log_entry = "[{$timestamp}] RESPONSE: {$method} {$url}\n";[m
+[32m+[m[32m+			$log_entry .= json_encode( $log_data, JSON_PRETTY_PRINT ) . "\n\n";[m
+[32m+[m[32m+			fwrite( $this->log_file_handle, $log_entry );[m
+[32m+[m[32m+		}[m
+[32m+[m[32m+	}[m
+[32m+[m[32m+}[m
+[32m+[m[32m\ No newline at end of file[m
+[32m+[m[32m--[m[41m [m
+[32m+[m[32m2.48.1.windows.1[m
+[32m+[m
+[1mdiff --git a/README.md b/README.md[m
+[1mindex 2f408d48..67d236eb 100644[m
+[1m--- a/README.md[m
+[1m+++ b/README.md[m
+[36m@@ -45,6 +45,41 @@[m [mFor a more complete introduction to using WP-CLI, read the [Quick Start guide](h[m
+ [m
+ Already feel comfortable with the basics? Jump into the [complete list of commands](https://developer.wordpress.org/cli/commands/) for detailed information on managing themes and plugins, importing and exporting data, performing database search-replace operations and more.[m
+ [m
+[32m+[m[32m### HTTP Request Logging[m
+[32m+[m
+[32m+[m[32mWP-CLI includes support for logging HTTP requests made by WordPress, which can be useful for debugging, troubleshooting, and development. You can enable HTTP request logging in two ways:[m
+[32m+[m
+[32m+[m[32m1. Using the `--debug` flag with the `http` group:[m
+[32m+[m[32m   ```bash[m
+[32m+[m[32m   $ wp --debug=http plugin install hello-dolly[m
+[32m+[m[32m   Debug (http): HTTP Request: GET https://api.wordpress.org/plugins/info/1.0/hello-dolly.json {"method":"GET","url":"https://api.wordpress.org/plugins/info/1.0/hello-dolly.json"} (0.201s)[m
+[32m+[m[32m   Debug (http): HTTP Response: 200 for GET https://api.wordpress.org/plugins/info/1.0/hello-dolly.json {"status":200,"success":true} (0.201s)[m
+[32m+[m[32m   ```[m
+[32m+[m
+[32m+[m[32m2. Using the dedicated `--http_log` flag:[m
+[32m+[m[32m   ```bash[m
+[32m+[m[32m   $ wp --http_log plugin install hello-dolly[m
+[32m+[m[32m   HTTP Request: GET https://api.wordpress.org/plugins/info/1.0/hello-dolly.json[m
+[32m+[m[32m   HTTP Response: 200 for GET https://api.wordpress.org/plugins/info/1.0/hello-dolly.json[m
+[32m+[m[32m   ```[m
+[32m+[m
+[32m+[m[32mFor more detailed logging, including headers and response bodies, you can add the `--http_log_verbose` flag:[m
+[32m+[m[32m```bash[m
+[32m+[m[32m$ wp --http_log --http_log_verbose plugin install hello-dolly[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mYou can also log HTTP requests to a file using the `--http_log_file` option:[m
+[32m+[m[32m```bash[m
+[32m+[m[32m$ wp --http_log_file=/path/to/http-log.txt plugin install hello-dolly[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mThis will write detailed HTTP request and response logs to the specified file, which is useful for:[m
+[32m+[m[32m- Capturing logs for later analysis[m
+[32m+[m[32m- Debugging in non-interactive environments[m
+[32m+[m[32m- Keeping a permanent record of HTTP interactions[m
+[32m+[m
+[32m+[m[32mThis feature helps when troubleshooting issues with external APIs, debugging WordPress core functionality, or developing custom commands that interact with remote services.[m
+[32m+[m
+ ## Installing[m
+ [m
+ Downloading the Phar file is our recommended installation method for most users. Should you need, see also our documentation on [alternative installation methods](https://make.wordpress.org/cli/handbook/installing/) ([Composer](https://make.wordpress.org/cli/handbook/installing/#installing-via-composer), [Homebrew](https://make.wordpress.org/cli/handbook/installing/#installing-via-homebrew), [Docker](https://make.wordpress.org/cli/handbook/installing/#installing-via-docker)).[m
+[36m@@ -182,11 +217,11 @@[m [mWP-CLI comes with dozens of commands. It's easier than it looks to create a cust[m
+ [m
+ ## Contributing[m
+ [m
+[31m-We appreciate you taking the initiative to contribute to WP-CLI. It’s because of you, and the community around you, that WP-CLI is such a great project.[m
+[32m+[m[32mWe appreciate you taking the initiative to contribute to WP-CLI. It's because of you, and the community around you, that WP-CLI is such a great project.[m
+ [m
+[31m-**Contributing isn’t limited to just code.** We encourage you to contribute in the way that best fits your abilities, by writing tutorials, giving a demo at your local meetup, helping other users with their support questions, or revising our documentation.[m
+[32m+[m[32m**Contributing isn't limited to just code.** We encourage you to contribute in the way that best fits your abilities, by writing tutorials, giving a demo at your local meetup, helping other users with their support questions, or revising our documentation.[m
+ [m
+[31m-Read through our [contributing guidelines in the handbook](https://make.wordpress.org/cli/handbook/contributing/) for a thorough introduction to how you can get involved. Following these guidelines helps to communicate that you respect the time of other contributors on the project. In turn, they’ll do their best to reciprocate that respect when working with you, across timezones and around the world.[m
+[32m+[m[32mRead through our [contributing guidelines in the handbook](https://make.wordpress.org/cli/handbook/contributing/) for a thorough introduction to how you can get involved. Following these guidelines helps to communicate that you respect the time of other contributors on the project. In turn, they'll do their best to reciprocate that respect when working with you, across timezones and around the world.[m
+ [m
+ ## Leadership[m
+ [m
+[1mdiff --git a/php/WP_CLI/Bootstrap/InitializeHttpRequestMonitoring.php b/php/WP_CLI/Bootstrap/InitializeHttpRequestMonitoring.php[m
+[1mnew file mode 100644[m
+[1mindex 00000000..e6b35c6c[m
+[1m--- /dev/null[m
+[1m+++ b/php/WP_CLI/Bootstrap/InitializeHttpRequestMonitoring.php[m
+[36m@@ -0,0 +1,189 @@[m
+[32m+[m[32m<?php[m
+[32m+[m
+[32m+[m[32mnamespace WP_CLI\Bootstrap;[m
+[32m+[m
+[32m+[m[32muse WP_CLI;[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Class InitializeHttpRequestMonitoring[m
+[32m+[m[32m *[m
+[32m+[m[32m * Initialize HTTP Request Monitoring by hooking into WordPress HTTP API filters.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @package WP_CLI\Bootstrap[m
+[32m+[m[32m */[m
+[32m+[m[32mclass InitializeHttpRequestMonitoring implements BootstrapStep {[m
+[32m+[m
+[32m+[m	[32m/**[m
+[32m+[m	[32m * Log file handle for HTTP requests/responses.[m
+[32m+[m	[32m *[m
+[32m+[m	[32m * @var resource|false[m
+[32m+[m	[32m */[m
+[32m+[m	[32mprivate $log_file_handle = false;[m
+[32m+[m
+[32m+[m	[32m/**[m
+[32m+[m	[32m * Process this single bootstrapping step.[m
+[32m+[m	[32m *[m
+[32m+[m	[32m * @param BootstrapState $state Contextual state to pass into the step.[m
+[32m+[m	[32m *[m
+[32m+[m	[32m * @return BootstrapState Modified state to pass to the next step.[m
+[32m+[m	[32m */[m
+[32m+[m	[32mpublic function process( BootstrapState $state ) {[m
+[32m+[m		[32m// Initialize log file if http_log_file is set[m
+[32m+[m		[32m$http_log_file = WP_CLI::get_config( 'http_log_file' );[m
+[32m+[m		[32mif ( $http_log_file ) {[m
+[32m+[m			[32m$this->log_file_handle = @fopen( $http_log_file, 'a' );[m
+[32m+[m			[32mif ( ! $this->log_file_handle ) {[m
+[32m+[m				[32mWP_CLI::warning( sprintf( 'Could not open HTTP log file %s for writing', $http_log_file ) );[m
+[32m+[m			[32m} else {[m
+[32m+[m				[32m// Write header to log file[m
+[32m+[m				[32mfwrite( $this->log_file_handle, "=== HTTP Request Log Started at " . date( 'Y-m-d H:i:s' ) . " ===\n" );[m
+[32m+[m
+[32m+[m				[32m// Ensure we close the file handle on shutdown[m
+[32m+[m				[32mregister_shutdown_function( function() {[m
+[32m+[m					[32mif ( $this->log_file_handle ) {[m
+[32m+[m						[32mfwrite( $this->log_file_handle, "=== HTTP Request Log Ended at " . date( 'Y-m-d H:i:s' ) . " ===\n" );[m
+[32m+[m						[32mfclose( $this->log_file_handle );[m
+[32m+[m					[32m}[m
+[32m+[m				[32m} );[m
+[32m+[m			[32m}[m
+[32m+[m		[32m}[m
+[32m+[m
+[32m+[m		[32m// Register the WordPress hooks that will be applied once WordPress is loaded[m
+[32m+[m		[32mWP_CLI::add_wp_hook( 'http_request_args', [ $this, 'log_http_request_args' ], 9999, 2 );[m
+[32m+[m		[32mWP_CLI::add_wp_hook( 'http_api_debug', [ $this, 'log_http_api_response' ], 9999, 5 );[m
+[32m+[m
+[32m+[m		[32mreturn $state;[m
+[32m+[m	[32m}[m
+[32m+[m
+[32m+[m	[32m/**[m
+[32m+[m	[32m * Log HTTP request arguments when HTTP request is made.[m
+[32m+[m	[32m *[m
+[32m+[m	[32m * @param array  $args HTTP request arguments.[m
+[32m+[m	[32m * @param string $url  Request URL.[m
+[32m+[m	[32m *[m
+[32m+[m	[32m * @return array Unmodified request arguments.[m
+[32m+[m	[32m */[m
+[32m+[m	[32mpublic function log_http_request_args( $args, $url ) {[m
+[32m+[m		[32m// Only log if debug mode or http_log is enabled[m
+[32m+[m		[32m$debug = WP_CLI::get_config( 'debug' );[m
+[32m+[m		[32m$http_log = WP_CLI::get_config( 'http_log' );[m
+[32m+[m
+[32m+[m		[32mif ( ! $debug && ! $http_log && ! $this->log_file_handle ) {[m
+[32m+[m			[32mreturn $args;[m
+[32m+[m		[32m}[m
+[32m+[m
+[32m+[m		[32m$log_group = $http_log ? 'http' : ($debug === true ? 'http' : $debug);[m
+[32m+[m		[32m$log_level = $http_log ? 'info' : 'debug';[m
+[32m+[m
+[32m+[m		[32m$log_data = [[m
+[32m+[m			[32m'method' => isset( $args['method'] ) ? $args['method'] : 'GET',[m
+[32m+[m			[32m'url' => $url,[m
+[32m+[m		[32m];[m
+[32m+[m
+[32m+[m		[32m// Only include headers and data in verbose logging mode[m
+[32m+[m		[32mif ( WP_CLI::get_config( 'http_log_verbose' ) ) {[m
+[32m+[m			[32m// Filter out sensitive headers (like Authorization)[m
+[32m+[m			[32mif ( isset( $args['headers'] ) ) {[m
+[32m+[m				[32m$log_headers
