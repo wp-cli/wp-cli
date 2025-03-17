@@ -361,6 +361,11 @@ Feature: Run a WP-CLI command
       <?php
       echo 'ENVIRONMENT REQUIRE' . PHP_EOL;
       """
+      And a env-2.php file:
+      """
+      <?php
+      echo 'ENVIRONMENT REQUIRE 2' . PHP_EOL;
+      """
 
     When I run `WP_CLI_REQUIRE=env.php wp eval 'return null;' --skip-wordpress`
     Then STDOUT should be:
@@ -372,6 +377,14 @@ Feature: Run a WP-CLI command
     Then STDOUT should be:
       """
       ENVIRONMENT REQUIRE
+      test
+      """
+
+    When I run `WP_CLI_REQUIRE='env.php,env-2.php' wp --require=custom-cmd.php custom-command echo_test`
+    Then STDOUT should be:
+      """
+      ENVIRONMENT REQUIRE
+      ENVIRONMENT REQUIRE 2
       test
       """
 
