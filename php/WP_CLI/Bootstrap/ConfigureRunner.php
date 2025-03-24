@@ -22,6 +22,10 @@ final class ConfigureRunner implements BootstrapStep {
 		$runner = new RunnerInstance();
 		$runner()->init_config();
 
+		$state->setValue( 'config', $runner()->config );
+		$state->setValue( 'arguments', $runner()->arguments );
+		$state->setValue( 'assoc_args', $runner()->assoc_args );
+
 		return $state;
 	}
 }
