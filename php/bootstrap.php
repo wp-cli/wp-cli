@@ -25,6 +25,7 @@ function get_bootstrap_steps() {
 		Bootstrap\IncludeRequestsAutoloader::class,
 		Bootstrap\InitializeColorization::class,
 		Bootstrap\InitializeLogger::class,
+		Bootstrap\InitializeHttpRequestMonitoring::class,
 		Bootstrap\DefineProtectedCommands::class,
 		Bootstrap\LoadExecCommand::class,
 		Bootstrap\LoadRequiredCommand::class,
