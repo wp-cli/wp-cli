@@ -84,6 +84,17 @@ class Configurator {
 
 			$this->config[ $key ] = $details['default'];
 		}
+
+		$env_files = getenv( 'WP_CLI_REQUIRE' )
+		? array_filter( array_map( 'trim', explode( ',', getenv( 'WP_CLI_REQUIRE' ) ) ) )
+		: [];
+
+		if ( ! empty( $env_files ) ) {
+			if ( ! isset( $this->config['require'] ) ) {
+				$this->config['require'] = [];
+			}
+			$this->config['require'] = array_unique( array_merge( $env_files, $this->config['require'] ) );
+		}
 	}
 
 	/**

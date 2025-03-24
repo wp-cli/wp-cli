@@ -286,7 +286,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 *     # Update CLI.
 	 *     $ wp cli update
-	 *     You have version 0.24.0. Would you like to update to 0.24.1? [y/n] y
+	 *     You are currently using WP-CLI version 0.24.0. Would you like to update to 0.24.1? [y/n] y
 	 *     Downloading from https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar...
 	 *     New version works. Proceeding to replace.
 	 *     Success: Updated WP-CLI to 0.24.1.
@@ -305,12 +305,12 @@ class CLI_Command extends WP_CLI_Command {
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'nightly' ) ) {
-			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest nightly?', WP_CLI_VERSION ), $assoc_args );
+			WP_CLI::confirm( sprintf( 'You are currently using WP-CLI version %s. Would you like to update to the latest nightly version?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar';
 			$md5_url      = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.md5';
 			$sha512_url   = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.sha512';
 		} elseif ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
-			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest stable release?', WP_CLI_VERSION ), $assoc_args );
+			WP_CLI::confirm( sprintf( 'You are currently using WP-CLI version %s. Would you like to update to the latest stable release?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
 			$md5_url      = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.md5';
 			$sha512_url   = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.sha512';
