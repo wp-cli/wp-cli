@@ -601,10 +601,12 @@ class Runner {
 		$is_stdout_tty = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
 		$is_stdin_tty  = function_exists( 'posix_isatty' ) ? posix_isatty( STDIN ) : true;
 
-		$docker_compose_v2_version_cmd = Utils\esc_cmd( Utils\force_env_on_nix_systems( 'docker' ) . ' compose %s', 'version' );
-		$docker_compose_cmd            = ! empty( Process::create( $docker_compose_v2_version_cmd )->run()->stdout )
-			? 'docker compose'
-			: 'docker-compose';
+		if ( in_array( $bits['scheme'], [ 'docker', 'docker-compose', 'docker-compose-run' ], true ) ) {
+				$docker_compose_v2_version_cmd = Utils\esc_cmd( Utils\force_env_on_nix_systems( 'docker' ) . ' compose %s', 'version' );
+				$docker_compose_cmd            = ! empty( Process::create( $docker_compose_v2_version_cmd )->run()->stdout )
+						? 'docker compose'
+						: 'docker-compose';
+		}
 
 		if ( 'docker' === $bits['scheme'] ) {
 			$command = 'docker exec %s%s%s%s%s sh -c %s';
