@@ -1818,20 +1818,57 @@ function pluralize( $noun, $count = null ) {
 }
 
 /**
- * Get the path to the mysql binary.
+ * Return the detected database type.
  *
- * @return string Path to the mysql binary, or an empty string if not found.
+ * Can be either 'sqlite' (if in a WordPress installation with the SQLite drop-in),
+ * 'mysql', or 'mariadb'.
+ *
+ * @return string Database type.
+ */
+function get_db_type() {
+	if ( defined( 'SQLITE_DB_DROPIN_VERSION' ) ) {
+		return 'sqlite';
+	}
+
+	return ( false !== strpos( get_mysql_version(), 'MariaDB' ) ) ? 'mariadb' : 'mysql';
+}
+
+/**
+ * Get the path to the MySQL or MariaDB binary.
+ *
+ * @since 2.12.0 Now also checks for MariaDB.
+ *
+ * @return string Path to the MySQL/MariaDB binary, or an empty string if not found.
  */
 function get_mysql_binary_path() {
 	static $path = null;
 
-	if ( null === $path ) {
-		$result = Process::create( '/usr/bin/env which mysql', null, null )->run();
+	if ( null !== $path ) {
+		return $path;
+	}
+
+	$result = Process::create( '/usr/bin/env which mysql', null, null )->run();
+
+	if ( 0 !== $result->return_code ) {
+		$path = '';
+
+		$result = Process::create( '/usr/bin/env which mariadb', null, null )->run();
 
 		if ( 0 !== $result->return_code ) {
 			$path = '';
 		} else {
 			$path = trim( $result->stdout );
+		}
+	} else {
+		$path = trim( $result->stdout );
+
+		// It's actually MariaDB disguised as MySQL.
+		if ( false !== strpos( $path, 'MariaDB' ) ) {
+			$result = Process::create( '/usr/bin/env which mariadb', null, null )->run();
+
+			if ( 0 === $result->return_code ) {
+				$path = trim( $result->stdout );
+			}
 		}
 	}
 
@@ -1839,16 +1876,26 @@ function get_mysql_binary_path() {
 }
 
 /**
- * Get the version of the MySQL database.
+ * Get the version of the MySQL or MariaDB database.
  *
- * @return string Version of the MySQL database, or an empty string if not
- *                found.
+ * @since 2.12.0 Now also checks for MariaDB.
+ *
+ * @return string Version of the MySQL/MariaDB database,
+ *                or an empty string if not found.
  */
 function get_mysql_version() {
 	static $version = null;
 
-	if ( null === $version ) {
-		$result = Process::create( '/usr/bin/env mysql --version', null, null )->run();
+	if ( null !== $version ) {
+		return $version;
+	}
+
+	$binary = get_mysql_binary_path();
+
+	if ( '' === $binary ) {
+		$version = null;
+	} else {
+		$result = Process::create( "$binary --version", null, null )->run();
 
 		if ( 0 !== $result->return_code ) {
 			$version = '';
@@ -1869,8 +1916,16 @@ function get_mysql_version() {
 function get_sql_modes() {
 	static $sql_modes = null;
 
-	if ( null === $sql_modes ) {
-		$result = Process::create( '/usr/bin/env mysql --no-auto-rehash --batch --skip-column-names --execute="SELECT @@SESSION.sql_mode"', null, null )->run();
+	if ( null !== $sql_modes ) {
+		return $sql_modes;
+	}
+
+	$binary = get_mysql_binary_path();
+
+	if ( '' === $binary ) {
+		$sql_modes = [];
+	} else {
+		$result = Process::create( "$binary --no-auto-rehash --batch --skip-column-names --execute=\"SELECT @@SESSION.sql_mode\"", null, null )->run();
 
 		if ( 0 !== $result->return_code ) {
 			$sql_modes = [];
