@@ -1826,11 +1826,29 @@ function pluralize( $noun, $count = null ) {
  * @return string Database type.
  */
 function get_db_type() {
+	static $db_type = null;
+
 	if ( defined( 'SQLITE_DB_DROPIN_VERSION' ) ) {
 		return 'sqlite';
 	}
 
-	return ( false !== strpos( get_mysql_version(), 'MariaDB' ) ) ? 'mariadb' : 'mysql';
+	if ( null !== $db_type ) {
+		return $db_type;
+	}
+
+	$db_type = 'mysql';
+
+	$binary = get_mysql_binary_path();
+
+	if ( '' !== $binary ) {
+		$result = Process::create( "$binary --version", null, null )->run();
+
+		if ( 0 === $result->return_code ) {
+			$db_type = ( false !== strpos( $result->stdout, 'MariaDB' ) ) ? 'mariadb' : 'mysql';
+		}
+	}
+
+	return $db_type;
 }
 
 /**
@@ -1847,28 +1865,16 @@ function get_mysql_binary_path() {
 		return $path;
 	}
 
+	$path   = '';
 	$result = Process::create( '/usr/bin/env which mysql', null, null )->run();
 
-	if ( 0 !== $result->return_code ) {
-		$path = '';
-
+	if ( 0 === $result->return_code ) {
+		$path = trim( $result->stdout );
+	} else {
 		$result = Process::create( '/usr/bin/env which mariadb', null, null )->run();
 
-		if ( 0 !== $result->return_code ) {
-			$path = '';
-		} else {
+		if ( 0 === $result->return_code ) {
 			$path = trim( $result->stdout );
-		}
-	} else {
-		$path = trim( $result->stdout );
-
-		// It's actually MariaDB disguised as MySQL.
-		if ( false !== strpos( $path, 'MariaDB' ) ) {
-			$result = Process::create( '/usr/bin/env which mariadb', null, null )->run();
-
-			if ( 0 === $result->return_code ) {
-				$path = trim( $result->stdout );
-			}
 		}
 	}
 
@@ -1890,12 +1896,12 @@ function get_mysql_version() {
 		return $version;
 	}
 
+	$db_type = get_db_type();
+
 	$binary = get_mysql_binary_path();
 
-	if ( '' === $binary ) {
-		$version = null;
-	} else {
-		$result = Process::create( "$binary --version", null, null )->run();
+	if ( 'sqlite' !== $db_type ) {
+		$result = Process::create( "/usr/bin/env $db_type --version", null, null )->run();
 
 		if ( 0 !== $result->return_code ) {
 			$version = '';
