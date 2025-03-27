@@ -1854,6 +1854,9 @@ function get_db_type() {
 /**
  * Get the path to the MySQL or MariaDB binary.
  *
+ * If the MySQL binary is provided by MariaDB (as determined by the version string),
+ * prefers the actual MariaDB binary.
+ *
  * @since 2.12.0 Now also checks for MariaDB.
  *
  * @return string Path to the MySQL/MariaDB binary, or an empty string if not found.
@@ -1865,17 +1868,24 @@ function get_mysql_binary_path() {
 		return $path;
 	}
 
-	$path   = '';
-	$result = Process::create( '/usr/bin/env which mysql', null, null )->run();
+	$path    = '';
+	$mysql   = Process::create( '/usr/bin/env which mysql', null, null )->run();
+	$mariadb = Process::create( '/usr/bin/env which mariadb', null, null )->run();
 
-	if ( 0 === $result->return_code ) {
-		$path = trim( $result->stdout );
-	} else {
-		$result = Process::create( '/usr/bin/env which mariadb', null, null )->run();
+	$mysql_binary   = trim( $mysql->stdout );
+	$mariadb_binary = trim( $mariadb->stdout );
 
-		if ( 0 === $result->return_code ) {
-			$path = trim( $result->stdout );
+	if ( 0 === $mysql->return_code ) {
+		if ( '' !== $mysql_binary ) {
+			$result = Process::create( "$mysql_binary --version", null, null )->run();
+
+			// It's actually MariaDB disguised as MySQL.
+			if ( 0 === $result->return_code && false !== strpos( $result->stdout, 'MariaDB' ) && 0 === $mariadb->return_code ) {
+				$path = $mariadb_binary;
+			}
 		}
+	} elseif ( 0 === $mariadb->return_code ) {
+		$path = $mariadb_binary;
 	}
 
 	return $path;
@@ -1897,8 +1907,6 @@ function get_mysql_version() {
 	}
 
 	$db_type = get_db_type();
-
-	$binary = get_mysql_binary_path();
 
 	if ( 'sqlite' !== $db_type ) {
 		$result = Process::create( "/usr/bin/env $db_type --version", null, null )->run();
