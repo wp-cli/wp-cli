@@ -1818,37 +1818,103 @@ function pluralize( $noun, $count = null ) {
 }
 
 /**
- * Get the path to the mysql binary.
+ * Return the detected database type.
  *
- * @return string Path to the mysql binary, or an empty string if not found.
+ * Can be either 'sqlite' (if in a WordPress installation with the SQLite drop-in),
+ * 'mysql', or 'mariadb'.
+ *
+ * @return string Database type.
+ */
+function get_db_type() {
+	static $db_type = null;
+
+	if ( defined( 'SQLITE_DB_DROPIN_VERSION' ) ) {
+		return 'sqlite';
+	}
+
+	if ( null !== $db_type ) {
+		return $db_type;
+	}
+
+	$db_type = 'mysql';
+
+	$binary = get_mysql_binary_path();
+
+	if ( '' !== $binary ) {
+		$result = Process::create( "$binary --version", null, null )->run();
+
+		if ( 0 === $result->return_code ) {
+			$db_type = ( false !== strpos( $result->stdout, 'MariaDB' ) ) ? 'mariadb' : 'mysql';
+		}
+	}
+
+	return $db_type;
+}
+
+/**
+ * Get the path to the MySQL or MariaDB binary.
+ *
+ * If the MySQL binary is provided by MariaDB (as determined by the version string),
+ * prefers the actual MariaDB binary.
+ *
+ * @since 2.12.0 Now also checks for MariaDB.
+ *
+ * @return string Path to the MySQL/MariaDB binary, or an empty string if not found.
  */
 function get_mysql_binary_path() {
 	static $path = null;
 
-	if ( null === $path ) {
-		$result = Process::create( '/usr/bin/env which mysql', null, null )->run();
+	if ( null !== $path ) {
+		return $path;
+	}
 
-		if ( 0 !== $result->return_code ) {
-			$path = '';
-		} else {
-			$path = trim( $result->stdout );
+	$path    = '';
+	$mysql   = Process::create( '/usr/bin/env which mysql', null, null )->run();
+	$mariadb = Process::create( '/usr/bin/env which mariadb', null, null )->run();
+
+	$mysql_binary   = trim( $mysql->stdout );
+	$mariadb_binary = trim( $mariadb->stdout );
+
+	if ( 0 === $mysql->return_code ) {
+		if ( '' !== $mysql_binary ) {
+			$path   = $mysql_binary;
+			$result = Process::create( "$mysql_binary --version", null, null )->run();
+
+			// It's actually MariaDB disguised as MySQL.
+			if ( 0 === $result->return_code && false !== strpos( $result->stdout, 'MariaDB' ) && 0 === $mariadb->return_code ) {
+				$path = $mariadb_binary;
+			}
 		}
+	} elseif ( 0 === $mariadb->return_code ) {
+		$path = $mariadb_binary;
+	}
+
+	if ( '' === $path ) {
+		WP_CLI::Error( 'Could not find mysql binary' );
 	}
 
 	return $path;
 }
 
 /**
- * Get the version of the MySQL database.
+ * Get the version of the MySQL or MariaDB database.
  *
- * @return string Version of the MySQL database, or an empty string if not
- *                found.
+ * @since 2.12.0 Now also checks for MariaDB.
+ *
+ * @return string Version of the MySQL/MariaDB database,
+ *                or an empty string if not found.
  */
 function get_mysql_version() {
 	static $version = null;
 
-	if ( null === $version ) {
-		$result = Process::create( '/usr/bin/env mysql --version', null, null )->run();
+	if ( null !== $version ) {
+		return $version;
+	}
+
+	$db_type = get_db_type();
+
+	if ( 'sqlite' !== $db_type ) {
+		$result = Process::create( "/usr/bin/env $db_type --version", null, null )->run();
 
 		if ( 0 !== $result->return_code ) {
 			$version = '';
@@ -1861,6 +1927,24 @@ function get_mysql_version() {
 }
 
 /**
+	* Returns the correct `dump` command based on the detected database type.
+	*
+	* @return string The appropriate dump command.
+	*/
+function get_sql_dump_command() {
+	return 'mariadb' === get_db_type() ? 'mariadb-dump' : 'mysqldump';
+}
+
+/**
+	* Returns the correct `check` command based on the detected database type.
+	*
+	* @return string The appropriate check command.
+	*/
+function get_sql_check_command() {
+	return 'mariadb' === get_db_type() ? 'mariadb-check' : 'mysqlcheck';
+}
+
+/**
  * Get the SQL modes of the MySQL session.
  *
  * @return string[] Array of SQL modes, or an empty array if they couldn't be
@@ -1869,8 +1953,16 @@ function get_mysql_version() {
 function get_sql_modes() {
 	static $sql_modes = null;
 
-	if ( null === $sql_modes ) {
-		$result = Process::create( '/usr/bin/env mysql --no-auto-rehash --batch --skip-column-names --execute="SELECT @@SESSION.sql_mode"', null, null )->run();
+	if ( null !== $sql_modes ) {
+		return $sql_modes;
+	}
+
+	$binary = get_mysql_binary_path();
+
+	if ( '' === $binary ) {
+		$sql_modes = [];
+	} else {
+		$result = Process::create( "$binary --no-auto-rehash --batch --skip-column-names --execute=\"SELECT @@SESSION.sql_mode\"", null, null )->run();
 
 		if ( 0 !== $result->return_code ) {
 			$sql_modes = [];
