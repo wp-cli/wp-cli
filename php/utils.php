@@ -1922,6 +1922,24 @@ function get_mysql_version() {
 }
 
 /**
+	* Returns the correct `dump` command based on the detected database type.
+	*
+	* @return string The appropriate dump command.
+	*/
+function get_sql_dump_command() {
+	return 'mariadb' === get_db_type() ? 'mariadb-dump' : 'mysqldump';
+}
+
+/**
+	* Returns the correct `check` command based on the detected database type.
+	*
+	* @return string The appropriate check command.
+	*/
+function get_sql_check_command() {
+	return 'mariadb' === get_db_type() ? 'mariadb-check' : 'mysqlcheck';
+}
+
+/**
  * Get the SQL modes of the MySQL session.
  *
  * @return string[] Array of SQL modes, or an empty array if they couldn't be
