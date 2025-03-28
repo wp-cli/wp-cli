@@ -1877,6 +1877,7 @@ function get_mysql_binary_path() {
 
 	if ( 0 === $mysql->return_code ) {
 		if ( '' !== $mysql_binary ) {
+			$path   = $mysql_binary;
 			$result = Process::create( "$mysql_binary --version", null, null )->run();
 
 			// It's actually MariaDB disguised as MySQL.
@@ -1886,6 +1887,10 @@ function get_mysql_binary_path() {
 		}
 	} elseif ( 0 === $mariadb->return_code ) {
 		$path = $mariadb_binary;
+	}
+
+	if ( '' === $path ) {
+		WP_CLI::Error( 'Could not find mysql binary' );
 	}
 
 	return $path;
