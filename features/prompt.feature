@@ -173,6 +173,7 @@ Feature: Prompt user for input
       post_type
       post
 
+
       post_title,post_name,post_status
       csv
       """
@@ -211,6 +212,9 @@ Feature: Prompt user for input
       category
       General
       general
+
+
+
       """
 
     When I run `wp term create --prompt < value-file`
