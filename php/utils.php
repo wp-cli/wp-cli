@@ -832,20 +832,97 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 
 	$options = WP_CLI::do_hook( 'http_request_options', $options );
 
+	// Log the HTTP request if debug mode is enabled or if http_log option is set
+	$debug    = \WP_CLI::get_config( 'debug' );
+	$http_log = \WP_CLI::get_config( 'http_log' );
+
+	if ( $debug || $http_log ) {
+		$log_group = $http_log ? 'http' : ( true === $debug ? 'http' : $debug );
+		$log_level = $http_log ? 'info' : 'debug';
+
+		$log_data = [
+			'method' => $method,
+			'url'    => $url,
+		];
+
+		// Only include headers and data in verbose logging mode
+		if ( \WP_CLI::get_config( 'http_log_verbose' ) ) {
+			// Filter out sensitive headers (like Authorization)
+			$log_headers = $headers;
+			if ( isset( $log_headers['Authorization'] ) ) {
+				$log_headers['Authorization'] = 'REDACTED';
+			}
+			$log_data['headers'] = $log_headers;
+
+			// Only log data if it exists and isn't too large
+			if ( null !== $data && is_string( $data ) && strlen( $data ) < 1024 ) {
+				$log_data['data'] = $data;
+			} elseif ( null !== $data ) {
+				$log_data['data'] = '[data too large to log]';
+			}
+		}
+
+		$log_message = "HTTP Request: {$method} {$url}";
+		if ( 'debug' === $log_level ) {
+			\WP_CLI::debug( $log_message . ' ' . json_encode( $log_data ), $log_group );
+		} else {
+			\WP_CLI::log( $log_message );
+		}
+	}
+
 	RequestsLibrary::register_autoloader();
 
 	$request_method = [ RequestsLibrary::get_class_name(), 'request' ];
 
 	try {
 		try {
-			return $request_method( $url, $headers, $data, $method, $options );
+			$response = $request_method( $url, $headers, $data, $method, $options );
+
+			// Log the HTTP response
+			if ( $debug || $http_log ) {
+				$log_group = $http_log ? 'http' : ( true === $debug ? 'http' : $debug );
+				$log_level = $http_log ? 'info' : 'debug';
+
+				$log_data = [
+					'status'  => $response->status_code,
+					'success' => $response->success,
+				];
+
+				// Only include headers in verbose logging mode
+				if ( \WP_CLI::get_config( 'http_log_verbose' ) ) {
+					$log_data['headers'] = $response->headers->getAll();
+
+					// Only log body if it's not too large
+					if ( 1024 > strlen( $response->body ) ) {
+						$log_data['body'] = $response->body;
+					} else {
+						$log_data['body'] = '[body too large to log]';
+					}
+				}
+
+				$log_message = "HTTP Response: {$response->status_code} for {$method} {$url}";
+				if ( 'debug' === $log_level ) {
+					\WP_CLI::debug( $log_message . ' ' . json_encode( $log_data ), $log_group );
+				} else {
+					\WP_CLI::log( $log_message );
+				}
+			}
+
+			return $response;
 		} catch ( Exception $exception ) {
 			if ( RequestsLibrary::is_requests_exception( $exception ) ) {
 				if (
 					true !== $options['verify']
 					|| 'curlerror' !== $exception->getType()
-					|| curl_errno( $exception->getData() ) !== CURLE_SSL_CACERT
+					|| CURLE_SSL_CACERT !== curl_errno( $exception->getData() )
 				) {
+					// Log HTTP request exception
+					if ( $debug || $http_log ) {
+						$log_group   = $http_log ? 'http' : ( true === $debug ? 'http' : $debug );
+						$log_message = "HTTP Request Exception: {$method} {$url} - " . $exception->getMessage();
+						\WP_CLI::debug( $log_message, $log_group );
+					}
+
 					throw $exception;
 				}
 
