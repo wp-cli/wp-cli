@@ -239,7 +239,7 @@ Feature: Have a config file
       """
 
     When I run `WP_CLI_CONFIG_PATH=test-dir/config.yml wp help`
-	  Then STDERR should be empty
+    Then STDERR should be empty
 
   Scenario: Load WordPress with `--debug`
     Given a WP installation

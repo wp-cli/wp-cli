@@ -235,7 +235,7 @@ Feature: Run a WP-CLI command
       | --no-launch |
       | --launch    |
 
-    @less-than-php-8
+  @less-than-php-8
   Scenario Outline: Installed packages work as expected
     Given a WP installation
 
@@ -249,9 +249,9 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
 
     Examples:
-    | flag        |
-    | --no-launch |
-    | --launch    |
+      | flag        |
+      | --no-launch |
+      | --launch    |
 
   Scenario Outline: Persists global parameters when supplied interactively
     Given a WP installation in 'foo'
@@ -266,9 +266,9 @@ Feature: Run a WP-CLI command
     And the return code should be 0
 
     Examples:
-    | flag        |
-    | --no-launch |
-    | --launch    |
+      | flag        |
+      | --no-launch |
+      | --launch    |
 
   Scenario Outline: Apply backwards compat conversions
     Given a WP installation
@@ -283,9 +283,9 @@ Feature: Run a WP-CLI command
     And the return code should be 0
 
     Examples:
-    | flag        |
-    | --no-launch |
-    | --launch    |
+      | flag        |
+      | --no-launch |
+      | --launch    |
 
   Scenario Outline: Check that proc_open() and proc_close() aren't disabled for launch
     Given a WP installation
@@ -356,12 +356,12 @@ Feature: Run a WP-CLI command
       }
       WP_CLI::add_command( 'custom-command', 'Custom_Command' );
       """
-      And a env.php file:
+    And a env.php file:
       """
       <?php
       echo 'ENVIRONMENT REQUIRE' . PHP_EOL;
       """
-      And a env-2.php file:
+    And a env-2.php file:
       """
       <?php
       echo 'ENVIRONMENT REQUIRE 2' . PHP_EOL;

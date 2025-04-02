@@ -1,20 +1,20 @@
 Feature: Runner WP-CLI
 
   Scenario: Path argument should be slashed correctly
-  When I try `wp no-such-command --path=/foo --debug`
-  Then STDERR should contain:
+    When I try `wp no-such-command --path=/foo --debug`
+    Then STDERR should contain:
     """
     ABSPATH defined: /foo/
     """
 
-  When I try `wp no-such-command --path=/foo/ --debug`
-  Then STDERR should contain:
+    When I try `wp no-such-command --path=/foo/ --debug`
+    Then STDERR should contain:
     """
     ABSPATH defined: /foo/
     """
 
-  When I try `wp no-such-command --path=/foo\\ --debug`
-  Then STDERR should contain:
+    When I try `wp no-such-command --path=/foo\\ --debug`
+    Then STDERR should contain:
     """
     ABSPATH defined: /foo/
     """
@@ -51,20 +51,20 @@ Feature: Runner WP-CLI
       """
 
   Scenario: Empty path argument should be handled correctly
-  When I try `wp no-such-command --path`
-  Then STDERR should contain:
+    When I try `wp no-such-command --path`
+    Then STDERR should contain:
     """
      The --path parameter cannot be empty when provided
     """
 
-  When I try `wp no-such-command --path=`
-  Then STDERR should contain:
+    When I try `wp no-such-command --path=`
+    Then STDERR should contain:
     """
      The --path parameter cannot be empty when provided
     """
 
-  When I try `wp no-such-command --path= some_path`
-  Then STDERR should contain:
+    When I try `wp no-such-command --path= some_path`
+    Then STDERR should contain:
     """
      The --path parameter cannot be empty when provided
     """
@@ -81,21 +81,21 @@ Feature: Runner WP-CLI
     And the return code should be 1
 
   Scenario: Suggest 'wp term <command>' when an invalid taxonomy command is run
-  Given a WP install
+    Given a WP install
 
-  When I try `wp category list`
-  Then STDERR should contain:
+    When I try `wp category list`
+    Then STDERR should contain:
     """
     Did you mean 'wp term <command>'?
     """
-  And the return code should be 1
+    And the return code should be 1
 
-Scenario: Suggest 'wp post <command>' when an invalid post type command is run
-  Given a WP install
+  Scenario: Suggest 'wp post <command>' when an invalid post type command is run
+    Given a WP install
 
-  When I try `wp page create`
-  Then STDERR should contain:
+    When I try `wp page create`
+    Then STDERR should contain:
     """
     Did you mean 'wp post --post_type=page <command>'?
     """
-  And the return code should be 1
+    And the return code should be 1
