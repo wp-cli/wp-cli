@@ -318,18 +318,18 @@ class CLI_Command extends WP_CLI_Command {
 
 			$updates = $this->get_updates( $assoc_args );
 
-			if ( empty( $updates ) ) {
+			$newest = $this->array_find(
+				$updates,
+				static function ( $update ) {
+					return $update['status'] === 'available';
+				}
+			);
+
+			if ( ! $newest ) {
 				$update_type = $this->get_update_type_str( $assoc_args );
 				WP_CLI::success( "WP-CLI is at the latest{$update_type}version." );
 				return;
 			}
-
-			$newest = $this->array_find(
-				$updates,
-				static function ( $update ) {
-					return $update['available'];
-				}
-			);
 
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to %s?', WP_CLI_VERSION, $newest['version'] ), $assoc_args );
 
