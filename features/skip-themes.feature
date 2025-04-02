@@ -59,7 +59,7 @@ Feature: Skipping themes
     And I run `wp theme install moina moina-blog`
 
     When I run `wp theme activate moina`
-    When I run `wp eval 'var_export( function_exists( "moina_setup" ) );'`
+    And I run `wp eval 'var_export( function_exists( "moina_setup" ) );'`
     Then STDOUT should be:
       """
       true
@@ -72,9 +72,8 @@ Feature: Skipping themes
       """
     And STDERR should be empty
 
-
     When I run `wp theme activate moina-blog`
-    When I run `wp eval 'var_export( function_exists( "moina_setup" ) );'`
+    And I run `wp eval 'var_export( function_exists( "moina_setup" ) );'`
     Then STDOUT should be:
       """
       true

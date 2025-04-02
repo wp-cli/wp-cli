@@ -387,5 +387,3 @@ Feature: Run a WP-CLI command
       ENVIRONMENT REQUIRE 2
       test
       """
-
-
