@@ -1245,7 +1245,7 @@ function parse_str_to_argv( $arguments ) {
 					break;
 				}
 			}
-				return $arg;
+			return $arg;
 		},
 		$argv
 	);
@@ -1411,8 +1411,8 @@ function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.C
 	// For each comma-separated subpattern.
 	do {
 		$subpattern = substr( $pattern, 0, $begin )
-					. substr( $pattern, $p, $next - $p )
-					. substr( $pattern, $rest + 1 );
+			. substr( $pattern, $p, $next - $p )
+			. substr( $pattern, $rest + 1 );
 
 		$result = glob_brace( $subpattern );
 		if ( ! empty( $result ) ) {
@@ -1889,10 +1889,6 @@ function get_mysql_binary_path() {
 		$path = $mariadb_binary;
 	}
 
-	if ( '' === $path ) {
-		WP_CLI::Error( 'Could not find mysql binary' );
-	}
-
 	return $path;
 }
 
@@ -1927,19 +1923,19 @@ function get_mysql_version() {
 }
 
 /**
-	* Returns the correct `dump` command based on the detected database type.
-	*
-	* @return string The appropriate dump command.
-	*/
+ * Returns the correct `dump` command based on the detected database type.
+ *
+ * @return string The appropriate dump command.
+ */
 function get_sql_dump_command() {
 	return 'mariadb' === get_db_type() ? 'mariadb-dump' : 'mysqldump';
 }
 
 /**
-	* Returns the correct `check` command based on the detected database type.
-	*
-	* @return string The appropriate check command.
-	*/
+ * Returns the correct `check` command based on the detected database type.
+ *
+ * @return string The appropriate check command.
+ */
 function get_sql_check_command() {
 	return 'mariadb' === get_db_type() ? 'mariadb-check' : 'mysqlcheck';
 }
