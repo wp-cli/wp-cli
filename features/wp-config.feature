@@ -22,7 +22,7 @@ Feature: wp-config
       """
 
     When I try `wp eval "echo 'TEST_CONFIG_OVERRIDE => ' . TEST_CONFIG_OVERRIDE;"`
-    And STDERR should contain:
+    Then STDERR should contain:
       """
       TEST_CONFIG_OVERRIDE
       """

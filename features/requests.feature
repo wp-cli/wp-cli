@@ -77,7 +77,7 @@ Feature: Requests integration with both v1 and v2
       Success: Installed 1 of 1 plugins.
       """
 
-    Scenario: Current version with WordPress-bundled Requests v2
+  Scenario: Current version with WordPress-bundled Requests v2
     Given a WP installation
     # Switch themes because twentytwentyfive requires a version newer than 6.2
     # and it would otherwise cause a fatal error further down.
