@@ -17,7 +17,7 @@ Feature: Make sure "Given", "When", "Then" steps work as expected
     # Note this would give behat "undefined step" message as "save" step uses "\w+"
     #And save STDOUT as {VARIABLE_NAME_WITH_PERCENT_%}
 
-    When I run `echo {VARIABLE_NAME}`
+    And I run `echo {VARIABLE_NAME}`
     Then STDOUT should match /^value$/
     And STDOUT should be:
     """

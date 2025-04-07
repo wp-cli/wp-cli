@@ -48,7 +48,7 @@ class Extractor {
 			throw new Exception( "Could not create folder '{$dest}'." );
 		}
 
-		if ( ! file( $zipfile )
+		if ( ! file_exists( $zipfile )
 			|| ! is_readable( $zipfile )
 			|| filesize( $zipfile ) <= 0 ) {
 			throw new Exception( "Invalid zip file '{$zipfile}'." );
@@ -127,7 +127,7 @@ class Extractor {
 			$tarball = "./{$tarball}";
 		}
 
-		if ( ! file( $tarball )
+		if ( ! file_exists( $tarball )
 			|| ! is_readable( $tarball )
 			|| filesize( $tarball ) <= 0 ) {
 			throw new Exception( "Invalid zip file '{$tarball}'." );
@@ -280,7 +280,7 @@ class Extractor {
 	/**
 	 * Return formatted error message from ProcessRun of tar command.
 	 *
-	 * @param Processrun $process_run
+	 * @param ProcessRun $process_run
 	 * @return string|int The error message of the process, if available;
 	 *                    otherwise the return code.
 	 */

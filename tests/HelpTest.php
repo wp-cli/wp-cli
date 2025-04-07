@@ -2,11 +2,13 @@
 
 use WP_CLI\Tests\TestCase;
 
-require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
-require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
-require_once dirname( __DIR__ ) . '/php/commands/help.php';
-
 class HelpTest extends TestCase {
+
+	public static function set_up_before_class() {
+		require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
+		require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
+		require_once dirname( __DIR__ ) . '/php/commands/help.php';
+	}
 
 	public function test_parse_reference_links() {
 		$test_class = new ReflectionClass( 'Help_Command' );

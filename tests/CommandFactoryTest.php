@@ -2,9 +2,11 @@
 
 use WP_CLI\Tests\TestCase;
 
-require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
-
 class CommandFactoryTest extends TestCase {
+
+	public static function set_up_before_class() {
+		require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
+	}
 
 	/**
 	 * @dataProvider dataProviderExtractLastDocComment

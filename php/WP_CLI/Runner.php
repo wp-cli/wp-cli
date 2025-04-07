@@ -160,7 +160,18 @@ class Runner {
 		// If global config doesn't exist create one.
 		if ( true === $create_config_file && ! file_exists( $config_path ) ) {
 			$this->global_config_path_debug = "Default global config doesn't exist, creating one in {$config_path}";
-			Process::create( Utils\esc_cmd( 'touch %s', $config_path ) )->run();
+
+			$dir = dirname( $config_path );
+
+			if ( ! is_dir( $dir ) ) {
+				mkdir( $dir, 0755, true );
+			}
+
+			touch( $config_path );
+
+			if ( file_exists( $config_path ) ) {
+				WP_CLI::debug( "Default global config does not exist, creating one in $config_path" );
+			}
 		}
 
 		if ( is_readable( $config_path ) ) {
@@ -200,12 +211,12 @@ class Runner {
 			}
 		);
 
-		$this->project_config_path_debug = 'No project config found';
-
-		if ( ! empty( $project_config_path ) ) {
-			$this->project_config_path_debug = 'Using project config: ' . $project_config_path;
+		if ( null === $project_config_path ) {
+			$this->project_config_path_debug = 'No project config found';
+			return false;
 		}
 
+		$this->project_config_path_debug = 'Using project config: ' . $project_config_path;
 		return $project_config_path;
 	}
 
@@ -344,6 +355,14 @@ class Runner {
 		return false;
 	}
 
+	/**
+	 * Checks if the arguments passed to the WP-CLI binary start with the specified prefix.
+	 *
+	 * @param array $prefix An array of strings specifying the expected start of the arguments passed to the WP-CLI binary.
+	 *                      For example, `['user', 'list']` checks if the arguments passed to the WP-CLI binary start with `user list`.
+	 *
+	 * @return bool `true` if the arguments passed to the WP-CLI binary start with the specified prefix, `false` otherwise.
+	 */
 	private function cmd_starts_with( $prefix ) {
 		return array_slice( $this->arguments, 0, count( $prefix ) ) === $prefix;
 	}
@@ -387,6 +406,16 @@ class Runner {
 				}
 
 				$suggestion = $this->get_subcommand_suggestion( $full_name, $command );
+
+				// If the functions are available, it means WordPress is available
+				// and has already been loaded.
+				if ( function_exists( '\taxonomy_exists' ) ) {
+					if ( \taxonomy_exists( $cmd_path[0] ) ) {
+						$suggestion = 'wp term <command>';
+					} elseif ( \post_type_exists( $cmd_path[0] ) ) {
+						$suggestion = "wp post --post_type={$cmd_path[0]} <command>";
+					}
+				}
 
 				return sprintf(
 					"'%s' is not a registered wp command. See 'wp help' for available commands.%s",
@@ -491,14 +520,9 @@ class Runner {
 
 		$pre_cmd = getenv( 'WP_CLI_SSH_PRE_CMD' );
 		if ( $pre_cmd ) {
-			$message = WP_CLI::warning( "WP_CLI_SSH_PRE_CMD found, executing the following command(s) on the remote machine:\n $pre_cmd" );
-
-			WP_CLI::log( $message );
+			WP_CLI::warning( "WP_CLI_SSH_PRE_CMD found, executing the following command(s) on the remote machine:\n $pre_cmd" );
 
 			$pre_cmd = rtrim( $pre_cmd, ';' ) . '; ';
-		}
-		if ( ! empty( $bits['path'] ) ) {
-			$pre_cmd .= 'cd ' . escapeshellarg( $bits['path'] ) . '; ';
 		}
 
 		$env_vars = '';
@@ -569,48 +593,65 @@ class Runner {
 			WP_CLI::debug( 'SSH ' . $bit . ': ' . $bits[ $bit ], 'bootstrap' );
 		}
 
-		$is_tty                        = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
+		/*
+		 * posix_isatty(STDIN) is generally true unless something was passed on stdin
+		 * If autodetection leads to false (fd on stdin), then `-i` is passed to `docker` cmd
+		 * (unless WP_CLI_DOCKER_NO_INTERACTIVE is set)
+		 */
+		$is_stdout_tty = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
+		$is_stdin_tty  = function_exists( 'posix_isatty' ) ? posix_isatty( STDIN ) : true;
+
 		$docker_compose_v2_version_cmd = Utils\esc_cmd( Utils\force_env_on_nix_systems( 'docker' ) . ' compose %s', 'version' );
 		$docker_compose_cmd            = ! empty( Process::create( $docker_compose_v2_version_cmd )->run()->stdout )
 			? 'docker compose'
 			: 'docker-compose';
 
 		if ( 'docker' === $bits['scheme'] ) {
-			$command = 'docker exec %s%s%s sh -c %s';
+			$command = 'docker exec %s%s%s%s%s sh -c %s';
 
 			$escaped_command = sprintf(
 				$command,
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
-				$is_tty ? '-t ' : '',
+				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
+				$is_stdout_tty && ! getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '-t  ' : '',
+				$is_stdin_tty || getenv( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '' : '-i ',
 				escapeshellarg( $bits['host'] ),
 				escapeshellarg( $wp_command )
 			);
 		}
 
 		if ( 'docker-compose' === $bits['scheme'] ) {
-			$command = '%s exec %s%s%s sh -c %s';
+			$command = '%s exec %s%s%s%s sh -c %s';
 
 			$escaped_command = sprintf(
 				$command,
 				$docker_compose_cmd,
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
-				$is_tty ? '' : '-T ',
+				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
+				$is_stdout_tty || getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
 				escapeshellarg( $bits['host'] ),
 				escapeshellarg( $wp_command )
 			);
 		}
 
 		if ( 'docker-compose-run' === $bits['scheme'] ) {
-			$command = '%s run %s%s%s %s';
+			$command = '%s run %s%s%s%s%s %s';
 
 			$escaped_command = sprintf(
 				$command,
 				$docker_compose_cmd,
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
-				$is_tty ? '' : '-T ',
+				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
+				$is_stdout_tty || getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
+				$is_stdin_tty || getenv( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '' : '-i ',
 				escapeshellarg( $bits['host'] ),
 				$wp_command
 			);
+		}
+
+		// For "vagrant" & "ssh" schemes which don't provide a working-directory option, use `cd`
+		if ( $bits['path'] ) {
+			$wp_command = 'cd ' . escapeshellarg( $bits['path'] ) . '; ' . $wp_command;
 		}
 
 		// Vagrant ssh-config.
@@ -630,10 +671,10 @@ class Runner {
 
 			if ( empty( $bits['host'] ) || ( isset( $values['Host'] ) && $bits['host'] === $values['Host'] ) ) {
 				$bits['scheme'] = 'ssh';
-				$bits['host']   = $values['HostName'];
-				$bits['port']   = $values['Port'];
-				$bits['user']   = $values['User'];
-				$bits['key']    = $values['IdentityFile'];
+				$bits['host']   = isset( $values['HostName'] ) ? $values['HostName'] : '';
+				$bits['port']   = isset( $values['Port'] ) ? $values['Port'] : '';
+				$bits['user']   = isset( $values['User'] ) ? $values['User'] : '';
+				$bits['key']    = isset( $values['IdentityFile'] ) ? $values['IdentityFile'] : '';
 			}
 
 			// If we could not resolve the bits still, fallback to just `vagrant ssh`
@@ -669,7 +710,7 @@ class Runner {
 				$bits['proxyjump'] ? sprintf( '-J %s', escapeshellarg( $bits['proxyjump'] ) ) : '',
 				$bits['port'] ? sprintf( '-p %d', (int) $bits['port'] ) : '',
 				$bits['key'] ? sprintf( '-i %s', escapeshellarg( $bits['key'] ) ) : '',
-				$is_tty ? '-t' : '-T',
+				$is_stdout_tty ? '-t' : '-T',
 				WP_CLI::get_config( 'debug' ) ? '-vvv' : '-q',
 			];
 
@@ -709,7 +750,7 @@ class Runner {
 			$wp_config_path = Utils\locate_wp_config();
 		}
 
-		$wp_config_code = explode( "\n", file_get_contents( $wp_config_path ) );
+		$wp_config_code = file_get_contents( $wp_config_path );
 
 		// Detect and strip byte-order marks (BOMs).
 		// This code assumes they can only be found on the first line.
@@ -718,34 +759,24 @@ class Runner {
 
 			$length = strlen( $bom_sequence );
 
-			while ( substr( $wp_config_code[0], 0, $length ) === $bom_sequence ) {
+			while ( substr( $wp_config_code, 0, $length ) === $bom_sequence ) {
 				WP_CLI::warning(
 					"{$bom_name} byte-order mark (BOM) detected in wp-config.php file, stripping it for parsing."
 				);
 
-				$wp_config_code[0] = substr( $wp_config_code[0], $length );
+				$wp_config_code = substr( $wp_config_code, $length );
 			}
 		}
 
-		$found_wp_settings = false;
+		$count = 0;
 
-		$lines_to_run = [];
+		$wp_config_code = preg_replace( '/\s*require(?:_once)?\s*.*wp-settings\.php.*\s*;/', '', $wp_config_code, -1, $count );
 
-		foreach ( $wp_config_code as $line ) {
-			if ( preg_match( '/^\s*require.+wp-settings\.php/', $line ) ) {
-				$found_wp_settings = true;
-				continue;
-			}
-
-			$lines_to_run[] = $line;
-		}
-
-		if ( ! $found_wp_settings ) {
+		if ( 0 === $count ) {
 			WP_CLI::error( 'Strange wp-config.php file: wp-settings.php is not loaded directly.' );
 		}
 
-		$source = implode( "\n", $lines_to_run );
-		$source = Utils\replace_path_consts( $source, $wp_config_path );
+		$source = Utils\replace_path_consts( $wp_config_code, $wp_config_path );
 		return preg_replace( '|^\s*\<\?php\s*|', '', $source );
 	}
 
@@ -1587,9 +1618,7 @@ class Runner {
 							$explanation = 'Verify DOMAIN_CURRENT_SITE matches an existing site or use `--url=<url>` to override.';
 						}
 					}
-					if ( $explanation ) {
-						$message .= ' ' . $explanation;
-					}
+					$message .= ' ' . $explanation;
 					WP_CLI::error( $message );
 				},
 				10,

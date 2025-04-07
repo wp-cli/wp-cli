@@ -13,15 +13,14 @@
         "mustache/mustache": "^2.14.1",
         "symfony/finder": ">2.7",
         "wp-cli/mustangostang-spyc": "^0.6.3",
-        "wp-cli/php-cli-tools": "~0.11.2"
+        "wp-cli/php-cli-tools": "~0.12.4"
     },
     "require-dev": {
-        "roave/security-advisories": "dev-latest",
         "wp-cli/db-command": "^1.3 || ^2",
         "wp-cli/entity-command": "^1.2 || ^2",
         "wp-cli/extension-command": "^1.1 || ^2",
         "wp-cli/package-command": "^1 || ^2",
-        "wp-cli/wp-cli-tests": "^4.0.1"
+        "wp-cli/wp-cli-tests": "^4.3.10"
     },
     "suggest": {
         "ext-readline": "Include for a better --prompt implementation",
@@ -33,7 +32,8 @@
             "johnpbloch/wordpress-core-installer": true
         },
         "process-timeout": 7200,
-        "sort-packages": true
+        "sort-packages": true,
+        "lock": false
     },
     "extra": {
         "branch-alias": {

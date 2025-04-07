@@ -6,15 +6,21 @@
 		 beStrictAboutOutputDuringTests="true"
 		 beStrictAboutTestsThatDoNotTestAnything="true"
 		 beStrictAboutTodoAnnotatedTests="true"
+		 convertErrorsToExceptions="true"
+		 convertWarningsToExceptions="true"
+		 convertNoticesToExceptions="true"
+		 convertDeprecationsToExceptions="true"
 		 colors="true"
 		 verbose="true">
-	<testsuite name="wp-cli/wp-cli tests">
-		<directory suffix="Test.php">tests</directory>
-	</testsuite>
+	<testsuites>
+		<testsuite name="wp-cli/wp-cli tests">
+			<directory suffix="Test.php">tests</directory>
+		</testsuite>
+	</testsuites>
 
-	<filter>
-		<whitelist processUncoveredFilesFromWhitelist="true">
-			<directory suffix=".php">src</directory>
-		</whitelist>
-	</filter>
+	<coverage processUncoveredFiles="false">
+		<include>
+			<directory suffix=".php">php</directory>
+		</include>
+	</coverage>
 </phpunit>

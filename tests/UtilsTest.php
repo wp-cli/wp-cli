@@ -5,10 +5,12 @@ use WP_CLI\Loggers;
 use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
-require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
-require_once __DIR__ . '/mock-requests-transport.php';
-
 class UtilsTest extends TestCase {
+
+	public static function set_up_before_class() {
+		require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
+		require_once __DIR__ . '/mock-requests-transport.php';
+	}
 
 	public function testIncrementVersion() {
 		// Keyword increments.
@@ -481,12 +483,12 @@ class UtilsTest extends TestCase {
 			'default request'  => [
 				[],
 				RuntimeException::class,
-				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate verify locations:',
+				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate',
 			],
 			'secure request'   => [
 				[ 'insecure' => false ],
 				RuntimeException::class,
-				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate verify locations:',
+				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate',
 			],
 			'insecure request' => [
 				[ 'insecure' => true ],

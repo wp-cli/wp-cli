@@ -199,7 +199,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * : Prints the value of a single field for each update.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to version,update_type,package_url.
+	 * : Limit the output to specific object fields. Defaults to version,update_type,package_url,status,requires_php.
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
@@ -235,7 +235,7 @@ class CLI_Command extends WP_CLI_Command {
 		if ( $updates ) {
 			$formatter = new Formatter(
 				$assoc_args,
-				[ 'version', 'update_type', 'package_url' ]
+				[ 'version', 'update_type', 'package_url', 'status', 'requires_php' ]
 			);
 			$formatter->display_items( $updates );
 		} elseif ( empty( $assoc_args['format'] ) || 'table' === $assoc_args['format'] ) {
@@ -286,7 +286,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 *     # Update CLI.
 	 *     $ wp cli update
-	 *     You have version 0.24.0. Would you like to update to 0.24.1? [y/n] y
+	 *     You are currently using WP-CLI version 0.24.0. Would you like to update to 0.24.1? [y/n] y
 	 *     Downloading from https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar...
 	 *     New version works. Proceeding to replace.
 	 *     Success: Updated WP-CLI to 0.24.1.
@@ -305,29 +305,37 @@ class CLI_Command extends WP_CLI_Command {
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'nightly' ) ) {
-			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest nightly?', WP_CLI_VERSION ), $assoc_args );
+			WP_CLI::confirm( sprintf( 'You are currently using WP-CLI version %s. Would you like to update to the latest nightly version?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar';
 			$md5_url      = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.md5';
+			$sha512_url   = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.sha512';
 		} elseif ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
-			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest stable release?', WP_CLI_VERSION ), $assoc_args );
+			WP_CLI::confirm( sprintf( 'You are currently using WP-CLI version %s. Would you like to update to the latest stable release?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
 			$md5_url      = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.md5';
+			$sha512_url   = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.sha512';
 		} else {
 
 			$updates = $this->get_updates( $assoc_args );
 
-			if ( empty( $updates ) ) {
+			$newest = $this->array_find(
+				$updates,
+				static function ( $update ) {
+					return 'available' === $update['status'];
+				}
+			);
+
+			if ( ! $newest ) {
 				$update_type = $this->get_update_type_str( $assoc_args );
 				WP_CLI::success( "WP-CLI is at the latest{$update_type}version." );
 				return;
 			}
 
-			$newest = $updates[0];
-
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to %s?', WP_CLI_VERSION, $newest['version'] ), $assoc_args );
 
 			$download_url = $newest['package_url'];
 			$md5_url      = str_replace( '.phar', '.phar.md5', $download_url );
+			$sha512_url   = str_replace( '.phar', '.phar.sha512', $download_url );
 		}
 
 		WP_CLI::log( sprintf( 'Downloading from %s...', $download_url ) );
@@ -344,17 +352,8 @@ class CLI_Command extends WP_CLI_Command {
 		Utils\http_request( 'GET', $download_url, null, $headers, $options );
 
 		unset( $options['filename'] );
-		$md5_response = Utils\http_request( 'GET', $md5_url, null, $headers, $options );
-		if ( '20' !== substr( $md5_response->status_code, 0, 2 ) ) {
-			WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$md5_response->status_code})." );
-		}
-		$md5_file     = md5_file( $temp );
-		$release_hash = trim( $md5_response->body );
-		if ( $md5_file === $release_hash ) {
-			WP_CLI::log( 'md5 hash verified: ' . $release_hash );
-		} else {
-			WP_CLI::error( "md5 hash for download ({$md5_file}) is different than the release hash ({$release_hash})." );
-		}
+
+		$this->validate_hashes( $temp, $sha512_url, $md5_url );
 
 		$allow_root = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
 		$php_binary = Utils\get_php_binary();
@@ -391,6 +390,41 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * @param string $file       Release file path.
+	 * @param string $sha512_url URL to sha512 hash.
+	 * @param string $md5_url    URL to md5 hash.
+	 *
+	 * @return void
+	 * @throws \WP_CLI\ExitException
+	 */
+	private function validate_hashes( $file, $sha512_url, $md5_url ) {
+		$algos = [
+			'sha512' => $sha512_url,
+			'md5'    => $md5_url,
+		];
+
+		foreach ( $algos as $algo => $url ) {
+			$response = Utils\http_request( 'GET', $url );
+			if ( '20' !== substr( $response->status_code, 0, 2 ) ) {
+				WP_CLI::log( "Couldn't access $algo hash for release (HTTP code {$response->status_code})." );
+				continue;
+			}
+
+			$file_hash = hash_file( $algo, $file );
+
+			$release_hash = trim( $response->body );
+			if ( $file_hash === $release_hash ) {
+				WP_CLI::log( "$algo hash verified: $release_hash" );
+				return;
+			} else {
+				WP_CLI::error( "$algo hash for download ($file_hash) is different than the release hash ($release_hash)." );
+			}
+		}
+
+		WP_CLI::error( 'Release hash verification failed.' );
+	}
+
+	/**
 	 * Returns update information.
 	 */
 	private function get_updates( $assoc_args ) {
@@ -423,6 +457,9 @@ class CLI_Command extends WP_CLI_Command {
 			'minor' => false,
 			'patch' => false,
 		];
+
+		$updates_unavailable = [];
+
 		foreach ( $release_data as $release ) {
 
 			// Get rid of leading "v" if there is one set.
@@ -432,23 +469,63 @@ class CLI_Command extends WP_CLI_Command {
 			}
 
 			$update_type = Utils\get_named_sem_ver( $release_version, WP_CLI_VERSION );
+
 			if ( ! $update_type ) {
 				continue;
 			}
 
-			if ( ! isset( $release->assets[0]->browser_download_url ) ) {
-				continue;
-			}
-
+			// Release is older than one we already have on file.
 			if ( ! empty( $updates[ $update_type ] ) && ! Comparator::greaterThan( $release_version, $updates[ $update_type ]['version'] ) ) {
 				continue;
 			}
 
-			$updates[ $update_type ] = [
-				'version'     => $release_version,
-				'update_type' => $update_type,
-				'package_url' => $release->assets[0]->browser_download_url,
-			];
+			$package_url   = null;
+			$manifest_data = null;
+
+			foreach ( $release->assets as $asset ) {
+				if ( ! isset( $asset->browser_download_url ) ) {
+					continue;
+				}
+
+				if ( substr( $asset->browser_download_url, - strlen( '.phar' ) ) === '.phar' ) {
+					$package_url = $asset->browser_download_url;
+				}
+
+				// The manifest.json file, if it exists, contains information about PHP version requirements and similar.
+				if ( substr( $asset->browser_download_url, - strlen( 'manifest.json' ) ) === 'manifest.json' ) {
+					$response = Utils\http_request( 'GET', $asset->browser_download_url, null, $headers, $options );
+
+					if ( $response->success ) {
+						$manifest_data = json_decode( $response->body );
+					}
+				}
+			}
+
+			if ( ! $package_url ) {
+				continue;
+			}
+
+			// Release requires a newer version of PHP.
+			if (
+				isset( $manifest_data->requires_php ) &&
+				! Comparator::greaterThanOrEqualTo( PHP_VERSION, $manifest_data->requires_php )
+			) {
+				$updates_unavailable[] = [
+					'version'      => $release_version,
+					'update_type'  => $update_type,
+					'package_url'  => $release->assets[0]->browser_download_url,
+					'status'       => 'unavailable',
+					'requires_php' => $manifest_data->requires_php,
+				];
+			} else {
+				$updates[ $update_type ] = [
+					'version'      => $release_version,
+					'update_type'  => $update_type,
+					'package_url'  => $release->assets[0]->browser_download_url,
+					'status'       => 'available',
+					'requires_php' => isset( $manifest_data->requires_php ) ? $manifest_data->requires_php : '',
+				];
+			}
 		}
 
 		foreach ( $updates as $type => $value ) {
@@ -470,16 +547,67 @@ class CLI_Command extends WP_CLI_Command {
 				WP_CLI::error( sprintf( 'Failed to get current nightly version (HTTP code %d)', $response->status_code ) );
 			}
 			$nightly_version = trim( $response->body );
+
 			if ( WP_CLI_VERSION !== $nightly_version ) {
-				$updates['nightly'] = [
-					'version'     => $nightly_version,
-					'update_type' => 'nightly',
-					'package_url' => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
-				];
+				$manifest_data = null;
+
+				// The manifest.json file, if it exists, contains information about PHP version requirements and similar.
+				$response = Utils\http_request( 'GET', 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.manifest.json', null, $headers, $options );
+
+				if ( $response->success ) {
+					$manifest_data = json_decode( $response->body );
+				}
+
+				// Release requires a newer version of PHP.
+				if (
+					isset( $manifest_data->requires_php ) &&
+					! Comparator::greaterThanOrEqualTo( PHP_VERSION, $manifest_data->requires_php )
+				) {
+					$updates_unavailable[] = [
+						'version'      => $nightly_version,
+						'update_type'  => 'nightly',
+						'package_url'  => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
+						'status'       => 'unvailable',
+						'requires_php' => $manifest_data->requires_php,
+					];
+				} else {
+					$updates['nightly'] = [
+						'version'      => $nightly_version,
+						'update_type'  => 'nightly',
+						'package_url'  => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
+						'status'       => 'available',
+						'requires_php' => isset( $manifest_data->requires_php ) ? $manifest_data->requires_php : '',
+					];
+				}
 			}
 		}
 
-		return array_values( $updates );
+		return array_merge( $updates_unavailable, array_values( $updates ) );
+	}
+
+	/**
+	 * Returns the the first element of the passed array for which the
+	 * callback returns true.
+	 *
+	 * Polyfill for the `array_find()` function introduced in PHP 8.3.
+	 *
+	 * @param array    $arr      Array to search.
+	 * @param callable $callback The callback function for each element in the array.
+	 * @return mixed First array element for which the callback returns true, null otherwise.
+	 */
+	private function array_find( $arr, $callback ) {
+		if ( function_exists( '\array_find' ) ) {
+			// phpcs:ignore PHPCompatibility.FunctionUse.NewFunctions.array_findFound
+			return \array_find( $arr, $callback );
+		}
+
+		foreach ( $arr as $key => $value ) {
+			if ( $callback( $value, $key ) ) {
+				return $value;
+			}
+		}
+
+		return null;
 	}
 
 	/**
