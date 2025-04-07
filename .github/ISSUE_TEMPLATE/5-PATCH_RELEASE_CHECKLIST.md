@@ -182,7 +182,7 @@ assignees: 'schlessera'
 
     Doing so ensure `wp cli update --nightly` works as expected.
 
-- [ ] Change the version constraint on `"wp-cli/wp-cli"` in `wp-cli/wp-cli-bundle`'s [`composer.json`](https://github.com/wp-cli/wp-cli-bundle/blob/master/composer.json) file back to `"dev-main"`.
+- [ ] Change the version constraint on `"wp-cli/wp-cli"` in `wp-cli/wp-cli-bundle`'s [`composer.json`](https://github.com/wp-cli/wp-cli-bundle/blob/main/composer.json) file back to `"dev-main"`.
 
     ```
     composer require wp-cli/wp-cli:dev-main
