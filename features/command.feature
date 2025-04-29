@@ -1515,9 +1515,9 @@ Feature: WP-CLI Commands
     # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
     When I try `wp custom --help`
     Then STDOUT should contain:
-    """
-    wp custom
-    """
+      """
+      wp custom
+      """
 
   Scenario: subcommand alias should respect @when definition
     Given an empty directory

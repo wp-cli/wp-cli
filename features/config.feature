@@ -65,17 +65,17 @@ Feature: Have a config file
   Scenario: WP in a subdirectory (autodetected)
     Given a WP installation in 'foo'
 
-    Given an index.php file:
-    """
-    require('./foo/wp-blog-header.php');
-    """
+    And an index.php file:
+      """
+      require('./foo/wp-blog-header.php');
+      """
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
     Given an index.php file:
-    """
-    require dirname(__FILE__) . '/foo/wp-blog-header.php';
-    """
+      """
+      require dirname(__FILE__) . '/foo/wp-blog-header.php';
+      """
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
@@ -239,7 +239,7 @@ Feature: Have a config file
       """
 
     When I run `WP_CLI_CONFIG_PATH=test-dir/config.yml wp help`
-	  Then STDERR should be empty
+    Then STDERR should be empty
 
   Scenario: Load WordPress with `--debug`
     Given a WP installation
@@ -249,7 +249,7 @@ Feature: Have a config file
       """
       No readable global config found
       """
-    Then STDERR should contain:
+    And STDERR should contain:
       """
       No project config found
       """
@@ -276,7 +276,7 @@ Feature: Have a config file
       """
       No readable global config found
       """
-    Then STDERR should contain:
+    And STDERR should contain:
       """
       No project config found
       """
@@ -303,7 +303,7 @@ Feature: Have a config file
       """
       No readable global config found
       """
-    Then STDERR should not contain:
+    And STDERR should not contain:
       """
       No project config found
       """
@@ -328,10 +328,10 @@ Feature: Have a config file
   Scenario: Missing required files should not fatal WP-CLI
     Given an empty directory
     And a wp-cli.yml file:
-    """
-    require:
-      - missing-file.php
-    """
+      """
+      require:
+        - missing-file.php
+      """
 
     When I try `wp help`
     Then STDERR should contain:
@@ -739,4 +739,3 @@ Feature: Have a config file
     When I run `[ -n "$HOME" ] && rm -rf "$HOME/doesnotexist"`
     And I try `WP_CLI_CONFIG_PATH=$HOME/doesnotexist/wp-cli.yml wp cli alias add 1 --debug`
     Then STDERR should match #Default global config does not exist, creating one in.+/doesnotexist/wp-cli.yml#
-
