@@ -180,7 +180,7 @@ assignees: 'schlessera'
 
     For instance, if the release version was `2.8.0`, the version should be bumped to `2.9.0-alpha`.
 
-    Doing so ensure `wp cli update --nightly` works as expected.
+    Doing so ensures `wp cli update --nightly` works as expected.
 
 - [ ] Change the version constraint on `"wp-cli/wp-cli"` in `wp-cli/wp-cli-bundle`'s [`composer.json`](https://github.com/wp-cli/wp-cli-bundle/blob/main/composer.json) file back to `"dev-main"`.
 
