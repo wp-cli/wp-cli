@@ -190,7 +190,16 @@ Feature: Bootstrap WP-CLI
       // Override framework command.
       WP_CLI::add_command( 'cli', 'Custom_CLI_Command', array( 'when' => 'before_wp_load' ) );
       // Override bundled command.
-      WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_hook(
+        'after_add_command:eval',
+        static function () {
+          static $added = false;
+          if ( ! $added ) {
+            $added = true;
+            WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
+          }
+        }
+      );
       """
     And a override/src/Custom_CLI_Command.php file:
       """
