@@ -66,16 +66,16 @@ Feature: Have a config file
     Given a WP installation in 'foo'
 
     And an index.php file:
-    """
-    require('./foo/wp-blog-header.php');
-    """
+      """
+      require('./foo/wp-blog-header.php');
+      """
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
     Given an index.php file:
-    """
-    require dirname(__FILE__) . '/foo/wp-blog-header.php';
-    """
+      """
+      require dirname(__FILE__) . '/foo/wp-blog-header.php';
+      """
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
@@ -328,10 +328,10 @@ Feature: Have a config file
   Scenario: Missing required files should not fatal WP-CLI
     Given an empty directory
     And a wp-cli.yml file:
-    """
-    require:
-      - missing-file.php
-    """
+      """
+      require:
+        - missing-file.php
+      """
 
     When I try `wp help`
     Then STDERR should contain:

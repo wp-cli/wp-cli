@@ -530,7 +530,7 @@ class Runner {
 			$env_vars .= 'WP_CLI_STRICT_ARGS_MODE=1 ';
 		}
 
-		$wp_binary = 'wp';
+		$wp_binary = getenv( 'WP_CLI_SSH_BINARY' ) ?: 'wp';
 		$wp_args   = array_slice( $GLOBALS['argv'], 1 );
 
 		if ( $this->alias && ! empty( $wp_args[0] ) && $this->alias === $wp_args[0] ) {
@@ -601,10 +601,12 @@ class Runner {
 		$is_stdout_tty = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
 		$is_stdin_tty  = function_exists( 'posix_isatty' ) ? posix_isatty( STDIN ) : true;
 
-		$docker_compose_v2_version_cmd = Utils\esc_cmd( Utils\force_env_on_nix_systems( 'docker' ) . ' compose %s', 'version' );
-		$docker_compose_cmd            = ! empty( Process::create( $docker_compose_v2_version_cmd )->run()->stdout )
-			? 'docker compose'
-			: 'docker-compose';
+		if ( in_array( $bits['scheme'], [ 'docker', 'docker-compose', 'docker-compose-run' ], true ) ) {
+				$docker_compose_v2_version_cmd = Utils\esc_cmd( Utils\force_env_on_nix_systems( 'docker' ) . ' compose %s', 'version' );
+				$docker_compose_cmd            = ! empty( Process::create( $docker_compose_v2_version_cmd )->run()->stdout )
+						? 'docker compose'
+						: 'docker-compose';
+		}
 
 		if ( 'docker' === $bits['scheme'] ) {
 			$command = 'docker exec %s%s%s%s%s sh -c %s';
