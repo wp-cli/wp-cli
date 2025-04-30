@@ -530,7 +530,7 @@ class Runner {
 			$env_vars .= 'WP_CLI_STRICT_ARGS_MODE=1 ';
 		}
 
-		$wp_binary = 'wp';
+		$wp_binary = getenv( 'WP_CLI_SSH_BINARY' ) ?: 'wp';
 		$wp_args   = array_slice( $GLOBALS['argv'], 1 );
 
 		if ( $this->alias && ! empty( $wp_args[0] ) && $this->alias === $wp_args[0] ) {
