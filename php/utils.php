@@ -1674,6 +1674,15 @@ function _proc_open_compat_win_env( $cmd, &$env ) {
  *                or real_escape next.
  */
 function esc_like( $text ) {
+	global $wpdb;
+
+	// Check if the esc_like() method exists on the global $wpdb object.
+	// We need to do this because to ensure compatibilty layers like the
+	// SQLite integration plugin still work.
+	if ( null !== $wpdb && method_exists( $wpdb, 'esc_like' ) ) {
+		return $wpdb->esc_like( $text );
+	}
+
 	return addcslashes( $text, '_%\\' );
 }
 

@@ -777,28 +777,52 @@ class UtilsTest extends TestCase {
 		];
 	}
 
-	/**
-	 * Copied from core "tests/phpunit/tests/db.php" (adapted to not use `$wpdb`).
-	 */
-	public function test_esc_like() {
-		$inputs   = [
-			'howdy%', // Single Percent.
-			'howdy_', // Single Underscore.
-			'howdy\\', // Single slash.
-			'howdy\\howdy%howdy_', // The works.
-			'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?', // Plain text.
+	public static function dataEscLike() {
+		return [
+			[ 'howdy%', 'howdy\\%' ],
+			[ 'howdy_', 'howdy\\_' ],
+			[ 'howdy\\', 'howdy\\\\' ],
+			[ 'howdy\\howdy%howdy_', 'howdy\\\\howdy\\%howdy\\_' ],
+			[ 'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?', 'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?' ],
 		];
-		$expected = [
-			'howdy\\%',
-			'howdy\\_',
-			'howdy\\\\',
-			'howdy\\\\howdy\\%howdy\\_',
-			'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?',
-		];
+	}
 
-		foreach ( $inputs as $key => $input ) {
-			$this->assertEquals( $expected[ $key ], Utils\esc_like( $input ) );
+	/**
+	 * @dataProvider dataEscLike
+	 */
+	public function test_esc_like( $input, $expected ) {
+		$this->assertEquals( $expected, Utils\esc_like( $input ) );
+	}
+
+	/**
+	 * @dataProvider dataEscLike
+	 */
+	public function test_esc_like_with_wpdb( $input, $expected ) {
+		global $wpdb;
+		$wpdb = $this->getMockBuilder( 'stdClass' );
+
+		// Handle different PHPUnit versions (5.7 for PHP 5.6 vs newer versions)
+		// This can be simplified if we drop support for PHP 5.6.
+		if ( method_exists( $wpdb, 'addMethods' ) ) {
+			$wpdb = $wpdb->addMethods( [ 'esc_like' ] );
+		} else {
+			$wpdb = $wpdb->setMethods( [ 'esc_like' ] );
 		}
+
+		$wpdb = $wpdb->getMock();
+		$wpdb->method( 'esc_like' )
+			->willReturn( addcslashes( $input, '_%\\' ) );
+		$this->assertEquals( $expected, Utils\esc_like( $input ) );
+		$this->assertEquals( $expected, Utils\esc_like( $input ) );
+	}
+
+	/**
+	 * @dataProvider dataEscLike
+	 */
+	public function test_esc_like_with_wpdb_being_null( $input, $expected ) {
+		global $wpdb;
+		$wpdb = null;
+		$this->assertEquals( $expected, Utils\esc_like( $input ) );
 	}
 
 	/**
