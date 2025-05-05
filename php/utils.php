@@ -1679,7 +1679,7 @@ function esc_like( $text ) {
 	// Check if the esc_like() method exists on the global $wpdb object.
 	// We need to do this because to ensure compatibilty layers like the
 	// SQLite integration plugin still work.
-	if ( $wpdb !== null && method_exists( $wpdb, 'esc_like' ) ) {
+	if ( null !== $wpdb && method_exists( $wpdb, 'esc_like' ) ) {
 		return $wpdb->esc_like( $text );
 	}
 
