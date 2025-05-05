@@ -777,28 +777,41 @@ class UtilsTest extends TestCase {
 		];
 	}
 
-	/**
-	 * Copied from core "tests/phpunit/tests/db.php" (adapted to not use `$wpdb`).
-	 */
-	public function test_esc_like() {
-		$inputs   = [
-			'howdy%', // Single Percent.
-			'howdy_', // Single Underscore.
-			'howdy\\', // Single slash.
-			'howdy\\howdy%howdy_', // The works.
-			'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?', // Plain text.
+	public static function dataEscLike() {
+		return [
+			[ 'howdy%', 'howdy\\%' ],
+			[ 'howdy_', 'howdy\\_' ],
+			[ 'howdy\\', 'howdy\\\\' ],
+			[ 'howdy\\howdy%howdy_', 'howdy\\\\howdy\\%howdy\\_' ],
+			[ 'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?', 'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?' ],
 		];
-		$expected = [
-			'howdy\\%',
-			'howdy\\_',
-			'howdy\\\\',
-			'howdy\\\\howdy\\%howdy\\_',
-			'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?',
-		];
+	}
 
-		foreach ( $inputs as $key => $input ) {
-			$this->assertEquals( $expected[ $key ], Utils\esc_like( $input ) );
-		}
+	/**
+	 * @dataProvider dataEscLike
+	 */
+	public function test_esc_like( $input, $expected ) {
+		$this->assertEquals( $expected, Utils\esc_like( $input ) );
+	}
+
+	/**
+	 * @dataProvider dataEscLike
+	 */
+	public function test_esc_like_with_wpdb( $input, $expected ) {
+		global $wpdb;
+		$wpdb->esc_like = function ( $text ) {
+			return addslashes( $text );
+		};
+		$this->assertEquals( $expected, Utils\esc_like( $input ) );
+	}
+
+	/**
+	 * @dataProvider dataEscLike
+	 */
+	public function test_esc_like_with_wpdb_being_null( $input, $expected ) {
+		global $wpdb;
+		$wpdb = null;
+		$this->assertEquals( $expected, Utils\esc_like( $input ) );
 	}
 
 	/**
