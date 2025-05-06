@@ -71,7 +71,7 @@ Feature: Requests integration with both v1 and v2
       """
     And STDERR should be empty
 
-    When I run `wp plugin install duplicate-post`
+    When I run `wp plugin install hello-dolly`
     Then STDOUT should contain:
       """
       Success: Installed 1 of 1 plugins.
@@ -102,7 +102,7 @@ Feature: Requests integration with both v1 and v2
       """
     And STDERR should be empty
 
-    When I run `wp plugin install duplicate-post`
+    When I run `wp plugin install hello-dolly`
     Then STDOUT should contain:
       """
       Success: Installed 1 of 1 plugins.

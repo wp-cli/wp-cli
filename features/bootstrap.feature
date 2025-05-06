@@ -312,7 +312,7 @@ Feature: Bootstrap WP-CLI
       """
     And I run `wp package install {RUN_DIR}/override`
 
-    When I try `wp plugin install duplicate-post`
+    When I try `wp plugin install hello-dolly`
     Then STDERR should contain:
       """
       Error: Plugin installation has been disabled.
