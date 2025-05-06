@@ -418,6 +418,7 @@ function format_items( $format, $items, $fields ) {
  */
 function write_csv( $fd, $rows, $headers = [] ) {
 	if ( ! empty( $headers ) ) {
+		$headers = array_map( __NAMESPACE__ . '\escape_csv_value', $headers );
 		fputcsv( $fd, $headers, ',', '"', '\\' );
 	}
 
@@ -426,6 +427,7 @@ function write_csv( $fd, $rows, $headers = [] ) {
 			$row = pick_fields( $row, $headers );
 		}
 
+		$row = array_map( __NAMESPACE__ . '\escape_csv_value', $row );
 		fputcsv( $fd, array_values( $row ), ',', '"', '\\' );
 	}
 }
@@ -2043,6 +2045,13 @@ function get_hook_description( $hook ) {
  * @return string Escaped value.
  */
 function escape_csv_value( $value ) {
+	if ( null === $value ) {
+		return '';
+	}
+
+	// Convert to string if not already
+	$value = (string) $value;
+
 	if (
 		in_array(
 			substr( $value, 0, 1 ),
