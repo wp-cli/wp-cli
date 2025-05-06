@@ -53,8 +53,6 @@ Feature: Requests integration with both v1 and v2
     Given a WP installation
     And I run `wp core update --version=5.8 --force`
     And I run `rm -r wp-content/themes/*`
-    And I run `wp plugin delete --all`
-    And I run `rm -r wp-content/plugins/*`
 
     When I run `wp core version`
     Then STDOUT should contain:
@@ -73,7 +71,7 @@ Feature: Requests integration with both v1 and v2
       """
     And STDERR should be empty
 
-    When I run `wp plugin install hello-dolly`
+    When I run `wp plugin install debug-bar`
     Then STDOUT should contain:
       """
       Success: Installed 1 of 1 plugins.
@@ -86,8 +84,6 @@ Feature: Requests integration with both v1 and v2
     And I try `wp theme install twentyten`
     And I try `wp theme activate twentyten`
     And I run `wp core update --version=6.2 --force`
-    And I run `wp plugin delete --all`
-    And I run `rm -r wp-content/plugins/*`
 
     When I run `wp core version`
     Then STDOUT should contain:
@@ -106,7 +102,7 @@ Feature: Requests integration with both v1 and v2
       """
     And STDERR should be empty
 
-    When I run `wp plugin install hello-dolly`
+    When I run `wp plugin install debug-bar`
     Then STDOUT should contain:
       """
       Success: Installed 1 of 1 plugins.
