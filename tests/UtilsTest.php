@@ -914,6 +914,155 @@ class UtilsTest extends TestCase {
 		];
 	}
 
+	/**
+	 * @dataProvider dataEscapeCsvValue
+	 */
+	public function testEscapeCsvValue( $input, $expected ) {
+		$this->assertEquals( $expected, Utils\escape_csv_value( $input ) );
+	}
+
+	public static function dataEscapeCsvValue() {
+		return [
+			// Values starting with special characters that should be escaped.
+			[ '=formula', "'=formula" ],
+			[ '+positive', "'+positive" ],
+			[ '-negative', "'-negative" ],
+			[ '@mention', "'@mention" ],
+			[ "\tindented", "'\tindented" ],
+			[ "\rcarriage", "'\rcarriage" ],
+
+			// Values that should not be escaped.
+			[ 'normal text', 'normal text' ],
+			[ 'text with = in middle', 'text with = in middle' ],
+			[ '123', '123' ],
+			[ '', '' ],
+			[ ' leading space', ' leading space' ],
+			[ 'trailing space ', 'trailing space ' ],
+			[ '=x==y=', "'=x==y=" ], // Only escapes when the first character is special
+		];
+	}
+
+	public function testWriteCsv() {
+		// Create a temporary file
+		$temp_file = tmpfile();
+
+		// Test data with various cases that need escaping
+		$headers = [ 'name', 'formula', 'quoted', 'comma', 'backslash' ];
+		$rows    = [
+			[
+				'name'      => 'John Doe',
+				'formula'   => '=SUM(A1:A2)',
+				'quoted'    => 'Contains "quotes"',
+				'comma'     => 'Item 1, Item 2',
+				'backslash' => 'C:\\path\\to\\file',
+			],
+			[
+				'name'      => '@username',
+				'formula'   => '+1234',
+				'quoted'    => "'Single quotes'",
+				'comma'     => '-123,45',
+				'backslash' => 'Escape \\this',
+			],
+		];
+
+		// Write to CSV
+		Utils\write_csv( $temp_file, $rows, $headers );
+
+		// Rewind file and read contents
+		rewind( $temp_file );
+		$csv_content = stream_get_contents( $temp_file );
+
+		// Normalize line endings for cross-platform testing
+		$csv_content = str_replace( "\r\n", "\n", $csv_content );
+
+		// Check individual components instead of the exact string
+		$this->assertStringContainsString( 'name,formula,quoted,comma,backslash', $csv_content );
+		$this->assertStringContainsString( '"John Doe"', $csv_content );
+		$this->assertStringContainsString( '\'=SUM(A1:A2)', $csv_content );
+		$this->assertStringContainsString( '"Contains ""quotes"""', $csv_content );
+		$this->assertStringContainsString( '"Item 1, Item 2"', $csv_content );
+		$this->assertStringContainsString( '\'@username', $csv_content );
+		$this->assertStringContainsString( '\'Single quotes\'', $csv_content );
+		$this->assertStringContainsString( '\'+1234', $csv_content );
+		$this->assertStringContainsString( '\'-123,45', $csv_content );
+	}
+
+	public function testWriteCsvWithoutHeaders() {
+		// Create a temporary file
+		$temp_file = tmpfile();
+
+		// Test data without using headers
+		$rows = [
+			[ 'John Doe', '=SUM(A1:A2)', 'Contains "quotes"' ],
+			[ '@username', '+1234', '-amount' ],
+		];
+
+		// Write to CSV without headers
+		Utils\write_csv( $temp_file, $rows );
+
+		// Rewind file and read contents
+		rewind( $temp_file );
+		$csv_content = stream_get_contents( $temp_file );
+
+		// Normalize line endings for cross-platform testing
+		$csv_content = str_replace( "\r\n", "\n", $csv_content );
+
+		// Check individual components instead of the exact string
+		$this->assertStringContainsString( '"John Doe"', $csv_content );
+		$this->assertStringContainsString( '\'=SUM(A1:A2)', $csv_content );
+		$this->assertStringContainsString( '"Contains ""quotes"""', $csv_content );
+		$this->assertStringContainsString( '\'@username', $csv_content );
+		$this->assertStringContainsString( '\'+1234', $csv_content );
+		$this->assertStringContainsString( '\'-amount', $csv_content );
+	}
+
+	public function testWriteCsvWithFieldPicking() {
+		// Create a temporary file
+		$temp_file = tmpfile();
+
+		// Test data with additional fields that should be filtered out
+		$rows = [
+			[
+				'id'      => 1,
+				'name'    => 'John Doe',
+				'email'   => 'john@example.com',
+				'formula' => '=HYPERLINK("http://malicious.com")',
+				'extra'   => 'Should not appear',
+			],
+			[
+				'id'      => 2,
+				'name'    => '@username',
+				'email'   => 'user@example.com',
+				'formula' => '+1234',
+				'extra'   => 'Should not appear',
+			],
+		];
+
+		// Only include these headers (should filter the rows accordingly)
+		$headers = [ 'id', 'name', 'email', 'formula' ];
+
+		// Write to CSV, which should filter fields based on headers
+		Utils\write_csv( $temp_file, $rows, $headers );
+
+		// Rewind file and read contents
+		rewind( $temp_file );
+		$csv_content = stream_get_contents( $temp_file );
+
+		// Normalize line endings for cross-platform testing
+		$csv_content = str_replace( "\r\n", "\n", $csv_content );
+
+		// Check individual components instead of the exact string
+		$this->assertStringContainsString( 'id,name,email,formula', $csv_content );
+		$this->assertStringContainsString( '1,"John Doe",john@example.com', $csv_content );
+		$this->assertStringContainsString( '\'=HYPERLINK', $csv_content );
+		$this->assertStringContainsString( '2,\'@username,user@example.com', $csv_content );
+		$this->assertStringContainsString( '\'+1234', $csv_content );
+
+		// Make sure 'extra' field is not in the output
+		$this->assertStringNotContainsString( 'extra', $csv_content );
+		$this->assertStringNotContainsString( 'Should not appear', $csv_content );
+	}
+
 	public function testReplacePathConstsAddSlashes() {
 		$expected = "define( 'ABSPATH', dirname( 'C:\\\\Users\\\\test\'s\\\\site' ) . '/' );";
 		$source   = "define( 'ABSPATH', dirname( __FILE__ ) . '/' );";
