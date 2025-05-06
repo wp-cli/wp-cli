@@ -506,3 +506,35 @@ Feature: Bootstrap WP-CLI
     Given an empty directory
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=ini_set} cli info`
     Then the return code should be 0
+
+  Scenario: Test early root detection
+
+    Given an empty directory
+    And a include.php file:
+    """
+    <?php
+      namespace WP_CLI\Bootstrap;
+
+      // To override posix_geteuid in our namespace
+      function posix_geteuid() {
+        return 0;
+      }
+    ?>
+    """
+
+    And I try `WP_CLI_EARLY_REQUIRE=include.php wp cli version --debug`
+
+    Then STDERR should contain:
+    """
+    WP_CLI\Bootstrap\CheckRoot
+    """
+
+    And STDERR should not contain:
+    """
+    WP_CLI\Bootstrap\IncludeRequestsAutoloader
+    """
+
+    And STDERR should contain:
+    """
+    YIKES!
+    """
