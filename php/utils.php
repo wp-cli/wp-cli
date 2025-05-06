@@ -2032,3 +2032,26 @@ function get_hook_description( $hook ) {
 	}
 	return null;
 }
+
+/**
+ * Escape a value for CSV output.
+ *
+ * Values that start with the following characters are escaping with a single
+ * quote: =, +, -, @, TAB (0x09) and CR (0x0D).
+ *
+ * @param string $value Value to escape.
+ * @return string Escaped value.
+ */
+function escape_csv_value( $value ) {
+	if (
+		in_array(
+			substr( $value, 0, 1 ),
+			[ '=', '+', '-', '@', "\t", "\r" ],
+			true
+		)
+	) {
+		return "'{$value}";
+	}
+
+	return $value;
+}

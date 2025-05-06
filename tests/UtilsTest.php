@@ -914,6 +914,34 @@ class UtilsTest extends TestCase {
 		];
 	}
 
+	/**
+	 * @dataProvider dataEscapeCsvValue
+	 */
+	public function testEscapeCsvValue( $input, $expected ) {
+		$this->assertEquals( $expected, Utils\escape_csv_value( $input ) );
+	}
+
+	public static function dataEscapeCsvValue() {
+		return [
+			// Values starting with special characters that should be escaped.
+			[ '=formula', "'=formula" ],
+			[ '+positive', "'+positive" ],
+			[ '-negative', "'-negative" ],
+			[ '@mention', "'@mention" ],
+			[ "\tindented", "'\tindented" ],
+			[ "\rcarriage", "'\rcarriage" ],
+
+			// Values that should not be escaped.
+			[ 'normal text', 'normal text' ],
+			[ 'text with = in middle', 'text with = in middle' ],
+			[ '123', '123' ],
+			[ '', '' ],
+			[ ' leading space', ' leading space' ],
+			[ 'trailing space ', 'trailing space ' ],
+			[ '=x==y=', "'=x==y=" ], // Only escapes when the first character is special
+		];
+	}
+
 	public function testReplacePathConstsAddSlashes() {
 		$expected = "define( 'ABSPATH', dirname( 'C:\\\\Users\\\\test\'s\\\\site' ) . '/' );";
 		$source   = "define( 'ABSPATH', dirname( __FILE__ ) . '/' );";
