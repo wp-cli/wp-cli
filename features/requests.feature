@@ -53,6 +53,7 @@ Feature: Requests integration with both v1 and v2
     Given a WP installation
     And I run `wp core update --version=5.8 --force`
     And I run `rm -r wp-content/themes/*`
+    And I run `wp plugin delete --all`
 
     When I run `wp core version`
     Then STDOUT should contain:
@@ -84,6 +85,7 @@ Feature: Requests integration with both v1 and v2
     And I try `wp theme install twentyten`
     And I try `wp theme activate twentyten`
     And I run `wp core update --version=6.2 --force`
+    And I run `wp plugin delete --all`
 
     When I run `wp core version`
     Then STDOUT should contain:

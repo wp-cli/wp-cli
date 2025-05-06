@@ -274,6 +274,7 @@ Feature: Bootstrap WP-CLI
   Scenario: Extend existing bundled command through package manager
 
     Given a WP installation
+    And I run `wp plugin delete --all`
     And a override/override.php file:
       """
       <?php
