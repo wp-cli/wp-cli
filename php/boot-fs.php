@@ -7,8 +7,8 @@ if ( 'cli' !== PHP_SAPI ) {
 	die( -1 );
 }
 
-if ( version_compare( PHP_VERSION, '5.6.0', '<' ) ) {
-	printf( "Error: WP-CLI requires PHP %s or newer. You are running version %s.\n", '5.6.0', PHP_VERSION );
+if ( version_compare( PHP_VERSION, '7.2.24', '<' ) ) {
+	printf( "Error: WP-CLI requires PHP %s or newer. You are running version %s.\n", '7.2.24', PHP_VERSION );
 	die( -1 );
 }
 
