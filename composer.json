@@ -8,7 +8,7 @@
     "homepage": "https://wp-cli.org",
     "license": "MIT",
     "require": {
-        "php": "^5.6 || ^7.0 || ^8.0",
+        "php": ">=7.2.24 || ^8.0",
         "ext-curl": "*",
         "symfony/finder": ">2.7",
         "wp-cli/mustache": "^2.14.99",
