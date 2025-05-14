@@ -13,7 +13,7 @@ class RecursiveDataStructureTraverser {
 	protected $data;
 
 	/**
-	 * @var null|string The key the data belongs to in the parent's data.
+	 * @var null|string|int The key the data belongs to in the parent's data.
 	 */
 	protected $key;
 
@@ -143,6 +143,7 @@ class RecursiveDataStructureTraverser {
 			throw $exception;
 		}
 
+		// @phpstan-ignore return.missing
 		foreach ( $this->data as $key => &$key_data ) {
 			if ( $key === $current ) {
 				$traverser = new self( $key_data, $key, $this );

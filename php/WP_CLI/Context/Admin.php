@@ -112,7 +112,7 @@ final class Admin implements Context {
 			$_wp_submenu_nopriv = []; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		}
 
-		$admin_php_file = file_get_contents( ABSPATH . 'wp-admin/admin.php' );
+		$admin_php_file = (string) file_get_contents( ABSPATH . 'wp-admin/admin.php' );
 
 		// First we remove the opening and closing PHP tags.
 		$admin_php_file = preg_replace( '/^<\?php\s+/', '', $admin_php_file );

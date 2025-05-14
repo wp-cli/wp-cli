@@ -96,8 +96,8 @@ class WP_CLI {
 
 		if ( ! $cache ) {
 			$dir      = Utils\get_cache_dir();
-			$ttl      = getenv( 'WP_CLI_CACHE_EXPIRY' ) ? : 15552000;
-			$max_size = getenv( 'WP_CLI_CACHE_MAX_SIZE' ) ? : 314572800;
+			$ttl      = (int) getenv( 'WP_CLI_CACHE_EXPIRY' ) ? : 15552000;
+			$max_size = (int) getenv( 'WP_CLI_CACHE_MAX_SIZE' ) ? : 314572800;
 			// 6 months, 300mb
 			$cache = new FileCache( $dir, $ttl, $max_size );
 
@@ -410,7 +410,9 @@ class WP_CLI {
 				if ( false === $priority ) {
 					return false;
 				}
-				$obj_idx                  .= isset( $wp_filter[ $tag ][ $priority ] ) ? count( (array) $wp_filter[ $tag ][ $priority ] ) : $filter_id_count;
+				$obj_idx .= isset( $wp_filter[ $tag ][ $priority ] ) ? count( (array) $wp_filter[ $tag ][ $priority ] ) : $filter_id_count;
+
+				// @phpstan-ignore property.notFound
 				$function[0]->wp_filter_id = $filter_id_count;
 				++$filter_id_count;
 			} else {
@@ -462,9 +464,9 @@ class WP_CLI {
 	 * @access public
 	 * @category Registration
 	 *
-	 * @param string   $name Name for the command (e.g. "post list" or "site empty").
-	 * @param callable|object|string $callable Command implementation as a class, function or closure.
-	 * @param array    $args {
+	 * @param string                          $name     Name for the command (e.g. "post list" or "site empty").
+	 * @param callable|object|string|string[] $callable Command implementation as a class, function or closure.
+	 * @param array                           $args {
 	 *    Optional. An associative array with additional registration parameters.
 	 *
 	 *    @type callable $before_invoke Callback to execute before invoking the command.
@@ -490,7 +492,7 @@ class WP_CLI {
 			$valid = true;
 		} elseif ( is_object( $callable ) ) {
 			$valid = true;
-		} elseif ( Utils\is_valid_class_and_method_pair( $callable ) ) {
+		} elseif ( is_array( $callable ) && Utils\is_valid_class_and_method_pair( $callable ) ) {
 			$valid = true;
 		}
 		if ( ! $valid ) {
@@ -515,7 +517,7 @@ class WP_CLI {
 			}
 		}
 
-		$path = preg_split( '/\s+/', $name );
+		$path = preg_split( '/\s+/', $name ) ?: [];
 
 		$leaf_name = array_pop( $path );
 
@@ -544,6 +546,10 @@ class WP_CLI {
 					$command->add_subcommand( $subcommand_name, $subcommand );
 				} else {
 					self::debug( "Deferring command: {$name}", 'commands' );
+
+					/**
+					 * @var callable $callable
+					 */
 
 					self::defer_command_addition(
 						$name,
@@ -680,10 +686,10 @@ class WP_CLI {
 	 * Defer command addition for a sub-command if the parent command is not yet
 	 * registered.
 	 *
-	 * @param string $name     Name for the sub-command.
-	 * @param string $parent   Name for the parent command.
-	 * @param string $callable Command implementation as a class, function or closure.
-	 * @param array  $args     Optional. See `WP_CLI::add_command()` for details.
+	 * @param string   $name     Name for the sub-command.
+	 * @param string   $parent   Name for the parent command.
+	 * @param callable $callable Command implementation as a class, function or closure.
+	 * @param array    $args     Optional. See `WP_CLI::add_command()` for details.
 	 */
 	private static function defer_command_addition( $name, $parent, $callable, $args = [] ) {
 		$args['is_deferred']               = true;
@@ -903,6 +909,8 @@ class WP_CLI {
 	 * @param string|WP_Error|Exception|Throwable $message Message to write to STDERR.
 	 * @param boolean|integer            $exit    True defaults to exit(1).
 	 * @return null
+	 *
+	 * @phpstan-return ($exit is true ? never : void)
 	 */
 	public static function error( $message, $exit = true ) {
 		if ( null !== self::$logger && ! isset( self::get_runner()->assoc_args['completions'] ) ) {
@@ -984,7 +992,7 @@ class WP_CLI {
 		if ( ! Utils\get_flag_value( $assoc_args, 'yes' ) ) {
 			fwrite( STDOUT, $question . ' [y/n] ' );
 
-			$answer = strtolower( trim( fgets( STDIN ) ) );
+			$answer = strtolower( trim( (string) fgets( STDIN ) ) );
 
 			if ( 'y' !== $answer ) {
 				exit;
@@ -1123,6 +1131,8 @@ class WP_CLI {
 	 * @param boolean $exit_on_error Whether to exit if the command returns an elevated return code.
 	 * @param boolean $return_detailed Whether to return an exit status (default) or detailed execution results.
 	 * @return int|ProcessRun The command exit status, or a ProcessRun object for full details.
+	 *
+	 * @phpstan-return ($return_detailed is true ? ProcessRun : int)
 	 */
 	public static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
 		Utils\check_proc_available( 'launch' );
@@ -1190,8 +1200,10 @@ class WP_CLI {
 
 		$script_path = $GLOBALS['argv'][0];
 
-		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
-			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
+		$wp_cli_config_path = (string) getenv( 'WP_CLI_CONFIG_PATH' );
+
+		if ( $wp_cli_config_path ) {
+			$config_path = $wp_cli_config_path;
 		} else {
 			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
 		}
@@ -1294,11 +1306,11 @@ class WP_CLI {
 	 * @param array  $options {
 	 *     Configuration options for command execution.
 	 *
-	 *     @type bool        $launch     Launches a new process (true) or reuses the existing process (false). Default: true.
-	 *     @type bool        $exit_error Halts the script on error. Default: true.
-	 *     @type bool|string $return     Returns output as an object when set to 'all' (string), return just the 'stdout', 'stderr', or 'return_code' (string) of command, or print directly to stdout/stderr (false). Default: false.
-	 *     @type bool|string $parse      Parse returned output as 'json' (string); otherwise, output is unchanged (false). Default: false.
-	 * @param array $command_args Contains additional command line arguments for the command. Each element represents a single argument. Default: empty array.
+	 *     @type bool        $launch       Launches a new process (true) or reuses the existing process (false). Default: true.
+	 *     @type bool        $exit_error   Halts the script on error. Default: true.
+	 *     @type bool|string $return       Returns output as an object when set to 'all' (string), return just the 'stdout', 'stderr', or 'return_code' (string) of command, or print directly to stdout/stderr (false). Default: false.
+	 *     @type bool|string $parse        Parse returned output as 'json' (string); otherwise, output is unchanged (false). Default: false.
+	 *     @type array       $command_args Contains additional command line arguments for the command. Each element represents a single argument. Default: empty array.
 	 * }
 	 * @return mixed
 	 */
@@ -1339,6 +1351,10 @@ class WP_CLI {
 				];
 			}
 
+			/**
+			 * @var array<resource> $descriptors
+			 */
+
 			$php_bin     = escapeshellarg( Utils\get_php_binary() );
 			$script_path = $GLOBALS['argv'][0];
 
@@ -1356,19 +1372,22 @@ class WP_CLI {
 
 			$runcommand = "{$php_bin} {$script_path} {$runtime_config} {$command}";
 
+			/**
+			 * @phpstan-var array<int, resource> $pipes
+			 */
 			$pipes = [];
-			$proc  = Utils\proc_open_compat( $runcommand, $descriptors, $pipes, getcwd() );
+			$proc  = Utils\proc_open_compat( $runcommand, $descriptors, $pipes, getcwd() ?: null );
 
 			$stdout = '';
 			$stderr = '';
 
 			if ( $return ) {
-				$stdout = stream_get_contents( $pipes[1] );
+				$stdout = (string) stream_get_contents( $pipes[1] );
 				fclose( $pipes[1] );
-				$stderr = stream_get_contents( $pipes[2] );
+				$stderr = (string) stream_get_contents( $pipes[2] );
 				fclose( $pipes[2] );
 			}
-			$return_code = proc_close( $proc );
+			$return_code = $proc ? proc_close( $proc ) : -1;
 			if ( -1 === $return_code ) {
 				self::warning( 'Spawned process returned exit code -1, which could be caused by a custom compiled version of PHP that uses the --enable-sigchild option.' );
 			} elseif ( $return_code && $exit_error ) {
@@ -1436,7 +1455,7 @@ class WP_CLI {
 			}
 		}
 		if ( ( true === $return || 'stdout' === $return )
-			&& 'json' === $parse ) {
+			&& 'json' === $parse && is_string( $retval ) ) {
 			$retval = json_decode( $retval, true );
 		}
 		return $retval;

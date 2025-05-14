@@ -23,8 +23,8 @@ class CommandFactory {
 	/**
 	 * Create a new CompositeCommand (or Subcommand if class has __invoke())
 	 *
-	 * @param string                                $name     Represents how the command should be invoked
-	 * @param string|callable-string|callable|array $callable A subclass of WP_CLI_Command, a function, or a closure
+	 * @param string                                       $name     Represents how the command should be invoked
+	 * @param string|callable-string|callable|array|object $callable A subclass of WP_CLI_Command, a function, or a closure
 	 * @param mixed $parent The new command's parent Composite (or Root) command
 	 */
 	public static function create( $name, $callable, $parent ) {
@@ -42,6 +42,9 @@ class CommandFactory {
 				$reflection->getMethod( $callable[1] )
 			);
 		} else {
+			/**
+			 * @var class-string $callable
+			 */
 			$reflection = new ReflectionClass( $callable );
 			if ( $reflection->isSubclassOf( '\WP_CLI\Dispatcher\CommandNamespace' ) ) {
 				$command = self::create_namespace( $parent, $name, $callable );
@@ -71,15 +74,18 @@ class CommandFactory {
 	/**
 	 * Create a new Subcommand instance.
 	 *
-	 * @param mixed $parent The new command's parent Composite command
-	 * @param string|bool $name Represents how the command should be invoked.
-	 * If false, will be determined from the documented subject, represented by `$reflection`.
-	 * @param mixed $callable A callable function or closure, or class name and method
-	 * @param object $reflection Reflection instance, for doc parsing
+	 * @param mixed                                               $parent     The new command's parent Composite command.
+	 * @param string|false                                        $name       Represents how the command should be invoked.
+	 *                                                                        If false, will be determined from the documented subject, represented by `$reflection`.
+	 * @param mixed                                               $callable   A callable function or closure, or class name and method
+	 * @param ReflectionClass|ReflectionMethod|ReflectionFunction $reflection Reflection instance, for doc parsing
+	 *
+	 * @template T of object
+	 * @phpstan-param ReflectionClass<T>|ReflectionMethod|ReflectionFunction $reflection
 	 */
 	private static function create_subcommand( $parent, $name, $callable, $reflection ) {
 		$doc_comment = self::get_doc_comment( $reflection );
-		$docparser   = new DocParser( $doc_comment );
+		$docparser   = new DocParser( $doc_comment ?: '' );
 
 		if ( is_array( $callable ) ) {
 			if ( ! $name ) {
@@ -97,11 +103,21 @@ class CommandFactory {
 		$when_invoked = function ( $args, $assoc_args ) use ( $callable ) {
 			if ( is_array( $callable ) ) {
 				$callable[0] = is_object( $callable[0] ) ? $callable[0] : new $callable[0]();
-				call_user_func( [ $callable[0], $callable[1] ], $args, $assoc_args );
+
+				/**
+				 * @var callable $command
+				 */
+				$command = [ $callable[0], $callable[1] ];
+
+				call_user_func( $command, $args, $assoc_args );
 			} else {
 				call_user_func( $callable, $args, $assoc_args );
 			}
 		};
+
+		/**
+		 * @var string $name
+		 */
 
 		return new Subcommand( $parent, $name, $docparser, $when_invoked );
 	}
@@ -118,6 +134,8 @@ class CommandFactory {
 		$doc_comment = self::get_doc_comment( $reflection );
 		if ( ! $doc_comment ) {
 			WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
+
+			$doc_comment = '';
 		}
 		$docparser = new DocParser( $doc_comment );
 
@@ -151,7 +169,10 @@ class CommandFactory {
 		$doc_comment = self::get_doc_comment( $reflection );
 		if ( ! $doc_comment ) {
 			WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
+
+			$doc_comment = '';
 		}
+
 		$docparser = new DocParser( $doc_comment );
 
 		return new CommandNamespace( $parent, $name, $docparser );
@@ -172,6 +193,9 @@ class CommandFactory {
 	 *
 	 * @param ReflectionMethod|ReflectionClass|ReflectionFunction $reflection Reflection instance.
 	 * @return string|false|null Doc comment string if any, false if none (same as `Reflection*::getDocComment()`), null if error.
+	 *
+	 * @template T of object
+	 * @phpstan-param ReflectionClass<T>|ReflectionMethod|ReflectionFunction $reflection
 	 */
 	private static function get_doc_comment( $reflection ) {
 		$contents    = null;
@@ -186,18 +210,20 @@ class CommandFactory {
 
 		$filename = $reflection->getFileName();
 
-		if ( isset( self::$file_contents[ $filename ] ) ) {
-			$contents = self::$file_contents[ $filename ];
-		} elseif ( is_readable( $filename ) ) {
-			$contents = file_get_contents( $filename );
-			if ( is_string( $contents ) && '' !== $contents ) {
-				$contents                         = explode( "\n", $contents );
-				self::$file_contents[ $filename ] = $contents;
+		if ( $filename ) {
+			if ( isset( self::$file_contents[ $filename ] ) ) {
+				$contents = self::$file_contents[ $filename ];
+			} elseif ( is_readable( $filename ) ) {
+				$contents = file_get_contents( $filename );
+				if ( is_string( $contents ) && '' !== $contents ) {
+					$contents                         = explode( "\n", $contents );
+					self::$file_contents[ $filename ] = $contents;
+				}
 			}
 		}
 
 		if ( ! empty( $contents ) ) {
-			return self::extract_last_doc_comment( implode( "\n", array_slice( $contents, 0, $reflection->getStartLine() ) ) );
+			return self::extract_last_doc_comment( implode( "\n", array_slice( $contents, 0, $reflection->getStartLine() ?: 0 ) ) );
 		}
 
 		WP_CLI::debug( "Could not read contents for filename '{$filename}'.", 'commandfactory' );
@@ -208,7 +234,7 @@ class CommandFactory {
 	 * Returns the last doc comment if any in `$content`.
 	 *
 	 * @param string $content The content, which should end at the class or function declaration.
-	 * @return string|bool The last doc comment if any, or false if none.
+	 * @return string|false The last doc comment if any, or false if none.
 	 */
 	private static function extract_last_doc_comment( $content ) {
 		$content         = trim( $content );

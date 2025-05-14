@@ -132,7 +132,7 @@ class Runner {
 
 		foreach ( $this->early_invoke[ $when ] as $path ) {
 			if ( $this->cmd_starts_with( $path ) ) {
-				if ( empty( $real_when ) || ( $real_when && $real_when === $when ) ) {
+				if ( empty( $real_when ) || $real_when === $when ) {
 					$this->run_command_and_exit();
 				}
 			}
@@ -148,9 +148,10 @@ class Runner {
 	 * @return string|false
 	 */
 	public function get_global_config_path( $create_config_file = false ) {
+		$wp_cli_config_path = (string) getenv( 'WP_CLI_CONFIG_PATH' );
 
-		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
-			$config_path                    = getenv( 'WP_CLI_CONFIG_PATH' );
+		if ( $wp_cli_config_path ) {
+			$config_path                    = $wp_cli_config_path;
 			$this->global_config_path_debug = 'Using global config from WP_CLI_CONFIG_PATH env var: ' . $config_path;
 		} else {
 			$config_path                    = Utils\get_home_dir() . '/.wp-cli/config.yml';
@@ -200,7 +201,7 @@ class Runner {
 		// installation into a parent installation
 		$project_config_path = Utils\find_file_upward(
 			$config_files,
-			getcwd(),
+			(string) getcwd(),
 			static function ( $dir ) {
 				static $wp_load_count = 0;
 				$wp_load_path         = $dir . DIRECTORY_SEPARATOR . 'wp-load.php';
@@ -226,8 +227,9 @@ class Runner {
 	 * @return string
 	 */
 	public function get_packages_dir_path() {
-		if ( getenv( 'WP_CLI_PACKAGES_DIR' ) ) {
-			$packages_dir = Utils\trailingslashit( getenv( 'WP_CLI_PACKAGES_DIR' ) );
+		$packages_dir = (string) getenv( 'WP_CLI_PACKAGES_DIR' );
+		if ( $packages_dir ) {
+			$packages_dir = Utils\trailingslashit( $packages_dir );
 		} else {
 			$packages_dir = Utils\get_home_dir() . '/.wp-cli/packages/';
 		}
@@ -241,7 +243,7 @@ class Runner {
 	 * @return string|false
 	 */
 	private static function extract_subdir_path( $index_path ) {
-		$index_code = file_get_contents( $index_path );
+		$index_code = (string) file_get_contents( $index_path );
 
 		if ( ! preg_match( '|^\s*require\s*\(?\s*(.+?)/wp-blog-header\.php([\'"])|m', $index_code, $matches ) ) {
 			return false;
@@ -282,10 +284,10 @@ class Runner {
 		}
 
 		if ( $this->cmd_starts_with( [ 'core', 'download' ] ) ) {
-			return getcwd();
+			return (string) getcwd();
 		}
 
-		$dir = getcwd();
+		$dir = (string) getcwd();
 
 		while ( is_readable( $dir ) ) {
 			if ( file_exists( "$dir/wp-load.php" ) ) {
@@ -306,7 +308,7 @@ class Runner {
 			$dir = $parent_dir;
 		}
 
-		return getcwd();
+		return (string) getcwd();
 	}
 
 	/**
@@ -601,12 +603,10 @@ class Runner {
 		$is_stdout_tty = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
 		$is_stdin_tty  = function_exists( 'posix_isatty' ) ? posix_isatty( STDIN ) : true;
 
-		if ( in_array( $bits['scheme'], [ 'docker', 'docker-compose', 'docker-compose-run' ], true ) ) {
-				$docker_compose_v2_version_cmd = Utils\esc_cmd( Utils\force_env_on_nix_systems( 'docker' ) . ' compose %s', 'version' );
-				$docker_compose_cmd            = ! empty( Process::create( $docker_compose_v2_version_cmd )->run()->stdout )
-						? 'docker compose'
-						: 'docker-compose';
-		}
+		$docker_compose_v2_version_cmd = Utils\esc_cmd( Utils\force_env_on_nix_systems( 'docker' ) . ' compose %s', 'version' );
+		$docker_compose_cmd            = ! empty( Process::create( $docker_compose_v2_version_cmd )->run()->stdout )
+				? 'docker compose'
+				: 'docker-compose';
 
 		if ( 'docker' === $bits['scheme'] ) {
 			$command = 'docker exec %s%s%s%s%s sh -c %s';
@@ -661,13 +661,13 @@ class Runner {
 			$cache     = WP_CLI::get_cache();
 			$cache_key = 'vagrant:' . $this->project_config_path;
 			if ( $cache->has( $cache_key ) ) {
-				$cached = $cache->read( $cache_key );
+				$cached = (string) $cache->read( $cache_key );
 				$values = json_decode( $cached, true );
 			} else {
-				$ssh_config = shell_exec( 'vagrant ssh-config 2>/dev/null' );
+				$ssh_config = (string) shell_exec( 'vagrant ssh-config 2>/dev/null' );
 				if ( preg_match_all( '#\s*(?<NAME>[a-zA-Z]+)\s(?<VALUE>.+)\s*#', $ssh_config, $matches ) ) {
 					$values = array_combine( $matches['NAME'], $matches['VALUE'] );
-					$cache->write( $cache_key, json_encode( $values ) );
+					$cache->write( $cache_key, (string) json_encode( $values ) );
 				}
 			}
 
@@ -752,7 +752,7 @@ class Runner {
 			$wp_config_path = Utils\locate_wp_config();
 		}
 
-		$wp_config_code = file_get_contents( $wp_config_path );
+		$wp_config_code = (string) file_get_contents( $wp_config_path );
 
 		// Detect and strip byte-order marks (BOMs).
 		// This code assumes they can only be found on the first line.
@@ -1110,8 +1110,10 @@ class Runner {
 
 		$script_path = $GLOBALS['argv'][0];
 
-		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
-			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
+		$wp_cli_config_path = (string) getenv( 'WP_CLI_CONFIG_PATH' );
+
+		if ( $wp_cli_config_path ) {
+			$config_path = $wp_cli_config_path;
 		} else {
 			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
 		}
@@ -1125,7 +1127,10 @@ class Runner {
 			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
 			$pipes          = [];
 			$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
-			proc_close( $proc );
+
+			if ( $proc ) {
+				proc_close( $proc );
+			}
 		}
 	}
 
@@ -1269,7 +1274,7 @@ class Runner {
 				WP_CLI::set_url( $url );
 			}
 
-			if ( 'multisite-install' === $this->arguments[1] ) {
+			if ( 'multisite-install' === $this->arguments[1] && $url ) {
 				// need to fake some globals to skip the checks in wp-includes/ms-settings.php
 				$url_parts = Utils\parse_url( $url );
 				self::fake_current_site_blog( $url_parts );
@@ -1503,7 +1508,7 @@ class Runner {
 				// Polyfill is_customize_preview(), as it is needed by TwentyTwenty to
 				// check for starter content.
 				if ( ! function_exists( 'is_customize_preview' ) ) {
-					function is_customize_preview() {
+					function is_customize_preview() { // @phpstan-ignore function.inner
 						return false;
 					}
 				}
@@ -1883,7 +1888,7 @@ class Runner {
 			return;
 		}
 
-		$existing_phar = realpath( $_SERVER['argv'][0] );
+		$existing_phar = (string) realpath( $_SERVER['argv'][0] );
 		// Phar needs to be writable to be easily updateable.
 		if ( ! is_writable( $existing_phar ) || ! is_writable( dirname( $existing_phar ) ) ) {
 			return;
@@ -1909,18 +1914,18 @@ class Runner {
 		$cache_key = 'wp-cli-update-check';
 		// Bail early on the first check, so we don't always check on an unwritable cache.
 		if ( ! $cache->has( $cache_key ) ) {
-			$cache->write( $cache_key, time() );
+			$cache->write( $cache_key, (string) time() );
 			return;
 		}
 
 		// Bail if last check is still within our update check time period.
 		$last_check = (int) $cache->read( $cache_key );
-		if ( ( time() - ( 24 * 60 * 60 * $days_between_checks ) ) < $last_check ) {
+		if ( ( time() - ( 24 * 60 * 60 * (int) $days_between_checks ) ) < $last_check ) {
 			return;
 		}
 
 		// In case the operation fails, ensure the timestamp has been updated.
-		$cache->write( $cache_key, time() );
+		$cache->write( $cache_key, (string) time() );
 
 		// Check whether any updates are available.
 		ob_start();

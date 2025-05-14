@@ -78,7 +78,13 @@ abstract class AutoloaderStep implements BootstrapStep {
 			return false;
 		}
 
-		$composer = json_decode( file_get_contents( $maybe_composer_json ) );
+		$contents = file_get_contents( $maybe_composer_json );
+
+		if ( false === $contents ) {
+			return false;
+		}
+
+		$composer = json_decode( $contents );
 
 		if ( ! empty( $composer->config )
 			&& ! empty( $composer->config->{'vendor-dir'} )

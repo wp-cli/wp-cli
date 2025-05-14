@@ -6,6 +6,8 @@ use IteratorIterator;
 
 /**
  * Applies one or more callbacks to an item before returning it.
+ *
+ * @phpstan-extends IteratorIterator<int, callable, \Iterator>
  */
 class Transform extends IteratorIterator {
 

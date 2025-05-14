@@ -12,7 +12,7 @@ use WP_CLI;
 class WpHttpCacheManager {
 
 	/**
-	 * @var array<string, array{key:string, ttl:int}> map whitelisted urls to keys and ttls
+	 * @var array<string, array{key:string, ttl: int|null}> map whitelisted urls to keys and ttls
 	 */
 	protected $whitelist = [];
 
@@ -83,7 +83,7 @@ class WpHttpCacheManager {
 			return $response;
 		}
 		// check if download was successful
-		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+		if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
 			return $response;
 		}
 		// cache downloaded file

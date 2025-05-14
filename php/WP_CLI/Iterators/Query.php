@@ -8,6 +8,8 @@ use Iterator;
  * Iterates over results of a query, split into many queries via LIMIT and OFFSET
  *
  * @source https://gist.github.com/4060005
+ *
+ * @implements \Iterator<int, mixed>
  */
 class Query implements Iterator {
 

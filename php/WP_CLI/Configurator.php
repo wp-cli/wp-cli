@@ -86,7 +86,7 @@ class Configurator {
 		}
 
 		$env_files = getenv( 'WP_CLI_REQUIRE' )
-		? array_filter( array_map( 'trim', explode( ',', getenv( 'WP_CLI_REQUIRE' ) ) ) )
+		? array_filter( array_map( 'trim', explode( ',', (string) getenv( 'WP_CLI_REQUIRE' ) ) ) )
 		: [];
 
 		if ( ! empty( $env_files ) ) {
@@ -277,7 +277,7 @@ class Configurator {
 			$this->merge_yml( $inherit_path, $current_alias );
 		}
 		// Prepare the base path for absolutized alias paths.
-		$yml_file_dir = $path ? dirname( $path ) : false;
+		$yml_file_dir = $path ? dirname( $path ) : '';
 		foreach ( $yaml as $key => $value ) {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
 				$this->aliases[ $key ] = [];

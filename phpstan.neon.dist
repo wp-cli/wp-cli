@@ -1,0 +1,33 @@
+parameters:
+  level: 7
+  paths:
+    - php/commands
+    - php/WP_CLI
+    - php/boot-fs.php
+    - php/bootstrap.php
+    - php/class-wp-cli.php
+    - php/class-wp-cli-command.php
+    - php/dispatcher.php
+    - php/utils.php
+    - php/utils-wp.php
+    - php/wp-cli.php
+#    - tests/
+  excludePaths:
+     - php/WP_CLI/ComposerIO.php
+     - php/WP_CLI/PackageManagerEventSubscriber.php
+  scanDirectories:
+    - bundle/rmccue/requests
+  scanFiles:
+    - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+    - utils/phpstan/scan-files.php
+    - php/boot-fs.php
+  treatPhpDocTypesAsCertain: false
+  dynamicConstantNames:
+  	- WP_DEBUG
+  	- WP_DEBUG_LOG
+  	- WP_DEBUG_DISPLAY
+  ignoreErrors:
+    - identifier: missingType.iterableValue
+    - identifier: missingType.property
+    - identifier: missingType.parameter
+    - identifier: missingType.return

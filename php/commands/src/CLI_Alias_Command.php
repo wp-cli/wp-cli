@@ -460,7 +460,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 */
 	private function validate_input( $assoc_args, $grouping ) {
 		// Check if valid arguments were passed.
-		$arg_match = preg_grep( '/^set-(\w+)/i', array_keys( $assoc_args ) );
+		$arg_match = (array) preg_grep( '/^set-(\w+)/i', array_keys( $assoc_args ) );
 
 		// Verify passed-arguments.
 		if ( empty( $grouping ) && empty( $arg_match ) ) {

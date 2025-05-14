@@ -12,6 +12,7 @@ use Closure;
 use Composer\Semver\Comparator;
 use Composer\Semver\Semver;
 use Exception;
+use Iterator;
 use Mustache_Engine;
 use ReflectionFunction;
 use RuntimeException;
@@ -23,6 +24,7 @@ use WP_CLI\Iterators\Transform;
 use WP_CLI\NoOp;
 use WP_CLI\Process;
 use WP_CLI\RequestsLibrary;
+use WpOrg\Requests\Response;
 
 /**
  * File stream wrapper prefix for Phar archives.
@@ -139,7 +141,7 @@ function get_vendor_paths() {
 	];
 	$maybe_composer_json = WP_CLI_ROOT . '/../../../composer.json';
 	if ( file_exists( $maybe_composer_json ) && is_readable( $maybe_composer_json ) ) {
-		$composer = json_decode( file_get_contents( $maybe_composer_json ) );
+		$composer = json_decode( (string) file_get_contents( $maybe_composer_json ), false );
 		if ( ! empty( $composer->config ) && ! empty( $composer->config->{'vendor-dir'} ) ) {
 			array_unshift( $vendor_paths, WP_CLI_ROOT . '/../../../' . $composer->config->{'vendor-dir'} );
 		}
@@ -189,9 +191,9 @@ function load_command( $name ) {
  *       var_dump($val);
  *     }
  *
- * @param array|object $it Either a plain array or another iterator.
+ * @param array|Iterator $it Either a plain array or another iterator.
  * @param callable     $fn The function to apply to an element.
- * @return object An iterator that applies the given callback(s).
+ * @return Iterator An iterator that applies the given callback(s).
  */
 function iterator_map( $it, $fn ) {
 	if ( is_array( $it ) ) {
@@ -222,7 +224,7 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	if ( is_null( $dir ) ) {
 		$dir = getcwd();
 	}
-	while ( is_readable( $dir ) ) {
+	while ( $dir && is_readable( $dir ) ) {
 		// Stop walking up when the supplied callable returns true being passed the $dir
 		if ( is_callable( $stop_check ) && call_user_func( $stop_check, $dir ) ) {
 			return null;
@@ -300,16 +302,13 @@ function assoc_args_to_str( $assoc_args ) {
  * Given a template string and an arbitrary number of arguments,
  * returns the final command, with the parameters escaped.
  *
- * @param array<string> $cmd
+ * @param string $cmd
+ * @param string ...$args
  */
-function esc_cmd( $cmd ) {
+function esc_cmd( $cmd, ...$args ) {
 	if ( func_num_args() < 2 ) {
 		trigger_error( 'esc_cmd() requires at least two arguments.', E_USER_WARNING );
 	}
-
-	$args = func_get_args();
-
-	$cmd = array_shift( $args );
 
 	return vsprintf( $cmd, array_map( 'escapeshellarg', $args ) );
 }
@@ -325,8 +324,10 @@ function locate_wp_config() {
 	if ( null === $path ) {
 		$path = false;
 
-		if ( getenv( 'WP_CONFIG_PATH' ) && file_exists( getenv( 'WP_CONFIG_PATH' ) ) ) {
-			$path = getenv( 'WP_CONFIG_PATH' );
+		$config_path = (string) getenv( 'WP_CONFIG_PATH' );
+
+		if ( $config_path && file_exists( $config_path ) ) {
+			$path = $config_path;
 		} elseif ( file_exists( ABSPATH . 'wp-config.php' ) ) {
 			$path = ABSPATH . 'wp-config.php';
 		} elseif ( file_exists( dirname( ABSPATH ) . '/wp-config.php' ) && ! file_exists( dirname( ABSPATH ) . '/wp-settings.php' ) ) {
@@ -412,9 +413,9 @@ function format_items( $format, $items, $fields ) {
  *
  * @access public
  *
- * @param resource      $fd      File descriptor.
- * @param array<string> $rows    Array of rows to output.
- * @param array<string> $headers List of CSV columns (optional).
+ * @param resource                 $fd      File descriptor.
+ * @param array<string[]>|Iterator $rows    Array of rows to output.
+ * @param array<string>            $headers List of CSV columns (optional).
  */
 function write_csv( $fd, $rows, $headers = [] ) {
 	if ( ! empty( $headers ) ) {
@@ -487,6 +488,7 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 		}
 	} while ( ! $tmpfile );
 
+	// @phpstan-ignore booleanNot.alwaysFalse
 	if ( ! $tmpfile ) {
 		WP_CLI::error( 'Error creating temporary file.' );
 	}
@@ -500,9 +502,11 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 
 	$descriptorspec = [ STDIN, STDOUT, STDERR ];
 	$process        = proc_open_compat( "$editor " . escapeshellarg( $tmpfile ), $descriptorspec, $pipes );
-	$r              = proc_close( $process );
-	if ( $r ) {
-		exit( $r );
+	if ( $process ) {
+		$r = proc_close( $process );
+		if ( $r ) {
+			exit( $r );
+		}
 	}
 
 	$output = file_get_contents( $tmpfile );
@@ -574,6 +578,9 @@ function mysql_host_to_cli_args( $raw_host ) {
 function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true, $interactive = false ) {
 	check_proc_available( 'run_mysql_command' );
 
+	/**
+	 * @var array<resource> $descriptors
+	 */
 	$descriptors = ( $interactive || $send_to_shell ) ?
 		[
 			0 => STDIN,
@@ -588,7 +595,11 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
 
 	$stdout = '';
 	$stderr = '';
-	$pipes  = [];
+
+	/**
+	 * @var array<int, resource> $pipes
+	 */
+	$pipes = [];
 
 	if ( isset( $assoc_args['host'] ) ) {
 		// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysql_host_to_cli_args -- Misidentified as PHP native MySQL function.
@@ -649,7 +660,7 @@ function mustache_render( $template_name, $data = [] ) {
 		$template_name = WP_CLI_ROOT . "/templates/$template_name";
 	}
 
-	$template = file_get_contents( $template_name );
+	$template = (string) file_get_contents( $template_name );
 
 	$mustache = new Mustache_Engine(
 		[
@@ -765,7 +776,7 @@ function replace_path_consts( $source, $path ) {
 	$file = addslashes( $path );
 
 	if ( file_exists( $file ) ) {
-		$file = realpath( $file );
+		$file = (string) realpath( $file );
 	}
 
 	$dir = dirname( $file );
@@ -818,7 +829,7 @@ function replace_path_consts( $source, $path ) {
  *                               Defaults to detected CA cert bundled with the Requests library.
  *     @type bool $insecure      Whether to retry automatically without certificate validation.
  * }
- * @return object
+ * @return \Requests_Response|Response
  * @throws RuntimeException If the request failed.
  * @throws ExitException If the request failed and $halt_on_error is true.
  */
@@ -836,6 +847,9 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 
 	RequestsLibrary::register_autoloader();
 
+	/**
+	 * @var callable $request_method
+	 */
 	$request_method = [ RequestsLibrary::get_class_name(), 'request' ];
 
 	try {
@@ -942,8 +956,12 @@ function get_default_cacert( $halt_on_error = false ) {
  */
 function increment_version( $current_version, $new_version ) {
 	// split version assuming the format is x.y.z-pre.
-	$current_version    = explode( '-', $current_version, 2 );
-	$current_version[0] = explode( '.', $current_version[0] );
+	$_current_version    = explode( '-', $current_version, 2 );
+	$_current_version[0] = explode( '.', $_current_version[0] );
+
+	/**
+	 * @var array{0: list<string>, 1: string} $_current_version
+	 */
 
 	switch ( $new_version ) {
 		case 'same':
@@ -951,36 +969,36 @@ function increment_version( $current_version, $new_version ) {
 			break;
 
 		case 'patch':
-			++$current_version[0][2];
+			++$_current_version[0][2];
 
-			$current_version = [ $current_version[0] ]; // Drop possible pre-release info.
+			$_current_version = [ $_current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		case 'minor':
-			++$current_version[0][1];
-			$current_version[0][2] = 0;
+			++$_current_version[0][1];
+			$_current_version[0][2] = 0;
 
-			$current_version = [ $current_version[0] ]; // Drop possible pre-release info.
+			$_current_version = [ $_current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		case 'major':
-			++$current_version[0][0];
-			$current_version[0][1] = 0;
-			$current_version[0][2] = 0;
+			++$_current_version[0][0];
+			$_current_version[0][1] = 0;
+			$_current_version[0][2] = 0;
 
-			$current_version = [ $current_version[0] ]; // Drop possible pre-release info.
+			$_current_version = [ $_current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		default: // not a keyword.
-			$current_version = [ [ $new_version ] ];
+			$_current_version = [ [ $new_version ] ];
 			break;
 	}
 
 	// Reconstruct version string.
-	$current_version[0] = implode( '.', $current_version[0] );
-	$current_version    = implode( '-', $current_version );
+	$_current_version[0] = implode( '.', $_current_version[0] );
+	$_current_version    = implode( '-', $_current_version );
 
-	return $current_version;
+	return $_current_version;
 }
 
 /**
@@ -1328,6 +1346,9 @@ function expand_globs( $paths, $flags = 'default' ) {
 		$matching = [ $path ];
 
 		if ( preg_match( '/[' . preg_quote( '*?[]{}!', '/' ) . ']/', $path ) ) {
+			/**
+			 * @var int $flags
+			 */
 			$matching = $glob_func( $path, $flags ) ?: [];
 		}
 		$expanded = array_merge( $expanded, $matching );
@@ -1394,7 +1415,8 @@ function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.C
 	// Find comma or matching closing brace.
 	$next = $next_brace_sub( $pattern, $begin + 1 );
 	if ( null === $next ) {
-		return glob( $pattern );
+		$result = glob( $pattern );
+		return $result ?: [];
 	}
 
 	$rest = $next;
@@ -1403,7 +1425,8 @@ function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.C
 	while ( '}' !== $pattern[ $rest ] ) {
 		$rest = $next_brace_sub( $pattern, $rest + 1 );
 		if ( null === $rest ) {
-			return glob( $pattern );
+			$result = glob( $pattern );
+			return $result ?: [];
 		}
 	}
 
@@ -1624,12 +1647,14 @@ function get_php_binary() {
  * @access public
  *
  * @param string                $cmd            Command to execute.
- * @param array<int, string>    $descriptorspec Indexed array of descriptor numbers and their values.
- * @param array<int, string>    &$pipes         Indexed array of file pointers that correspond to PHP's end of any pipes that are created.
+ * @param array<resource>       $descriptorspec Indexed array of descriptor numbers and their values.
+ * @param array<int, resource> &$pipes         Indexed array of file pointers that correspond to PHP's end of any pipes that are created.
  * @param string                $cwd            Initial working directory for the command.
  * @param array<string, string> $env            Array of environment variables.
  * @param array<string>         $other_options  Array of additional options (Windows only).
- * @return resource Command stripped of any environment variable settings.
+ * @return resource|false Command stripped of any environment variable settings, or false on failure.
+ *
+ * @param-out array<int, resource> $pipes
  */
 function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = null, $other_options = null ) {
 	if ( is_windows() ) {
@@ -1676,10 +1701,13 @@ function _proc_open_compat_win_env( $cmd, &$env ) {
  *                or real_escape next.
  */
 function esc_like( $text ) {
+	/**
+	 * @var null|\wpdb $wpdb
+	 */
 	global $wpdb;
 
 	// Check if the esc_like() method exists on the global $wpdb object.
-	// We need to do this because to ensure compatibilty layers like the
+	// We need to do this because to ensure compatibility layers like the
 	// SQLite integration plugin still work.
 	if ( null !== $wpdb && method_exists( $wpdb, 'esc_like' ) ) {
 		return $wpdb->esc_like( $text );
@@ -1694,6 +1722,8 @@ function esc_like( $text ) {
  *
  * @param  string|array<string> $idents A single identifier or an array of identifiers.
  * @return string|array<string> An escaped string if given a string, or an array of escaped strings if given an array of strings.
+ *
+ * @phpstan-return ($idents is string ? string : array<string>)
  */
 function esc_sql_ident( $idents ) {
 	$backtick = static function ( $v ) {
@@ -1788,7 +1818,7 @@ function describe_callable( $callable ) {
  * This accommodates changes to `is_callable()` in PHP 8 that mean an array of a
  * classname and instance method is no longer callable.
  *
- * @param array<string> $pair The class and method pair to check.
+ * @param array $pair The class and method pair to check.
  * @return bool
  */
 function is_valid_class_and_method_pair( $pair ) {
@@ -1918,14 +1948,14 @@ function get_mysql_version() {
 		return $version;
 	}
 
+	$version = '';
+
 	$db_type = get_db_type();
 
 	if ( 'sqlite' !== $db_type ) {
 		$result = Process::create( "/usr/bin/env $db_type --version", null, null )->run();
 
-		if ( 0 !== $result->return_code ) {
-			$version = '';
-		} else {
+		if ( 0 === $result->return_code ) {
 			$version = trim( $result->stdout );
 		}
 	}
@@ -1974,10 +2004,11 @@ function get_sql_modes() {
 		if ( 0 !== $result->return_code ) {
 			$sql_modes = [];
 		} else {
+			$split_lines = preg_split( "/\r\n|\n|\r/", $result->stdout );
 			$sql_modes = array_filter(
 				array_map(
 					'trim',
-					preg_split( "/\r\n|\n|\r/", $result->stdout )
+					$split_lines ?: []
 				)
 			);
 		}
@@ -2003,10 +2034,15 @@ function get_cache_dir() {
  */
 function has_stdin() {
 	$handle  = fopen( 'php://stdin', 'r' );
+	if ( ! $handle ) {
+		return false;
+	}
+
 	$read    = array( $handle );
 	$write   = null;
 	$except  = null;
 	$streams = stream_select( $read, $write, $except, 0 );
+
 	fclose( $handle );
 
 	return 1 === $streams;

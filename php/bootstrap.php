@@ -80,6 +80,9 @@ function bootstrap() {
 			\WP_CLI::debug( "Processing bootstrap step: {$step}", 'bootstrap' );
 		}
 
+		/**
+		 * @var BootstrapStep $step_instance
+		 */
 		$step_instance = new $step();
 		$state         = $step_instance->process( $state );
 	}
