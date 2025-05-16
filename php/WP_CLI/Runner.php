@@ -772,14 +772,14 @@ class Runner {
 
 		$count = 0;
 
-		$wp_config_code = preg_replace( '/\s*require(?:_once)?\s*.*wp-settings\.php.*\s*;/', '', $wp_config_code, -1, $count );
+		$wp_config_code = (string) preg_replace( '/\s*require(?:_once)?\s*.*wp-settings\.php.*\s*;/', '', $wp_config_code, -1, $count );
 
 		if ( 0 === $count ) {
 			WP_CLI::error( 'Strange wp-config.php file: wp-settings.php is not loaded directly.' );
 		}
 
 		$source = Utils\replace_path_consts( $wp_config_code, $wp_config_path );
-		return preg_replace( '|^\s*\<\?php\s*|', '', $source );
+		return (string) preg_replace( '|^\s*\<\?php\s*|', '', $source );
 	}
 
 	/**

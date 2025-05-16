@@ -115,17 +115,17 @@ final class Admin implements Context {
 		$admin_php_file = (string) file_get_contents( ABSPATH . 'wp-admin/admin.php' );
 
 		// First we remove the opening and closing PHP tags.
-		$admin_php_file = preg_replace( '/^<\?php\s+/', '', $admin_php_file );
-		$admin_php_file = preg_replace( '/\s+\?>$/', '', $admin_php_file );
+		$admin_php_file = (string) preg_replace( '/^<\?php\s+/', '', $admin_php_file );
+		$admin_php_file = (string) preg_replace( '/\s+\?>$/', '', $admin_php_file );
 
 		// Then we remove the loading of either wp-config.php or wp-load.php.
-		$admin_php_file = preg_replace( '/^\s*(?:include|require).*[\'"]\/?wp-(?:load|config)\.php[\'"]\s*\)?;\s*$/m', '', $admin_php_file );
+		$admin_php_file = (string) preg_replace( '/^\s*(?:include|require).*[\'"]\/?wp-(?:load|config)\.php[\'"]\s*\)?;\s*$/m', '', $admin_php_file );
 
 		// We also remove the authentication redirect.
-		$admin_php_file = preg_replace( '/^\s*auth_redirect\(\);$/m', '', $admin_php_file );
+		$admin_php_file = (string) preg_replace( '/^\s*auth_redirect\(\);$/m', '', $admin_php_file );
 
 		// Finally, we avoid sending headers.
-		$admin_php_file   = preg_replace( '/^\s*nocache_headers\(\);$/m', '', $admin_php_file );
+		$admin_php_file   = (string) preg_replace( '/^\s*nocache_headers\(\);$/m', '', $admin_php_file );
 		$_GET['noheader'] = true;
 
 		eval( $admin_php_file ); // phpcs:ignore Squiz.PHP.Eval.Discouraged

@@ -782,7 +782,7 @@ function replace_path_consts( $source, $path ) {
 	$dir = dirname( $file );
 
 	// Replace __FILE__ and __DIR__ constants with value of $file or $dir.
-	return preg_replace_callback(
+	return (string) preg_replace_callback(
 		FILE_DIR_PATTERN,
 		static function ( $matches ) use ( $file, $dir ) {
 			if ( ! empty( $matches['file'] ) ) {
@@ -1112,7 +1112,7 @@ function trailingslashit( $string ) {
  */
 function normalize_path( $path ) {
 	$path = str_replace( '\\', '/', $path );
-	$path = preg_replace( '|(?<=.)/+|', '/', $path );
+	$path = (string) preg_replace( '|(?<=.)/+|', '/', $path );
 	if ( ':' === substr( $path, 1, 1 ) ) {
 		$path = ucfirst( $path );
 	}

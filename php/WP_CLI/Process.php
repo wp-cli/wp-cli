@@ -19,7 +19,7 @@ class Process {
 	private $cwd;
 
 	/**
-	 * @var array Environment variables to set when running the command.
+	 * @var array|null Environment variables to set when running the command.
 	 */
 	private $env;
 

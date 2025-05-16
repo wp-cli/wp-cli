@@ -561,7 +561,7 @@ function strip_tags( $string ) {
 		return \wp_strip_all_tags( $string );
 	}
 
-	$string = preg_replace(
+	$string = (string) preg_replace(
 		'@<(script|style)[^>]*?>.*?</\\1>@si',
 		'',
 		$string

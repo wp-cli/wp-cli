@@ -25,9 +25,9 @@ class RecursiveDataStructureTraverser {
 	/**
 	 * RecursiveDataStructureTraverser constructor.
 	 *
-	 * @param mixed       $data            The data to read/manipulate by reference.
-	 * @param string|int  $key             The key/property the data belongs to.
-	 * @param static|null $parent_instance The parent instance of the traverser.
+	 * @param mixed           $data            The data to read/manipulate by reference.
+	 * @param string|int|null $key             The key/property the data belongs to.
+	 * @param static|null     $parent_instance The parent instance of the traverser.
 	 */
 	public function __construct( &$data, $key = null, $parent_instance = null ) {
 		$this->data   =& $data;
@@ -105,13 +105,15 @@ class RecursiveDataStructureTraverser {
 	 * Delete the key on the parent's data that references this data.
 	 */
 	public function unset_on_parent() {
-		$this->parent->delete_by_key( $this->key );
+		if ( $this->parent ) {
+			$this->parent->delete_by_key( $this->key );
+		}
 	}
 
 	/**
 	 * Delete the given key from the data.
 	 *
-	 * @param $key
+	 * @param mixed $key
 	 */
 	public function delete_by_key( $key ) {
 		if ( is_array( $this->data ) ) {

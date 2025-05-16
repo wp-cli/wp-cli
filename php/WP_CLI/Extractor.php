@@ -330,7 +330,7 @@ class Extractor {
 					sprintf(
 						"Failed to create directory '%s': %s.",
 						$dir,
-						$error['message']
+						$error ? $error['message'] : 'Unknown error'
 					)
 				);
 				return false;

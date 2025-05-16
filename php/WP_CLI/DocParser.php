@@ -33,9 +33,9 @@ class DocParser {
 	 * @return string
 	 */
 	private static function remove_decorations( $comment ) {
-		$comment = preg_replace( '|^/\*\*[\r\n]+|', '', $comment );
-		$comment = preg_replace( '|\n[\t ]*\*/$|', '', $comment );
-		$comment = preg_replace( '|^[\t ]*\* ?|m', '', $comment );
+		$comment = (string) preg_replace( '|^/\*\*[\r\n]+|', '', $comment );
+		$comment = (string) preg_replace( '|\n[\t ]*\*/$|', '', $comment );
+		$comment = (string) preg_replace( '|^[\t ]*\* ?|m', '', $comment );
 
 		return $comment;
 	}

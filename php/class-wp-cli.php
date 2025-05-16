@@ -519,7 +519,7 @@ class WP_CLI {
 
 		$path = preg_split( '/\s+/', $name ) ?: [];
 
-		$leaf_name = array_pop( $path );
+		$leaf_name = (string) array_pop( $path );
 
 		$command = self::get_root_command();
 
