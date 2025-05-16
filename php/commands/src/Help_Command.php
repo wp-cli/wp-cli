@@ -73,7 +73,7 @@ class Help_Command extends WP_CLI_Command {
 			// Wordwrap with column indent.
 			$subcommands = (string) preg_replace_callback(
 				'/^(' . $column_subpattern . ')([^\n]+)\n/m',
-				static function ($matches ) use ( $wordwrap_width, $tab ) {
+				static function ( $matches ) use ( $wordwrap_width, $tab ) {
 					// Need to de-tab for wordwrapping to work properly.
 					$matches[1]  = str_replace( "\t", $tab, $matches[1] );
 					$matches[2]  = str_replace( "\t", $tab, $matches[2] );

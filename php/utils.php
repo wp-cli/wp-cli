@@ -2005,7 +2005,7 @@ function get_sql_modes() {
 			$sql_modes = [];
 		} else {
 			$split_lines = preg_split( "/\r\n|\n|\r/", $result->stdout );
-			$sql_modes = array_filter(
+			$sql_modes   = array_filter(
 				array_map(
 					'trim',
 					$split_lines ?: []
@@ -2033,7 +2033,7 @@ function get_cache_dir() {
  * @return bool
  */
 function has_stdin() {
-	$handle  = fopen( 'php://stdin', 'r' );
+	$handle = fopen( 'php://stdin', 'r' );
 	if ( ! $handle ) {
 		return false;
 	}

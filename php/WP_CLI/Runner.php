@@ -1508,7 +1508,8 @@ class Runner {
 				// Polyfill is_customize_preview(), as it is needed by TwentyTwenty to
 				// check for starter content.
 				if ( ! function_exists( 'is_customize_preview' ) ) {
-					function is_customize_preview() { // @phpstan-ignore function.inner
+					function is_customize_preview() {
+						// @phpstan-ignore function.inner
 						return false;
 					}
 				}
