@@ -111,17 +111,13 @@ class CLI_Command extends WP_CLI_Command {
 	 *     WP-CLI version: 1.5.0
 	 */
 	public function info( $_, $assoc_args ) {
-		// php_uname() $mode argument was only added with PHP 7.0+. Fall back to
-		// entire string for older versions.
-		$system_os = PHP_MAJOR_VERSION < 7
-			? php_uname()
-			: sprintf(
-				'%s %s %s %s',
-				php_uname( 's' ),
-				php_uname( 'r' ),
-				php_uname( 'v' ),
-				php_uname( 'm' )
-			);
+		$system_os = sprintf(
+			'%s %s %s %s',
+			php_uname( 's' ),
+			php_uname( 'r' ),
+			php_uname( 'v' ),
+			php_uname( 'm' )
+		);
 
 		$shell = getenv( 'SHELL' );
 		if ( ! $shell && Utils\is_windows() ) {
