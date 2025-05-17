@@ -276,7 +276,7 @@ function args_to_str( $args ) {
 /**
  * Composes associative arguments into a command string.
  *
- * @param array<string, string|int> $assoc_args Associative arguments to compose.
+ * @param array<string, int|string> $assoc_args Associative arguments to compose.
  * @return string
  */
 function assoc_args_to_str( $assoc_args ) {
@@ -294,7 +294,7 @@ function assoc_args_to_str( $assoc_args ) {
 				);
 			}
 		} else {
-			$str .= " --$key=" . escapeshellarg( $value );
+			$str .= " --$key=" . escapeshellarg( (string) $value );
 		}
 	}
 
@@ -426,6 +426,9 @@ function write_csv( $fd, $rows, $headers = [] ) {
 		fputcsv( $fd, $headers, ',', '"', '\\' );
 	}
 
+	/**
+	 * @var string[] $row
+	 */
 	foreach ( $rows as $row ) {
 		if ( ! empty( $headers ) ) {
 			$row = pick_fields( $row, $headers );
@@ -433,8 +436,11 @@ function write_csv( $fd, $rows, $headers = [] ) {
 
 		/**
 		 * @var string[] $row
+		 * @var callable $callback
 		 */
-		$row = array_map( __NAMESPACE__ . '\escape_csv_value', $row );
+
+		$callback = __NAMESPACE__ . '\escape_csv_value';
+		$row      = array_map( $callback, $row );
 		fputcsv( $fd, array_values( $row ), ',', '"', '\\' );
 	}
 }
@@ -733,6 +739,8 @@ function make_progress_bar( $message, $count, $interval = 100 ) {
  *               component doesn't exist in the given URL; a string or - in the
  *               case of PHP_URL_PORT - integer when it does. See parse_url()'s
  *               return values.
+ *
+ * @phpstan-return ($component is non-negative-int ? string|null|int|false : array{scheme?: string, host?: string, port?: int, user?: string, pass?: string, query?: string, path?: string, fragment?: string})
  */
 function parse_url( $url, $component = - 1, $auto_add_scheme = true ) {
 	if (

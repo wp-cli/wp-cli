@@ -7,7 +7,7 @@ use IteratorIterator;
 /**
  * Applies one or more callbacks to an item before returning it.
  *
- * @phpstan-extends IteratorIterator<int, callable, \Iterator>
+ * @phpstan-extends IteratorIterator<int, mixed, \Iterator>
  */
 class Transform extends IteratorIterator {
 

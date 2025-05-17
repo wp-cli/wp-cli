@@ -413,7 +413,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @param string $grouping    Grouping value.
 	 * @param bool   $is_update   Is this an update operation?
 	 *
-	 * @return mixed
+	 * @return array<string, array<string, mixed>>
 	 */
 	private function build_aliases( $aliases, $alias, $assoc_args, $is_grouping, $grouping = '', $is_update = false ) {
 		$alias = $this->normalize_alias( $alias );

@@ -354,10 +354,10 @@ class WP_CLI {
 	 * @access public
 	 * @category Registration
 	 *
-	 * @param string $tag Named WordPress action or filter.
-	 * @param mixed $function_to_add Callable to execute when the action or filter is evaluated.
-	 * @param integer $priority Priority to add the callback as.
-	 * @param integer $accepted_args Number of arguments to pass to callback.
+	 * @param string   $tag             Named WordPress action or filter.
+	 * @param callable $function_to_add Callable to execute when the action or filter is evaluated.
+	 * @param integer  $priority        Priority to add the callback as.
+	 * @param integer  $accepted_args   Number of arguments to pass to callback.
 	 * @return true
 	 */
 	public static function add_wp_hook( $tag, $function_to_add, $priority = 10, $accepted_args = 1 ) {
@@ -1055,15 +1055,21 @@ class WP_CLI {
 	 * @param array $assoc_args Arguments passed to the command, determining format.
 	 */
 	public static function print_value( $value, $assoc_args = [] ) {
+		$_value = '';
 		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
-			$value = json_encode( $value );
+			$_value = json_encode( $value );
 		} elseif ( Utils\get_flag_value( $assoc_args, 'format' ) === 'yaml' ) {
-			$value = Spyc::YAMLDump( $value, 2, 0 );
+			/**
+			 * @var array $value
+			 */
+			$_value = Spyc::YAMLDump( $value, 2, 0 );
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
-			$value = var_export( $value, true );
+			$_value = var_export( $value, true );
+		} else {
+			$_value = $value;
 		}
 
-		echo $value . "\n";
+		echo $_value . "\n";
 	}
 
 	/**

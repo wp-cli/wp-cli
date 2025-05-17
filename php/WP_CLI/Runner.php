@@ -1288,7 +1288,7 @@ class Runner {
 				self::fake_current_site_blog( $url_parts );
 
 				if ( ! defined( 'COOKIEHASH' ) ) {
-					define( 'COOKIEHASH', md5( $url_parts['host'] ) );
+					define( 'COOKIEHASH', md5( $url_parts['host'] ?? '' ) );
 				}
 			}
 		}
@@ -1662,6 +1662,9 @@ class Runner {
 				static function () use ( $config ) {
 					if ( isset( $config['user'] ) ) {
 						$fetcher = new Fetchers\User();
+						/**
+						 * @var \WP_User $user
+						 */
 						$user    = $fetcher->get_check( $config['user'] );
 						wp_set_current_user( $user->ID );
 					} else {
@@ -1677,7 +1680,7 @@ class Runner {
 			'wp_mail_from',
 			static function ( $from_email ) {
 				if ( 'wordpress@' === $from_email ) {
-					$sitename = strtolower( Utils\parse_url( site_url(), PHP_URL_HOST ) );
+					$sitename = strtolower( (string) Utils\parse_url( site_url(), PHP_URL_HOST ) );
 					if ( substr( $sitename, 0, 4 ) === 'www.' ) {
 						$sitename = substr( $sitename, 4 );
 					}

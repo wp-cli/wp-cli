@@ -120,6 +120,9 @@ class Formatter {
 				]
 			);
 		} else {
+			/**
+			 * @var array $item
+			 */
 			$this->show_multiple_fields( $item, $this->args['format'], $ascii_pre_colorized );
 		}
 	}
@@ -351,7 +354,7 @@ class Formatter {
 	/**
 	 * Transforms objects and arrays to JSON as necessary
 	 *
-	 * @param mixed $item
+	 * @param array|object $item
 	 * @return mixed
 	 */
 	public function transform_item_values_to_json( $item ) {

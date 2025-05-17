@@ -30,6 +30,9 @@ final class InitializeContexts implements BootstrapStep {
 			Context::AUTO     => new Context\Auto( $context_manager ),
 		];
 
+		/**
+		 * @var array<string, Context> $contexts
+		 */
 		$contexts = WP_CLI::do_hook( 'before_registering_contexts', $contexts );
 
 		foreach ( $contexts as $name => $implementation ) {

@@ -124,7 +124,7 @@ class DocParser {
 	 * Get the arguments for a given argument.
 	 *
 	 * @param string $name Argument's doc name.
-	 * @return mixed|null
+	 * @return array|null
 	 */
 	public function get_arg_args( $name ) {
 		return $this->get_arg_or_param_args( "/^\[?<{$name}>.*/" );
@@ -149,7 +149,7 @@ class DocParser {
 	 * Get the arguments for a given parameter.
 	 *
 	 * @param string $key Parameter's key.
-	 * @return mixed|null
+	 * @return array|null
 	 */
 	public function get_param_args( $key ) {
 		return $this->get_arg_or_param_args( "/^\[?--{$key}=.*/" );

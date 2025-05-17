@@ -174,6 +174,9 @@ class Subcommand extends CompositeCommand {
 
 		$spec = array_values( $spec );
 
+		/**
+		 * @var string|true $prompt_args
+		 */
 		$prompt_args = WP_CLI::get_config( 'prompt' );
 		if ( true !== $prompt_args ) {
 			$prompt_args = explode( ',', $prompt_args );
@@ -379,8 +382,12 @@ class Subcommand extends CompositeCommand {
 			}
 		}
 
+		/**
+		 * @var array $config
+		 */
+		$config = \WP_CLI::get_config();
 		list( $returned_errors, $to_unset ) = $validator->validate_assoc(
-			array_merge( \WP_CLI::get_config(), $extra_args, $assoc_args )
+			array_merge( $config, $extra_args, $assoc_args )
 		);
 		foreach ( [ 'fatal', 'warning' ] as $error_type ) {
 			$errors[ $error_type ] = array_merge( $errors[ $error_type ], $returned_errors[ $error_type ] );

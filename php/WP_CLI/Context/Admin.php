@@ -104,7 +104,12 @@ final class Admin implements Context {
 
 		// Make sure we don't trigger a DB upgrade as that tries to redirect
 		// the page.
-		$wp_db_version = (int) get_option( 'db_version' ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		/**
+		 * @var string $wp_db_version
+		 */
+		$wp_db_version = get_option( 'db_version' ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$wp_db_version = (int) $wp_db_version; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		// Ensure WP does not iterate over an undefined variable in
 		// `user_can_access_admin_page()`.

@@ -25,7 +25,7 @@ class CommandFactory {
 	 *
 	 * @param string                                       $name     Represents how the command should be invoked
 	 * @param string|callable-string|callable|array|object $callable A subclass of WP_CLI_Command, a function, or a closure
-	 * @param mixed $parent The new command's parent Composite (or Root) command
+	 * @param RootCommand|CompositeCommand                 $parent   The new command's parent Composite (or Root) command
 	 */
 	public static function create( $name, $callable, $parent ) {
 
@@ -111,6 +111,9 @@ class CommandFactory {
 
 				call_user_func( $command, $args, $assoc_args );
 			} else {
+				/**
+				 * @var callable $callable
+				 */
 				call_user_func( $callable, $args, $assoc_args );
 			}
 		};
@@ -125,9 +128,9 @@ class CommandFactory {
 	/**
 	 * Create a new Composite command instance.
 	 *
-	 * @param mixed $parent The new command's parent Root or Composite command
-	 * @param string $name Represents how the command should be invoked
-	 * @param mixed $callable
+	 * @param RootCommand|CompositeCommand $parent   The new command's parent Root or Composite command
+	 * @param string                       $name     Represents how the command should be invoked
+	 * @param class-string                 $callable
 	 */
 	private static function create_composite_command( $parent, $name, $callable ) {
 		$reflection  = new ReflectionClass( $callable );
@@ -160,9 +163,9 @@ class CommandFactory {
 	/**
 	 * Create a new command namespace instance.
 	 *
-	 * @param mixed $parent The new namespace's parent Root or Composite command.
-	 * @param string $name Represents how the command should be invoked
-	 * @param mixed $callable
+	 * @param RootCommand|CompositeCommand $parent   The new namespace's parent Root or Composite command.
+	 * @param string                       $name     Represents how the command should be invoked
+	 * @param class-string                 $callable
 	 */
 	private static function create_namespace( $parent, $name, $callable ) {
 		$reflection  = new ReflectionClass( $callable );
