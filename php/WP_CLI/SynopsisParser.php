@@ -138,7 +138,7 @@ class SynopsisParser {
 
 			$value = substr( $token, strlen( $matches[0] ) );
 
-			// substr returns false <= PHP 5.6, and '' PHP 7+
+			// substr can return false <= PHP 8.0.
 			if ( false === $value || '' === $value ) {
 				$param['type'] = 'flag';
 			} else {
