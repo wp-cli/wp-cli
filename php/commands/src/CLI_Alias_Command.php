@@ -167,7 +167,11 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$this->validate_config_file( $config_path );
 
-		$alias    = $args[0];
+		$alias = $args[0];
+
+		/**
+		 * @var string|null $grouping
+		 */
 		$grouping = Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		$this->validate_input( $assoc_args, $grouping );
@@ -275,8 +279,12 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 */
 	public function update( $args, $assoc_args ) {
 
-		$config   = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
-		$alias    = $args[0];
+		$config = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
+		$alias  = $args[0];
+
+		/**
+		 * @var string|null $grouping
+		 */
 		$grouping = Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		list( $config_path, $aliases ) = $this->get_aliases_data( $config, $alias, true );
@@ -453,8 +461,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	/**
 	 * Validate input of passed arguments.
 	 *
-	 * @param array  $assoc_args Arguments array.
-	 * @param string $grouping   Grouping argument value.
+	 * @param array       $assoc_args Arguments array.
+	 * @param string|null $grouping   Grouping argument value.
 	 *
 	 * @throws ExitException
 	 */

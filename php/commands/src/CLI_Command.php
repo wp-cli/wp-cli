@@ -31,6 +31,10 @@ use WP_CLI\Utils;
  *     Success: Cache cleared.
  *
  * @when before_wp_load
+ *
+ * @phpstan-type GitHubRelease object{tag_name: string, assets: array<object{browser_download_url: string}>}
+ *
+ * @phpstan-type UpdateOffer array{version: string, update_type: string, package_url: string, status: string, requires_php: string}
  */
 class CLI_Command extends WP_CLI_Command {
 
@@ -318,6 +322,9 @@ class CLI_Command extends WP_CLI_Command {
 
 			$updates = $this->get_updates( $assoc_args );
 
+			/**
+			 * @phpstan-var UpdateOffer|null $newest
+			 */
 			$newest = $this->array_find(
 				$updates,
 				static function ( $update ) {
@@ -450,7 +457,10 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( 'Failed to get latest version (HTTP code %d).', $response->status_code ) );
 		}
 
-		$release_data = json_decode( $response->body );
+		/**
+		 * @phpstan-var GitHubRelease[] $release_data
+		 */
+		$release_data = json_decode( $response->body, false );
 
 		$updates = [
 			'major' => false,
@@ -479,7 +489,13 @@ class CLI_Command extends WP_CLI_Command {
 				continue;
 			}
 
-			$package_url   = null;
+			$package_url = null;
+
+			/**
+			 * WP-CLI manifest.json data.
+			 *
+			 * @var object{requires_php?: string}|null $manifest_data
+			 */
 			$manifest_data = null;
 
 			foreach ( $release->assets as $asset ) {
@@ -496,7 +512,12 @@ class CLI_Command extends WP_CLI_Command {
 					$response = Utils\http_request( 'GET', $asset->browser_download_url, null, $headers, $options );
 
 					if ( $response->success ) {
-						$manifest_data = json_decode( $response->body );
+						/**
+						 * WP-CLI manifest.json data.
+						 *
+						 * @var object{requires_php?: string}|null $manifest_data
+						 */
+						$manifest_data = json_decode( $response->body, false );
 					}
 				}
 			}
@@ -555,6 +576,11 @@ class CLI_Command extends WP_CLI_Command {
 				$response = Utils\http_request( 'GET', 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.manifest.json', null, $headers, $options );
 
 				if ( $response->success ) {
+					/**
+					 * WP-CLI manifest.json data.
+					 *
+					 * @var object{requires_php?: string}|null $manifest_data
+					 */
 					$manifest_data = json_decode( $response->body );
 				}
 

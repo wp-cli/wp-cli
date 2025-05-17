@@ -1032,7 +1032,7 @@ class WP_CLI {
 	 * @access public
 	 * @category Input
 	 *
-	 * @param mixed $raw_value
+	 * @param string $raw_value
 	 * @param array $assoc_args
 	 */
 	public static function read_value( $raw_value, $assoc_args = [] ) {

@@ -84,6 +84,9 @@ abstract class AutoloaderStep implements BootstrapStep {
 			return false;
 		}
 
+		/**
+		 * @var object{config: object{'vendor-dir': string}} $composer
+		 */
 		$composer = json_decode( $contents );
 
 		if ( ! empty( $composer->config )

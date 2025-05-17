@@ -579,7 +579,7 @@ class Runner {
 	/**
 	 * Generate a shell command from the parsed connection string.
 	 *
-	 * @param array  $bits       Parsed connection string.
+	 * @param array $bits Parsed connection string.
 	 * @param string $wp_command WP-CLI command to run.
 	 * @return string
 	 */
@@ -594,6 +594,10 @@ class Runner {
 
 			WP_CLI::debug( 'SSH ' . $bit . ': ' . $bits[ $bit ], 'bootstrap' );
 		}
+
+		/**
+		 * @var array{scheme: string|null, user: string|null, host: string|null, port: int|null, path: string|null, key: string|null, proxyjump: string|null} $bits
+		 */
 
 		/*
 		 * posix_isatty(STDIN) is generally true unless something was passed on stdin
@@ -670,6 +674,10 @@ class Runner {
 					$cache->write( $cache_key, (string) json_encode( $values ) );
 				}
 			}
+
+			/**
+			 * @var array{HostName?: string, Port?: int, User?: string, IdentityFile?: string} $values
+			 */
 
 			if ( empty( $bits['host'] ) || ( isset( $values['Host'] ) && $bits['host'] === $values['Host'] ) ) {
 				$bits['scheme'] = 'ssh';

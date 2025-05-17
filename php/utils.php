@@ -141,6 +141,9 @@ function get_vendor_paths() {
 	];
 	$maybe_composer_json = WP_CLI_ROOT . '/../../../composer.json';
 	if ( file_exists( $maybe_composer_json ) && is_readable( $maybe_composer_json ) ) {
+		/**
+		 * @var object{config: object{'vendor-dir': string}} $composer
+		 */
 		$composer = json_decode( (string) file_get_contents( $maybe_composer_json ), false );
 		if ( ! empty( $composer->config ) && ! empty( $composer->config->{'vendor-dir'} ) ) {
 			array_unshift( $vendor_paths, WP_CLI_ROOT . '/../../../' . $composer->config->{'vendor-dir'} );
@@ -832,6 +835,8 @@ function replace_path_consts( $source, $path ) {
  * @return \Requests_Response|Response
  * @throws RuntimeException If the request failed.
  * @throws ExitException If the request failed and $halt_on_error is true.
+ *
+ * @phpstan-param array{halt_on_error?: bool, verify?: bool|string, insecure?: bool} $options
  */
 function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
@@ -843,6 +848,9 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		$options['verify'] = ! empty( ini_get( 'curl.cainfo' ) ) ? ini_get( 'curl.cainfo' ) : true;
 	}
 
+	/**
+	 * @var array{halt_on_error?: bool, verify: bool|string, insecure?: bool} $options
+	 */
 	$options = WP_CLI::do_hook( 'http_request_options', $options );
 
 	RequestsLibrary::register_autoloader();
@@ -1051,10 +1059,10 @@ function get_named_sem_ver( $new_version, $original_version ) {
  * @access public
  * @category Input
  *
- * @param array<string,string|bool>  $assoc_args Arguments array.
- * @param string                     $flag       Flag to get the value.
- * @param mixed                      $default    Default value for the flag. Default: NULL.
- * @return mixed
+ * @param array<string,string|bool> $assoc_args Arguments array.
+ * @param string                    $flag       Flag to get the value.
+ * @param string|bool|int|null      $default    Default value for the flag. Default: NULL.
+ * @return string|bool|int|null
  */
 function get_flag_value( $assoc_args, $flag, $default = null ) {
 	return isset( $assoc_args[ $flag ] ) ? $assoc_args[ $flag ] : $default;
@@ -1169,6 +1177,8 @@ function get_temp_dir() {
  * @param string $url
  * @param int $component
  * @return mixed
+ *
+ * @phpstan-return ($component is non-negative-int ? string|null : array{scheme?: string, user?: string, host?: string, port?: string, path?: string})
  */
 function parse_ssh_url( $url, $component = -1 ) {
 	preg_match( '#^((docker|docker\-compose|docker\-compose\-run|ssh|vagrant):)?(([^@:]+)@)?([^:/~]+)(:([\d]*))?((/|~)(.+))?$#', $url, $matches );
@@ -1739,10 +1749,12 @@ function esc_sql_ident( $idents ) {
 /**
  * Check whether a given string is a valid JSON representation.
  *
- * @param string $argument       String to evaluate.
+ * @param mixed  $argument       String to evaluate.
  * @param bool   $ignore_scalars Optional. Whether to ignore scalar values.
  *                               Defaults to true.
  * @return bool Whether the provided string is a valid JSON representation.
+ *
+ * @phpstan-assert-if-true =non-empty-string $argument
  */
 function is_json( $argument, $ignore_scalars = true ) {
 	if ( ! is_string( $argument ) || '' === $argument ) {
@@ -1764,7 +1776,7 @@ function is_json( $argument, $ignore_scalars = true ) {
  * @param array<string, string> $assoc_args      Associative array of arguments.
  * @param array<string>         $array_arguments Array of argument keys that should receive an
  *                                               array through the shell.
- * @return array<string, string>
+ * @return array<string, mixed>
  */
 function parse_shell_arrays( $assoc_args, $array_arguments ) {
 	if ( empty( $assoc_args ) || empty( $array_arguments ) ) {
@@ -1773,7 +1785,7 @@ function parse_shell_arrays( $assoc_args, $array_arguments ) {
 
 	foreach ( $array_arguments as $key ) {
 		if ( array_key_exists( $key, $assoc_args ) && is_json( $assoc_args[ $key ] ) ) {
-			$assoc_args[ $key ] = json_decode( $assoc_args[ $key ], $assoc = true );
+			$assoc_args[ $key ] = json_decode( (string) $assoc_args[ $key ], $assoc = true );
 		}
 	}
 

@@ -179,6 +179,9 @@ class Extractor {
 			mkdir( $dest, 0777, true );
 		}
 
+		/**
+		 * @var \SplFileInfo $item
+		 */
 		foreach ( $iterator as $item ) {
 
 			$dest_path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
@@ -217,6 +220,9 @@ class Extractor {
 			RecursiveIteratorIterator::CHILD_FIRST
 		);
 
+		/**
+		 * @var \SplFileInfo $fileinfo
+		 */
 		foreach ( $files as $fileinfo ) {
 			$todo = $fileinfo->isDir() ? 'rmdir' : 'unlink';
 			$path = $fileinfo->getRealPath();
