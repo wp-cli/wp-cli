@@ -260,8 +260,8 @@ class WP_CLI {
 	 * @access public
 	 * @category Registration
 	 *
-	 * @param string $when Identifier for the hook.
-	 * @param mixed $callback Callback to execute when hook is called.
+	 * @param string   $when     Identifier for the hook.
+	 * @param callable $callback Callback to execute when hook is called.
 	 * @return void
 	 */
 	public static function add_hook( $when, $callback ) {

@@ -276,7 +276,7 @@ function args_to_str( $args ) {
 /**
  * Composes associative arguments into a command string.
  *
- * @param array<string, string> $assoc_args Associative arguments to compose.
+ * @param array<string, string|int> $assoc_args Associative arguments to compose.
  * @return string
  */
 function assoc_args_to_str( $assoc_args ) {
@@ -431,6 +431,9 @@ function write_csv( $fd, $rows, $headers = [] ) {
 			$row = pick_fields( $row, $headers );
 		}
 
+		/**
+		 * @var string[] $row
+		 */
 		$row = array_map( __NAMESPACE__ . '\escape_csv_value', $row );
 		fputcsv( $fd, array_values( $row ), ',', '"', '\\' );
 	}
@@ -562,7 +565,7 @@ function mysql_host_to_cli_args( $raw_host ) {
  * @since v2.5.0 Deprecated $descriptors argument.
  *
  * @param string                $cmd           Command to run.
- * @param array<string, mixed>  $assoc_args    Associative array of arguments to use.
+ * @param array<string, string> $assoc_args    Associative array of arguments to use.
  * @param mixed                 $_             Deprecated. Former $descriptors argument.
  * @param bool                  $send_to_shell Optional. Whether to send STDOUT and STDERR
  *                                             immediately to the shell. Defaults to true.
@@ -865,10 +868,15 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 			return $request_method( $url, $headers, $data, $method, $options );
 		} catch ( Exception $exception ) {
 			if ( RequestsLibrary::is_requests_exception( $exception ) ) {
+				/**
+				 * @var \CurlHandle $curl_handle
+				 */
+				$curl_handle = $exception->getData();
+
 				if (
 					true !== $options['verify']
 					|| 'curlerror' !== $exception->getType()
-					|| curl_errno( $exception->getData() ) !== CURLE_SSL_CACERT
+					|| curl_errno( $curl_handle ) !== CURLE_SSL_CACERT
 				) {
 					throw $exception;
 				}
@@ -881,13 +889,17 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		}
 	} catch ( Exception $exception ) {
 		if ( RequestsLibrary::is_requests_exception( $exception ) ) {
-			// CURLE_SSL_CACERT_BADFILE only defined for PHP >= 7.
+			/**
+			 * @var \CurlHandle $curl_handle
+			 */
+			$curl_handle = $exception->getData();
+
 			if (
 				! $insecure
 				||
 				'curlerror' !== $exception->getType()
 				||
-				! in_array( curl_errno( $exception->getData() ), [ CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, 77 /*CURLE_SSL_CACERT_BADFILE*/ ], true )
+				! in_array( curl_errno( $curl_handle ), [ CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, CURLE_SSL_CACERT_BADFILE ], true )
 			) {
 				$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $exception->getMessage() );
 				if ( $halt_on_error ) {

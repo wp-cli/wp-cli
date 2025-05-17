@@ -596,7 +596,7 @@ class Runner {
 		}
 
 		/**
-		 * @var array{scheme: string|null, user: string|null, host: string|null, port: int|null, path: string|null, key: string|null, proxyjump: string|null} $bits
+		 * @var array{scheme: string|null, user: string|null, host: string, port: int|null, path: string|null, key: string|null, proxyjump: string|null} $bits
 		 */
 
 		/*
