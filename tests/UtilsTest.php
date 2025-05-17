@@ -800,15 +800,8 @@ class UtilsTest extends TestCase {
 	 */
 	public function test_esc_like_with_wpdb( $input, $expected ) {
 		global $wpdb;
-		$wpdb = $this->getMockBuilder( 'stdClass' );
-
-		// Handle different PHPUnit versions (5.7 for PHP 5.6 vs newer versions)
-		// This can be simplified if we drop support for PHP 5.6.
-		if ( method_exists( $wpdb, 'addMethods' ) ) {
-			$wpdb = $wpdb->addMethods( [ 'esc_like' ] );
-		} else {
-			$wpdb = $wpdb->setMethods( [ 'esc_like' ] );
-		}
+		$wpdb = $this->getMockBuilder( 'stdClass' )
+			->addMethods( [ 'esc_like' ] );
 
 		$wpdb = $wpdb->getMock();
 		$wpdb->method( 'esc_like' )

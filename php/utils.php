@@ -874,72 +874,61 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 	try {
 		try {
 			return $request_method( $url, $headers, $data, $method, $options );
-		} catch ( Exception $exception ) {
-			if ( RequestsLibrary::is_requests_exception( $exception ) ) {
-				/**
-				 * @var \CurlHandle $curl_handle
-				 */
-				$curl_handle = $exception->getData();
-
-				if (
-					true !== $options['verify']
-					|| 'curlerror' !== $exception->getType()
-					|| curl_errno( $curl_handle ) !== CURLE_SSL_CACERT
-				) {
-					throw $exception;
-				}
-
-				$options['verify'] = get_default_cacert( $halt_on_error );
-
-				return $request_method( $url, $headers, $data, $method, $options );
-			}
-			throw $exception;
-		}
-	} catch ( Exception $exception ) {
-		if ( RequestsLibrary::is_requests_exception( $exception ) ) {
+		} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
 			/**
 			 * @var \CurlHandle $curl_handle
 			 */
 			$curl_handle = $exception->getData();
-
 			if (
-				! $insecure
-				||
-				'curlerror' !== $exception->getType()
-				||
-				! in_array( curl_errno( $curl_handle ), [ CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, CURLE_SSL_CACERT_BADFILE ], true )
+				true !== $options['verify']
+				|| 'curlerror' !== $exception->getType()
+				|| curl_errno( $curl_handle ) !== CURLE_SSL_CACERT
 			) {
-				$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $exception->getMessage() );
-				if ( $halt_on_error ) {
-					WP_CLI::error( $error_msg );
-				}
-				throw new RuntimeException( $error_msg, 0, $exception );
-			}
-
-			$warning = sprintf(
-				"Re-trying without verify after failing to get verified url '%s' %s.",
-				$url,
-				$exception->getMessage()
-			);
-			WP_CLI::warning( $warning );
-
-			// Disable certificate validation for the next try.
-			$options['verify'] = false;
-
-			try {
-				return $request_method( $url, $headers, $data, $method, $options );
-			} catch ( Exception $exception ) {
-				if ( RequestsLibrary::is_requests_exception( $exception ) ) {
-					$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $exception->getMessage() );
-					if ( $halt_on_error ) {
-						WP_CLI::error( $error_msg );
-					}
-					throw new RuntimeException( $error_msg, 0, $exception );
-				}
 				throw $exception;
 			}
+
+			$options['verify'] = get_default_cacert( $halt_on_error );
+
+			return $request_method( $url, $headers, $data, $method, $options );
 		}
-		throw $exception;
+	} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
+		/**
+		 * @var \CurlHandle $curl_handle
+		 */
+		$curl_handle = $exception->getData();
+		if (
+			! $insecure
+			||
+			'curlerror' !== $exception->getType()
+			||
+			! in_array( curl_errno( $curl_handle ), [ CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, CURLE_SSL_CACERT_BADFILE ], true )
+		) {
+			$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $exception->getMessage() );
+			if ( $halt_on_error ) {
+				WP_CLI::error( $error_msg );
+			}
+			throw new RuntimeException( $error_msg, 0, $exception );
+		}
+
+		$warning = sprintf(
+			"Re-trying without verify after failing to get verified url '%s' %s.",
+			$url,
+			$exception->getMessage()
+		);
+		WP_CLI::warning( $warning );
+
+		// Disable certificate validation for the next try.
+		$options['verify'] = false;
+
+		try {
+			return $request_method( $url, $headers, $data, $method, $options );
+		} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
+			$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $exception->getMessage() );
+			if ( $halt_on_error ) {
+				WP_CLI::error( $error_msg );
+			}
+			throw new RuntimeException( $error_msg, 0, $exception );
+		}
 	}
 }
 
