@@ -510,6 +510,9 @@ class UtilsTest extends TestCase {
 			$this->markTestSkipped( 'curl not available' );
 		}
 
+		// Save WP_CLI state.
+		$prev_logger = WP_CLI::get_logger();
+
 		// Create temporary file to use as a bad certificate file.
 		$bad_cacert_path = tempnam( sys_get_temp_dir(), 'wp-cli-badcacert-pem-' );
 		file_put_contents( $bad_cacert_path, "-----BEGIN CERTIFICATE-----\nasdfasdf\n-----END CERTIFICATE-----\n" );
@@ -525,12 +528,10 @@ class UtilsTest extends TestCase {
 		if ( false !== $exception ) {
 			$this->expectException( $exception );
 			$this->expectExceptionMessage( $exception_message );
-		} else {
-			// Save WP_CLI state.
-			$prev_logger = WP_CLI::get_logger();
-			$logger      = new Loggers\Execution();
-			WP_CLI::set_logger( $logger );
 		}
+
+		$logger = new Loggers\Execution();
+		WP_CLI::set_logger( $logger );
 
 		Utils\http_request( 'GET', 'https://example.com', null, [], $options );
 

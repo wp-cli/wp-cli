@@ -8,7 +8,7 @@ use WP_CLI\Exception\NonExistentKeyException;
 class RecursiveDataStructureTraverser {
 
 	/**
-	 * @var array The data to traverse set by reference.
+	 * @var string|int|array The data to traverse set by reference.
 	 */
 	protected $data;
 
@@ -64,7 +64,7 @@ class RecursiveDataStructureTraverser {
 	 * Update a nested value at the given key path.
 	 *
 	 * @param string|int|array $key_path
-	 * @param array            $value
+	 * @param string|int|array $value
 	 */
 	public function update( $key_path, $value ) {
 		$this->traverse_to( (array) $key_path )->set_value( $value );
@@ -76,7 +76,7 @@ class RecursiveDataStructureTraverser {
 	 * This will mutate the variable which was passed into the constructor
 	 * as the data is set and traversed by reference.
 	 *
-	 * @param array $value
+	 * @param string|int|array $value
 	 */
 	public function set_value( $value ) {
 		$this->data = $value;
@@ -95,7 +95,7 @@ class RecursiveDataStructureTraverser {
 	 * Define a nested value while creating keys if they do not exist.
 	 *
 	 * @param array $key_path
-	 * @param array $value
+	 * @param string $value
 	 */
 	public function insert( $key_path, $value ) {
 		try {
@@ -150,8 +150,13 @@ class RecursiveDataStructureTraverser {
 			throw $exception;
 		}
 
+		/**
+		 * @var array $data
+		 */
+		$data = $this->data;
+
 		// @phpstan-ignore return.missing
-		foreach ( $this->data as $key => &$key_data ) {
+		foreach ( $data as $key => &$key_data ) {
 			if ( $key === $current ) {
 				$traverser = new self( $key_data, $key, $this );
 				return $traverser->traverse_to( $key_path );

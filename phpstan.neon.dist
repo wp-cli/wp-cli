@@ -11,12 +11,13 @@ parameters:
     - php/utils.php
     - php/utils-wp.php
     - php/wp-cli.php
-#    - tests/
   excludePaths:
      - php/WP_CLI/ComposerIO.php
      - php/WP_CLI/PackageManagerEventSubscriber.php
+     - tests/data
   scanDirectories:
     - bundle/rmccue/requests
+    - vendor/wp-cli/wp-cli-tests
   scanFiles:
     - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
     - utils/phpstan/scan-files.php
@@ -31,3 +32,5 @@ parameters:
     - identifier: missingType.property
     - identifier: missingType.parameter
     - identifier: missingType.return
+    - message: '#Parameter \#1 \$errors of static method WP_CLI::error_to_string\(\) expects string|Throwable|WP_Error, true given\.#'
+      path: tests/WPCLITest.php

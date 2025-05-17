@@ -90,6 +90,9 @@ class CSVTest extends TestCase {
 	private function create_csv_file( $data, $delimiter = ',' ) {
 		$filename = tempnam( sys_get_temp_dir(), 'wp-cli-tests-' );
 
+		/**
+		 * @var resource $fp
+		 */
 		$fp = fopen( $filename, 'wb' );
 
 		foreach ( $data as $row ) {
