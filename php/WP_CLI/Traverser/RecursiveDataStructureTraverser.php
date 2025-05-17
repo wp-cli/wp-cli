@@ -153,7 +153,7 @@ class RecursiveDataStructureTraverser {
 		/**
 		 * @var array $data
 		 */
-		$data = $this->data;
+		$data = &$this->data;
 
 		// @phpstan-ignore return.missing
 		foreach ( $data as $key => &$key_data ) {
