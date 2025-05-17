@@ -29,8 +29,8 @@ class Site extends Base {
 	 *
 	 * @global wpdb $wpdb WordPress database abstraction object.
 	 *
-	 * @param string $arg The raw CLI argument.
-	 * @return array|false The item if found; false otherwise.
+	 * @param string|int $arg The raw CLI argument.
+	 * @return object|false The item if found; false otherwise.
 	 */
 	private function get_site( $arg ) {
 		global $wpdb;

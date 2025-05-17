@@ -31,6 +31,10 @@ use WP_CLI\Utils;
  *     Success: Cache cleared.
  *
  * @when before_wp_load
+ *
+ * @phpstan-type GitHubRelease object{tag_name: string, assets: array<object{browser_download_url: string}>}
+ *
+ * @phpstan-type UpdateOffer array{version: string, update_type: string, package_url: string, status: string, requires_php: string}
  */
 class CLI_Command extends WP_CLI_Command {
 
@@ -153,13 +157,17 @@ class CLI_Command extends WP_CLI_Command {
 				'wp_cli_version'           => WP_CLI_VERSION,
 			];
 
-			WP_CLI::line( json_encode( $info ) );
+			WP_CLI::line( (string) json_encode( $info ) );
 		} else {
+			/**
+			 * @var string $cfg_file_path
+			 */
+			$cfg_file_path = get_cfg_var( 'cfg_file_path' );
 			WP_CLI::line( "OS:\t" . $system_os );
 			WP_CLI::line( "Shell:\t" . $shell );
 			WP_CLI::line( "PHP binary:\t" . $php_bin );
 			WP_CLI::line( "PHP version:\t" . PHP_VERSION );
-			WP_CLI::line( "php.ini used:\t" . get_cfg_var( 'cfg_file_path' ) );
+			WP_CLI::line( "php.ini used:\t" . $cfg_file_path );
 			WP_CLI::line( "MySQL binary:\t" . Utils\get_mysql_binary_path() );
 			WP_CLI::line( "MySQL version:\t" . Utils\get_mysql_version() );
 			WP_CLI::line( "SQL modes:\t" . implode( ',', Utils\get_sql_modes() ) );
@@ -292,7 +300,7 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( 'You can only self-update Phar files.' );
 		}
 
-		$old_phar = realpath( $_SERVER['argv'][0] );
+		$old_phar = (string) realpath( $_SERVER['argv'][0] );
 
 		if ( ! is_writable( $old_phar ) ) {
 			WP_CLI::error( sprintf( '%s is not writable by current user.', $old_phar ) );
@@ -314,6 +322,9 @@ class CLI_Command extends WP_CLI_Command {
 
 			$updates = $this->get_updates( $assoc_args );
 
+			/**
+			 * @phpstan-var UpdateOffer|null $newest
+			 */
 			$newest = $this->array_find(
 				$updates,
 				static function ( $update ) {
@@ -401,7 +412,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		foreach ( $algos as $algo => $url ) {
 			$response = Utils\http_request( 'GET', $url );
-			if ( '20' !== substr( $response->status_code, 0, 2 ) ) {
+			if ( '20' !== substr( (string) $response->status_code, 0, 2 ) ) {
 				WP_CLI::log( "Couldn't access $algo hash for release (HTTP code {$response->status_code})." );
 				continue;
 			}
@@ -446,7 +457,10 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( 'Failed to get latest version (HTTP code %d).', $response->status_code ) );
 		}
 
-		$release_data = json_decode( $response->body );
+		/**
+		 * @phpstan-var GitHubRelease[] $release_data
+		 */
+		$release_data = json_decode( $response->body, false );
 
 		$updates = [
 			'major' => false,
@@ -475,7 +489,13 @@ class CLI_Command extends WP_CLI_Command {
 				continue;
 			}
 
-			$package_url   = null;
+			$package_url = null;
+
+			/**
+			 * WP-CLI manifest.json data.
+			 *
+			 * @var object{requires_php?: string}|null $manifest_data
+			 */
 			$manifest_data = null;
 
 			foreach ( $release->assets as $asset ) {
@@ -492,7 +512,12 @@ class CLI_Command extends WP_CLI_Command {
 					$response = Utils\http_request( 'GET', $asset->browser_download_url, null, $headers, $options );
 
 					if ( $response->success ) {
-						$manifest_data = json_decode( $response->body );
+						/**
+						 * WP-CLI manifest.json data.
+						 *
+						 * @var object{requires_php?: string}|null $manifest_data
+						 */
+						$manifest_data = json_decode( $response->body, false );
 					}
 				}
 			}
@@ -551,6 +576,11 @@ class CLI_Command extends WP_CLI_Command {
 				$response = Utils\http_request( 'GET', 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.manifest.json', null, $headers, $options );
 
 				if ( $response->success ) {
+					/**
+					 * WP-CLI manifest.json data.
+					 *
+					 * @var object{requires_php?: string}|null $manifest_data
+					 */
 					$manifest_data = json_decode( $response->body );
 				}
 

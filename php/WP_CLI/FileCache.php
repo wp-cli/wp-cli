@@ -85,7 +85,9 @@ class FileCache {
 	 *
 	 * @param string $key cache key
 	 * @param int    $ttl time to live
-	 * @return bool|string filename or false
+	 * @return false|string filename or false
+	 *
+	 * @phpstan-assert-if-true string $this->read()
 	 */
 	public function has( $key, $ttl = null ) {
 		if ( ! $this->enabled ) {
@@ -140,13 +142,13 @@ class FileCache {
 	 *
 	 * @param string $key cache key
 	 * @param int    $ttl time to live
-	 * @return bool|string file contents or false
+	 * @return false|string file contents or false
 	 */
 	public function read( $key, $ttl = null ) {
 		$filename = $this->has( $key, $ttl );
 
 		if ( $filename ) {
-			return file_get_contents( $filename );
+			return (string) file_get_contents( $filename );
 		}
 
 		return false;
@@ -343,7 +345,7 @@ class FileCache {
 	 * Prepare cache write
 	 *
 	 * @param string $key cache key
-	 * @return bool|string The destination filename or false when cache disabled or directory creation fails.
+	 * @return false|string The destination filename or false when cache disabled or directory creation fails.
 	 */
 	protected function prepare_write( $key ) {
 		if ( ! $this->enabled ) {

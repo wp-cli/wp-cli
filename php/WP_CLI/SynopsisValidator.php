@@ -125,7 +125,7 @@ class SynopsisValidator {
 	 * Check whether there are unknown parameters supplied.
 	 *
 	 * @param array $assoc_args Parameters passed to command.
-	 * @return array|false
+	 * @return array
 	 */
 	public function unknown_assoc( $assoc_args ) {
 		$generic = $this->query_spec(

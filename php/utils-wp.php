@@ -111,9 +111,18 @@ function wp_die_handler( $message ) {
 
 	if ( $message instanceof \WP_Error ) {
 		$text_message = $message->get_error_message();
-		$error_data   = $message->get_error_data( 'internal_server_error' );
-		if ( ! empty( $error_data['error']['file'] )
-			&& false !== stripos( $error_data['error']['file'], 'themes/functions.php' ) ) {
+
+		/**
+		 * @var array{error?: array{file?: string}} $error_data
+		 */
+		$error_data = $message->get_error_data( 'internal_server_error' );
+
+		/**
+		 * @var string $file
+		 */
+		$file = ! empty( $error_data['error']['file'] ) ? $error_data['error']['file'] : '';
+
+		if ( false !== stripos( $file, 'themes/functions.php' ) ) {
 			$text_message = 'An unexpected functions.php file in the themes directory may have caused this internal server error.';
 		}
 	} else {
@@ -161,7 +170,7 @@ function wp_redirect_handler( $url ) {
 
 	ob_start();
 	debug_print_backtrace();
-	fwrite( STDERR, ob_get_clean() );
+	fwrite( STDERR, (string) ob_get_clean() );
 
 	return $url;
 }
@@ -214,10 +223,20 @@ function get_upgrader( $class_name, $insecure = false ) {
 	}
 
 	if ( $uses_insecure_flag ) {
-		return new $class_name( new UpgraderSkin(), $insecure );
-	} else {
-		return new $class_name( new UpgraderSkin() );
+		/**
+		 * @var \WP_Upgrader $result
+		 */
+		$result = new $class_name( new UpgraderSkin(), $insecure );
+
+		return $result;
 	}
+
+	/**
+	 * @var \WP_Upgrader $result
+	 */
+	$result = new $class_name( new UpgraderSkin() );
+
+	return $result;
 }
 
 /**
@@ -504,7 +523,7 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 		if ( get_flag_value( $assoc_args, 'base-tables-only' ) || get_flag_value( $assoc_args, 'views-only' ) ) {
 			// Apply Views restriction args if needed.
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared, see above.
-			$views_query_tables = $wpdb->get_col( $tables_sql, 0 );
+			$views_query_tables = $wpdb->get_col( $tables_sql, 0 ); // @phpstan-ignore variable.undefined
 			$tables             = array_intersect( $tables, $views_query_tables );
 		}
 	}
@@ -551,7 +570,7 @@ function strip_tags( $string ) {
 		return \wp_strip_all_tags( $string );
 	}
 
-	$string = preg_replace(
+	$string = (string) preg_replace(
 		'@<(script|style)[^>]*?>.*?</\\1>@si',
 		'',
 		$string

@@ -20,10 +20,13 @@ class Post extends Base {
 	 * Get a post object by ID
 	 *
 	 * @param string $arg The raw CLI argument.
-	 * @return WP_Post|array|false The item if found; false otherwise.
+	 * @return WP_Post|false The item if found; false otherwise.
 	 */
 	public function get( $arg ) {
-		$post = get_post( $arg );
+		/**
+		 * @var WP_Post|null $post
+		 */
+		$post = get_post( (int) $arg );
 
 		if ( null === $post ) {
 			return false;
