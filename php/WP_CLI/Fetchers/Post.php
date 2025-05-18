@@ -6,6 +6,8 @@ use WP_Post;
 
 /**
  * Fetch a WordPress post based on one of its attributes.
+ *
+ * @extends Base<\WP_Post>
  */
 class Post extends Base {
 

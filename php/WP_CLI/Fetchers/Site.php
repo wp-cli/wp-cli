@@ -4,6 +4,8 @@ namespace WP_CLI\Fetchers;
 
 /**
  * Fetch a WordPress site based on one of its attributes.
+ *
+ * @extends Base<object>
  */
 class Site extends Base {
 

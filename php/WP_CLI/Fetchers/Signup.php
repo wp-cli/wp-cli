@@ -4,6 +4,8 @@ namespace WP_CLI\Fetchers;
 
 /**
  * Fetch a signup based on one of its attributes.
+ *
+ * @extends Base<object>
  */
 class Signup extends Base {
 

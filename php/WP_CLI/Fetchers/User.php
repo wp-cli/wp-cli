@@ -7,6 +7,8 @@ use WP_User;
 
 /**
  * Fetch a WordPress user based on one of its attributes.
+ *
+ * @extends Base<\WP_User>
  */
 class User extends Base {
 

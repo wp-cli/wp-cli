@@ -6,6 +6,8 @@ use WP_Comment;
 
 /**
  * Fetch a WordPress comment based on one of its attributes.
+ *
+ * @extends Base<\WP_Comment>
  */
 class Comment extends Base {
 
