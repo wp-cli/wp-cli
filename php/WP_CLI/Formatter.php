@@ -10,6 +10,10 @@ use WP_CLI;
 
 /**
  * Output one or more items in a given format (e.g. table, JSON).
+ *
+ * @property-read string      $format
+ * @property-read string[]    $fields
+ * @property-read string|null $field
  */
 class Formatter {
 
