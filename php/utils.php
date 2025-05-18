@@ -743,13 +743,7 @@ function make_progress_bar( $message, $count, $interval = 100 ) {
  * @phpstan-return ($component is non-negative-int ? string|null|int|false : array{scheme?: string, host?: string, port?: int, user?: string, pass?: string, query?: string, path?: string, fragment?: string})
  */
 function parse_url( $url, $component = - 1, $auto_add_scheme = true ) {
-	if (
-		function_exists( 'wp_parse_url' )
-		&& (
-			-1 === $component
-			|| wp_version_compare( '4.7', '>=' )
-		)
-	) {
+	if ( function_exists( 'wp_parse_url' ) ) {
 		$url_parts = wp_parse_url( $url, $component );
 	} else {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Fallback.

@@ -1374,20 +1374,17 @@ class Runner {
 		$this->setup_bootstrap_hooks();
 
 		// Load Core, mu-plugins, plugins, themes etc.
-		if ( Utils\wp_version_compare( '4.6-alpha-37575', '>=' ) ) {
-			if ( $this->cmd_starts_with( [ 'help' ] ) ) {
-				// Hack: define `WP_DEBUG` and `WP_DEBUG_DISPLAY` to get `wpdb::bail()` to `wp_die()`.
-				if ( ! defined( 'WP_DEBUG' ) ) {
-					define( 'WP_DEBUG', true );
-				}
-				if ( ! defined( 'WP_DEBUG_DISPLAY' ) ) {
-					define( 'WP_DEBUG_DISPLAY', true );
-				}
+
+		if ( $this->cmd_starts_with( [ 'help' ] ) ) {
+			// Hack: define `WP_DEBUG` and `WP_DEBUG_DISPLAY` to get `wpdb::bail()` to `wp_die()`.
+			if ( ! defined( 'WP_DEBUG' ) ) {
+				define( 'WP_DEBUG', true );
 			}
-			require ABSPATH . 'wp-settings.php';
-		} else {
-			require WP_CLI_ROOT . '/php/wp-settings-cli.php';
+			if ( ! defined( 'WP_DEBUG_DISPLAY' ) ) {
+				define( 'WP_DEBUG_DISPLAY', true );
+			}
 		}
+		require ABSPATH . 'wp-settings.php';
 
 		// Fix memory limit. See https://core.trac.wordpress.org/ticket/14889
 		// phpcs:ignore WordPress.PHP.IniSet.memory_limit_Disallowed -- This is perfectly fine for CLI usage.
@@ -1600,8 +1597,7 @@ class Runner {
 					$run_on_site_not_found = 'search-replace';
 				}
 			}
-			if ( $run_on_site_not_found
-				&& Utils\wp_version_compare( '4.0', '>=' ) ) {
+			if ( $run_on_site_not_found ) {
 				WP_CLI::add_wp_hook(
 					'ms_site_not_found',
 					static function () use ( $run_on_site_not_found ) {
