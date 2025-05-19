@@ -74,8 +74,8 @@ class Formatter {
 	/**
 	 * Display multiple items according to the output arguments.
 	 *
-	 * @param array|Iterator $items The items to display.
-	 * @param bool|array      $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `format()` if items in the table are pre-colorized. Default false.
+	 * @param iterable   $items               The items to display.
+	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `format()` if items in the table are pre-colorized. Default false.
 	 */
 	public function display_items( $items, $ascii_pre_colorized = false ) {
 		if ( $this->args['field'] ) {
@@ -95,7 +95,7 @@ class Formatter {
 				if ( $items instanceof Iterator ) {
 					$items = Utils\iterator_map( $items, [ $this, 'transform_item_values_to_json' ] );
 				} else {
-					$items = array_map( [ $this, 'transform_item_values_to_json' ], $items );
+					$items = array_map( [ $this, 'transform_item_values_to_json' ], (array) $items );
 				}
 			}
 
@@ -134,8 +134,8 @@ class Formatter {
 	/**
 	 * Format items according to arguments.
 	 *
-	 * @param array|Iterator $items               Items.
-	 * @param bool|array     $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if items in the table are pre-colorized. Default false.
+	 * @param iterable   $items               Items.
+	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if items in the table are pre-colorized. Default false.
 	 */
 	private function format( $items, $ascii_pre_colorized = false ) {
 		$fields = $this->args['fields'];
@@ -190,8 +190,8 @@ class Formatter {
 	/**
 	 * Show a single field from a list of items.
 	 *
-	 * @param array|Iterator $items Array of objects to show fields from
-	 * @param string         $field The field to show
+	 * @param iterable $items Array of objects to show fields from
+	 * @param string   $field The field to show
 	 */
 	private function show_single_field( $items, $field ) {
 		$key    = null;
@@ -303,9 +303,9 @@ class Formatter {
 	/**
 	 * Show items in a \cli\Table.
 	 *
-	 * @param array|Iterator $items               Items.
-	 * @param array          $fields              Fields.
-	 * @param bool|array     $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `Table::setAsciiPreColorized()` if items in the table are pre-colorized. Default false.
+	 * @param iterable   $items               Items.
+	 * @param array      $fields              Fields.
+	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `Table::setAsciiPreColorized()` if items in the table are pre-colorized. Default false.
 	 */
 	private static function show_table( $items, $fields, $ascii_pre_colorized = false ) {
 		$table = new Table();

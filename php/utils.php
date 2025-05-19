@@ -417,7 +417,7 @@ function format_items( $format, $items, $fields ) {
  * @access public
  *
  * @param resource                 $fd      File descriptor.
- * @param array<string[]>|Iterator $rows    Array of rows to output.
+ * @param array<string[]>|iterable $rows    Array of rows to output.
  * @param array<string>            $headers List of CSV columns (optional).
  */
 function write_csv( $fd, $rows, $headers = [] ) {
