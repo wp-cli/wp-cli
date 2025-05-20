@@ -187,11 +187,12 @@ function maybe_require( $since, $path ) {
 }
 
 /**
+ * @template T of \WP_Upgrader
  *
- * @param class-string $class_name
+ * @param class-string<T> $class_name
  * @param bool         $insecure
  *
- * @return \WP_Upgrader Upgrader instance.
+ * @return T Upgrader instance.
  * @throws \ReflectionException
  */
 function get_upgrader( $class_name, $insecure = false ) {
