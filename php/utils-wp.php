@@ -225,7 +225,7 @@ function get_upgrader( $class_name, $insecure = false ) {
 
 	if ( $uses_insecure_flag ) {
 		/**
-		 * @var \WP_Upgrader $result
+		 * @var T $result
 		 */
 		$result = new $class_name( new UpgraderSkin(), $insecure );
 
@@ -233,7 +233,7 @@ function get_upgrader( $class_name, $insecure = false ) {
 	}
 
 	/**
-	 * @var \WP_Upgrader $result
+	 * @var T $result
 	 */
 	$result = new $class_name( new UpgraderSkin() );
 
