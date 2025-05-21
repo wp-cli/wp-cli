@@ -194,11 +194,11 @@ function load_command( $name ) {
  *       var_dump($val);
  *     }
  *
- * @param array|Iterator $it Either a plain array or another iterator.
- * @param callable     $fn The function to apply to an element.
+ * @param array|Iterator $it     Either a plain array or another iterator.
+ * @param callable       ...$fns The function to apply to an element.
  * @return Iterator An iterator that applies the given callback(s).
  */
-function iterator_map( $it, $fn ) {
+function iterator_map( $it, ...$fns ) {
 	if ( is_array( $it ) ) {
 		$it = new ArrayIterator( $it );
 	}
@@ -207,7 +207,10 @@ function iterator_map( $it, $fn ) {
 		$it = new Transform( $it );
 	}
 
-	foreach ( array_slice( func_get_args(), 1 ) as $fn ) {
+	foreach ( $fns as $fn ) {
+		/**
+		 * @var Transform $it
+		 */
 		$it->add_transform( $fn );
 	}
 
