@@ -22,6 +22,8 @@ use WP_CLI\WpHttpCacheManager;
 
 /**
  * Various utilities for WP-CLI commands.
+ *
+ * @phpstan-type GlobalConfig array{path: string|null, ssh: string|null, http: string|null, url: string|null, user: string|null, 'skip-plugins': true|string[], 'skip-themes': true|string[], 'skip-packages': bool, require: string[], exec: string[], context: string, debug: string|true, prompt: false|string, quiet: bool}
  */
 class WP_CLI {
 
@@ -1246,6 +1248,8 @@ class WP_CLI {
 	 * @param string $key Config parameter key to check.
 	 *
 	 * @return bool
+	 *
+	 * @phpstan-param key-of<GlobalConfig> $key
 	 */
 	public static function has_config( $key ) {
 		return array_key_exists( $key, self::get_runner()->config );
@@ -1266,6 +1270,9 @@ class WP_CLI {
 	 *
 	 * @param string $key Get value for a specific global configuration parameter.
 	 * @return mixed
+	 *
+	 * @phpstan-param key-of<GlobalConfig> $key
+	 * @phpstan-return ($key is null ? GlobalConfig : value-of<GlobalConfig>)
 	 */
 	public static function get_config( $key = null ) {
 		if ( null === $key ) {
