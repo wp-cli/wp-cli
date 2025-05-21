@@ -1063,7 +1063,7 @@ function get_named_sem_ver( $new_version, $original_version ) {
  * @category Input
  *
  * @param array<string,string|bool> $assoc_args Arguments array.
- * @param string                    $flag       Flag to get the value.
+ * @param string|int                $flag       Flag to get the value.
  * @param string|bool|int|null      $default    Default value for the flag. Default: NULL.
  * @return string|bool|int|null
  */
