@@ -11,6 +11,7 @@ parameters:
     - php/utils.php
     - php/utils-wp.php
     - php/wp-cli.php
+    - tests
   excludePaths:
      - php/WP_CLI/ComposerIO.php
      - php/WP_CLI/PackageManagerEventSubscriber.php
@@ -24,9 +25,9 @@ parameters:
     - php/boot-fs.php
   treatPhpDocTypesAsCertain: false
   dynamicConstantNames:
-  	- WP_DEBUG
-  	- WP_DEBUG_LOG
-  	- WP_DEBUG_DISPLAY
+    - WP_DEBUG
+    - WP_DEBUG_LOG
+    - WP_DEBUG_DISPLAY
   ignoreErrors:
     - identifier: missingType.iterableValue
     - identifier: missingType.property

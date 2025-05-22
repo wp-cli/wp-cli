@@ -88,7 +88,7 @@ class CompositeCommand {
 	/**
 	 * Composite commands always contain subcommands.
 	 *
-	 * @return true
+	 * @return bool
 	 */
 	public function can_have_subcommands() {
 		return true;
@@ -178,6 +178,7 @@ class CompositeCommand {
 	/**
 	 * Get the usage for this composite command.
 	 *
+	 * @param string $prefix
 	 * @return string
 	 */
 	public function get_usage( $prefix ) {

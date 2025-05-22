@@ -21,8 +21,8 @@ class Comment extends Base {
 	/**
 	 * Get a comment object by ID
 	 *
-	 * @param string $arg The raw CLI argument.
-	 * @return WP_Comment|array|false The item if found; false otherwise.
+	 * @param string|int $arg The raw CLI argument.
+	 * @return WP_Comment|false The item if found; false otherwise.
 	 */
 	public function get( $arg ) {
 		$comment_id = (int) $arg;

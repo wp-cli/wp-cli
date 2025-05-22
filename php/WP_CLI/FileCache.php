@@ -369,7 +369,7 @@ class FileCache {
 	 */
 	protected function validate_key( $key ) {
 		$url_parts = Utils\parse_url( $key, -1, false );
-		if ( array_key_exists( 'path', $url_parts ) && ! empty( $url_parts['scheme'] ) ) { // is url
+		if ( $url_parts && array_key_exists( 'path', $url_parts ) && ! empty( $url_parts['scheme'] ) ) { // is url
 			$parts   = [ 'misc' ];
 			$parts[] = $url_parts['scheme'] .
 				( empty( $url_parts['host'] ) ? '' : '-' . $url_parts['host'] ) .

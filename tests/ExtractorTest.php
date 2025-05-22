@@ -35,8 +35,11 @@ class ExtractorTest extends TestCase {
 		WP_CLI::set_logger( self::$logger );
 
 		// Remove any failed tests detritus.
-		$temp_dirs = Utils\get_temp_dir() . self::$copy_overwrite_files_prefix . '*';
-		foreach ( glob( $temp_dirs ) as $temp_dir ) {
+		$temp_dirs = glob( Utils\get_temp_dir() . self::$copy_overwrite_files_prefix . '*' );
+
+		$this->assertNotFalse( $temp_dirs );
+
+		foreach ( $temp_dirs as $temp_dir ) {
 			Extractor::rmdir( $temp_dir );
 		}
 	}
@@ -279,8 +282,14 @@ class ExtractorTest extends TestCase {
 	}
 
 	private static function recursive_scandir( $dir, $prefix_dir = '' ) {
+		$dirs = scandir( $dir );
+		if ( ! $dirs ) {
+			return [];
+		}
+
 		$ret = [];
-		foreach ( array_diff( scandir( $dir ), [ '.', '..' ] ) as $file ) {
+
+		foreach ( array_diff( $dirs, [ '.', '..' ] ) as $file ) {
 			if ( is_dir( $dir . '/' . $file ) ) {
 				$ret[] = ( $prefix_dir ? ( $prefix_dir . '/' . $file ) : $file ) . '/';
 				$ret   = array_merge( $ret, self::recursive_scandir( $dir . '/' . $file, $prefix_dir ? ( $prefix_dir . '/' . $file ) : $file ) );

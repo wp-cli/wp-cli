@@ -7,6 +7,7 @@ use WP_CLI\Tests\TestCase;
 class MockRegularLogger extends WP_CLI\Loggers\Regular {
 
 	protected function get_runner() {
+		// @phpstan-ignore return.type
 		return (object) [
 			'config' => [
 				'debug' => true,
@@ -22,6 +23,7 @@ class MockRegularLogger extends WP_CLI\Loggers\Regular {
 class MockQuietLogger extends WP_CLI\Loggers\Quiet {
 
 	protected function get_runner() {
+		// @phpstan-ignore return.type
 		return (object) [
 			'config' => [
 				'debug' => true,

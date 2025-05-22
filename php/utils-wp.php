@@ -67,6 +67,7 @@ function wp_debug_mode() {
 
 			if ( in_array( strtolower( (string) WP_DEBUG_LOG ), [ 'true', '1' ], true ) ) {
 				$log_path = WP_CONTENT_DIR . '/debug.log';
+				// @phpstan-ignore function.alreadyNarrowedType
 			} elseif ( is_string( WP_DEBUG_LOG ) ) {
 				$log_path = WP_DEBUG_LOG;
 			} else {
@@ -512,6 +513,7 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 		}
 
 		// The global_terms_enabled() function has been deprecated with WP 6.1+.
+		// @phpstan-ignore function.deprecated
 		if ( wp_version_compare( '6.1', '>=' ) || ! global_terms_enabled() ) { // phpcs:ignore WordPress.WP.DeprecatedFunctions.global_terms_enabledFound
 			// Only include sitecategories when it's actually enabled.
 			$wp_tables = array_values( array_diff( $wp_tables, [ $wpdb->sitecategories ] ) );

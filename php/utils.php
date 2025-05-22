@@ -279,7 +279,7 @@ function args_to_str( $args ) {
 /**
  * Composes associative arguments into a command string.
  *
- * @param array<string, int|string> $assoc_args Associative arguments to compose.
+ * @param array<string, array<int, string>|string|true|int> $assoc_args Associative arguments to compose.
  * @return string
  */
 function assoc_args_to_str( $assoc_args ) {
@@ -1419,6 +1419,8 @@ function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.C
 
 	$length = strlen( $pattern );
 
+	$begin = 0;
+
 	// Find first opening brace.
 	for ( $begin = 0; $begin < $length; $begin++ ) {
 		if ( '\\' === $pattern[ $begin ] ) {
@@ -1518,6 +1520,9 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
 	if ( empty( $options ) ) {
 		return '';
 	}
+
+	$levenshtein = [];
+
 	foreach ( $options as $option ) {
 		$distance               = levenshtein( $option, $target );
 		$levenshtein[ $option ] = $distance;
@@ -1674,6 +1679,7 @@ function get_php_binary() {
  */
 function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = null, $other_options = null ) {
 	if ( is_windows() ) {
+		// @phpstan-ignore no.private.function
 		$cmd = _proc_open_compat_win_env( $cmd, $env );
 	}
 	return proc_open( $cmd, $descriptorspec, $pipes, $cwd, $env, $other_options );

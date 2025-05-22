@@ -21,7 +21,7 @@ class Post extends Base {
 	/**
 	 * Get a post object by ID
 	 *
-	 * @param string $arg The raw CLI argument.
+	 * @param string|int $arg The raw CLI argument.
 	 * @return WP_Post|false The item if found; false otherwise.
 	 */
 	public function get( $arg ) {

@@ -19,11 +19,11 @@ class Site extends Base {
 	/**
 	 * Get a site object by ID
 	 *
-	 * @param int $site_id
+	 * @param string|int $site_id
 	 * @return object|false
 	 */
 	public function get( $site_id ) {
-		return $this->get_site( $site_id );
+		return $this->get_site( (int) $site_id );
 	}
 
 	/**

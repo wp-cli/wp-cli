@@ -77,6 +77,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *       - @dev
 	 *
 	 * @subcommand list
+	 *
+	 * @param array                 $args      Positional arguments. Unused.
+	 * @param array{format: string} $assoc_args Associative arguments.
 	 */
 	public function list_( $args, $assoc_args ) {
 		WP_CLI::print_value( WP_CLI::get_runner()->aliases, $assoc_args );
@@ -95,8 +98,10 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     # Get alias.
 	 *     $ wp cli alias get @prod
 	 *     ssh: dev@somedeve.env:12345/home/dev/
+	 *
+	 * @param array{string} $args Positional arguments.
 	 */
-	public function get( $args, $assoc_args ) {
+	public function get( $args ) {
 		list( $alias ) = $args;
 
 		$aliases = WP_CLI::get_runner()->aliases;
@@ -158,6 +163,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     # Add group of aliases.
 	 *     $ wp cli alias add @multiservers --grouping=servera,serverb
 	 *     Success: Added '@multiservers' alias.
+	 *
+	 * @param array{string} $args Positional arguments.
+	 * @param array{'set-user'?: string, 'set-url'?: string, 'set-path'?: string, 'set-ssh'?: string, 'set-http'?: string, grouping?: string, config?: string} $assoc_args Associative arguments.
 	 */
 	public function add( $args, $assoc_args ) {
 
@@ -214,6 +222,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     # Delete project alias.
 	 *     $ wp cli alias delete @prod --config=project
 	 *     Success: Deleted '@prod' alias.
+	 *
+	 * @param array{string}          $args       Positional arguments.
+	 * @param array{config?: string} $assoc_args Associative arguments
 	 */
 	public function delete( $args, $assoc_args ) {
 
@@ -276,6 +287,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     # Update project alias.
 	 *     $ wp cli alias update @prod --set-user=newuser --set-path=/new/path/to/wordpress/install/ --config=project
 	 *     Success: Updated 'prod' alias.
+	 *
+	 * @param array{string} $args Positional arguments.
+	 * @param array{'set-user'?: string, 'set-url'?: string, 'set-path'?: string, 'set-ssh'?: string, 'set-http'?: string, grouping?: string, config?: string} $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
 

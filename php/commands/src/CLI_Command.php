@@ -113,8 +113,11 @@ class CLI_Command extends WP_CLI_Command {
 	 *     WP-CLI global config:
 	 *     WP-CLI project config:
 	 *     WP-CLI version: 1.5.0
+	 *
+	 * @param array $args                       Positional arguments. Unused.
+	 * @param array $assoc_args{format: string} Associative arguments.
 	 */
-	public function info( $_, $assoc_args ) {
+	public function info( $args, $assoc_args ) {
 		$system_os = sprintf(
 			'%s %s %s %s',
 			php_uname( 's' ),
@@ -232,8 +235,11 @@ class CLI_Command extends WP_CLI_Command {
 	 *     +---------+-------------+-------------------------------------------------------------------------------+
 	 *
 	 * @subcommand check-update
+	 *
+	 * @param array $args Positional arguments. Unused.
+	 * @param array $assoc_args{patch?: bool, minor?: bool, major?: bool, field?: string, fields?: string, format: string} Associative arguments.
 	 */
-	public function check_update( $_, $assoc_args ) {
+	public function check_update( $args, $assoc_args ) {
 		$updates = $this->get_updates( $assoc_args );
 
 		if ( $updates ) {
@@ -294,8 +300,11 @@ class CLI_Command extends WP_CLI_Command {
 	 *     Downloading from https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar...
 	 *     New version works. Proceeding to replace.
 	 *     Success: Updated WP-CLI to 0.24.1.
+	 *
+	 * @param array $args Positional arguments. Unused.
+	 * @param array $assoc_args{patch?: bool, minor?: bool, major?: bool, stable?: bool, nightly?: bool, yes?: bool, insecure?: bool} Associative arguments.
 	 */
-	public function update( $_, $assoc_args ) {
+	public function update( $args, $assoc_args ) {
 		if ( ! Utils\inside_phar() ) {
 			WP_CLI::error( 'You can only self-update Phar files.' );
 		}

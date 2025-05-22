@@ -184,7 +184,7 @@ class Extractor {
 		 */
 		foreach ( $iterator as $item ) {
 
-			$dest_path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
+			$dest_path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathname();
 
 			if ( $item->isDir() ) {
 				if ( ! is_dir( $dest_path ) ) {
@@ -196,7 +196,7 @@ class Extractor {
 				copy( $item, $dest_path );
 			} else {
 				$error = 1;
-				WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathName() . "' to current directory." );
+				WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathname() . "' to current directory." );
 			}
 		}
 

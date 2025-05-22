@@ -119,7 +119,7 @@ class FileCacheTest extends TestCase {
 		$fixture_filepath = $tmp_dir . '/my-downloaded-fixture-plugin-1.0.0.zip';
 
 		$zip = new ZipArchive();
-		$zip->open( $fixture_filepath, ZIPARCHIVE::CREATE );
+		$zip->open( $fixture_filepath, ZipArchive::CREATE );
 		$zip->addFile( __FILE__ );
 		$zip->close();
 
@@ -151,7 +151,7 @@ class FileCacheTest extends TestCase {
 		$fixture_filepath = $tmp_dir . '/my-bad-permissions-fixture-plugin-1.0.0.zip';
 
 		$zip = new ZipArchive();
-		$zip->open( $fixture_filepath, ZIPARCHIVE::CREATE );
+		$zip->open( $fixture_filepath, ZipArchive::CREATE );
 		$zip->addFile( __FILE__ );
 		$zip->close();
 
@@ -160,7 +160,8 @@ class FileCacheTest extends TestCase {
 		// "Warning: copy(-.): Failed to open stream: Permission denied".
 		$error = null;
 		set_error_handler(
-			function ( $errno, $errstr ) use ( &$error ) {
+			// @phpstan-ignore argument.type
+			function ( int $errno, string $errstr ) use ( &$error ) {
 				$error = $errstr;
 			}
 		);
@@ -201,6 +202,7 @@ class FileCacheTest extends TestCase {
 
 		$result = $method->invoke( $cache, $key );
 
+		$this->assertIsString( $result );
 		$this->assertStringEndsNotWith( '.', $result );
 		$this->assertSame( 'plugin/advanced-sidebar-menu-pro-9.5.7', $result );
 	}
