@@ -28,6 +28,13 @@ parameters:
     - WP_DEBUG
     - WP_DEBUG_LOG
     - WP_DEBUG_DISPLAY
+  strictRules:
+    uselessCast: true
+    closureUsesThis: true
+    overwriteVariablesWithLoop: true
+    matchingInheritedMethodNames: true
+    numericOperandsInArithmeticOperators: true
+    switchConditionsMatchingType: true
   ignoreErrors:
     - identifier: missingType.iterableValue
     - identifier: missingType.property

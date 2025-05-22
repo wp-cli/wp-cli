@@ -490,7 +490,7 @@ class WP_CLI {
 		$valid = false;
 		if ( is_callable( $callable ) ) {
 			$valid = true;
-		} elseif ( is_string( $callable ) && class_exists( (string) $callable ) ) {
+		} elseif ( is_string( $callable ) && class_exists( $callable ) ) {
 			$valid = true;
 		} elseif ( is_object( $callable ) ) {
 			$valid = true;
@@ -623,9 +623,9 @@ class WP_CLI {
 						$long_desc .= ': ' . $arg['description'] . "\n";
 					}
 					$yamlify = [];
-					foreach ( [ 'default', 'options' ] as $key ) {
-						if ( isset( $arg[ $key ] ) ) {
-							$yamlify[ $key ] = $arg[ $key ];
+					foreach ( [ 'default', 'options' ] as $_key ) {
+						if ( isset( $arg[ $_key ] ) ) {
+							$yamlify[ $_key ] = $arg[ $_key ];
 						}
 					}
 					if ( ! empty( $yamlify ) ) {

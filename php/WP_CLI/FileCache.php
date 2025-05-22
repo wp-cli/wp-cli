@@ -109,8 +109,12 @@ class FileCache {
 			$ttl = (int) $ttl;
 		}
 
-		//
-		if ( $ttl > 0 && ( filemtime( $filename ) + $ttl ) < time() ) {
+		$modified_time = filemtime( $filename );
+		if ( false === $modified_time ) {
+			$modified_time = 0;
+		}
+
+		if ( $ttl > 0 && ( $modified_time + $ttl ) < time() ) {
 			if ( $this->ttl > 0 && $ttl >= $this->ttl ) {
 				unlink( $filename );
 			}

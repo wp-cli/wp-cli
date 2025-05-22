@@ -65,6 +65,7 @@ function wp_debug_mode() {
 				ini_set( 'display_errors', 0 );
 			}
 
+			// @phpstan-ignore cast.useless
 			if ( in_array( strtolower( (string) WP_DEBUG_LOG ), [ 'true', '1' ], true ) ) {
 				$log_path = WP_CONTENT_DIR . '/debug.log';
 				// @phpstan-ignore function.alreadyNarrowedType
