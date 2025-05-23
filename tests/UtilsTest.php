@@ -501,14 +501,17 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataHttpRequestBadCAcert()
 	 *
-	 * @param array  $additional_options Associative array of additional options to pass to http_request().
-	 * @param string $exception          Class of the exception to expect.
-	 * @param string $exception_message  Message of the exception to expect.
+	 * @param array                    $additional_options Associative array of additional options to pass to http_request().
+	 * @param class-string<\Throwable> $exception          Class of the exception to expect.
+	 * @param string                   $exception_message  Message of the exception to expect.
 	 */
 	public function testHttpRequestBadCAcert( $additional_options, $exception, $exception_message ) {
 		if ( ! extension_loaded( 'curl' ) ) {
 			$this->markTestSkipped( 'curl not available' );
 		}
+
+		// Save WP_CLI state.
+		$prev_logger = WP_CLI::get_logger();
 
 		// Create temporary file to use as a bad certificate file.
 		$bad_cacert_path = tempnam( sys_get_temp_dir(), 'wp-cli-badcacert-pem-' );
@@ -525,12 +528,10 @@ class UtilsTest extends TestCase {
 		if ( false !== $exception ) {
 			$this->expectException( $exception );
 			$this->expectExceptionMessage( $exception_message );
-		} else {
-			// Save WP_CLI state.
-			$prev_logger = WP_CLI::get_logger();
-			$logger      = new Loggers\Execution();
-			WP_CLI::set_logger( $logger );
 		}
+
+		$logger = new Loggers\Execution();
+		WP_CLI::set_logger( $logger );
 
 		Utils\http_request( 'GET', 'https://example.com', null, [], $options );
 
@@ -799,10 +800,12 @@ class UtilsTest extends TestCase {
 	 */
 	public function test_esc_like_with_wpdb( $input, $expected ) {
 		global $wpdb;
+		// @phpstan-ignore method.deprecated
 		$wpdb = $this->getMockBuilder( 'stdClass' )
 			->addMethods( [ 'esc_like' ] );
 
 		$wpdb = $wpdb->getMock();
+		// @phpstan-ignore phpunit.mockMethod
 		$wpdb->method( 'esc_like' )
 			->willReturn( addcslashes( $input, '_%\\' ) );
 		$this->assertEquals( $expected, Utils\esc_like( $input ) );
@@ -965,6 +968,8 @@ class UtilsTest extends TestCase {
 		rewind( $temp_file );
 		$csv_content = stream_get_contents( $temp_file );
 
+		$this->assertNotFalse( $csv_content );
+
 		// Normalize line endings for cross-platform testing
 		$csv_content = str_replace( "\r\n", "\n", $csv_content );
 
@@ -996,6 +1001,8 @@ class UtilsTest extends TestCase {
 		// Rewind file and read contents
 		rewind( $temp_file );
 		$csv_content = stream_get_contents( $temp_file );
+
+		$this->assertNotFalse( $csv_content );
 
 		// Normalize line endings for cross-platform testing
 		$csv_content = str_replace( "\r\n", "\n", $csv_content );
@@ -1040,6 +1047,8 @@ class UtilsTest extends TestCase {
 		// Rewind file and read contents
 		rewind( $temp_file );
 		$csv_content = stream_get_contents( $temp_file );
+
+		$this->assertNotFalse( $csv_content );
 
 		// Normalize line endings for cross-platform testing
 		$csv_content = str_replace( "\r\n", "\n", $csv_content );

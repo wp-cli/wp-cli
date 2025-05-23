@@ -7,6 +7,8 @@ use WP_User;
 
 /**
  * Fetch a WordPress user based on one of its attributes.
+ *
+ * @extends Base<\WP_User>
  */
 class User extends Base {
 
@@ -20,7 +22,7 @@ class User extends Base {
 	/**
 	 * Get a user object by one of its identifying attributes.
 	 *
-	 * @param string $arg The raw CLI argument.
+	 * @param string|int $arg The raw CLI argument.
 	 * @return WP_User|false The item if found; false otherwise.
 	 */
 	public function get( $arg ) {

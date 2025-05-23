@@ -78,7 +78,11 @@ class Table extends Query {
 			$conditions = [];
 			foreach ( $where as $key => $value ) {
 				if ( is_array( $value ) ) {
-					$conditions[] = $key . ' IN (' . esc_sql( implode( ',', $value ) ) . ')';
+					/**
+					 * @var string $values
+					 */
+					$values       = esc_sql( implode( ',', $value ) );
+					$conditions[] = $key . ' IN (' . $values . ')';
 				} elseif ( is_numeric( $key ) ) {
 					$conditions[] = $value;
 				} else {
