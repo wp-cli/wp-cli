@@ -16,7 +16,6 @@
         "wp-cli/php-cli-tools": "~0.12.4"
     },
     "require-dev": {
-        "phpstan/phpstan-phpunit": "^1.4.2",
         "roave/security-advisories": "dev-latest",
         "wp-cli/db-command": "^1.3 || ^2",
         "wp-cli/entity-command": "^1.2 || ^2",
