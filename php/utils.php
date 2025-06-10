@@ -12,7 +12,7 @@ use Closure;
 use Composer\Semver\Comparator;
 use Composer\Semver\Semver;
 use Exception;
-use Mustache_Engine;
+use Mustache\Engine as Mustache_Engine;
 use ReflectionFunction;
 use RuntimeException;
 use WP_CLI;
