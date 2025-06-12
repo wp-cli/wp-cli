@@ -800,12 +800,8 @@ class UtilsTest extends TestCase {
 	 */
 	public function test_esc_like_with_wpdb( $input, $expected ) {
 		global $wpdb;
-		// @phpstan-ignore method.deprecated
-		$wpdb = $this->getMockBuilder( 'stdClass' )
-			->addMethods( [ 'esc_like' ] );
 
 		$wpdb = $wpdb->getMock();
-		// @phpstan-ignore phpunit.mockMethod
 		$wpdb->method( 'esc_like' )
 			->willReturn( addcslashes( $input, '_%\\' ) );
 		$this->assertEquals( $expected, Utils\esc_like( $input ) );
