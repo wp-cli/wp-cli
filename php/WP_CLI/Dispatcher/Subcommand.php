@@ -112,10 +112,10 @@ class Subcommand extends CompositeCommand {
 	 * Wrapper for CLI Tools' prompt() method.
 	 *
 	 * @param string $question
-	 * @param string $default
+	 * @param mixed $default
 	 * @return string|false
 	 */
-	private function prompt( $question, $default ) {
+	private function prompt( $question, $default = null ) {
 
 		$question .= ': ';
 		if ( function_exists( 'readline' ) ) {
@@ -124,7 +124,7 @@ class Subcommand extends CompositeCommand {
 
 		echo $question;
 
-		$ret = stream_get_line( STDIN, 1024, "\n" );
+		$ret = (string) stream_get_line( STDIN, 1024, "\n" );
 		if ( Utils\is_windows() && "\r" === substr( $ret, -1 ) ) {
 			$ret = substr( $ret, 0, -1 );
 		}
@@ -174,6 +174,9 @@ class Subcommand extends CompositeCommand {
 
 		$spec = array_values( $spec );
 
+		/**
+		 * @var string|true $prompt_args
+		 */
 		$prompt_args = WP_CLI::get_config( 'prompt' );
 		if ( true !== $prompt_args ) {
 			$prompt_args = explode( ',', $prompt_args );
@@ -197,7 +200,6 @@ class Subcommand extends CompositeCommand {
 			}
 
 			$current_prompt = ( $key + 1 ) . '/' . count( $spec ) . ' ';
-			$default        = $spec_arg['optional'] ? '' : false;
 
 			// 'generic' permits arbitrary key=value (e.g. [--<field>=<value>] )
 			if ( 'generic' === $spec_arg['type'] ) {
@@ -212,7 +214,7 @@ class Subcommand extends CompositeCommand {
 						$key_prompt = str_repeat( ' ', strlen( $current_prompt ) ) . $key_token;
 					}
 
-					$key = $this->prompt( $key_prompt, $default );
+					$key = $this->prompt( $key_prompt );
 					if ( false === $key ) {
 						return [ $args, $assoc_args ];
 					}
@@ -221,7 +223,7 @@ class Subcommand extends CompositeCommand {
 						$key_prompt_count = strlen( $key_prompt ) - strlen( $value_token ) - 1;
 						$value_prompt     = str_repeat( ' ', $key_prompt_count ) . '=' . $value_token;
 
-						$value = $this->prompt( $value_prompt, $default );
+						$value = $this->prompt( $value_prompt );
 						if ( false === $value ) {
 							return [ $args, $assoc_args ];
 						}
@@ -240,7 +242,7 @@ class Subcommand extends CompositeCommand {
 					$prompt .= ' (Y/n)';
 				}
 
-				$response = $this->prompt( $prompt, $default );
+				$response = $this->prompt( $prompt );
 				if ( false === $response ) {
 					return [ $args, $assoc_args ];
 				}
@@ -380,8 +382,12 @@ class Subcommand extends CompositeCommand {
 			}
 		}
 
+		/**
+		 * @var array $config
+		 */
+		$config                             = \WP_CLI::get_config();
 		list( $returned_errors, $to_unset ) = $validator->validate_assoc(
-			array_merge( \WP_CLI::get_config(), $extra_args, $assoc_args )
+			array_merge( $config, $extra_args, $assoc_args )
 		);
 		foreach ( [ 'fatal', 'warning' ] as $error_type ) {
 			$errors[ $error_type ] = array_merge( $errors[ $error_type ], $returned_errors[ $error_type ] );

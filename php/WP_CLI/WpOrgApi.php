@@ -98,7 +98,7 @@ final class WpOrgApi {
 	 *
 	 * @param string $version Version string to query.
 	 * @param string $locale  Optional. Locale to query. Defaults to 'en_US'.
-	 * @return bool|array False on failure. An array of checksums on success.
+	 * @return false|array False on failure. An array of checksums on success.
 	 * @throws RuntimeException If the remote request fails.
 	 */
 	public function get_core_checksums( $version, $locale = 'en_US' ) {
@@ -181,7 +181,7 @@ final class WpOrgApi {
 	 *
 	 * @param string $plugin  Plugin slug to query.
 	 * @param string $version Version string to query.
-	 * @return bool|array False on failure. An array of checksums on success.
+	 * @return false|array False on failure. An array of checksums on success.
 	 * @throws RuntimeException If the remote request fails.
 	 */
 	public function get_plugin_checksums( $plugin, $version ) {
