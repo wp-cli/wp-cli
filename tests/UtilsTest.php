@@ -812,6 +812,7 @@ class UtilsTest extends TestCase {
 	public function test_esc_like_with_wpdb( $input, $expected ) {
 		global $wpdb;
 
+		// @phpstan-ignore class.notFound
 		$wpdb = $this->createMock( WP_CLI_Mock_WPDB::class )
 			->expects( $this->any() )
 			->method( 'esc_like' )
