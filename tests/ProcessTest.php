@@ -3,12 +3,14 @@
 use WP_CLI\Process;
 use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ProcessTest extends TestCase {
 
 	/**
 	 * @dataProvider data_process_env
 	 */
+	#[DataProvider( 'data_process_env' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function test_process_env( $cmd_prefix, $env, $expected_env_vars, $expected_out ) {
 		$code = vsprintf( str_repeat( 'echo getenv( \'%s\' );', count( $expected_env_vars ) ), $expected_env_vars );
 

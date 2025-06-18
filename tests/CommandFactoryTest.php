@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\Tests\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class CommandFactoryTest extends TestCase {
 
@@ -11,6 +12,7 @@ class CommandFactoryTest extends TestCase {
 	/**
 	 * @dataProvider dataProviderExtractLastDocComment
 	 */
+	#[DataProvider( 'dataProviderExtractLastDocComment' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testExtractLastDocComment( $content, $expected ) {
 		// Save and set test env var.
 		$is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
@@ -32,6 +34,7 @@ class CommandFactoryTest extends TestCase {
 	/**
 	 * @dataProvider dataProviderExtractLastDocComment
 	 */
+	#[DataProvider( 'dataProviderExtractLastDocComment' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testExtractLastDocCommentWin( $content, $expected ) {
 		// Save and set test env var.
 		$is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
