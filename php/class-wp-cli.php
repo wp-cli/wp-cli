@@ -912,7 +912,7 @@ class WP_CLI {
 	 * @param boolean|integer            $exit    True defaults to exit(1).
 	 * @return null
 	 *
-	 * @phpstan-return ($exit is true ? never : void)
+	 * @phpstan-return ($exit is true|positive-int ? never : void)
 	 */
 	public static function error( $message, $exit = true ) {
 		if ( null !== self::$logger && ! isset( self::get_runner()->assoc_args['completions'] ) ) {
