@@ -2,7 +2,7 @@
 
 // Can be used by plugins/themes to check if WP-CLI is running or not.
 define( 'WP_CLI', true );
-define( 'WP_CLI_VERSION', trim( file_get_contents( WP_CLI_ROOT . '/VERSION' ) ) );
+define( 'WP_CLI_VERSION', trim( (string) file_get_contents( WP_CLI_ROOT . '/VERSION' ) ) );
 define( 'WP_CLI_START_MICROTIME', microtime( true ) );
 
 if ( file_exists( WP_CLI_ROOT . '/vendor/autoload.php' ) ) {
@@ -26,7 +26,7 @@ $_SERVER['REMOTE_ADDR']     = '127.0.0.1';
 require_once WP_CLI_ROOT . '/php/bootstrap.php';
 
 if ( getenv( 'WP_CLI_EARLY_REQUIRE' ) ) {
-	foreach ( explode( ',', getenv( 'WP_CLI_EARLY_REQUIRE' ) ) as $wp_cli_early_require ) {
+	foreach ( explode( ',', (string) getenv( 'WP_CLI_EARLY_REQUIRE' ) ) as $wp_cli_early_require ) {
 		require_once trim( $wp_cli_early_require );
 	}
 	unset( $wp_cli_early_require );

@@ -39,10 +39,10 @@ final class LoadRequiredCommand implements BootstrapStep {
 					if ( in_array( $path, $required_files[ $scope ], true ) ) {
 						switch ( $scope ) {
 							case 'global':
-								$context = ' (from global ' . Utils\basename( $runner()->get_global_config_path() ) . ')';
+								$context = ' (from global ' . Utils\basename( (string) $runner()->get_global_config_path() ) . ')';
 								break;
 							case 'project':
-								$context = ' (from project\'s ' . Utils\basename( $runner()->get_project_config_path() ) . ')';
+								$context = ' (from project\'s ' . Utils\basename( (string) $runner()->get_project_config_path() ) . ')';
 								break;
 							case 'runtime':
 								$context = ' (from runtime argument)';

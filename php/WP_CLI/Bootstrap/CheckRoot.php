@@ -22,6 +22,9 @@ class CheckRoot implements BootstrapStep {
 	 * @return BootstrapState Modified state to pass to the next step.
 	 */
 	public function process( BootstrapState $state ) {
+		/**
+		 * @var array{'allow-root'?: bool} $config
+		 */
 		$config = $state->getValue( 'config', [] );
 		if ( array_key_exists( 'allow-root', $config ) && true === $config['allow-root'] ) {
 			// They're aware of the risks and set a flag to allow root.
@@ -33,6 +36,9 @@ class CheckRoot implements BootstrapStep {
 			return $state;
 		}
 
+		/**
+		 * @var string[] $args
+		 */
 		$args = $state->getValue( 'arguments', [] );
 		if ( count( $args ) >= 2 && 'cli' === $args[0] && in_array( $args[1], [ 'update', 'info' ], true ) ) {
 			// Make it easier to update root-owned copies.
