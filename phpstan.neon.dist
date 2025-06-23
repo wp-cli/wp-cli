@@ -40,5 +40,3 @@ parameters:
     - identifier: missingType.property
     - identifier: missingType.parameter
     - identifier: missingType.return
-    - message: '#Parameter \#1 \$errors of static method WP_CLI::error_to_string\(\) expects string|Throwable|WP_Error, true given\.#'
-      path: tests/WPCLITest.php
