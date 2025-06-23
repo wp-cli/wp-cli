@@ -55,10 +55,8 @@ final class Admin implements Context {
 	 *
 	 * A lot of premium plugins/themes have their custom update routines locked
 	 * behind an is_admin() call.
-	 *
-	 * @return void
 	 */
-	private function log_in_as_admin_user() {
+	private function log_in_as_admin_user(): void {
 		// TODO: Add logic to find an administrator user.
 		$admin_user_id = 1;
 
@@ -92,10 +90,8 @@ final class Admin implements Context {
 	 * @global string $pagenow
 	 * @global int    $wp_db_version
 	 * @global array  $_wp_submenu_nopriv
-	 *
-	 * @return void
 	 */
-	private function load_admin_environment() {
+	private function load_admin_environment(): void {
 		global $hook_suffix, $pagenow, $wp_db_version, $_wp_submenu_nopriv;
 
 		if ( ! isset( $hook_suffix ) ) {

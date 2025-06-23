@@ -58,7 +58,7 @@ class Query implements Iterator {
 	 * longer be returned by the original query, the offset must be reduced to
 	 * iterate over all remaining rows.
 	 */
-	private function adjust_offset_for_shrinking_result_set() {
+	private function adjust_offset_for_shrinking_result_set(): void {
 		if ( empty( $this->count_query ) ) {
 			return;
 		}

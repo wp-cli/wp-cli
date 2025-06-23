@@ -408,10 +408,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * Check if the config file exists and is writable.
 	 *
 	 * @param string $config_path Path to config file.
-	 *
-	 * @return void
 	 */
-	private function validate_config_file( $config_path ) {
+	private function validate_config_file( $config_path ): void {
 		if ( ! file_exists( $config_path ) || ! is_writable( $config_path ) ) {
 			WP_CLI::error( "Config file does not exist: {$config_path}" );
 		}

@@ -109,7 +109,7 @@ class Runner {
 	 *
 	 * @param string $when Named execution hook
 	 */
-	private function do_early_invoke( $when ) {
+	private function do_early_invoke( $when ): void {
 		WP_CLI::debug( "Executing hook: {$when}", 'hooks' );
 		if ( ! isset( $this->early_invoke[ $when ] ) ) {
 			return;
@@ -365,7 +365,7 @@ class Runner {
 	 *
 	 * @return bool `true` if the arguments passed to the WP-CLI binary start with the specified prefix, `false` otherwise.
 	 */
-	private function cmd_starts_with( $prefix ) {
+	private function cmd_starts_with( $prefix ): bool {
 		return array_slice( $this->arguments, 0, count( $prefix ) ) === $prefix;
 	}
 
@@ -490,7 +490,7 @@ class Runner {
 		}
 	}
 
-	private function run_command_and_exit( $help_exit_warning = '' ) {
+	private function run_command_and_exit( $help_exit_warning = '' ): void {
 		$this->show_synopsis_if_composite_command();
 		$this->run_command( $this->arguments, $this->assoc_args );
 		if ( $this->cmd_starts_with( [ 'help' ] ) ) {
@@ -512,9 +512,8 @@ class Runner {
 	 * scheme of "docker", "docker-compose", or "docker-compose-run").
 	 *
 	 * @param string $connection_string Passed connection string.
-	 * @return void
 	 */
-	private function run_ssh_command( $connection_string ) {
+	private function run_ssh_command( $connection_string ): void {
 
 		WP_CLI::do_hook( 'before_ssh' );
 
@@ -1009,23 +1008,19 @@ class Runner {
 
 	/**
 	 * Do WordPress core files exist?
-	 *
-	 * @return bool
 	 */
-	private function wp_exists() {
+	private function wp_exists(): bool {
 		return file_exists( ABSPATH . 'wp-includes/version.php' );
 	}
 
 	/**
 	 * Are WordPress core files readable?
-	 *
-	 * @return bool
 	 */
-	private function wp_is_readable() {
+	private function wp_is_readable(): bool {
 		return is_readable( ABSPATH . 'wp-includes/version.php' );
 	}
 
-	private function check_wp_version() {
+	private function check_wp_version(): void {
 		$wp_exists      = $this->wp_exists();
 		$wp_is_readable = $this->wp_is_readable();
 		if ( ! $wp_exists || ! $wp_is_readable ) {
@@ -1111,7 +1106,7 @@ class Runner {
 		$this->required_files['runtime'] = $this->config['require'];
 	}
 
-	private function run_alias_group( $aliases ) {
+	private function run_alias_group( $aliases ): void {
 		Utils\check_proc_available( 'group alias' );
 
 		$php_bin = escapeshellarg( Utils\get_php_binary() );
@@ -1142,7 +1137,7 @@ class Runner {
 		}
 	}
 
-	private function set_alias( $alias ) {
+	private function set_alias( $alias ): void {
 		$orig_config  = $this->config;
 		$alias_config = $this->aliases[ $alias ];
 		$this->config = array_merge( $orig_config, $alias_config );
@@ -1410,7 +1405,7 @@ class Runner {
 		WP_CLI::do_hook( 'after_wp_load' );
 	}
 
-	private static function fake_current_site_blog( $url_parts ) {
+	private static function fake_current_site_blog( $url_parts ): void {
 		global $current_site, $current_blog;
 
 		if ( ! isset( $url_parts['path'] ) ) {
@@ -1445,7 +1440,7 @@ class Runner {
 	/**
 	 * Called after wp-config.php is eval'd, to potentially reset `--url`
 	 */
-	private function maybe_update_url_from_domain_constant() {
+	private function maybe_update_url_from_domain_constant(): void {
 		if ( ! empty( $this->config['url'] ) || ! empty( $this->config['blog'] ) ) {
 			return;
 		}
@@ -1462,7 +1457,7 @@ class Runner {
 	/**
 	 * Set up hooks meant to run during the WordPress bootstrap process
 	 */
-	private function setup_bootstrap_hooks() {
+	private function setup_bootstrap_hooks(): void {
 
 		if ( $this->config['skip-plugins'] ) {
 			$this->setup_skip_plugins_filters();
@@ -1861,7 +1856,7 @@ class Runner {
 	 * For use after wp-config.php has loaded, but before the rest of WordPress
 	 * is loaded.
 	 */
-	private function is_multisite() {
+	private function is_multisite(): bool {
 		if ( defined( 'MULTISITE' ) ) {
 			return MULTISITE;
 		}
@@ -1889,7 +1884,7 @@ class Runner {
 	/**
 	 * Check whether there's a WP-CLI update available, and suggest update if so.
 	 */
-	private function auto_check_update() {
+	private function auto_check_update(): void {
 
 		// `wp cli update` only works with Phars at this time.
 		if ( ! Utils\inside_phar() ) {
@@ -1982,7 +1977,7 @@ class Runner {
 	 * @param array            $list    Reference to list accumulating results.
 	 * @param string           $parent  Parent command to use as prefix.
 	 */
-	private function enumerate_commands( CompositeCommand $command, array &$list, $parent = '' ) {
+	private function enumerate_commands( CompositeCommand $command, array &$list, $parent = '' ): void {
 		foreach ( $command->get_subcommands() as $subcommand ) {
 			/** @var CompositeCommand $subcommand */
 			$command_string = empty( $parent )
@@ -1998,7 +1993,7 @@ class Runner {
 	/**
 	 * Enables (almost) full PHP error reporting to stderr.
 	 */
-	private function enable_error_reporting() {
+	private function enable_error_reporting(): void {
 		if ( E_ALL !== error_reporting() ) {
 			// Don't enable E_DEPRECATED as old versions of WP use PHP 4 style constructors and the mysql extension.
 			error_reporting( E_ALL & ~E_DEPRECATED );

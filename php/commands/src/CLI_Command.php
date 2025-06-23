@@ -410,10 +410,9 @@ class CLI_Command extends WP_CLI_Command {
 	 * @param string $sha512_url URL to sha512 hash.
 	 * @param string $md5_url    URL to md5 hash.
 	 *
-	 * @return void
 	 * @throws \WP_CLI\ExitException
 	 */
-	private function validate_hashes( $file, $sha512_url, $md5_url ) {
+	private function validate_hashes( $file, $sha512_url, $md5_url ): void {
 		$algos = [
 			'sha512' => $sha512_url,
 			'md5'    => $md5_url,

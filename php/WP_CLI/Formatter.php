@@ -137,7 +137,7 @@ class Formatter {
 	 * @param iterable   $items               Items.
 	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if items in the table are pre-colorized. Default false.
 	 */
-	private function format( $items, $ascii_pre_colorized = false ) {
+	private function format( $items, $ascii_pre_colorized = false ): void {
 		$fields = $this->args['fields'];
 
 		switch ( $this->args['format'] ) {
@@ -193,7 +193,7 @@ class Formatter {
 	 * @param iterable $items Array of objects to show fields from
 	 * @param string   $field The field to show
 	 */
-	private function show_single_field( $items, $field ) {
+	private function show_single_field( $items, $field ): void {
 		$key    = null;
 		$values = [];
 
@@ -254,7 +254,7 @@ class Formatter {
 	 * @param string     $format              Format to display the data in
 	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if the item in the table is pre-colorized. Default false.
 	 */
-	private function show_multiple_fields( $data, $format, $ascii_pre_colorized = false ) {
+	private function show_multiple_fields( $data, $format, $ascii_pre_colorized = false ): void {
 
 		$true_fields = [];
 		foreach ( $this->args['fields'] as $field ) {

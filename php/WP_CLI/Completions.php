@@ -178,10 +178,8 @@ class Completions {
 	 * Store individual option.
 	 *
 	 * @param string $opt Option to store.
-	 *
-	 * @return void
 	 */
-	private function add( $opt ) {
+	private function add( $opt ): void {
 		if ( '' !== $this->cur_word ) {
 			if ( 0 !== strpos( $opt, $this->cur_word ) ) {
 				return;
