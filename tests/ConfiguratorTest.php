@@ -6,7 +6,7 @@ use WP_CLI\Tests\TestCase;
 
 class ConfiguratorTest extends TestCase {
 
-	public function testExtractAssoc() {
+	public function testExtractAssoc(): void {
 		$args = Configurator::extract_assoc( [ 'foo', '--bar', '--baz=text' ] );
 
 		$this->assertCount( 1, $args[0] );
@@ -21,7 +21,7 @@ class ConfiguratorTest extends TestCase {
 		$this->assertEquals( 'text', $args[1][1][1] );
 	}
 
-	public function testExtractAssocNoValue() {
+	public function testExtractAssocNoValue(): void {
 		$args = Configurator::extract_assoc( [ 'foo', '--bar=', '--baz=text' ] );
 
 		$this->assertCount( 1, $args[0] );
@@ -36,7 +36,7 @@ class ConfiguratorTest extends TestCase {
 		$this->assertEquals( 'text', $args[1][1][1] );
 	}
 
-	public function testExtractAssocGlobalLocal() {
+	public function testExtractAssocGlobalLocal(): void {
 		$args = Configurator::extract_assoc( [ '--url=foo.dev', '--path=wp', 'foo', '--bar=', '--baz=text', '--url=bar.dev' ] );
 
 		$this->assertCount( 1, $args[0] );
@@ -50,7 +50,7 @@ class ConfiguratorTest extends TestCase {
 		$this->assertEquals( 'bar.dev', $args[3][2][1] );
 	}
 
-	public function testExtractAssocDoubleDashInValue() {
+	public function testExtractAssocDoubleDashInValue(): void {
 		$args = Configurator::extract_assoc( [ '--test=text--text' ] );
 
 		$this->assertCount( 0, $args[0] );
@@ -63,7 +63,7 @@ class ConfiguratorTest extends TestCase {
 	/**
 	 * WP_CLI::get_config does not show warnings for null values.
 	 */
-	public function testNullGetConfig() {
+	public function testNullGetConfig(): void {
 		// Init config so there is a config to check.
 		$runner = WP_CLI::get_runner();
 		$runner->init_config();

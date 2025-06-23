@@ -109,7 +109,7 @@ class Runner {
 	 *
 	 * @param string $when Named execution hook
 	 */
-	private function do_early_invoke( $when ) {
+	private function do_early_invoke( $when ): void {
 		WP_CLI::debug( "Executing hook: {$when}", 'hooks' );
 		if ( ! isset( $this->early_invoke[ $when ] ) ) {
 			return;
@@ -132,7 +132,7 @@ class Runner {
 
 		foreach ( $this->early_invoke[ $when ] as $path ) {
 			if ( $this->cmd_starts_with( $path ) ) {
-				if ( empty( $real_when ) || ( $real_when && $real_when === $when ) ) {
+				if ( empty( $real_when ) || $real_when === $when ) {
 					$this->run_command_and_exit();
 				}
 			}
@@ -148,9 +148,10 @@ class Runner {
 	 * @return string|false
 	 */
 	public function get_global_config_path( $create_config_file = false ) {
+		$wp_cli_config_path = (string) getenv( 'WP_CLI_CONFIG_PATH' );
 
-		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
-			$config_path                    = getenv( 'WP_CLI_CONFIG_PATH' );
+		if ( $wp_cli_config_path ) {
+			$config_path                    = $wp_cli_config_path;
 			$this->global_config_path_debug = 'Using global config from WP_CLI_CONFIG_PATH env var: ' . $config_path;
 		} else {
 			$config_path                    = Utils\get_home_dir() . '/.wp-cli/config.yml';
@@ -200,7 +201,7 @@ class Runner {
 		// installation into a parent installation
 		$project_config_path = Utils\find_file_upward(
 			$config_files,
-			getcwd(),
+			(string) getcwd(),
 			static function ( $dir ) {
 				static $wp_load_count = 0;
 				$wp_load_path         = $dir . DIRECTORY_SEPARATOR . 'wp-load.php';
@@ -226,8 +227,9 @@ class Runner {
 	 * @return string
 	 */
 	public function get_packages_dir_path() {
-		if ( getenv( 'WP_CLI_PACKAGES_DIR' ) ) {
-			$packages_dir = Utils\trailingslashit( getenv( 'WP_CLI_PACKAGES_DIR' ) );
+		$packages_dir = (string) getenv( 'WP_CLI_PACKAGES_DIR' );
+		if ( $packages_dir ) {
+			$packages_dir = Utils\trailingslashit( $packages_dir );
 		} else {
 			$packages_dir = Utils\get_home_dir() . '/.wp-cli/packages/';
 		}
@@ -241,7 +243,7 @@ class Runner {
 	 * @return string|false
 	 */
 	private static function extract_subdir_path( $index_path ) {
-		$index_code = file_get_contents( $index_path );
+		$index_code = (string) file_get_contents( $index_path );
 
 		if ( ! preg_match( '|^\s*require\s*\(?\s*(.+?)/wp-blog-header\.php([\'"])|m', $index_code, $matches ) ) {
 			return false;
@@ -282,10 +284,10 @@ class Runner {
 		}
 
 		if ( $this->cmd_starts_with( [ 'core', 'download' ] ) ) {
-			return getcwd();
+			return (string) getcwd();
 		}
 
-		$dir = getcwd();
+		$dir = (string) getcwd();
 
 		while ( is_readable( $dir ) ) {
 			if ( file_exists( "$dir/wp-load.php" ) ) {
@@ -306,7 +308,7 @@ class Runner {
 			$dir = $parent_dir;
 		}
 
-		return getcwd();
+		return (string) getcwd();
 	}
 
 	/**
@@ -363,7 +365,7 @@ class Runner {
 	 *
 	 * @return bool `true` if the arguments passed to the WP-CLI binary start with the specified prefix, `false` otherwise.
 	 */
-	private function cmd_starts_with( $prefix ) {
+	private function cmd_starts_with( $prefix ): bool {
 		return array_slice( $this->arguments, 0, count( $prefix ) ) === $prefix;
 	}
 
@@ -488,7 +490,7 @@ class Runner {
 		}
 	}
 
-	private function run_command_and_exit( $help_exit_warning = '' ) {
+	private function run_command_and_exit( $help_exit_warning = '' ): void {
 		$this->show_synopsis_if_composite_command();
 		$this->run_command( $this->arguments, $this->assoc_args );
 		if ( $this->cmd_starts_with( [ 'help' ] ) ) {
@@ -510,9 +512,8 @@ class Runner {
 	 * scheme of "docker", "docker-compose", or "docker-compose-run").
 	 *
 	 * @param string $connection_string Passed connection string.
-	 * @return void
 	 */
-	private function run_ssh_command( $connection_string ) {
+	private function run_ssh_command( $connection_string ): void {
 
 		WP_CLI::do_hook( 'before_ssh' );
 
@@ -577,7 +578,7 @@ class Runner {
 	/**
 	 * Generate a shell command from the parsed connection string.
 	 *
-	 * @param array  $bits       Parsed connection string.
+	 * @param array $bits Parsed connection string.
 	 * @param string $wp_command WP-CLI command to run.
 	 * @return string
 	 */
@@ -593,6 +594,10 @@ class Runner {
 			WP_CLI::debug( 'SSH ' . $bit . ': ' . $bits[ $bit ], 'bootstrap' );
 		}
 
+		/**
+		 * @var array{scheme: string|null, user: string|null, host: string, port: int|null, path: string|null, key: string|null, proxyjump: string|null} $bits
+		 */
+
 		/*
 		 * posix_isatty(STDIN) is generally true unless something was passed on stdin
 		 * If autodetection leads to false (fd on stdin), then `-i` is passed to `docker` cmd
@@ -601,12 +606,10 @@ class Runner {
 		$is_stdout_tty = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
 		$is_stdin_tty  = function_exists( 'posix_isatty' ) ? posix_isatty( STDIN ) : true;
 
-		if ( in_array( $bits['scheme'], [ 'docker', 'docker-compose', 'docker-compose-run' ], true ) ) {
-				$docker_compose_v2_version_cmd = Utils\esc_cmd( Utils\force_env_on_nix_systems( 'docker' ) . ' compose %s', 'version' );
-				$docker_compose_cmd            = ! empty( Process::create( $docker_compose_v2_version_cmd )->run()->stdout )
-						? 'docker compose'
-						: 'docker-compose';
-		}
+		$docker_compose_v2_version_cmd = Utils\esc_cmd( Utils\force_env_on_nix_systems( 'docker' ) . ' compose %s', 'version' );
+		$docker_compose_cmd            = ! empty( Process::create( $docker_compose_v2_version_cmd )->run()->stdout )
+				? 'docker compose'
+				: 'docker-compose';
 
 		if ( 'docker' === $bits['scheme'] ) {
 			$command = 'docker exec %s%s%s%s%s sh -c %s';
@@ -661,15 +664,19 @@ class Runner {
 			$cache     = WP_CLI::get_cache();
 			$cache_key = 'vagrant:' . $this->project_config_path;
 			if ( $cache->has( $cache_key ) ) {
-				$cached = $cache->read( $cache_key );
+				$cached = (string) $cache->read( $cache_key );
 				$values = json_decode( $cached, true );
 			} else {
-				$ssh_config = shell_exec( 'vagrant ssh-config 2>/dev/null' );
+				$ssh_config = (string) shell_exec( 'vagrant ssh-config 2>/dev/null' );
 				if ( preg_match_all( '#\s*(?<NAME>[a-zA-Z]+)\s(?<VALUE>.+)\s*#', $ssh_config, $matches ) ) {
 					$values = array_combine( $matches['NAME'], $matches['VALUE'] );
-					$cache->write( $cache_key, json_encode( $values ) );
+					$cache->write( $cache_key, (string) json_encode( $values ) );
 				}
 			}
+
+			/**
+			 * @var array{HostName?: string, Port?: int, User?: string, IdentityFile?: string} $values
+			 */
 
 			if ( empty( $bits['host'] ) || ( isset( $values['Host'] ) && $bits['host'] === $values['Host'] ) ) {
 				$bits['scheme'] = 'ssh';
@@ -752,7 +759,7 @@ class Runner {
 			$wp_config_path = Utils\locate_wp_config();
 		}
 
-		$wp_config_code = file_get_contents( $wp_config_path );
+		$wp_config_code = (string) file_get_contents( $wp_config_path );
 
 		// Detect and strip byte-order marks (BOMs).
 		// This code assumes they can only be found on the first line.
@@ -772,14 +779,14 @@ class Runner {
 
 		$count = 0;
 
-		$wp_config_code = preg_replace( '/\s*require(?:_once)?\s*.*wp-settings\.php.*\s*;/', '', $wp_config_code, -1, $count );
+		$wp_config_code = (string) preg_replace( '/\s*require(?:_once)?\s*.*wp-settings\.php.*\s*;/', '', $wp_config_code, -1, $count );
 
 		if ( 0 === $count ) {
 			WP_CLI::error( 'Strange wp-config.php file: wp-settings.php is not loaded directly.' );
 		}
 
 		$source = Utils\replace_path_consts( $wp_config_code, $wp_config_path );
-		return preg_replace( '|^\s*\<\?php\s*|', '', $source );
+		return (string) preg_replace( '|^\s*\<\?php\s*|', '', $source );
 	}
 
 	/**
@@ -1001,23 +1008,19 @@ class Runner {
 
 	/**
 	 * Do WordPress core files exist?
-	 *
-	 * @return bool
 	 */
-	private function wp_exists() {
+	private function wp_exists(): bool {
 		return file_exists( ABSPATH . 'wp-includes/version.php' );
 	}
 
 	/**
 	 * Are WordPress core files readable?
-	 *
-	 * @return bool
 	 */
-	private function wp_is_readable() {
+	private function wp_is_readable(): bool {
 		return is_readable( ABSPATH . 'wp-includes/version.php' );
 	}
 
-	private function check_wp_version() {
+	private function check_wp_version(): void {
 		$wp_exists      = $this->wp_exists();
 		$wp_is_readable = $this->wp_is_readable();
 		if ( ! $wp_exists || ! $wp_is_readable ) {
@@ -1103,15 +1106,17 @@ class Runner {
 		$this->required_files['runtime'] = $this->config['require'];
 	}
 
-	private function run_alias_group( $aliases ) {
+	private function run_alias_group( $aliases ): void {
 		Utils\check_proc_available( 'group alias' );
 
 		$php_bin = escapeshellarg( Utils\get_php_binary() );
 
 		$script_path = $GLOBALS['argv'][0];
 
-		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
-			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
+		$wp_cli_config_path = (string) getenv( 'WP_CLI_CONFIG_PATH' );
+
+		if ( $wp_cli_config_path ) {
+			$config_path = $wp_cli_config_path;
 		} else {
 			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
 		}
@@ -1125,11 +1130,14 @@ class Runner {
 			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
 			$pipes          = [];
 			$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
-			proc_close( $proc );
+
+			if ( $proc ) {
+				proc_close( $proc );
+			}
 		}
 	}
 
-	private function set_alias( $alias ) {
+	private function set_alias( $alias ): void {
 		$orig_config  = $this->config;
 		$alias_config = $this->aliases[ $alias ];
 		$this->config = array_merge( $orig_config, $alias_config );
@@ -1269,13 +1277,13 @@ class Runner {
 				WP_CLI::set_url( $url );
 			}
 
-			if ( 'multisite-install' === $this->arguments[1] ) {
+			if ( 'multisite-install' === $this->arguments[1] && $url ) {
 				// need to fake some globals to skip the checks in wp-includes/ms-settings.php
 				$url_parts = Utils\parse_url( $url );
 				self::fake_current_site_blog( $url_parts );
 
 				if ( ! defined( 'COOKIEHASH' ) ) {
-					define( 'COOKIEHASH', md5( $url_parts['host'] ) );
+					define( 'COOKIEHASH', md5( $url_parts['host'] ?? '' ) );
 				}
 			}
 		}
@@ -1361,20 +1369,17 @@ class Runner {
 		$this->setup_bootstrap_hooks();
 
 		// Load Core, mu-plugins, plugins, themes etc.
-		if ( Utils\wp_version_compare( '4.6-alpha-37575', '>=' ) ) {
-			if ( $this->cmd_starts_with( [ 'help' ] ) ) {
-				// Hack: define `WP_DEBUG` and `WP_DEBUG_DISPLAY` to get `wpdb::bail()` to `wp_die()`.
-				if ( ! defined( 'WP_DEBUG' ) ) {
-					define( 'WP_DEBUG', true );
-				}
-				if ( ! defined( 'WP_DEBUG_DISPLAY' ) ) {
-					define( 'WP_DEBUG_DISPLAY', true );
-				}
+
+		if ( $this->cmd_starts_with( [ 'help' ] ) ) {
+			// Hack: define `WP_DEBUG` and `WP_DEBUG_DISPLAY` to get `wpdb::bail()` to `wp_die()`.
+			if ( ! defined( 'WP_DEBUG' ) ) {
+				define( 'WP_DEBUG', true );
 			}
-			require ABSPATH . 'wp-settings.php';
-		} else {
-			require WP_CLI_ROOT . '/php/wp-settings-cli.php';
+			if ( ! defined( 'WP_DEBUG_DISPLAY' ) ) {
+				define( 'WP_DEBUG_DISPLAY', true );
+			}
 		}
+		require ABSPATH . 'wp-settings.php';
 
 		// Fix memory limit. See https://core.trac.wordpress.org/ticket/14889
 		// phpcs:ignore WordPress.PHP.IniSet.memory_limit_Disallowed -- This is perfectly fine for CLI usage.
@@ -1400,7 +1405,7 @@ class Runner {
 		WP_CLI::do_hook( 'after_wp_load' );
 	}
 
-	private static function fake_current_site_blog( $url_parts ) {
+	private static function fake_current_site_blog( $url_parts ): void {
 		global $current_site, $current_blog;
 
 		if ( ! isset( $url_parts['path'] ) ) {
@@ -1435,7 +1440,7 @@ class Runner {
 	/**
 	 * Called after wp-config.php is eval'd, to potentially reset `--url`
 	 */
-	private function maybe_update_url_from_domain_constant() {
+	private function maybe_update_url_from_domain_constant(): void {
 		if ( ! empty( $this->config['url'] ) || ! empty( $this->config['blog'] ) ) {
 			return;
 		}
@@ -1452,7 +1457,7 @@ class Runner {
 	/**
 	 * Set up hooks meant to run during the WordPress bootstrap process
 	 */
-	private function setup_bootstrap_hooks() {
+	private function setup_bootstrap_hooks(): void {
 
 		if ( $this->config['skip-plugins'] ) {
 			$this->setup_skip_plugins_filters();
@@ -1503,6 +1508,7 @@ class Runner {
 				// Polyfill is_customize_preview(), as it is needed by TwentyTwenty to
 				// check for starter content.
 				if ( ! function_exists( 'is_customize_preview' ) ) {
+					// @phpstan-ignore function.inner
 					function is_customize_preview() {
 						return false;
 					}
@@ -1586,8 +1592,7 @@ class Runner {
 					$run_on_site_not_found = 'search-replace';
 				}
 			}
-			if ( $run_on_site_not_found
-				&& Utils\wp_version_compare( '4.0', '>=' ) ) {
+			if ( $run_on_site_not_found ) {
 				WP_CLI::add_wp_hook(
 					'ms_site_not_found',
 					static function () use ( $run_on_site_not_found ) {
@@ -1648,7 +1653,10 @@ class Runner {
 				static function () use ( $config ) {
 					if ( isset( $config['user'] ) ) {
 						$fetcher = new Fetchers\User();
-						$user    = $fetcher->get_check( $config['user'] );
+						/**
+						 * @var \WP_User $user
+						 */
+						$user = $fetcher->get_check( $config['user'] );
 						wp_set_current_user( $user->ID );
 					} else {
 						add_action( 'init', 'kses_remove_filters', 11 );
@@ -1663,7 +1671,7 @@ class Runner {
 			'wp_mail_from',
 			static function ( $from_email ) {
 				if ( 'wordpress@' === $from_email ) {
-					$sitename = strtolower( Utils\parse_url( site_url(), PHP_URL_HOST ) );
+					$sitename = strtolower( (string) Utils\parse_url( site_url(), PHP_URL_HOST ) );
 					if ( substr( $sitename, 0, 4 ) === 'www.' ) {
 						$sitename = substr( $sitename, 4 );
 					}
@@ -1848,7 +1856,7 @@ class Runner {
 	 * For use after wp-config.php has loaded, but before the rest of WordPress
 	 * is loaded.
 	 */
-	private function is_multisite() {
+	private function is_multisite(): bool {
 		if ( defined( 'MULTISITE' ) ) {
 			return MULTISITE;
 		}
@@ -1876,14 +1884,14 @@ class Runner {
 	/**
 	 * Check whether there's a WP-CLI update available, and suggest update if so.
 	 */
-	private function auto_check_update() {
+	private function auto_check_update(): void {
 
 		// `wp cli update` only works with Phars at this time.
 		if ( ! Utils\inside_phar() ) {
 			return;
 		}
 
-		$existing_phar = realpath( $_SERVER['argv'][0] );
+		$existing_phar = (string) realpath( $_SERVER['argv'][0] );
 		// Phar needs to be writable to be easily updateable.
 		if ( ! is_writable( $existing_phar ) || ! is_writable( dirname( $existing_phar ) ) ) {
 			return;
@@ -1909,18 +1917,18 @@ class Runner {
 		$cache_key = 'wp-cli-update-check';
 		// Bail early on the first check, so we don't always check on an unwritable cache.
 		if ( ! $cache->has( $cache_key ) ) {
-			$cache->write( $cache_key, time() );
+			$cache->write( $cache_key, (string) time() );
 			return;
 		}
 
 		// Bail if last check is still within our update check time period.
 		$last_check = (int) $cache->read( $cache_key );
-		if ( ( time() - ( 24 * 60 * 60 * $days_between_checks ) ) < $last_check ) {
+		if ( ( time() - ( 24 * 60 * 60 * (int) $days_between_checks ) ) < $last_check ) {
 			return;
 		}
 
 		// In case the operation fails, ensure the timestamp has been updated.
-		$cache->write( $cache_key, time() );
+		$cache->write( $cache_key, (string) time() );
 
 		// Check whether any updates are available.
 		ob_start();
@@ -1969,7 +1977,7 @@ class Runner {
 	 * @param array            $list    Reference to list accumulating results.
 	 * @param string           $parent  Parent command to use as prefix.
 	 */
-	private function enumerate_commands( CompositeCommand $command, array &$list, $parent = '' ) {
+	private function enumerate_commands( CompositeCommand $command, array &$list, $parent = '' ): void {
 		foreach ( $command->get_subcommands() as $subcommand ) {
 			/** @var CompositeCommand $subcommand */
 			$command_string = empty( $parent )
@@ -1985,7 +1993,7 @@ class Runner {
 	/**
 	 * Enables (almost) full PHP error reporting to stderr.
 	 */
-	private function enable_error_reporting() {
+	private function enable_error_reporting(): void {
 		if ( E_ALL !== error_reporting() ) {
 			// Don't enable E_DEPRECATED as old versions of WP use PHP 4 style constructors and the mysql extension.
 			error_reporting( E_ALL & ~E_DEPRECATED );

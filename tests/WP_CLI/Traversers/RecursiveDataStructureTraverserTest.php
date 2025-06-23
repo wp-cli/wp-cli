@@ -7,7 +7,7 @@ use WP_CLI\Traverser\RecursiveDataStructureTraverser;
 
 class RecursiveDataStructureTraverserTest extends TestCase {
 
-	public function test_it_can_get_a_top_level_array_value() {
+	public function test_it_can_get_a_top_level_array_value(): void {
 		$array = array(
 			'foo' => 'bar',
 		);
@@ -17,7 +17,7 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 		$this->assertEquals( 'bar', $traverser->get( 'foo' ) );
 	}
 
-	public function test_it_can_get_a_top_level_object_value() {
+	public function test_it_can_get_a_top_level_object_value(): void {
 		$object = (object) array(
 			'foo' => 'bar',
 		);
@@ -27,7 +27,7 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 		$this->assertEquals( 'bar', $traverser->get( 'foo' ) );
 	}
 
-	public function test_it_can_get_a_nested_array_value() {
+	public function test_it_can_get_a_nested_array_value(): void {
 		$array = array(
 			'foo' => array(
 				'bar' => array(
@@ -41,7 +41,7 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 		$this->assertEquals( 'value', $traverser->get( array( 'foo', 'bar', 'baz' ) ) );
 	}
 
-	public function test_it_can_get_a_nested_object_value() {
+	public function test_it_can_get_a_nested_object_value(): void {
 		$object = (object) array(
 			'foo' => (object) array(
 				'bar' => 'baz',
@@ -53,7 +53,7 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 		$this->assertEquals( 'baz', $traverser->get( array( 'foo', 'bar' ) ) );
 	}
 
-	public function test_it_can_set_a_nested_array_value() {
+	public function test_it_can_set_a_nested_array_value(): void {
 		$array = array(
 			'foo' => array(
 				'bar' => 'baz',
@@ -67,7 +67,7 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 		$this->assertEquals( 'new', $array['foo']['bar'] );
 	}
 
-	public function test_it_can_set_a_nested_object_value() {
+	public function test_it_can_set_a_nested_object_value(): void {
 		$object = (object) array(
 			'foo' => (object) array(
 				'bar' => 'baz',
@@ -81,7 +81,7 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 		$this->assertEquals( 'new', $object->foo->bar );
 	}
 
-	public function test_it_can_update_an_integer_object_value() {
+	public function test_it_can_update_an_integer_object_value(): void {
 		$object = (object) array(
 			'test_mode' => 0,
 		);
@@ -93,7 +93,7 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 		$this->assertEquals( 1, $object->test_mode );
 	}
 
-	public function test_it_can_delete_a_nested_array_value() {
+	public function test_it_can_delete_a_nested_array_value(): void {
 		$array = array(
 			'foo' => array(
 				'bar' => 'baz',
@@ -107,7 +107,7 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 		$this->assertArrayNotHasKey( 'bar', $array['foo'] );
 	}
 
-	public function test_it_can_delete_a_nested_object_value() {
+	public function test_it_can_delete_a_nested_object_value(): void {
 		$object = (object) array(
 			'foo' => (object) array(
 				'bar' => 'baz',
@@ -121,7 +121,7 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 		$this->assertObjectNotHasProperty( 'bar', $object->foo );
 	}
 
-	public function test_it_can_insert_a_key_into_a_nested_array() {
+	public function test_it_can_insert_a_key_into_a_nested_array(): void {
 		$array = array(
 			'foo' => array(
 				'bar' => 'baz',
@@ -135,7 +135,7 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 		$this->assertEquals( 'new value', $array['foo']['new'] );
 	}
 
-	public function test_it_throws_an_exception_when_attempting_to_create_a_key_on_an_invalid_type() {
+	public function test_it_throws_an_exception_when_attempting_to_create_a_key_on_an_invalid_type(): void {
 		$data      = 'a string';
 		$traverser = new RecursiveDataStructureTraverser( $data );
 

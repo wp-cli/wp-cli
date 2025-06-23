@@ -7,7 +7,7 @@ use WP_CLI\Iterators\CSV;
 
 class CSVTest extends TestCase {
 
-	public function test_it_can_iterate_over_a_csv_file() {
+	public function test_it_can_iterate_over_a_csv_file(): void {
 		$filename = $this->create_csv_file(
 			array(
 				array( 'foo', 'bar' ),
@@ -27,7 +27,7 @@ class CSVTest extends TestCase {
 		}
 	}
 
-	public function test_it_can_iterate_over_a_csv_file_with_custom_delimiter() {
+	public function test_it_can_iterate_over_a_csv_file_with_custom_delimiter(): void {
 		$filename = $this->create_csv_file(
 			array(
 				array( 'foo|bar' ),
@@ -47,7 +47,7 @@ class CSVTest extends TestCase {
 		}
 	}
 
-	public function test_it_can_iterate_over_a_csv_file_with_multiple_lines_in_a_value() {
+	public function test_it_can_iterate_over_a_csv_file_with_multiple_lines_in_a_value(): void {
 		$filename = $this->create_csv_file(
 			array(
 				array( 'foo', "bar\nbaz" ),
@@ -67,7 +67,7 @@ class CSVTest extends TestCase {
 		}
 	}
 
-	public function test_it_can_iterate_over_a_csv_file_with_multiple_lines_and_comma_in_a_value() {
+	public function test_it_can_iterate_over_a_csv_file_with_multiple_lines_and_comma_in_a_value(): void {
 		$filename = $this->create_csv_file(
 			array(
 				array( 'foo', "bar\nbaz,qux" ),
@@ -90,6 +90,9 @@ class CSVTest extends TestCase {
 	private function create_csv_file( $data, $delimiter = ',' ) {
 		$filename = tempnam( sys_get_temp_dir(), 'wp-cli-tests-' );
 
+		/**
+		 * @var resource $fp
+		 */
 		$fp = fopen( $filename, 'wb' );
 
 		foreach ( $data as $row ) {

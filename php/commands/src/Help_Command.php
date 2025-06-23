@@ -21,8 +21,10 @@ class Help_Command extends WP_CLI_Command {
 	 *
 	 *     # get help for `core download` subcommand
 	 *     wp help core download
+	 *
+	 * @param string[] $args
 	 */
-	public function __invoke( $args, $assoc_args ) {
+	public function __invoke( $args ) {
 		$r = WP_CLI::get_runner()->find_command_to_run( $args );
 
 		if ( is_array( $r ) ) {
@@ -48,10 +50,10 @@ class Help_Command extends WP_CLI_Command {
 		$out .= self::parse_reference_links( $command->get_longdesc() );
 
 		// Definition lists.
-		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', [ __CLASS__, 'rewrap_param_desc' ], $out );
+		$out = (string) preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', [ __CLASS__, 'rewrap_param_desc' ], $out );
 
 		// Ensure lines with no leading whitespace that aren't section headers are indented.
-		$out = preg_replace( '/^((?! |\t|##).)/m', "\t$1", $out );
+		$out = (string) preg_replace( '/^((?! |\t|##).)/m', "\t$1", $out );
 
 		$tab = str_repeat( ' ', 2 );
 
@@ -61,9 +63,9 @@ class Help_Command extends WP_CLI_Command {
 		$wordwrap_width = Shell::columns();
 
 		// Wordwrap with indent.
-		$out = preg_replace_callback(
+		$out = (string) preg_replace_callback(
 			'/^( *)([^\n]+)\n/m',
-			function ( $matches ) use ( $wordwrap_width ) {
+			static function ( $matches ) use ( $wordwrap_width ) {
 				return $matches[1] . str_replace( "\n", "\n{$matches[1]}", wordwrap( $matches[2], $wordwrap_width - strlen( $matches[1] ) ) ) . "\n";
 			},
 			$out
@@ -71,9 +73,9 @@ class Help_Command extends WP_CLI_Command {
 
 		if ( $subcommands ) {
 			// Wordwrap with column indent.
-			$subcommands = preg_replace_callback(
+			$subcommands = (string) preg_replace_callback(
 				'/^(' . $column_subpattern . ')([^\n]+)\n/m',
-				function ( $matches ) use ( $wordwrap_width, $tab ) {
+				static function ( $matches ) use ( $wordwrap_width, $tab ) {
 					// Need to de-tab for wordwrapping to work properly.
 					$matches[1]  = str_replace( "\t", $tab, $matches[1] );
 					$matches[2]  = str_replace( "\t", $tab, $matches[2] );
@@ -89,7 +91,7 @@ class Help_Command extends WP_CLI_Command {
 		}
 
 		// Section headers.
-		$out = preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
+		$out = (string) preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
 
 		self::pass_through_pager( $out );
 	}
@@ -124,22 +126,28 @@ class Help_Command extends WP_CLI_Command {
 		// For Windows 7 need to set code page to something other than Unicode (65001) to get around "Not enough memory." error with `more.com` on PHP 7.1+.
 		if ( 'more' === $pager && defined( 'PHP_WINDOWS_VERSION_MAJOR' ) && PHP_WINDOWS_VERSION_MAJOR < 10 ) {
 			// Note will also apply to Windows 8 (see https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832.aspx) but probably harmless anyway.
-			$cp = getenv( 'WP_CLI_WINDOWS_CODE_PAGE' ) ?: 1252; // Code page 1252 is the most used so probably the most compat.
+			$cp = (int) getenv( 'WP_CLI_WINDOWS_CODE_PAGE' ) ?: 1252; // Code page 1252 is the most used so probably the most compat.
 			sapi_windows_cp_set( $cp );
 		}
 
 		// Convert string to file handle.
 		$fd = fopen( 'php://temp', 'r+b' );
-		fwrite( $fd, $out );
-		rewind( $fd );
+		if ( $fd ) {
+			fwrite( $fd, $out );
+			rewind( $fd );
+		}
 
+		/**
+		 * @var array<resource> $descriptorspec
+		 */
 		$descriptorspec = [
 			0 => $fd,
 			1 => STDOUT,
 			2 => STDERR,
 		];
 
-		return proc_close( Utils\proc_open_compat( $pager, $descriptorspec, $pipes ) );
+		$process = Utils\proc_open_compat( $pager, $descriptorspec, $pipes );
+		return $process ? proc_close( $process ) : -1;
 	}
 
 	private static function get_initial_markdown( $command ) {
@@ -225,9 +233,9 @@ class Help_Command extends WP_CLI_Command {
 		if ( $description ) {
 			$links   = []; // An array of URLs from the description.
 			$pattern = '/\[.+?\]\((https?:\/\/.+?)\)/';
-			$newdesc = preg_replace_callback(
+			$newdesc = (string) preg_replace_callback(
 				$pattern,
-				function ( $matches ) use ( &$links ) {
+				static function ( $matches ) use ( &$links ) {
 					static $count = 0;
 					$count++;
 					$links[] = $matches[1];
@@ -236,11 +244,10 @@ class Help_Command extends WP_CLI_Command {
 				$description
 			);
 
-			$footnote   = '';
-			$link_count = count( $links );
-			for ( $i = 0; $i < $link_count; $i++ ) {
+			$footnote = '';
+			foreach ( $links as $i => $link ) {
 				$n         = $i + 1;
-				$footnote .= '[' . $n . '] ' . $links[ $i ] . "\n";
+				$footnote .= '[' . $n . '] ' . $link . "\n";
 			}
 
 			if ( $footnote ) {

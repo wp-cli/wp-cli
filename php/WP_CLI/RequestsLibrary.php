@@ -225,8 +225,10 @@ final class RequestsLibrary {
 	 * classes with PHP 5.6. Because of that, we catch generic exceptions, check if
 	 * they match the Requests library, and re-throw them if they do not.
 	 *
-	 * @param Exception $exception Exception to check.
+	 * @param \Exception|\Requests_Exception|\WpOrg\Requests\Exception $exception Exception to check.
 	 * @return bool Whether the provided exception was issued by the Requests library.
+	 *
+	 * @phpstan-assert-if-true \Requests_Exception|\WpOrg\Requests\Exception $exception
 	 */
 	public static function is_requests_exception( Exception $exception ) {
 		return is_a( $exception, '\Requests_Exception' )
@@ -248,6 +250,7 @@ final class RequestsLibrary {
 			} else {
 				require_once WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests.php';
 			}
+			// @phpstan-ignore staticMethod.deprecated, staticMethod.deprecatedClass
 			\Requests::register_autoloader();
 		}
 

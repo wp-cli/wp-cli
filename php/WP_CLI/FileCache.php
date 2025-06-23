@@ -85,7 +85,9 @@ class FileCache {
 	 *
 	 * @param string $key cache key
 	 * @param int    $ttl time to live
-	 * @return bool|string filename or false
+	 * @return false|string filename or false
+	 *
+	 * @phpstan-assert-if-true string $this->read()
 	 */
 	public function has( $key, $ttl = null ) {
 		if ( ! $this->enabled ) {
@@ -107,8 +109,12 @@ class FileCache {
 			$ttl = (int) $ttl;
 		}
 
-		//
-		if ( $ttl > 0 && ( filemtime( $filename ) + $ttl ) < time() ) {
+		$modified_time = filemtime( $filename );
+		if ( false === $modified_time ) {
+			$modified_time = 0;
+		}
+
+		if ( $ttl > 0 && ( $modified_time + $ttl ) < time() ) {
 			if ( $this->ttl > 0 && $ttl >= $this->ttl ) {
 				unlink( $filename );
 			}
@@ -140,13 +146,13 @@ class FileCache {
 	 *
 	 * @param string $key cache key
 	 * @param int    $ttl time to live
-	 * @return bool|string file contents or false
+	 * @return false|string file contents or false
 	 */
 	public function read( $key, $ttl = null ) {
 		$filename = $this->has( $key, $ttl );
 
 		if ( $filename ) {
-			return file_get_contents( $filename );
+			return (string) file_get_contents( $filename );
 		}
 
 		return false;
@@ -343,7 +349,7 @@ class FileCache {
 	 * Prepare cache write
 	 *
 	 * @param string $key cache key
-	 * @return bool|string The destination filename or false when cache disabled or directory creation fails.
+	 * @return false|string The destination filename or false when cache disabled or directory creation fails.
 	 */
 	protected function prepare_write( $key ) {
 		if ( ! $this->enabled ) {
@@ -367,7 +373,7 @@ class FileCache {
 	 */
 	protected function validate_key( $key ) {
 		$url_parts = Utils\parse_url( $key, -1, false );
-		if ( array_key_exists( 'path', $url_parts ) && ! empty( $url_parts['scheme'] ) ) { // is url
+		if ( $url_parts && array_key_exists( 'path', $url_parts ) && ! empty( $url_parts['scheme'] ) ) { // is url
 			$parts   = [ 'misc' ];
 			$parts[] = $url_parts['scheme'] .
 				( empty( $url_parts['host'] ) ? '' : '-' . $url_parts['host'] ) .

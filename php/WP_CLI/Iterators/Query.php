@@ -8,6 +8,8 @@ use Iterator;
  * Iterates over results of a query, split into many queries via LIMIT and OFFSET
  *
  * @source https://gist.github.com/4060005
+ *
+ * @implements \Iterator<int, mixed>
  */
 class Query implements Iterator {
 
@@ -56,7 +58,7 @@ class Query implements Iterator {
 	 * longer be returned by the original query, the offset must be reduced to
 	 * iterate over all remaining rows.
 	 */
-	private function adjust_offset_for_shrinking_result_set() {
+	private function adjust_offset_for_shrinking_result_set(): void {
 		if ( empty( $this->count_query ) ) {
 			return;
 		}

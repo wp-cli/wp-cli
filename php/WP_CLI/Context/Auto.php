@@ -69,7 +69,7 @@ final class Auto implements Context {
 	 *
 	 * @return bool Whether the current command should be run as admin.
 	 */
-	private function is_command_to_run_as_admin() {
+	private function is_command_to_run_as_admin(): bool {
 		$command = WP_CLI::get_runner()->arguments;
 
 		foreach ( self::COMMANDS_TO_RUN_AS_ADMIN as $command_to_run_as_admin ) {
