@@ -13,7 +13,7 @@ class UtilsTest extends TestCase {
 		require_once __DIR__ . '/mock-requests-transport.php';
 	}
 
-	public function testIncrementVersion() {
+	public function testIncrementVersion(): void {
 		// Keyword increments.
 		$this->assertEquals(
 			Utils\increment_version( '1.2.3-pre', 'same' ),
@@ -42,7 +42,7 @@ class UtilsTest extends TestCase {
 		);
 	}
 
-	public function testGetSemVer() {
+	public function testGetSemVer(): void {
 		$original_version = '0.19.1';
 		$this->assertEmpty( Utils\get_named_sem_ver( '0.18.0', $original_version ) );
 		$this->assertEmpty( Utils\get_named_sem_ver( '0.19.1', $original_version ) );
@@ -59,7 +59,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( 'major', Utils\get_named_sem_ver( '1.1.1', $original_version ) );
 	}
 
-	public function testGetSemVerWP() {
+	public function testGetSemVerWP(): void {
 		$original_version = '3.0';
 		$this->assertEmpty( Utils\get_named_sem_ver( '2.8', $original_version ) );
 		$this->assertEmpty( Utils\get_named_sem_ver( '2.9.1', $original_version ) );
@@ -77,7 +77,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( 'major', Utils\get_named_sem_ver( '4.1.1', $original_version ) );
 	}
 
-	public function testParseSSHUrl() {
+	public function testParseSSHUrl(): void {
 		$testcase = 'foo';
 		$this->assertEquals( [ 'host' => 'foo' ], Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
@@ -294,11 +294,11 @@ class UtilsTest extends TestCase {
 	 * @dataProvider parseStrToArgvData
 	 */
 	#[DataProvider( 'parseStrToArgvData' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testParseStrToArgv( $expected, $parseable_string ) {
+	public function testParseStrToArgv( $expected, $parseable_string ): void {
 		$this->assertEquals( $expected, Utils\parse_str_to_argv( $parseable_string ) );
 	}
 
-	public function testAssocArgsToString() {
+	public function testAssocArgsToString(): void {
 		// Strip quotes for Windows compat.
 		$strip_quotes = function ( $str ) {
 			return str_replace( [ '"', "'" ], '', $str );
@@ -327,7 +327,7 @@ class UtilsTest extends TestCase {
 		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
 	}
 
-	public function testMysqlHostToCLIArgs() {
+	public function testMysqlHostToCLIArgs(): void {
 		// Test hostname only, with and without 'p:' modifier.
 		$expected = [
 			'host' => 'hostname',
@@ -362,7 +362,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( $expected, Utils\mysql_host_to_cli_args( $testcase ) );
 	}
 
-	public function testForceEnvOnNixSystems() {
+	public function testForceEnvOnNixSystems(): void {
 		$env_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
 
 		putenv( 'WP_CLI_TEST_IS_WINDOWS=0' );
@@ -376,7 +376,7 @@ class UtilsTest extends TestCase {
 		putenv( false === $env_is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$env_is_windows" );
 	}
 
-	public function testGetHomeDir() {
+	public function testGetHomeDir(): void {
 
 		// Save environments.
 		$home      = getenv( 'HOME' );
@@ -404,7 +404,7 @@ class UtilsTest extends TestCase {
 		putenv( false === $homepath ? 'HOMEPATH' : "HOME=$homepath" );
 	}
 
-	public function testTrailingslashit() {
+	public function testTrailingslashit(): void {
 		$this->assertSame( 'a/', Utils\trailingslashit( 'a' ) );
 		$this->assertSame( 'a/', Utils\trailingslashit( 'a/' ) );
 		$this->assertSame( 'a/', Utils\trailingslashit( 'a\\' ) );
@@ -415,11 +415,11 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataNormalizePath
 	 */
 	#[DataProvider( 'dataNormalizePath' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testNormalizePath( $path, $expected ) {
+	public function testNormalizePath( $path, $expected ): void {
 		$this->assertEquals( $expected, Utils\normalize_path( $path ) );
 	}
 
-	public static function dataNormalizePath() {
+	public static function dataNormalizePath(): array {
 		return [
 			[ '', '' ],
 			// Windows paths.
@@ -442,15 +442,15 @@ class UtilsTest extends TestCase {
 		];
 	}
 
-	public function testNormalizeEols() {
+	public function testNormalizeEols(): void {
 		$this->assertSame( "\na\ra\na\n", Utils\normalize_eols( "\r\na\ra\r\na\r\n" ) );
 	}
 
-	public function testGetTempDir() {
+	public function testGetTempDir(): void {
 		$this->assertTrue( '/' === substr( Utils\get_temp_dir(), -1 ) );
 	}
 
-	public function testHttpRequestBadAddress() {
+	public function testHttpRequestBadAddress(): void {
 		// Save WP_CLI state.
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		$class_wp_cli_capture_exit->setAccessible( true );
@@ -481,7 +481,7 @@ class UtilsTest extends TestCase {
 		WP_CLI::set_logger( $prev_logger );
 	}
 
-	public static function dataHttpRequestBadCAcert() {
+	public static function dataHttpRequestBadCAcert(): array {
 		return [
 			'default request'  => [
 				[],
@@ -509,7 +509,7 @@ class UtilsTest extends TestCase {
 	 * @param string                   $exception_message  Message of the exception to expect.
 	 */
 	#[DataProvider( 'dataHttpRequestBadCAcert' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testHttpRequestBadCAcert( $additional_options, $exception, $exception_message ) {
+	public function testHttpRequestBadCAcert( $additional_options, $exception, $exception_message ): void {
 		if ( ! extension_loaded( 'curl' ) ) {
 			$this->markTestSkipped( 'curl not available' );
 		}
@@ -550,7 +550,7 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataHttpRequestVerify
 	 */
 	#[DataProvider( 'dataHttpRequestVerify' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testHttpRequestVerify( $expected, $options ) {
+	public function testHttpRequestVerify( $expected, $options ): void {
 		$transport_spy        = new Mock_Requests_Transport();
 		$options['transport'] = $transport_spy;
 
@@ -560,7 +560,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( $expected, $transport_spy->requests[0]['options']['verify'] );
 	}
 
-	public static function dataHttpRequestVerify() {
+	public static function dataHttpRequestVerify(): array {
 		return [
 			'not passed'    => [
 				true,
@@ -581,7 +581,7 @@ class UtilsTest extends TestCase {
 		];
 	}
 
-	public function testGetDefaultCaCert() {
+	public function testGetDefaultCaCert(): void {
 		$default_cert = Utils\get_default_cacert();
 		$this->assertStringEndsWith(
 			'/rmccue/requests/certificates/cacert.pem',
@@ -594,11 +594,11 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataPastTenseVerb
 	 */
 	#[DataProvider( 'dataPastTenseVerb' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testPastTenseVerb( $verb, $expected ) {
+	public function testPastTenseVerb( $verb, $expected ): void {
 		$this->assertSame( $expected, Utils\past_tense_verb( $verb ) );
 	}
 
-	public static function dataPastTenseVerb() {
+	public static function dataPastTenseVerb(): array {
 		return [
 			// Known to be used by commands.
 			[ 'activate', 'activated' ],
@@ -632,7 +632,7 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataExpandGlobs
 	 */
 	#[DataProvider( 'dataExpandGlobs' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testExpandGlobs( $path, $expected ) {
+	public function testExpandGlobs( $path, $expected ): void {
 		$expand_globs_no_glob_brace = getenv( 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE' );
 
 		$dir      = __DIR__ . '/data/expand_globs/';
@@ -655,7 +655,7 @@ class UtilsTest extends TestCase {
 		putenv( false === $expand_globs_no_glob_brace ? 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE' : "WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE=$expand_globs_no_glob_brace" );
 	}
 
-	public static function dataExpandGlobs() {
+	public static function dataExpandGlobs(): array {
 		// Files in "data/expand_globs": foo.ab1, foo.ab2, foo.efg1, foo.efg2, bar.ab1, bar.ab2, baz.ab1, baz.ac1, baz.efg2.
 		return [
 			[ 'foo.ab1', [ 'foo.ab1' ] ],
@@ -677,7 +677,7 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataReportBatchOperationResults
 	 */
 	#[DataProvider( 'dataReportBatchOperationResults' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testReportBatchOperationResults( $stdout, $stderr, $noun, $verb, $total, $successes, $failures, $skips ) {
+	public function testReportBatchOperationResults( $stdout, $stderr, $noun, $verb, $total, $successes, $failures, $skips ): void {
 		// Save WP_CLI state.
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		$class_wp_cli_capture_exit->setAccessible( true );
@@ -706,7 +706,7 @@ class UtilsTest extends TestCase {
 		WP_CLI::set_logger( $prev_logger );
 	}
 
-	public static function dataReportBatchOperationResults() {
+	public static function dataReportBatchOperationResults(): array {
 		return [
 			[ "Success: Noun already verbed.\n", '', 'noun', 'verb', 1, 0, 0, null ],
 			[ "Success: Verbed 1 of 1 nouns.\n", '', 'noun', 'verb', 1, 1, 0, null ],
@@ -724,7 +724,7 @@ class UtilsTest extends TestCase {
 		];
 	}
 
-	public function testGetPHPBinary() {
+	public function testGetPHPBinary(): void {
 		$env_php_used = getenv( 'WP_CLI_PHP_USED' );
 		$env_php      = getenv( 'WP_CLI_PHP' );
 
@@ -754,7 +754,7 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataProcOpenCompatWinEnv
 	 */
 	#[DataProvider( 'dataProcOpenCompatWinEnv' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testProcOpenCompatWinEnv( $cmd, $env, $expected_cmd, $expected_env ) {
+	public function testProcOpenCompatWinEnv( $cmd, $env, $expected_cmd, $expected_env ): void {
 		$env_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
 
 		putenv( 'WP_CLI_TEST_IS_WINDOWS=1' );
@@ -766,7 +766,7 @@ class UtilsTest extends TestCase {
 		putenv( false === $env_is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$env_is_windows" );
 	}
 
-	public static function dataProcOpenCompatWinEnv() {
+	public static function dataProcOpenCompatWinEnv(): array {
 		return [
 			[ 'echo', [], 'echo', [] ],
 			[ 'ENV=blah echo', [], 'echo', [ 'ENV' => 'blah' ] ],
@@ -787,7 +787,7 @@ class UtilsTest extends TestCase {
 		];
 	}
 
-	public static function dataEscLike() {
+	public static function dataEscLike(): array {
 		return [
 			[ 'howdy%', 'howdy\\%' ],
 			[ 'howdy_', 'howdy\\_' ],
@@ -801,7 +801,7 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataEscLike
 	 */
 	#[DataProvider( 'dataEscLike' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function test_esc_like( $input, $expected ) {
+	public function test_esc_like( $input, $expected ): void {
 		$this->assertEquals( $expected, Utils\esc_like( $input ) );
 	}
 
@@ -809,7 +809,7 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataEscLike
 	 */
 	#[DataProvider( 'dataEscLike' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function test_esc_like_with_wpdb( $input, $expected ) {
+	public function test_esc_like_with_wpdb( $input, $expected ): void {
 		global $wpdb;
 
 		// @phpstan-ignore class.notFound
@@ -826,7 +826,7 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataEscLike
 	 */
 	#[DataProvider( 'dataEscLike' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function test_esc_like_with_wpdb_being_null( $input, $expected ) {
+	public function test_esc_like_with_wpdb_being_null( $input, $expected ): void {
 		global $wpdb;
 		$wpdb = null;
 		$this->assertEquals( $expected, Utils\esc_like( $input ) );
@@ -836,11 +836,11 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataIsJson
 	 */
 	#[DataProvider( 'dataIsJson' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testIsJson( $argument, $ignore_scalars, $expected ) {
+	public function testIsJson( $argument, $ignore_scalars, $expected ): void {
 		$this->assertEquals( $expected, Utils\is_json( $argument, $ignore_scalars ) );
 	}
 
-	public static function dataIsJson() {
+	public static function dataIsJson(): array {
 		return [
 			[ '42', true, false ],
 			[ '42', false, true ],
@@ -861,11 +861,11 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataParseShellArray
 	 */
 	#[DataProvider( 'dataParseShellArray' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testParseShellArray( $assoc_args, $array_arguments, $expected ) {
+	public function testParseShellArray( $assoc_args, $array_arguments, $expected ): void {
 		$this->assertEquals( $expected, Utils\parse_shell_arrays( $assoc_args, $array_arguments ) );
 	}
 
-	public static function dataParseShellArray() {
+	public static function dataParseShellArray(): array {
 		return [
 			[ [ 'alpha' => '{"key":"value"}' ], [], [ 'alpha' => '{"key":"value"}' ] ],
 			[ [ 'alpha' => '{"key":"value"}' ], [ 'alpha' ], [ 'alpha' => [ 'key' => 'value' ] ] ],
@@ -877,11 +877,11 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataPluralize
 	 */
 	#[DataProvider( 'dataPluralize' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testPluralize( $singular, $count, $expected ) {
+	public function testPluralize( $singular, $count, $expected ): void {
 		$this->assertEquals( $expected, Utils\pluralize( $singular, $count ) );
 	}
 
-	public static function dataPluralize() {
+	public static function dataPluralize(): array {
 		return [
 			[ 'string', 1, 'string' ],
 			[ 'string', 2, 'strings' ],
@@ -893,11 +893,11 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataPickFields
 	 */
 	#[DataProvider( 'dataPickFields' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testPickFields( $data, $fields, $expected ) {
+	public function testPickFields( $data, $fields, $expected ): void {
 		$this->assertEquals( $expected, Utils\pick_fields( $data, $fields ) );
 	}
 
-	public static function dataPickFields() {
+	public static function dataPickFields(): array {
 		return [
 			[ [ 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ], [ 'keyB' ], [ 'keyB' => 'valB' ] ],
 			[ [ '1' => 'valA', '2' => 'valB', '3' => 'valC' ], [ '2' ], [ '2' => 'valB' ] ],
@@ -913,11 +913,11 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataParseUrl
 	 */
 	#[DataProvider( 'dataParseUrl' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testParseUrl( $url, $component, $auto_add_scheme, $expected ) {
+	public function testParseUrl( $url, $component, $auto_add_scheme, $expected ): void {
 		$this->assertEquals( $expected, Utils\parse_url( $url, $component, $auto_add_scheme ) );
 	}
 
-	public static function dataParseUrl() {
+	public static function dataParseUrl(): array {
 		return [
 			[ 'http://user:pass@example.com:9090/path?arg=value#anchor', -1, true, [ 'scheme' => 'http', 'host' => 'example.com', 'port' => 9090, 'user' => 'user', 'pass' => 'pass', 'path' => '/path', 'query' => 'arg=value', 'fragment' => 'anchor' ] ],
 			[ 'example.com:9090/path?arg=value#anchor', -1, true, [ 'scheme' => 'http', 'host' => 'example.com', 'port' => 9090, 'path' => '/path', 'query' => 'arg=value', 'fragment' => 'anchor' ] ],
@@ -930,11 +930,11 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataEscapeCsvValue
 	 */
 	#[DataProvider( 'dataEscapeCsvValue' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testEscapeCsvValue( $input, $expected ) {
+	public function testEscapeCsvValue( $input, $expected ): void {
 		$this->assertEquals( $expected, Utils\escape_csv_value( $input ) );
 	}
 
-	public static function dataEscapeCsvValue() {
+	public static function dataEscapeCsvValue(): array {
 		return [
 			// Values starting with special characters that should be escaped.
 			[ '=formula', "'=formula" ],
@@ -955,7 +955,7 @@ class UtilsTest extends TestCase {
 		];
 	}
 
-	public function testWriteCsv() {
+	public function testWriteCsv(): void {
 		// Create a temporary file
 		$temp_file = tmpfile();
 
@@ -1002,7 +1002,7 @@ class UtilsTest extends TestCase {
 		$this->assertStringContainsString( '\'-123,45', $csv_content );
 	}
 
-	public function testWriteCsvWithoutHeaders() {
+	public function testWriteCsvWithoutHeaders(): void {
 		// Create a temporary file
 		$temp_file = tmpfile();
 
@@ -1033,7 +1033,7 @@ class UtilsTest extends TestCase {
 		$this->assertStringContainsString( '\'-amount', $csv_content );
 	}
 
-	public function testWriteCsvWithFieldPicking() {
+	public function testWriteCsvWithFieldPicking(): void {
 		// Create a temporary file
 		$temp_file = tmpfile();
 
@@ -1082,7 +1082,7 @@ class UtilsTest extends TestCase {
 		$this->assertStringNotContainsString( 'Should not appear', $csv_content );
 	}
 
-	public function testReplacePathConstsAddSlashes() {
+	public function testReplacePathConstsAddSlashes(): void {
 		$expected = "define( 'ABSPATH', dirname( 'C:\\\\Users\\\\test\'s\\\\site' ) . '/' );";
 		$source   = "define( 'ABSPATH', dirname( __FILE__ ) . '/' );";
 		$actual   = Utils\replace_path_consts( $source, "C:\Users\\test's\site" );
@@ -1093,11 +1093,11 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataValidClassAndMethodPair
 	 */
 	#[DataProvider( 'dataValidClassAndMethodPair' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testValidClassAndMethodPair( $pair, $is_valid ) {
+	public function testValidClassAndMethodPair( $pair, $is_valid ): void {
 		$this->assertEquals( $is_valid, Utils\is_valid_class_and_method_pair( $pair ) );
 	}
 
-	public static function dataValidClassAndMethodPair() {
+	public static function dataValidClassAndMethodPair(): array {
 		return [
 			[ 'string', false ],
 			[ [], false ],

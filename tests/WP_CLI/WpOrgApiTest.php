@@ -10,7 +10,7 @@ class WpOrgApiTest extends TestCase {
 		require_once dirname( __DIR__ ) . '/mock-requests-transport.php';
 	}
 
-	public static function data_http_request_verify() {
+	public static function data_http_request_verify(): array {
 		return [
 			'can retrieve core checksums'              => [
 				'get_core_checksums',
@@ -132,7 +132,7 @@ class WpOrgApiTest extends TestCase {
 	 * @dataProvider data_http_request_verify()
 	 */
 	#[DataProvider( 'data_http_request_verify' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function test_http_request_verify( $method, $arguments, $options, $expected_url, $expected_options ) {
+	public function test_http_request_verify( $method, $arguments, $options, $expected_url, $expected_options ): void {
 		if ( isset( $options['insecure'] ) && true === $options['insecure'] ) {
 			// Create temporary file to use as a bad certificate file.
 			$bad_cacert_path = tempnam( sys_get_temp_dir(), 'wp-cli-badcacert-pem-' );

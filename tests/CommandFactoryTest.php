@@ -13,7 +13,7 @@ class CommandFactoryTest extends TestCase {
 	 * @dataProvider dataProviderExtractLastDocComment
 	 */
 	#[DataProvider( 'dataProviderExtractLastDocComment' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testExtractLastDocComment( $content, $expected ) {
+	public function testExtractLastDocComment( $content, $expected ): void {
 		// Save and set test env var.
 		$is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
 		putenv( 'WP_CLI_TEST_IS_WINDOWS=0' );
@@ -35,7 +35,7 @@ class CommandFactoryTest extends TestCase {
 	 * @dataProvider dataProviderExtractLastDocComment
 	 */
 	#[DataProvider( 'dataProviderExtractLastDocComment' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testExtractLastDocCommentWin( $content, $expected ) {
+	public function testExtractLastDocCommentWin( $content, $expected ): void {
 		// Save and set test env var.
 		$is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
 		putenv( 'WP_CLI_TEST_IS_WINDOWS=1' );
@@ -53,7 +53,7 @@ class CommandFactoryTest extends TestCase {
 		putenv( false === $is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$is_windows" );
 	}
 
-	public static function dataProviderExtractLastDocComment() {
+	public static function dataProviderExtractLastDocComment(): array {
 		return [
 			[ '', false ],
 			[ '*/', false ],
@@ -85,7 +85,7 @@ class CommandFactoryTest extends TestCase {
 		];
 	}
 
-	public function testGetDocComment() {
+	public function testGetDocComment(): void {
 		// Save and set test env var.
 		$_get_doc_comment = getenv( 'WP_CLI_TEST_GET_DOC_COMMENT' );
 		$_is_windows      = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
@@ -258,7 +258,7 @@ class CommandFactoryTest extends TestCase {
 		putenv( false === $_is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$_is_windows" );
 	}
 
-	public function testGetDocCommentWin() {
+	public function testGetDocCommentWin(): void {
 		// Save and set test env var.
 		$_get_doc_comment = getenv( 'WP_CLI_TEST_GET_DOC_COMMENT' );
 		$_is_windows      = getenv( 'WP_CLI_TEST_IS_WINDOWS' );

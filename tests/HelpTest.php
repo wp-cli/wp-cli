@@ -10,7 +10,7 @@ class HelpTest extends TestCase {
 		require_once dirname( __DIR__ ) . '/php/commands/help.php';
 	}
 
-	public function test_parse_reference_links() {
+	public function test_parse_reference_links(): void {
 		$test_class = new ReflectionClass( 'Help_Command' );
 		$method     = $test_class->getMethod( 'parse_reference_links' );
 		$method->setAccessible( true );

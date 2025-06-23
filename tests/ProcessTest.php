@@ -11,7 +11,7 @@ class ProcessTest extends TestCase {
 	 * @dataProvider data_process_env
 	 */
 	#[DataProvider( 'data_process_env' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function test_process_env( $cmd_prefix, $env, $expected_env_vars, $expected_out ) {
+	public function test_process_env( $cmd_prefix, $env, $expected_env_vars, $expected_out ): void {
 		$code = vsprintf( str_repeat( 'echo getenv( \'%s\' );', count( $expected_env_vars ) ), $expected_env_vars );
 
 		$cmd         = $cmd_prefix . ' ' . escapeshellarg( Utils\get_php_binary() ) . ' -r ' . escapeshellarg( $code );
@@ -20,7 +20,7 @@ class ProcessTest extends TestCase {
 		$this->assertSame( $process_run->stdout, $expected_out );
 	}
 
-	public static function data_process_env() {
+	public static function data_process_env(): array {
 		return [
 			[ '', [], [], '' ],
 			[ 'ENV=blah', [], [ 'ENV' ], 'blah' ],
