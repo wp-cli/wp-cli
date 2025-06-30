@@ -10,8 +10,8 @@
     "require": {
         "php": ">=7.2.24 || ^8.0",
         "ext-curl": "*",
+        "mustache/mustache": "^3.0.0",
         "symfony/finder": ">2.7",
-        "wp-cli/mustache": "^2.14.99",
         "wp-cli/mustangostang-spyc": "^0.6.3",
         "wp-cli/php-cli-tools": "~0.12.4"
     },
