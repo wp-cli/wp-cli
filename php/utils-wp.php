@@ -456,8 +456,8 @@ function wp_clear_object_cache() {
  *
  * Interprets common command-line options into a resolved set of table names.
  *
- * @param array<string>         $args Provided table names, or tables with wildcards.
- * @param array<string, string> $assoc_args Optional flags for groups of tables (e.g. --network)
+ * @param array<string>              $args Provided table names, or tables with wildcards.
+ * @param array<string, bool|string> $assoc_args Optional flags for groups of tables (e.g. --network)
  * @return array<string>
  */
 function wp_get_table_names( $args, $assoc_args = [] ) {
