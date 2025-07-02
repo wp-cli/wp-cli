@@ -17,7 +17,7 @@
     "http": {
       "type": "string",
       "format": "uri",
-      "description": "Perform operation against a remote WordPress install over HTTP.",
+      "description": "Perform operation against a remote WordPress installation over HTTP.",
       "default": null
     },
     "url": {
