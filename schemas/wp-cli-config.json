@@ -99,9 +99,7 @@
         },
         {
           "type": "string",
-          "enum": [
-            "auto"
-          ]
+          "const": "auto"
         }
       ],
       "description": "Whether to colorize the output.",
