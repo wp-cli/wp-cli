@@ -1,0 +1,199 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WP-CLI Configuration Schema",
+  "description": "JSON Schema for validating wp-cli.yml configuration files",
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Path to the WordPress files.",
+      "default": null
+    },
+    "ssh": {
+      "type": "string",
+      "description": "Perform operation against a remote server over SSH (or a container using scheme of \"docker\", \"docker-compose\", \"docker-compose-run\", \"vagrant\").",
+      "default": null
+    },
+    "http": {
+      "type": "string",
+      "format": "uri",
+      "description": "Perform operation against a remote WordPress installation over HTTP.",
+      "default": null
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Pretend request came from given URL. In multisite, this argument is how the target site is specified.",
+      "default": null
+    },
+    "user": {
+      "type": "string",
+      "description": "Set the WordPress user.",
+      "default": null
+    },
+    "skip-plugins": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Plugin slug"
+      },
+      "description": "Skip loading all or some plugins. Note: mu-plugins are still loaded.",
+      "default": []
+    },
+    "skip-themes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Theme slug"
+      },
+      "description": "Skip loading all or some themes.",
+      "default": []
+    },
+    "skip-packages": {
+      "type": "boolean",
+      "description": "Skip loading all installed packages.",
+      "default": false
+    },
+    "require": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "File path"
+      },
+      "description": "Load PHP file before running the command (may be used more than once).",
+      "default": []
+    },
+    "exec": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "PHP code to execute"
+      },
+      "description": "Execute PHP code before running the command (may be used more than once).",
+      "default": []
+    },
+    "context": {
+      "type": "string",
+      "description": "Load WordPress in a given context.",
+      "oneOf": [
+        { "const": "admin", "description": "A context that simulates running a command as if it would be executed in the administration backend." },
+        { "const": "auto", "description": "Switches between 'cli' and 'admin' depending on which command is being used." },
+        { "const": "cli", "description": "This is something in-between a frontend and an admin request, to get around some of the quirks of WordPress when running on the console." },
+        { "const": "frontend", "description": "This does nothing yet." }
+      ],
+      "default": "auto"
+    },
+    "disabled_commands": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Command"
+      },
+      "description": "(Sub)commands to disable.",
+      "default": []
+    },
+    "color": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "string",
+          "const": "auto"
+        }
+      ],
+      "description": "Whether to colorize the output.",
+      "default": "auto"
+    },
+    "debug": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "description": "Show all PHP errors; add verbosity to WP-CLI bootstrap.",
+      "default": false
+    },
+    "quiet": {
+      "type": "boolean",
+      "description": "Suppress informational messages.",
+      "default": false
+    },
+    "apache_modules": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Module"
+      },
+      "description": "List of Apache Modules that are to be reported as loaded.",
+      "default": []
+    },
+    "_": {
+      "type": "object",
+      "properties": {
+        "merge": {
+          "type": "boolean",
+          "description": "Merge subcommand defaults from the upstream config.yml, instead of overriding",
+          "default": false
+        },
+        "inherit": {
+          "type": "string",
+          "description": "Inherit configuration from an arbitrary YAML file",
+          "default": null
+        }
+      },
+      "description": "'_' is a special value denoting configuration options for this wp-cli.yml"
+    }
+  },
+  "patternProperties": {
+    "^@[_a-zA-Z][_a-zA-Z0-9]*$": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "user": {
+              "type": "string",
+              "description": "Set the WordPress user."
+            },
+            "url": {
+              "type": "string",
+              "description": "Pretend request came from given URL. In multisite, this argument is how the target site is specified."
+            },
+            "path": {
+              "type": "string",
+              "description": "Path to the WordPress files."
+            },
+            "ssh": {
+              "type": "string",
+              "description": "Perform operation against a remote server over SSH (or a container using scheme of \"docker\", \"docker-compose\", \"docker-compose-run\", \"vagrant\")."
+            },
+            "http": {
+              "type": "string",
+              "format": "uri",
+              "description": "Perform operation against a remote WordPress installation over HTTP."
+            }
+          },
+          "description": "An alias can include 'user', 'url', 'path', 'ssh', or 'http'"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Alias name"
+          },
+          "description": "Aliases can reference other aliases to create alias groups. Alias groups can be nested"
+        }
+      ],
+      "description": "Aliases to other WordPress installs (e.g. `wp @staging rewrite flush`)"
+    },
+    "^[a-z]+(\\s?[a-z-])*$": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Subcommand defaults (e.g. `wp config create`)"
+    }
+  },
+  "additionalProperties": false
+}
