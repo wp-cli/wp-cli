@@ -75,11 +75,11 @@
     "context": {
       "type": "string",
       "description": "Load WordPress in a given context.",
-      "enum": [
-        "admin",
-        "auto",
-        "cli",
-        "frontend"
+      "oneOf": [
+        { "const": "admin", "description": "A context that simulates running a command as if it would be executed in the administration backend." },
+        { "const": "auto", "description": "Switches between 'cli' and 'admin' depending on which command is being used." },
+        { "const": "cli", "description": "This is something in-between a frontend and an admin request, to get around some of the quirks of WordPress when running on the console." },
+        { "const": "frontend", "description": "This does nothing yet." }
       ],
       "default": "auto"
     },
