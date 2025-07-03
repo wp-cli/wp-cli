@@ -19,7 +19,7 @@ class Process {
 	private $cwd;
 
 	/**
-	 * @var array Environment variables to set when running the command.
+	 * @var array|null Environment variables to set when running the command.
 	 */
 	private $env;
 
@@ -71,6 +71,9 @@ class Process {
 
 		$start_time = microtime( true );
 
+		/**
+		 * @var array<int, resource> $pipes
+		 */
 		$pipes = [];
 		$proc  = Utils\proc_open_compat( $this->command, self::$descriptors, $pipes, $this->cwd, $this->env );
 
@@ -80,7 +83,7 @@ class Process {
 		$stderr = stream_get_contents( $pipes[2] );
 		fclose( $pipes[2] );
 
-		$return_code = proc_close( $proc );
+		$return_code = $proc ? proc_close( $proc ) : -1;
 
 		$run_time = microtime( true ) - $start_time;
 

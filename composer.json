@@ -21,7 +21,7 @@
         "wp-cli/entity-command": "^1.2 || ^2",
         "wp-cli/extension-command": "^1.1 || ^2",
         "wp-cli/package-command": "^1 || ^2",
-        "wp-cli/wp-cli-tests": "^4.3.10"
+        "wp-cli/wp-cli-tests": "dev-add/phpstan-enhancements"
     },
     "suggest": {
         "ext-readline": "Include for a better --prompt implementation",
@@ -30,7 +30,8 @@
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true,
-            "johnpbloch/wordpress-core-installer": true
+            "johnpbloch/wordpress-core-installer": true,
+            "phpstan/extension-installer": true
         },
         "process-timeout": 7200,
         "sort-packages": true,
@@ -62,11 +63,13 @@
         "lint": "run-linter-tests",
         "phpcs": "run-phpcs-tests",
         "phpcbf": "run-phpcbf-cleanup",
+        "phpstan": "run-phpstan-tests",
         "phpunit": "run-php-unit-tests",
         "prepare-tests": "install-package-tests",
         "test": [
             "@lint",
             "@phpcs",
+            "@phpstan",
             "@phpunit",
             "@behat"
         ]

@@ -8,12 +8,12 @@ use WP_CLI\Exception\NonExistentKeyException;
 class RecursiveDataStructureTraverser {
 
 	/**
-	 * @var mixed The data to traverse set by reference.
+	 * @var string|int|array The data to traverse set by reference.
 	 */
 	protected $data;
 
 	/**
-	 * @var null|string The key the data belongs to in the parent's data.
+	 * @var null|string|int The key the data belongs to in the parent's data.
 	 */
 	protected $key;
 
@@ -25,9 +25,9 @@ class RecursiveDataStructureTraverser {
 	/**
 	 * RecursiveDataStructureTraverser constructor.
 	 *
-	 * @param mixed       $data            The data to read/manipulate by reference.
-	 * @param string|int  $key             The key/property the data belongs to.
-	 * @param static|null $parent_instance The parent instance of the traverser.
+	 * @param array           $data            The data to read/manipulate by reference.
+	 * @param string|int|null $key             The key/property the data belongs to.
+	 * @param static|null     $parent_instance The parent instance of the traverser.
 	 */
 	public function __construct( &$data, $key = null, $parent_instance = null ) {
 		$this->data   =& $data;
@@ -43,7 +43,12 @@ class RecursiveDataStructureTraverser {
 	 * @return static
 	 */
 	public function get( $key_path ) {
-		return $this->traverse_to( (array) $key_path )->value();
+		/**
+		 * @var static $result
+		 */
+		$result = $this->traverse_to( (array) $key_path )->value();
+
+		return $result;
 	}
 
 	/**
@@ -59,7 +64,7 @@ class RecursiveDataStructureTraverser {
 	 * Update a nested value at the given key path.
 	 *
 	 * @param string|int|array $key_path
-	 * @param mixed $value
+	 * @param string|int|array $value
 	 */
 	public function update( $key_path, $value ) {
 		$this->traverse_to( (array) $key_path )->set_value( $value );
@@ -71,7 +76,7 @@ class RecursiveDataStructureTraverser {
 	 * This will mutate the variable which was passed into the constructor
 	 * as the data is set and traversed by reference.
 	 *
-	 * @param mixed $value
+	 * @param string|int|array $value
 	 */
 	public function set_value( $value ) {
 		$this->data = $value;
@@ -90,7 +95,7 @@ class RecursiveDataStructureTraverser {
 	 * Define a nested value while creating keys if they do not exist.
 	 *
 	 * @param array $key_path
-	 * @param mixed $value
+	 * @param string $value
 	 */
 	public function insert( $key_path, $value ) {
 		try {
@@ -105,13 +110,15 @@ class RecursiveDataStructureTraverser {
 	 * Delete the key on the parent's data that references this data.
 	 */
 	public function unset_on_parent() {
-		$this->parent->delete_by_key( $this->key );
+		if ( $this->parent ) {
+			$this->parent->delete_by_key( $this->key );
+		}
 	}
 
 	/**
 	 * Delete the given key from the data.
 	 *
-	 * @param $key
+	 * @param mixed $key
 	 */
 	public function delete_by_key( $key ) {
 		if ( is_array( $this->data ) ) {
@@ -143,7 +150,13 @@ class RecursiveDataStructureTraverser {
 			throw $exception;
 		}
 
-		foreach ( $this->data as $key => &$key_data ) {
+		/**
+		 * @var array $data
+		 */
+		$data = &$this->data;
+
+		// @phpstan-ignore return.missing
+		foreach ( $data as $key => &$key_data ) {
 			if ( $key === $current ) {
 				$traverser = new self( $key_data, $key, $this );
 				return $traverser->traverse_to( $key_path );

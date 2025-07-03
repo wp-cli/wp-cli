@@ -4,6 +4,8 @@ namespace WP_CLI\Fetchers;
 
 /**
  * Fetch a WordPress site based on one of its attributes.
+ *
+ * @extends Base<object>
  */
 class Site extends Base {
 
@@ -17,11 +19,11 @@ class Site extends Base {
 	/**
 	 * Get a site object by ID
 	 *
-	 * @param int $site_id
+	 * @param string|int $site_id
 	 * @return object|false
 	 */
 	public function get( $site_id ) {
-		return $this->get_site( $site_id );
+		return $this->get_site( (int) $site_id );
 	}
 
 	/**
@@ -29,8 +31,8 @@ class Site extends Base {
 	 *
 	 * @global wpdb $wpdb WordPress database abstraction object.
 	 *
-	 * @param string $arg The raw CLI argument.
-	 * @return array|false The item if found; false otherwise.
+	 * @param string|int $arg The raw CLI argument.
+	 * @return object|false The item if found; false otherwise.
 	 */
 	private function get_site( $arg ) {
 		global $wpdb;

@@ -23,7 +23,7 @@ class Completions {
 		array_shift( $this->words );
 
 		// Last word is either empty or an incomplete subcommand.
-		$this->cur_word = end( $this->words );
+		$this->cur_word = (string) end( $this->words );
 		if ( '' !== $this->cur_word && ! preg_match( '/^\-/', $this->cur_word ) ) {
 			array_pop( $this->words );
 		}
@@ -178,10 +178,8 @@ class Completions {
 	 * Store individual option.
 	 *
 	 * @param string $opt Option to store.
-	 *
-	 * @return void
 	 */
-	private function add( $opt ) {
+	private function add( $opt ): void {
 		if ( '' !== $this->cur_word ) {
 			if ( 0 !== strpos( $opt, $this->cur_word ) ) {
 				return;

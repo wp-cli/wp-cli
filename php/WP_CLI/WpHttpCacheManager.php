@@ -12,7 +12,7 @@ use WP_CLI;
 class WpHttpCacheManager {
 
 	/**
-	 * @var array<string, array{key:string, ttl:int}> map whitelisted urls to keys and ttls
+	 * @var array<string, array{key:string, ttl: int|null}> map whitelisted urls to keys and ttls
 	 */
 	protected $whitelist = [];
 
@@ -83,7 +83,7 @@ class WpHttpCacheManager {
 			return $response;
 		}
 		// check if download was successful
-		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+		if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
 			return $response;
 		}
 		// cache downloaded file
@@ -101,7 +101,7 @@ class WpHttpCacheManager {
 	 * @param int    $ttl
 	 */
 	public function whitelist_package( $url, $group, $slug, $version, $ttl = null ) {
-		$ext = pathinfo( Utils\parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION );
+		$ext = pathinfo( (string) Utils\parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION );
 		$key = "$group/$slug-$version.$ext";
 		$this->whitelist_url( $url, $key, $ttl );
 		wp_update_plugins();
