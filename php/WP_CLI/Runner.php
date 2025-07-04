@@ -1723,6 +1723,29 @@ class Runner {
 			4
 		);
 
+		// Don't apply set_url_scheme() in network_site_url() function.
+		// Converts HTTP to HTTPS in the response when triggered by CLI.
+		WP_CLI::add_wp_hook(
+			'network_site_url',
+			static function ( $path, $scheme ) {
+				if ( ! is_multisite() ) {
+					return site_url( $path, $scheme );
+				}
+
+				$current_network = get_network();
+
+				if ( 'relative' === $scheme ) {
+					$url = $current_network->path;
+				} else {
+					$url = 'https://' . $current_network->domain . $current_network->path;
+				}
+
+				return $url;
+			},
+			0,
+			2
+		);
+
 		// Set up hook for plugins and themes to conditionally add WP-CLI commands.
 		WP_CLI::add_wp_hook(
 			'init',
