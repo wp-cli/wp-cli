@@ -373,7 +373,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		$allow_root = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
 		$php_binary = Utils\get_php_binary();
-		$process    = Process::create( "{$php_binary} $temp --info {$allow_root}" );
+		$process    = Process::create( Utils\esc_cmd( '%s %s --info %s', $php_binary, $temp, $allow_root ) );
 		$result     = $process->run();
 		if ( 0 !== $result->return_code || false === stripos( $result->stdout, 'WP-CLI version' ) ) {
 			$multi_line = explode( PHP_EOL, $result->stderr );
