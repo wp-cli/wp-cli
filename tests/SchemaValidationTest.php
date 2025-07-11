@@ -13,22 +13,28 @@ class SchemaValidationTest extends TestCase {
 
 		// Load schema once
 		$schema_content = file_get_contents( $schema_path );
-		$schema         = json_decode( $schema_content );
+		$this->assertNotFalse( $schema_content, 'Schema file should be readable' );
 
+		$schema = json_decode( $schema_content );
 		$this->assertNotNull( $schema, 'Schema should be valid JSON' );
 
 		// Find all .yml files in the schemas directory
 		$yaml_files = glob( $schemas_dir . '/*.yml' );
+		$this->assertNotFalse( $yaml_files, 'Should be able to glob for YAML files' );
 
 		foreach ( $yaml_files as $yaml_file ) {
 			// Load and parse the YAML file
 			$yaml_content = file_get_contents( $yaml_file );
-			$yaml_data    = \Mustangostang\Spyc::YAMLLoadString( $yaml_content );
+			$this->assertNotFalse( $yaml_content, 'YAML file should be readable: ' . basename( $yaml_file ) );
 
+			$yaml_data = \Mustangostang\Spyc::YAMLLoadString( $yaml_content );
 			$this->assertIsArray( $yaml_data, 'YAML should parse to an array/object: ' . basename( $yaml_file ) );
 
 			// Convert YAML data to object for validation
-			$data = json_decode( json_encode( $yaml_data ) );
+			$json_string = json_encode( $yaml_data );
+			$this->assertNotFalse( $json_string, 'YAML data should convert to JSON string: ' . basename( $yaml_file ) );
+
+			$data = json_decode( $json_string );
 			$this->assertNotNull( $data, 'YAML data should convert to JSON object: ' . basename( $yaml_file ) );
 
 			// Validate using JSON Schema validator
