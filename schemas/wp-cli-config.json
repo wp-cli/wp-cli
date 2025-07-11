@@ -193,7 +193,7 @@
       ],
       "description": "Aliases to other WordPress installs (e.g. `wp @staging rewrite flush`)"
     },
-    "^[a-z]+(\\s?[a-z-])*$": {
+    "^[a-z]+[a-z-]*\\s[a-z-]+.*$": {
       "type": "object",
       "additionalProperties": true,
       "description": "Subcommand defaults (e.g. `wp config create`)"
