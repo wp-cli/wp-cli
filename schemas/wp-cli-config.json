@@ -4,6 +4,10 @@
   "description": "JSON Schema for validating wp-cli.yml configuration files",
   "type": "object",
   "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
     "path": {
       "type": "string",
       "description": "Path to the WordPress files.",
