@@ -40,6 +40,14 @@ WP-CLI also includes commands for many things you can't do in the WordPress admi
 $ wp transient delete --all
 Success: 34 transients deleted from the database.
 ```
+### 🔧 Simple Example
+
+To update all WordPress plugins from the terminal:
+
+```bash
+wp plugin update --all
+```
+
 
 For a more complete introduction to using WP-CLI, read the [Quick Start guide](https://make.wordpress.org/cli/handbook/quick-start/). Or, catch up with [shell friends](https://make.wordpress.org/cli/handbook/shell-friends/) to learn about helpful command line utilities.
 
