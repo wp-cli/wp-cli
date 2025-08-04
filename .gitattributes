@@ -4,3 +4,14 @@ tests/data/*-win.php eol=crlf
 
 # Don't show bundled libraries as source files in GitHub
 bundle/**/* linguist-vendored
+
+/.github export-ignore
+/tests export-ignore
+/features export-ignore
+/bin export-ignore
+/phpunit.xml.dist export-ignore
+/composer.json export-ignore
+/composer.lock export-ignore
+/utils export-ignore
+/.phpcs.xml.dist export-ignore
+/.editorconfig export-ignore
