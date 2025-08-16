@@ -10,6 +10,31 @@ on:
   schedule:
     - cron:  '17 1 * * *' # Run every day on a seemly random time.
 
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: wp-cli/.github/.github/workflows/reusable-testing.yml@main
+#     - name: Set up PHP
+#       uses: shivammathur/setup-php@v2
+#       with:
+#           php-version: 8.1
+#     - name: Install dependencies
+#       run: composer install
+#       env:
+#     PHP_OPTIONS: -d error_reporting=E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED
+
 jobs:
   test:
-    uses: wp-cli/.github/.github/workflows/reusable-testing.yml@main
+    runs-on: ubuntu-latest
+    env:
+      PHP_OPTIONS: -d error_reporting=E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest 2>/dev/null
+
