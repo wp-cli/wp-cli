@@ -7,9 +7,6 @@
     ],
     "homepage": "https://wp-cli.org",
     "license": "MIT",
-    "replace": {
-        "wp-cli/wp-cli": "*"
-    },
     "require": {
         "php": ">=7.2.24 || ^8.0",
         "ext-curl": "*",
