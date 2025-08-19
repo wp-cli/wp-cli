@@ -30,7 +30,7 @@ jobs:
     env:
       PHP_OPTIONS: -d error_reporting=E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
