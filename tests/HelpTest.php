@@ -18,7 +18,7 @@ class HelpTest extends TestCase {
 		$desc   = 'This is a [reference link](https://wordpress.org/). It should be displayed very nice!';
 		$result = $method->invokeArgs( null, [ $desc ] );
 
-		$expected = <<<EOL
+		$expected = <<<'EOL'
 This is a [reference link][1]. It should be displayed very nice!
 
 ---
@@ -29,7 +29,7 @@ EOL;
 		$desc   = 'This is a [reference link](https://wordpress.org/) and [second link](http://wp-cli.org/). It should be displayed very nice!';
 		$result = $method->invokeArgs( null, [ $desc ] );
 
-		$expected = <<<EOL
+		$expected = <<<'EOL'
 This is a [reference link][1] and [second link][2]. It should be displayed very nice!
 
 ---
@@ -38,13 +38,13 @@ This is a [reference link][1] and [second link][2]. It should be displayed very 
 EOL;
 		$this->assertSame( $expected, $result );
 
-		$desc   = <<<EOL
+		$desc   = <<<'EOL'
 This is a [reference link](https://wordpress.org/) and [second link](http://wp-cli.org/).
 It should be displayed very nice!
 EOL;
 		$result = $method->invokeArgs( null, [ $desc ] );
 
-		$expected = <<<EOL
+		$expected = <<<'EOL'
 This is a [reference link][1] and [second link][2].
 It should be displayed very nice!
 
@@ -55,7 +55,7 @@ EOL;
 
 		$this->assertSame( $expected, $result );
 
-		$desc   = <<<EOL
+		$desc   = <<<'EOL'
 This is a [reference link](https://wordpress.org/) and [second link](http://wp-cli.org/).
 It should be displayed very nice!
 
@@ -65,7 +65,7 @@ It doesn't expect to be link here like [reference link](https://wordpress.org/).
 EOL;
 		$result = $method->invokeArgs( null, [ $desc ] );
 
-		$expected = <<<EOL
+		$expected = <<<'EOL'
 This is a [reference link][1] and [second link][2].
 It should be displayed very nice!
 
@@ -80,14 +80,14 @@ EOL;
 
 		$this->assertSame( $expected, $result );
 
-		$desc   = <<<EOL
+		$desc   = <<<'EOL'
 ## Example
 
 It doesn't expect to be link here like [reference link](https://wordpress.org/).
 EOL;
 		$result = $method->invokeArgs( null, [ $desc ] );
 
-		$expected = <<<EOL
+		$expected = <<<'EOL'
 ## Example
 
 It doesn't expect to be link here like [reference link](https://wordpress.org/).
@@ -95,7 +95,7 @@ EOL;
 
 		$this->assertSame( $expected, $result );
 
-		$desc   = <<<EOL
+		$desc   = <<<'EOL'
 This is a long description.
 It doesn't have any link.
 
@@ -105,7 +105,7 @@ It doesn't expect to be link here like [reference link](https://wordpress.org/).
 EOL;
 		$result = $method->invokeArgs( null, [ $desc ] );
 
-		$expected = <<<EOL
+		$expected = <<<'EOL'
 This is a long description.
 It doesn't have any link.
 

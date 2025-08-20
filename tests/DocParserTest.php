@@ -16,7 +16,7 @@ class DocParserTest extends TestCase {
 
 	public function test_only_tags(): void {
 		$doc = new DocParser(
-			<<<EOB
+			<<<'EOB'
 /**
  * @alias rock-on
  * @subcommand revoke-md5-passwords
@@ -34,7 +34,7 @@ EOB
 
 	public function test_no_longdesc(): void {
 		$doc = new DocParser(
-			<<<EOB
+			<<<'EOB'
 /**
  * Rock and roll!
  * @alias rock-on
@@ -50,7 +50,7 @@ EOB
 
 	public function test_complete(): void {
 		$doc = new DocParser(
-			<<<EOB
+			<<<'EOB'
 /**
  * Rock and roll!
  *
@@ -81,7 +81,7 @@ EOB
 		$this->assertEquals( 'Sets the volume.', $doc->get_param_desc( 'volume' ) );
 		$this->assertEquals( 'rock-on', $doc->get_tag( 'alias' ) );
 
-		$longdesc = <<<EOB
+		$longdesc = <<<'EOB'
 ## OPTIONS
 
 <genre>...
@@ -101,7 +101,7 @@ EOB;
 	}
 
 	public function test_desc_parses_yaml(): void {
-		$longdesc = <<<EOB
+		$longdesc = <<<'EOB'
 Play some music loudly
 
 ```
@@ -154,7 +154,7 @@ EOB;
 	}
 
 	public function test_desc_doesnt_parse_far_params_yaml(): void {
-		$longdesc = <<<EOB
+		$longdesc = <<<'EOB'
 ## OPTIONS
 
 <hook>
@@ -183,7 +183,7 @@ EOB;
 	}
 
 	public function test_desc_doesnt_parse_far_args_yaml(): void {
-		$longdesc = <<<EOB
+		$longdesc = <<<'EOB'
 ## OPTIONS
 
 <hook>
