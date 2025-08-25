@@ -21,7 +21,9 @@ class CommandFactoryTest extends TestCase {
 		static $extract_last_doc_comment = null;
 		if ( null === $extract_last_doc_comment ) {
 			$extract_last_doc_comment = new \ReflectionMethod( 'WP_CLI\Dispatcher\CommandFactory', 'extract_last_doc_comment' );
-			$extract_last_doc_comment->setAccessible( true );
+			if ( PHP_VERSION_ID < 80100 ) {
+				$extract_last_doc_comment->setAccessible( true );
+			}
 		}
 
 		$actual = $extract_last_doc_comment->invoke( null, $content );
@@ -43,7 +45,9 @@ class CommandFactoryTest extends TestCase {
 		static $extract_last_doc_comment = null;
 		if ( null === $extract_last_doc_comment ) {
 			$extract_last_doc_comment = new \ReflectionMethod( 'WP_CLI\Dispatcher\CommandFactory', 'extract_last_doc_comment' );
-			$extract_last_doc_comment->setAccessible( true );
+			if ( PHP_VERSION_ID < 80100 ) {
+				$extract_last_doc_comment->setAccessible( true );
+			}
 		}
 
 		$actual = $extract_last_doc_comment->invoke( null, $content );
@@ -95,7 +99,9 @@ class CommandFactoryTest extends TestCase {
 
 		// Make private function accessible.
 		$get_doc_comment = new \ReflectionMethod( 'WP_CLI\Dispatcher\CommandFactory', 'get_doc_comment' );
-		$get_doc_comment->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$get_doc_comment->setAccessible( true );
+		}
 
 		if ( ! class_exists( 'CommandFactoryTests_Get_Doc_Comment_1_Command', false ) ) {
 			require __DIR__ . '/data/commandfactory-doc_comment-class.php';
@@ -268,7 +274,9 @@ class CommandFactoryTest extends TestCase {
 
 		// Make private function accessible.
 		$get_doc_comment = new \ReflectionMethod( 'WP_CLI\Dispatcher\CommandFactory', 'get_doc_comment' );
-		$get_doc_comment->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$get_doc_comment->setAccessible( true );
+		}
 
 		if ( ! class_exists( 'CommandFactoryTests_Get_Doc_Comment_1_Command', false ) ) {
 			require __DIR__ . '/data/commandfactory-doc_comment-class.php';

@@ -453,7 +453,9 @@ class UtilsTest extends TestCase {
 	public function testHttpRequestBadAddress(): void {
 		// Save WP_CLI state.
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
-		$class_wp_cli_capture_exit->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$class_wp_cli_capture_exit->setAccessible( true );
+		}
 		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
 
 		$prev_logger = WP_CLI::get_logger();
@@ -680,7 +682,9 @@ class UtilsTest extends TestCase {
 	public function testReportBatchOperationResults( $stdout, $stderr, $noun, $verb, $total, $successes, $failures, $skips ): void {
 		// Save WP_CLI state.
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
-		$class_wp_cli_capture_exit->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$class_wp_cli_capture_exit->setAccessible( true );
+		}
 		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
 
 		$prev_logger = WP_CLI::get_logger();

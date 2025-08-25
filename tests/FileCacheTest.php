@@ -48,7 +48,9 @@ class FileCacheTest extends TestCase {
 		$cache      = new FileCache( $cache_dir, $ttl, $max_size );
 		$test_class = new ReflectionClass( $cache );
 		$method     = $test_class->getMethod( 'ensure_dir_exists' );
-		$method->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
 
 		// Cache directory should be created.
 		$result = $method->invokeArgs( $cache, [ $cache_dir . '/test1' ] );
@@ -198,7 +200,9 @@ class FileCacheTest extends TestCase {
 		$reflection = new ReflectionClass( $cache );
 
 		$method = $reflection->getMethod( 'validate_key' );
-		$method->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
 
 		$result = $method->invoke( $cache, $key );
 
