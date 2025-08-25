@@ -13,7 +13,9 @@ class HelpTest extends TestCase {
 	public function test_parse_reference_links(): void {
 		$test_class = new ReflectionClass( 'Help_Command' );
 		$method     = $test_class->getMethod( 'parse_reference_links' );
-		$method->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
 
 		$desc   = 'This is a [reference link](https://wordpress.org/). It should be displayed very nice!';
 		$result = $method->invokeArgs( null, [ $desc ] );

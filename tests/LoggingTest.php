@@ -59,7 +59,9 @@ class LoggingTest extends TestCase {
 		// Save Runner config.
 		$runner        = WP_CLI::get_runner();
 		$runner_config = new \ReflectionProperty( $runner, 'config' );
-		$runner_config->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$runner_config->setAccessible( true );
+		}
 
 		$prev_config = $runner_config->getValue( $runner );
 
