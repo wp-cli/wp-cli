@@ -1058,13 +1058,16 @@ class WP_CLI {
 	 */
 	public static function print_value( $value, $assoc_args = [] ) {
 		$_value = '';
+
 		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$_value = json_encode( $value );
 		} elseif ( Utils\get_flag_value( $assoc_args, 'format' ) === 'yaml' ) {
-			/**
-			 * @var array $value
-			 */
-			$_value = Spyc::YAMLDump( $value, 2, 0 );
+			if ( is_scalar( $value ) ) {
+				// Handle scalars (like "0") directly to avoid empty YAML output
+				$_value = "---\n" . (string) $value . "\n";
+			} else {
+				$_value = Spyc::YAMLDump( $value, 2, 0 );
+			}
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
 			$_value = var_export( $value, true );
 		} else {
@@ -1073,6 +1076,7 @@ class WP_CLI {
 
 		echo $_value . "\n";
 	}
+
 
 	/**
 	 * Convert a WP_Error or Exception into a string
