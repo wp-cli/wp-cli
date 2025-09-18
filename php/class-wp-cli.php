@@ -1057,27 +1057,28 @@ class WP_CLI {
 	 * @param array $assoc_args Arguments passed to the command, determining format.
 	 */
 	public static function print_value( $value, $assoc_args = [] ) {
-    $_value = '';
-    $format = Utils\get_flag_value( $assoc_args, 'format' );
+		$_value = '';
+		$format = Utils\get_flag_value( $assoc_args, 'format' );
 
-    if ( $format === 'json' ) {
-        $_value = json_encode( $value );
-    } elseif ( $format === 'yaml' ) {
-        if ( is_scalar( $value ) || $value === null ) {
-            // Print plain YAML scalar
-            $_value = "---\n" . ( $value === null ? '' : $value );
-        } else {
-            // Fallback for arrays/objects
-            $_value = Spyc::YAMLDump( $value, 2, 0 );
-        }
-    } elseif ( is_array( $value ) || is_object( $value ) ) {
-        $_value = var_export( $value, true );
-    } else {
-        $_value = $value;
-    }
+		if ( 'json' === $format ) {
+				$_value = json_encode( $value );
+		} elseif ( 'yaml' === $format ) {
+			if ( is_scalar( $value ) || null === $value ) {
+					// Print plain YAML scalar
+					$_value = "---\n" . ( null === $value ? '' : $value );
+			} else {
+					// Fallback for arrays/objects
+					$_value = Spyc::YAMLDump( $value, 2, 0 );
+			}
+		} elseif ( is_array( $value ) || is_object( $value ) ) {
+				$_value = var_export( $value, true );
+		} else {
+				$_value = $value;
+		}
 
-    echo $_value . "\n";
-}
+		echo $_value . "\n";
+	}
+
 
 
 	/**
