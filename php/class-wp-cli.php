@@ -1065,7 +1065,7 @@ class WP_CLI {
 		} elseif ( 'yaml' === $format ) {
 			if ( is_scalar( $value ) || null === $value ) {
 					// Print plain YAML scalar
-					$_value = "---\n" . ( null === $value ? '' : $value );
+					$_value = "---\n" . ( null === $value ? 'null' : $value );
 			} else {
 					// Fallback for arrays/objects
 					$_value = Spyc::YAMLDump( $value, 2, 0 );
