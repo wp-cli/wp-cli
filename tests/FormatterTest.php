@@ -20,7 +20,6 @@ class FormatterTest extends TestCase {
         $output = ob_get_clean();
 
         $this->assertStringContainsString("value: 0", $output, "YAML scalar 0 should be displayed correctly.");
-
     }
 
     public function test_yaml_outputs_string_value() {
@@ -35,6 +34,14 @@ class FormatterTest extends TestCase {
         $output = ob_get_clean();
 
         $this->assertStringContainsString("value: hello", $output, "YAML string should be displayed correctly.");
+    }
 
+    public function test_print_value_scalar_zero() {
+        ob_start();
+        \WP_CLI::print_value( 0, [ 'format' => 'yaml' ] );
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString("---\n0", $output, "Direct WP_CLI::print_value should render scalar 0 correctly.");
     }
 }
+
