@@ -7,6 +7,7 @@ use WP_CLI\Utils;
 
 final class PathTest extends TestCase {
 
+
 	/**
 	 * @dataProvider providePathCases
 	 */
@@ -25,6 +26,10 @@ final class PathTest extends TestCase {
 			[ 'C:\\wp\\public', true ],
 			[ '/var/www/html/', true ],
 			[ './relative/path', false ],
+			// Extra edge cases
+			[ '', false ],                // Empty string is not absolute
+			[ '\\\\Server\\Share', false ], // Windows UNC path
+			[ '/', true ],                // Root directory on UNIX
 		];
 	}
 }
