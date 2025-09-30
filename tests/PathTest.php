@@ -1,15 +1,30 @@
 <?php
-// Standalone check for Windows path regex (no PHPUnit)
 
-$cases = [
-    'C:\wp\public/'   => true,
-    'C:/wp/public/'   => true,
-    'C:\wp\public'    => true,
-    '/var/www/html/'  => false,
-    './relative/path' => false,
-];
+namespace WP_CLI\Tests;
 
-foreach ($cases as $path => $expected) {
-    $result = (bool) preg_match('#^[a-zA-Z]:(?:\\\\|/)#', $path);
-    echo $path . " => " . ($result ? 'matched' : 'not matched') . " | expected: " . ($expected ? 'matched' : 'not matched') . PHP_EOL;
+use PHPUnit\Framework\TestCase;
+use WP_CLI\Utils;
+
+final class PathTest extends TestCase {
+
+	/**
+	 * @dataProvider providePathCases
+	 */
+	public function testPathIsRecognizedAsAbsolute( string $path, bool $expected ): void {
+		$this->assertSame(
+			$expected,
+			Utils\is_path_absolute( $path ),
+			"Failed asserting that path '$path' is recognized correctly."
+		);
+	}
+
+	public static function providePathCases(): array {
+		return [
+			[ 'C:\\wp\\public/', true ],
+			[ 'C:/wp/public/', true ],
+			[ 'C:\\wp\\public', true ],
+			[ '/var/www/html/', true ],
+			[ './relative/path', false ],
+		];
+	}
 }
