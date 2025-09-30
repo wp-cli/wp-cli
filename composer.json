@@ -18,10 +18,10 @@
     "require-dev": {
         "justinrainbow/json-schema": "^6.3",
         "roave/security-advisories": "dev-latest",
-        "wp-cli/db-command": "^1.3 || ^2",
-        "wp-cli/entity-command": "^1.2 || ^2",
-        "wp-cli/extension-command": "^1.1 || ^2",
-        "wp-cli/package-command": "^1 || ^2",
+        "wp-cli/db-command": "^2",
+        "wp-cli/entity-command": "^2",
+        "wp-cli/extension-command": "^2",
+        "wp-cli/package-command": "^2",
         "wp-cli/wp-cli-tests": "^5"
     },
     "suggest": {
