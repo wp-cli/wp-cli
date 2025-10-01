@@ -17,3 +17,14 @@ require_once WP_CLI_ROOT . '/bundle/rmccue/requests/src/Autoload.php';
 require_once __DIR__ . '/includes/wpdb.php';
 
 \WpOrg\Requests\Autoload::register();
+$bootstrap1 = dirname( __DIR__ ) . '/vendor/wp-cli-tests/bootstrap.php';
+$bootstrap2 = dirname( __DIR__ ) . '/vendor/wp-cli/wp-cli-tests/tests/bootstrap.php';
+
+if ( file_exists( $bootstrap1 ) ) {
+    require_once $bootstrap1;
+} elseif ( file_exists( $bootstrap2 ) ) {
+    require_once $bootstrap2;
+} else {
+    fwrite( STDERR, "Could not find wp-cli-tests bootstrap.php\n" );
+    exit( 1 );
+}
