@@ -1095,7 +1095,7 @@ class Runner {
 			$this->show_synopsis_if_composite_command();
 			// If the command doesn't exist use as error.
 			$args                   = $this->cmd_starts_with( [ 'help' ] ) ? array_slice( $this->arguments, 1 ) : $this->arguments;
-			$suggestion_or_disabled = $this->find_command_to_run( $args, getenv( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
+			$suggestion_or_disabled = $this->find_command_to_run( $args );
 			if ( is_string( $suggestion_or_disabled ) ) {
 				if ( ! preg_match( '/disabled from the config file.$/', $suggestion_or_disabled ) ) {
 					WP_CLI::warning( "No WordPress installation found. If the command '" . implode( ' ', $args ) . "' is in a plugin or theme, pass --path=`path/to/wordpress`." );
@@ -1302,6 +1302,16 @@ class Runner {
 		}
 
 		$this->do_early_invoke( 'before_wp_load' );
+
+		// Second try in case a misspelled command was corrected.
+		if ( $this->cmd_starts_with( [ 'help' ] )
+			&& ( ! $this->wp_exists()
+				|| ! Utils\locate_wp_config()
+				|| count( $this->arguments ) > 2
+			) ) {
+			$this->auto_check_update();
+			$this->run_command( $this->arguments, $this->assoc_args );
+		}
 
 		$this->check_wp_version();
 
