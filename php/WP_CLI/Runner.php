@@ -117,9 +117,12 @@ class Runner {
 
 		// Search the value of @when from the command method.
 		$real_when = '';
-		$r         = $this->find_command_to_run( $this->arguments );
+		$r         = $this->find_command_to_run( $this->arguments, true );
 		if ( is_array( $r ) ) {
 			list( $command, $final_args, $cmd_path ) = $r;
+
+			// Override potentially missspelled cmd with the corrected one.
+			$this->arguments = $cmd_path;
 
 			foreach ( $this->early_invoke as $_when => $_path ) {
 				foreach ( $_path as $cmd ) {
@@ -373,9 +376,10 @@ class Runner {
 	 * Given positional arguments, find the command to execute.
 	 *
 	 * @param array $args
+	 * @param bool $run_suggestions Whether to run suggestions if a command is not found.
 	 * @return array|string Command, args, and path on success; error message on failure
 	 */
-	public function find_command_to_run( $args ) {
+	public function find_command_to_run( $args, $run_suggestions = false ) {
 		$command = WP_CLI::get_root_command();
 
 		WP_CLI::do_hook( 'find_command_to_run_pre' );
@@ -398,13 +402,34 @@ class Runner {
 						$suggestion = 'meta';
 					}
 
-					return sprintf(
-						"'%s' is not a registered subcommand of '%s'. See 'wp help %s' for available subcommands.%s",
+					$error = sprintf(
+						"'%s' is not a registered subcommand of '%s'. See 'wp help %s' for available subcommands.",
 						$child,
 						$parent_name,
-						$parent_name,
-						! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
+						$parent_name
 					);
+
+					if ( ! empty( $suggestion ) ) {
+						$suggestion_text = "Did you mean '{$suggestion}'?";
+
+						if ( $run_suggestions ) {
+							$suggested_command_to_run = $this->find_command_to_run( explode( ' ', "$parent_name $suggestion" ) );
+
+							if ( is_array( $suggested_command_to_run ) ) {
+								if ( getenv( 'WP_CLI_AUTOCORRECT' ) ) {
+									return $suggested_command_to_run;
+								}
+
+								WP_CLI::warning( $error );
+								WP_CLI::confirm( $suggestion_text );
+								return $suggested_command_to_run;
+							}
+						}
+
+						return $error . PHP_EOL . $suggestion_text;
+					}
+
+					return $error;
 				}
 
 				$suggestion = $this->get_subcommand_suggestion( $full_name, $command );
@@ -419,11 +444,32 @@ class Runner {
 					}
 				}
 
-				return sprintf(
-					"'%s' is not a registered wp command. See 'wp help' for available commands.%s",
-					$full_name,
-					! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
+				$error = sprintf(
+					"'%s' is not a registered wp command. See 'wp help' for available commands.",
+					$full_name
 				);
+
+				if ( ! empty( $suggestion ) ) {
+					$suggestion_text = "Did you mean '{$suggestion}'?";
+
+					if ( $run_suggestions ) {
+						$suggested_command_to_run = $this->find_command_to_run( [ $suggestion ] );
+
+						if ( is_array( $suggested_command_to_run ) ) {
+							if ( getenv( 'WP_CLI_AUTOCORRECT' ) ) {
+								return $suggested_command_to_run;
+							}
+
+							WP_CLI::warning( $error );
+							WP_CLI::confirm( $suggestion_text );
+							return $suggested_command_to_run;
+						}
+					}
+
+					return $error . PHP_EOL . $suggestion_text;
+				}
+
+				return $error;
 			}
 
 			if ( $this->is_command_disabled( $subcommand ) ) {
@@ -452,7 +498,7 @@ class Runner {
 		if ( ! empty( $options['back_compat_conversions'] ) ) {
 			list( $args, $assoc_args ) = self::back_compat_conversions( $args, $assoc_args );
 		}
-		$r = $this->find_command_to_run( $args );
+		$r = $this->find_command_to_run( $args, true );
 		if ( is_string( $r ) ) {
 			WP_CLI::error( $r );
 		}
