@@ -48,15 +48,13 @@
         "psr-0": {
             "WP_CLI\\": "php/"
         },
+        "psr-4": {
+            "WP_CLI\\Tests\\": "vendor/wp-cli/wp-cli-tests/tests/includes/"
+        },
         "classmap": [
             "php/class-wp-cli.php",
             "php/class-wp-cli-command.php"
         ]
-    },
-    "autoload-dev": { 
-        "psr-4": {
-            "WP_CLI\\Tests\\": "vendor/wp-cli/wp-cli-tests/tests/includes/"
-        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
