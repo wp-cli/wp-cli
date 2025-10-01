@@ -121,9 +121,6 @@ class Runner {
 		if ( is_array( $r ) ) {
 			list( $command, $final_args, $cmd_path ) = $r;
 
-			// Override potentially missspelled cmd with the corrected one.
-			$this->arguments = $cmd_path;
-
 			foreach ( $this->early_invoke as $_when => $_path ) {
 				foreach ( $_path as $cmd ) {
 					if ( $cmd === $cmd_path ) {
@@ -416,6 +413,9 @@ class Runner {
 							$suggested_command_to_run = $this->find_command_to_run( explode( ' ', "$parent_name $suggestion" ) );
 
 							if ( is_array( $suggested_command_to_run ) ) {
+								// Override potentially missspelled cmd with the corrected one.
+								$this->arguments = $suggested_command_to_run[2];
+
 								if ( getenv( 'WP_CLI_AUTOCORRECT' ) ) {
 									return $suggested_command_to_run;
 								}
@@ -453,12 +453,25 @@ class Runner {
 					$suggestion_text = "Did you mean '{$suggestion}'?";
 
 					if ( $run_suggestions ) {
-						$suggested_command_to_run = $this->find_command_to_run( array_merge( [ $suggestion ], $args ) );
+						if ( 'help' === $suggestion ) {
+							$suggested_command_to_run = $this->find_command_to_run( $args );
+							if ( is_array( $suggested_command_to_run ) ) {
+								$suggested_command_to_run[2] = array_merge( [ $suggestion ], $args );
+							}
+						}
+
+						if ( ! isset( $suggested_command_to_run ) || ! is_array( $suggested_command_to_run ) ) {
+							$suggested_command_to_run = $this->find_command_to_run( array_merge( [ $suggestion ], $args ) );
+						}
+
 						if ( ! is_array( $suggested_command_to_run ) ) {
 							$suggested_command_to_run = $this->find_command_to_run( [ $suggestion ] );
 						}
 
 						if ( is_array( $suggested_command_to_run ) ) {
+							// Override potentially missspelled cmd with the corrected one.
+							$this->arguments = $suggested_command_to_run[2];
+
 							if ( getenv( 'WP_CLI_AUTOCORRECT' ) ) {
 								return $suggested_command_to_run;
 							}
@@ -1283,17 +1296,6 @@ class Runner {
 		}
 
 		$this->do_early_invoke( 'before_wp_load' );
-
-		// Second try, in case a misspelled 'help' command was corrected to 'help' in do_early_invoke().
-		if ( $this->cmd_starts_with( [ 'help' ] )
-			&& ( ! $this->wp_exists()
-				|| ! Utils\locate_wp_config()
-				|| count( $this->arguments ) > 2
-			) ) {
-			$this->auto_check_update();
-			$this->run_command( $this->arguments, $this->assoc_args );
-			// Help didn't exit so failed to find the command at this stage.
-		}
 
 		$this->check_wp_version();
 

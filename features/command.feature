@@ -27,6 +27,14 @@ Feature: WP-CLI Commands
 
   Scenario: Invalid subcommand of valid command
     Given an empty directory
+    And a session_no file:
+      """
+      n
+      """
+    And a session_yes file:
+      """
+      y
+      """
     And a custom-cmd.php file:
       """
       <?php
@@ -43,10 +51,10 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'command', 'Custom_Command_Class' );
       """
 
-    When I try `wp --require=custom-cmd.php command invalid`
+    When I try `wp --require=custom-cmd.php command invalid < session_no`
     Then STDERR should contain:
       """
-      Error: 'invalid' is not a registered subcommand of 'command'. See 'wp help command' for available subcommands.
+      Warning: 'invalid' is not a registered subcommand of 'command'. See 'wp help command' for available subcommands.
       """
 
   Scenario: Use a closure as a command
@@ -546,7 +554,7 @@ Feature: WP-CLI Commands
 
       SYNOPSIS
 
-        wp foo 
+        wp foo
 
       EXAMPLES
 
@@ -975,17 +983,107 @@ Feature: WP-CLI Commands
 
   Scenario: WP-CLI suggests matching commands when user entry contains typos
     Given a WP installation
+    And a session_no file:
+      """
+      n
+      """
 
-    When I try `wp clu`
+    When I try `wp clu < session_no`
     Then STDERR should contain:
+      """
+      Warning: 'clu' is not a registered wp command
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'cli'? [y/n]
+      """
+
+    When I try `wp cli nfo < session_no`
+    Then STDERR should contain:
+      """
+      Warning: 'nfo' is not a registered subcommand of 'cli'
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'info'? [y/n]
+      """
+
+    When I try `wp cli beyondlevenshteinthreshold`
+    Then STDOUT should not contain:
+      """
+      Did you mean
+      """
+
+  Scenario: WP-CLI optionally runs matching commands when user entry contains typos
+    Given a WP installation
+    And a session_yes file:
+      """
+      y
+      """
+
+    When I try `wp clu < session_yes`
+    Then STDERR should contain:
+      """
+      Warning: 'clu' is not a registered wp command
+      """
+    And STDOUT should contain:
       """
       Did you mean 'cli'?
       """
+    And STDOUT should contain:
+      """
+      See 'wp help cli <command>' for more information on a specific command.
+      """
 
-    When I try `wp cli nfo`
+    When I try `wp cli nfo < session_yes`
     Then STDERR should contain:
       """
+      Warning: 'nfo' is not a registered subcommand of 'cli'
+      """
+    And STDOUT should contain:
+      """
       Did you mean 'info'?
+      """
+    And STDOUT should contain:
+      """
+      WP-CLI version:
+      """
+
+    When I try `wp cli beyondlevenshteinthreshold`
+    Then STDERR should not contain:
+      """
+      Did you mean
+      """
+
+  Scenario: WP-CLI automatically runs matching commands when user entry contains typos
+    Given a WP installation
+
+    When I try `WP_CLI_AUTOCORRECT=1 wp clu`
+    Then STDERR should not contain:
+      """
+      Warning: 'clu' is not a registered wp command
+      """
+    And STDOUT should not contain:
+      """
+      Did you mean 'cli'?
+      """
+    And STDOUT should contain:
+      """
+      See 'wp help cli <command>' for more information on a specific command.
+      """
+
+    When I try `WP_CLI_AUTOCORRECT=1 wp cli nfo`
+    Then STDERR should not contain:
+      """
+      Warning: 'nfo' is not a registered subcommand of 'cli'
+      """
+    And STDOUT should not contain:
+      """
+      Did you mean 'info'?
+      """
+    And STDOUT should contain:
+      """
+      WP-CLI version:
       """
 
     When I try `wp cli beyondlevenshteinthreshold`
