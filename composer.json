@@ -17,6 +17,7 @@
     },
     "require-dev": {
         "justinrainbow/json-schema": "^6.3",
+        "phpunit/phpunit": "^9",
         "roave/security-advisories": "dev-latest",
         "wp-cli/db-command": "^1.3 || ^2",
         "wp-cli/entity-command": "^1.2 || ^2",
@@ -51,6 +52,11 @@
             "php/class-wp-cli.php",
             "php/class-wp-cli-command.php"
         ]
+    },
+    "autoload-dev": { 
+        "psr-4": {
+            "WP_CLI\\Tests\\": "vendor/wp-cli/wp-cli-tests/tests/includes/"
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

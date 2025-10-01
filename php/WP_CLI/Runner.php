@@ -35,7 +35,6 @@ use WP_Error;
  */
 class Runner {
 
-
 	/**
 	 * List of byte-order marks (BOMs) to detect.
 	 *
@@ -120,7 +119,7 @@ class Runner {
 		$real_when = '';
 		$r         = $this->find_command_to_run( $this->arguments );
 		if ( is_array( $r ) ) {
-			list($command, $final_args, $cmd_path) = $r;
+			list( $command, $final_args, $cmd_path ) = $r;
 
 			foreach ( $this->early_invoke as $_when => $_path ) {
 				foreach ( $_path as $cmd ) {
@@ -269,8 +268,7 @@ class Runner {
 	 * @return string An absolute path.
 	 */
 	public function find_wp_root() {
-		if (
-			isset( $this->config['path'] ) &&
+		if ( isset( $this->config['path'] ) &&
 			( is_bool( $this->config['path'] ) || empty( $this->config['path'] ) )
 		) {
 			WP_CLI::error( 'The --path parameter cannot be empty when provided.' );
@@ -320,16 +318,8 @@ class Runner {
 	 */
 	private static function set_wp_root( $path ) {
 		if ( ! defined( 'ABSPATH' ) ) {
-			$root = Utils\normalize_path( Utils\trailingslashit( $path ) );
-
-			// Fix for Windows: if path starts with drive letter + forward slash (C:/),
-			// convert it to drive letter + backslash (C:\) to match browser-style ABSPATH.
-			if ( preg_match( '#^[a-zA-Z]:/#', $root ) ) {
-				$root = preg_replace( '#^([a-zA-Z]):/#', '$1:\\\\', $root );
-			}
-
 			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Declaring a WP native constant.
-			define( 'ABSPATH', $root );
+			define( 'ABSPATH', Utils\normalize_path( Utils\trailingslashit( $path ) ) );
 		} elseif ( ! is_null( $path ) ) {
 			WP_CLI::error_multi_line(
 				[
@@ -338,12 +328,10 @@ class Runner {
 				]
 			);
 		}
-
 		WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH, 'bootstrap' );
 
 		$_SERVER['DOCUMENT_ROOT'] = realpath( $path );
 	}
-
 
 	/**
 	 * Guess which URL context WP-CLI has been invoked under.
@@ -462,14 +450,14 @@ class Runner {
 		WP_CLI::do_hook( 'before_run_command', $args, $assoc_args, $options );
 
 		if ( ! empty( $options['back_compat_conversions'] ) ) {
-			list($args, $assoc_args) = self::back_compat_conversions( $args, $assoc_args );
+			list( $args, $assoc_args ) = self::back_compat_conversions( $args, $assoc_args );
 		}
 		$r = $this->find_command_to_run( $args );
 		if ( is_string( $r ) ) {
 			WP_CLI::error( $r );
 		}
 
-		list($command, $final_args, $cmd_path) = $r;
+		list( $command, $final_args, $cmd_path ) = $r;
 
 		$name = implode( ' ', $cmd_path );
 
@@ -493,7 +481,7 @@ class Runner {
 	public function show_synopsis_if_composite_command() {
 		$r = $this->find_command_to_run( $this->arguments );
 		if ( is_array( $r ) ) {
-			list($command) = $r;
+			list( $command ) = $r;
 
 			if ( $command->can_have_subcommands() ) {
 				$command->show_usage();
@@ -620,8 +608,8 @@ class Runner {
 
 		$docker_compose_v2_version_cmd = Utils\esc_cmd( Utils\force_env_on_nix_systems( 'docker' ) . ' compose %s', 'version' );
 		$docker_compose_cmd            = ! empty( Process::create( $docker_compose_v2_version_cmd )->run()->stdout )
-			? 'docker compose'
-			: 'docker-compose';
+				? 'docker compose'
+				: 'docker-compose';
 
 		if ( 'docker' === $bits['scheme'] ) {
 			$command = 'docker exec %s%s%s%s%s sh -c %s';
@@ -831,7 +819,7 @@ class Runner {
 
 		// cli aliases  ->  cli alias list
 		if ( [ 'cli', 'aliases' ] === array_slice( $args, 0, 2 ) ) {
-			list($args[0], $args[1], $args[2]) = [ 'cli', 'alias', 'list' ];
+			list( $args[0], $args[1], $args[2] ) = [ 'cli', 'alias', 'list' ];
 		}
 
 		// core (multsite-)install --admin_name=  ->  --admin_user=
@@ -842,21 +830,21 @@ class Runner {
 
 		// core config  ->  config create
 		if ( [ 'core', 'config' ] === array_slice( $args, 0, 2 ) ) {
-			list($args[0], $args[1]) = [ 'config', 'create' ];
+			list( $args[0], $args[1] ) = [ 'config', 'create' ];
 		}
 		// core language  ->  language core
 		if ( [ 'core', 'language' ] === array_slice( $args, 0, 2 ) ) {
-			list($args[0], $args[1]) = [ 'language', 'core' ];
+			list( $args[0], $args[1] ) = [ 'language', 'core' ];
 		}
 
 		// checksum core  ->  core verify-checksums
 		if ( [ 'checksum', 'core' ] === array_slice( $args, 0, 2 ) ) {
-			list($args[0], $args[1]) = [ 'core', 'verify-checksums' ];
+			list( $args[0], $args[1] ) = [ 'core', 'verify-checksums' ];
 		}
 
 		// checksum plugin  ->  plugin verify-checksums
 		if ( [ 'checksum', 'plugin' ] === array_slice( $args, 0, 2 ) ) {
-			list($args[0], $args[1]) = [ 'plugin', 'verify-checksums' ];
+			list( $args[0], $args[1] ) = [ 'plugin', 'verify-checksums' ];
 		}
 
 		// site create --site_id=  ->  site create --network_id=
@@ -866,8 +854,7 @@ class Runner {
 		}
 
 		// {plugin|theme} update-all  ->  {plugin|theme} update --all
-		if (
-			count( $args ) > 1 && in_array( $args[0], [ 'plugin', 'theme' ], true )
+		if ( count( $args ) > 1 && in_array( $args[0], [ 'plugin', 'theme' ], true )
 			&& 'update-all' === $args[1]
 		) {
 			$args[1]           = 'update';
@@ -888,7 +875,7 @@ class Runner {
 
 		// plugin scaffold  ->  scaffold plugin
 		if ( [ 'plugin', 'scaffold' ] === array_slice( $args, 0, 2 ) ) {
-			list($args[0], $args[1]) = [ $args[1], $args[0] ];
+			list( $args[0], $args[1] ) = [ $args[1], $args[0] ];
 		}
 
 		// foo --help  ->  help foo
@@ -898,8 +885,7 @@ class Runner {
 		}
 
 		// {post|user} list --ids  ->  {post|user} list --format=ids
-		if (
-			count( $args ) > 1 && in_array( $args[0], [ 'post', 'user' ], true )
+		if ( count( $args ) > 1 && in_array( $args[0], [ 'post', 'user' ], true )
 			&& 'list' === $args[1]
 			&& isset( $assoc_args['ids'] )
 		) {
@@ -965,11 +951,9 @@ class Runner {
 
 		// config get --[global|constant]=<global|constant> --> config get <name> --type=constant|variable
 		// config get --> config list
-		if (
-			count( $args ) === 2
+		if ( count( $args ) === 2
 			&& 'config' === $args[0]
-			&& 'get' === $args[1]
-		) {
+			&& 'get' === $args[1] ) {
 			if ( isset( $assoc_args['global'] ) ) {
 				$name = $assoc_args['global'];
 				$type = 'variable';
@@ -1102,9 +1086,9 @@ class Runner {
 
 		// Runtime config and args
 		{
-			list($args, $assoc_args, $this->runtime_config) = $configurator->parse_args( $argv );
+			list( $args, $assoc_args, $this->runtime_config ) = $configurator->parse_args( $argv );
 
-			list($this->arguments, $this->assoc_args) = self::back_compat_conversions(
+			list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
 				$args,
 				$assoc_args
 			);
@@ -1112,8 +1096,8 @@ class Runner {
 			$configurator->merge_array( $this->runtime_config );
 		}
 
-		list($this->config, $this->extra_config) = $configurator->to_array();
-		$this->aliases                           = $configurator->get_aliases();
+		list( $this->config, $this->extra_config ) = $configurator->to_array();
+		$this->aliases                             = $configurator->get_aliases();
 		if ( count( $this->aliases ) && ! isset( $this->aliases['@all'] ) ) {
 			$this->aliases         = array_reverse( $this->aliases );
 			$this->aliases['@all'] = 'Run command against every registered alias.';
@@ -1233,13 +1217,11 @@ class Runner {
 		self::set_wp_root( $this->find_wp_root() );
 
 		// First try at showing man page - if help command and either haven't found 'version.php' or 'wp-config.php' (so won't be loading WP & adding commands) or help on subcommand.
-		if (
-			$this->cmd_starts_with( [ 'help' ] )
+		if ( $this->cmd_starts_with( [ 'help' ] )
 			&& ( ! $this->wp_exists()
 				|| ! Utils\locate_wp_config()
 				|| count( $this->arguments ) > 2
-			)
-		) {
+			) ) {
 			$this->auto_check_update();
 			$this->run_command( $this->arguments, $this->assoc_args );
 			// Help didn't exit so failed to find the command at this stage.
@@ -1277,10 +1259,8 @@ class Runner {
 
 		// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Declaring WP native constants.
 
-		if (
-			$this->cmd_starts_with( [ 'core', 'is-installed' ] )
-			|| $this->cmd_starts_with( [ 'core', 'update-db' ] )
-		) {
+		if ( $this->cmd_starts_with( [ 'core', 'is-installed' ] )
+			|| $this->cmd_starts_with( [ 'core', 'update-db' ] ) ) {
 			define( 'WP_INSTALLING', true );
 		}
 
@@ -1377,10 +1357,8 @@ class Runner {
 		$this->do_early_invoke( 'after_wp_config_load' );
 
 		// Prevent error notice from wp_guess_url() when core isn't installed
-		if (
-			$this->cmd_starts_with( [ 'core', 'is-installed' ] )
-			&& ! defined( 'COOKIEHASH' )
-		) {
+		if ( $this->cmd_starts_with( [ 'core', 'is-installed' ] )
+			&& ! defined( 'COOKIEHASH' ) ) {
 			define( 'COOKIEHASH', md5( 'wp-cli' ) );
 		}
 
@@ -1607,12 +1585,10 @@ class Runner {
 				// Table-specified
 				// Bits: search-replace <search> <replace> [<table>...]
 				// Or not against a specific blog
-				if (
-					count( $this->arguments ) > 3
+				if ( count( $this->arguments ) > 3
 					|| ! empty( $this->assoc_args['network'] )
 					|| ! empty( $this->assoc_args['all-tables'] )
-					|| ! empty( $this->assoc_args['all-tables-with-prefix'] )
-				) {
+					|| ! empty( $this->assoc_args['all-tables-with-prefix'] ) ) {
 					$run_on_site_not_found = 'search-replace';
 				}
 			}
@@ -1852,7 +1828,7 @@ class Runner {
 				[ 'init', 'gutenberg_register_theme_block_patterns' ], // Block patterns registration in the GB plugin.
 			];
 			foreach ( $theme_related_actions as $action ) {
-				list($hook, $callback) = $action;
+				list( $hook, $callback ) = $action;
 				remove_action( $hook, $callback );
 			}
 		}
