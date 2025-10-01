@@ -25,7 +25,7 @@ class Help_Command extends WP_CLI_Command {
 	 * @param string[] $args
 	 */
 	public function __invoke( $args ) {
-		$r = WP_CLI::get_runner()->find_command_to_run( $args, true );
+		$r = WP_CLI::get_runner()->find_command_to_run( $args, getenv( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
 
 		if ( is_array( $r ) ) {
 			list( $command ) = $r;

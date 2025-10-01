@@ -117,7 +117,7 @@ class Runner {
 
 		// Search the value of @when from the command method.
 		$real_when = '';
-		$r         = $this->find_command_to_run( $this->arguments, true );
+		$r         = $this->find_command_to_run( $this->arguments, getenv( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
 		if ( is_array( $r ) ) {
 			list( $command, $final_args, $cmd_path ) = $r;
 
@@ -373,10 +373,12 @@ class Runner {
 	 * Given positional arguments, find the command to execute.
 	 *
 	 * @param array $args
-	 * @param bool $run_suggestions Whether to run suggestions if a command is not found.
+	 * @param string $autocorrect Whether to autocorrect commands based on suggestions.
 	 * @return array|string Command, args, and path on success; error message on failure
+	 *
+	 * @phpstan-param 'none'|'confirm'|'auto' $autocorrect
 	 */
-	public function find_command_to_run( $args, $run_suggestions = false ) {
+	public function find_command_to_run( $args, $autocorrect = 'none' ) {
 		$command = WP_CLI::get_root_command();
 
 		WP_CLI::do_hook( 'find_command_to_run_pre' );
@@ -409,14 +411,14 @@ class Runner {
 					if ( ! empty( $suggestion ) ) {
 						$suggestion_text = "Did you mean '{$suggestion}'?";
 
-						if ( $run_suggestions ) {
+						if ( 'none' !== $autocorrect ) {
 							$suggested_command_to_run = $this->find_command_to_run( explode( ' ', "$parent_name $suggestion" ) );
 
 							if ( is_array( $suggested_command_to_run ) ) {
 								// Override potentially misspelled cmd with the corrected one.
 								$this->arguments = $suggested_command_to_run[2];
 
-								if ( getenv( 'WP_CLI_AUTOCORRECT' ) ) {
+								if ( 'auto' === $autocorrect ) {
 									return $suggested_command_to_run;
 								}
 
@@ -452,27 +454,31 @@ class Runner {
 				if ( ! empty( $suggestion ) ) {
 					$suggestion_text = "Did you mean '{$suggestion}'?";
 
-					if ( $run_suggestions ) {
+					if ( 'none' !== $autocorrect ) {
 						if ( 'help' === $suggestion ) {
-							$suggested_command_to_run = $this->find_command_to_run( $args );
+							$suggested_command_to_run = $this->find_command_to_run( $args, 'auto' );
 							if ( is_array( $suggested_command_to_run ) ) {
-								$suggested_command_to_run[2] = array_merge( [ $suggestion ], $args );
+								$this->arguments = array_merge( [ $suggestion ], $args );
+
+								$suggested_command_to_run = $this->find_command_to_run( array_merge( [ $suggestion ], $args ), 'auto' );
 							}
 						}
 
 						if ( ! isset( $suggested_command_to_run ) || ! is_array( $suggested_command_to_run ) ) {
-							$suggested_command_to_run = $this->find_command_to_run( array_merge( [ $suggestion ], $args ) );
+							$suggested_command_to_run = $this->find_command_to_run( array_merge( [ $suggestion ], $args ), 'auto' );
+
+							$this->arguments = $suggested_command_to_run[2];
 						}
 
 						if ( ! is_array( $suggested_command_to_run ) ) {
-							$suggested_command_to_run = $this->find_command_to_run( [ $suggestion ] );
+							$suggested_command_to_run = $this->find_command_to_run( [ $suggestion ], 'auto' );
+
+							$this->arguments = $suggested_command_to_run[2];
 						}
 
 						if ( is_array( $suggested_command_to_run ) ) {
-							// Override potentially misspelled cmd with the corrected one.
-							$this->arguments = $suggested_command_to_run[2];
 
-							if ( getenv( 'WP_CLI_AUTOCORRECT' ) ) {
+							if ( 'auto' === $autocorrect ) {
 								return $suggested_command_to_run;
 							}
 
@@ -514,7 +520,7 @@ class Runner {
 		if ( ! empty( $options['back_compat_conversions'] ) ) {
 			list( $args, $assoc_args ) = self::back_compat_conversions( $args, $assoc_args );
 		}
-		$r = $this->find_command_to_run( $args, true );
+		$r = $this->find_command_to_run( $args, getenv( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
 		if ( is_string( $r ) ) {
 			WP_CLI::error( $r );
 		}
@@ -1089,7 +1095,7 @@ class Runner {
 			$this->show_synopsis_if_composite_command();
 			// If the command doesn't exist use as error.
 			$args                   = $this->cmd_starts_with( [ 'help' ] ) ? array_slice( $this->arguments, 1 ) : $this->arguments;
-			$suggestion_or_disabled = $this->find_command_to_run( $args );
+			$suggestion_or_disabled = $this->find_command_to_run( $args, getenv( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
 			if ( is_string( $suggestion_or_disabled ) ) {
 				if ( ! preg_match( '/disabled from the config file.$/', $suggestion_or_disabled ) ) {
 					WP_CLI::warning( "No WordPress installation found. If the command '" . implode( ' ', $args ) . "' is in a plugin or theme, pass --path=`path/to/wordpress`." );
