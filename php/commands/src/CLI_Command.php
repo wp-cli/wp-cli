@@ -601,7 +601,7 @@ class CLI_Command extends WP_CLI_Command {
 						'version'      => $nightly_version,
 						'update_type'  => 'nightly',
 						'package_url'  => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
-						'status'       => 'unvailable',
+						'status'       => 'unavailable',
 						'requires_php' => $manifest_data->requires_php,
 					];
 				} else {
