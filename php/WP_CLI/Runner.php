@@ -453,7 +453,10 @@ class Runner {
 					$suggestion_text = "Did you mean '{$suggestion}'?";
 
 					if ( $run_suggestions ) {
-						$suggested_command_to_run = $this->find_command_to_run( [ $suggestion ] );
+						$suggested_command_to_run = $this->find_command_to_run( array_merge( [ $suggestion ], $args ) );
+						if ( ! is_array( $suggested_command_to_run ) ) {
+							$suggested_command_to_run = $this->find_command_to_run( [ $suggestion ] );
+						}
 
 						if ( is_array( $suggested_command_to_run ) ) {
 							if ( getenv( 'WP_CLI_AUTOCORRECT' ) ) {
