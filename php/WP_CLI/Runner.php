@@ -413,7 +413,7 @@ class Runner {
 							$suggested_command_to_run = $this->find_command_to_run( explode( ' ', "$parent_name $suggestion" ) );
 
 							if ( is_array( $suggested_command_to_run ) ) {
-								// Override potentially missspelled cmd with the corrected one.
+								// Override potentially misspelled cmd with the corrected one.
 								$this->arguments = $suggested_command_to_run[2];
 
 								if ( getenv( 'WP_CLI_AUTOCORRECT' ) ) {
@@ -469,7 +469,7 @@ class Runner {
 						}
 
 						if ( is_array( $suggested_command_to_run ) ) {
-							// Override potentially missspelled cmd with the corrected one.
+							// Override potentially misspelled cmd with the corrected one.
 							$this->arguments = $suggested_command_to_run[2];
 
 							if ( getenv( 'WP_CLI_AUTOCORRECT' ) ) {
