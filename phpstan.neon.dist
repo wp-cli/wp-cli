@@ -40,3 +40,5 @@ parameters:
     - identifier: missingType.property
     - identifier: missingType.parameter
     - identifier: missingType.return
+    - '#Attribute class PHPUnit\\Framework\\Attributes\\DataProvider does not exist#'
+
