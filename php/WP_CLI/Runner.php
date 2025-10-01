@@ -1281,6 +1281,17 @@ class Runner {
 
 		$this->do_early_invoke( 'before_wp_load' );
 
+		// Second try, in case a misspelled 'help' command was corrected to 'help' in do_early_invoke().
+		if ( $this->cmd_starts_with( [ 'help' ] )
+			&& ( ! $this->wp_exists()
+				|| ! Utils\locate_wp_config()
+				|| count( $this->arguments ) > 2
+			) ) {
+			$this->auto_check_update();
+			$this->run_command( $this->arguments, $this->assoc_args );
+			// Help didn't exit so failed to find the command at this stage.
+		}
+
 		$this->check_wp_version();
 
 		if ( $this->cmd_starts_with( [ 'config', 'create' ] ) ) {
