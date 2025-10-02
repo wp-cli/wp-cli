@@ -1086,6 +1086,28 @@ Feature: WP-CLI Commands
       WP-CLI version:
       """
 
+    When I try `WP_CLI_AUTOCORRECT=1 wp hel post mota`
+    Then STDERR should not contain:
+      """
+      is not a registered wp command
+      """
+    And STDERR should not contain:
+      """
+      is not a registered subcommand
+      """
+    And STDOUT should not contain:
+      """
+      Did you mean
+      """
+    And STDOUT should contain:
+      """
+      SYNOPSIS
+      """
+    And STDOUT should contain:
+      """
+      wp post meta <command>
+      """
+
     When I try `wp cli beyondlevenshteinthreshold`
     Then STDERR should not contain:
       """
