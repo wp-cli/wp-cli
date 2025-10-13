@@ -572,6 +572,37 @@ Feature: Get help about WP-CLI commands
       """
     And the return code should be 0
 
+  Scenario: Suggestions for chained command typos in help
+    Given a WP installation
+    And a session_yes_yes file:
+      """
+      y
+      y
+      """
+
+    When I try `wp hel post seta < session_yes_yes`
+    Then STDERR should contain:
+      """
+      Warning: 'hel' is not a registered wp command. See 'wp help' for available commands.
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'help'? [y/n]
+      """
+    And STDERR should contain:
+      """
+      Warning: 'seta' is not a registered subcommand of 'post'. See 'wp help post' for available subcommands.
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'meta'? [y/n]
+      """
+    And STDOUT should contain:
+      """
+      wp post meta <command>
+      """
+    And the return code should be 0
+
   Scenario: No WordPress installation warning or suggestions for disabled commands
     Given an empty directory
     And a wp-cli.yml file:
