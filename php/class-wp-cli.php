@@ -862,7 +862,7 @@ class WP_CLI {
 	 *
 	 * Warning message is written to STDERR, or discarded when `--quiet` flag is supplied.
 	 *
-	 * Use instead of `WP_CLI::debug()` when script execution should be permitted
+	 * Use instead of `WP_CLI::error()` when script execution should be permitted
 	 * to continue.
 	 *
 	 * ```
