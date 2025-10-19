@@ -1158,6 +1158,17 @@ class Runner {
 		WP_CLI::debug( $this->project_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( 'argv: ' . implode( ' ', $GLOBALS['argv'] ), 'bootstrap' );
 
+		// Ensure WP-CLI runs without restrictive memory limits by default.
+		if(defined( 'Wp_CLI' ) && WP_CLI) {
+			if( ! defined( 'WP_MEMORY_LIMIT') ) {
+				define( 'WP_MEMORY_LIMIT', '-1' );
+			}
+			if( ! defined( 'WP_MAX_MEMORY_LIMIT' ) ) {
+				define( 'WP_MAX_MEMORY_LIMIT', '-1' );
+			}
+			WP_CLI::debug( 'WP_MEMORY_LIMIT and WP_MAX_MEMORY_LIMIT set to unilimted (-1) for CLI context', 'bootstrap' );
+		}
+		
 		if ( $this->alias ) {
 			if ( '@all' === $this->alias && ! isset( $this->aliases['@all'] ) ) {
 				WP_CLI::error( "Cannot use '@all' when no aliases are registered." );
