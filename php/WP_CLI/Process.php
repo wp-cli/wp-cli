@@ -95,7 +95,7 @@ class Process {
 			fclose( $pipes[2] );
 		}
 
-		$return_code = $proc ? proc_close( $proc ) : 0;
+		$return_code = $proc ? proc_close( $proc ) : -1;
 
 		if ( Utils\is_windows() ) {
 			$stdout = (string) file_get_contents( $stdout_file );
