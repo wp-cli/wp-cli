@@ -317,6 +317,10 @@ class Runner {
 	 * @param string $path
 	 */
 	private static function set_wp_root( $path ) {
+		// Normalize Windows-style paths starting with drive letter + forward slash (C:/).
+		if ( preg_match( '#^[A-Z]:/#i', $path ) ) {
+			$path = str_replace( '/', '\\', $path );
+		}
 		if ( ! defined( 'ABSPATH' ) ) {
 			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Declaring a WP native constant.
 			define( 'ABSPATH', Utils\normalize_path( Utils\trailingslashit( $path ) ) );
