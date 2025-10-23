@@ -19,7 +19,7 @@ class Process {
 	private $cwd;
 
 	/**
-	 * @var array Environment variables to set when running the command.
+	 * @var array|null Environment variables to set when running the command.
 	 */
 	private $env;
 
@@ -95,11 +95,11 @@ class Process {
 			fclose( $pipes[2] );
 		}
 
-		$return_code = proc_close( $proc );
+		$return_code = $proc ? proc_close( $proc ) : -1;
 
 		if ( Utils\is_windows() ) {
-			$stdout = file_get_contents( $stdout_file );
-			$stderr = file_get_contents( $stderr_file );
+			$stdout = (string) file_get_contents( $stdout_file );
+			$stderr = (string) file_get_contents( $stderr_file );
 			unlink( $stdout_file );
 			unlink( $stderr_file );
 
