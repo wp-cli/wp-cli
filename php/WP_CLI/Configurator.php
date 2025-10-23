@@ -184,12 +184,22 @@ class Configurator {
 		$assoc_args      = [];
 		$global_assoc    = [];
 		$local_assoc     = [];
+		$end_of_options  = false;
 
-		foreach ( $arguments as $arg ) {
+		$delimiter_index = array_search( '--', $arguments, true );
+
+		foreach ( $arguments as $i => $arg ) {
 			$positional = null;
 			$assoc_arg  = null;
 
-			if ( preg_match( '|^--no-([^=]+)$|', $arg, $matches ) ) {
+			if ( ! $end_of_options && '--' === $arg ) {
+				$end_of_options = true;
+				continue;
+			}
+
+			if ( $end_of_options ) {
+				$positional = $arg;
+			} elseif ( preg_match( '|^--no-([^=]+)$|', $arg, $matches ) ) {
 				$assoc_arg = [ $matches[1], false ];
 			} elseif ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
 				$assoc_arg = [ $matches[1], true ];
@@ -201,10 +211,16 @@ class Configurator {
 
 			if ( ! is_null( $assoc_arg ) ) {
 				$assoc_args[] = $assoc_arg;
-				if ( count( $positional_args ) ) {
-					$local_assoc[] = $assoc_arg;
+				if ( false !== $delimiter_index ) {
+					if ( $i < $delimiter_index ) {
+						$global_assoc[] = $assoc_arg;
+					}
 				} else {
-					$global_assoc[] = $assoc_arg;
+					if ( count( $positional_args ) ) {
+						$local_assoc[] = $assoc_arg;
+					} else {
+						$global_assoc[] = $assoc_arg;
+					}
 				}
 			} elseif ( ! is_null( $positional ) ) {
 				$positional_args[] = $positional;
