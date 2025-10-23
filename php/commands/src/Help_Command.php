@@ -3,6 +3,7 @@
 use cli\Shell;
 use WP_CLI\Dispatcher;
 use WP_CLI\Utils;
+use WP_CLI\Process;
 
 class Help_Command extends WP_CLI_Command {
 
@@ -110,17 +111,81 @@ class Help_Command extends WP_CLI_Command {
 		return implode( "\n", $lines );
 	}
 
+	/**
+	 * Locate an executable binary by name using `which`.
+	 *
+	 * If the binary requested is an alias instead of a binary, this function may return an emptystring.
+	 *
+	 * This may not work accurately in PowerShell.
+	 *
+	 * @param string $binary Name of the binary to be found
+	 * @return boolean True if this command has determined that the binary or other command exists.
+	 */
+	public static function binary_exists( $binary ) {
+		if ( Utils\is_windows() ) {
+			// This may not work in PowerShell; see https://stackoverflow.com/a/304447
+			// If this needs to be adjusted to use 'where.exe' for PowerShell,
+			// then we will need to add a way of detecting whether wp-cli is running in PowerShell.
+			$detector = 'where';
+		} else {
+			// POSIX method to detect whether a command exists
+			// This sometimes detects aliases.
+			$detector = 'command -v';
+		}
+
+		$result = Process::create( "$detector $binary", null, null )->run();
+
+		if ( 0 !== $result->return_code ) {
+			// We could not reliably determine that the binary exists
+			return false;
+		} else {
+			// POSIX binaries: command -v will return the path and exit 0
+			// aliases: command -v may return the alias command and exit 0
+			return true;
+		}
+	}
+
+	/**
+	 * Determine whether to use `less` or `more` as a pager
+	 *
+	 * This caches the determined pager.
+	 *
+	 * @return string The command to use for the pager. Defaults to `more`.
+	 */
+	public static function locate_pager() {
+		static $pager = null;
+
+		if ( empty( $pager ) ) {
+			if ( self::binary_exists( 'less' ) ) {
+				// less is not available in all systems
+				$pager = 'less -R';
+			} else {
+				// more is part of the POSIX definition, and is also available on Windows.
+				$pager = 'more';
+			}
+		}
+
+		return $pager;
+	}
+
+	/**
+	 * Pass a given set of output through the system's terminal pager.
+	 *
+	 * @param string $out The output to be run through the pager.
+	 * @return mixed Termination status of the pager as reported by https://www.php.net/manual/en/function.proc-close.php
+	 */
 	private static function pass_through_pager( $out ) {
 
 		if ( ! Utils\check_proc_available( null /*context*/, true /*return*/ ) ) {
 			WP_CLI::line( $out );
-			WP_CLI::debug( 'Warning: check_proc_available() failed in pass_through_pager().', 'help' );
+			WP_CLI::debug( 'Warning: check_proc_available() failed in pass_through_pager().' );
 			return -1;
 		}
 
 		$pager = getenv( 'PAGER' );
+		// if '' we should assume that the user has explicitly disabled the pager by setting `PAGER=`
 		if ( false === $pager ) {
-			$pager = Utils\is_windows() ? 'more' : 'less -R';
+			$pager = self::locate_pager();
 		}
 
 		// For Windows 7 need to set code page to something other than Unicode (65001) to get around "Not enough memory." error with `more.com` on PHP 7.1+.
