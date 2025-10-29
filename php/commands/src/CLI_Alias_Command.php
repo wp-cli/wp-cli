@@ -15,6 +15,9 @@ use WP_CLI\Utils;
  * `@dev` could refer to a development install and `@prod` could refer to a production install.
  * This command gives you and option to add, update and delete, the registered aliases you have available.
  *
+ * Environment variables can be used in alias definitions using the syntax `${env.VARIABLE_NAME}`.
+ * This allows you to centralize configuration in environment variables or .env files.
+ *
  * ## EXAMPLES
  *
  *     # List alias information.
@@ -41,6 +44,14 @@ use WP_CLI\Utils;
  *     # Delete alias.
  *     $ wp cli alias delete @prod
  *     Success: Deleted '@prod' alias.
+ *
+ *     # Use environment variables in alias definitions.
+ *     # In wp-cli.yml:
+ *     # @prod:
+ *     #   ssh: ${env.PROD_USER}@${env.PROD_HOST}:${env.PROD_PATH}
+ *     #   user: ${env.PROD_WP_USER}
+ *     $ export PROD_USER=myuser PROD_HOST=example.com PROD_PATH=/var/www PROD_WP_USER=admin
+ *     $ wp @prod option get home
  *
  * @package wp-cli
  * @when    before_wp_load
