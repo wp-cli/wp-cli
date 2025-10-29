@@ -664,3 +664,52 @@ Feature: Create shortcuts to specific WordPress installs
       @foo:
         path: {TEST_DIR}/foo
       """
+
+  Scenario: Use environment variables in alias definitions
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @dev:
+        user: ${env.TEST_WP_USER}
+        path: ${env.TEST_WP_PATH}
+      """
+
+    When I run `TEST_WP_USER=admin TEST_WP_PATH=foo wp @dev eval 'echo get_current_user_id();'`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `TEST_WP_USER=testuser TEST_WP_PATH=foo wp @dev option get home`
+    Then STDOUT should be:
+      """
+      https://example.com
+      """
+
+  Scenario: Use environment variables in SSH alias definitions
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: ${env.SSH_USER}@${env.SSH_HOST}:${env.SSH_PATH}
+      """
+
+    When I run `SSH_USER=admin SSH_HOST=example.com SSH_PATH=/var/www wp cli alias get @prod`
+    Then STDOUT should be:
+      """
+      ssh: admin@example.com:/var/www
+      """
+
+  Scenario: Handle missing environment variables gracefully
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @test:
+        path: ${env.NONEXISTENT_VAR}/wordpress
+      """
+
+    When I run `wp cli alias get @test`
+    Then STDOUT should contain:
+      """
+      ${env.NONEXISTENT_VAR}
+      """
