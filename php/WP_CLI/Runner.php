@@ -1122,17 +1122,44 @@ class Runner {
 		}
 		$config_path = escapeshellarg( $config_path );
 
-		foreach ( $aliases as $alias ) {
-			WP_CLI::log( $alias );
-			$args           = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
-			$assoc_args     = Utils\assoc_args_to_str( $this->assoc_args );
-			$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
-			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
-			$pipes          = [];
-			$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
+		// Check if parallel execution is enabled
+		$parallel = ! empty( $this->config['parallel'] );
 
-			if ( $proc ) {
+		if ( $parallel ) {
+			// Run aliases in parallel
+			$procs = [];
+			foreach ( $aliases as $alias ) {
+				WP_CLI::log( $alias );
+				$args           = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
+				$assoc_args     = Utils\assoc_args_to_str( $this->assoc_args );
+				$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
+				$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
+				$pipes          = [];
+				$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
+
+				if ( $proc ) {
+					$procs[] = $proc;
+				}
+			}
+
+			// Wait for all processes to complete
+			foreach ( $procs as $proc ) {
 				proc_close( $proc );
+			}
+		} else {
+			// Run aliases sequentially (original behavior)
+			foreach ( $aliases as $alias ) {
+				WP_CLI::log( $alias );
+				$args           = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
+				$assoc_args     = Utils\assoc_args_to_str( $this->assoc_args );
+				$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
+				$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
+				$pipes          = [];
+				$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
+
+				if ( $proc ) {
+					proc_close( $proc );
+				}
 			}
 		}
 	}
