@@ -681,8 +681,7 @@ Feature: Create shortcuts to specific WordPress installs
 
     When I run `wp @foo option update home 'http://parallel-foo.com'`
     And I run `wp @bar option update home 'http://parallel-bar.com'`
-
-    When I run `wp @both option get home --parallel`
+    And I run `wp @both option get home --parallel`
     Then STDOUT should contain:
       """
       @foo
