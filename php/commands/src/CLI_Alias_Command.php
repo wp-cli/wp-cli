@@ -13,7 +13,7 @@ use WP_CLI\Utils;
  *
  * Aliases are shorthand references to WordPress installs. For instance,
  * `@dev` could refer to a development install and `@prod` could refer to a production install.
- * This command gives you and option to add, update and delete, the registered aliases you have available.
+ * This command gives you an option to add, update and delete, the registered aliases you have available.
  *
  * Environment variables can be used in alias definitions using the syntax `${env.VARIABLE_NAME}`.
  * This allows you to centralize configuration in environment variables or .env files.
