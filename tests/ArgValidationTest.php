@@ -99,9 +99,11 @@ class ArgValidationTest extends TestCase {
 
 		$unknown = $validator->get_unknown();
 
-		// Should detect the two parts of the broken synopsis
-		$this->assertCount( 2, $unknown );
+		// Should detect all parts of the broken synopsis
+		// "value with spaces" splits into 3 tokens: "<value", "with", "spaces>"
+		$this->assertCount( 3, $unknown );
 		$this->assertContains( '[--invalid=<value', $unknown );
+		$this->assertContains( 'with', $unknown );
 		$this->assertContains( 'spaces>]', $unknown );
 	}
 
