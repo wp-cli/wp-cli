@@ -71,4 +71,37 @@ class ArgValidationTest extends TestCase {
 		$this->assertCount( 0, $errors['fatal'] );
 		$this->assertCount( 0, $errors['warning'] );
 	}
+
+	public function testGetUnknownWithSpacesInSynopsis(): void {
+		// Synopsis with spaces in value parameters should be detected as unknown
+		$validator = new SynopsisValidator( '[--user_registered=<yyyy-mm-dd hh:ii:ss>]' );
+
+		$unknown = $validator->get_unknown();
+
+		// Should detect both parts of the broken synopsis
+		$this->assertCount( 2, $unknown );
+		$this->assertContains( '[--user_registered=<yyyy-mm-dd', $unknown );
+		$this->assertContains( 'hh:ii:ss>]', $unknown );
+	}
+
+	public function testGetUnknownWithValidSynopsis(): void {
+		// Valid synopsis should have no unknown tokens
+		$validator = new SynopsisValidator( '[--user_registered=<yyyy-mm-dd-hh-ii-ss>]' );
+
+		$unknown = $validator->get_unknown();
+
+		$this->assertCount( 0, $unknown );
+	}
+
+	public function testGetUnknownWithMultipleInvalidTokens(): void {
+		// Test with a mix of valid and invalid tokens
+		$validator = new SynopsisValidator( '--valid=<value> [--invalid=<value with spaces>] [--another-valid]' );
+
+		$unknown = $validator->get_unknown();
+
+		// Should detect the two parts of the broken synopsis
+		$this->assertCount( 2, $unknown );
+		$this->assertContains( '[--invalid=<value', $unknown );
+		$this->assertContains( 'spaces>]', $unknown );
+	}
 }

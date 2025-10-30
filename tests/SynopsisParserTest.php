@@ -191,4 +191,35 @@ class SynopsisParserTest extends TestCase {
 		$r = SynopsisParser::render( $a );
 		$this->assertEquals( $o, $r );
 	}
+
+	public function testSpacesInValueParameterAreInvalid(): void {
+		// Spaces in value parameters should be detected as invalid
+		// This prevents issues like https://github.com/wp-cli/entity-command/pull/43
+		$r = SynopsisParser::parse( '[--user_registered=<yyyy-mm-dd hh:ii:ss>]' );
+
+		// When there are spaces, the synopsis is split into multiple tokens
+		// and marked as 'unknown' type
+		$this->assertCount( 2, $r );
+		$this->assertEquals( 'unknown', $r[0]['type'] );
+		$this->assertEquals( 'unknown', $r[1]['type'] );
+	}
+
+	public function testSpacesInMandatoryAssocAreInvalid(): void {
+		// Test with mandatory assoc parameter with spaces
+		$r = SynopsisParser::parse( '--date=<yyyy-mm-dd hh:ii:ss>' );
+
+		$this->assertCount( 2, $r );
+		$this->assertEquals( 'unknown', $r[0]['type'] );
+		$this->assertEquals( 'unknown', $r[1]['type'] );
+	}
+
+	public function testNoSpacesInValueParameterIsValid(): void {
+		// Verify that the correct format (without spaces) works
+		$r = SynopsisParser::parse( '[--user_registered=<yyyy-mm-dd-hh-ii-ss>]' );
+
+		$this->assertCount( 1, $r );
+		$this->assertEquals( 'assoc', $r[0]['type'] );
+		$this->assertEquals( 'user_registered', $r[0]['name'] );
+		$this->assertTrue( $r[0]['optional'] );
+	}
 }
