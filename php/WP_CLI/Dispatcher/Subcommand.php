@@ -249,8 +249,16 @@ class Subcommand extends CompositeCommand {
 				$description = '';
 				if ( 'positional' === $spec_arg['type'] ) {
 					$description = $docparser->get_arg_desc( $spec_arg['name'] );
-				} elseif ( 'assoc' === $spec_arg['type'] || 'flag' === $spec_arg['type'] ) {
+				} elseif ( 'assoc' === $spec_arg['type'] ) {
 					$description = $docparser->get_param_desc( $spec_arg['name'] );
+				} elseif ( 'flag' === $spec_arg['type'] ) {
+					// For flags, the pattern is [--flag] not [--flag=<value>]
+					// So we need a custom regex pattern in the longdesc
+					$longdesc     = $this->get_longdesc();
+					$flag_pattern = "/\[?--{$spec_arg['name']}\]\s*\n:\s*(.+?)(\n|$)/";
+					if ( preg_match( $flag_pattern, $longdesc, $matches ) ) {
+						$description = trim( $matches[1] );
+					}
 				}
 
 				if ( ! empty( $description ) ) {
