@@ -249,6 +249,15 @@ class Subcommand extends CompositeCommand {
 				$description = '';
 				if ( 'positional' === $spec_arg['type'] ) {
 					$description = $docparser->get_arg_desc( $spec_arg['name'] );
+					// If get_arg_desc doesn't find it (e.g., for simple <arg> without modifiers),
+					// try a simpler pattern that matches <arg> followed by : description
+					if ( empty( $description ) ) {
+						$longdesc    = $this->get_longdesc();
+						$arg_pattern = "/\[?<{$spec_arg['name']}>\s*\n:\s*(.+?)(\n|$)/";
+						if ( preg_match( $arg_pattern, $longdesc, $matches ) ) {
+							$description = trim( $matches[1] );
+						}
+					}
 				} elseif ( 'assoc' === $spec_arg['type'] ) {
 					$description = $docparser->get_param_desc( $spec_arg['name'] );
 				} elseif ( 'flag' === $spec_arg['type'] ) {
