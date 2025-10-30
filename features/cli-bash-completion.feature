@@ -337,3 +337,58 @@ Feature: `wp cli completions` tasks
 
     When I run `wp cli completions --line="wp core download --no-color --no-color" --point=100`
     Then STDOUT should be empty
+
+  Scenario: Bash Completion for flag values with enum options
+    Given an empty directory
+
+    When I run `wp cli completions --line="wp cli check-update --format=" --point=100`
+    Then STDOUT should contain:
+      """
+      table
+      """
+    And STDOUT should contain:
+      """
+      csv
+      """
+    And STDOUT should contain:
+      """
+      json
+      """
+    And STDOUT should contain:
+      """
+      yaml
+      """
+    And STDOUT should contain:
+      """
+      count
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `wp cli completions --line="wp cli check-update --format=j" --point=100`
+    Then STDOUT should contain:
+      """
+      json
+      """
+    And STDOUT should not contain:
+      """
+      table
+      """
+    And STDOUT should not contain:
+      """
+      csv
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `wp cli completions --line="wp cli info --format=" --point=100`
+    Then STDOUT should contain:
+      """
+      list
+      """
+    And STDOUT should contain:
+      """
+      json
+      """
+    And STDERR should be empty
+    And the return code should be 0
