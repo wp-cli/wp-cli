@@ -255,11 +255,11 @@ class FileCache {
 		if ( $max_size > 0 ) {
 			$files = $this->get_cache_files();
 			
-			// Sort files by accessed time (oldest first)
+			// Sort files by accessed time (newest first)
 			usort(
 				$files,
 				function ( $a, $b ) {
-					return $a->getATime() <=> $b->getATime();
+					return $b->getATime() <=> $a->getATime();
 				}
 			);
 
@@ -451,7 +451,9 @@ class FileCache {
 				}
 			}
 		} catch ( Exception $e ) {
-			// If directory iteration fails, return empty array
+			// If directory iteration fails (e.g., permissions issue, directory deleted),
+			// return empty array. This matches the behavior of Symfony Finder which
+			// would also return an empty result for inaccessible directories.
 		}
 
 		return $files;
