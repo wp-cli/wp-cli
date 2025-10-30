@@ -291,11 +291,8 @@ class Subcommand extends CompositeCommand {
 							$assoc_args[ $spec_arg['name'] ] = $response;
 							break;
 						case 'flag':
-							// Handle flag response
-							if ( true === $response ) {
-								// Default was used (empty response)
-								$assoc_args[ $spec_arg['name'] ] = true;
-							} elseif ( 'Y' === strtoupper( $response ) ) {
+							// Set flag if default was used (true) or user explicitly typed 'Y'
+							if ( true === $response || 'Y' === strtoupper( $response ) ) {
 								$assoc_args[ $spec_arg['name'] ] = true;
 							}
 							// For 'n' or any other input, flag is not set
