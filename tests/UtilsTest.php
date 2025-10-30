@@ -609,8 +609,9 @@ class UtilsTest extends TestCase {
 		if ( function_exists( 'curl_init' ) ) {
 			$ch     = curl_init();
 			$result = Utils\get_curl_error_code( $ch );
-			// Should return 0 (no error) for a freshly initialized curl handle
+			// Verify the function returns an integer value for valid curl handles
 			$this->assertIsInt( $result );
+			// A freshly initialized curl handle should have no error (error code 0)
 			$this->assertSame( 0, $result );
 			curl_close( $ch );
 		}
