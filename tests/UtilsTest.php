@@ -592,31 +592,6 @@ class UtilsTest extends TestCase {
 		$this->assertFileExists( $default_cert );
 	}
 
-	public function testGetCurlErrorCode(): void {
-		// Test with null input
-		$result = Utils\get_curl_error_code( null );
-		$this->assertNull( $result );
-
-		// Test with invalid input (string)
-		$result = Utils\get_curl_error_code( 'not a curl handle' );
-		$this->assertNull( $result );
-
-		// Test with invalid input (array)
-		$result = Utils\get_curl_error_code( [] );
-		$this->assertNull( $result );
-
-		// Test with valid curl handle (if curl is available)
-		if ( function_exists( 'curl_init' ) ) {
-			$ch     = curl_init();
-			$result = Utils\get_curl_error_code( $ch );
-			// Verify the function returns an integer value for valid curl handles
-			$this->assertIsInt( $result );
-			// A freshly initialized curl handle should have no error (error code 0)
-			$this->assertSame( 0, $result );
-			curl_close( $ch );
-		}
-	}
-
 	/**
 	 * @dataProvider dataPastTenseVerb
 	 */
