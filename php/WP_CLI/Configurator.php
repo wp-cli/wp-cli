@@ -436,7 +436,7 @@ class Configurator {
 			return $value;
 		}
 
-		return preg_replace_callback(
+		$result = preg_replace_callback(
 			'/\$\{env\.([A-Za-z0-9_]+)\}/',
 			function ( $matches ) {
 				$env_var = getenv( $matches[1] );
@@ -444,5 +444,8 @@ class Configurator {
 			},
 			$value
 		);
+
+		// Ensure we always return a string, even if preg_replace_callback fails.
+		return is_string( $result ) ? $result : $value;
 	}
 }

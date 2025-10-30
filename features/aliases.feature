@@ -680,7 +680,7 @@ Feature: Create shortcuts to specific WordPress installs
       1
       """
 
-    When I run `TEST_WP_USER=testuser TEST_WP_PATH=foo wp @dev option get home`
+    When I run `TEST_WP_USER=admin TEST_WP_PATH=foo wp @dev option get home`
     Then STDOUT should be:
       """
       https://example.com
