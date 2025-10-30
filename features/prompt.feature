@@ -249,7 +249,7 @@ Feature: Prompt user for input
        * @when before_wp_load
        */
       WP_CLI::add_command( 'test-desc', function( $args, $assoc_args ) {
-        WP_CLI::line( 'name: ' . $args[0] );
+        WP_CLI::line( 'name: ' . ( isset( $args[0] ) ? $args[0] : 'none' ) );
         WP_CLI::line( 'type: ' . ( isset( $assoc_args['type'] ) ? $assoc_args['type'] : 'none' ) );
         WP_CLI::line( 'enabled: ' . ( isset( $assoc_args['enabled'] ) ? 'yes' : 'no' ) );
       } );
@@ -270,15 +270,15 @@ Feature: Prompt user for input
     Then STDERR should be empty
     And STDOUT should contain:
       """
-      (The name of the item)
+      (The name of the item.)
       """
     And STDOUT should contain:
       """
-      (The type of the item)
+      (The type of the item.)
       """
     And STDOUT should contain:
       """
-      (Whether the item is enabled)
+      (Whether the item is enabled.)
       """
     And STDOUT should contain:
       """
