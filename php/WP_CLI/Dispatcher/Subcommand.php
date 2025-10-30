@@ -132,6 +132,41 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Get the description for an argument from documentation.
+	 *
+	 * @param array $spec_arg Argument specification from SynopsisParser
+	 * @param DocParser $docparser DocParser instance for retrieving descriptions
+	 * @param string $longdesc Long description text for regex matching
+	 * @return string Description text, or empty string if not found
+	 */
+	private function get_arg_description( $spec_arg, $docparser, $longdesc ) {
+		$description = '';
+
+		if ( 'positional' === $spec_arg['type'] ) {
+			$description = $docparser->get_arg_desc( $spec_arg['name'] );
+			// If get_arg_desc doesn't find it (e.g., for simple <arg> without modifiers),
+			// try a simpler pattern that matches <arg> followed by : description
+			if ( empty( $description ) ) {
+				$arg_pattern = "/\[?<{$spec_arg['name']}>\s*\n:\s*(.+?)(\n|$)/";
+				if ( preg_match( $arg_pattern, $longdesc, $matches ) ) {
+					$description = trim( $matches[1] );
+				}
+			}
+		} elseif ( 'assoc' === $spec_arg['type'] ) {
+			$description = $docparser->get_param_desc( $spec_arg['name'] );
+		} elseif ( 'flag' === $spec_arg['type'] ) {
+			// For flags, the pattern is [--flag] not [--flag=<value>]
+			// So we need a custom regex pattern in the longdesc
+			$flag_pattern = "/\[?--{$spec_arg['name']}\]\s*\n:\s*(.+?)(\n|$)/";
+			if ( preg_match( $flag_pattern, $longdesc, $matches ) ) {
+				$description = trim( $matches[1] );
+			}
+		}
+
+		return $description;
+	}
+
+	/**
 	 * Interactively prompt the user for input
 	 * based on defined synopsis and passed arguments.
 	 *
@@ -247,27 +282,7 @@ class Subcommand extends CompositeCommand {
 				$prompt = $current_prompt . $spec_arg['token'];
 
 				// Add description if available
-				$description = '';
-				if ( 'positional' === $spec_arg['type'] ) {
-					$description = $docparser->get_arg_desc( $spec_arg['name'] );
-					// If get_arg_desc doesn't find it (e.g., for simple <arg> without modifiers),
-					// try a simpler pattern that matches <arg> followed by : description
-					if ( empty( $description ) ) {
-						$arg_pattern = "/\[?<{$spec_arg['name']}>\s*\n:\s*(.+?)(\n|$)/";
-						if ( preg_match( $arg_pattern, $longdesc, $matches ) ) {
-							$description = trim( $matches[1] );
-						}
-					}
-				} elseif ( 'assoc' === $spec_arg['type'] ) {
-					$description = $docparser->get_param_desc( $spec_arg['name'] );
-				} elseif ( 'flag' === $spec_arg['type'] ) {
-					// For flags, the pattern is [--flag] not [--flag=<value>]
-					// So we need a custom regex pattern in the longdesc
-					$flag_pattern = "/\[?--{$spec_arg['name']}\]\s*\n:\s*(.+?)(\n|$)/";
-					if ( preg_match( $flag_pattern, $longdesc, $matches ) ) {
-						$description = trim( $matches[1] );
-					}
-				}
+				$description = $this->get_arg_description( $spec_arg, $docparser, $longdesc );
 
 				if ( ! empty( $description ) ) {
 					$prompt .= ' (' . $description . ')';
