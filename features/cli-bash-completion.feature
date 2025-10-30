@@ -392,3 +392,29 @@ Feature: `wp cli completions` tasks
       """
     And STDERR should be empty
     And the return code should be 0
+
+    When I run `wp cli completions --line="wp cli check-update --format=c" --point=100`
+    Then STDOUT should contain:
+      """
+      csv
+      """
+    And STDOUT should contain:
+      """
+      count
+      """
+    And STDOUT should not contain:
+      """
+      json
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `wp cli completions --line="wp cli check-update --format=xyz" --point=100`
+    Then STDOUT should be empty
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `wp cli completions --line="wp cli check-update --field=" --point=100`
+    Then STDOUT should be empty
+    And STDERR should be empty
+    And the return code should be 0
