@@ -227,13 +227,13 @@ Feature: Prompt user for input
       Created category
       """
 
-  Scenario: Flag prompt should show notation consistently
+  Scenario: Flag prompt should accept Y for yes
     Given an empty directory
     And a cmd.php file:
       """
       <?php
       /**
-       * Test that flag prompt shows (Y/n) notation.
+       * Test that flag prompt accepts Y.
        *
        * ## OPTIONS
        *
@@ -242,7 +242,7 @@ Feature: Prompt user for input
        *
        * @when before_wp_load
        */
-      WP_CLI::add_command( 'test-flag-notation', function( $_, $assoc_args ){
+      WP_CLI::add_command( 'test-flag-y', function( $_, $assoc_args ){
         $flag_value = isset( $assoc_args['flag'] ) ? 'true' : 'false';
         WP_CLI::line( 'flag: ' . $flag_value );
       });
@@ -257,23 +257,23 @@ Feature: Prompt user for input
         - cmd.php
       """
 
-    When I run `wp test-flag-notation --prompt < yes-response`
+    When I run `wp test-flag-y --prompt < yes-response`
     Then STDOUT should contain:
       """
-      (Y/n)
+      wp test-flag-y --flag
       """
     And STDOUT should contain:
       """
       flag: true
       """
 
-  Scenario: Assoc param with default should show default value in brackets
+  Scenario: Assoc param with default should apply default on empty input
     Given an empty directory
     And a cmd.php file:
       """
       <?php
       /**
-       * Test that default value is shown for assoc params.
+       * Test that default value is applied for assoc params.
        *
        * ## OPTIONS
        *
@@ -306,20 +306,20 @@ Feature: Prompt user for input
     When I run `wp test-assoc-default --prompt < empty-response`
     Then STDOUT should contain:
       """
-      [table]
+      wp test-assoc-default --format='table'
       """
     And STDOUT should contain:
       """
       format: table
       """
 
-  Scenario: Positional arg with default should show default value in brackets
+  Scenario: Positional arg with default should apply default on empty input
     Given an empty directory
     And a cmd.php file:
       """
       <?php
       /**
-       * Test that default value is shown for positional args.
+       * Test that default value is applied for positional args.
        *
        * ## OPTIONS
        *
@@ -349,7 +349,7 @@ Feature: Prompt user for input
     When I run `wp test-positional-default --prompt < empty-response`
     Then STDOUT should contain:
       """
-      [World]
+      wp test-positional-default 'World'
       """
     And STDOUT should contain:
       """
