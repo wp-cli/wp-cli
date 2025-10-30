@@ -811,6 +811,28 @@ function replace_path_consts( $source, $path ) {
 }
 
 /**
+ * Safely get the curl error code from a curl handle.
+ *
+ * This function checks if curl extension is available and if the handle is valid
+ * before attempting to get the error code.
+ *
+ * @param mixed $curl_handle The curl handle to check.
+ * @return int|null The curl error code, or null if not available.
+ */
+function get_curl_error_code( $curl_handle ) {
+	if ( ! function_exists( 'curl_errno' ) ) {
+		return null;
+	}
+
+	// Check if the handle is a valid curl resource/object
+	if ( ! is_resource( $curl_handle ) && ! ( is_object( $curl_handle ) && $curl_handle instanceof \CurlHandle ) ) {
+		return null;
+	}
+
+	return curl_errno( $curl_handle );
+}
+
+/**
  * Make a HTTP request to a remote URL.
  *
  * Wraps the Requests HTTP library to ensure every request includes a cert.
@@ -872,14 +894,15 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		try {
 			return $request_method( $url, $headers, $data, $method, $options );
 		} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
-			/**
-			 * @var \CurlHandle $curl_handle
-			 */
-			$curl_handle = $exception->getData();
+			$curl_handle  = $exception->getData();
+			$curl_errno   = get_curl_error_code( $curl_handle );
+			// CURLE_SSL_CACERT = 60
+			$is_ssl_cacert_error = null !== $curl_errno && 60 === $curl_errno;
+
 			if (
 				true !== $options['verify']
 				|| 'curlerror' !== $exception->getType()
-				|| curl_errno( $curl_handle ) !== CURLE_SSL_CACERT
+				|| ! $is_ssl_cacert_error
 			) {
 				throw $exception;
 			}
@@ -889,16 +912,17 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 			return $request_method( $url, $headers, $data, $method, $options );
 		}
 	} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
-		/**
-		 * @var \CurlHandle $curl_handle
-		 */
 		$curl_handle = $exception->getData();
+		$curl_errno  = get_curl_error_code( $curl_handle );
+		// CURLE_SSL_CONNECT_ERROR = 35, CURLE_SSL_CERTPROBLEM = 58, CURLE_SSL_CACERT_BADFILE = 77
+		$is_ssl_error = null !== $curl_errno && in_array( $curl_errno, [ 35, 58, 77 ], true );
+
 		if (
 			! $insecure
 			||
 			'curlerror' !== $exception->getType()
 			||
-			! in_array( curl_errno( $curl_handle ), [ CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, CURLE_SSL_CACERT_BADFILE ], true )
+			! $is_ssl_error
 		) {
 			$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $exception->getMessage() );
 			if ( $halt_on_error ) {
