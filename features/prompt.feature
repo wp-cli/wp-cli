@@ -310,7 +310,7 @@ Feature: Prompt user for input
        * @when before_wp_load
        */
       WP_CLI::add_command( 'test-no-desc', function( $args, $assoc_args ) {
-        WP_CLI::line( 'name: ' . $args[0] );
+        WP_CLI::line( 'name: ' . ( isset( $args[0] ) ? $args[0] : 'none' ) );
         WP_CLI::line( 'flag: ' . ( isset( $assoc_args['flag'] ) ? 'yes' : 'no' ) );
       } );
       """
