@@ -17,12 +17,7 @@
     },
     "require-dev": {
         "justinrainbow/json-schema": "^6.3",
-        "roave/security-advisories": "dev-latest",
-        "wp-cli/db-command": "^2",
-        "wp-cli/entity-command": "^2",
-        "wp-cli/extension-command": "^2",
-        "wp-cli/package-command": "^2",
-        "wp-cli/wp-cli-tests": "^5"
+        "roave/security-advisories": "dev-latest"
     },
     "suggest": {
         "ext-readline": "Include for a better --prompt implementation",
