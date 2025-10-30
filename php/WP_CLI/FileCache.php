@@ -254,7 +254,7 @@ class FileCache {
 		// Unlink older files if max cache size is exceeded.
 		if ( $max_size > 0 ) {
 			$files = $this->get_cache_files();
-			
+
 			// Sort files by accessed time (newest first)
 			usort(
 				$files,
@@ -454,6 +454,7 @@ class FileCache {
 			// If directory iteration fails (e.g., permissions issue, directory deleted),
 			// return empty array. This matches the behavior of Symfony Finder which
 			// would also return an empty result for inaccessible directories.
+			return [];
 		}
 
 		return $files;
