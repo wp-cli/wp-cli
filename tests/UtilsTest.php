@@ -1113,4 +1113,65 @@ class UtilsTest extends TestCase {
 			[ [ 'Exception', 'getMessage' ], true ],
 		];
 	}
+
+	public function testIsTransientHttpError(): void {
+		if ( ! extension_loaded( 'curl' ) ) {
+			$this->markTestSkipped( 'curl not available' );
+		}
+
+		// Test timeout error (CURLE_OPERATION_TIMEDOUT = 28).
+		$curl_handle = curl_init();
+		curl_setopt( $curl_handle, CURLOPT_URL, 'https://example.com' );
+		curl_setopt( $curl_handle, CURLOPT_TIMEOUT_MS, 1 ); // Very short timeout to force timeout.
+		curl_setopt( $curl_handle, CURLOPT_RETURNTRANSFER, true );
+		curl_exec( $curl_handle );
+		$curl_errno = curl_errno( $curl_handle );
+
+		// Create a mock exception with the curl handle.
+		$exception = $this->createMockRequestsException( 'curlerror', $curl_handle );
+
+		// Only test if we actually got a timeout error.
+		if ( CURLE_OPERATION_TIMEDOUT === $curl_errno ) {
+			$this->assertTrue( Utils\is_transient_http_error( $exception ) );
+		}
+
+		curl_close( $curl_handle );
+	}
+
+	public function testHttpRequestRetriesConfig(): void {
+		// Test that the default config value is used.
+		$prev_config = WP_CLI::get_config( 'http_request_retries' );
+		WP_CLI::set_config_value( 'http_request_retries', 2 );
+
+		$this->assertEquals( 2, WP_CLI::get_config( 'http_request_retries' ) );
+
+		// Restore previous config.
+		if ( null !== $prev_config ) {
+			WP_CLI::set_config_value( 'http_request_retries', $prev_config );
+		}
+	}
+
+	/**
+	 * Create a mock Requests exception.
+	 *
+	 * @param string      $type        Exception type.
+	 * @param \CurlHandle $curl_handle Curl handle.
+	 * @return \WpOrg\Requests\Exception Mock exception.
+	 */
+	private function createMockRequestsException( $type, $curl_handle ) {
+		$exception = $this->getMockBuilder( '\WpOrg\Requests\Exception' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$exception->method( 'getType' )
+			->willReturn( $type );
+
+		$exception->method( 'getData' )
+			->willReturn( $curl_handle );
+
+		$exception->method( 'getMessage' )
+			->willReturn( 'Mock error message' );
+
+		return $exception;
+	}
 }

@@ -811,9 +811,44 @@ function replace_path_consts( $source, $path ) {
 }
 
 /**
+ * Check if an HTTP exception is a transient error that should be retried.
+ *
+ * @param \Requests_Exception|\WpOrg\Requests\Exception $exception The exception to check.
+ * @return bool True if the error is transient and should be retried.
+ */
+function is_transient_http_error( $exception ) {
+	// Check if it's a curl error.
+	if ( 'curlerror' !== $exception->getType() ) {
+		return false;
+	}
+
+	$curl_handle = $exception->getData();
+	if ( ! is_resource( $curl_handle ) && ! $curl_handle instanceof \CurlHandle ) {
+		return false;
+	}
+
+	$curl_errno = curl_errno( $curl_handle );
+
+	// List of curl error codes that are considered transient.
+	// These are typically network-related errors that may succeed on retry.
+	$transient_curl_errors = [
+		CURLE_OPERATION_TIMEDOUT,    // 28 - Operation timeout.
+		CURLE_COULDNT_RESOLVE_HOST,  // 6 - Couldn't resolve host.
+		CURLE_COULDNT_CONNECT,       // 7 - Failed to connect to host.
+		CURLE_PARTIAL_FILE,          // 18 - Transferred a partial file.
+		CURLE_GOT_NOTHING,           // 52 - Server returned nothing.
+		CURLE_SEND_ERROR,            // 55 - Failed sending network data.
+		CURLE_RECV_ERROR,            // 56 - Failure in receiving network data.
+	];
+
+	return in_array( $curl_errno, $transient_curl_errors, true );
+}
+
+/**
  * Make a HTTP request to a remote URL.
  *
  * Wraps the Requests HTTP library to ensure every request includes a cert.
+ * Automatically retries on transient failures (timeouts, connection issues).
  *
  * ```
  * # `wp core download` verifies the hash for a downloaded WordPress archive
@@ -839,17 +874,19 @@ function replace_path_consts( $source, $path ) {
  *                               or string absolute path to CA cert to use.
  *                               Defaults to detected CA cert bundled with the Requests library.
  *     @type bool $insecure      Whether to retry automatically without certificate validation.
+ *     @type int $retries        Number of times to retry on transient failures. Overrides http_request_retries config.
  * }
  * @return \Requests_Response|Response
  * @throws RuntimeException If the request failed.
  * @throws ExitException If the request failed and $halt_on_error is true.
  *
- * @phpstan-param array{halt_on_error?: bool, verify?: bool|string, insecure?: bool} $options
+ * @phpstan-param array{halt_on_error?: bool, verify?: bool|string, insecure?: bool, retries?: int} $options
  */
 function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
-	unset( $options['halt_on_error'] );
+	$max_retries   = isset( $options['retries'] ) ? (int) $options['retries'] : (int) WP_CLI::get_config( 'http_request_retries' );
+	unset( $options['halt_on_error'], $options['retries'] );
 
 	if ( ! isset( $options['verify'] ) ) {
 		// 'curl.cainfo' enforces the CA file to use, otherwise fallback to system-wide defaults then use the embedded CA file.
@@ -868,65 +905,92 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 	 */
 	$request_method = [ RequestsLibrary::get_class_name(), 'request' ];
 
-	try {
+	$attempt           = 0;
+	$last_exception    = null;
+	$retry_after_delay = 1; // Start with 1 second delay.
+
+	while ( $attempt <= $max_retries ) {
+		++$attempt;
+
 		try {
-			return $request_method( $url, $headers, $data, $method, $options );
+			try {
+				return $request_method( $url, $headers, $data, $method, $options );
+			} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
+				/**
+				 * @var \CurlHandle $curl_handle
+				 */
+				$curl_handle = $exception->getData();
+				if (
+					true !== $options['verify']
+					|| 'curlerror' !== $exception->getType()
+					|| curl_errno( $curl_handle ) !== CURLE_SSL_CACERT
+				) {
+					throw $exception;
+				}
+
+				$options['verify'] = get_default_cacert( $halt_on_error );
+
+				return $request_method( $url, $headers, $data, $method, $options );
+			}
 		} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
 			/**
 			 * @var \CurlHandle $curl_handle
 			 */
 			$curl_handle = $exception->getData();
 			if (
-				true !== $options['verify']
-				|| 'curlerror' !== $exception->getType()
-				|| curl_errno( $curl_handle ) !== CURLE_SSL_CACERT
+				! $insecure
+				||
+				'curlerror' !== $exception->getType()
+				||
+				! in_array( curl_errno( $curl_handle ), [ CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, CURLE_SSL_CACERT_BADFILE ], true )
 			) {
-				throw $exception;
+				// Check if this is a transient error that should be retried.
+				$is_retryable = is_transient_http_error( $exception );
+
+				if ( ! $is_retryable || $attempt > $max_retries ) {
+					$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $exception->getMessage() );
+					if ( $halt_on_error ) {
+						WP_CLI::error( $error_msg );
+					}
+					throw new RuntimeException( $error_msg, 0, $exception );
+				}
+
+				// Store exception and retry.
+				$last_exception = $exception;
+				WP_CLI::debug( sprintf( 'Retrying HTTP request to %s (attempt %d/%d) after transient error: %s', $url, $attempt, $max_retries + 1, $exception->getMessage() ), 'http' );
+				sleep( $retry_after_delay );
+				$retry_after_delay = min( $retry_after_delay * 2, 10 ); // Exponential backoff, max 10 seconds.
+				continue;
 			}
 
-			$options['verify'] = get_default_cacert( $halt_on_error );
+			$warning = sprintf(
+				"Re-trying without verify after failing to get verified url '%s' %s.",
+				$url,
+				$exception->getMessage()
+			);
+			WP_CLI::warning( $warning );
 
-			return $request_method( $url, $headers, $data, $method, $options );
-		}
-	} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
-		/**
-		 * @var \CurlHandle $curl_handle
-		 */
-		$curl_handle = $exception->getData();
-		if (
-			! $insecure
-			||
-			'curlerror' !== $exception->getType()
-			||
-			! in_array( curl_errno( $curl_handle ), [ CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, CURLE_SSL_CACERT_BADFILE ], true )
-		) {
-			$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $exception->getMessage() );
-			if ( $halt_on_error ) {
-				WP_CLI::error( $error_msg );
+			// Disable certificate validation for the next try.
+			$options['verify'] = false;
+
+			try {
+				return $request_method( $url, $headers, $data, $method, $options );
+			} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
+				$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $exception->getMessage() );
+				if ( $halt_on_error ) {
+					WP_CLI::error( $error_msg );
+				}
+				throw new RuntimeException( $error_msg, 0, $exception );
 			}
-			throw new RuntimeException( $error_msg, 0, $exception );
-		}
-
-		$warning = sprintf(
-			"Re-trying without verify after failing to get verified url '%s' %s.",
-			$url,
-			$exception->getMessage()
-		);
-		WP_CLI::warning( $warning );
-
-		// Disable certificate validation for the next try.
-		$options['verify'] = false;
-
-		try {
-			return $request_method( $url, $headers, $data, $method, $options );
-		} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
-			$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $exception->getMessage() );
-			if ( $halt_on_error ) {
-				WP_CLI::error( $error_msg );
-			}
-			throw new RuntimeException( $error_msg, 0, $exception );
 		}
 	}
+
+	// Should never reach here, but just in case.
+	$error_msg = sprintf( "Failed to get url '%s' after %d attempts.", $url, $max_retries + 1 );
+	if ( $halt_on_error ) {
+		WP_CLI::error( $error_msg );
+	}
+	throw new RuntimeException( $error_msg, 0, $last_exception );
 }
 
 /**

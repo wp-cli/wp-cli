@@ -121,6 +121,13 @@ return [
 		'default'  => [],
 	],
 
+	'http_request_retries' => [
+		'file'    => '<number>',
+		'runtime' => '=<number>',
+		'default' => 3,
+		'desc'    => 'Number of times to retry HTTP requests on transient failures (timeouts, connection issues).',
+	],
+
 	# --allow-root => (NOT RECOMMENDED) Allow wp-cli to run as root. This poses
 	# a security risk, so you probably do not want to do this.
 	'allow-root'        => [
