@@ -859,7 +859,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 	/**
 	 * @var array{halt_on_error?: bool, verify: bool|string, insecure?: bool} $options
 	 */
-	$options = WP_CLI::do_hook( 'http_request_options', $options );
+	$options = WP_CLI::do_hook( 'http_request_options', $options, $method, $url, $data, $headers );
 
 	RequestsLibrary::register_autoloader();
 

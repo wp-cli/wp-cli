@@ -1467,6 +1467,27 @@ class Runner {
 			WP_CLI::add_wp_hook( 'setup_theme', [ $this, 'action_setup_theme_wp_cli_skip_themes' ], 999 );
 		}
 
+		// HTTP request logging
+		WP_CLI::add_hook(
+			'http_request_options',
+			static function ( $options, $method, $url, $data, $headers ) {
+				WP_CLI::debug( sprintf( 'HTTP %s request to %s', $method, $url ), 'http' );
+				return $options;
+			}
+		);
+
+		// Log WordPress HTTP API requests
+		WP_CLI::add_wp_hook(
+			'pre_http_request',
+			static function ( $response, $args, $url ) {
+				$method = isset( $args['method'] ) ? $args['method'] : 'GET';
+				WP_CLI::debug( sprintf( 'HTTP %s request to %s', $method, $url ), 'http' );
+				return $response;
+			},
+			10,
+			3
+		);
+
 		if ( $this->cmd_starts_with( [ 'help' ] ) ) {
 			// Try to trap errors on help.
 			$help_handler = [ $this, 'help_wp_die_handler' ]; // Avoid any cross PHP version issues by not using $this in anon function.
