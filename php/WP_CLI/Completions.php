@@ -143,6 +143,10 @@ class Completions {
 			$r = WP_CLI::get_runner()->find_command_to_run( $positional_args );
 		}
 
+		/**
+		 * @var array{0: \WP_CLI\Dispatcher\CompositeCommand, 1: array, 2: array}|string $r
+		 */
+
 		if ( ! is_array( $r ) ) {
 			return $r;
 		}

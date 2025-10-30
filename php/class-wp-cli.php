@@ -70,6 +70,9 @@ class WP_CLI {
 		return $configurator;
 	}
 
+	/**
+	 * @return RootCommand
+	 */
 	public static function get_root_command() {
 		static $root;
 

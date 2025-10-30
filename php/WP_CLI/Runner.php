@@ -373,7 +373,7 @@ class Runner {
 	 * Given positional arguments, find the command to execute.
 	 *
 	 * @param array $args
-	 * @return array|string Command, args, and path on success; error message on failure
+	 * @return array{0: CompositeCommand, 1: array, 2: array}|string Command, args, and path on success; error message on failure
 	 */
 	public function find_command_to_run( $args ) {
 		$command = WP_CLI::get_root_command();
