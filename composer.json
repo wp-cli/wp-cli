@@ -10,10 +10,10 @@
     "require": {
         "php": ">=7.2.24 || ^8.0",
         "ext-curl": "*",
-        "mustache/mustache": "^3.0.0",
-        "symfony/finder": ">2.7",
+        "mustache/mustache": "^3.0",
+        "symfony/finder": "^7.3",
         "wp-cli/mustangostang-spyc": "^0.6.3",
-        "wp-cli/php-cli-tools": "~0.12.4"
+        "wp-cli/php-cli-tools": "^0.12.6"
     },
     "require-dev": {
         "justinrainbow/json-schema": "^6.3",
