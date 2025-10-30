@@ -193,20 +193,14 @@ class Completions {
 		$options = [];
 
 		// First, try to get options from the command's documentation
-		try {
-			$reflection  = new \ReflectionClass( $command );
-			$doc_comment = $reflection->getMethod( 'invoke' )->getDocComment();
+		$longdesc = $command->get_longdesc();
+		if ( $longdesc ) {
+			$parser     = new DocParser( $longdesc );
+			$param_args = $parser->get_param_args( $param_name );
 
-			if ( $doc_comment ) {
-				$parser     = new DocParser( $doc_comment );
-				$param_args = $parser->get_param_args( $param_name );
-
-				if ( $param_args && isset( $param_args['options'] ) ) {
-					$options = $param_args['options'];
-				}
+			if ( $param_args && isset( $param_args['options'] ) ) {
+				$options = $param_args['options'];
 			}
-		} catch ( \ReflectionException $e ) {
-			// If reflection fails, continue to check global parameters
 		}
 
 		// If no options found in command doc, check global parameters
