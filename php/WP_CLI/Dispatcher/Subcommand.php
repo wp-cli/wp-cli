@@ -183,8 +183,9 @@ class Subcommand extends CompositeCommand {
 		}
 
 		// Create a DocParser to retrieve argument descriptions
+		$longdesc  = $this->get_longdesc();
 		$mock_doc  = [ $this->get_shortdesc(), '' ];
-		$mock_doc  = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
+		$mock_doc  = array_merge( $mock_doc, explode( "\n", $longdesc ) );
 		$mock_doc  = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
 		$docparser = new DocParser( $mock_doc );
 
@@ -252,7 +253,6 @@ class Subcommand extends CompositeCommand {
 					// If get_arg_desc doesn't find it (e.g., for simple <arg> without modifiers),
 					// try a simpler pattern that matches <arg> followed by : description
 					if ( empty( $description ) ) {
-						$longdesc    = $this->get_longdesc();
 						$arg_pattern = "/\[?<{$spec_arg['name']}>\s*\n:\s*(.+?)(\n|$)/";
 						if ( preg_match( $arg_pattern, $longdesc, $matches ) ) {
 							$description = trim( $matches[1] );
@@ -263,7 +263,6 @@ class Subcommand extends CompositeCommand {
 				} elseif ( 'flag' === $spec_arg['type'] ) {
 					// For flags, the pattern is [--flag] not [--flag=<value>]
 					// So we need a custom regex pattern in the longdesc
-					$longdesc     = $this->get_longdesc();
 					$flag_pattern = "/\[?--{$spec_arg['name']}\]\s*\n:\s*(.+?)(\n|$)/";
 					if ( preg_match( $flag_pattern, $longdesc, $matches ) ) {
 						$description = trim( $matches[1] );
