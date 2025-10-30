@@ -1138,19 +1138,6 @@ class UtilsTest extends TestCase {
 		curl_close( $curl_handle );
 	}
 
-	public function testHttpRequestRetriesConfig(): void {
-		// Test that the default config value is used.
-		$prev_config = WP_CLI::get_config( 'http_request_retries' );
-		WP_CLI::set_config_value( 'http_request_retries', 2 );
-
-		$this->assertEquals( 2, WP_CLI::get_config( 'http_request_retries' ) );
-
-		// Restore previous config.
-		if ( null !== $prev_config ) {
-			WP_CLI::set_config_value( 'http_request_retries', $prev_config );
-		}
-	}
-
 	/**
 	 * Create a mock Requests exception.
 	 *

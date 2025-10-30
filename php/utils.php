@@ -832,13 +832,13 @@ function is_transient_http_error( $exception ) {
 	// List of curl error codes that are considered transient.
 	// These are typically network-related errors that may succeed on retry.
 	$transient_curl_errors = [
-		CURLE_OPERATION_TIMEDOUT,    // 28 - Operation timeout.
-		CURLE_COULDNT_RESOLVE_HOST,  // 6 - Couldn't resolve host.
-		CURLE_COULDNT_CONNECT,       // 7 - Failed to connect to host.
-		CURLE_PARTIAL_FILE,          // 18 - Transferred a partial file.
-		CURLE_GOT_NOTHING,           // 52 - Server returned nothing.
-		CURLE_SEND_ERROR,            // 55 - Failed sending network data.
-		CURLE_RECV_ERROR,            // 56 - Failure in receiving network data.
+		CURLE_OPERATION_TIMEDOUT,   // 28 - Operation timeout.
+		CURLE_COULDNT_RESOLVE_HOST, // 6 - Couldn't resolve host.
+		CURLE_COULDNT_CONNECT,      // 7 - Failed to connect to host.
+		CURLE_PARTIAL_FILE,         // 18 - Transferred a partial file.
+		CURLE_GOT_NOTHING,          // 52 - Server returned nothing.
+		CURLE_SEND_ERROR,           // 55 - Failed sending network data.
+		CURLE_RECV_ERROR,           // 56 - Failure in receiving network data.
 	];
 
 	return in_array( $curl_errno, $transient_curl_errors, true );
@@ -874,20 +874,18 @@ function is_transient_http_error( $exception ) {
  *                               or string absolute path to CA cert to use.
  *                               Defaults to detected CA cert bundled with the Requests library.
  *     @type bool $insecure      Whether to retry automatically without certificate validation.
- *     @type int $retries        Number of times to retry on transient failures. Overrides http_request_retries config.
  * }
  * @return \Requests_Response|Response
  * @throws RuntimeException If the request failed.
  * @throws ExitException If the request failed and $halt_on_error is true.
  *
- * @phpstan-param array{halt_on_error?: bool, verify?: bool|string, insecure?: bool, retries?: int} $options
+ * @phpstan-param array{halt_on_error?: bool, verify?: bool|string, insecure?: bool} $options
  */
 function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
-	$config_retries = WP_CLI::get_config( 'http_request_retries' );
-	$max_retries    = isset( $options['retries'] ) ? (int) $options['retries'] : ( null !== $config_retries ? (int) $config_retries : 3 );
-	unset( $options['halt_on_error'], $options['retries'] );
+	$max_retries   = 3;
+	unset( $options['halt_on_error'] );
 
 	if ( ! isset( $options['verify'] ) ) {
 		// 'curl.cainfo' enforces the CA file to use, otherwise fallback to system-wide defaults then use the embedded CA file.
