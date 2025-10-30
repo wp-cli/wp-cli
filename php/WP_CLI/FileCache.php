@@ -446,7 +446,7 @@ class FileCache {
 			);
 
 			foreach ( $iterator as $file ) {
-				if ( $file->isFile() ) {
+				if ( $file instanceof SplFileInfo && $file->isFile() ) {
 					$files[] = $file;
 				}
 			}
