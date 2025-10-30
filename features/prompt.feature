@@ -226,3 +226,132 @@ Feature: Prompt user for input
       """
       Created category
       """
+
+  Scenario: Flag prompt should show default in brackets and apply it on empty input
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * Test that empty response for flag defaults to Y.
+       *
+       * ## OPTIONS
+       *
+       * [--flag]
+       * : An optional flag
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'test-flag-default', function( $_, $assoc_args ){
+        $flag_value = isset( $assoc_args['flag'] ) ? 'true' : 'false';
+        WP_CLI::line( 'flag: ' . $flag_value );
+      });
+      """
+    And a empty-response file:
+      """
+
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `wp test-flag-default --prompt < empty-response`
+    Then STDOUT should contain:
+      """
+      [Y/n]
+      """
+    And STDOUT should contain:
+      """
+      flag: true
+      """
+
+  Scenario: Assoc param with default should show default value in brackets
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * Test that default value is shown for assoc params.
+       *
+       * ## OPTIONS
+       *
+       * [--format=<format>]
+       * : Output format
+       * ---
+       * default: table
+       * options:
+       *   - table
+       *   - csv
+       *   - json
+       * ---
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'test-assoc-default', function( $_, $assoc_args ){
+        WP_CLI::line( 'format: ' . $assoc_args['format'] );
+      });
+      """
+    And a empty-response file:
+      """
+
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `wp test-assoc-default --prompt < empty-response`
+    Then STDOUT should contain:
+      """
+      [table]
+      """
+    And STDOUT should contain:
+      """
+      format: table
+      """
+
+  Scenario: Positional arg with default should show default value in brackets
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * Test that default value is shown for positional args.
+       *
+       * ## OPTIONS
+       *
+       * [<name>]
+       * : The name
+       * ---
+       * default: World
+       * ---
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'test-positional-default', function( $args, $_ ){
+        $name = isset( $args[0] ) ? $args[0] : 'Nobody';
+        WP_CLI::line( 'Hello ' . $name );
+      });
+      """
+    And a empty-response file:
+      """
+
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `wp test-positional-default --prompt < empty-response`
+    Then STDOUT should contain:
+      """
+      [World]
+      """
+    And STDOUT should contain:
+      """
+      Hello World
+      """
