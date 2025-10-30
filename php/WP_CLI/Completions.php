@@ -118,7 +118,7 @@ class Completions {
 	 *
 	 * @param array $words Individual input line words.
 	 *
-	 * @return array|mixed Array with command and arguments, or error result if command detection failed.
+	 * @return array{0: \WP_CLI\Dispatcher\CompositeCommand, 1: array, 2: array}|string Array with command, args, and assoc_args on success; error string on failure.
 	 */
 	private function get_command( $words ) {
 		$positional_args = [];
@@ -185,9 +185,12 @@ class Completions {
 	/**
 	 * Add parameter values to completions if the parameter has defined options.
 	 *
-	 * @param mixed  $command Command object.
-	 * @param string $param_name Parameter name.
-	 * @param string $param_value Current partial value.
+	 * Extracts enum options from the command's PHPdoc YAML blocks using DocParser.
+	 * If options are found, they are filtered by the partial value and added to completions.
+	 *
+	 * @param \WP_CLI\Dispatcher\CompositeCommand $command Command object.
+	 * @param string                               $param_name Parameter name.
+	 * @param string                               $param_value Current partial value.
 	 */
 	private function add_param_values( $command, $param_name, $param_value ) {
 		$options = [];
