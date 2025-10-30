@@ -243,15 +243,12 @@ class Subcommand extends CompositeCommand {
 				} while ( $repeat );
 
 			} else {
-				$prompt       = $current_prompt . $spec_arg['token'];
-				$default_used = false;
-				$default_val  = null;
+				$prompt      = $current_prompt . $spec_arg['token'];
+				$default_val = null;
 
-				// Get default value for the argument
+				// Get default value for the argument (not for flags)
 				if ( 'flag' === $spec_arg['type'] ) {
-					// For flags, the default is always 'Y' (true)
-					$prompt      .= ' [Y/n]';
-					$default_val  = true;
+					$prompt .= ' (Y/n)';
 				} elseif ( 'positional' === $spec_arg['type'] ) {
 					$spec_args = $docparser->get_arg_args( $spec_arg['name'] );
 					if ( isset( $spec_args['default'] ) ) {
@@ -271,13 +268,12 @@ class Subcommand extends CompositeCommand {
 					return [ $args, $assoc_args ];
 				}
 
-				// If response is empty and there's a default, use the default
+				// If response is empty and there's a default (not a flag), use the default
 				if ( '' === $response && null !== $default_val ) {
-					$response    = $default_val;
-					$default_used = true;
+					$response = $default_val;
 				}
 
-				if ( $response || $default_used ) {
+				if ( $response ) {
 					switch ( $spec_arg['type'] ) {
 						case 'positional':
 							if ( $spec_arg['repeating'] ) {
@@ -291,11 +287,9 @@ class Subcommand extends CompositeCommand {
 							$assoc_args[ $spec_arg['name'] ] = $response;
 							break;
 						case 'flag':
-							// Set flag if default was used (true) or user explicitly typed 'Y'
-							if ( true === $response || 'Y' === strtoupper( $response ) ) {
+							if ( 'Y' === strtoupper( $response ) ) {
 								$assoc_args[ $spec_arg['name'] ] = true;
 							}
-							// For 'n' or any other input, flag is not set
 							break;
 					}
 				}

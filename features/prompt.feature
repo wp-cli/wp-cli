@@ -227,13 +227,13 @@ Feature: Prompt user for input
       Created category
       """
 
-  Scenario: Flag prompt should show default in brackets and apply it on empty input
+  Scenario: Flag prompt should show notation consistently
     Given an empty directory
     And a cmd.php file:
       """
       <?php
       /**
-       * Test that empty response for flag defaults to Y.
+       * Test that flag prompt shows (Y/n) notation.
        *
        * ## OPTIONS
        *
@@ -242,14 +242,14 @@ Feature: Prompt user for input
        *
        * @when before_wp_load
        */
-      WP_CLI::add_command( 'test-flag-default', function( $_, $assoc_args ){
+      WP_CLI::add_command( 'test-flag-notation', function( $_, $assoc_args ){
         $flag_value = isset( $assoc_args['flag'] ) ? 'true' : 'false';
         WP_CLI::line( 'flag: ' . $flag_value );
       });
       """
-    And a empty-response file:
+    And a yes-response file:
       """
-
+      Y
       """
     And a wp-cli.yml file:
       """
@@ -257,10 +257,10 @@ Feature: Prompt user for input
         - cmd.php
       """
 
-    When I run `wp test-flag-default --prompt < empty-response`
+    When I run `wp test-flag-notation --prompt < yes-response`
     Then STDOUT should contain:
       """
-      [Y/n]
+      (Y/n)
       """
     And STDOUT should contain:
       """
