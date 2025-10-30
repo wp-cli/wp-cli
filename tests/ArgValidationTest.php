@@ -104,4 +104,18 @@ class ArgValidationTest extends TestCase {
 		$this->assertContains( '[--invalid=<value', $unknown );
 		$this->assertContains( 'spaces>]', $unknown );
 	}
+
+	public function testIsValidWithInvalidSynopsis(): void {
+		// Synopsis with spaces should be invalid
+		$this->assertFalse( SynopsisValidator::is_valid( '[--user_registered=<yyyy-mm-dd hh:ii:ss>]' ) );
+		$this->assertFalse( SynopsisValidator::is_valid( '--date=<yyyy-mm-dd hh:ii:ss>' ) );
+	}
+
+	public function testIsValidWithValidSynopsis(): void {
+		// Properly formatted synopses should be valid
+		$this->assertTrue( SynopsisValidator::is_valid( '[--user_registered=<yyyy-mm-dd-hh-ii-ss>]' ) );
+		$this->assertTrue( SynopsisValidator::is_valid( '--date=<yyyy-mm-dd-hh-ii-ss>' ) );
+		$this->assertTrue( SynopsisValidator::is_valid( '<positional> --assoc=<value> [--flag]' ) );
+		$this->assertTrue( SynopsisValidator::is_valid( '' ) );
+	}
 }

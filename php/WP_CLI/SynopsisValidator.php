@@ -22,6 +22,18 @@ class SynopsisValidator {
 	}
 
 	/**
+	 * Validate that a synopsis has no unknown tokens.
+	 * This is useful for testing that command synopses are properly formatted.
+	 *
+	 * @param string $synopsis Command's synopsis.
+	 * @return bool True if the synopsis is valid, false if it contains unknown tokens.
+	 */
+	public static function is_valid( $synopsis ) {
+		$validator = new self( $synopsis );
+		return empty( $validator->get_unknown() );
+	}
+
+	/**
 	 * Get any unknown arguments.
 	 *
 	 * @return array
