@@ -15,7 +15,7 @@ use WP_CLI\Utils;
  * `@dev` could refer to a development install and `@prod` could refer to a production install.
  * This command gives you and option to add, update and delete, the registered aliases you have available.
  *
- * Learn more about [running commands remotely](https://make.wordpress.org/cli/handbook/running-commands-remotely/).
+ * Learn more about [running commands remotely](https://make.wordpress.org/cli/handbook/guides/running-commands-remotely/).
  *
  * ## EXAMPLES
  *
