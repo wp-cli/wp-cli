@@ -28,7 +28,7 @@ class SynopsisValidator {
 	 * @param string $synopsis Command's synopsis.
 	 * @return bool True if the synopsis is valid, false if it contains unknown tokens.
 	 */
-	public static function is_valid( $synopsis ) {
+	public static function is_valid( string $synopsis ) {
 		$validator = new self( $synopsis );
 		return empty( $validator->get_unknown() );
 	}
