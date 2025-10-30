@@ -1470,7 +1470,7 @@ class Runner {
 		// HTTP request logging
 		WP_CLI::add_hook(
 			'http_request_options',
-			static function ( $options, $method, $url, $data, $headers ) {
+			static function ( $options, $method, $url ) {
 				WP_CLI::debug( sprintf( 'HTTP %s request to %s', $method, $url ), 'http' );
 				return $options;
 			}

@@ -21,10 +21,10 @@ Feature: HTTP request logging
         - http-test.php
       """
 
-    When I run `wp http-test --debug=http`
+    When I try `wp http-test --debug=http`
     Then STDERR should contain:
       """
-      Debug (http): HTTP GET request to https://api.wordpress.org/core/version-check/1.7/
+      Debug: HTTP GET request to https://api.wordpress.org/core/version-check/1.7/
       """
     And the return code should be 0
 
@@ -64,21 +64,21 @@ Feature: HTTP request logging
       WP_CLI::add_command( 'http-methods-test', function() {
         // Test different HTTP methods
         $test_url = 'https://httpbin.org/';
-        
+
         // GET request
         try {
           WP_CLI\Utils\http_request( 'GET', $test_url . 'get', null, [], [ 'timeout' => 5 ] );
         } catch ( Exception $e ) {
           // Ignore errors for this test
         }
-        
+
         // POST request
         try {
           WP_CLI\Utils\http_request( 'POST', $test_url . 'post', ['test' => 'data'], [], [ 'timeout' => 5 ] );
         } catch ( Exception $e ) {
           // Ignore errors for this test
         }
-        
+
         WP_CLI::success( 'Test completed' );
       });
       """
@@ -88,13 +88,13 @@ Feature: HTTP request logging
         - http-methods-test.php
       """
 
-    When I run `wp http-methods-test --debug=http`
+    When I try `wp http-methods-test --debug=http`
     Then STDERR should contain:
       """
-      Debug (http): HTTP GET request to https://httpbin.org/get
+      Debug: HTTP GET request to https://httpbin.org/get
       """
     And STDERR should contain:
       """
-      Debug (http): HTTP POST request to https://httpbin.org/post
+      Debug: HTTP POST request to https://httpbin.org/post
       """
     And the return code should be 0
