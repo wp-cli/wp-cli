@@ -885,7 +885,8 @@ function is_transient_http_error( $exception ) {
 function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
-	$max_retries   = isset( $options['retries'] ) ? (int) $options['retries'] : (int) WP_CLI::get_config( 'http_request_retries' );
+	$config_retries = WP_CLI::get_config( 'http_request_retries' );
+	$max_retries    = isset( $options['retries'] ) ? (int) $options['retries'] : ( null !== $config_retries ? (int) $config_retries : 3 );
 	unset( $options['halt_on_error'], $options['retries'] );
 
 	if ( ! isset( $options['verify'] ) ) {
