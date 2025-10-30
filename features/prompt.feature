@@ -226,3 +226,69 @@ Feature: Prompt user for input
       """
       Created category
       """
+
+  Scenario: Prompt should display argument descriptions
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * Test command with descriptions.
+       *
+       * ## OPTIONS
+       *
+       * <name>
+       * : The name of the item.
+       *
+       * [--type=<type>]
+       * : The type of the item.
+       *
+       * [--enabled]
+       * : Whether the item is enabled.
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'test-desc', function( $args, $assoc_args ) {
+        WP_CLI::line( 'name: ' . $args[0] );
+        WP_CLI::line( 'type: ' . ( isset( $assoc_args['type'] ) ? $assoc_args['type'] : 'none' ) );
+        WP_CLI::line( 'enabled: ' . ( isset( $assoc_args['enabled'] ) ? 'yes' : 'no' ) );
+      } );
+      """
+    And a value-file file:
+      """
+      test-item
+      special
+      Y
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `wp test-desc --prompt < value-file`
+    Then STDERR should be empty
+    And STDOUT should contain:
+      """
+      (The name of the item)
+      """
+    And STDOUT should contain:
+      """
+      (The type of the item)
+      """
+    And STDOUT should contain:
+      """
+      (Whether the item is enabled)
+      """
+    And STDOUT should contain:
+      """
+      name: test-item
+      """
+    And STDOUT should contain:
+      """
+      type: special
+      """
+    And STDOUT should contain:
+      """
+      enabled: yes
+      """

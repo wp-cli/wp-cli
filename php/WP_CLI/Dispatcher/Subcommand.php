@@ -182,6 +182,12 @@ class Subcommand extends CompositeCommand {
 			$prompt_args = explode( ',', $prompt_args );
 		}
 
+		// Create a DocParser to retrieve argument descriptions
+		$mock_doc  = [ $this->get_shortdesc(), '' ];
+		$mock_doc  = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
+		$mock_doc  = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
+		$docparser = new DocParser( $mock_doc );
+
 		// 'positional' arguments are positional (aka zero-indexed)
 		// so $args needs to be reset before prompting for new arguments
 		$args = [];
@@ -238,6 +244,19 @@ class Subcommand extends CompositeCommand {
 
 			} else {
 				$prompt = $current_prompt . $spec_arg['token'];
+
+				// Add description if available
+				$description = '';
+				if ( 'positional' === $spec_arg['type'] ) {
+					$description = $docparser->get_arg_desc( $spec_arg['name'] );
+				} elseif ( 'assoc' === $spec_arg['type'] || 'flag' === $spec_arg['type'] ) {
+					$description = $docparser->get_param_desc( $spec_arg['name'] );
+				}
+
+				if ( ! empty( $description ) ) {
+					$prompt .= ' (' . $description . ')';
+				}
+
 				if ( 'flag' === $spec_arg['type'] ) {
 					$prompt .= ' (Y/n)';
 				}
