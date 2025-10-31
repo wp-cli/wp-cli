@@ -43,7 +43,7 @@ use WP_CLI\Utils;
  *     Success: Deleted '@prod' alias.
  *
  *     # Run a command against a group of aliases in parallel.
- *     $ wp @all plugin status --parallel
+ *     $ WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @all plugin status
  *
  * @package wp-cli
  * @when    before_wp_load

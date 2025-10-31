@@ -665,7 +665,7 @@ Feature: Create shortcuts to specific WordPress installs
         path: {TEST_DIR}/foo
       """
 
-  Scenario: Run alias groups in parallel with --parallel flag
+  Scenario: Run alias groups in parallel with WP_CLI_ALIAS_GROUPS_PARALLEL environment variable
     Given a WP installation in 'foo'
     And a WP installation in 'bar'
     And a wp-cli.yml file:
@@ -681,7 +681,7 @@ Feature: Create shortcuts to specific WordPress installs
 
     When I run `wp @foo option update home 'http://parallel-foo.com'`
     And I run `wp @bar option update home 'http://parallel-bar.com'`
-    And I run `wp @both option get home --parallel`
+    And I run `WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both option get home`
     Then STDOUT should contain:
       """
       @foo
@@ -699,7 +699,7 @@ Feature: Create shortcuts to specific WordPress installs
       http://parallel-bar.com
       """
 
-    When I run `wp @both option get home --parallel --quiet`
+    When I run `WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both option get home --quiet`
     Then STDOUT should contain:
       """
       http://parallel-foo.com

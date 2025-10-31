@@ -1122,12 +1122,8 @@ class Runner {
 		}
 		$config_path = escapeshellarg( $config_path );
 
-		// Check if parallel execution is enabled
-		$parallel = ! empty( $this->config['parallel'] );
-
-		// Remove --parallel from runtime_config to avoid passing it to child commands
-		$runtime_config_filtered = $this->runtime_config;
-		unset( $runtime_config_filtered['parallel'] );
+		// Check if parallel execution is enabled via environment variable
+		$parallel = (bool) getenv( 'WP_CLI_ALIAS_GROUPS_PARALLEL' );
 
 		if ( $parallel ) {
 			// Run aliases in parallel
@@ -1136,7 +1132,7 @@ class Runner {
 				WP_CLI::log( $alias );
 				$args           = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
 				$assoc_args     = Utils\assoc_args_to_str( $this->assoc_args );
-				$runtime_config = Utils\assoc_args_to_str( $runtime_config_filtered );
+				$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
 				$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
 				$pipes          = [];
 				$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
@@ -1156,7 +1152,7 @@ class Runner {
 				WP_CLI::log( $alias );
 				$args           = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
 				$assoc_args     = Utils\assoc_args_to_str( $this->assoc_args );
-				$runtime_config = Utils\assoc_args_to_str( $runtime_config_filtered );
+				$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
 				$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
 				$pipes          = [];
 				$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );

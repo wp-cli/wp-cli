@@ -129,11 +129,4 @@ return [
 		'hidden'  => true,
 	],
 
-	'parallel'          => [
-		'runtime' => '',
-		'file'    => '<bool>',
-		'default' => false,
-		'desc'    => 'Run alias groups in parallel.',
-	],
-
 ];
