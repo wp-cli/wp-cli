@@ -827,6 +827,9 @@ function is_transient_http_error( $exception ) {
 		return false;
 	}
 
+	/**
+	 * @var \CurlHandle $curl_handle
+	 */
 	$curl_errno = curl_errno( $curl_handle );
 
 	// List of curl error codes that are considered transient.

@@ -1135,7 +1135,10 @@ class UtilsTest extends TestCase {
 			$this->assertTrue( Utils\is_transient_http_error( $exception ) );
 		}
 
-		curl_close( $curl_handle );
+		// Don't call curl_close if PHP 8.5+ as it's deprecated.
+		if ( PHP_VERSION_ID < 80500 ) {
+			curl_close( $curl_handle );
+		}
 	}
 
 	/**
@@ -1155,9 +1158,6 @@ class UtilsTest extends TestCase {
 
 		$exception->method( 'getData' )
 			->willReturn( $curl_handle );
-
-		$exception->method( 'getMessage' )
-			->willReturn( 'Mock error message' );
 
 		return $exception;
 	}
