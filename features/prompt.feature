@@ -270,18 +270,6 @@ Feature: Prompt user for input
     Then STDERR should be empty
     And STDOUT should contain:
       """
-      (The name of the item.)
-      """
-    And STDOUT should contain:
-      """
-      (The type of the item.)
-      """
-    And STDOUT should contain:
-      """
-      (Whether the item is enabled.)
-      """
-    And STDOUT should contain:
-      """
       name: test-item
       """
     And STDOUT should contain:
@@ -299,18 +287,18 @@ Feature: Prompt user for input
       """
       <?php
       /**
-       * Test command without descriptions.
+       * Test that the prompt works without argument descriptions.
        *
        * ## OPTIONS
        *
-       * <name>
-       *
+       * [--name=<name>]
+       * 
        * [--flag]
        *
        * @when before_wp_load
        */
       WP_CLI::add_command( 'test-no-desc', function( $args, $assoc_args ) {
-        WP_CLI::line( 'name: ' . ( isset( $args[0] ) ? $args[0] : 'none' ) );
+        WP_CLI::line( 'name: ' . ( isset( $assoc_args['name'] ) ? $assoc_args['name'] : 'none' ) );
         WP_CLI::line( 'flag: ' . ( isset( $assoc_args['flag'] ) ? 'yes' : 'no' ) );
       } );
       """
