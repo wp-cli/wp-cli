@@ -15,6 +15,7 @@ use WP_Error;
 /**
  * Performs the execution of a command.
  *
+ * @property-read string         $system_config_path
  * @property-read string         $global_config_path
  * @property-read string         $project_config_path
  * @property-read array          $config
@@ -27,6 +28,7 @@ use WP_Error;
  * @property-read array          $runtime_config
  * @property-read bool           $colorize
  * @property-read array          $early_invoke
+ * @property-read string         $system_config_path_debug
  * @property-read string         $global_config_path_debug
  * @property-read string         $project_config_path_debug
  * @property-read array          $required_files
@@ -46,6 +48,7 @@ class Runner {
 		'UTF-16 (LE)' => "\xFF\xFE",
 	];
 
+	private $system_config_path;
 	private $global_config_path;
 	private $project_config_path;
 
@@ -65,6 +68,8 @@ class Runner {
 	private $colorize = false;
 
 	private $early_invoke = [];
+
+	private $system_config_path_debug;
 
 	private $global_config_path_debug;
 
@@ -180,6 +185,24 @@ class Runner {
 		}
 
 		$this->global_config_path_debug = 'No readable global config found';
+
+		return false;
+	}
+
+	/**
+	 * Get the path to the system-wide configuration YAML file.
+	 *
+	 * @return string|false
+	 */
+	public function get_system_config_path() {
+		$config_path = '/etc/wp-cli/config.yml';
+
+		if ( is_readable( $config_path ) ) {
+			$this->system_config_path_debug = 'Using system config: ' . $config_path;
+			return $config_path;
+		}
+
+		$this->system_config_path_debug = 'No readable system config found';
 
 		return false;
 	}
@@ -1073,9 +1096,13 @@ class Runner {
 
 		// File config
 		{
+			$this->system_config_path  = $this->get_system_config_path();
 			$this->global_config_path  = $this->get_global_config_path();
 			$this->project_config_path = $this->get_project_config_path();
 
+			$configurator->merge_yml( $this->system_config_path, $this->alias );
+			$config                         = $configurator->to_array();
+			$this->required_files['system'] = $config[0]['require'];
 			$configurator->merge_yml( $this->global_config_path, $this->alias );
 			$config                         = $configurator->to_array();
 			$this->required_files['global'] = $config[0]['require'];
@@ -1154,6 +1181,7 @@ class Runner {
 			$this->enable_error_reporting();
 		}
 
+		WP_CLI::debug( $this->system_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( $this->global_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( $this->project_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( 'argv: ' . implode( ' ', $GLOBALS['argv'] ), 'bootstrap' );
