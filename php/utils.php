@@ -269,18 +269,22 @@ function is_path_absolute( $path ) {
 /**
  * Expand tilde (~) in path to home directory.
  *
+ * Expands paths that start with ~ to the current user's home directory.
+ * Only handles the current user's home directory (not ~username patterns).
+ *
  * @param string $path Path that may contain a tilde.
- * @return string Path with tilde expanded to home directory.
+ * @return string Path with tilde expanded to home directory, or unchanged if tilde not at start or followed by username.
  */
 function expand_tilde_path( $path ) {
 	// Check if path starts with tilde
 	if ( isset( $path[0] ) && '~' === $path[0] ) {
 		$home = get_home_dir();
 		// Replace ~ with home directory
-		// Handle both "~" and "~/..." patterns
+		// Handle both "~" and "~/..." patterns (but not "~username")
 		if ( 1 === strlen( $path ) || '/' === $path[1] ) {
 			$path = $home . substr( $path, 1 );
 		}
+		// If followed by anything other than '/', leave it unchanged (e.g., ~username)
 	}
 
 	return $path;
