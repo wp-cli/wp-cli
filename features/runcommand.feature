@@ -235,7 +235,7 @@ Feature: Run a WP-CLI command
       | --no-launch |
       | --launch    |
 
-    @less-than-php-8
+  @less-than-php-8
   Scenario Outline: Installed packages work as expected
     Given a WP installation
 
@@ -249,9 +249,9 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
 
     Examples:
-    | flag        |
-    | --no-launch |
-    | --launch    |
+      | flag        |
+      | --no-launch |
+      | --launch    |
 
   Scenario Outline: Persists global parameters when supplied interactively
     Given a WP installation in 'foo'
@@ -266,9 +266,9 @@ Feature: Run a WP-CLI command
     And the return code should be 0
 
     Examples:
-    | flag        |
-    | --no-launch |
-    | --launch    |
+      | flag        |
+      | --no-launch |
+      | --launch    |
 
   Scenario Outline: Apply backwards compat conversions
     Given a WP installation
@@ -283,9 +283,9 @@ Feature: Run a WP-CLI command
     And the return code should be 0
 
     Examples:
-    | flag        |
-    | --no-launch |
-    | --launch    |
+      | flag        |
+      | --no-launch |
+      | --launch    |
 
   Scenario Outline: Check that proc_open() and proc_close() aren't disabled for launch
     Given a WP installation
@@ -301,3 +301,89 @@ Feature: Run a WP-CLI command
       | func       |
       | proc_open  |
       | proc_close |
+
+  Scenario: Check that command_args provided to runcommand are used in command
+    Given a WP installation
+    And a custom-cmd.php file:
+      """
+      <?php
+      class Custom_Command extends WP_CLI_Command {
+
+        /**
+         * Custom command to test passing command_args via runcommand options
+         *
+         * @when after_wp_load
+         */
+        public function echo_test( $args ) {
+          $cli_opts = array( 'command_args' => array( '--exec="echo \'test\' . PHP_EOL;"' ) );
+          WP_CLI::runcommand( 'option get home', $cli_opts);
+        }
+        public function bad_path( $args ) {
+          $cli_opts = array( 'command_args' => array('--path=/bad/path' ) );
+          WP_CLI::runcommand( 'option get home', $cli_opts);
+        }
+      }
+      WP_CLI::add_command( 'custom-command', 'Custom_Command' );
+      """
+
+    When I run `wp --require=custom-cmd.php custom-command echo_test`
+    Then STDOUT should be:
+      """
+      test
+      https://example.com
+      """
+
+    When I try `wp --require=custom-cmd.php custom-command bad_path`
+    Then STDERR should contain:
+      """
+      The used path is: /bad/path/
+      """
+
+  Scenario: Check that required files are used from command arguments and ENV VAR
+    Given a WP installation
+    And a custom-cmd.php file:
+      """
+      <?php
+      class Custom_Command extends WP_CLI_Command {
+        /**
+         * Custom command to test passing command_args via runcommand options
+         *
+         * @when after_wp_load
+         */
+         public function echo_test( $args ) {
+         echo "test" . PHP_EOL;
+        }
+      }
+      WP_CLI::add_command( 'custom-command', 'Custom_Command' );
+      """
+    And a env.php file:
+      """
+      <?php
+      echo 'ENVIRONMENT REQUIRE' . PHP_EOL;
+      """
+    And a env-2.php file:
+      """
+      <?php
+      echo 'ENVIRONMENT REQUIRE 2' . PHP_EOL;
+      """
+
+    When I run `WP_CLI_REQUIRE=env.php wp eval 'return null;' --skip-wordpress`
+    Then STDOUT should be:
+      """
+      ENVIRONMENT REQUIRE
+      """
+
+    When I run `WP_CLI_REQUIRE=env.php wp --require=custom-cmd.php custom-command echo_test`
+    Then STDOUT should be:
+      """
+      ENVIRONMENT REQUIRE
+      test
+      """
+
+    When I run `WP_CLI_REQUIRE='env.php,env-2.php' wp --require=custom-cmd.php custom-command echo_test`
+    Then STDOUT should be:
+      """
+      ENVIRONMENT REQUIRE
+      ENVIRONMENT REQUIRE 2
+      test
+      """

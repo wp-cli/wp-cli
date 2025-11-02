@@ -315,7 +315,7 @@ class Inflector {
 	 * @return string The tableized word.
 	 */
 	public static function tableize( $word ) {
-		return strtolower( preg_replace( '~(?<=\\w)([A-Z])~', '_$1', $word ) );
+		return strtolower( (string) preg_replace( '~(?<=\\w)([A-Z])~', '_$1', $word ) );
 	}
 
 	/**
@@ -341,11 +341,11 @@ class Inflector {
 	}
 
 	/**
-	 * Uppercases words with configurable delimeters between words.
+	 * Uppercases words with configurable delimiters between words.
 	 *
 	 * Takes a string and capitalizes all of the words, like PHP's built-in
 	 * ucwords function.  This extends that behavior, however, by allowing the
-	 * word delimeters to be configured, rather than only separating on
+	 * word delimiters to be configured, rather than only separating on
 	 * whitespace.
 	 *
 	 * Here is an example:
@@ -363,12 +363,12 @@ class Inflector {
 	 * @param string $string The string to operate on.
 	 * @param string $delimiters A list of word separators.
 	 *
-	 * @return string The string with all delimeter-separated words capitalized.
+	 * @return string The string with all delimiter-separated words capitalized.
 	 */
 	public static function ucwords( $string, $delimiters = " \n\t\r\0\x0B-" ) {
-		return preg_replace_callback(
+		return (string) preg_replace_callback(
 			'/[^' . preg_quote( $delimiters, '/' ) . ']+/',
-			function( $matches ) {
+			function ( $matches ) {
 				return ucfirst( $matches[0] );
 			},
 			$string
@@ -486,11 +486,15 @@ class Inflector {
 
 		foreach ( self::$plural['rules'] as $rule => $replacement ) {
 			if ( preg_match( $rule, $word ) ) {
-				self::$cache['pluralize'][ $word ] = preg_replace( $rule, $replacement, $word );
+				self::$cache['pluralize'][ $word ] = (string) preg_replace( $rule, $replacement, $word );
 
 				return self::$cache['pluralize'][ $word ];
 			}
 		}
+
+		// Just so a string is always returned.
+		// This should never be reached.
+		return $word;
 	}
 
 	/**
@@ -538,7 +542,7 @@ class Inflector {
 
 		foreach ( self::$singular['rules'] as $rule => $replacement ) {
 			if ( preg_match( $rule, $word ) ) {
-				self::$cache['singularize'][ $word ] = preg_replace( $rule, $replacement, $word );
+				self::$cache['singularize'][ $word ] = (string) preg_replace( $rule, $replacement, $word );
 
 				return self::$cache['singularize'][ $word ];
 			}

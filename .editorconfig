@@ -2,7 +2,9 @@
 # editorconfig.org
 
 # WordPress Coding Standards
-# http://make.wordpress.org/core/handbook/coding-standards/
+# https://make.wordpress.org/core/handbook/coding-standards/
+
+# From https://github.com/WordPress/wordpress-develop/blob/trunk/.editorconfig with a couple of additions.
 
 root = true
 
@@ -12,12 +14,13 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 indent_style = tab
-indent_size = 4
 
-[*.{json,yml,feature}]
+[{*.yml,*.feature,.jshintrc,*.json}]
 indent_style = space
 indent_size = 2
 
-[composer.json]
-indent_style = space
-indent_size = 4
+[*.md]
+trim_trailing_whitespace = false
+
+[{*.txt,wp-config-sample.php}]
+end_of_line = crlf

@@ -12,10 +12,9 @@ use Closure;
 use Composer\Semver\Comparator;
 use Composer\Semver\Semver;
 use Exception;
-use Mustache_Engine;
+use Iterator;
+use Mustache\Engine as Mustache_Engine;
 use ReflectionFunction;
-use Requests;
-use Requests_Exception;
 use RuntimeException;
 use WP_CLI;
 use WP_CLI\ExitException;
@@ -24,7 +23,14 @@ use WP_CLI\Inflector;
 use WP_CLI\Iterators\Transform;
 use WP_CLI\NoOp;
 use WP_CLI\Process;
+use WP_CLI\RequestsLibrary;
+use WpOrg\Requests\Response;
 
+/**
+ * File stream wrapper prefix for Phar archives.
+ *
+ * @var string
+ */
 const PHAR_STREAM_PREFIX = 'phar://';
 
 /**
@@ -40,13 +46,38 @@ const PHAR_STREAM_PREFIX = 'phar://';
  */
 const FILE_DIR_PATTERN = '%(?>#.*?$)|(?>//.*?$)|(?>/\*.*?\*/)|(?>\'(?:(?=(\\\\?))\1.)*?\')|(?>"(?:(?=(\\\\?))\2.)*?")|(?<file>\b__FILE__\b)|(?<dir>\b__DIR__\b)%ms';
 
-function inside_phar() {
-	return defined( 'WP_CLI_ROOT' ) && 0 === strpos( WP_CLI_ROOT, PHAR_STREAM_PREFIX );
+/**
+ * Check if a certain path is within a Phar archive.
+ *
+ * If no path is provided, the function checks whether the current WP_CLI instance is
+ * running from within a Phar archive.
+ *
+ * @param string|null $path Optional. Path to check. Defaults to null, which checks WP_CLI_ROOT.
+ * @return bool Whether path is within a Phar archive.
+ */
+function inside_phar( $path = null ) {
+	if ( null === $path ) {
+		if ( ! defined( 'WP_CLI_ROOT' ) ) {
+			return false;
+		}
+
+		$path = WP_CLI_ROOT;
+	}
+
+	return 0 === strpos( $path, PHAR_STREAM_PREFIX );
 }
 
-// Files that need to be read by external programs have to be extracted from the Phar archive.
+/**
+ * Extract a file from a Phar archive.
+ *
+ * Files that need to be read by external programs have to be extracted from the Phar archive.
+ * If the file is not within a Phar archive, the function returns the path unchanged.
+ *
+ * @param string $path Path to the file to extract.
+ * @return string Path to the extracted file.
+ */
 function extract_from_phar( $path ) {
-	if ( ! inside_phar() ) {
+	if ( ! inside_phar( $path ) ) {
 		return $path;
 	}
 
@@ -57,7 +88,7 @@ function extract_from_phar( $path ) {
 	copy( $path, $tmp_path );
 
 	register_shutdown_function(
-		function() use ( $tmp_path ) {
+		function () use ( $tmp_path ) {
 			if ( file_exists( $tmp_path ) ) {
 				unlink( $tmp_path );
 			}
@@ -67,6 +98,11 @@ function extract_from_phar( $path ) {
 	return $tmp_path;
 }
 
+/**
+ * Load dependencies.
+ *
+ * @return void|never
+ */
 function load_dependencies() {
 	if ( inside_phar() ) {
 		if ( file_exists( WP_CLI_ROOT . '/vendor/autoload.php' ) ) {
@@ -93,6 +129,11 @@ function load_dependencies() {
 	}
 }
 
+/**
+ * Return vendor paths.
+ *
+ * @return array<string> List of paths.
+ */
 function get_vendor_paths() {
 	$vendor_paths        = [
 		WP_CLI_ROOT . '/../../../vendor',  // Part of a larger project / installed via Composer (preferred).
@@ -100,7 +141,10 @@ function get_vendor_paths() {
 	];
 	$maybe_composer_json = WP_CLI_ROOT . '/../../../composer.json';
 	if ( file_exists( $maybe_composer_json ) && is_readable( $maybe_composer_json ) ) {
-		$composer = json_decode( file_get_contents( $maybe_composer_json ) );
+		/**
+		 * @var object{config: object{'vendor-dir': string}} $composer
+		 */
+		$composer = json_decode( (string) file_get_contents( $maybe_composer_json ), false );
 		if ( ! empty( $composer->config ) && ! empty( $composer->config->{'vendor-dir'} ) ) {
 			array_unshift( $vendor_paths, WP_CLI_ROOT . '/../../../' . $composer->config->{'vendor-dir'} );
 		}
@@ -108,11 +152,25 @@ function get_vendor_paths() {
 	return $vendor_paths;
 }
 
-// Using require() directly inside a class grants access to private methods to the loaded code.
+/**
+ * Load a file.
+ *
+ * Using require() directly inside a class grants access
+ * to private methods to the loaded code, hence this wrapper helper.
+ *
+ * @param string $path
+ * @return void
+ */
 function load_file( $path ) {
 	require_once $path;
 }
 
+/**
+ * Load a command.
+ *
+ * @param string $name
+ * @return void
+ */
 function load_command( $name ) {
 	$path = WP_CLI_ROOT . "/php/commands/$name.php";
 
@@ -136,11 +194,11 @@ function load_command( $name ) {
  *       var_dump($val);
  *     }
  *
- * @param array|object $it Either a plain array or another iterator.
- * @param callback     $fn The function to apply to an element.
- * @return object An iterator that applies the given callback(s).
+ * @param array|Iterator $it     Either a plain array or another iterator.
+ * @param callable       ...$fns The function to apply to an element.
+ * @return Iterator An iterator that applies the given callback(s).
  */
-function iterator_map( $it, $fn ) {
+function iterator_map( $it, ...$fns ) {
 	if ( is_array( $it ) ) {
 		$it = new ArrayIterator( $it );
 	}
@@ -149,7 +207,10 @@ function iterator_map( $it, $fn ) {
 		$it = new Transform( $it );
 	}
 
-	foreach ( array_slice( func_get_args(), 1 ) as $fn ) {
+	foreach ( $fns as $fn ) {
+		/**
+		 * @var Transform $it
+		 */
 		$it->add_transform( $fn );
 	}
 
@@ -159,9 +220,9 @@ function iterator_map( $it, $fn ) {
 /**
  * Search for file by walking up the directory tree until the first file is found or until $stop_check($dir) returns true.
  *
- * @param string|array $files      The files (or file) to search for.
- * @param string|null  $dir        The directory to start searching from; defaults to CWD.
- * @param callable     $stop_check Function which is passed the current dir each time a directory level is traversed.
+ * @param string|array<string> $files      The files (or file) to search for.
+ * @param string|null          $dir        The directory to start searching from; defaults to CWD.
+ * @param callable             $stop_check Function which is passed the current dir each time a directory level is traversed.
  * @return null|string Null if the file was not found.
  */
 function find_file_upward( $files, $dir = null, $stop_check = null ) {
@@ -169,7 +230,7 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	if ( is_null( $dir ) ) {
 		$dir = getcwd();
 	}
-	while ( is_readable( $dir ) ) {
+	while ( $dir && is_readable( $dir ) ) {
 		// Stop walking up when the supplied callable returns true being passed the $dir
 		if ( is_callable( $stop_check ) && call_user_func( $stop_check, $dir ) ) {
 			return null;
@@ -191,19 +252,24 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	return null;
 }
 
+/**
+ * Determine whether a path is absolute.
+ * @param string $path
+ * @return bool
+ */
 function is_path_absolute( $path ) {
-	// Windows
+	// Windows.
 	if ( isset( $path[1] ) && ':' === $path[1] ) {
 		return true;
 	}
 
-	return '/' === $path[0];
+	return isset( $path[0] ) && '/' === $path[0];
 }
 
 /**
  * Composes positional arguments into a command string.
  *
- * @param array $args Positional arguments to compose.
+ * @param array<string> $args Positional arguments to compose.
  * @return string
  */
 function args_to_str( $args ) {
@@ -213,7 +279,7 @@ function args_to_str( $args ) {
 /**
  * Composes associative arguments into a command string.
  *
- * @param array $assoc_args Associative arguments to compose.
+ * @param array<string, array<int, string>|string|true|int> $assoc_args Associative arguments to compose.
  * @return string
  */
 function assoc_args_to_str( $assoc_args ) {
@@ -231,7 +297,7 @@ function assoc_args_to_str( $assoc_args ) {
 				);
 			}
 		} else {
-			$str .= " --$key=" . escapeshellarg( $value );
+			$str .= " --$key=" . escapeshellarg( (string) $value );
 		}
 	}
 
@@ -241,15 +307,14 @@ function assoc_args_to_str( $assoc_args ) {
 /**
  * Given a template string and an arbitrary number of arguments,
  * returns the final command, with the parameters escaped.
+ *
+ * @param string $cmd
+ * @param string ...$args
  */
-function esc_cmd( $cmd ) {
+function esc_cmd( $cmd, ...$args ) {
 	if ( func_num_args() < 2 ) {
 		trigger_error( 'esc_cmd() requires at least two arguments.', E_USER_WARNING );
 	}
-
-	$args = func_get_args();
-
-	$cmd = array_shift( $args );
 
 	return vsprintf( $cmd, array_map( 'escapeshellarg', $args ) );
 }
@@ -265,8 +330,10 @@ function locate_wp_config() {
 	if ( null === $path ) {
 		$path = false;
 
-		if ( getenv( 'WP_CONFIG_PATH' ) && file_exists( getenv( 'WP_CONFIG_PATH' ) ) ) {
-			$path = getenv( 'WP_CONFIG_PATH' );
+		$config_path = (string) getenv( 'WP_CONFIG_PATH' );
+
+		if ( $config_path && file_exists( $config_path ) ) {
+			$path = $config_path;
 		} elseif ( file_exists( ABSPATH . 'wp-config.php' ) ) {
 			$path = ABSPATH . 'wp-config.php';
 		} elseif ( file_exists( dirname( ABSPATH ) . '/wp-config.php' ) && ! file_exists( dirname( ABSPATH ) . '/wp-settings.php' ) ) {
@@ -281,6 +348,13 @@ function locate_wp_config() {
 	return $path;
 }
 
+/**
+ * Compare a WordPress version.
+ *
+ * @param string $since
+ * @param string $operator
+ * @return bool
+ */
 function wp_version_compare( $since, $operator ) {
 	$wp_version = str_replace( '-src', '', $GLOBALS['wp_version'] );
 	$since      = str_replace( '-src', '', $since );
@@ -328,11 +402,14 @@ function wp_version_compare( $since, $operator ) {
  * @category Output
  *
  * @param string       $format Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count'.
- * @param array        $items  An array of items to output.
- * @param array|string $fields Named fields for each item of data. Can be array or comma-separated list.
+ * @param array<mixed> $items  An array of items to output.
+ * @param array<string>|string $fields Named fields for each item of data. Can be array or comma-separated list.
  */
 function format_items( $format, $items, $fields ) {
-	$assoc_args = compact( 'format', 'fields' );
+	$assoc_args = [
+		'format' => $format,
+		'fields' => $fields,
+	];
 	$formatter  = new Formatter( $assoc_args );
 	$formatter->display_items( $items );
 }
@@ -342,30 +419,41 @@ function format_items( $format, $items, $fields ) {
  *
  * @access public
  *
- * @param resource $fd      File descriptor.
- * @param array    $rows    Array of rows to output.
- * @param array    $headers List of CSV columns (optional).
+ * @param resource                 $fd      File descriptor.
+ * @param array<string[]>|iterable $rows    Array of rows to output.
+ * @param array<string>            $headers List of CSV columns (optional).
  */
 function write_csv( $fd, $rows, $headers = [] ) {
 	if ( ! empty( $headers ) ) {
-		fputcsv( $fd, $headers );
+		$headers = array_map( __NAMESPACE__ . '\escape_csv_value', $headers );
+		fputcsv( $fd, $headers, ',', '"', '\\' );
 	}
 
+	/**
+	 * @var string[] $row
+	 */
 	foreach ( $rows as $row ) {
 		if ( ! empty( $headers ) ) {
 			$row = pick_fields( $row, $headers );
 		}
 
-		fputcsv( $fd, array_values( $row ) );
+		/**
+		 * @var string[] $row
+		 * @var callable $callback
+		 */
+
+		$callback = __NAMESPACE__ . '\escape_csv_value';
+		$row      = array_map( $callback, $row );
+		fputcsv( $fd, array_values( $row ), ',', '"', '\\' );
 	}
 }
 
 /**
  * Pick fields from an associative array or object.
  *
- * @param  array|object $item    Associative array or object to pick fields from.
- * @param  array        $fields  List of fields to pick.
- * @return array
+ * @param array<string, mixed>|object $item   Associative array or object to pick fields from.
+ * @param array<string>               $fields List of fields to pick.
+ * @return array<string, mixed>
  */
 function pick_fields( $item, $fields ) {
 	$values = [];
@@ -403,7 +491,7 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 	do {
 		$tmpfile  = basename( $title );
 		$tmpfile  = preg_replace( '|\.[^.]*$|', '', $tmpfile );
-		$tmpfile .= '-' . substr( md5( mt_rand() ), 0, 6 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand -- no crypto and WP not loaded.
+		$tmpfile .= '-' . substr( md5( (string) mt_rand() ), 0, 6 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand -- no crypto and WP not loaded.
 		$tmpfile  = $tmpdir . $tmpfile . '.' . $ext;
 		$fp       = fopen( $tmpfile, 'xb' );
 		if ( ! $fp && is_writable( $tmpdir ) && file_exists( $tmpfile ) ) {
@@ -415,6 +503,7 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 		}
 	} while ( ! $tmpfile );
 
+	// @phpstan-ignore booleanNot.alwaysFalse
 	if ( ! $tmpfile ) {
 		WP_CLI::error( 'Error creating temporary file.' );
 	}
@@ -428,9 +517,11 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 
 	$descriptorspec = [ STDIN, STDOUT, STDERR ];
 	$process        = proc_open_compat( "$editor " . escapeshellarg( $tmpfile ), $descriptorspec, $pipes );
-	$r              = proc_close( $process );
-	if ( $r ) {
-		exit( $r );
+	if ( $process ) {
+		$r = proc_close( $process );
+		if ( $r ) {
+			exit( $r );
+		}
 	}
 
 	$output = file_get_contents( $tmpfile );
@@ -447,7 +538,7 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 /**
  * @param string $raw_host MySQL host string, as defined in wp-config.php.
  *
- * @return array
+ * @return array<string, string|int>
  */
 function mysql_host_to_cli_args( $raw_host ) {
 	$assoc_args = [];
@@ -482,14 +573,14 @@ function mysql_host_to_cli_args( $raw_host ) {
  *
  * @since v2.5.0 Deprecated $descriptors argument.
  *
- * @param string $cmd           Command to run.
- * @param array  $assoc_args    Associative array of arguments to use.
- * @param mixed  $_             Deprecated. Former $descriptors argument.
- * @param bool   $send_to_shell Optional. Whether to send STDOUT and STDERR
- *                              immediately to the shell. Defaults to true.
- * @param bool   $interactive   Optional. Whether MySQL is meant to be
- *                              executed as an interactive process. Defaults
- *                              to false.
+ * @param string                $cmd           Command to run.
+ * @param array<string, string> $assoc_args    Associative array of arguments to use.
+ * @param mixed                 $_             Deprecated. Former $descriptors argument.
+ * @param bool                  $send_to_shell Optional. Whether to send STDOUT and STDERR
+ *                                             immediately to the shell. Defaults to true.
+ * @param bool                  $interactive   Optional. Whether MySQL is meant to be
+ *                                             executed as an interactive process. Defaults
+ *                                             to false.
  *
  * @return array {
  *     Associative array containing STDOUT and STDERR output.
@@ -502,6 +593,9 @@ function mysql_host_to_cli_args( $raw_host ) {
 function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true, $interactive = false ) {
 	check_proc_available( 'run_mysql_command' );
 
+	/**
+	 * @var array<resource> $descriptors
+	 */
 	$descriptors = ( $interactive || $send_to_shell ) ?
 		[
 			0 => STDIN,
@@ -516,7 +610,11 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
 
 	$stdout = '';
 	$stderr = '';
-	$pipes  = [];
+
+	/**
+	 * @var array<int, resource> $pipes
+	 */
+	$pipes = [];
 
 	if ( isset( $assoc_args['host'] ) ) {
 		// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysql_host_to_cli_args -- Misidentified as PHP native MySQL function.
@@ -568,13 +666,16 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
  * Render PHP or other types of files using Mustache templates.
  *
  * IMPORTANT: Automatic HTML escaping is disabled!
+ *
+ * @param string               $template_name
+ * @param array<string, mixed> $data
  */
 function mustache_render( $template_name, $data = [] ) {
 	if ( ! file_exists( $template_name ) ) {
 		$template_name = WP_CLI_ROOT . "/templates/$template_name";
 	}
 
-	$template = file_get_contents( $template_name );
+	$template = (string) file_get_contents( $template_name );
 
 	$mustache = new Mustache_Engine(
 		[
@@ -613,7 +714,7 @@ function mustache_render( $template_name, $data = [] ) {
  * @param string  $message  Text to display before the progress bar.
  * @param integer $count    Total number of ticks to be performed.
  * @param int     $interval Optional. The interval in milliseconds between updates. Default 100.
- * @return cli\progress\Bar|NoOp
+ * @return \cli\progress\Bar|\WP_CLI\NoOp
  */
 function make_progress_bar( $message, $count, $interval = 100 ) {
 	if ( Shell::isPiped() ) {
@@ -641,15 +742,11 @@ function make_progress_bar( $message, $count, $interval = 100 ) {
  *               component doesn't exist in the given URL; a string or - in the
  *               case of PHP_URL_PORT - integer when it does. See parse_url()'s
  *               return values.
+ *
+ * @phpstan-return ($component is non-negative-int ? string|null|int|false : array{scheme?: string, host?: string, port?: int, user?: string, pass?: string, query?: string, path?: string, fragment?: string})
  */
 function parse_url( $url, $component = - 1, $auto_add_scheme = true ) {
-	if (
-		function_exists( 'wp_parse_url' )
-		&& (
-			-1 === $component
-			|| wp_version_compare( '4.7', '>=' )
-		)
-	) {
+	if ( function_exists( 'wp_parse_url' ) ) {
 		$url_parts = wp_parse_url( $url, $component );
 	} else {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Fallback.
@@ -690,13 +787,13 @@ function replace_path_consts( $source, $path ) {
 	$file = addslashes( $path );
 
 	if ( file_exists( $file ) ) {
-		$file = realpath( $file );
+		$file = (string) realpath( $file );
 	}
 
 	$dir = dirname( $file );
 
 	// Replace __FILE__ and __DIR__ constants with value of $file or $dir.
-	return preg_replace_callback(
+	return (string) preg_replace_callback(
 		FILE_DIR_PATTERN,
 		static function ( $matches ) use ( $file, $dir ) {
 			if ( ! empty( $matches['file'] ) ) {
@@ -729,10 +826,12 @@ function replace_path_consts( $source, $path ) {
  *
  * @access public
  *
- * @param string $method  HTTP method (GET, POST, DELETE, etc.).
- * @param string $url     URL to make the HTTP request to.
- * @param array  $headers Add specific headers to the request.
- * @param array  $options {
+ * @param string     $method  HTTP method (GET, POST, DELETE, etc.).
+ * @param string     $url     URL to make the HTTP request to.
+ * @param array|null $data    Data to send either as a query string for GET/HEAD requests,
+ *                            or in the body for POST requests.
+ * @param array      $headers Add specific headers to the request.
+ * @param array      $options {
  *     Optional. An associative array of additional request options.
  *
  *     @type bool $halt_on_error Whether or not command execution should be halted on error. Default: true
@@ -741,17 +840,13 @@ function replace_path_consts( $source, $path ) {
  *                               Defaults to detected CA cert bundled with the Requests library.
  *     @type bool $insecure      Whether to retry automatically without certificate validation.
  * }
- * @return object
+ * @return \Requests_Response|Response
  * @throws RuntimeException If the request failed.
  * @throws ExitException If the request failed and $halt_on_error is true.
+ *
+ * @phpstan-param array{halt_on_error?: bool, verify?: bool|string, insecure?: bool} $options
  */
 function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
-
-	if ( ! class_exists( 'Requests_Hooks' ) ) {
-		// Autoloader for the Requests library has not been registered yet.
-		Requests::register_autoloader();
-	}
-
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
 	unset( $options['halt_on_error'] );
@@ -761,38 +856,61 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		$options['verify'] = ! empty( ini_get( 'curl.cainfo' ) ) ? ini_get( 'curl.cainfo' ) : true;
 	}
 
+	/**
+	 * @var array{halt_on_error?: bool, verify: bool|string, insecure?: bool} $options
+	 */
+	$options = WP_CLI::do_hook( 'http_request_options', $options );
+
+	RequestsLibrary::register_autoloader();
+
+	/**
+	 * @var callable $request_method
+	 */
+	$request_method = [ RequestsLibrary::get_class_name(), 'request' ];
+
 	try {
 		try {
-			return Requests::request( $url, $headers, $data, $method, $options );
-		} catch ( Requests_Exception $ex ) {
-			if ( true !== $options['verify'] || 'curlerror' !== $ex->getType() || curl_errno( $ex->getData() ) !== CURLE_SSL_CACERT ) {
-				throw $ex;
+			return $request_method( $url, $headers, $data, $method, $options );
+		} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
+			/**
+			 * @var \CurlHandle $curl_handle
+			 */
+			$curl_handle = $exception->getData();
+			if (
+				true !== $options['verify']
+				|| 'curlerror' !== $exception->getType()
+				|| curl_errno( $curl_handle ) !== CURLE_SSL_CACERT
+			) {
+				throw $exception;
 			}
 
 			$options['verify'] = get_default_cacert( $halt_on_error );
 
-			return Requests::request( $url, $headers, $data, $method, $options );
+			return $request_method( $url, $headers, $data, $method, $options );
 		}
-	} catch ( Requests_Exception $ex ) {
-		// CURLE_SSL_CACERT_BADFILE only defined for PHP >= 7.
+	} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
+		/**
+		 * @var \CurlHandle $curl_handle
+		 */
+		$curl_handle = $exception->getData();
 		if (
 			! $insecure
 			||
-			'curlerror' !== $ex->getType()
+			'curlerror' !== $exception->getType()
 			||
-			! in_array( curl_errno( $ex->getData() ), [ CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, 77 /*CURLE_SSL_CACERT_BADFILE*/ ], true )
+			! in_array( curl_errno( $curl_handle ), [ CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, CURLE_SSL_CACERT_BADFILE ], true )
 		) {
-			$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $ex->getMessage() );
+			$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $exception->getMessage() );
 			if ( $halt_on_error ) {
 				WP_CLI::error( $error_msg );
 			}
-			throw new RuntimeException( $error_msg, null, $ex );
+			throw new RuntimeException( $error_msg, 0, $exception );
 		}
 
 		$warning = sprintf(
 			"Re-trying without verify after failing to get verified url '%s' %s.",
 			$url,
-			$ex->getMessage()
+			$exception->getMessage()
 		);
 		WP_CLI::warning( $warning );
 
@@ -800,13 +918,13 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		$options['verify'] = false;
 
 		try {
-			return Requests::request( $url, $headers, $data, $method, $options );
-		} catch ( Requests_Exception $ex ) {
-			$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $ex->getMessage() );
+			return $request_method( $url, $headers, $data, $method, $options );
+		} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
+			$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $exception->getMessage() );
 			if ( $halt_on_error ) {
 				WP_CLI::error( $error_msg );
 			}
-			throw new RuntimeException( $error_msg, null, $ex );
+			throw new RuntimeException( $error_msg, 0, $exception );
 		}
 	}
 }
@@ -820,18 +938,16 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
  * @throws ExitException If unable to locate the cert and $halt_on_error is true.
  */
 function get_default_cacert( $halt_on_error = false ) {
-	$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
+	$cert_path = RequestsLibrary::get_bundled_certificate_path();
 	$error_msg = 'Cannot find SSL certificate.';
 
-	if ( inside_phar() ) {
-		// cURL can't read Phar archives
-		return extract_from_phar( WP_CLI_VENDOR_DIR . $cert_path );
+	if ( inside_phar( $cert_path ) ) {
+		// cURL can't read Phar archives.
+		return extract_from_phar( $cert_path );
 	}
 
-	foreach ( get_vendor_paths() as $vendor_path ) {
-		if ( file_exists( $vendor_path . $cert_path ) ) {
-			return $vendor_path . $cert_path;
-		}
+	if ( file_exists( $cert_path ) ) {
+		return $cert_path;
 	}
 
 	if ( $halt_on_error ) {
@@ -853,46 +969,50 @@ function get_default_cacert( $halt_on_error = false ) {
  * @return string
  */
 function increment_version( $current_version, $new_version ) {
-	// split version assuming the format is x.y.z-pre
-	$current_version    = explode( '-', $current_version, 2 );
-	$current_version[0] = explode( '.', $current_version[0] );
+	// split version assuming the format is x.y.z-pre.
+	$_current_version    = explode( '-', $current_version, 2 );
+	$_current_version[0] = explode( '.', $_current_version[0] );
+
+	/**
+	 * @var array{0: list<string>, 1: string} $_current_version
+	 */
 
 	switch ( $new_version ) {
 		case 'same':
-			// do nothing
+			// do nothing.
 			break;
 
 		case 'patch':
-			$current_version[0][2]++;
+			++$_current_version[0][2];
 
-			$current_version = [ $current_version[0] ]; // Drop possible pre-release info.
+			$_current_version = [ $_current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		case 'minor':
-			$current_version[0][1]++;
-			$current_version[0][2] = 0;
+			++$_current_version[0][1];
+			$_current_version[0][2] = 0;
 
-			$current_version = [ $current_version[0] ]; // Drop possible pre-release info.
+			$_current_version = [ $_current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		case 'major':
-			$current_version[0][0]++;
-			$current_version[0][1] = 0;
-			$current_version[0][2] = 0;
+			++$_current_version[0][0];
+			$_current_version[0][1] = 0;
+			$_current_version[0][2] = 0;
 
-			$current_version = [ $current_version[0] ]; // Drop possible pre-release info.
+			$_current_version = [ $_current_version[0] ]; // Drop possible pre-release info.
 			break;
 
-		default: // not a keyword
-			$current_version = [ [ $new_version ] ];
+		default: // not a keyword.
+			$_current_version = [ [ $new_version ] ];
 			break;
 	}
 
 	// Reconstruct version string.
-	$current_version[0] = implode( '.', $current_version[0] );
-	$current_version    = implode( '-', $current_version );
+	$_current_version[0] = implode( '.', $_current_version[0] );
+	$_current_version    = implode( '-', $_current_version );
 
-	return $current_version;
+	return $_current_version;
 }
 
 /**
@@ -920,12 +1040,16 @@ function get_named_sem_ver( $new_version, $original_version ) {
 		$patch = $bits[2];
 	}
 
-	if ( isset( $minor ) && Semver::satisfies( $new_version, "{$major}.{$minor}.x" ) ) {
-		return 'patch';
-	}
+	try {
+		if ( isset( $minor ) && Semver::satisfies( $new_version, "{$major}.{$minor}.x" ) ) {
+			return 'patch';
+		}
 
-	if ( Semver::satisfies( $new_version, "{$major}.x.x" ) ) {
-		return 'minor';
+		if ( Semver::satisfies( $new_version, "{$major}.x.x" ) ) {
+			return 'minor';
+		}
+	} catch ( \UnexpectedValueException $e ) {
+		return '';
 	}
 
 	return 'major';
@@ -941,10 +1065,10 @@ function get_named_sem_ver( $new_version, $original_version ) {
  * @access public
  * @category Input
  *
- * @param array  $assoc_args Arguments array.
- * @param string $flag       Flag to get the value.
- * @param mixed  $default    Default value for the flag. Default: NULL.
- * @return mixed
+ * @param array<string|int,string|bool> $assoc_args Arguments array.
+ * @param string|int                    $flag       Flag to get the value.
+ * @param string|bool|int|null          $default    Default value for the flag. Default: NULL.
+ * @return string|bool|int|null
  */
 function get_flag_value( $assoc_args, $flag, $default = null ) {
 	return isset( $assoc_args[ $flag ] ) ? $assoc_args[ $flag ] : $default;
@@ -961,7 +1085,7 @@ function get_flag_value( $assoc_args, $flag, $default = null ) {
 function get_home_dir() {
 	$home = getenv( 'HOME' );
 	if ( ! $home ) {
-		// In Windows $HOME may not be defined
+		// In Windows $HOME may not be defined.
 		$home = getenv( 'HOMEDRIVE' ) . getenv( 'HOMEPATH' );
 	}
 
@@ -1002,7 +1126,7 @@ function trailingslashit( $string ) {
  */
 function normalize_path( $path ) {
 	$path = str_replace( '\\', '/', $path );
-	$path = preg_replace( '|(?<=.)/+|', '/', $path );
+	$path = (string) preg_replace( '|(?<=.)/+|', '/', $path );
 	if ( ':' === substr( $path, 1, 1 ) ) {
 		$path = ucfirst( $path );
 	}
@@ -1056,7 +1180,11 @@ function get_temp_dir() {
  *
  * @access public
  *
+ * @param string $url
+ * @param int $component
  * @return mixed
+ *
+ * @phpstan-return ($component is non-negative-int ? string|null : array{scheme?: string, user?: string, host?: string, port?: string, path?: string})
  */
 function parse_ssh_url( $url, $component = -1 ) {
 	preg_match( '#^((docker|docker\-compose|docker\-compose\-run|ssh|vagrant):)?(([^@:]+)@)?([^:/~]+)(:([\d]*))?((/|~)(.+))?$#', $url, $matches );
@@ -1109,6 +1237,7 @@ function parse_ssh_url( $url, $component = -1 ) {
  * @param integer      $successes Number of successful operations.
  * @param integer      $failures  Number of failures.
  * @param null|integer $skips     Optional. Number of skipped operations. Default null (don't show skips).
+ * @return void
  */
 function report_batch_operation_results( $noun, $verb, $total, $successes, $failures, $skips = null ) {
 	$plural_noun           = $noun . 's';
@@ -1139,11 +1268,11 @@ function report_batch_operation_results( $noun, $verb, $total, $successes, $fail
  * @category Input
  *
  * @param string $arguments
- * @return array
+ * @return array<string>
  */
 function parse_str_to_argv( $arguments ) {
 	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches );
-	$argv = isset( $matches[0] ) ? $matches[0] : [];
+	$argv = $matches[0];
 	return array_map(
 		static function ( $arg ) {
 			foreach ( [ '"', "'" ] as $char ) {
@@ -1152,7 +1281,7 @@ function parse_str_to_argv( $arguments ) {
 					break;
 				}
 			}
-				return $arg;
+			return $arg;
 		},
 		$argv
 	);
@@ -1175,14 +1304,23 @@ function basename( $path, $suffix = '' ) {
 /**
  * Checks whether the output of the current script is a TTY or a pipe / redirect
  *
- * Returns true if STDOUT output is being redirected to a pipe or a file; false is
+ * Returns `true` if `STDOUT` output is being redirected to a pipe or a file; `false` is
  * output is being sent directly to the terminal.
  *
- * If an env variable SHELL_PIPE exists, returned result depends on its
- * value. Strings like 1, 0, yes, no, that validate to booleans are accepted.
+ * If an env variable `SHELL_PIPE` exists, the returned result depends on its
+ * value. Strings like `1`, `0`, `yes`, `no`, that validate to booleans are accepted.
  *
  * To enable ASCII formatting even when the shell is piped, use the
- * ENV variable SHELL_PIPE=0.
+ * ENV variable `SHELL_PIPE=0`.
+ * ```
+ * SHELL_PIPE=0 wp plugin list | cat
+ * ```
+ *
+ * Note that the db command forwards to the mysql client, which is unaware of the env
+ * variable. For db commands, pass the `--table` option instead.
+ * ```
+ * wp db query --table "SELECT 1" | cat
+ * ```
  *
  * @access public
  *
@@ -1203,9 +1341,9 @@ function isPiped() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionNa
  *
  * Has no effect on paths which do not use glob patterns.
  *
- * @param string|array $paths Single path as a string, or an array of paths.
- * @param int          $flags Optional. Flags to pass to glob. Defaults to GLOB_BRACE.
- * @return array Expanded paths.
+ * @param string|array<string>  $paths Single path as a string, or an array of paths.
+ * @param int|'default'         $flags Optional. Flags to pass to glob. Defaults to GLOB_BRACE.
+ * @return array<string> Expanded paths.
  */
 function expand_globs( $paths, $flags = 'default' ) {
 	// Compatibility for systems without GLOB_BRACE.
@@ -1224,6 +1362,9 @@ function expand_globs( $paths, $flags = 'default' ) {
 		$matching = [ $path ];
 
 		if ( preg_match( '/[' . preg_quote( '*?[]{}!', '/' ) . ']/', $path ) ) {
+			/**
+			 * @var int $flags
+			 */
 			$matching = $glob_func( $path, $flags ) ?: [];
 		}
 		$expanded = array_merge( $expanded, $matching );
@@ -1244,9 +1385,9 @@ function expand_globs( $paths, $flags = 'default' ) {
  *
  * @param string $pattern     Filename pattern.
  * @param void   $dummy_flags Not used.
- * @return array Array of paths.
+ * @return array<string> Array of paths.
  */
-function glob_brace( $pattern, $dummy_flags = null ) {
+function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $dummy_flags is needed for compatibility with the libc implementation.
 
 	static $next_brace_sub;
 	if ( ! $next_brace_sub ) {
@@ -1260,14 +1401,14 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 					if ( ++$current === $length ) {
 						break;
 					}
-					$current++;
+					++$current;
 				} else {
 					if ( ( '}' === $pattern[ $current ] && 0 === $depth-- ) || ( ',' === $pattern[ $current ] && 0 === $depth ) ) {
 						break;
 					}
 
 					if ( '{' === $pattern[ $current++ ] ) {
-						$depth++;
+						++$depth;
 					}
 				}
 			}
@@ -1278,10 +1419,13 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 
 	$length = strlen( $pattern );
 
+	$begin = 0;
+
 	// Find first opening brace.
+	// @phpstan-ignore for.variableOverwrite
 	for ( $begin = 0; $begin < $length; $begin++ ) {
 		if ( '\\' === $pattern[ $begin ] ) {
-			$begin++;
+			++$begin;
 		} elseif ( '{' === $pattern[ $begin ] ) {
 			break;
 		}
@@ -1290,7 +1434,8 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 	// Find comma or matching closing brace.
 	$next = $next_brace_sub( $pattern, $begin + 1 );
 	if ( null === $next ) {
-		return glob( $pattern );
+		$result = glob( $pattern );
+		return $result ?: [];
 	}
 
 	$rest = $next;
@@ -1299,7 +1444,8 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 	while ( '}' !== $pattern[ $rest ] ) {
 		$rest = $next_brace_sub( $pattern, $rest + 1 );
 		if ( null === $rest ) {
-			return glob( $pattern );
+			$result = glob( $pattern );
+			return $result ?: [];
 		}
 	}
 
@@ -1309,8 +1455,8 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 	// For each comma-separated subpattern.
 	do {
 		$subpattern = substr( $pattern, 0, $begin )
-					. substr( $pattern, $p, $next - $p )
-					. substr( $pattern, $rest + 1 );
+			. substr( $pattern, $p, $next - $p )
+			. substr( $pattern, $rest + 1 );
 
 		$result = glob_brace( $subpattern );
 		if ( ! empty( $result ) ) {
@@ -1329,7 +1475,7 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 }
 
 /**
- * Get the closest suggestion for a mis-typed target term amongst a list of
+ * Get the closest suggestion for a mistyped target term amongst a list of
  * options.
  *
  * Uses the Levenshtein algorithm to calculate the relative "distance" between
@@ -1338,9 +1484,9 @@ function glob_brace( $pattern, $dummy_flags = null ) {
  * If the "distance" to the closest term is higher than the threshold, an empty
  * string is returned.
  *
- * @param string $target    Target term to get a suggestion for.
- * @param array  $options   Array with possible options.
- * @param int    $threshold Threshold above which to return an empty string.
+ * @param string        $target    Target term to get a suggestion for.
+ * @param array<string> $options   Array with possible options.
+ * @param int           $threshold Threshold above which to return an empty string.
  * @return string
  */
 function get_suggestion( $target, array $options, $threshold = 2 ) {
@@ -1375,6 +1521,9 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
 	if ( empty( $options ) ) {
 		return '';
 	}
+
+	$levenshtein = [];
+
 	foreach ( $options as $option ) {
 		$distance               = levenshtein( $option, $target );
 		$levenshtein[ $option ] = $distance;
@@ -1411,7 +1560,7 @@ function phar_safe_path( $path ) {
 	}
 
 	return str_replace(
-		PHAR_STREAM_PREFIX . WP_CLI_PHAR_PATH . '/',
+		PHAR_STREAM_PREFIX . rtrim( WP_CLI_PHAR_PATH, '/' ) . '/',
 		PHAR_STREAM_PREFIX,
 		$path
 	);
@@ -1495,7 +1644,7 @@ function past_tense_verb( $verb ) {
  * @return string
  */
 function get_php_binary() {
-	// PHAR installs always use PHP_BINARY.
+	// Phar installs always use PHP_BINARY.
 	if ( inside_phar() ) {
 		return PHP_BINARY;
 	}
@@ -1519,16 +1668,19 @@ function get_php_binary() {
  *
  * @access public
  *
- * @param string $cmd            Command to execute.
- * @param array  $descriptorspec Indexed array of descriptor numbers and their values.
- * @param array  &$pipes         Indexed array of file pointers that correspond to PHP's end of any pipes that are created.
- * @param string $cwd            Initial working directory for the command.
- * @param array  $env            Array of environment variables.
- * @param array  $other_options  Array of additional options (Windows only).
- * @return resource Command stripped of any environment variable settings.
+ * @param string                            $cmd            Command to execute.
+ * @param array<int, list<string>|resource> $descriptorspec Indexed array of descriptor numbers and their values.
+ * @param array<int, resource>              &$pipes         Indexed array of file pointers that correspond to PHP's end of any pipes that are created.
+ * @param string                            $cwd            Initial working directory for the command.
+ * @param array<string, string>             $env            Array of environment variables.
+ * @param array<string>                     $other_options  Array of additional options (Windows only).
+ * @return resource|false Command stripped of any environment variable settings, or false on failure.
+ *
+ * @param-out array<int, resource> $pipes
  */
 function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = null, $other_options = null ) {
 	if ( is_windows() ) {
+		// @phpstan-ignore no.private.function
 		$cmd = _proc_open_compat_win_env( $cmd, $env );
 	}
 	return proc_open( $cmd, $descriptorspec, $pipes, $cwd, $env, $other_options );
@@ -1540,8 +1692,8 @@ function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = n
  *
  * @access private
  *
- * @param string $cmd Command to execute.
- * @param array &$env Array of existing environment variables. Will be modified if any settings in command.
+ * @param string                $cmd  Command to execute.
+ * @param array<string, string> &$env Array of existing environment variables. Will be modified if any settings in command.
  * @return string Command stripped of any environment variable settings.
  */
 function _proc_open_compat_win_env( $cmd, &$env ) {
@@ -1572,6 +1724,18 @@ function _proc_open_compat_win_env( $cmd, &$env ) {
  *                or real_escape next.
  */
 function esc_like( $text ) {
+	/**
+	 * @var null|\wpdb $wpdb
+	 */
+	global $wpdb;
+
+	// Check if the esc_like() method exists on the global $wpdb object.
+	// We need to do this because to ensure compatibility layers like the
+	// SQLite integration plugin still work.
+	if ( null !== $wpdb && method_exists( $wpdb, 'esc_like' ) ) {
+		return $wpdb->esc_like( $text );
+	}
+
 	return addcslashes( $text, '_%\\' );
 }
 
@@ -1579,8 +1743,10 @@ function esc_like( $text ) {
  * Escapes (backticks) MySQL identifiers (aka schema object names) - i.e. column names, table names, and database/index/alias/view etc names.
  * See https://dev.mysql.com/doc/refman/5.5/en/identifiers.html
  *
- * @param  string|array $idents A single identifier or an array of identifiers.
- * @return string|array An escaped string if given a string, or an array of escaped strings if given an array of strings.
+ * @param  string|array<string> $idents A single identifier or an array of identifiers.
+ * @return string|array<string> An escaped string if given a string, or an array of escaped strings if given an array of strings.
+ *
+ * @phpstan-return ($idents is string ? string : array<string>)
  */
 function esc_sql_ident( $idents ) {
 	$backtick = static function ( $v ) {
@@ -1596,10 +1762,12 @@ function esc_sql_ident( $idents ) {
 /**
  * Check whether a given string is a valid JSON representation.
  *
- * @param string $argument       String to evaluate.
+ * @param mixed  $argument       String to evaluate.
  * @param bool   $ignore_scalars Optional. Whether to ignore scalar values.
  *                               Defaults to true.
  * @return bool Whether the provided string is a valid JSON representation.
+ *
+ * @phpstan-assert-if-true =non-empty-string $argument
  */
 function is_json( $argument, $ignore_scalars = true ) {
 	if ( ! is_string( $argument ) || '' === $argument ) {
@@ -1618,10 +1786,10 @@ function is_json( $argument, $ignore_scalars = true ) {
 /**
  * Parse known shell arrays included in the $assoc_args array.
  *
- * @param array $assoc_args      Associative array of arguments.
- * @param array $array_arguments Array of argument keys that should receive an
- *                               array through the shell.
- * @return array
+ * @param array<string, string> $assoc_args      Associative array of arguments.
+ * @param array<string>         $array_arguments Array of argument keys that should receive an
+ *                                               array through the shell.
+ * @return array<string, mixed>
  */
 function parse_shell_arrays( $assoc_args, $array_arguments ) {
 	if ( empty( $assoc_args ) || empty( $array_arguments ) ) {
@@ -1630,7 +1798,8 @@ function parse_shell_arrays( $assoc_args, $array_arguments ) {
 
 	foreach ( $array_arguments as $key ) {
 		if ( array_key_exists( $key, $assoc_args ) && is_json( $assoc_args[ $key ] ) ) {
-			$assoc_args[ $key ] = json_decode( $assoc_args[ $key ], $assoc = true );
+			// @phpstan-ignore cast.useless
+			$assoc_args[ $key ] = json_decode( (string) $assoc_args[ $key ], $assoc = true );
 		}
 	}
 
@@ -1716,46 +1885,126 @@ function pluralize( $noun, $count = null ) {
 }
 
 /**
- * Get the path to the mysql binary.
+ * Return the detected database type.
  *
- * @return string Path to the mysql binary, or an empty string if not found.
+ * Can be either 'sqlite' (if in a WordPress installation with the SQLite drop-in),
+ * 'mysql', or 'mariadb'.
+ *
+ * @return string Database type.
+ */
+function get_db_type() {
+	static $db_type = null;
+
+	if ( defined( 'SQLITE_DB_DROPIN_VERSION' ) ) {
+		return 'sqlite';
+	}
+
+	if ( null !== $db_type ) {
+		return $db_type;
+	}
+
+	$db_type = 'mysql';
+
+	$binary = get_mysql_binary_path();
+
+	if ( '' !== $binary ) {
+		$result = Process::create( "$binary --version", null, null )->run();
+
+		if ( 0 === $result->return_code ) {
+			$db_type = ( false !== strpos( $result->stdout, 'MariaDB' ) ) ? 'mariadb' : 'mysql';
+		}
+	}
+
+	return $db_type;
+}
+
+/**
+ * Get the path to the MySQL or MariaDB binary.
+ *
+ * If the MySQL binary is provided by MariaDB (as determined by the version string),
+ * prefers the actual MariaDB binary.
+ *
+ * @since 2.12.0 Now also checks for MariaDB.
+ *
+ * @return string Path to the MySQL/MariaDB binary, or an empty string if not found.
  */
 function get_mysql_binary_path() {
 	static $path = null;
 
-	if ( null === $path ) {
-		$result = Process::create( '/usr/bin/env which mysql', null, null )->run();
+	if ( null !== $path ) {
+		return $path;
+	}
 
-		if ( 0 !== $result->return_code ) {
-			$path = '';
-		} else {
-			$path = trim( $result->stdout );
+	$path    = '';
+	$mysql   = Process::create( '/usr/bin/env which mysql', null, null )->run();
+	$mariadb = Process::create( '/usr/bin/env which mariadb', null, null )->run();
+
+	$mysql_binary   = trim( $mysql->stdout );
+	$mariadb_binary = trim( $mariadb->stdout );
+
+	if ( 0 === $mysql->return_code ) {
+		if ( '' !== $mysql_binary ) {
+			$path   = $mysql_binary;
+			$result = Process::create( "$mysql_binary --version", null, null )->run();
+
+			// It's actually MariaDB disguised as MySQL.
+			if ( 0 === $result->return_code && false !== strpos( $result->stdout, 'MariaDB' ) && 0 === $mariadb->return_code ) {
+				$path = $mariadb_binary;
+			}
 		}
+	} elseif ( 0 === $mariadb->return_code ) {
+		$path = $mariadb_binary;
 	}
 
 	return $path;
 }
 
 /**
- * Get the version of the MySQL database.
+ * Get the version of the MySQL or MariaDB database.
  *
- * @return string Version of the MySQL database, or an empty string if not
- *                found.
+ * @since 2.12.0 Now also checks for MariaDB.
+ *
+ * @return string Version of the MySQL/MariaDB database,
+ *                or an empty string if not found.
  */
 function get_mysql_version() {
 	static $version = null;
 
-	if ( null === $version ) {
-		$result = Process::create( '/usr/bin/env mysql --version', null, null )->run();
+	if ( null !== $version ) {
+		return $version;
+	}
 
-		if ( 0 !== $result->return_code ) {
-			$version = '';
-		} else {
+	$version = '';
+
+	$db_type = get_db_type();
+
+	if ( 'sqlite' !== $db_type ) {
+		$result = Process::create( "/usr/bin/env $db_type --version", null, null )->run();
+
+		if ( 0 === $result->return_code ) {
 			$version = trim( $result->stdout );
 		}
 	}
 
 	return $version;
+}
+
+/**
+ * Returns the correct `dump` command based on the detected database type.
+ *
+ * @return string The appropriate dump command.
+ */
+function get_sql_dump_command() {
+	return 'mariadb' === get_db_type() ? 'mariadb-dump' : 'mysqldump';
+}
+
+/**
+ * Returns the correct `check` command based on the detected database type.
+ *
+ * @return string The appropriate check command.
+ */
+function get_sql_check_command() {
+	return 'mariadb' === get_db_type() ? 'mariadb-check' : 'mysqlcheck';
 }
 
 /**
@@ -1767,16 +2016,25 @@ function get_mysql_version() {
 function get_sql_modes() {
 	static $sql_modes = null;
 
-	if ( null === $sql_modes ) {
-		$result = Process::create( '/usr/bin/env mysql --no-auto-rehash --batch --skip-column-names --execute="SELECT @@SESSION.sql_mode"', null, null )->run();
+	if ( null !== $sql_modes ) {
+		return $sql_modes;
+	}
+
+	$binary = get_mysql_binary_path();
+
+	if ( '' === $binary ) {
+		$sql_modes = [];
+	} else {
+		$result = Process::create( "$binary --no-auto-rehash --batch --skip-column-names --execute=\"SELECT @@SESSION.sql_mode\"", null, null )->run();
 
 		if ( 0 !== $result->return_code ) {
 			$sql_modes = [];
 		} else {
-			$sql_modes = array_filter(
+			$split_lines = preg_split( "/\r\n|\n|\r/", $result->stdout );
+			$sql_modes   = array_filter(
 				array_map(
 					'trim',
-					preg_split( "/\r\n|\n|\r/", $result->stdout )
+					$split_lines ?: []
 				)
 			);
 		}
@@ -1793,4 +2051,78 @@ function get_sql_modes() {
 function get_cache_dir() {
 	$home = get_home_dir();
 	return getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
+}
+
+/**
+ * Check whether any input is passed to STDIN.
+ *
+ * @return bool
+ */
+function has_stdin() {
+	$handle = fopen( 'php://stdin', 'r' );
+	if ( ! $handle ) {
+		return false;
+	}
+
+	$read    = array( $handle );
+	$write   = null;
+	$except  = null;
+	$streams = stream_select( $read, $write, $except, 0 );
+
+	fclose( $handle );
+
+	return 1 === $streams;
+}
+
+/**
+ * Return description of WP_CLI hooks used in @when tag
+ *
+ *  @param string $hook Name of WP_CLI hook
+ *
+ * @return string|null
+ */
+function get_hook_description( $hook ) {
+	$events = [
+		'find_command_to_run_pre'     => 'just before WP-CLI finds the command to run.',
+		'before_registering_contexts' => 'before the contexts are registered.',
+		'before_wp_load'              => 'just before the WP load process begins.',
+		'before_wp_config_load'       => 'after wp-config.php has been located.',
+		'after_wp_config_load'        => 'after wp-config.php has been loaded into scope.',
+		'after_wp_load'               => 'just after the WP load process has completed.',
+	];
+
+	if ( array_key_exists( $hook, $events ) ) {
+		return $events[ $hook ];
+	}
+	return null;
+}
+
+/**
+ * Escape a value for CSV output.
+ *
+ * Values that start with the following characters are escaping with a single
+ * quote: =, +, -, @, TAB (0x09) and CR (0x0D).
+ *
+ * @param string $value Value to escape.
+ * @return string Escaped value.
+ */
+function escape_csv_value( $value ) {
+	if ( null === $value ) {
+		return '';
+	}
+
+	// Convert to string if not already
+	$value = (string) $value;
+
+	if (
+		in_array(
+			substr( $value, 0, 1 ),
+			[ '=', '+', '-', '@', "\t", "\r" ],
+			true
+		)
+	) {
+		return "'{$value}";
+	}
+
+	return $value;
 }

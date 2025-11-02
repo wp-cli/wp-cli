@@ -55,12 +55,12 @@ class Regular extends Base {
 	/**
 	 * Similar to error( $message ), but outputs $message in a red box.
 	 *
-	 * @param  array $message_lines Message to write.
+	 * @param non-empty-array<string> $message_lines Message to write.
 	 */
 	public function error_multi_line( $message_lines ) {
 		// Convert tabs to four spaces, as some shells will output the tabs as variable-length.
 		$message_lines = array_map(
-			function( $line ) {
+			function ( $line ) {
 				return str_replace( "\t", '    ', $line );
 			},
 			$message_lines

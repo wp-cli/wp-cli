@@ -38,5 +38,4 @@ class ComposerIO extends NullIO {
 			WP_CLI::log( strip_tags( trim( $message ) ) );
 		}
 	}
-
 }

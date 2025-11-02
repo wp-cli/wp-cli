@@ -174,19 +174,49 @@ Feature: Create shortcuts to specific WordPress installs
       Error: No alias found with key '@someotherfoo'.
       """
 
+  Scenario: Adds proxyjump to ssh command
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        proxyjump: proxyhost
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -J 'proxyhost' -T -vvv
+      """
+
+  Scenario: Adds key to ssh command
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        key: identityfile.key
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -i 'identityfile.key' -T -vvv
+      """
+
   Scenario: Add an alias
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
-    """
-    @foo:
-      ssh: wpcli@wp-cli.org:2222
-    """
+      """
+      @foo:
+        ssh: wpcli@wp-cli.org:2222
+      """
 
     When I run `wp cli alias add @dev --set-user=wpcli --set-path=/path/to/wordpress --config=project`
     Then STDOUT should be:
-       """
-       Success: Added '@dev' alias.
-       """
+      """
+      Success: Added '@dev' alias.
+      """
     When I run `wp cli alias list`
     Then STDOUT should be YAML containing:
       """
@@ -200,31 +230,31 @@ Feature: Create shortcuts to specific WordPress installs
 
     When I try `wp cli alias add @something --config=project`
     Then STDERR should be:
-    """
-    Error: No valid arguments passed.
-    """
+      """
+      Error: No valid arguments passed.
+      """
 
     When I try `wp cli alias add @something --set-user= --config=project`
     Then STDERR should be:
-    """
-    Error: No value passed to arguments.
-    """
+      """
+      Error: No value passed to arguments.
+      """
 
     When I try `wp cli alias add @something --set-path=/new/path --grouping=foo,dev --config=project`
     Then STDERR should be:
-    """
-    Error: --grouping argument works alone. Found invalid arg(s) 'set-path'.
-    """
+      """
+      Error: --grouping argument works alone. Found invalid arg(s) 'set-path'.
+      """
 
   Scenario: Delete an alias
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
-    """
-    @foo:
-      ssh: foo@bar:/path/to/wordpress
-    @dev:
-      ssh: user@hostname:/path/to/wordpress
-    """
+      """
+      @foo:
+        ssh: foo@bar:/path/to/wordpress
+      @dev:
+        ssh: user@hostname:/path/to/wordpress
+      """
 
     When I run `wp cli alias delete @dev --config=project`
     Then STDOUT should be:
@@ -246,28 +276,28 @@ Feature: Create shortcuts to specific WordPress installs
 
     When I try `wp cli alias update @foo`
     Then STDERR should be:
-    """
-    Error: No valid arguments passed.
-    """
+      """
+      Error: No valid arguments passed.
+      """
 
   Scenario: Update an alias
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
-    """
-    @foo:
-      user: wpcli
-    @foopath:
-      path: /home/wpcli/sites/wpcli
-    @foogroup:
-      - @foo
-      - @foopath
-    """
+      """
+      @foo:
+        user: wpcli
+      @foopath:
+        path: /home/wpcli/sites/wpcli
+      @foogroup:
+        - @foo
+        - @foopath
+      """
 
     When I run `wp cli alias update @foo --set-user=newuser --config=project`
     Then STDOUT should be:
-       """
+      """
       Success: Updated '@foo' alias.
-       """
+      """
     When I run `wp cli alias list`
     Then STDOUT should be YAML containing:
       """
@@ -306,9 +336,9 @@ Feature: Create shortcuts to specific WordPress installs
 
     When I try `wp cli alias update @foo --set-path=/new/path`
     Then STDOUT should be:
-    """
-    Success: Updated '@foo' alias.
-    """
+      """
+      Success: Updated '@foo' alias.
+      """
 
     When I run `wp cli alias list`
     Then STDOUT should be YAML containing:
@@ -580,3 +610,57 @@ Feature: Create shortcuts to specific WordPress installs
       | func       |
       | proc_open  |
       | proc_close |
+
+  Scenario: An alias is a group of aliases
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      @bar:
+        path: bar
+      @both:
+       - @foo
+       - @bar
+      """
+
+    When I try `wp cli alias is-group @both`
+    Then the return code should be 0
+
+  Scenario: An alias is not a group of aliases
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      """
+
+    When I try `wp cli alias is-group @foo`
+    Then the return code should be 1
+
+  Scenario: Automatically add "@" prefix to an alias
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      """
+
+    When I run `wp cli alias add hello --set-path=/path/to/wordpress`
+    Then STDOUT should be:
+      """
+      Success: Added '@hello' alias.
+      """
+
+    When I run `wp eval --skip-wordpress 'echo realpath( getenv( "RUN_DIR" ) );'`
+    Then save STDOUT as {TEST_DIR}
+
+    When I run `wp cli alias list`
+    Then STDOUT should be YAML containing:
+      """
+      @all: Run command against every registered alias.
+      @hello:
+        path: /path/to/wordpress
+      @foo:
+        path: {TEST_DIR}/foo
+      """

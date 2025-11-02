@@ -20,11 +20,11 @@ class Subcommand extends CompositeCommand {
 	private $when_invoked;
 
 	public function __construct( $parent, $name, $docparser, $when_invoked ) {
+		$this->alias = $docparser->get_tag( 'alias' );
+
 		parent::__construct( $parent, $name, $docparser );
 
 		$this->when_invoked = $when_invoked;
-
-		$this->alias = $docparser->get_tag( 'alias' );
 
 		$this->synopsis = $docparser->get_synopsis();
 		if ( ! $this->synopsis && $this->longdesc ) {
@@ -112,10 +112,10 @@ class Subcommand extends CompositeCommand {
 	 * Wrapper for CLI Tools' prompt() method.
 	 *
 	 * @param string $question
-	 * @param string $default
+	 * @param mixed $default
 	 * @return string|false
 	 */
-	private function prompt( $question, $default ) {
+	private function prompt( $question, $default = null ) {
 
 		$question .= ': ';
 		if ( function_exists( 'readline' ) ) {
@@ -124,7 +124,7 @@ class Subcommand extends CompositeCommand {
 
 		echo $question;
 
-		$ret = stream_get_line( STDIN, 1024, "\n" );
+		$ret = (string) stream_get_line( STDIN, 1024, "\n" );
 		if ( Utils\is_windows() && "\r" === substr( $ret, -1 ) ) {
 			$ret = substr( $ret, 0, -1 );
 		}
@@ -153,7 +153,7 @@ class Subcommand extends CompositeCommand {
 
 		$spec = array_filter(
 			SynopsisParser::parse( $synopsis ),
-			function( $spec_arg ) use ( $args, $assoc_args, &$arg_index ) {
+			function ( $spec_arg ) use ( $args, $assoc_args, &$arg_index ) {
 				switch ( $spec_arg['type'] ) {
 					case 'positional':
 						// Only prompt for the positional arguments that are not
@@ -174,6 +174,9 @@ class Subcommand extends CompositeCommand {
 
 		$spec = array_values( $spec );
 
+		/**
+		 * @var string|true $prompt_args
+		 */
 		$prompt_args = WP_CLI::get_config( 'prompt' );
 		if ( true !== $prompt_args ) {
 			$prompt_args = explode( ',', $prompt_args );
@@ -197,7 +200,6 @@ class Subcommand extends CompositeCommand {
 			}
 
 			$current_prompt = ( $key + 1 ) . '/' . count( $spec ) . ' ';
-			$default        = $spec_arg['optional'] ? '' : false;
 
 			// 'generic' permits arbitrary key=value (e.g. [--<field>=<value>] )
 			if ( 'generic' === $spec_arg['type'] ) {
@@ -212,7 +214,7 @@ class Subcommand extends CompositeCommand {
 						$key_prompt = str_repeat( ' ', strlen( $current_prompt ) ) . $key_token;
 					}
 
-					$key = $this->prompt( $key_prompt, $default );
+					$key = $this->prompt( $key_prompt );
 					if ( false === $key ) {
 						return [ $args, $assoc_args ];
 					}
@@ -221,7 +223,7 @@ class Subcommand extends CompositeCommand {
 						$key_prompt_count = strlen( $key_prompt ) - strlen( $value_token ) - 1;
 						$value_prompt     = str_repeat( ' ', $key_prompt_count ) . '=' . $value_token;
 
-						$value = $this->prompt( $value_prompt, $default );
+						$value = $this->prompt( $value_prompt );
 						if ( false === $value ) {
 							return [ $args, $assoc_args ];
 						}
@@ -240,7 +242,7 @@ class Subcommand extends CompositeCommand {
 					$prompt .= ' (Y/n)';
 				}
 
-				$response = $this->prompt( $prompt, $default );
+				$response = $this->prompt( $prompt );
 				if ( false === $response ) {
 					return [ $args, $assoc_args ];
 				}
@@ -338,16 +340,13 @@ class Subcommand extends CompositeCommand {
 							if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) {
 								\WP_CLI::error( 'Invalid value specified for positional arg.' );
 							}
-							$i++;
+							++$i;
 						} while ( isset( $args[ $i ] ) );
-					} else {
-						// phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
-						if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) {
-							\WP_CLI::error( 'Invalid value specified for positional arg.' );
-						}
+					} elseif ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) { // phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
+						\WP_CLI::error( 'Invalid value specified for positional arg.' );
 					}
 				}
-				$i++;
+				++$i;
 			} elseif ( 'assoc' === $spec['type'] ) {
 				$spec_args = $docparser->get_param_args( $spec['name'] );
 				if ( ! isset( $assoc_args[ $spec['name'] ] ) && ! isset( $extra_args[ $spec['name'] ] ) ) {
@@ -383,8 +382,12 @@ class Subcommand extends CompositeCommand {
 			}
 		}
 
+		/**
+		 * @var array $config
+		 */
+		$config                             = \WP_CLI::get_config();
 		list( $returned_errors, $to_unset ) = $validator->validate_assoc(
-			array_merge( \WP_CLI::get_config(), $extra_args, $assoc_args )
+			array_merge( $config, $extra_args, $assoc_args )
 		);
 		foreach ( [ 'fatal', 'warning' ] as $error_type ) {
 			$errors[ $error_type ] = array_merge( $errors[ $error_type ], $returned_errors[ $error_type ] );
@@ -464,10 +467,10 @@ class Subcommand extends CompositeCommand {
 		$parent = implode( ' ', array_slice( $path, 1 ) );
 		$cmd    = $this->name;
 		if ( $parent ) {
-			WP_CLI::do_hook( "before_invoke:{$parent}" );
+			WP_CLI::do_hook( "before_invoke:{$parent}", $parent );
 			$cmd = $parent . ' ' . $cmd;
 		}
-		WP_CLI::do_hook( "before_invoke:{$cmd}" );
+		WP_CLI::do_hook( "before_invoke:{$cmd}", $cmd );
 
 		// Check if `--prompt` arg passed or not.
 		if ( $prompted_once ) {
@@ -483,7 +486,16 @@ class Subcommand extends CompositeCommand {
 				sprintf(
 					'wp %s %s',
 					$cmd,
-					ltrim( Utils\assoc_args_to_str( $actual_args ), ' ' )
+					ltrim(
+						implode(
+							' ',
+							[
+								ltrim( Utils\args_to_str( $args ), ' ' ),
+								ltrim( Utils\assoc_args_to_str( $actual_args ), ' ' ),
+							]
+						),
+						' '
+					)
 				)
 			);
 		}
@@ -491,16 +503,16 @@ class Subcommand extends CompositeCommand {
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 
 		if ( $parent ) {
-			WP_CLI::do_hook( "after_invoke:{$parent}" );
+			WP_CLI::do_hook( "after_invoke:{$parent}", $parent );
 		}
-		WP_CLI::do_hook( "after_invoke:{$cmd}" );
+		WP_CLI::do_hook( "after_invoke:{$cmd}", $cmd );
 	}
 
 	/**
 	 * Get an array of parameter names, by merging the command-specific and the
 	 * global parameters.
 	 *
-	 * @param array  $spec Optional. Specification of the current command.
+	 * @param array $spec Optional. Specification of the current command.
 	 *
 	 * @return array Array of parameter names
 	 */

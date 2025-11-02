@@ -16,6 +16,7 @@
 	<!-- Ignoring select files/folders.
 		 https://github.com/squizlabs/PHP_CodeSniffer/wiki/Advanced-Usage#ignoring-files-and-folders -->
 	<exclude-pattern>*/tests/data/*</exclude-pattern>
+	<exclude-pattern>*/bundle/*</exclude-pattern>
 
 	<!-- Show progress. -->
 	<arg value="p"/>
@@ -34,12 +35,7 @@
 
 	<rule ref="WP_CLI_CS">
 		<!-- The `while` control structure is the only one where assignments in conditions are mostly valid. -->
-		<exclude name="WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition"/>
-
-		<!-- This is a bug in PHPCS. A fix for which has been pulled already and is expected to be
-			 merged in PHPCS 3.5.0. Once this repos upgrades to that version, this exclusion
-			 should be removed. -->
-		<exclude name="PSR2.Namespaces.NamespaceDeclaration.BlankLineAfter"/>
+		<exclude name="Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition"/>
 	</rule>
 
 	<!--
@@ -48,9 +44,11 @@
 	#############################################################################
 	-->
 
+	<exclude-pattern>*/utils/phpstan/*</exclude-pattern>
+
 	<!-- For help understanding the `testVersion` configuration setting:
 		 https://github.com/PHPCompatibility/PHPCompatibility#sniffing-your-code-for-compatibility-with-specific-php-versions -->
-	<config name="testVersion" value="5.6-"/>
+	<config name="testVersion" value="7.2-"/>
 
 	<!-- Verify that everything in the global namespace is either namespaced or prefixed.
 		 The default prefixes `WP_CLI` (for namespaces and classes) and `wpcli` (for variables) are inherited
@@ -93,7 +91,6 @@
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound">
 		<exclude-pattern>*/php/commands/src/CLI_(Cache_)?Command\.php$</exclude-pattern>
 		<exclude-pattern>*/php/commands/src/Help_Command\.php$</exclude-pattern>
-		<exclude-pattern>*/utils/contrib-list\.php$</exclude-pattern>
 	</rule>
 
 	<!-- Exclude existing classes from the prefix rule as it would break BC to prefix them now. -->
@@ -103,18 +100,33 @@
 
 	<!-- These are all to do with file-system related tests. Just ignore them. -->
 	<rule ref="WordPress.WP.CapitalPDangit">
-		<exclude-pattern>*/tests/test-(extractor|utils)\.php$</exclude-pattern>
+		<exclude-pattern>*/tests/(Extractor|Utils)Test\.php$</exclude-pattern>
 	</rule>
 
 	<!-- Allow for select data providers for tests to use single-line associative arrays. -->
 	<rule ref="WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound">
-		<exclude-pattern>*/tests/test-(process|utils)\.php$</exclude-pattern>
+		<exclude-pattern>*/tests/(Process|Utils)Test\.php$</exclude-pattern>
 	</rule>
 
 	<!-- This is a procedural stand-alone file that is never loaded in a WordPress context,
 		 so this file does not have to comply with WP naming conventions. -->
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<exclude-pattern>*/utils/get-package-require-from-composer\.php$</exclude-pattern>
+	</rule>
+
+	<!-- Exclude existing classes from the protected parameter names rule as it would break BC to change these now. -->
+	<rule ref="Universal.NamingConventions.NoReservedKeywordParameterNames">
+		<exclude-pattern>*/php/WP_CLI/Iterators/Transform\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/Inflector\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/Autoloader\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/Dispatcher/CommandFactory\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/Dispatcher/CompositeCommand\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/Dispatcher/Subcommand\.php</exclude-pattern>
+		<exclude-pattern>*/php/utils\.php</exclude-pattern>
+		<exclude-pattern>*/php/utils-wp\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/Runner\.php</exclude-pattern>
+		<exclude-pattern>*/php/WP_CLI/UpgraderSkin\.php$</exclude-pattern>
+		<exclude-pattern>*/php/class-wp-cli\.php$</exclude-pattern>
 	</rule>
 
 </ruleset>

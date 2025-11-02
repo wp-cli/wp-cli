@@ -21,6 +21,9 @@ Feature: Utilities that depend on WordPress code
       1,,,
       """
 
+  # `wp db query` does not yet work on SQLite,
+  # See https://github.com/wp-cli/db-command/issues/234
+  @require-mysql
   Scenario: Get WP table names for single site install
     Given a WP installation
     And I run `wp db query "CREATE TABLE xx_wp_posts ( id int );"`
@@ -110,7 +113,7 @@ Feature: Utilities that depend on WordPress code
       wp_term_taxonomy
       """
   # Leave out wp_termmeta for old WP compat.
-    But STDOUT should contain:
+    And STDOUT should contain:
       """
       wp_terms
       wp_usermeta
@@ -330,6 +333,9 @@ Feature: Utilities that depend on WordPress code
       wp_posts
       """
 
+  # `wp db query` does not yet work on SQLite,
+  # See https://github.com/wp-cli/db-command/issues/234
+  @require-mysql
   Scenario: Get WP table names for multisite install
     Given a WP multisite install
     And I run `wp db query "CREATE TABLE xx_wp_posts ( id int );"`
@@ -532,7 +538,7 @@ Feature: Utilities that depend on WordPress code
       """
     # Leave out wp_blog_versions as it was never used and is removed with WP 5.3+.
     # Leave out wp_blogmeta for old WP compat.
-    Then STDOUT should contain:
+    And STDOUT should contain:
       """
       wp_blogs
       wp_categories
@@ -561,7 +567,7 @@ Feature: Utilities that depend on WordPress code
       """
     And save STDOUT as {ALL_TABLES_WITH_PREFIX_STDOUT}
 
-    # Network overriden by all-tables-with-prefix.
+    # Network overridden by all-tables-with-prefix.
     When I run `wp --require=table_names.php get_table_names --all-tables-with-prefix --network`
     Then STDOUT should contain:
       """
@@ -577,7 +583,7 @@ Feature: Utilities that depend on WordPress code
       """
     And save STDOUT as {ALL_TABLES_STDOUT}
 
-    # Network overriden by all-tables.
+    # Network overridden by all-tables.
     When I run `wp --require=table_names.php get_table_names --all-tables --network`
     Then STDOUT should be:
       """

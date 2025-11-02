@@ -15,24 +15,26 @@ use WP_CLI\Bootstrap\BootstrapStep;
  */
 function get_bootstrap_steps() {
 	return [
-		'WP_CLI\Bootstrap\DeclareFallbackFunctions',
-		'WP_CLI\Bootstrap\LoadUtilityFunctions',
-		'WP_CLI\Bootstrap\LoadDispatcher',
-		'WP_CLI\Bootstrap\DeclareMainClass',
-		'WP_CLI\Bootstrap\DeclareAbstractBaseCommand',
-		'WP_CLI\Bootstrap\IncludeFrameworkAutoloader',
-		'WP_CLI\Bootstrap\ConfigureRunner',
-		'WP_CLI\Bootstrap\InitializeColorization',
-		'WP_CLI\Bootstrap\InitializeLogger',
-		'WP_CLI\Bootstrap\DefineProtectedCommands',
-		'WP_CLI\Bootstrap\LoadExecCommand',
-		'WP_CLI\Bootstrap\LoadRequiredCommand',
-		'WP_CLI\Bootstrap\IncludePackageAutoloader',
-		'WP_CLI\Bootstrap\IncludeFallbackAutoloader',
-		'WP_CLI\Bootstrap\RegisterFrameworkCommands',
-		'WP_CLI\Bootstrap\RegisterDeferredCommands',
-		'WP_CLI\Bootstrap\InitializeContexts',
-		'WP_CLI\Bootstrap\LaunchRunner',
+		Bootstrap\DeclareFallbackFunctions::class,
+		Bootstrap\LoadUtilityFunctions::class,
+		Bootstrap\LoadDispatcher::class,
+		Bootstrap\DeclareMainClass::class,
+		Bootstrap\DeclareAbstractBaseCommand::class,
+		Bootstrap\IncludeFrameworkAutoloader::class,
+		Bootstrap\ConfigureRunner::class,
+		Bootstrap\InitializeColorization::class,
+		Bootstrap\InitializeLogger::class,
+		Bootstrap\CheckRoot::class,
+		Bootstrap\IncludeRequestsAutoloader::class,
+		Bootstrap\DefineProtectedCommands::class,
+		Bootstrap\LoadExecCommand::class,
+		Bootstrap\LoadRequiredCommand::class,
+		Bootstrap\IncludePackageAutoloader::class,
+		Bootstrap\IncludeFallbackAutoloader::class,
+		Bootstrap\RegisterFrameworkCommands::class,
+		Bootstrap\RegisterDeferredCommands::class,
+		Bootstrap\InitializeContexts::class,
+		Bootstrap\LaunchRunner::class,
 	];
 }
 
@@ -74,6 +76,13 @@ function bootstrap() {
 
 	foreach ( get_bootstrap_steps() as $step ) {
 		/** @var BootstrapStep $step_instance */
+		if ( class_exists( 'WP_CLI' ) ) {
+			\WP_CLI::debug( "Processing bootstrap step: {$step}", 'bootstrap' );
+		}
+
+		/**
+		 * @var BootstrapStep $step_instance
+		 */
 		$step_instance = new $step();
 		$state         = $step_instance->process( $state );
 	}

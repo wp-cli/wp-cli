@@ -77,6 +77,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *       - @dev
 	 *
 	 * @subcommand list
+	 *
+	 * @param array                 $args      Positional arguments. Unused.
+	 * @param array{format: string} $assoc_args Associative arguments.
 	 */
 	public function list_( $args, $assoc_args ) {
 		WP_CLI::print_value( WP_CLI::get_runner()->aliases, $assoc_args );
@@ -95,8 +98,10 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     # Get alias.
 	 *     $ wp cli alias get @prod
 	 *     ssh: dev@somedeve.env:12345/home/dev/
+	 *
+	 * @param array{string} $args Positional arguments.
 	 */
-	public function get( $args, $assoc_args ) {
+	public function get( $args ) {
 		list( $alias ) = $args;
 
 		$aliases = WP_CLI::get_runner()->aliases;
@@ -158,6 +163,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     # Add group of aliases.
 	 *     $ wp cli alias add @multiservers --grouping=servera,serverb
 	 *     Success: Added '@multiservers' alias.
+	 *
+	 * @param array{string} $args Positional arguments.
+	 * @param array{'set-user'?: string, 'set-url'?: string, 'set-path'?: string, 'set-ssh'?: string, 'set-http'?: string, grouping?: string, config?: string} $assoc_args Associative arguments.
 	 */
 	public function add( $args, $assoc_args ) {
 
@@ -167,7 +175,11 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$this->validate_config_file( $config_path );
 
-		$alias    = $args[0];
+		$alias = $args[0];
+
+		/**
+		 * @var string|null $grouping
+		 */
 		$grouping = Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		$this->validate_input( $assoc_args, $grouping );
@@ -210,6 +222,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     # Delete project alias.
 	 *     $ wp cli alias delete @prod --config=project
 	 *     Success: Deleted '@prod' alias.
+	 *
+	 * @param array{string}          $args       Positional arguments.
+	 * @param array{config?: string} $assoc_args Associative arguments
 	 */
 	public function delete( $args, $assoc_args ) {
 
@@ -227,7 +242,6 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		unset( $aliases[ $alias ] );
 		$this->process_aliases( $aliases, $alias, $config_path, 'Deleted' );
-
 	}
 
 	/**
@@ -273,11 +287,18 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     # Update project alias.
 	 *     $ wp cli alias update @prod --set-user=newuser --set-path=/new/path/to/wordpress/install/ --config=project
 	 *     Success: Updated 'prod' alias.
+	 *
+	 * @param array{string} $args Positional arguments.
+	 * @param array{'set-user'?: string, 'set-url'?: string, 'set-path'?: string, 'set-ssh'?: string, 'set-http'?: string, grouping?: string, config?: string} $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
 
-		$config   = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
-		$alias    = $args[0];
+		$config = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
+		$alias  = $args[0];
+
+		/**
+		 * @var string|null $grouping
+		 */
 		$grouping = Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		list( $config_path, $aliases ) = $this->get_aliases_data( $config, $alias, true );
@@ -297,6 +318,46 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		}
 
 		$this->process_aliases( $aliases, $alias, $config_path, 'Updated' );
+	}
+
+	/**
+	 * Check whether an alias is a group.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <key>
+	 * : Key for the alias.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Checks whether the alias is a group; exit status 0 if it is, otherwise 1.
+	 *     $ wp cli alias is-group @prod
+	 *     $ echo $?
+	 *     1
+	 *
+	 * @subcommand is-group
+	 */
+	public function is_group( $args, $assoc_args = array() ) {
+		$alias = $args[0];
+
+		$aliases = WP_CLI::get_runner()->aliases;
+
+		if ( empty( $aliases[ $alias ] ) ) {
+			WP_CLI::error( "No alias found with key '{$alias}'." );
+		}
+
+		// how do we know the alias is a group?
+		// + array keys are numeric
+		// + array values begin with '@'
+
+		$first_item       = $aliases[ $alias ];
+		$first_item_key   = key( $first_item );
+		$first_item_value = $first_item[ $first_item_key ];
+
+		if ( is_numeric( $first_item_key ) && substr( $first_item_value, 0, 1 ) === '@' ) {
+			WP_CLI::halt( 0 );
+		}
+		WP_CLI::halt( 1 );
 	}
 
 	/**
@@ -341,17 +402,14 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		}
 
 		return [ $config_path, $aliases ];
-
 	}
 
 	/**
 	 * Check if the config file exists and is writable.
 	 *
 	 * @param string $config_path Path to config file.
-	 *
-	 * @return void
 	 */
-	private function validate_config_file( $config_path ) {
+	private function validate_config_file( $config_path ): void {
 		if ( ! file_exists( $config_path ) || ! is_writable( $config_path ) ) {
 			WP_CLI::error( "Config file does not exist: {$config_path}" );
 		}
@@ -367,9 +425,10 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @param string $grouping    Grouping value.
 	 * @param bool   $is_update   Is this an update operation?
 	 *
-	 * @return mixed
+	 * @return array<string, array<string, mixed>>
 	 */
 	private function build_aliases( $aliases, $alias, $assoc_args, $is_grouping, $grouping = '', $is_update = false ) {
+		$alias = $this->normalize_alias( $alias );
 
 		if ( $is_grouping ) {
 			$valid_assoc_args = [ 'config', 'grouping' ];
@@ -396,9 +455,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 					}
 				}
 			}
-		} else {
+		} elseif ( ! empty( $grouping ) ) {
 
-			if ( ! empty( $grouping ) ) {
 				$group_alias_list  = explode( ',', $grouping );
 				$group_alias       = array_map(
 					function ( $current_alias ) {
@@ -407,7 +465,6 @@ class CLI_Alias_Command extends WP_CLI_Command {
 					$group_alias_list
 				);
 				$aliases[ $alias ] = $group_alias;
-			}
 		}
 
 		return $aliases;
@@ -416,14 +473,14 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	/**
 	 * Validate input of passed arguments.
 	 *
-	 * @param array  $assoc_args Arguments array.
-	 * @param string $grouping   Grouping argument value.
+	 * @param array       $assoc_args Arguments array.
+	 * @param string|null $grouping   Grouping argument value.
 	 *
 	 * @throws ExitException
 	 */
 	private function validate_input( $assoc_args, $grouping ) {
 		// Check if valid arguments were passed.
-		$arg_match = preg_grep( '/^set-(\w+)/i', array_keys( $assoc_args ) );
+		$arg_match = (array) preg_grep( '/^set-(\w+)/i', array_keys( $assoc_args ) );
 
 		// Verify passed-arguments.
 		if ( empty( $grouping ) && empty( $arg_match ) ) {
@@ -471,6 +528,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @param string $operation   Current operation string fro message.
 	 */
 	private function process_aliases( $aliases, $alias, $config_path, $operation = '' ) {
+		$alias = $this->normalize_alias( $alias );
+
 		// Convert data to YAML string.
 		$yaml_data = Spyc::YAMLDump( $aliases );
 
@@ -478,5 +537,22 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		if ( file_put_contents( $config_path, $yaml_data ) ) {
 			WP_CLI::success( "$operation '{$alias}' alias." );
 		}
+	}
+
+	/**
+	 * Normalize the alias to an expected format.
+	 *
+	 * - Add @ if not present.
+	 *
+	 * @param string $alias Name of alias.
+	 */
+	private function normalize_alias( $alias ) {
+		// Check if the alias starts with the @.
+		// See: https://github.com/wp-cli/wp-cli/issues/5391
+		if ( strpos( $alias, '@' ) !== 0 ) {
+			$alias = '@' . ltrim( $alias, '@' );
+		}
+
+		return $alias;
 	}
 }

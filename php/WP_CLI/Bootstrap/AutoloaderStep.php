@@ -35,7 +35,7 @@ abstract class AutoloaderStep implements BootstrapStep {
 		$autoloader_paths = $this->get_autoloader_paths();
 
 		if ( false === $autoloader_paths ) {
-			// Skip this autoloading step.
+			// Skip this autoload step.
 			return $state;
 		}
 
@@ -78,7 +78,16 @@ abstract class AutoloaderStep implements BootstrapStep {
 			return false;
 		}
 
-		$composer = json_decode( file_get_contents( $maybe_composer_json ) );
+		$contents = file_get_contents( $maybe_composer_json );
+
+		if ( false === $contents ) {
+			return false;
+		}
+
+		/**
+		 * @var object{config: object{'vendor-dir': string}} $composer
+		 */
+		$composer = json_decode( $contents );
 
 		if ( ! empty( $composer->config )
 			&& ! empty( $composer->config->{'vendor-dir'} )

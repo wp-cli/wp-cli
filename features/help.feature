@@ -53,6 +53,28 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
+  Scenario: Include when the command is run if a non-standard hook.
+    Given an empty directory
+
+    When I run `COLUMNS=80 wp help db`
+    Then STDOUT should contain:
+      """
+        Unless overridden, these commands run on the 'after_wp_config_load' hook,
+        after wp-config.php has been loaded into scope.
+      """
+
+    When I run `COLUMNS=150 wp help db check`
+    Then STDOUT should contain:
+      """
+      This command runs on the 'after_wp_config_load' hook, after wp-config.php has been loaded into scope.
+      """
+
+    When I run `COLUMNS=150 wp help db size`
+    Then STDOUT should not contain:
+      """
+      This command runs on the
+      """
+
   Scenario: Hide Global parameters when requested
     Given an empty directory
 
@@ -143,7 +165,7 @@ Feature: Get help about WP-CLI commands
       GLOBAL PARAMETERS
       """
 
-  @require-php-5.6
+  @require-php-7.0
   Scenario: Help when WordPress is downloaded but not installed
     Given an empty directory
 
@@ -155,7 +177,7 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
-    When I run `wp config create {CORE_CONFIG_SETTINGS}`
+    When I run `wp config create {CORE_CONFIG_SETTINGS} --skip-check`
     And I run `wp help core install`
     Then STDOUT should contain:
       """

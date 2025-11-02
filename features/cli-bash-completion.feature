@@ -101,7 +101,16 @@ Feature: `wp cli completions` tasks
       """
 
     When I run `wp cli completions --line='wp config create --dbname=' --point=100`
-    Then STDOUT should be empty
+    Then STDOUT should not contain:
+      """
+      --dbname=
+      """
+
+    When I run `wp cli completions --line='wp config create --dbname' --point=100`
+    Then STDOUT should contain:
+      """
+      --dbname=
+      """
 
     When I run `wp cli completions --line='wp config create --dbname=foo ' --point=100`
     Then STDOUT should not contain:
@@ -315,16 +324,20 @@ Feature: `wp cli completions` tasks
       """
       --prompt=
       """
-    Then STDOUT should not contain:
+    And STDOUT should not contain:
       """
       --path
       """
 
     When I run `wp cli completions --line="wp core download --no-color" --point=100`
-    Then STDOUT should not contain:
+    Then STDOUT should contain:
       """
       --no-color
       """
+
+    When I run `wp cli completions --line="wp core download --no-color --no-color" --point=100`
+    Then STDOUT should be empty
+
 
  Scenario: Bash Completion for global --url parameter
     Given a WP multisite installation
@@ -346,14 +359,14 @@ Feature: `wp cli completions` tasks
     # todo probably needs to check in a different way than the others?
     # todo not necessary if cant autocomplete when multiple
     When I run `wp cli completions --line="wp plugin list --url=bar"
-        Then STDOUT should contain:
-          """
-          bar.example.org/qui
-          """
+    Then STDOUT should contain:
+      """
+      bar.example.org/qui
+      """
 
     # autocomplete entirely when only 1 match
     When I run `wp cli completions --line="wp plugin list --url=wal"
-            Then STDOUT should contain:
-              """
-              waldo.example.org
-              """
+    Then STDOUT should contain:
+      """
+      waldo.example.org
+      """

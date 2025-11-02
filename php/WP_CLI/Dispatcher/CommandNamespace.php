@@ -29,14 +29,14 @@ class CommandNamespace extends CompositeCommand {
 
 		foreach ( $methods as $subcommand ) {
 			$prefix = ( 0 === $i ) ? 'usage: ' : '   or: ';
-			$i++;
+			++$i;
 
 			if ( \WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
 				continue;
 			}
 
 			\WP_CLI::line( $subcommand->get_usage( $prefix ) );
-			$count++;
+			++$count;
 		}
 
 		$cmd_name = implode( ' ', array_slice( get_path( $this ), 1 ) );
@@ -46,6 +46,5 @@ class CommandNamespace extends CompositeCommand {
 
 		\WP_CLI::line();
 		\WP_CLI::line( $message );
-
 	}
 }

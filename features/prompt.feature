@@ -204,3 +204,25 @@ Feature: Prompt user for input
       """
       "Hello world!",hello-world,publish
       """
+
+  Scenario: Prompt should show positional arguments
+    Given a WP installation
+    And a value-file file:
+      """
+      category
+      General
+      general
+
+
+
+      """
+
+    When I run `wp term create --prompt < value-file`
+    Then STDOUT should contain:
+      """
+      wp term create 'category' 'General' --slug='general'
+      """
+    And STDOUT should contain:
+      """
+      Created category
+      """

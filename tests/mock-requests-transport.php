@@ -1,7 +1,9 @@
 <?php
 
+use WpOrg\Requests\Transport;
+
 // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
-class Mock_Requests_Transport implements Requests_Transport {
+class Mock_Requests_Transport implements Transport {
 	public $requests = [];
 
 	public function request( $url, $headers = [], $data = [], $options = [] ) {
@@ -26,7 +28,7 @@ class Mock_Requests_Transport implements Requests_Transport {
 		throw new Exception( 'Method not implemented: ' . __METHOD__ );
 	}
 
-	public static function test() {
+	public static function test( $capabilities = [] ) {
 		return true;
 	}
 }

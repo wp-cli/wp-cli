@@ -98,14 +98,19 @@ final class WpOrgApi {
 	 *
 	 * @param string $version Version string to query.
 	 * @param string $locale  Optional. Locale to query. Defaults to 'en_US'.
-	 * @return bool|array False on failure. An array of checksums on success.
+	 * @return false|array False on failure. An array of checksums on success.
 	 * @throws RuntimeException If the remote request fails.
 	 */
 	public function get_core_checksums( $version, $locale = 'en_US' ) {
+		$data = [
+			'version' => $version,
+			'locale'  => $locale,
+		];
+
 		$url = sprintf(
 			'%s?%s',
 			self::CORE_CHECKSUMS_ENDPOINT,
-			http_build_query( compact( 'version', 'locale' ), null, '&' )
+			http_build_query( $data, '', '&' )
 		);
 
 		$response = $this->json_get_request( $url );
@@ -132,7 +137,7 @@ final class WpOrgApi {
 		$url = sprintf(
 			'%s?%s',
 			self::VERSION_CHECK_ENDPOINT,
-			http_build_query( compact( 'locale' ), null, '&' )
+			http_build_query( [ 'locale' => $locale ], '', '&' )
 		);
 
 		$response = $this->json_get_request( $url );
@@ -176,7 +181,7 @@ final class WpOrgApi {
 	 *
 	 * @param string $plugin  Plugin slug to query.
 	 * @param string $version Version string to query.
-	 * @return bool|array False on failure. An array of checksums on success.
+	 * @return false|array False on failure. An array of checksums on success.
 	 * @throws RuntimeException If the remote request fails.
 	 */
 	public function get_plugin_checksums( $plugin, $version ) {
@@ -205,20 +210,25 @@ final class WpOrgApi {
 	 *
 	 * @param string $plugin Plugin slug to query.
 	 * @param string $locale Optional. Locale to request info for. Defaults to 'en_US'.
+	 * @param array $fields Optional. Fields to include/omit from the response.
 	 * @return array|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
-	public function get_plugin_info( $plugin, $locale = 'en_US' ) {
+	public function get_plugin_info( $plugin, $locale = 'en_US', array $fields = [] ) {
 		$action  = 'plugin_information';
 		$request = [
 			'locale' => $locale,
 			'slug'   => $plugin,
 		];
 
+		if ( ! empty( $fields ) ) {
+			$request['fields'] = $fields;
+		}
+
 		$url = sprintf(
 			'%s?%s',
 			self::PLUGIN_INFO_ENDPOINT,
-			http_build_query( compact( 'action', 'request' ), null, '&' )
+			http_build_query( compact( 'action', 'request' ), '', '&' )
 		);
 
 		$response = $this->json_get_request( $url );
@@ -235,20 +245,25 @@ final class WpOrgApi {
 	 *
 	 * @param string $theme  Theme slug to query.
 	 * @param string $locale Optional. Locale to request info for. Defaults to 'en_US'.
+	 * @param array $fields Optional. Fields to include/omit from the response.
 	 * @return array|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
-	public function get_theme_info( $theme, $locale = 'en_US' ) {
+	public function get_theme_info( $theme, $locale = 'en_US', array $fields = [] ) {
 		$action  = 'theme_information';
 		$request = [
 			'locale' => $locale,
 			'slug'   => $theme,
 		];
 
+		if ( ! empty( $fields ) ) {
+			$request['fields'] = $fields;
+		}
+
 		$url = sprintf(
 			'%s?%s',
 			self::THEME_INFO_ENDPOINT,
-			http_build_query( compact( 'action', 'request' ), null, '&' )
+			http_build_query( compact( 'action', 'request' ), '', '&' )
 		);
 
 		$response = $this->json_get_request( $url );
@@ -263,7 +278,7 @@ final class WpOrgApi {
 	/**
 	 * Gets a set of salts in the format required by `wp-config.php`.
 	 *
-	 * @return bool|string False on failure. A string of PHP define() statements on success.
+	 * @return string A string of PHP define() statements.
 	 * @throws RuntimeException If the remote request fails.
 	 */
 	public function get_salts() {
@@ -308,7 +323,7 @@ final class WpOrgApi {
 	 * @param string $url     URL to execute the GET request on.
 	 * @param array  $headers Optional. Associative array of headers.
 	 * @param array  $options Optional. Associative array of options.
-	 * @return string|false False on failure. Response body string on success.
+	 * @return string Response body.
 	 * @throws RuntimeException If the remote request fails.
 	 */
 	private function get_request( $url, $headers = [], $options = [] ) {

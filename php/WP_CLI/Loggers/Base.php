@@ -13,10 +13,25 @@ abstract class Base {
 
 	protected $in_color = false;
 
+	/**
+	 * Informational message.
+	 *
+	 * @param string $message Message to write.
+	 */
 	abstract public function info( $message );
 
+	/**
+	 * Success message.
+	 *
+	 * @param string $message Message to write.
+	 */
 	abstract public function success( $message );
 
+	/**
+	 * Warning message.
+	 *
+	 * @param string $message Message to write.
+	 */
 	abstract public function warning( $message );
 
 	/**
@@ -82,5 +97,4 @@ abstract class Base {
 		}
 		$this->write( $handle, "$label $message\n" );
 	}
-
 }
