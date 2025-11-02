@@ -27,19 +27,19 @@ class CompositeCommand {
 	/**
 	 * Instantiate a new CompositeCommand
 	 *
-	 * @param mixed $parent Parent command (either Root or Composite)
-	 * @param string $name Represents how command should be invoked
-	 * @param DocParser $docparser
+	 * @param RootCommand|CompositeCommand $parent_command Parent command (either Root or Composite)
+	 * @param string                       $name           Represents how command should be invoked
+	 * @param DocParser                    $docparser
 	 */
-	public function __construct( $parent, $name, $docparser ) {
-		$this->parent = $parent;
+	public function __construct( $parent_command, $name, $docparser ) {
+		$this->parent = $parent_command;
 
 		$this->name = $name;
 
 		$this->shortdesc = $docparser->get_shortdesc();
 		$this->longdesc  = $docparser->get_longdesc();
 		$this->docparser = $docparser;
-		$this->hook      = $parent->get_hook();
+		$this->hook      = $parent_command->get_hook();
 
 		$when_to_invoke = $docparser->get_tag( 'when' );
 		if ( $when_to_invoke ) {
@@ -51,7 +51,7 @@ class CompositeCommand {
 	/**
 	 * Get the parent composite (or root) command
 	 *
-	 * @return mixed
+	 * @return RootCommand|CompositeCommand
 	 */
 	public function get_parent() {
 		return $this->parent;
@@ -88,7 +88,7 @@ class CompositeCommand {
 	/**
 	 * Composite commands always contain subcommands.
 	 *
-	 * @return true
+	 * @return bool
 	 */
 	public function can_have_subcommands() {
 		return true;
@@ -178,6 +178,7 @@ class CompositeCommand {
 	/**
 	 * Get the usage for this composite command.
 	 *
+	 * @param string $prefix
 	 * @return string
 	 */
 	public function get_usage( $prefix ) {
@@ -277,7 +278,7 @@ class CompositeCommand {
 	/**
 	 * Composite commands can only be known by one name.
 	 *
-	 * @return false
+	 * @return string|false
 	 */
 	public function get_alias() {
 		return false;
