@@ -1137,6 +1137,7 @@ class UtilsTest extends TestCase {
 
 		// Don't call curl_close if PHP 8.5+ as it's deprecated.
 		if ( PHP_VERSION_ID < 80500 ) {
+			// phpcs:ignore PHPCompatibility.FunctionUse.RemovedFunctions.curl_closeDeprecated
 			curl_close( $curl_handle );
 		}
 	}
