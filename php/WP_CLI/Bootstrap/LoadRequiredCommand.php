@@ -36,7 +36,7 @@ final class LoadRequiredCommand implements BootstrapStep {
 				$context        = '';
 				$required_files = $runner()->get_required_files();
 				foreach ( [ 'system', 'global', 'project', 'runtime' ] as $scope ) {
-					if ( in_array( $path, $required_files[ $scope ], true ) ) {
+					if ( isset( $required_files[ $scope ] ) && in_array( $path, $required_files[ $scope ], true ) ) {
 						switch ( $scope ) {
 							case 'system':
 								$context = ' (from system ' . Utils\basename( (string) $runner()->get_system_config_path() ) . ')';
