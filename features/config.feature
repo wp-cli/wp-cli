@@ -739,3 +739,16 @@ Feature: Have a config file
     When I run `[ -n "$HOME" ] && rm -rf "$HOME/doesnotexist"`
     And I try `WP_CLI_CONFIG_PATH=$HOME/doesnotexist/wp-cli.yml wp cli alias add 1 --debug`
     Then STDERR should match #Default global config does not exist, creating one in.+/doesnotexist/wp-cli.yml#
+
+  Scenario: Tilde expansion in config file path
+    Given an empty directory
+    And I run `mkdir -p {HOME}/test-wp-config-tilde`
+    And WP files in '{HOME}/test-wp-config-tilde'
+    And a wp-cli.yml file:
+      """
+      path: ~/test-wp-config-tilde
+      """
+
+    When I run `wp core version`
+    Then STDOUT should not be empty
+    And the return code should be 0

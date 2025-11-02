@@ -384,3 +384,12 @@ Feature: Global flags
       """
       --user=<id|login|email>
       """
+
+  Scenario: Tilde expansion in --path parameter
+    Given an empty directory
+    And I run `mkdir -p {HOME}/test-wp-tilde`
+    And WP files in '{HOME}/test-wp-tilde'
+
+    When I run `wp core version --path=~/test-wp-tilde`
+    Then STDOUT should not be empty
+    And the return code should be 0
