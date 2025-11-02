@@ -279,12 +279,12 @@ function expand_tilde_path( $path ) {
 	// Check if path starts with tilde
 	if ( isset( $path[0] ) && '~' === $path[0] ) {
 		$home = get_home_dir();
-		// Replace ~ with home directory
+		// Only expand if we can determine the home directory
 		// Handle both "~" and "~/..." patterns (but not "~username")
-		if ( 1 === strlen( $path ) || '/' === $path[1] ) {
+		if ( ! empty( $home ) && ( 1 === strlen( $path ) || '/' === $path[1] ) ) {
 			$path = $home . substr( $path, 1 );
 		}
-		// If followed by anything other than '/', leave it unchanged (e.g., ~username)
+		// If followed by anything other than '/', or home is empty, leave it unchanged
 	}
 
 	return $path;
