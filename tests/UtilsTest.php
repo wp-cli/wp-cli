@@ -1113,4 +1113,21 @@ class UtilsTest extends TestCase {
 			[ [ 'Exception', 'getMessage' ], true ],
 		];
 	}
+
+	public function testExpandTildePath(): void {
+		$home = Utils\get_home_dir();
+
+		// Test tilde expansion for home directory
+		$this->assertEquals( $home, Utils\expand_tilde_path( '~' ) );
+
+		// Test tilde expansion with subdirectory
+		$this->assertEquals( $home . '/sites/wordpress', Utils\expand_tilde_path( '~/sites/wordpress' ) );
+
+		// Test that paths without tilde are unchanged
+		$this->assertEquals( '/absolute/path', Utils\expand_tilde_path( '/absolute/path' ) );
+		$this->assertEquals( 'relative/path', Utils\expand_tilde_path( 'relative/path' ) );
+
+		// Test that tilde in the middle is not expanded
+		$this->assertEquals( '/path/to/~something', Utils\expand_tilde_path( '/path/to/~something' ) );
+	}
 }

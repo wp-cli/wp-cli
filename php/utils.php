@@ -267,6 +267,26 @@ function is_path_absolute( $path ) {
 }
 
 /**
+ * Expand tilde (~) in path to home directory.
+ *
+ * @param string $path Path that may contain a tilde.
+ * @return string Path with tilde expanded to home directory.
+ */
+function expand_tilde_path( $path ) {
+	// Check if path starts with tilde
+	if ( isset( $path[0] ) && '~' === $path[0] ) {
+		$home = get_home_dir();
+		// Replace ~ with home directory
+		// Handle both "~" and "~/..." patterns
+		if ( 1 === strlen( $path ) || '/' === $path[1] ) {
+			$path = $home . substr( $path, 1 );
+		}
+	}
+
+	return $path;
+}
+
+/**
  * Composes positional arguments into a command string.
  *
  * @param array<string> $args Positional arguments to compose.
