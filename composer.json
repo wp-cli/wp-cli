@@ -40,8 +40,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "2.13.x-dev",
-            "dev-copilot/load-global-config-from-etc": "2.13.x-dev"
+            "dev-main": "2.13.x-dev"
         }
     },
     "autoload": {
