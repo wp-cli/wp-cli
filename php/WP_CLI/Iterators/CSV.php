@@ -10,6 +10,8 @@ use WP_CLI;
 
 /**
  * Allows incrementally reading and parsing lines from a CSV file.
+ *
+ * @implements \Iterator<int, string>
  */
 class CSV implements Countable, Iterator {
 
@@ -81,6 +83,9 @@ class CSV implements Countable, Iterator {
 		}
 	}
 
+	/**
+	 * @return int
+	 */
 	#[ReturnTypeWillChange]
 	public function count() {
 		$file = new SplFileObject( $this->filename, 'r' );

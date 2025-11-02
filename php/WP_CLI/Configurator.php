@@ -84,6 +84,17 @@ class Configurator {
 
 			$this->config[ $key ] = $details['default'];
 		}
+
+		$env_files = getenv( 'WP_CLI_REQUIRE' )
+		? array_filter( array_map( 'trim', explode( ',', (string) getenv( 'WP_CLI_REQUIRE' ) ) ) )
+		: [];
+
+		if ( ! empty( $env_files ) ) {
+			if ( ! isset( $this->config['require'] ) ) {
+				$this->config['require'] = [];
+			}
+			$this->config['require'] = array_unique( array_merge( $env_files, $this->config['require'] ) );
+		}
 	}
 
 	/**
@@ -129,7 +140,12 @@ class Configurator {
 		$runtime_alias = getenv( 'WP_CLI_RUNTIME_ALIAS' );
 		if ( false !== $runtime_alias ) {
 			$returned_aliases = [];
-			foreach ( json_decode( $runtime_alias, true ) as $key => $value ) {
+
+			/**
+			 * @var string $key
+			 * @var array<string, string> $value
+			 */
+			foreach ( (array) json_decode( $runtime_alias, true ) as $key => $value ) {
 				if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
 					$returned_aliases[ $key ] = [];
 					foreach ( self::$alias_spec as $i ) {
@@ -148,8 +164,8 @@ class Configurator {
 	/**
 	 * Splits a list of arguments into positional, associative and config.
 	 *
-	 * @param array(string) $arguments
-	 * @return array(array)
+	 * @param array<string> $arguments
+	 * @return array<array<string>>
 	 */
 	public function parse_args( $arguments ) {
 		list( $positional_args, $mixed_args, $global_assoc, $local_assoc ) = self::extract_assoc( $arguments );
@@ -160,8 +176,8 @@ class Configurator {
 	/**
 	 * Splits positional args from associative args.
 	 *
-	 * @param array $arguments
-	 * @return array(array)
+	 * @param array<string> $arguments
+	 * @return array{0: array<string>, 1: array<array{0: string, 1: string|bool}>, 2: array<array{0: string, 1: string|bool}>, 3: array<array{0: string, 1: string|bool}>}
 	 */
 	public static function extract_assoc( $arguments ) {
 		$positional_args = [];
@@ -266,7 +282,7 @@ class Configurator {
 			$this->merge_yml( $inherit_path, $current_alias );
 		}
 		// Prepare the base path for absolutized alias paths.
-		$yml_file_dir = $path ? dirname( $path ) : false;
+		$yml_file_dir = $path ? dirname( $path ) : '';
 		foreach ( $yaml as $key => $value ) {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
 				$this->aliases[ $key ] = [];

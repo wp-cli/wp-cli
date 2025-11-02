@@ -7,6 +7,8 @@ use WP_CLI\ExitException;
 
 /**
  * Fetch a WordPress entity for use in a subcommand.
+ *
+ * @template T
  */
 abstract class Base {
 
@@ -18,8 +20,8 @@ abstract class Base {
 	protected $msg;
 
 	/**
-	 * @param string $arg The raw CLI argument.
-	 * @return mixed|false The item if found; false otherwise.
+	 * @param string|int $arg The raw CLI argument.
+	 * @return T|false The item if found; false otherwise.
 	 */
 	abstract public function get( $arg );
 
@@ -27,8 +29,10 @@ abstract class Base {
 	 * Like get(), but calls WP_CLI::error() instead of returning false.
 	 *
 	 * @param string $arg The raw CLI argument.
-	 * @return mixed The item if found.
+	 * @return T The item if found.
 	 * @throws ExitException If the item is not found.
+	 *
+	 * @phpstan-assert-if-true !false $this->get()
 	 */
 	public function get_check( $arg ) {
 		$item = $this->get( $arg );
@@ -44,7 +48,7 @@ abstract class Base {
 	 * Get multiple items.
 	 *
 	 * @param array $args The raw CLI arguments.
-	 * @return array The list of found items.
+	 * @return T[] The list of found items.
 	 */
 	public function get_many( $args ) {
 		$items = [];

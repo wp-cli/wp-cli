@@ -100,6 +100,7 @@ assignees: ''
     ```
     cd wp-cli/builds/phar
     cp wp-cli-release.phar wp-cli.phar
+    cp wp-cli-release.manifest.json wp-cli.manifest.json
     md5 -q wp-cli.phar > wp-cli.phar.md5
     shasum -a 256 wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha256
     shasum -a 512 wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha512
@@ -139,6 +140,7 @@ assignees: ''
     cp wp-cli.phar.md5 wp-cli-2.x.0.phar.md5
     cp wp-cli.phar.sha512 wp-cli-2.x.0.phar.sha256
     cp wp-cli.phar.sha512 wp-cli-2.x.0.phar.sha512
+    cp wp-cli.manifest.json wp-cli-2.x.0.manifest.json
     ```
 
     Do this for both [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/) and [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/)
@@ -147,13 +149,13 @@ assignees: ''
 
     ```
     $ wp cli update
-    You have version 1.4.0-alpha-88450b8. Would you like to update to 1.4.0? [y/n] y
-    Downloading from https://github.com/wp-cli/wp-cli/releases/download/v1.4.0/wp-cli-1.4.0.phar...
-    md5 hash verified: 179fc8dacbfe3ebc2d00ba57a333c982
+    You are currently using WP-CLI version 2.12.0-alpha-d2bfea9. Would you like to update to 2.12.0? [y/n] y
+    Downloading from https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar...
+    sha512 hash verified: fe19025cc113142492a3ca68dd93d20ba4164e5ecb3c0a0d86a9db7e06b917201120763fa2b8256addeaa9cb745b2b8bef8e8d74a697230e30ef681f13e09186
     New version works. Proceeding to replace.
-    Success: Updated WP-CLI to 1.4.0.
+    Success: Updated WP-CLI to 2.12.0.
     $ wp cli version
-    WP-CLI 2.8.1
+    WP-CLI 2.12.0
     $wp eval 'echo \WP_CLI\Utils\http_request( "GET", "https://api.wordpress.org/core/version-check/1.6/" )->body;' --skip-wordpress
     <PHP serialized string with version numbers>
     ```

@@ -93,6 +93,7 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 			}
 
 			if ( class_exists( '\\Requests' ) ) {
+				// @phpstan-ignore staticMethod.deprecated, staticMethod.deprecatedClass
 				\Requests::register_autoloader();
 				$this->store_requests_meta( RequestsLibrary::CLASS_NAME_V1, self::FROM_WP_CORE );
 				return $state;
@@ -124,7 +125,7 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 	 * @param string $class_name The class name of the Requests integration.
 	 * @param string $source     The source of the Requests integration.
 	 */
-	private function store_requests_meta( $class_name, $source ) {
+	private function store_requests_meta( $class_name, $source ): void {
 		RequestsLibrary::set_version(
 			RequestsLibrary::CLASS_NAME_V2 === $class_name
 				? RequestsLibrary::VERSION_V2

@@ -26,7 +26,7 @@ class ExtractorTest extends TestCase {
 	public static $logger      = null;
 	public static $prev_logger = null;
 
-	public function set_up() {
+	public function set_up(): void {
 		parent::set_up();
 
 		self::$prev_logger = WP_CLI::get_logger();
@@ -35,20 +35,23 @@ class ExtractorTest extends TestCase {
 		WP_CLI::set_logger( self::$logger );
 
 		// Remove any failed tests detritus.
-		$temp_dirs = Utils\get_temp_dir() . self::$copy_overwrite_files_prefix . '*';
-		foreach ( glob( $temp_dirs ) as $temp_dir ) {
+		$temp_dirs = glob( Utils\get_temp_dir() . self::$copy_overwrite_files_prefix . '*' );
+
+		$this->assertNotFalse( $temp_dirs );
+
+		foreach ( $temp_dirs as $temp_dir ) {
 			Extractor::rmdir( $temp_dir );
 		}
 	}
 
-	public function tear_down() {
+	public function tear_down(): void {
 		// Restore logger.
 		WP_CLI::set_logger( self::$prev_logger );
 
 		parent::tear_down();
 	}
 
-	public function test_rmdir() {
+	public function test_rmdir(): void {
 		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
 
 		$this->assertTrue( is_dir( $wp_dir ) );
@@ -60,7 +63,7 @@ class ExtractorTest extends TestCase {
 		$this->assertFalse( file_exists( $temp_dir ) );
 	}
 
-	public function test_err_rmdir() {
+	public function test_err_rmdir(): void {
 		$msg = '';
 		try {
 			Extractor::rmdir( 'no-such-dir' );
@@ -71,7 +74,7 @@ class ExtractorTest extends TestCase {
 		$this->assertTrue( empty( self::$logger->stderr ) );
 	}
 
-	public function test_copy_overwrite_files() {
+	public function test_copy_overwrite_files(): void {
 		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
 
 		$dest_dir = $temp_dir . '/dest';
@@ -87,7 +90,7 @@ class ExtractorTest extends TestCase {
 		Extractor::rmdir( $temp_dir );
 	}
 
-	public function test_err_copy_overwrite_files() {
+	public function test_err_copy_overwrite_files(): void {
 		$msg = '';
 		try {
 			Extractor::copy_overwrite_files( 'no-such-dir', 'dest-dir' );
@@ -98,7 +101,7 @@ class ExtractorTest extends TestCase {
 		$this->assertTrue( empty( self::$logger->stderr ) );
 	}
 
-	public function test_extract_tarball() {
+	public function test_extract_tarball(): void {
 		if ( ! exec( 'tar --version' ) ) {
 			$this->markTestSkipped( 'tar not installed.' );
 		}
@@ -143,7 +146,7 @@ class ExtractorTest extends TestCase {
 		Extractor::rmdir( $temp_dir );
 	}
 
-	public function test_err_extract_tarball() {
+	public function test_err_extract_tarball(): void {
 		// Non-existent.
 		$msg = '';
 		try {
@@ -176,7 +179,7 @@ class ExtractorTest extends TestCase {
 		$this->assertTrue( false !== strpos( self::$logger->stderr, 'zero-tar' ) );
 	}
 
-	public function test_extract_zip() {
+	public function test_extract_zip(): void {
 		if ( ! class_exists( 'ZipArchive' ) ) {
 			$this->markTestSkipped( 'ZipArchive not installed.' );
 		}
@@ -213,7 +216,7 @@ class ExtractorTest extends TestCase {
 		Extractor::rmdir( $temp_dir );
 	}
 
-	public function test_err_extract_zip() {
+	public function test_err_extract_zip(): void {
 		if ( ! class_exists( 'ZipArchive' ) ) {
 			$this->markTestSkipped( 'ZipArchive not installed.' );
 		}
@@ -246,7 +249,7 @@ class ExtractorTest extends TestCase {
 		$this->assertTrue( empty( self::$logger->stderr ) );
 	}
 
-	public function test_err_extract() {
+	public function test_err_extract(): void {
 		$msg = '';
 		try {
 			Extractor::extract( 'not-supported.tar.xz', 'dest-dir' );
@@ -279,8 +282,14 @@ class ExtractorTest extends TestCase {
 	}
 
 	private static function recursive_scandir( $dir, $prefix_dir = '' ) {
+		$dirs = scandir( $dir );
+		if ( ! $dirs ) {
+			return [];
+		}
+
 		$ret = [];
-		foreach ( array_diff( scandir( $dir ), [ '.', '..' ] ) as $file ) {
+
+		foreach ( array_diff( $dirs, [ '.', '..' ] ) as $file ) {
 			if ( is_dir( $dir . '/' . $file ) ) {
 				$ret[] = ( $prefix_dir ? ( $prefix_dir . '/' . $file ) : $file ) . '/';
 				$ret   = array_merge( $ret, self::recursive_scandir( $dir . '/' . $file, $prefix_dir ? ( $prefix_dir . '/' . $file ) : $file ) );

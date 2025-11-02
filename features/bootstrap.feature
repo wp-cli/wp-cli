@@ -60,12 +60,12 @@ Feature: Bootstrap WP-CLI
         return;
       }
       // Override bundled command.
-      WP_CLI::add_command( 'eval', 'Eval_Command', array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
       """
-    And a override/src/Eval_Command.php file:
+    And a override/src/Custom_Eval_Command.php file:
       """
       <?php
-      class Eval_Command extends WP_CLI_Command {
+      class Custom_Eval_Command extends WP_CLI_Command {
         public function __invoke() {
           WP_CLI::success( "WP-Override-Eval" );
         }
@@ -105,27 +105,36 @@ Feature: Bootstrap WP-CLI
         return;
       }
       $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
-      if ( file_exists( $autoload ) && ! class_exists( 'CLI_Command' ) ) {
+      if ( file_exists( $autoload ) && ! class_exists( 'Custom_CLI_Command' ) ) {
         require_once $autoload;
       }
       // Override framework command.
-      WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_command( 'cli', 'Custom_CLI_Command', array( 'when' => 'before_wp_load' ) );
       // Override bundled command.
-      WP_CLI::add_command( 'eval', 'Eval_Command', array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_hook(
+        'after_add_command:eval',
+        static function () {
+          static $added = false;
+          if ( ! $added ) {
+            $added = true;
+            WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
+          }
+        }
+      );
       """
-    And a override/src/CLI_Command.php file:
+    And a override/src/Custom_CLI_Command.php file:
       """
       <?php
-      class CLI_Command extends WP_CLI_Command {
+      class Custom_CLI_Command extends WP_CLI_Command {
         public function version() {
           WP_CLI::success( "WP-Override-CLI" );
         }
       }
       """
-    And a override/src/Eval_Command.php file:
+    And a override/src/Custom_Eval_Command.php file:
       """
       <?php
-      class Eval_Command extends WP_CLI_Command {
+      class Custom_Eval_Command extends WP_CLI_Command {
         public function __invoke() {
           WP_CLI::success( "WP-Override-Eval" );
         }
@@ -184,27 +193,36 @@ Feature: Bootstrap WP-CLI
         return;
       }
       $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
-      if ( file_exists( $autoload ) && ! class_exists( 'CLI_Command' ) ) {
+      if ( file_exists( $autoload ) && ! class_exists( 'Custom_CLI_Command' ) ) {
         require_once $autoload;
       }
       // Override framework command.
-      WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_command( 'cli', 'Custom_CLI_Command', array( 'when' => 'before_wp_load' ) );
       // Override bundled command.
-      WP_CLI::add_command( 'eval', 'Eval_Command', array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_hook(
+        'after_add_command:eval',
+        static function () {
+          static $added = false;
+          if ( ! $added ) {
+            $added = true;
+            WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
+          }
+        }
+      );
       """
-    And a override/src/CLI_Command.php file:
+    And a override/src/Custom_CLI_Command.php file:
       """
       <?php
-      class CLI_Command extends WP_CLI_Command {
+      class Custom_CLI_Command extends WP_CLI_Command {
         public function version() {
           WP_CLI::success( "WP-Override-CLI" );
         }
       }
       """
-    And a override/src/Eval_Command.php file:
+    And a override/src/Custom_Eval_Command.php file:
       """
       <?php
-      class Eval_Command extends WP_CLI_Command {
+      class Custom_Eval_Command extends WP_CLI_Command {
         public function __invoke() {
           WP_CLI::success( "WP-Override-Eval" );
         }
@@ -488,3 +506,35 @@ Feature: Bootstrap WP-CLI
     Given an empty directory
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=ini_set} cli info`
     Then the return code should be 0
+
+  Scenario: Test early root detection
+
+    Given an empty directory
+    And a include.php file:
+    """
+    <?php
+      namespace WP_CLI\Bootstrap;
+
+      // To override posix_geteuid in our namespace
+      function posix_geteuid() {
+        return 0;
+      }
+    ?>
+    """
+
+    And I try `WP_CLI_EARLY_REQUIRE=include.php wp cli version --debug`
+
+    Then STDERR should contain:
+    """
+    WP_CLI\Bootstrap\CheckRoot
+    """
+
+    And STDERR should not contain:
+    """
+    WP_CLI\Bootstrap\IncludeRequestsAutoloader
+    """
+
+    And STDERR should contain:
+    """
+    YIKES!
+    """

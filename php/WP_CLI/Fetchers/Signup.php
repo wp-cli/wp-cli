@@ -4,6 +4,8 @@ namespace WP_CLI\Fetchers;
 
 /**
  * Fetch a signup based on one of its attributes.
+ *
+ * @extends Base<object>
  */
 class Signup extends Base {
 
@@ -18,7 +20,7 @@ class Signup extends Base {
 	 * Get a signup.
 	 *
 	 * @param int|string $signup
-	 * @return stdClass|false
+	 * @return object|false
 	 */
 	public function get( $signup ) {
 		return $this->get_signup( $signup );
@@ -27,8 +29,8 @@ class Signup extends Base {
 	/**
 	 * Get a signup by one of its identifying attributes.
 	 *
-	 * @param string $arg The raw CLI argument.
-	 * @return stdClass|false The item if found; false otherwise.
+	 * @param int|string $arg The raw CLI argument.
+	 * @return object|false The item if found; false otherwise.
 	 */
 	protected function get_signup( $arg ) {
 		global $wpdb;

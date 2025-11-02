@@ -14,7 +14,7 @@ class FileCacheTest extends TestCase {
 	/**
 	 * Test get_root() deals with backslashed directory.
 	 */
-	public function testGetRoot() {
+	public function testGetRoot(): void {
 		$max_size = 32;
 		$ttl      = 60;
 
@@ -35,7 +35,7 @@ class FileCacheTest extends TestCase {
 		rmdir( $cache_dir );
 	}
 
-	public function test_ensure_dir_exists() {
+	public function test_ensure_dir_exists(): void {
 		$prev_logger = WP_CLI::get_logger();
 
 		$logger = new Loggers\Execution();
@@ -48,7 +48,9 @@ class FileCacheTest extends TestCase {
 		$cache      = new FileCache( $cache_dir, $ttl, $max_size );
 		$test_class = new ReflectionClass( $cache );
 		$method     = $test_class->getMethod( 'ensure_dir_exists' );
-		$method->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
 
 		// Cache directory should be created.
 		$result = $method->invokeArgs( $cache, [ $cache_dir . '/test1' ] );
@@ -84,7 +86,7 @@ class FileCacheTest extends TestCase {
 		WP_CLI::set_logger( $prev_logger );
 	}
 
-	public function test_export() {
+	public function test_export(): void {
 		$max_size   = 32;
 		$ttl        = 60;
 		$cache_dir  = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache', true );
@@ -105,7 +107,7 @@ class FileCacheTest extends TestCase {
 		rmdir( $target_dir );
 	}
 
-	public function test_import() {
+	public function test_import(): void {
 		$max_size  = 32;
 		$ttl       = 60;
 		$cache_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache', true );
@@ -119,7 +121,7 @@ class FileCacheTest extends TestCase {
 		$fixture_filepath = $tmp_dir . '/my-downloaded-fixture-plugin-1.0.0.zip';
 
 		$zip = new ZipArchive();
-		$zip->open( $fixture_filepath, ZIPARCHIVE::CREATE );
+		$zip->open( $fixture_filepath, ZipArchive::CREATE );
 		$zip->addFile( __FILE__ );
 		$zip->close();
 
@@ -138,7 +140,7 @@ class FileCacheTest extends TestCase {
 	/**
 	 * @see https://github.com/wp-cli/wp-cli/pull/5947
 	 */
-	public function test_import_do_not_use_cache_file_cannot_be_read() {
+	public function test_import_do_not_use_cache_file_cannot_be_read(): void {
 		$max_size  = 32;
 		$ttl       = 60;
 		$cache_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache', true );
@@ -151,7 +153,7 @@ class FileCacheTest extends TestCase {
 		$fixture_filepath = $tmp_dir . '/my-bad-permissions-fixture-plugin-1.0.0.zip';
 
 		$zip = new ZipArchive();
-		$zip->open( $fixture_filepath, ZIPARCHIVE::CREATE );
+		$zip->open( $fixture_filepath, ZipArchive::CREATE );
 		$zip->addFile( __FILE__ );
 		$zip->close();
 
@@ -160,7 +162,8 @@ class FileCacheTest extends TestCase {
 		// "Warning: copy(-.): Failed to open stream: Permission denied".
 		$error = null;
 		set_error_handler(
-			function ( $errno, $errstr ) use ( &$error ) {
+			// @phpstan-ignore argument.type
+			function ( int $errno, string $errstr ) use ( &$error ) {
 				$error = $errstr;
 			}
 		);
@@ -186,7 +189,7 @@ class FileCacheTest extends TestCase {
 	 * @see https://github.com/wp-cli/wp-cli/pull/5947
 	 * @see https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
 	 */
-	public function test_validate_key_ending_in_period() {
+	public function test_validate_key_ending_in_period(): void {
 		$max_size  = 32;
 		$ttl       = 60;
 		$cache_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache', true );
@@ -197,10 +200,13 @@ class FileCacheTest extends TestCase {
 		$reflection = new ReflectionClass( $cache );
 
 		$method = $reflection->getMethod( 'validate_key' );
-		$method->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
 
 		$result = $method->invoke( $cache, $key );
 
+		$this->assertIsString( $result );
 		$this->assertStringEndsNotWith( '.', $result );
 		$this->assertSame( 'plugin/advanced-sidebar-menu-pro-9.5.7', $result );
 	}
