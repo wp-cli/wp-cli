@@ -7,6 +7,7 @@ use WP_CLI\Tests\TestCase;
 class MockRegularLogger extends WP_CLI\Loggers\Regular {
 
 	protected function get_runner() {
+		// @phpstan-ignore return.type
 		return (object) [
 			'config' => [
 				'debug' => true,
@@ -22,6 +23,7 @@ class MockRegularLogger extends WP_CLI\Loggers\Regular {
 class MockQuietLogger extends WP_CLI\Loggers\Quiet {
 
 	protected function get_runner() {
+		// @phpstan-ignore return.type
 		return (object) [
 			'config' => [
 				'debug' => true,
@@ -32,7 +34,7 @@ class MockQuietLogger extends WP_CLI\Loggers\Quiet {
 
 class LoggingTest extends TestCase {
 
-	public function testLogDebug() {
+	public function testLogDebug(): void {
 		$message = 'This is a test message.';
 
 		$regular_logger = new MockRegularLogger( false );
@@ -44,7 +46,7 @@ class LoggingTest extends TestCase {
 		$quiet_logger->debug( $message );
 	}
 
-	public function testLogEscaping() {
+	public function testLogEscaping(): void {
 		$logger = new MockRegularLogger( false );
 
 		$message = 'foo%20bar';
@@ -53,11 +55,13 @@ class LoggingTest extends TestCase {
 		$logger->success( $message );
 	}
 
-	public function testExecutionLogger() {
+	public function testExecutionLogger(): void {
 		// Save Runner config.
 		$runner        = WP_CLI::get_runner();
 		$runner_config = new \ReflectionProperty( $runner, 'config' );
-		$runner_config->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$runner_config->setAccessible( true );
+		}
 
 		$prev_config = $runner_config->getValue( $runner );
 

@@ -17,12 +17,12 @@ Feature: Make sure "Given", "When", "Then" steps work as expected
     # Note this would give behat "undefined step" message as "save" step uses "\w+"
     #And save STDOUT as {VARIABLE_NAME_WITH_PERCENT_%}
 
-    When I run `echo {VARIABLE_NAME}`
+    And I run `echo {VARIABLE_NAME}`
     Then STDOUT should match /^value$/
     And STDOUT should be:
-    """
-    value
-    """
+      """
+      value
+      """
 
     When I run `echo {V}`
     Then STDOUT should match /^value$/
@@ -45,9 +45,9 @@ Feature: Make sure "Given", "When", "Then" steps work as expected
     When I run `echo {2_VARIABLE_NAME_STARTING_WITH_DIGIT}`
     Then STDOUT should match /^\{2_VARIABLE_NAME_STARTING_WITH_DIGIT}$/
     And STDOUT should contain:
-    """
-    {
-    """
+      """
+      {
+      """
 
     When I run `echo {2}`
     Then STDOUT should match /^\{2}$/

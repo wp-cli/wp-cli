@@ -86,6 +86,7 @@ assignees: 'schlessera'
     ```
     cd wp-cli/builds/phar
     cp wp-cli-release.phar wp-cli.phar
+    cp wp-cli-release.manifest.json wp-cli.manifest.json
     md5 -q wp-cli.phar > wp-cli.phar.md5
     shasum -a 512 wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha512
     ```
@@ -110,30 +111,33 @@ assignees: 'schlessera'
     ```
     git status
     git add .
-    git commit -m "Update stable to v1.x.0"
+    git commit -m "Update stable to v2.x.x"
     ```
 
 - [ ] Create a release on GitHub: <https://github.com/wp-cli/wp-cli/releases>. Make sure to upload the Phar from the builds directory.
 
     ```
-    cp wp-cli.phar wp-cli-1.x.0.phar
-    cp wp-cli.phar.gpg wp-cli-1.x.0.phar.gpg
-    cp wp-cli.phar.asc wp-cli-1.x.0.phar.asc
-    cp wp-cli.phar.md5 wp-cli-1.x.0.phar.md5
-    cp wp-cli.phar.sha512 wp-cli-1.x.0.phar.sha512
+    cp wp-cli.phar wp-cli-2.x.x.phar
+    cp wp-cli.phar.gpg wp-cli-2.x.x.phar.gpg
+    cp wp-cli.phar.asc wp-cli-2.x.x.phar.asc
+    cp wp-cli.phar.md5 wp-cli-2.x.x.phar.md5
+    cp wp-cli.phar.sha512 wp-cli-2.x.x.phar.sha512
+    cp wp-cli.manifest.json wp-cli-2.x.x.manifest.json
     ```
 
 - [ ] Verify Phar release artifact
 
     ```
     $ wp cli update
-    You have version 1.4.0-alpha-88450b8. Would you like to update to 1.4.0? [y/n] y
-    Downloading from https://github.com/wp-cli/wp-cli/releases/download/v1.4.0/wp-cli-1.4.0.phar...
-    md5 hash verified: 179fc8dacbfe3ebc2d00ba57a333c982
+    You are currently using WP-CLI version 2.12.0-alpha-d2bfea9. Would you like to update to 2.12.1? [y/n] y
+    Downloading from https://github.com/wp-cli/wp-cli/releases/download/v2.12.1/wp-cli-2.12.1.phar...
+    sha512 hash verified: fe19025cc113142492a3ca68dd93d20ba4164e5ecb3c0a0d86a9db7e06b917201120763fa2b8256addeaa9cb745b2b8bef8e8d74a697230e30ef681f13e09186
     New version works. Proceeding to replace.
-    Success: Updated WP-CLI to 1.4.0.
-    $ wp @daniel option get home
-    https://danielbachhuber.com
+    Success: Updated WP-CLI to 2.12.1.
+    $ wp cli version
+    WP-CLI 2.12.1
+    $wp eval 'echo \WP_CLI\Utils\http_request( "GET", "https://api.wordpress.org/core/version-check/1.6/" )->body;' --skip-wordpress
+    <PHP serialized string with version numbers>
     ```
 
 ### Updating the Debian and RPM builds
@@ -174,6 +178,12 @@ assignees: 'schlessera'
 
 - [ ] Bump [VERSION](https://github.com/wp-cli/wp-cli/blob/master/VERSION) in [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli) again.
 
-    For instance, if the release version was `0.24.0`, the version should be bumped to `0.25.0-alpha`. Doing so ensure `wp cli update --nightly` works as expected.
+    For instance, if the release version was `2.8.0`, the version should be bumped to `2.9.0-alpha`.
 
-- [ ] Change the version constraint on `"wp-cli/wp-cli"` in `wp-cli/wp-cli-bundle`'s [`composer.json`](https://github.com/wp-cli/wp-cli-bundle/blob/master/composer.json) file back to `"dev-master"`.
+    Doing so ensures `wp cli update --nightly` works as expected.
+
+- [ ] Change the version constraint on `"wp-cli/wp-cli"` in `wp-cli/wp-cli-bundle`'s [`composer.json`](https://github.com/wp-cli/wp-cli-bundle/blob/main/composer.json) file back to `"dev-main"`.
+
+    ```
+    composer require wp-cli/wp-cli:dev-main
+    ```

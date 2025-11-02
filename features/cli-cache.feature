@@ -37,7 +37,6 @@ Feature: CLI Cache
     When I run `wp --require=env-var.php core download --path=/tmp/wp-core --version=4.9 --force`
     Then STDERR should be empty
 
-
   Scenario: Remove all but newest files from cache directory
     Given an empty cache
     And a file-a-12345.tmp cache file:

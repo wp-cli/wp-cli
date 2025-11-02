@@ -35,9 +35,9 @@ final class DefineProtectedCommands implements BootstrapStep {
 	/**
 	 * Get the list of protected commands.
 	 *
-	 * @return array
+	 * @return string[]
 	 */
-	private function get_protected_commands() {
+	private function get_protected_commands(): array {
 		return [
 			'cli info',
 			'package',
@@ -49,7 +49,7 @@ final class DefineProtectedCommands implements BootstrapStep {
 	 *
 	 * @return string Current command to be executed.
 	 */
-	private function get_current_command() {
+	private function get_current_command(): string {
 		$runner = new RunnerInstance();
 
 		return implode( ' ', (array) $runner()->arguments );

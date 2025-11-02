@@ -71,13 +71,13 @@ Feature: Requests integration with both v1 and v2
       """
     And STDERR should be empty
 
-    When I run `wp plugin install duplicate-post`
+    When I run `wp plugin install debug-bar`
     Then STDOUT should contain:
       """
       Success: Installed 1 of 1 plugins.
       """
 
-    Scenario: Current version with WordPress-bundled Requests v2
+  Scenario: Current version with WordPress-bundled Requests v2
     Given a WP installation
     # Switch themes because twentytwentyfive requires a version newer than 6.2
     # and it would otherwise cause a fatal error further down.
@@ -102,7 +102,7 @@ Feature: Requests integration with both v1 and v2
       """
     And STDERR should be empty
 
-    When I run `wp plugin install duplicate-post`
+    When I run `wp plugin install debug-bar`
     Then STDOUT should contain:
       """
       Success: Installed 1 of 1 plugins.
