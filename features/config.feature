@@ -741,9 +741,8 @@ Feature: Have a config file
     Then STDERR should match #Default global config does not exist, creating one in.+/doesnotexist/wp-cli.yml#
 
   Scenario: Tilde expansion in config file path
-    Given an empty directory
-    And I run `mkdir -p {HOME}/test-wp-config-tilde`
-    And WP files in '{HOME}/test-wp-config-tilde'
+    Given a WP installation in 'subdir'
+    And I run `bash -c 'ln -s $(pwd)/subdir $HOME/test-wp-config-tilde'`
     And a wp-cli.yml file:
       """
       path: ~/test-wp-config-tilde
