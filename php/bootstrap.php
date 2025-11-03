@@ -22,9 +22,10 @@ function get_bootstrap_steps() {
 		Bootstrap\DeclareAbstractBaseCommand::class,
 		Bootstrap\IncludeFrameworkAutoloader::class,
 		Bootstrap\ConfigureRunner::class,
-		Bootstrap\IncludeRequestsAutoloader::class,
 		Bootstrap\InitializeColorization::class,
 		Bootstrap\InitializeLogger::class,
+		Bootstrap\CheckRoot::class,
+		Bootstrap\IncludeRequestsAutoloader::class,
 		Bootstrap\DefineProtectedCommands::class,
 		Bootstrap\LoadExecCommand::class,
 		Bootstrap\LoadRequiredCommand::class,
@@ -79,6 +80,9 @@ function bootstrap() {
 			\WP_CLI::debug( "Processing bootstrap step: {$step}", 'bootstrap' );
 		}
 
+		/**
+		 * @var BootstrapStep $step_instance
+		 */
 		$step_instance = new $step();
 		$state         = $step_instance->process( $state );
 	}

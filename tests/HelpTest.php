@@ -2,21 +2,25 @@
 
 use WP_CLI\Tests\TestCase;
 
-require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
-require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
-require_once dirname( __DIR__ ) . '/php/commands/help.php';
-
 class HelpTest extends TestCase {
 
-	public function test_parse_reference_links() {
+	public static function set_up_before_class() {
+		require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
+		require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
+		require_once dirname( __DIR__ ) . '/php/commands/help.php';
+	}
+
+	public function test_parse_reference_links(): void {
 		$test_class = new ReflectionClass( 'Help_Command' );
 		$method     = $test_class->getMethod( 'parse_reference_links' );
-		$method->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
 
 		$desc   = 'This is a [reference link](https://wordpress.org/). It should be displayed very nice!';
 		$result = $method->invokeArgs( null, [ $desc ] );
 
-		$expected = <<<EOL
+		$expected = <<<'EOL'
 This is a [reference link][1]. It should be displayed very nice!
 
 ---
@@ -27,7 +31,7 @@ EOL;
 		$desc   = 'This is a [reference link](https://wordpress.org/) and [second link](http://wp-cli.org/). It should be displayed very nice!';
 		$result = $method->invokeArgs( null, [ $desc ] );
 
-		$expected = <<<EOL
+		$expected = <<<'EOL'
 This is a [reference link][1] and [second link][2]. It should be displayed very nice!
 
 ---
@@ -36,13 +40,13 @@ This is a [reference link][1] and [second link][2]. It should be displayed very 
 EOL;
 		$this->assertSame( $expected, $result );
 
-		$desc   = <<<EOL
+		$desc   = <<<'EOL'
 This is a [reference link](https://wordpress.org/) and [second link](http://wp-cli.org/).
 It should be displayed very nice!
 EOL;
 		$result = $method->invokeArgs( null, [ $desc ] );
 
-		$expected = <<<EOL
+		$expected = <<<'EOL'
 This is a [reference link][1] and [second link][2].
 It should be displayed very nice!
 
@@ -53,7 +57,7 @@ EOL;
 
 		$this->assertSame( $expected, $result );
 
-		$desc   = <<<EOL
+		$desc   = <<<'EOL'
 This is a [reference link](https://wordpress.org/) and [second link](http://wp-cli.org/).
 It should be displayed very nice!
 
@@ -63,7 +67,7 @@ It doesn't expect to be link here like [reference link](https://wordpress.org/).
 EOL;
 		$result = $method->invokeArgs( null, [ $desc ] );
 
-		$expected = <<<EOL
+		$expected = <<<'EOL'
 This is a [reference link][1] and [second link][2].
 It should be displayed very nice!
 
@@ -78,14 +82,14 @@ EOL;
 
 		$this->assertSame( $expected, $result );
 
-		$desc   = <<<EOL
+		$desc   = <<<'EOL'
 ## Example
 
 It doesn't expect to be link here like [reference link](https://wordpress.org/).
 EOL;
 		$result = $method->invokeArgs( null, [ $desc ] );
 
-		$expected = <<<EOL
+		$expected = <<<'EOL'
 ## Example
 
 It doesn't expect to be link here like [reference link](https://wordpress.org/).
@@ -93,7 +97,7 @@ EOL;
 
 		$this->assertSame( $expected, $result );
 
-		$desc   = <<<EOL
+		$desc   = <<<'EOL'
 This is a long description.
 It doesn't have any link.
 
@@ -103,7 +107,7 @@ It doesn't expect to be link here like [reference link](https://wordpress.org/).
 EOL;
 		$result = $method->invokeArgs( null, [ $desc ] );
 
-		$expected = <<<EOL
+		$expected = <<<'EOL'
 This is a long description.
 It doesn't have any link.
 

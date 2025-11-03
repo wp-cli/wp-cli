@@ -19,7 +19,7 @@ class Process {
 	private $cwd;
 
 	/**
-	 * @var array Environment variables to set when running the command.
+	 * @var array|null Environment variables to set when running the command.
 	 */
 	private $env;
 
@@ -43,9 +43,9 @@ class Process {
 	public static $run_times = [];
 
 	/**
-	 * @param string $command Command to execute.
-	 * @param string $cwd Directory to execute the command in.
-	 * @param array $env Environment variables to set when running the command.
+	 * @param string      $command Command to execute.
+	 * @param string|null $cwd     Directory to execute the command in.
+	 * @param array|null  $env     Environment variables to set when running the command.
 	 *
 	 * @return Process
 	 */
@@ -71,16 +71,42 @@ class Process {
 
 		$start_time = microtime( true );
 
+		/**
+		 * @var array<int, resource> $pipes
+		 */
 		$pipes = [];
-		$proc  = Utils\proc_open_compat( $this->command, self::$descriptors, $pipes, $this->cwd, $this->env );
+		if ( Utils\is_windows() ) {
+			// On Windows, leaving pipes open can cause hangs.
+			// Redirect output to files and close stdin.
+			$stdout_file = tempnam( sys_get_temp_dir(), 'behat-stdout-' );
+			$stderr_file = tempnam( sys_get_temp_dir(), 'behat-stderr-' );
+			$descriptors = [
+				0 => [ 'pipe', 'r' ],
+				1 => [ 'file', $stdout_file, 'a' ],
+				2 => [ 'file', $stderr_file, 'a' ],
+			];
+			$proc        = Utils\proc_open_compat( $this->command, $descriptors, $pipes, $this->cwd, $this->env );
+			fclose( $pipes[0] );
+		} else {
+			$proc   = Utils\proc_open_compat( $this->command, self::$descriptors, $pipes, $this->cwd, $this->env );
+			$stdout = stream_get_contents( $pipes[1] );
+			fclose( $pipes[1] );
+			$stderr = stream_get_contents( $pipes[2] );
+			fclose( $pipes[2] );
+		}
 
-		$stdout = stream_get_contents( $pipes[1] );
-		fclose( $pipes[1] );
+		$return_code = $proc ? proc_close( $proc ) : -1;
 
-		$stderr = stream_get_contents( $pipes[2] );
-		fclose( $pipes[2] );
+		if ( Utils\is_windows() ) {
+			$stdout = (string) file_get_contents( $stdout_file );
+			$stderr = (string) file_get_contents( $stderr_file );
+			unlink( $stdout_file );
+			unlink( $stderr_file );
 
-		$return_code = proc_close( $proc );
+			// Normalize line endings.
+			$stdout = str_replace( "\r\n", "\n", $stdout );
+			$stderr = str_replace( "\r\n", "\n", $stderr );
+		}
 
 		$run_time = microtime( true ) - $start_time;
 

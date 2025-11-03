@@ -8,7 +8,7 @@ class WPVersionCompareTest extends TestCase {
 	/**
 	 * Test basic functionality
 	 */
-	public function testBasic() {
+	public function testBasic(): void {
 		$GLOBALS['wp_version'] = '4.9-alpha-40870-src';
 		$this->assertTrue( Utils\wp_version_compare( '4.8', '>=' ) );
 		$this->assertFalse( Utils\wp_version_compare( '4.8', '<' ) );
