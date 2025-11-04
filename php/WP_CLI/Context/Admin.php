@@ -78,7 +78,7 @@ final class Admin implements Context {
 	 *
 	 * @return void
 	 */
-	private function log_in_as_admin_user( $admin_user_id ) {
+	private function log_in_as_admin_user( $admin_user_id ): void {
 		wp_set_current_user( $admin_user_id );
 
 		$expiration = time() + DAY_IN_SECONDS;
@@ -109,10 +109,8 @@ final class Admin implements Context {
 	 * @global string $pagenow
 	 * @global int    $wp_db_version
 	 * @global array  $_wp_submenu_nopriv
-	 *
-	 * @return void
 	 */
-	private function load_admin_environment() {
+	private function load_admin_environment(): void {
 		global $hook_suffix, $pagenow, $wp_db_version, $_wp_submenu_nopriv;
 
 		if ( ! isset( $hook_suffix ) ) {
@@ -121,7 +119,12 @@ final class Admin implements Context {
 
 		// Make sure we don't trigger a DB upgrade as that tries to redirect
 		// the page.
-		$wp_db_version = (int) get_option( 'db_version' ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		/**
+		 * @var string $wp_db_version
+		 */
+		$wp_db_version = get_option( 'db_version' ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$wp_db_version = (int) $wp_db_version; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		// Ensure WP does not iterate over an undefined variable in
 		// `user_can_access_admin_page()`.
@@ -129,20 +132,20 @@ final class Admin implements Context {
 			$_wp_submenu_nopriv = []; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		}
 
-		$admin_php_file = file_get_contents( ABSPATH . 'wp-admin/admin.php' );
+		$admin_php_file = (string) file_get_contents( ABSPATH . 'wp-admin/admin.php' );
 
 		// First we remove the opening and closing PHP tags.
-		$admin_php_file = preg_replace( '/^<\?php\s+/', '', $admin_php_file );
-		$admin_php_file = preg_replace( '/\s+\?>$/', '', $admin_php_file );
+		$admin_php_file = (string) preg_replace( '/^<\?php\s+/', '', $admin_php_file );
+		$admin_php_file = (string) preg_replace( '/\s+\?>$/', '', $admin_php_file );
 
 		// Then we remove the loading of either wp-config.php or wp-load.php.
-		$admin_php_file = preg_replace( '/^\s*(?:include|require).*[\'"]\/?wp-(?:load|config)\.php[\'"]\s*\)?;\s*$/m', '', $admin_php_file );
+		$admin_php_file = (string) preg_replace( '/^\s*(?:include|require).*[\'"]\/?wp-(?:load|config)\.php[\'"]\s*\)?;\s*$/m', '', $admin_php_file );
 
 		// We also remove the authentication redirect.
-		$admin_php_file = preg_replace( '/^\s*auth_redirect\(\);$/m', '', $admin_php_file );
+		$admin_php_file = (string) preg_replace( '/^\s*auth_redirect\(\);$/m', '', $admin_php_file );
 
 		// Finally, we avoid sending headers.
-		$admin_php_file   = preg_replace( '/^\s*nocache_headers\(\);$/m', '', $admin_php_file );
+		$admin_php_file   = (string) preg_replace( '/^\s*nocache_headers\(\);$/m', '', $admin_php_file );
 		$_GET['noheader'] = true;
 
 		eval( $admin_php_file ); // phpcs:ignore Squiz.PHP.Eval.Discouraged

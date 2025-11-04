@@ -5,7 +5,7 @@ use WP_CLI\Tests\TestCase;
 
 class DocParserTest extends TestCase {
 
-	public function test_empty() {
+	public function test_empty(): void {
 		$doc = new DocParser( '' );
 
 		$this->assertEquals( '', $doc->get_shortdesc() );
@@ -14,9 +14,9 @@ class DocParserTest extends TestCase {
 		$this->assertEquals( '', $doc->get_tag( 'alias' ) );
 	}
 
-	public function test_only_tags() {
+	public function test_only_tags(): void {
 		$doc = new DocParser(
-			<<<EOB
+			<<<'EOB'
 /**
  * @alias rock-on
  * @subcommand revoke-md5-passwords
@@ -32,9 +32,9 @@ EOB
 		$this->assertEquals( 'revoke-md5-passwords', $doc->get_tag( 'subcommand' ) );
 	}
 
-	public function test_no_longdesc() {
+	public function test_no_longdesc(): void {
 		$doc = new DocParser(
-			<<<EOB
+			<<<'EOB'
 /**
  * Rock and roll!
  * @alias rock-on
@@ -48,9 +48,9 @@ EOB
 		$this->assertEquals( 'rock-on', $doc->get_tag( 'alias' ) );
 	}
 
-	public function test_complete() {
+	public function test_complete(): void {
 		$doc = new DocParser(
-			<<<EOB
+			<<<'EOB'
 /**
  * Rock and roll!
  *
@@ -81,7 +81,7 @@ EOB
 		$this->assertEquals( 'Sets the volume.', $doc->get_param_desc( 'volume' ) );
 		$this->assertEquals( 'rock-on', $doc->get_tag( 'alias' ) );
 
-		$longdesc = <<<EOB
+		$longdesc = <<<'EOB'
 ## OPTIONS
 
 <genre>...
@@ -100,8 +100,8 @@ EOB;
 		$this->assertEquals( $longdesc, $doc->get_longdesc() );
 	}
 
-	public function test_desc_parses_yaml() {
-		$longdesc = <<<EOB
+	public function test_desc_parses_yaml(): void {
+		$longdesc = <<<'EOB'
 Play some music loudly
 
 ```
@@ -153,8 +153,8 @@ EOB;
 		$this->assertNull( $doc->get_param_args( 'artist' ) );
 	}
 
-	public function test_desc_doesnt_parse_far_params_yaml() {
-		$longdesc = <<<EOB
+	public function test_desc_doesnt_parse_far_params_yaml(): void {
+		$longdesc = <<<'EOB'
 ## OPTIONS
 
 <hook>
@@ -182,8 +182,8 @@ EOB;
 		$this->assertNull( $doc->get_arg_args( 'hook' ) );
 	}
 
-	public function test_desc_doesnt_parse_far_args_yaml() {
-		$longdesc = <<<EOB
+	public function test_desc_doesnt_parse_far_args_yaml(): void {
+		$longdesc = <<<'EOB'
 ## OPTIONS
 
 <hook>
