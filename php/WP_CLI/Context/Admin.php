@@ -51,6 +51,10 @@ final class Admin implements Context {
 					$admin_user_id = 1;
 				}
 
+				/**
+				 * @var int<1, max> $admin_user_id
+				 */
+
 				$this->log_in_as_admin_user( $admin_user_id );
 			},
 			defined( 'PHP_INT_MIN' ) ? PHP_INT_MIN : -2147483648, // phpcs:ignore PHPCompatibility.Constants.NewConstants.php_int_minFound
