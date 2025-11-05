@@ -46,6 +46,11 @@ class CLI_Command extends WP_CLI_Command {
 			'hook'        => $command->get_hook(),
 		];
 
+		$alias = $command->get_alias();
+		if ( $alias ) {
+			$dump['alias'] = $alias;
+		}
+
 		foreach ( $command->get_subcommands() as $subcommand ) {
 			$dump['subcommands'][] = $this->command_to_array( $subcommand );
 		}
