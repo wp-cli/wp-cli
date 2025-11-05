@@ -280,9 +280,10 @@ function args_to_str( $args ) {
  * Composes associative arguments into a command string.
  *
  * @param array<string, array<int, string>|string|true|int> $assoc_args Associative arguments to compose.
+ * @param array<string> $sensitive_args Optional. Array of argument keys that should be masked.
  * @return string
  */
-function assoc_args_to_str( $assoc_args ) {
+function assoc_args_to_str( $assoc_args, $sensitive_args = [] ) {
 	$str = '';
 
 	foreach ( $assoc_args as $key => $value ) {
@@ -293,11 +294,17 @@ function assoc_args_to_str( $assoc_args ) {
 				$str .= assoc_args_to_str(
 					[
 						$key => $v,
-					]
+					],
+					$sensitive_args
 				);
 			}
 		} else {
-			$str .= " --$key=" . escapeshellarg( (string) $value );
+			// Mask the value if this is a sensitive argument
+			if ( in_array( $key, $sensitive_args, true ) ) {
+				$str .= " --$key=" . escapeshellarg( '[REDACTED]' );
+			} else {
+				$str .= " --$key=" . escapeshellarg( (string) $value );
+			}
 		}
 	}
 

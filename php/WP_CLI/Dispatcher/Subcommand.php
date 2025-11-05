@@ -428,6 +428,37 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Get the list of sensitive argument names from the synopsis.
+	 * These arguments will have their values masked in log output.
+	 *
+	 * @return array<string> Array of argument names that are marked as sensitive
+	 */
+	private function get_sensitive_args() {
+		$synopsis = $this->get_synopsis();
+		if ( ! $synopsis ) {
+			return [];
+		}
+
+		$synopsis_spec = SynopsisParser::parse( $synopsis );
+		$mock_doc      = [ $this->get_shortdesc(), '' ];
+		$mock_doc      = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
+		$mock_doc      = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
+		$docparser     = new DocParser( $mock_doc );
+
+		$sensitive_args = [];
+		foreach ( $synopsis_spec as $spec ) {
+			if ( 'assoc' === $spec['type'] ) {
+				$spec_args = $docparser->get_param_args( $spec['name'] );
+				if ( isset( $spec_args['sensitive'] ) && $spec_args['sensitive'] ) {
+					$sensitive_args[] = $spec['name'];
+				}
+			}
+		}
+
+		return $sensitive_args;
+	}
+
+	/**
 	 * Invoke the subcommand with the supplied arguments.
 	 * Given a --prompt argument, interactively request input
 	 * from the end user.
@@ -482,6 +513,9 @@ class Subcommand extends CompositeCommand {
 				}
 			}
 
+			// Get list of sensitive arguments to mask in output
+			$sensitive_args = $this->get_sensitive_args();
+
 			WP_CLI::log(
 				sprintf(
 					'wp %s %s',
@@ -491,7 +525,7 @@ class Subcommand extends CompositeCommand {
 							' ',
 							[
 								ltrim( Utils\args_to_str( $args ), ' ' ),
-								ltrim( Utils\assoc_args_to_str( $actual_args ), ' ' ),
+								ltrim( Utils\assoc_args_to_str( $actual_args, $sensitive_args ), ' ' ),
 							]
 						),
 						' '
