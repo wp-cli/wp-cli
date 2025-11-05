@@ -513,8 +513,8 @@ class Subcommand extends CompositeCommand {
 		if ( $prompted_once ) {
 			// Unset empty args.
 			$actual_args = $assoc_args;
-			foreach ( $actual_args as $key ) {
-				if ( empty( $actual_args[ $key ] ) ) {
+			foreach ( $actual_args as $key => $value ) {
+				if ( empty( $value ) ) {
 					unset( $actual_args[ $key ] );
 				}
 			}
