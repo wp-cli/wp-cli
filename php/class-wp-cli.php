@@ -1068,6 +1068,7 @@ class WP_CLI {
 				$_value = "---\n" . ( null === $value ? 'null' : ( '' === $value ? '""' : $value ) );
 			} else {
 				// Fallback for arrays/objects
+				/** @var array|stdClass $value */
 				$_value = Spyc::YAMLDump( $value, 2, 0 );
 			}
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
