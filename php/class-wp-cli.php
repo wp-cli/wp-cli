@@ -1061,19 +1061,19 @@ class WP_CLI {
 		$format = Utils\get_flag_value( $assoc_args, 'format' );
 
 		if ( 'json' === $format ) {
-				$_value = json_encode( $value );
+	                $_value = json_encode( $value );
 		} elseif ( 'yaml' === $format ) {
 			if ( is_scalar( $value ) || null === $value ) {
-					// Print plain YAML scalar
-					$_value = "---\n" . ( null === $value ? 'null' : $value );
+				// Print plain YAML scalar
+				$_value = "---\n" . ( null === $value ? 'null' : ( $value === '' ? '""' : $value ) );
 			} else {
-					// Fallback for arrays/objects
-					$_value = Spyc::YAMLDump( $value, 2, 0 );
+				// Fallback for arrays/objects
+				$_value = Spyc::YAMLDump( $value, 2, 0 );
 			}
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
-				$_value = var_export( $value, true );
+			$_value = var_export( $value, true );
 		} else {
-				$_value = $value;
+			$_value = $value;
 		}
 
 		echo $_value . "\n";
