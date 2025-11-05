@@ -298,13 +298,11 @@ function assoc_args_to_str( $assoc_args, $sensitive_args = [] ) {
 					$sensitive_args
 				);
 			}
-		} else {
+		} elseif ( in_array( $key, $sensitive_args, true ) ) {
 			// Mask the value if this is a sensitive argument
-			if ( in_array( $key, $sensitive_args, true ) ) {
-				$str .= " --$key=" . escapeshellarg( '[REDACTED]' );
-			} else {
-				$str .= " --$key=" . escapeshellarg( (string) $value );
-			}
+			$str .= " --$key=" . escapeshellarg( '[REDACTED]' );
+		} else {
+			$str .= " --$key=" . escapeshellarg( (string) $value );
 		}
 	}
 
