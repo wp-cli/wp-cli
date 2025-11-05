@@ -274,6 +274,18 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Create a DocParser instance from the command's description.
+	 *
+	 * @return DocParser
+	 */
+	private function get_docparser() {
+		$mock_doc = [ $this->get_shortdesc(), '' ];
+		$mock_doc = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
+		$mock_doc = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
+		return new DocParser( $mock_doc );
+	}
+
+	/**
 	 * Validate the supplied arguments to the command.
 	 * Throws warnings or errors if arguments are missing
 	 * or invalid.
@@ -321,10 +333,7 @@ class Subcommand extends CompositeCommand {
 			'fatal'   => [],
 			'warning' => [],
 		];
-		$mock_doc      = [ $this->get_shortdesc(), '' ];
-		$mock_doc      = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
-		$mock_doc      = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
-		$docparser     = new DocParser( $mock_doc );
+		$docparser     = $this->get_docparser();
 		foreach ( $synopsis_spec as $spec ) {
 			if ( 'positional' === $spec['type'] ) {
 				$spec_args = $docparser->get_arg_args( $spec['name'] );
@@ -439,13 +448,10 @@ class Subcommand extends CompositeCommand {
 			return [];
 		}
 
-		$synopsis_spec = SynopsisParser::parse( $synopsis );
-		$mock_doc      = [ $this->get_shortdesc(), '' ];
-		$mock_doc      = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
-		$mock_doc      = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
-		$docparser     = new DocParser( $mock_doc );
-
+		$synopsis_spec  = SynopsisParser::parse( $synopsis );
+		$docparser      = $this->get_docparser();
 		$sensitive_args = [];
+
 		foreach ( $synopsis_spec as $spec ) {
 			if ( 'assoc' === $spec['type'] ) {
 				$spec_args = $docparser->get_param_args( $spec['name'] );
