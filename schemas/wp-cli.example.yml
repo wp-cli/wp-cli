@@ -1,0 +1,40 @@
+$schema: "./wp-cli-config.json"
+path: wp-core
+url: http://example.com
+user: admin
+color: false
+disabled_commands:
+ - db drop
+ - plugin install
+require:
+ - path-to/command.php
+
+config create:
+  dbuser: root
+  dbpass:
+  extra-php: |
+   define( 'WP_DEBUG', true );
+   define( 'WP_POST_REVISIONS', 50 );
+
+"@foo":
+   bar: "baz"
+
+"@staging":
+  ssh: wpcli@staging.wp-cli.org
+  user: wpcli
+  path: /srv/www/staging.wp-cli.org
+
+"@production":
+  ssh: wpcli@wp-cli.org:2222
+  user: wpcli
+  path: /srv/www/wp-cli.org
+
+# Aliases can reference other aliases to create alias groups
+# Alias groups can be nested
+"@both":
+  - "@staging"
+  - "@production"
+
+_:
+  merge: true
+  inherit: prod.yml

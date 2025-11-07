@@ -65,17 +65,17 @@ Feature: Have a config file
   Scenario: WP in a subdirectory (autodetected)
     Given a WP installation in 'foo'
 
-    Given an index.php file:
-    """
-    require('./foo/wp-blog-header.php');
-    """
+    And an index.php file:
+      """
+      require('./foo/wp-blog-header.php');
+      """
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
     Given an index.php file:
-    """
-    require dirname(__FILE__) . '/foo/wp-blog-header.php';
-    """
+      """
+      require dirname(__FILE__) . '/foo/wp-blog-header.php';
+      """
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
@@ -239,7 +239,7 @@ Feature: Have a config file
       """
 
     When I run `WP_CLI_CONFIG_PATH=test-dir/config.yml wp help`
-	  Then STDERR should be empty
+    Then STDERR should be empty
 
   Scenario: Load WordPress with `--debug`
     Given a WP installation
@@ -249,7 +249,7 @@ Feature: Have a config file
       """
       No readable global config found
       """
-    Then STDERR should contain:
+    And STDERR should contain:
       """
       No project config found
       """
@@ -276,7 +276,7 @@ Feature: Have a config file
       """
       No readable global config found
       """
-    Then STDERR should contain:
+    And STDERR should contain:
       """
       No project config found
       """
@@ -303,7 +303,7 @@ Feature: Have a config file
       """
       No readable global config found
       """
-    Then STDERR should not contain:
+    And STDERR should not contain:
       """
       No project config found
       """
@@ -328,10 +328,10 @@ Feature: Have a config file
   Scenario: Missing required files should not fatal WP-CLI
     Given an empty directory
     And a wp-cli.yml file:
-    """
-    require:
-      - missing-file.php
-    """
+      """
+      require:
+        - missing-file.php
+      """
 
     When I try `wp help`
     Then STDERR should contain:
@@ -625,3 +625,117 @@ Feature: Have a config file
       """
       Warning: UTF-8 byte-order mark (BOM) detected in wp-config.php file, stripping it for parsing.
       """
+
+  Scenario: Strange wp-config.php file with missing wp-settings.php call
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      /* That's all, stop editing! Happy publishing. */
+      """
+
+    When I try `wp core is-installed`
+    Then STDERR should contain:
+      """
+      Error: Strange wp-config.php file: wp-settings.php is not loaded directly.
+      """
+
+  Scenario: Strange wp-config.php file with multi-line wp-settings.php call
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      if ( 1 === 1 ) {
+        require_once ABSPATH . 'some-other-file.php';
+      }
+
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      /* That's all, stop editing! Happy publishing. */
+
+      /** Sets up WordPress vars and included files. */
+      require_once
+        ABSPATH . 'wp-settings.php'
+      ;
+      """
+
+    When I try `wp core is-installed`
+    Then STDERR should not contain:
+      """
+      Error: Strange wp-config.php file: wp-settings.php is not loaded directly.
+      """
+
+  Scenario: Code after wp-settings.php call should be loaded
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      if ( 1 === 1 ) {
+        require_once ABSPATH . 'some-other-file.php';
+      }
+
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      /* That's all, stop editing! Happy publishing. */
+
+      /** Sets up WordPress vars and included files. */
+      require_once
+        ABSPATH . 'wp-settings.php'
+      ;
+
+      require_once ABSPATH . 'includes-file.php';
+      """
+    And a includes-file.php file:
+      """
+      <?php
+      define( 'MY_CONSTANT', true );
+      """
+    And a some-other-file.php file:
+      """
+      <?php
+      define( 'MY_OTHER_CONSTANT', true );
+      """
+
+    When I try `wp core is-installed`
+    Then STDERR should not contain:
+      """
+      Error: Strange wp-config.php file: wp-settings.php is not loaded directly.
+      """
+
+    When I run `wp eval 'var_export( defined("MY_CONSTANT") );'`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+    When I run `wp eval 'var_export( defined("MY_OTHER_CONSTANT") );'`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+  Scenario: Be able to create a new global config file (including any new parent folders) when one doesn't exist
+    # Delete this folder or else a rerun of the test will fail since the folder/file now exists
+    When I run `[ -n "$HOME" ] && rm -rf "$HOME/doesnotexist"`
+    And I try `WP_CLI_CONFIG_PATH=$HOME/doesnotexist/wp-cli.yml wp cli alias add 1 --debug`
+    Then STDERR should match #Default global config does not exist, creating one in.+/doesnotexist/wp-cli.yml#

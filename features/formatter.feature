@@ -153,3 +153,39 @@ Feature: Format output
       | [33mgaa/gaa-log[0m      | *          | [32m✔[0m      |
       | [33mgaa/gaa-nonsense[0m | v3.0.11    | [31m🛇[0m      |
       | [33mgaa/gaa-100%new[0m  | v100%new   | [32m✔[0m      |
+
+  Scenario: Table rows containing linebreaks
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $items      = array(
+        (object) array(
+          'post_id'    => 1,
+          'meta_key'   => 'foo',
+          'meta_value' => 'foo',
+        ),
+        (object) array(
+          'post_id'    => 1,
+          'meta_key'   => 'fruits',
+          'meta_value' => "apple\nbanana\nmango",
+        ),
+        (object) array(
+          'post_id'    => 1,
+          'meta_key'   => 'bar',
+          'meta_value' => 'br',
+        ),
+      );
+      $assoc_args = array();
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'post_id', 'meta_key', 'meta_value' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file file.php --skip-wordpress`
+    Then STDOUT should be a table containing rows:
+      | post_id | meta_key | meta_value |
+      | 1       | foo      | foo        |
+      | 1       | fruits   | apple      |
+      |         |          | banana     |
+      |         |          | mango      |
+      | 1       | bar      | br         |

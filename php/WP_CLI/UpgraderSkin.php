@@ -22,7 +22,7 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 	/**
 	 * Show error message.
 	 *
-	 * @param string $error Error message.
+	 * @param string|\WP_Error $error Error message.
 	 *
 	 * @return void
 	 */

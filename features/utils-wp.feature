@@ -113,7 +113,7 @@ Feature: Utilities that depend on WordPress code
       wp_term_taxonomy
       """
   # Leave out wp_termmeta for old WP compat.
-    But STDOUT should contain:
+    And STDOUT should contain:
       """
       wp_terms
       wp_usermeta
@@ -538,7 +538,7 @@ Feature: Utilities that depend on WordPress code
       """
     # Leave out wp_blog_versions as it was never used and is removed with WP 5.3+.
     # Leave out wp_blogmeta for old WP compat.
-    Then STDOUT should contain:
+    And STDOUT should contain:
       """
       wp_blogs
       wp_categories
