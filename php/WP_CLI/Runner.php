@@ -1734,6 +1734,10 @@ class Runner {
 
 				$current_network = get_network();
 
+				if ( ! $current_network ) {
+					return site_url( $path, $scheme );
+				}
+
 				if ( 'relative' === $scheme ) {
 					$url = $current_network->path;
 				} else {
