@@ -86,9 +86,49 @@ class WpHttpCacheManager {
 		if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
 			return $response;
 		}
+		// Validate before caching.
+		if ( ! $this->validate_downloaded_file( $response['filename'], $url ) ) {
+			WP_CLI::warning( "Invalid or corrupt file from {$url} skipping cache and removing file." );
+			return $response;
+		}
 		// cache downloaded file
 		$this->cache->import( $this->whitelist[ $url ]['key'], $response['filename'] );
 		return $response;
+	}
+
+	/**
+	 * Validate downloaded file before adding to cache.
+	 *
+	 * @param string $file Path to the downloaded file.
+	 * @param string $url  Source URL.
+	 * @return bool True if file is valid, false otherwise.
+	 */
+	private function validate_downloaded_file( $file, $url ) {
+		// Basic existence and size check.
+		if ( ! file_exists( $file ) || filesize( $file ) < 20 ) {
+			return false;
+		}
+
+		$ext  = strtolower( pathinfo( parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION ) );
+		$mime = function_exists( 'mime_content_type' ) ? mime_content_type( $file ) : '';
+
+		// ZIP validation.
+		if ( $ext === 'zip' || $mime === 'application/zip' ) {
+			$zip = new \ZipArchive();
+			$result = $zip->open( $file );
+			if ( $result !== true ) {
+				$zip->close();
+				return false;
+			}
+			// Optional deeper check: ensure we can read file list.
+			if ( $zip->numFiles === 0 ) {
+				$zip->close();
+				return false;
+			}
+			$zip->close();
+		}
+
+		return true;
 	}
 
 	/**
