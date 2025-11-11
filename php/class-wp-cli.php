@@ -1065,7 +1065,8 @@ class WP_CLI {
 		} elseif ( 'yaml' === $format ) {
 			if ( is_scalar( $value ) || null === $value ) {
 				// Print plain YAML scalar
-				$_value = "---\n" . ( null === $value ? 'null' : ( '' === $value ? '""' : $value ) );
+				$scalar = null === $value ? 'null' : ( '' === $value ? '""' : $value );
+				$_value = "---\n" . $scalar;
 			} else {
 				// Fallback for arrays/objects
 				/** @var array|stdClass $value */
