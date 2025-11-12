@@ -88,7 +88,7 @@ class WpHttpCacheManager {
 		}
 		// Validate before caching.
 		if ( ! $this->validate_downloaded_file( $response['filename'], $url ) ) {
-			WP_CLI::warning( "Invalid or corrupt file from {$url} skipping cache and removing file." );
+			WP_CLI::warning( "Invalid or corrupt file from {$url}, skipping cache." );
 			return $response;
 		}
 		// cache downloaded file
