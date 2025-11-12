@@ -271,11 +271,18 @@ class Formatter {
 			}
 		}
 
+		$ordered_data = $this->reorder_array( $data, $this->args['fields'] );
+
+		if ( is_object( $data ) ) {
+			$ordered_data = (object) $ordered_data;
+		}
+
 		switch ( $format ) {
 
 			case 'table':
 			case 'csv':
-				$rows   = $this->assoc_array_to_rows( $data );
+				$rows = $this->assoc_array_to_rows( $ordered_data );
+
 				$fields = [ 'Field', 'Value' ];
 				if ( 'table' === $format ) {
 					self::show_table( $rows, $fields, $ascii_pre_colorized );
@@ -287,7 +294,7 @@ class Formatter {
 			case 'yaml':
 			case 'json':
 				WP_CLI::print_value(
-					$data,
+					$ordered_data,
 					[
 						'format' => $format,
 					]
@@ -374,5 +381,15 @@ class Formatter {
 			}
 		}
 		return $item;
+	}
+
+	/**
+	 * @param $data mixed
+	 * @param $order array
+	 *
+	 * @return array
+	 */
+	public function reorder_array( $data, $order ) {
+		return array_replace( array_flip( $order ), (array) $data );
 	}
 }
