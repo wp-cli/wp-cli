@@ -14,12 +14,20 @@ class WpHttpCacheManager {
 	/**
 	 * @var array<string, array{key:string, ttl: int|null}> map whitelisted urls to keys and ttls
 	 */
-	protected $whitelist = [];
+	protected $whitelist = array();
 
 	/**
 	 * @var FileCache
 	 */
 	protected $cache;
+
+	/**
+	 * Minimum valid archive file size in bytes.
+	 *
+	 * This threshold (20 bytes) roughly corresponds to the smallest possible
+	 * valid ZIP or TAR.GZ header, ensuring we skip obviously invalid or empty downloads.
+	 */
+	private const MIN_VALID_ARCHIVE_SIZE = 20;
 
 	/**
 	 * @param FileCache $cache
@@ -28,8 +36,8 @@ class WpHttpCacheManager {
 		$this->cache = $cache;
 
 		// hook into wp http api
-		add_filter( 'pre_http_request', [ $this, 'filter_pre_http_request' ], 10, 3 );
-		add_filter( 'http_response', [ $this, 'filter_http_response' ], 10, 3 );
+		add_filter( 'pre_http_request', array( $this, 'filter_pre_http_request' ), 10, 3 );
+		add_filter( 'http_response', array( $this, 'filter_http_response' ), 10, 3 );
 	}
 
 	/**
@@ -50,13 +58,13 @@ class WpHttpCacheManager {
 			WP_CLI::log( sprintf( 'Using cached file \'%s\'...', $filename ) );
 			if ( copy( $filename, $args['filename'] ) ) {
 				// simulate successful download response
-				return [
-					'response' => [
+				return array(
+					'response' => array(
 						'code'    => 200,
 						'message' => 'OK',
-					],
+					),
 					'filename' => $args['filename'],
-				];
+				);
 			}
 
 			WP_CLI::error( sprintf( 'Error copying cached file %s to %s', $filename, $url ) );
@@ -68,8 +76,8 @@ class WpHttpCacheManager {
 	/**
 	 * cache wp http api downloads
 	 *
-	 * @param array $response
-	 * @param array $args
+	 * @param array  $response
+	 * @param array  $args
 	 * @param string $url
 	 * @return array
 	 */
@@ -105,27 +113,43 @@ class WpHttpCacheManager {
 	 */
 	private function validate_downloaded_file( $file, $url ) {
 		// Basic existence and size check.
-		if ( ! file_exists( $file ) || filesize( $file ) < 20 ) {
+		if ( ! file_exists( $file ) ) {
+			return false;
+		}
+		$size = filesize( $file );
+		if ( false === $size || $size < self::MIN_VALID_ARCHIVE_SIZE ) {
 			return false;
 		}
 
-		$ext  = strtolower( pathinfo( parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION ) );
-		$mime = function_exists( 'mime_content_type' ) ? mime_content_type( $file ) : '';
+		$ext  = strtolower( pathinfo( (string) wp_parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION ) );
+		$mime = ( function_exists( 'mime_content_type' ) && is_readable( $file ) ) ? mime_content_type( $file ) : '';
 
 		// ZIP validation.
-		if ( $ext === 'zip' || $mime === 'application/zip' ) {
-			$zip = new \ZipArchive();
+		if ( ( 'zip' === $ext || 'application/zip' === $mime ) && class_exists( '\ZipArchive' ) ) {
+			$zip    = new \ZipArchive();
 			$result = $zip->open( $file );
-			if ( $result !== true ) {
-				$zip->close();
+			if ( true !== $result ) {
 				return false;
 			}
 			// Optional deeper check: ensure we can read file list.
-			if ( $zip->numFiles === 0 ) {
+			if ( 0 === $zip->numFiles ) { //phpcs:ignore
 				$zip->close();
 				return false;
 			}
 			$zip->close();
+		}
+
+		// TAR.GZ validation.
+		if ( ( preg_match( '/\.tar\.gz$/i', $url ) || 'application/gzip' === $mime ) && class_exists( '\PharData' ) ) {
+			try {
+				$phar = new \PharData( $file );
+				// Accessing the file list ensures it can be read.
+				if ( empty( iterator_to_array( $phar ) ) ) {
+					return false;
+				}
+			} catch ( \Exception $e ) {
+				return false;
+			}
 		}
 
 		return true;
@@ -156,10 +180,10 @@ class WpHttpCacheManager {
 	 */
 	public function whitelist_url( $url, $key = null, $ttl = null ) {
 		$key                     = $key ? : $url;
-		$this->whitelist[ $url ] = [
+		$this->whitelist[ $url ] = array(
 			'key' => $key,
 			'ttl' => $ttl,
-		];
+		);
 	}
 
 	/**
