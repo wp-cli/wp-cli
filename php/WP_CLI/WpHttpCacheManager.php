@@ -112,19 +112,18 @@ class WpHttpCacheManager {
 	 * @return bool True if file is valid, false otherwise.
 	 */
 	private function validate_downloaded_file( $file, $url ) {
-		// Basic existence and size check.
-		if ( ! file_exists( $file ) ) {
+		if ( ! is_readable( $file ) ) {
 			return false;
 		}
+
 		$size = filesize( $file );
 		if ( false === $size || $size < self::MIN_VALID_ARCHIVE_SIZE ) {
 			return false;
 		}
 
 		$ext  = strtolower( pathinfo( (string) wp_parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION ) );
-		$mime = ( function_exists( 'mime_content_type' ) && is_readable( $file ) ) ? mime_content_type( $file ) : '';
+		$mime = function_exists( 'mime_content_type' ) ? mime_content_type( $file ) : '';
 
-		// ZIP validation.
 		if ( ( 'zip' === $ext || 'application/zip' === $mime ) && class_exists( '\ZipArchive' ) ) {
 			$zip    = new \ZipArchive();
 			$result = $zip->open( $file );
@@ -139,7 +138,6 @@ class WpHttpCacheManager {
 			$zip->close();
 		}
 
-		// TAR.GZ validation.
 		if ( ( preg_match( '/\.tar\.gz$/i', $url ) || 'application/gzip' === $mime ) && class_exists( '\PharData' ) ) {
 			try {
 				$phar = new \PharData( $file );
