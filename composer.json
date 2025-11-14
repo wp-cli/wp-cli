@@ -40,8 +40,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "2.13.x-dev",
-            "dev-copilot/fix-cli-cache-prune-issue": "2.13.x-dev"
+            "dev-main": "2.13.x-dev"
         }
     },
     "autoload": {
