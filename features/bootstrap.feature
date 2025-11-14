@@ -16,7 +16,7 @@ Feature: Bootstrap WP-CLI
           "name": "wp-cli/composer-test",
           "type": "project",
           "require": {
-              "wp-cli/wp-cli": "1.1.0"
+              "wp-cli/wp-cli": "1.11.0"
           }
       }
       """
@@ -26,7 +26,7 @@ Feature: Bootstrap WP-CLI
     When I run `vendor/bin/wp cli version`
     Then STDOUT should contain:
       """
-      WP-CLI 1.1.0
+      WP-CLI 1.11.0
       """
 
   Scenario: Composer stack with override requirement before WP-CLI
