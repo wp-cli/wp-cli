@@ -276,6 +276,8 @@ class Runner {
 
 		if ( ! empty( $this->config['path'] ) ) {
 			$path = $this->config['path'];
+			// Expand tilde to home directory if present
+			$path = Utils\expand_tilde_path( $path );
 			if ( ! Utils\is_path_absolute( $path ) ) {
 				$path = getcwd() . '/' . $path;
 			}
