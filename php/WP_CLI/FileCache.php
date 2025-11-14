@@ -352,7 +352,8 @@ class FileCache {
 			);
 
 			// Delete all except the first (newest).
-			for ( $i = 1; $i < count( $files ); $i++ ) {
+			$total = count( $files );
+			for ( $i = 1; $i < $total; $i++ ) {
 				unlink( $files[ $i ]['path'] );
 			}
 		}
