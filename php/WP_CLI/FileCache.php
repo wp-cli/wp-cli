@@ -294,25 +294,68 @@ class FileCache {
 		/** @var Finder $finder */
 		$finder = $this->get_finder()->sortByName();
 
-		$files_to_delete = [];
+		$files_by_base = [];
 
+		// Group files by their base name (stripping version/timestamp).
 		foreach ( $finder as $file ) {
-			$pieces    = explode( '-', $file->getBasename( $file->getExtension() ) );
-			$timestamp = end( $pieces );
+			$basename = $file->getBasename();
+			$pieces   = explode( '-', $file->getBasename( $file->getExtension() ) );
+			$last_piece = end( $pieces );
 
-			// No way to compare versions, do nothing.
-			if ( ! is_numeric( $timestamp ) ) {
+			// Try to identify a version or timestamp suffix.
+			$basename_without_suffix = $basename;
+			$version_string          = null;
+
+			// Check if last piece is purely numeric (original timestamp format).
+			if ( is_numeric( $last_piece ) ) {
+				$basename_without_suffix = str_replace( '-' . $last_piece, '', $basename );
+				$version_string          = $last_piece; // Store as string for comparison.
+			} elseif ( preg_match( '/^(\d+(?:\.\d+)*)/', $last_piece, $matches ) ) {
+				// Handle version numbers like "8.6.1" in "jetpack-8.6.1.zip".
+				$basename_without_suffix = str_replace( '-' . $last_piece, '', $basename );
+				$version_string          = $matches[0]; // Store the version string.
+			}
+
+			// Store file info: path, modification time, and optional version string.
+			if ( ! isset( $files_by_base[ $basename_without_suffix ] ) ) {
+				$files_by_base[ $basename_without_suffix ] = [];
+			}
+
+			$files_by_base[ $basename_without_suffix ][] = [
+				'path'    => $file->getRealPath(),
+				'mtime'   => $file->getMTime(),
+				'version' => $version_string,
+			];
+		}
+
+		// For each group, keep only the newest file and delete the rest.
+		foreach ( $files_by_base as $files ) {
+			if ( count( $files ) <= 1 ) {
 				continue;
 			}
 
-			$basename_without_timestamp = str_replace( '-' . $timestamp, '', $file->getBasename() );
+			// Sort files: prefer version comparison if available, otherwise use mtime.
+			usort(
+				$files,
+				function ( $a, $b ) {
+					// If both have version strings, use version_compare().
+					if ( null !== $a['version'] && null !== $b['version'] ) {
+						$cmp = version_compare( $b['version'], $a['version'] );
+						if ( 0 !== $cmp ) {
+							return $cmp;
+						}
+						// If versions are equal, fall through to mtime comparison.
+					}
+					// Otherwise, compare by modification time.
+					return $b['mtime'] <=> $a['mtime'];
+				}
+			);
 
-			// There's a file with an older timestamp, delete it.
-			if ( isset( $files_to_delete[ $basename_without_timestamp ] ) ) {
-				unlink( $files_to_delete[ $basename_without_timestamp ] );
+			// Delete all except the first (newest).
+			$total = count( $files );
+			for ( $i = 1; $i < $total; $i++ ) {
+				unlink( $files[ $i ]['path'] );
 			}
-
-			$files_to_delete[ $basename_without_timestamp ] = $file->getRealPath();
 		}
 
 		return true;
