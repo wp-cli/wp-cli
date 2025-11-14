@@ -304,20 +304,19 @@ class FileCache {
 
 			// Try to identify a version or timestamp suffix.
 			$basename_without_suffix = $basename;
-			$numeric_version = null;
+			$version_string          = null;
 
 			// Check if last piece is purely numeric (original timestamp format).
 			if ( is_numeric( $last_piece ) ) {
 				$basename_without_suffix = str_replace( '-' . $last_piece, '', $basename );
-				$numeric_version = (int) $last_piece;
+				$version_string          = $last_piece; // Store as string for comparison.
 			} elseif ( preg_match( '/^(\d+(?:\.\d+)*)/', $last_piece, $matches ) ) {
 				// Handle version numbers like "8.6.1" in "jetpack-8.6.1.zip".
 				$basename_without_suffix = str_replace( '-' . $last_piece, '', $basename );
-				// For version comparison, we'll use mtime as versions can't be reliably compared as single numbers.
-				$numeric_version = null;
+				$version_string          = $matches[0]; // Store the version string.
 			}
 
-			// Store file info: path, modification time, and optional numeric version.
+			// Store file info: path, modification time, and optional version string.
 			if ( ! isset( $files_by_base[ $basename_without_suffix ] ) ) {
 				$files_by_base[ $basename_without_suffix ] = [];
 			}
@@ -325,7 +324,7 @@ class FileCache {
 			$files_by_base[ $basename_without_suffix ][] = [
 				'path'    => $file->getRealPath(),
 				'mtime'   => $file->getMTime(),
-				'version' => $numeric_version,
+				'version' => $version_string,
 			];
 		}
 
@@ -335,13 +334,17 @@ class FileCache {
 				continue;
 			}
 
-			// Sort files: prefer numeric version if available, otherwise use mtime.
+			// Sort files: prefer version comparison if available, otherwise use mtime.
 			usort(
 				$files,
 				function ( $a, $b ) {
-					// If both have numeric versions, compare those.
+					// If both have version strings, use version_compare().
 					if ( null !== $a['version'] && null !== $b['version'] ) {
-						return $b['version'] <=> $a['version'];
+						$cmp = version_compare( $b['version'], $a['version'] );
+						if ( 0 !== $cmp ) {
+							return $cmp;
+						}
+						// If versions are equal, fall through to mtime comparison.
 					}
 					// Otherwise, compare by modification time.
 					return $b['mtime'] <=> $a['mtime'];
