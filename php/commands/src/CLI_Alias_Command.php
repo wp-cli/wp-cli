@@ -460,7 +460,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 				$group_alias_list  = explode( ',', $grouping );
 				$group_alias       = array_map(
 					function ( $current_alias ) {
-						return '@' . ltrim( $current_alias, '@' );
+						// Remove @ prefix if present
+						return ltrim( $current_alias, '@' );
 					},
 					$group_alias_list
 				);
@@ -542,17 +543,13 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	/**
 	 * Normalize the alias to an expected format.
 	 *
-	 * - Add @ if not present.
+	 * - Remove @ if present.
 	 *
 	 * @param string $alias Name of alias.
 	 */
 	private function normalize_alias( $alias ) {
-		// Check if the alias starts with the @.
+		// Remove the @ prefix if present for storage
 		// See: https://github.com/wp-cli/wp-cli/issues/5391
-		if ( strpos( $alias, '@' ) !== 0 ) {
-			$alias = '@' . ltrim( $alias, '@' );
-		}
-
-		return $alias;
+		return ltrim( $alias, '@' );
 	}
 }
