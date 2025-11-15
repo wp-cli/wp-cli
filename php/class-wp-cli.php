@@ -898,6 +898,10 @@ class WP_CLI {
 	 * Use `WP_CLI::warning()` instead when script execution should be permitted
 	 * to continue.
 	 *
+	 * When `--debug` is enabled, this method will also output a backtrace
+	 * showing where the error was triggered from, making it easier to identify
+	 * problematic code.
+	 *
 	 * ```
 	 * # `wp cache flush` considers flush failure to be a fatal error.
 	 * if ( false === wp_cache_flush() ) {
@@ -939,6 +943,10 @@ class WP_CLI {
 	 * Halt script execution with a specific return code.
 	 *
 	 * Permits script execution to be overloaded by `WP_CLI::runcommand()`
+	 *
+	 * When `--debug` is enabled, this method will also output a backtrace
+	 * showing where the halt was triggered from, making it easier to identify
+	 * the cause of early termination.
 	 *
 	 * @access public
 	 * @category Output
