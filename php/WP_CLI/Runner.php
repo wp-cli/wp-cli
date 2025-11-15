@@ -534,7 +534,7 @@ class Runner {
 		$wp_binary = getenv( 'WP_CLI_SSH_BINARY' ) ?: 'wp';
 		$wp_args   = array_slice( $GLOBALS['argv'], 1 );
 
-		if ( $this->alias && ! empty( $wp_args[0] ) && preg_match( '#' . Configurator::ALIAS_REGEX . '#', $wp_args[0] ) ) {
+		if ( $this->alias && ! empty( $wp_args[0] ) && ( '@' . $this->alias === $wp_args[0] || $wp_args[0] === $this->alias ) ) {
 			array_shift( $wp_args );
 			$runtime_alias = [];
 			foreach ( $this->aliases[ $this->alias ] as $key => $value ) {
