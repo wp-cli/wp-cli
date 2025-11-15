@@ -82,7 +82,30 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @param array{format: string} $assoc_args Associative arguments.
 	 */
 	public function list_( $args, $assoc_args ) {
-		WP_CLI::print_value( WP_CLI::get_runner()->aliases, $assoc_args );
+		$aliases = WP_CLI::get_runner()->aliases;
+		
+		// Add @ prefix to aliases for display (backward compatibility)
+		$display_aliases = [];
+		foreach ( $aliases as $alias => $value ) {
+			$display_alias = '@' . $alias;
+			if ( is_array( $value ) ) {
+				// Check if it's a group (numeric indexed array)
+				if ( isset( $value[0] ) && is_string( $value[0] ) ) {
+					// It's a group, add @ prefix to each member
+					$display_aliases[ $display_alias ] = array_map( function( $member ) {
+						return '@' . $member;
+					}, $value );
+				} else {
+					// It's a regular alias config
+					$display_aliases[ $display_alias ] = $value;
+				}
+			} else {
+				// It's a string (like the 'all' description)
+				$display_aliases[ $display_alias ] = $value;
+			}
+		}
+		
+		WP_CLI::print_value( $display_aliases, $assoc_args );
 	}
 
 	/**
@@ -103,11 +126,14 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 */
 	public function get( $args ) {
 		list( $alias ) = $args;
+		
+		// Normalize alias (remove @ prefix if present)
+		$alias = ltrim( $alias, '@' );
 
 		$aliases = WP_CLI::get_runner()->aliases;
 
 		if ( empty( $aliases[ $alias ] ) ) {
-			WP_CLI::error( "No alias found with key '{$alias}'." );
+			WP_CLI::error( "No alias found with key '@{$alias}'." );
 		}
 
 		foreach ( $aliases[ $alias ] as $key => $value ) {
@@ -338,23 +364,22 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @subcommand is-group
 	 */
 	public function is_group( $args, $assoc_args = array() ) {
-		$alias = $args[0];
+		$alias = ltrim( $args[0], '@' );
 
 		$aliases = WP_CLI::get_runner()->aliases;
 
 		if ( empty( $aliases[ $alias ] ) ) {
-			WP_CLI::error( "No alias found with key '{$alias}'." );
+			WP_CLI::error( "No alias found with key '@{$alias}'." );
 		}
 
 		// how do we know the alias is a group?
 		// + array keys are numeric
-		// + array values begin with '@'
+		// + array values are strings (group members)
 
-		$first_item       = $aliases[ $alias ];
-		$first_item_key   = key( $first_item );
-		$first_item_value = $first_item[ $first_item_key ];
+		$first_item = $aliases[ $alias ];
+		$first_item_key = key( $first_item );
 
-		if ( is_numeric( $first_item_key ) && substr( $first_item_value, 0, 1 ) === '@' ) {
+		if ( is_numeric( $first_item_key ) ) {
 			WP_CLI::halt( 0 );
 		}
 		WP_CLI::halt( 1 );
