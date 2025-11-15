@@ -1160,8 +1160,9 @@ class WP_CLI {
 			$backtrace_output = [];
 			$max_frames       = 5;
 			$frame_count      = 0;
+			$backtrace_count  = count( $backtrace );
 
-			for ( $i = $skip_frames; $i < count( $backtrace ) && $frame_count < $max_frames; $i++ ) {
+			for ( $i = $skip_frames; $i < $backtrace_count && $frame_count < $max_frames; $i++ ) {
 				$frame = $backtrace[ $i ];
 				$func  = isset( $frame['function'] ) ? $frame['function'] : '';
 
