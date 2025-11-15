@@ -1068,19 +1068,10 @@ class Runner {
 
 		$argv = array_slice( $GLOBALS['argv'], 1 );
 
-		// Extract config from CLI args first
-		list( $args, $assoc_args, $this->runtime_config ) = $configurator->parse_args( $argv );
-		list( $this->arguments, $this->assoc_args )       = self::back_compat_conversions(
-			$args,
-			$assoc_args
-		);
-
-		// Check if we use an alias (either @foo or --alias=foo)
+		// Check if we use an alias with @foo syntax (must be done before parsing args)
 		$this->alias = null;
 		if ( ! empty( $argv[0] ) && preg_match( '#' . Configurator::ALIAS_REGEX . '#', $argv[0], $matches ) ) {
-			$this->alias = substr( array_shift( $argv ), 1 ); // Remove the @ prefix
-		} elseif ( ! empty( $this->runtime_config['alias'] ) ) {
-			$this->alias = $this->runtime_config['alias'];
+			$this->alias = substr( array_shift( $argv ), 1 ); // Remove the @ prefix and shift from argv
 		}
 
 		// File config
@@ -1096,7 +1087,22 @@ class Runner {
 			$this->required_files['project'] = $config[0]['require'];
 		}
 
-		$configurator->merge_array( $this->runtime_config );
+		// Runtime config and args
+		{
+			list( $args, $assoc_args, $this->runtime_config ) = $configurator->parse_args( $argv );
+
+			list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
+				$args,
+				$assoc_args
+			);
+
+			$configurator->merge_array( $this->runtime_config );
+		}
+
+		// Check if --alias flag was used (takes precedence over @foo if both provided)
+		if ( ! empty( $this->runtime_config['alias'] ) ) {
+			$this->alias = $this->runtime_config['alias'];
+		}
 
 		list( $this->config, $this->extra_config ) = $configurator->to_array();
 		$this->aliases                             = $configurator->get_aliases();
