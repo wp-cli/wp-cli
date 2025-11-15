@@ -1356,6 +1356,9 @@ class Runner {
 		WP_CLI::do_hook( 'after_wp_config_load' );
 		$this->do_early_invoke( 'after_wp_config_load' );
 
+		// Validate multisite URL if applicable
+		$this->validate_multisite_url();
+
 		// Prevent error notice from wp_guess_url() when core isn't installed
 		if ( $this->cmd_starts_with( [ 'core', 'is-installed' ] )
 			&& ! defined( 'COOKIEHASH' ) ) {
@@ -1866,6 +1869,107 @@ class Runner {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Validate that the URL matches an existing site in a multisite installation.
+	 *
+	 * For use after wp-config.php has loaded, but before wp-settings.php.
+	 * Checks if the provided --url parameter corresponds to an existing site
+	 * in a multisite installation.
+	 */
+	private function validate_multisite_url(): void {
+		// Only validate if this is a multisite and a URL was explicitly provided
+		if ( ! $this->is_multisite() || empty( $this->config['url'] ) ) {
+			return;
+		}
+
+		// Don't validate for certain commands that don't need a specific site
+		if ( $this->cmd_starts_with( [ 'core', 'install' ] )
+			|| $this->cmd_starts_with( [ 'core', 'multisite-install' ] )
+			|| $this->cmd_starts_with( [ 'core', 'is-installed' ] )
+			|| $this->cmd_starts_with( [ 'db' ] )
+			|| $this->cmd_starts_with( [ 'cache', 'flush' ] ) ) {
+			return;
+		}
+
+		// Don't validate search-replace when running on all tables or network-wide
+		if ( $this->cmd_starts_with( [ 'search-replace' ] ) ) {
+			if ( count( $this->arguments ) > 3
+				|| ! empty( $this->assoc_args['network'] )
+				|| ! empty( $this->assoc_args['all-tables'] )
+				|| ! empty( $this->assoc_args['all-tables-with-prefix'] ) ) {
+				return;
+			}
+		}
+
+		// Parse the URL to get domain and path
+		$url_parts = Utils\parse_url( $this->config['url'] );
+		if ( empty( $url_parts['host'] ) ) {
+			// URL is malformed - already warned about in WP_CLI::set_url()
+			return;
+		}
+
+		$domain = $url_parts['host'];
+		$path   = isset( $url_parts['path'] ) ? $url_parts['path'] : '/';
+
+		// Ensure path ends with a slash for multisite lookup
+		if ( '/' !== substr( $path, -1 ) ) {
+			$path .= '/';
+		}
+
+		// Need to connect to database to check if site exists
+		if ( ! defined( 'DB_HOST' ) || ! defined( 'DB_NAME' ) || ! defined( 'DB_USER' ) || ! defined( 'DB_PASSWORD' ) ) {
+			// Database not configured, can't validate
+			return;
+		}
+
+		global $wpdb;
+		if ( ! isset( $wpdb ) ) {
+			// Initialize wpdb if not already done
+			if ( ! defined( 'ABSPATH' ) ) {
+				return;
+			}
+			require_once ABSPATH . 'wp-includes/wp-db.php';
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			$wpdb = new \wpdb( DB_USER, DB_PASSWORD, DB_NAME, DB_HOST );
+		}
+
+		// Suppress errors to avoid showing database connection issues here
+		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		$prev_error_reporting = error_reporting( 0 );
+
+		// Check if the site exists in the database
+		$table_prefix = isset( $GLOBALS['table_prefix'] ) ? $GLOBALS['table_prefix'] : 'wp_';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$site = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT blog_id FROM {$table_prefix}blogs WHERE domain = %s AND path = %s",
+				$domain,
+				$path
+			)
+		);
+
+		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		error_reporting( $prev_error_reporting );
+
+		// If database query failed, let the normal WordPress flow handle it
+		if ( $wpdb->last_error ) {
+			return;
+		}
+
+		if ( ! $site ) {
+			// Format URL the same way as ms_site_not_found hook
+			$url = $domain . $path;
+			// Remove trailing slash if path is just '/'
+			if ( '/' === $path ) {
+				$url = $domain;
+			}
+			WP_CLI::error(
+				"Site '{$url}' not found. " .
+				'Verify `--url=<url>` matches an existing site.'
+			);
+		}
 	}
 
 	/**
