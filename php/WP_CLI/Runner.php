@@ -1133,7 +1133,7 @@ class Runner {
 				}
 			);
 
-			WP_CLI::log( $alias );
+			WP_CLI::log( '@' . $alias );
 			$args = implode( ' ', array_map( 'escapeshellarg', $filtered_arguments ) );
 
 			// Filter out --ssh and --alias args from the ssh command

@@ -665,6 +665,7 @@ Feature: Create shortcuts to specific WordPress installs
         path: {TEST_DIR}/foo
       """
 
+
   Scenario: Use alternative aliases syntax without @ prefix
     Given a WP installation in 'foo'
     And I run `mkdir bar`
@@ -744,9 +745,9 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp --alias=both option get home`
     Then STDOUT should be:
       """
-      foo
+      @foo
       http://apple.com
-      bar
+      @bar
       http://google.com
       """
 
@@ -765,8 +766,8 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp cli alias list`
     Then STDOUT should be YAML containing:
       """
-      all: Run command against every registered alias.
-      foo:
+      @all: Run command against every registered alias.
+      @foo:
         path: {TEST_DIR}/foo
       """
 
@@ -808,9 +809,9 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp --alias=all option get home`
     Then STDOUT should be:
       """
-      foo
+      @foo
       http://apple.com
-      bar
+      @bar
       http://google.com
       """
 
