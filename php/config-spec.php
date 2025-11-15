@@ -129,4 +129,12 @@ return [
 		'hidden'  => true,
 	],
 
+	'alias'             => [
+		'runtime'  => '=<name>',
+		'file'     => '<name>',
+		'desc'     => 'Name of the remote connection to use. Aliases are defined in the wp-cli.yml file.',
+		'multiple' => false,
+		'default'  => '',
+	],
+
 ];
