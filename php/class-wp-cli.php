@@ -1172,17 +1172,17 @@ class WP_CLI {
 
 			for ( $i = $skip_frames; $i < $backtrace_count && $frame_count < $max_frames; $i++ ) {
 				$frame = $backtrace[ $i ];
-				$func  = isset( $frame['function'] ) ? $frame['function'] : '';
+				$func  = $frame['function'];
 
 				if ( isset( $frame['class'] ) ) {
-					$func = $frame['class'] . $frame['type'] . $func;
+					$func = $frame['class'] . ( isset( $frame['type'] ) ? $frame['type'] : '::' ) . $func;
 				}
 
 				$file = isset( $frame['file'] ) ? $frame['file'] : 'unknown';
 				$line = isset( $frame['line'] ) ? $frame['line'] : '?';
 
 				$backtrace_output[] = "  #{$frame_count} {$func}() called at [{$file}:{$line}]";
-				$frame_count++;
+				++$frame_count;
 			}
 
 			if ( ! empty( $backtrace_output ) ) {
