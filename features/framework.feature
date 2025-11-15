@@ -152,6 +152,77 @@ Feature: Load WP-CLI
       Error: So I can use multiple lines.
       """
 
+  Scenario: Debug flag shows backtrace on error
+    Given an empty directory
+    And a debug-error.php file:
+      """
+      <?php
+      function my_custom_function() {
+          WP_CLI::error( 'Test error message.' );
+      }
+      my_custom_function();
+      """
+
+    When I try `wp --require=debug-error.php --debug`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Error: Test error message.
+      """
+    And STDERR should contain:
+      """
+      Script called exit from:
+      """
+    And STDERR should contain:
+      """
+      debug-error.php:
+      """
+    And STDERR should contain:
+      """
+      Backtrace:
+      """
+
+  Scenario: Debug flag shows backtrace on halt
+    Given an empty directory
+    And a debug-halt.php file:
+      """
+      <?php
+      function trigger_halt() {
+          WP_CLI::halt( 2 );
+      }
+      trigger_halt();
+      """
+
+    When I try `wp --require=debug-halt.php --debug`
+    Then the return code should be 2
+    And STDERR should contain:
+      """
+      Script called exit from:
+      """
+    And STDERR should contain:
+      """
+      debug-halt.php:
+      """
+    And STDERR should contain:
+      """
+      Backtrace:
+      """
+
+  Scenario: Without debug flag, no backtrace is shown
+    Given an empty directory
+    And a no-debug-error.php file:
+      """
+      <?php
+      WP_CLI::error( 'Simple error.' );
+      """
+
+    When I try `wp --require=no-debug-error.php`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Simple error.
+      """
+
   Scenario: A plugin calling wp_redirect() shouldn't redirect
     Given a WP installation
     And a wp-content/mu-plugins/redirect.php file:
