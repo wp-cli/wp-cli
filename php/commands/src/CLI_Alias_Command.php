@@ -83,7 +83,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 */
 	public function list_( $args, $assoc_args ) {
 		$aliases = WP_CLI::get_runner()->aliases;
-		
+
 		// Add @ prefix to aliases for display (backward compatibility)
 		$display_aliases = [];
 		foreach ( $aliases as $alias => $value ) {
@@ -92,9 +92,12 @@ class CLI_Alias_Command extends WP_CLI_Command {
 				// Check if it's a group (numeric indexed array)
 				if ( isset( $value[0] ) && is_string( $value[0] ) ) {
 					// It's a group, add @ prefix to each member
-					$display_aliases[ $display_alias ] = array_map( function( $member ) {
-						return '@' . $member;
-					}, $value );
+					$display_aliases[ $display_alias ] = array_map(
+						function ( $member ) {
+							return '@' . $member;
+						},
+						$value
+					);
 				} else {
 					// It's a regular alias config
 					$display_aliases[ $display_alias ] = $value;
@@ -104,7 +107,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 				$display_aliases[ $display_alias ] = $value;
 			}
 		}
-		
+
 		WP_CLI::print_value( $display_aliases, $assoc_args );
 	}
 
@@ -126,7 +129,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 */
 	public function get( $args ) {
 		list( $alias ) = $args;
-		
+
 		// Normalize alias (remove @ prefix if present)
 		$alias = ltrim( $alias, '@' );
 
@@ -376,7 +379,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		// + array keys are numeric
 		// + array values are strings (group members)
 
-		$first_item = $aliases[ $alias ];
+		$first_item     = $aliases[ $alias ];
 		$first_item_key = key( $first_item );
 
 		if ( is_numeric( $first_item_key ) ) {

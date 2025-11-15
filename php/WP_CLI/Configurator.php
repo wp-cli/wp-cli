@@ -117,7 +117,7 @@ class Configurator {
 	 * Add the given alias to the internal aliases array.
 	 *
 	 * @param string $key The alias name (with or without @ prefix).
-	 * @param mixed  $value The alias configuration.
+	 * @param array  $value The alias configuration.
 	 * @param string $yml_file_dir The directory of the YAML file for path resolution.
 	 * @return void
 	 */
