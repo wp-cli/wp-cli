@@ -1141,7 +1141,9 @@ class Runner {
 			unset( $filtered_assoc_args['ssh'], $filtered_assoc_args['alias'] );
 
 			$assoc_args     = Utils\assoc_args_to_str( $filtered_assoc_args );
-			$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
+			$filtered_runtime_config = $this->runtime_config;
+			unset( $filtered_runtime_config['alias'] );
+			$runtime_config = Utils\assoc_args_to_str( $filtered_runtime_config );
 			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} --alias={$alias} {$args}{$assoc_args}{$runtime_config}";
 			$pipes          = [];
 			$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
