@@ -1146,7 +1146,7 @@ class Runner {
 			$filtered_assoc_args = $this->assoc_args;
 			unset( $filtered_assoc_args['ssh'], $filtered_assoc_args['alias'] );
 
-			$assoc_args     = Utils\assoc_args_to_str( $filtered_assoc_args );
+			$assoc_args              = Utils\assoc_args_to_str( $filtered_assoc_args );
 			$filtered_runtime_config = $this->runtime_config;
 			unset( $filtered_runtime_config['alias'] );
 			$runtime_config = Utils\assoc_args_to_str( $filtered_runtime_config );
