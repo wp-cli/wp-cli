@@ -1064,11 +1064,16 @@ class WP_CLI {
 				$_value = json_encode( $value );
 		} elseif ( 'yaml' === $format ) {
 			if ( is_scalar( $value ) || null === $value ) {
-					// Print plain YAML scalar
-					$_value = "---\n" . ( null === $value ? 'null' : $value );
+				if ( '' === $value ) {
+					$_value = "---\n\"\"";
+				} elseif ( null === $value ) {
+					$_value = "---\nnull";
+				} else {
+					$_value = "---\n{$value}";
+				}
 			} else {
-					// Fallback for arrays/objects
-					$_value = Spyc::YAMLDump( $value, 2, 0 );
+				/** @var string $_value */
+				$_value = Spyc::YAMLDump( (array) $value, 2, 0 );
 			}
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
 				$_value = var_export( $value, true );
