@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REQUESTS_TAG="v2.0.7"
+REQUESTS_TAG="v2.0.12"
 
 DOWNLOAD_LINK="https://github.com/WordPress/Requests/archive/refs/tags/${REQUESTS_TAG}.tar.gz"
 

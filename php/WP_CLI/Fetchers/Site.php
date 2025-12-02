@@ -4,6 +4,10 @@ namespace WP_CLI\Fetchers;
 
 /**
  * Fetch a WordPress site based on one of its attributes.
+ *
+ * @phpstan-type SiteObject object{blog_id: int, site_id: int, domain: string, path: string, registered: string, last_updated: string, public: int, archived: int, mature: int, spam: int, deleted: int, lang_id: int}
+ *
+ * @extends Base<SiteObject>
  */
 class Site extends Base {
 
@@ -17,18 +21,24 @@ class Site extends Base {
 	/**
 	 * Get a site object by ID
 	 *
-	 * @param int $site_id
+	 * @param string|int $site_id
 	 * @return object|false
+	 *
+	 * @phpstan-return SiteObject|false
 	 */
 	public function get( $site_id ) {
-		return $this->get_site( $site_id );
+		return $this->get_site( (int) $site_id );
 	}
 
 	/**
 	 * Get site (blog) data for a given id.
 	 *
-	 * @param string $arg The raw CLI argument.
-	 * @return array|false The item if found; false otherwise.
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param string|int $arg The raw CLI argument.
+	 * @return object|false The item if found; false otherwise.
+	 *
+	 * @phpstan-return SiteObject|false
 	 */
 	private function get_site( $arg ) {
 		global $wpdb;

@@ -11,3 +11,6 @@ phpunit.xml
 phpcs.xml
 .phpcs.xml
 composer.lock
+.phpunit.result.cache
+.phpunit.cache
+/build/logs
