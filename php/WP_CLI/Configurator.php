@@ -215,12 +215,10 @@ class Configurator {
 					if ( $i < $delimiter_index ) {
 						$global_assoc[] = $assoc_arg;
 					}
-				} else {
-					if ( count( $positional_args ) ) {
+				} elseif ( count( $positional_args ) ) {
 						$local_assoc[] = $assoc_arg;
-					} else {
-						$global_assoc[] = $assoc_arg;
-					}
+				} else {
+					$global_assoc[] = $assoc_arg;
 				}
 			} elseif ( ! is_null( $positional ) ) {
 				$positional_args[] = $positional;
