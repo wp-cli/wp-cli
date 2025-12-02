@@ -477,7 +477,6 @@ class Runner {
 						}
 
 						if ( is_array( $suggested_command_to_run ) ) {
-
 							if ( 'auto' === $autocorrect ) {
 								return $suggested_command_to_run;
 							}
