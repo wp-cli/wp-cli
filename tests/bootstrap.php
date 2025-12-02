@@ -14,4 +14,6 @@ require_once WP_CLI_VENDOR_DIR . '/autoload.php';
 require_once WP_CLI_ROOT . '/php/utils.php';
 require_once WP_CLI_ROOT . '/bundle/rmccue/requests/src/Autoload.php';
 
+require_once __DIR__ . '/includes/wpdb.php';
+
 \WpOrg\Requests\Autoload::register();

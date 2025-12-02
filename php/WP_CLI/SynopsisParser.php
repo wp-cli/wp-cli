@@ -14,7 +14,7 @@ class SynopsisParser {
 	 * @return array List of parameters
 	 */
 	public static function parse( $synopsis ) {
-		$tokens = array_filter( preg_split( '/[\s\t]+/', $synopsis ) );
+		$tokens = array_filter( (array) preg_split( '/[\s\t]+/', $synopsis ) );
 
 		$params = [];
 		foreach ( $tokens as $token ) {
@@ -101,12 +101,7 @@ class SynopsisParser {
 				$value .= "{$rendered_arg} ";
 			}
 		}
-		$rendered = '';
-		foreach ( $bits as $v ) {
-			if ( ! empty( $v ) ) {
-				$rendered .= $v;
-			}
-		}
+		$rendered = implode( '', $bits );
 
 		$synopsis = array_merge(
 			$reordered_synopsis['positional'],
@@ -143,7 +138,8 @@ class SynopsisParser {
 
 			$value = substr( $token, strlen( $matches[0] ) );
 
-			// substr returns false <= PHP 5.6, and '' PHP 7+
+			// substr can return false <= PHP 8.0.
+			// @phpstan-ignore identical.alwaysFalse
 			if ( false === $value || '' === $value ) {
 				$param['type'] = 'flag';
 			} else {

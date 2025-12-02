@@ -4,6 +4,7 @@ namespace WP_CLI\Context;
 
 use WP_CLI;
 use WP_CLI\Context;
+use WP_CLI\Fetchers\User;
 use WP_Session_Tokens;
 
 /**
@@ -39,12 +40,33 @@ final class Admin implements Context {
 
 		// Bootstrap the WordPress administration area.
 		WP_CLI::add_wp_hook(
-			'init',
-			function () {
-				$this->log_in_as_admin_user();
-				$this->load_admin_environment();
+			'plugins_loaded',
+			function () use ( $config ) {
+				if ( isset( $config['user'] ) ) {
+					$fetcher       = new User();
+					$user          = $fetcher->get_check( $config['user'] );
+					$admin_user_id = $user->ID;
+				} else {
+					// TODO: Add logic to find an administrator user.
+					$admin_user_id = 1;
+				}
+
+				/**
+				 * @var int<1, max> $admin_user_id
+				 */
+
+				$this->log_in_as_admin_user( $admin_user_id );
 			},
 			defined( 'PHP_INT_MIN' ) ? PHP_INT_MIN : -2147483648, // phpcs:ignore PHPCompatibility.Constants.NewConstants.php_int_minFound
+			0
+		);
+
+		WP_CLI::add_wp_hook(
+			'wp_loaded',
+			function () {
+				$this->load_admin_environment();
+			},
+			defined( 'PHP_INT_MAX' ) ? PHP_INT_MAX : 2147483648, // phpcs:ignore PHPCompatibility.Constants.NewConstants.php_int_maxFound
 			0
 		);
 	}
@@ -56,12 +78,11 @@ final class Admin implements Context {
 	 * A lot of premium plugins/themes have their custom update routines locked
 	 * behind an is_admin() call.
 	 *
+	 * @param int<1, max> $admin_user_id to log in as
+	 *
 	 * @return void
 	 */
-	private function log_in_as_admin_user() {
-		// TODO: Add logic to find an administrator user.
-		$admin_user_id = 1;
-
+	private function log_in_as_admin_user( $admin_user_id ): void {
 		wp_set_current_user( $admin_user_id );
 
 		$expiration = time() + DAY_IN_SECONDS;
@@ -88,9 +109,12 @@ final class Admin implements Context {
 	 * To make this work across WordPress versions, we use the actual file and
 	 * modify it on-the-fly.
 	 *
-	 * @return void
+	 * @global string $hook_suffix
+	 * @global string $pagenow
+	 * @global int    $wp_db_version
+	 * @global array  $_wp_submenu_nopriv
 	 */
-	private function load_admin_environment() {
+	private function load_admin_environment(): void {
 		global $hook_suffix, $pagenow, $wp_db_version, $_wp_submenu_nopriv;
 
 		if ( ! isset( $hook_suffix ) ) {
@@ -99,7 +123,12 @@ final class Admin implements Context {
 
 		// Make sure we don't trigger a DB upgrade as that tries to redirect
 		// the page.
-		$wp_db_version = (int) get_option( 'db_version' ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		/**
+		 * @var string $wp_db_version
+		 */
+		$wp_db_version = get_option( 'db_version' ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$wp_db_version = (int) $wp_db_version; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		// Ensure WP does not iterate over an undefined variable in
 		// `user_can_access_admin_page()`.
@@ -107,20 +136,20 @@ final class Admin implements Context {
 			$_wp_submenu_nopriv = []; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		}
 
-		$admin_php_file = file_get_contents( ABSPATH . 'wp-admin/admin.php' );
+		$admin_php_file = (string) file_get_contents( ABSPATH . 'wp-admin/admin.php' );
 
 		// First we remove the opening and closing PHP tags.
-		$admin_php_file = preg_replace( '/^<\?php\s+/', '', $admin_php_file );
-		$admin_php_file = preg_replace( '/\s+\?>$/', '', $admin_php_file );
+		$admin_php_file = (string) preg_replace( '/^<\?php\s+/', '', $admin_php_file );
+		$admin_php_file = (string) preg_replace( '/\s+\?>$/', '', $admin_php_file );
 
 		// Then we remove the loading of either wp-config.php or wp-load.php.
-		$admin_php_file = preg_replace( '/^\s*(?:include|require).*[\'"]\/?wp-(?:load|config)\.php[\'"]\s*\)?;$/m', '', $admin_php_file );
+		$admin_php_file = (string) preg_replace( '/^\s*(?:include|require).*[\'"]\/?wp-(?:load|config)\.php[\'"]\s*\)?;\s*$/m', '', $admin_php_file );
 
 		// We also remove the authentication redirect.
-		$admin_php_file = preg_replace( '/^\s*auth_redirect\(\);$/m', '', $admin_php_file );
+		$admin_php_file = (string) preg_replace( '/^\s*auth_redirect\(\);$/m', '', $admin_php_file );
 
 		// Finally, we avoid sending headers.
-		$admin_php_file   = preg_replace( '/^\s*nocache_headers\(\);$/m', '', $admin_php_file );
+		$admin_php_file   = (string) preg_replace( '/^\s*nocache_headers\(\);$/m', '', $admin_php_file );
 		$_GET['noheader'] = true;
 
 		eval( $admin_php_file ); // phpcs:ignore Squiz.PHP.Eval.Discouraged

@@ -1,15 +1,19 @@
 <?php
 
 use WP_CLI\Tests\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
-require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
+class CommandFactoryTest extends TestCase {
 
-class CommandFactoryTests extends TestCase {
+	public static function set_up_before_class() {
+		require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
+	}
 
 	/**
 	 * @dataProvider dataProviderExtractLastDocComment
 	 */
-	public function testExtractLastDocComment( $content, $expected ) {
+	#[DataProvider( 'dataProviderExtractLastDocComment' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testExtractLastDocComment( $content, $expected ): void {
 		// Save and set test env var.
 		$is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
 		putenv( 'WP_CLI_TEST_IS_WINDOWS=0' );
@@ -17,7 +21,9 @@ class CommandFactoryTests extends TestCase {
 		static $extract_last_doc_comment = null;
 		if ( null === $extract_last_doc_comment ) {
 			$extract_last_doc_comment = new \ReflectionMethod( 'WP_CLI\Dispatcher\CommandFactory', 'extract_last_doc_comment' );
-			$extract_last_doc_comment->setAccessible( true );
+			if ( PHP_VERSION_ID < 80100 ) {
+				$extract_last_doc_comment->setAccessible( true );
+			}
 		}
 
 		$actual = $extract_last_doc_comment->invoke( null, $content );
@@ -30,7 +36,8 @@ class CommandFactoryTests extends TestCase {
 	/**
 	 * @dataProvider dataProviderExtractLastDocComment
 	 */
-	public function testExtractLastDocCommentWin( $content, $expected ) {
+	#[DataProvider( 'dataProviderExtractLastDocComment' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testExtractLastDocCommentWin( $content, $expected ): void {
 		// Save and set test env var.
 		$is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
 		putenv( 'WP_CLI_TEST_IS_WINDOWS=1' );
@@ -38,7 +45,9 @@ class CommandFactoryTests extends TestCase {
 		static $extract_last_doc_comment = null;
 		if ( null === $extract_last_doc_comment ) {
 			$extract_last_doc_comment = new \ReflectionMethod( 'WP_CLI\Dispatcher\CommandFactory', 'extract_last_doc_comment' );
-			$extract_last_doc_comment->setAccessible( true );
+			if ( PHP_VERSION_ID < 80100 ) {
+				$extract_last_doc_comment->setAccessible( true );
+			}
 		}
 
 		$actual = $extract_last_doc_comment->invoke( null, $content );
@@ -48,7 +57,7 @@ class CommandFactoryTests extends TestCase {
 		putenv( false === $is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$is_windows" );
 	}
 
-	public function dataProviderExtractLastDocComment() {
+	public static function dataProviderExtractLastDocComment(): array {
 		return [
 			[ '', false ],
 			[ '*/', false ],
@@ -80,17 +89,19 @@ class CommandFactoryTests extends TestCase {
 		];
 	}
 
-	public function testGetDocComment() {
+	public function testGetDocComment(): void {
 		// Save and set test env var.
-		$get_doc_comment = getenv( 'WP_CLI_TEST_GET_DOC_COMMENT' );
-		$is_windows      = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
+		$_get_doc_comment = getenv( 'WP_CLI_TEST_GET_DOC_COMMENT' );
+		$_is_windows      = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
 
 		putenv( 'WP_CLI_TEST_GET_DOC_COMMENT=1' );
 		putenv( 'WP_CLI_TEST_IS_WINDOWS=0' );
 
 		// Make private function accessible.
 		$get_doc_comment = new \ReflectionMethod( 'WP_CLI\Dispatcher\CommandFactory', 'get_doc_comment' );
-		$get_doc_comment->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$get_doc_comment->setAccessible( true );
+		}
 
 		if ( ! class_exists( 'CommandFactoryTests_Get_Doc_Comment_1_Command', false ) ) {
 			require __DIR__ . '/data/commandfactory-doc_comment-class.php';
@@ -99,15 +110,16 @@ class CommandFactoryTests extends TestCase {
 			require __DIR__ . '/data/commandfactory-doc_comment-class-win.php';
 		}
 
-		// Class 1
+		// Class 1.
 
+		// @phpstan-ignore argument.type
 		$reflection = new \ReflectionClass( 'CommandFactoryTests_Get_Doc_Comment_1_Command' );
 		$expected   = $reflection->getDocComment();
 
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 1
+		// Class method 1.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command', 'command1' );
 		$expected   = $reflection->getDocComment();
@@ -115,7 +127,7 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 2
+		// Class method 2.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command', 'command2' );
 		$expected   = $reflection->getDocComment();
@@ -123,7 +135,7 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 3
+		// Class method 3.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command', 'command3' );
 		$expected   = $reflection->getDocComment();
@@ -131,7 +143,7 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 4
+		// Class method 4.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command', 'command4' );
 		$expected   = $reflection->getDocComment();
@@ -140,15 +152,16 @@ class CommandFactoryTests extends TestCase {
 		$this->assertSame( $expected, $actual );
 		$this->assertFalse( $actual );
 
-		// Class 1 Windows
+		// Class 1 Windows.
 
+		// @phpstan-ignore argument.type
 		$reflection = new \ReflectionClass( 'CommandFactoryTests_Get_Doc_Comment_1_Command_Win' );
 		$expected   = $reflection->getDocComment();
 
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 1
+		// Class method 1.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command_Win', 'command1' );
 		$expected   = $reflection->getDocComment();
@@ -156,7 +169,7 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 2
+		// Class method 2.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command_Win', 'command2' );
 		$expected   = $reflection->getDocComment();
@@ -164,7 +177,7 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 3
+		// Class method 3.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command_Win', 'command3' );
 		$expected   = $reflection->getDocComment();
@@ -172,7 +185,7 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 4
+		// Class method 4.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command_Win', 'command4' );
 		$expected   = $reflection->getDocComment();
@@ -181,15 +194,16 @@ class CommandFactoryTests extends TestCase {
 		$this->assertSame( $expected, $actual );
 		$this->assertFalse( $actual );
 
-		// Class 2
+		// Class 2.
 
+		// @phpstan-ignore argument.type
 		$reflection = new \ReflectionClass( 'CommandFactoryTests_Get_Doc_Comment_2_Command' );
 		$expected   = $reflection->getDocComment();
 
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 1
+		// Class method 1.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_2_Command', 'command1' );
 		$expected   = $reflection->getDocComment();
@@ -198,15 +212,16 @@ class CommandFactoryTests extends TestCase {
 		$this->assertSame( $expected, $actual );
 		$this->assertFalse( $actual );
 
-		// Class 2 Windows
+		// Class 2 Windows.
 
+		// @phpstan-ignore argument.type
 		$reflection = new \ReflectionClass( 'CommandFactoryTests_Get_Doc_Comment_2_Command_Win' );
 		$expected   = $reflection->getDocComment();
 
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 1
+		// Class method 1.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_2_Command_Win', 'command1' );
 		$expected   = $reflection->getDocComment();
@@ -215,11 +230,11 @@ class CommandFactoryTests extends TestCase {
 		$this->assertSame( $expected, $actual );
 		$this->assertFalse( $actual );
 
-		// Functions
+		// Functions.
 
 		require __DIR__ . '/data/commandfactory-doc_comment-function.php';
 
-		// Function 1
+		// Function 1.
 
 		$reflection = new \ReflectionFunction( 'commandfactorytests_get_doc_comment_func_1' );
 		$expected   = $reflection->getDocComment();
@@ -227,7 +242,7 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Function 2
+		// Function 2.
 
 		$reflection = new \ReflectionFunction( 'commandfactorytests_get_doc_comment_func_2' );
 		$expected   = $reflection->getDocComment();
@@ -235,8 +250,9 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Function 3
+		// Function 3.
 
+		// @phpstan-ignore variable.undefined
 		$reflection = new \ReflectionFunction( $commandfactorytests_get_doc_comment_func_3 );
 		$expected   = $reflection->getDocComment();
 
@@ -244,21 +260,23 @@ class CommandFactoryTests extends TestCase {
 		$this->assertSame( $expected, $actual );
 
 		// Restore.
-		putenv( false === $get_doc_comment ? 'WP_CLI_TEST_GET_DOC_COMMENT' : "WP_CLI_TEST_GET_DOC_COMMENT=$get_doc_comment" );
-		putenv( false === $is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$is_windows" );
+		putenv( false === $_get_doc_comment ? 'WP_CLI_TEST_GET_DOC_COMMENT' : "WP_CLI_TEST_GET_DOC_COMMENT=$_get_doc_comment" );
+		putenv( false === $_is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$_is_windows" );
 	}
 
-	public function testGetDocCommentWin() {
+	public function testGetDocCommentWin(): void {
 		// Save and set test env var.
-		$get_doc_comment = getenv( 'WP_CLI_TEST_GET_DOC_COMMENT' );
-		$is_windows      = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
+		$_get_doc_comment = getenv( 'WP_CLI_TEST_GET_DOC_COMMENT' );
+		$_is_windows      = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
 
 		putenv( 'WP_CLI_TEST_GET_DOC_COMMENT=1' );
 		putenv( 'WP_CLI_TEST_IS_WINDOWS=1' );
 
 		// Make private function accessible.
 		$get_doc_comment = new \ReflectionMethod( 'WP_CLI\Dispatcher\CommandFactory', 'get_doc_comment' );
-		$get_doc_comment->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$get_doc_comment->setAccessible( true );
+		}
 
 		if ( ! class_exists( 'CommandFactoryTests_Get_Doc_Comment_1_Command', false ) ) {
 			require __DIR__ . '/data/commandfactory-doc_comment-class.php';
@@ -267,15 +285,16 @@ class CommandFactoryTests extends TestCase {
 			require __DIR__ . '/data/commandfactory-doc_comment-class-win.php';
 		}
 
-		// Class 1
+		// Class 1.
 
+		// @phpstan-ignore argument.type
 		$reflection = new \ReflectionClass( 'CommandFactoryTests_Get_Doc_Comment_1_Command' );
 		$expected   = $reflection->getDocComment();
 
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 1
+		// Class method 1.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command', 'command1' );
 		$expected   = $reflection->getDocComment();
@@ -283,7 +302,7 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 2
+		// Class method 2.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command', 'command2' );
 		$expected   = $reflection->getDocComment();
@@ -291,7 +310,7 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 3
+		// Class method 3.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command', 'command3' );
 		$expected   = $reflection->getDocComment();
@@ -299,7 +318,7 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 4
+		// Class method 4.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command', 'command4' );
 		$expected   = $reflection->getDocComment();
@@ -308,15 +327,16 @@ class CommandFactoryTests extends TestCase {
 		$this->assertSame( $expected, $actual );
 		$this->assertFalse( $actual );
 
-		// Class 1 Windows
+		// Class 1 Windows.
 
+		// @phpstan-ignore argument.type
 		$reflection = new \ReflectionClass( 'CommandFactoryTests_Get_Doc_Comment_1_Command_Win' );
 		$expected   = $reflection->getDocComment();
 
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 1
+		// Class method 1.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command_Win', 'command1' );
 		$expected   = $reflection->getDocComment();
@@ -324,7 +344,7 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 2
+		// Class method 2.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command_Win', 'command2' );
 		$expected   = $reflection->getDocComment();
@@ -332,7 +352,7 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 3
+		// Class method 3.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command_Win', 'command3' );
 		$expected   = $reflection->getDocComment();
@@ -340,7 +360,7 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 4
+		// Class method 4.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_1_Command_Win', 'command4' );
 		$expected   = $reflection->getDocComment();
@@ -349,15 +369,16 @@ class CommandFactoryTests extends TestCase {
 		$this->assertSame( $expected, $actual );
 		$this->assertFalse( $actual );
 
-		// Class 2
+		// Class 2.
 
+		// @phpstan-ignore argument.type
 		$reflection = new \ReflectionClass( 'CommandFactoryTests_Get_Doc_Comment_2_Command' );
 		$expected   = $reflection->getDocComment();
 
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 1
+		// Class method 1.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_2_Command', 'command1' );
 		$expected   = $reflection->getDocComment();
@@ -366,15 +387,16 @@ class CommandFactoryTests extends TestCase {
 		$this->assertSame( $expected, $actual );
 		$this->assertFalse( $actual );
 
-		// Class 2 Windows
+		// Class 2 Windows.
 
+		// @phpstan-ignore argument.type
 		$reflection = new \ReflectionClass( 'CommandFactoryTests_Get_Doc_Comment_2_Command_Win' );
 		$expected   = $reflection->getDocComment();
 
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Class method 1
+		// Class method 1.
 
 		$reflection = new \ReflectionMethod( 'CommandFactoryTests_Get_Doc_Comment_2_Command_Win', 'command1' );
 		$expected   = $reflection->getDocComment();
@@ -383,11 +405,11 @@ class CommandFactoryTests extends TestCase {
 		$this->assertSame( $expected, $actual );
 		$this->assertFalse( $actual );
 
-		// Functions
+		// Functions.
 
 		require __DIR__ . '/data/commandfactory-doc_comment-function-win.php';
 
-		// Function 1 Windows
+		// Function 1 Windows.
 
 		$reflection = new \ReflectionFunction( 'commandfactorytests_get_doc_comment_func_1_win' );
 		$expected   = $reflection->getDocComment();
@@ -395,7 +417,7 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Function 2
+		// Function 2.
 
 		$reflection = new \ReflectionFunction( 'commandfactorytests_get_doc_comment_func_2_win' );
 		$expected   = $reflection->getDocComment();
@@ -403,8 +425,9 @@ class CommandFactoryTests extends TestCase {
 		$actual = $get_doc_comment->invoke( null, $reflection );
 		$this->assertSame( $expected, $actual );
 
-		// Function 3
+		// Function 3.
 
+		// @phpstan-ignore variable.undefined
 		$reflection = new \ReflectionFunction( $commandfactorytests_get_doc_comment_func_3_win );
 		$expected   = $reflection->getDocComment();
 
@@ -412,7 +435,7 @@ class CommandFactoryTests extends TestCase {
 		$this->assertSame( $expected, $actual );
 
 		// Restore.
-		putenv( false === $get_doc_comment ? 'WP_CLI_TEST_GET_DOC_COMMENT' : "WP_CLI_TEST_GET_DOC_COMMENT=$get_doc_comment" );
-		putenv( false === $is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$is_windows" );
+		putenv( false === $_get_doc_comment ? 'WP_CLI_TEST_GET_DOC_COMMENT' : "WP_CLI_TEST_GET_DOC_COMMENT=$_get_doc_comment" );
+		putenv( false === $_is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$_is_windows" );
 	}
 }
