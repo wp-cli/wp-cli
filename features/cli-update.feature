@@ -5,7 +5,7 @@ Feature: CLI Update
     When I try `wp cli update`
 
     Then STDOUT should be empty
-    Then STDERR should contain:
+    And STDERR should contain:
       """
       Error: You can only self-update Phar files.
       """
