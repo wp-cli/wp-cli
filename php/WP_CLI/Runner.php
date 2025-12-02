@@ -456,24 +456,30 @@ class Runner {
 
 					if ( 'none' !== $autocorrect ) {
 						if ( 'help' === $suggestion ) {
+							// This was a typo suggestion for a help command, so find command without 'help'
+							// and then prepend 'help' again for the corrected command.
 							$suggested_command_to_run = $this->find_command_to_run( $args, 'auto' );
 							if ( is_array( $suggested_command_to_run ) ) {
 								$this->arguments = array_merge( [ $suggestion ], $args );
 
-								$suggested_command_to_run = $this->find_command_to_run( array_merge( [ $suggestion ], $args ), 'auto' );
+								$suggested_command_to_run = $this->find_command_to_run( $this->arguments, 'auto' );
 							}
 						}
 
 						if ( ! isset( $suggested_command_to_run ) || ! is_array( $suggested_command_to_run ) ) {
 							$suggested_command_to_run = $this->find_command_to_run( array_merge( [ $suggestion ], $args ), 'auto' );
 
-							$this->arguments = $suggested_command_to_run[2];
+							if ( is_array( $suggested_command_to_run ) ) {
+								$this->arguments = $suggested_command_to_run[2];
+							}
 						}
 
 						if ( ! is_array( $suggested_command_to_run ) ) {
 							$suggested_command_to_run = $this->find_command_to_run( [ $suggestion ], 'auto' );
 
-							$this->arguments = $suggested_command_to_run[2];
+							if ( is_array( $suggested_command_to_run ) ) {
+								$this->arguments = $suggested_command_to_run[2];
+							}
 						}
 
 						if ( is_array( $suggested_command_to_run ) ) {
@@ -1302,7 +1308,8 @@ class Runner {
 
 		$this->do_early_invoke( 'before_wp_load' );
 
-		// Second try in case a misspelled command was corrected.
+		// Second try at showing man page - in case a misspelled command was corrected
+		// in do_early_invoke -> find_command_to_run.
 		if ( $this->cmd_starts_with( [ 'help' ] )
 			&& ( ! $this->wp_exists()
 				|| ! Utils\locate_wp_config()
