@@ -193,3 +193,62 @@ Feature: Context handling via --context global flag
       """
       true
       """
+
+  Scenario: Admin context can be configured to run as a specific user
+    Given a WP install
+    When I run `wp user create editor editor@example.com --role=editor --porcelain`
+    And save STDOUT as {EDITOR_ID}
+    Given a wp-cli.yml file:
+      """
+      user: editor
+      """
+    And a test.php file:
+      """
+      <?php
+      function init_cb() {
+          echo "User ID in init: ";
+          echo get_current_user_id() . "\n";
+      }
+      WP_CLI::add_wp_hook( 'init', 'init_cb' );
+
+      function admin_init_cb() {
+          echo "User ID in admin_init: ";
+          echo get_current_user_id() . "\n";
+      }
+      WP_CLI::add_wp_hook( 'admin_init', 'admin_init_cb' );
+      """
+
+    # There might be PHP warnings due to `header()` calls from
+    # `send_frame_options_header()` and `wp_admin_headers()`.
+    When I try `wp --require=test.php --context=admin eval ''`
+    Then the return code should be 0
+    And STDOUT should contain:
+      """
+      User ID in init: {EDITOR_ID}
+      User ID in admin_init: {EDITOR_ID}
+      """
+
+  Scenario: Admin context throws an error for a non-existent user
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      user: non_existent_user
+      """
+    And a test.php file:
+      """
+      <?php
+      function plugins_loaded_cb() {
+          echo "Before init";
+      }
+      WP_CLI::add_wp_hook( 'plugins_loaded', 'plugins_loaded_cb', PHP_INT_MAX );
+      """
+    When I try `wp --require=test.php --context=admin eval 'echo get_current_user_id();'`
+    Then the return code should be 1
+    And STDOUT should not contain:
+      """
+      Before init
+      """
+    And STDERR should contain:
+      """
+      Error: Invalid user ID, email or login: 'non_existent_user'
+      """
