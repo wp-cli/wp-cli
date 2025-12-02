@@ -1683,12 +1683,12 @@ function get_php_binary() {
  *
  * @access public
  *
- * @param string                $cmd            Command to execute.
- * @param array<resource>       $descriptorspec Indexed array of descriptor numbers and their values.
- * @param array<int, resource> &$pipes         Indexed array of file pointers that correspond to PHP's end of any pipes that are created.
- * @param string                $cwd            Initial working directory for the command.
- * @param array<string, string> $env            Array of environment variables.
- * @param array<string>         $other_options  Array of additional options (Windows only).
+ * @param string                            $cmd            Command to execute.
+ * @param array<int, list<string>|resource> $descriptorspec Indexed array of descriptor numbers and their values.
+ * @param array<int, resource>              &$pipes         Indexed array of file pointers that correspond to PHP's end of any pipes that are created.
+ * @param string                            $cwd            Initial working directory for the command.
+ * @param array<string, string>             $env            Array of environment variables.
+ * @param array<string>                     $other_options  Array of additional options (Windows only).
  * @return resource|false Command stripped of any environment variable settings, or false on failure.
  *
  * @param-out array<int, resource> $pipes
