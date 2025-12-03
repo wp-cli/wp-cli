@@ -142,7 +142,8 @@ class WpHttpCacheManager {
 			try {
 				$phar = new \PharData( $file );
 				// Accessing the file list ensures it can be read.
-				if ( empty( iterator_to_array( $phar ) ) ) {
+				$iterator = $phar->getIterator();
+				if ( ! $iterator->valid() ) {
 					return false;
 				}
 			} catch ( \Exception $e ) {
