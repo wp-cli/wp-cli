@@ -446,7 +446,8 @@ class FileCache {
 			);
 
 			foreach ( $iterator as $file ) {
-				if ( $file instanceof SplFileInfo && $file->isFile() ) {
+				// Match Symfony Finder behavior: skip symlinks (Finder doesn't follow them by default).
+				if ( $file instanceof SplFileInfo && $file->isFile() && ! $file->isLink() ) {
 					$files[] = $file;
 				}
 			}
