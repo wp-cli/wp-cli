@@ -227,6 +227,71 @@ Feature: Prompt user for input
       Created category
       """
 
+  Scenario: Prompt should mask sensitive argument values
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * Test that sensitive arguments are masked in output.
+       *
+       * ## OPTIONS
+       *
+       * [--username=<value>]
+       * : A username.
+       *
+       * [--password=<value>]
+       * : A password that should be masked.
+       * ---
+       * sensitive: true
+       * ---
+       *
+       * [--api-key=<value>]
+       * : An API key that should be masked.
+       * ---
+       * sensitive: true
+       * ---
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'test-sensitive', function( $args, $assoc_args ) {
+        WP_CLI::line( 'username: ' . ( isset( $assoc_args['username'] ) ? $assoc_args['username'] : 'none' ) );
+        WP_CLI::line( 'password: ' . ( isset( $assoc_args['password'] ) ? $assoc_args['password'] : 'none' ) );
+        WP_CLI::line( 'api-key: ' . ( isset( $assoc_args['api-key'] ) ? $assoc_args['api-key'] : 'none' ) );
+      } );
+      """
+    And a value-file file:
+      """
+      admin
+      secretpassword123
+      myapikey456
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `wp test-sensitive --prompt < value-file`
+    Then the return code should be 0
+    And STDERR should be empty
+    And STDOUT should contain:
+      """
+      username: admin
+      """
+    And STDOUT should contain:
+      """
+      password: secretpassword123
+      """
+    And STDOUT should contain:
+      """
+      api-key: myapikey456
+      """
+    And STDOUT should contain:
+      """
+      wp test-sensitive --username='admin' --password='[REDACTED]' --api-key='[REDACTED]'
+      """
+
   Scenario: Flag prompt should accept Y for yes
     Given an empty directory
     And a cmd.php file:
@@ -355,3 +420,4 @@ Feature: Prompt user for input
       """
       Hello World
       """
+
