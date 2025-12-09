@@ -901,14 +901,19 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		try {
 			return $request_method( $url, $headers, $data, $method, $options );
 		} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
-			/**
-			 * @var \CurlHandle $curl_handle
-			 */
 			$curl_handle = $exception->getData();
+			// Get curl error code safely - only if curl is available and handle is valid.
+			$curl_errno = null;
+			if ( function_exists( 'curl_errno' ) && ( is_resource( $curl_handle ) || ( is_object( $curl_handle ) && $curl_handle instanceof \CurlHandle ) ) ) {
+				$curl_errno = curl_errno( $curl_handle );
+			}
+			// CURLE_SSL_CACERT = 60
+			$is_ssl_cacert_error = null !== $curl_errno && 60 === $curl_errno;
+
 			if (
 				true !== $options['verify']
 				|| 'curlerror' !== $exception->getType()
-				|| curl_errno( $curl_handle ) !== CURLE_SSL_CACERT
+				|| ! $is_ssl_cacert_error
 			) {
 				throw $exception;
 			}
@@ -918,16 +923,21 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 			return $request_method( $url, $headers, $data, $method, $options );
 		}
 	} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
-		/**
-		 * @var \CurlHandle $curl_handle
-		 */
 		$curl_handle = $exception->getData();
+		// Get curl error code safely - only if curl is available and handle is valid.
+		$curl_errno = null;
+		if ( function_exists( 'curl_errno' ) && ( is_resource( $curl_handle ) || ( is_object( $curl_handle ) && $curl_handle instanceof \CurlHandle ) ) ) {
+			$curl_errno = curl_errno( $curl_handle );
+		}
+		// CURLE_SSL_CONNECT_ERROR = 35, CURLE_SSL_CERTPROBLEM = 58, CURLE_SSL_CACERT_BADFILE = 77
+		$is_ssl_error = null !== $curl_errno && in_array( $curl_errno, [ 35, 58, 77 ], true );
+
 		if (
 			! $insecure
 			||
 			'curlerror' !== $exception->getType()
 			||
-			! in_array( curl_errno( $curl_handle ), [ CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, CURLE_SSL_CACERT_BADFILE ], true )
+			! $is_ssl_error
 		) {
 			$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $exception->getMessage() );
 			if ( $halt_on_error ) {
