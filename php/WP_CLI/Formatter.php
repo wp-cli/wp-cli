@@ -371,6 +371,13 @@ class Formatter {
 				} elseif ( is_array( $item ) ) {
 					$item[ $true_field ] = json_encode( $value );
 				}
+			} elseif ( is_bool( $value ) ) {
+				// Convert boolean to string representation for table/CSV display
+				if ( is_object( $item ) ) {
+					$item->$true_field = $value ? '1' : '0';
+				} elseif ( is_array( $item ) ) {
+					$item[ $true_field ] = $value ? '1' : '0';
+				}
 			}
 		}
 		return $item;
