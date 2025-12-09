@@ -267,6 +267,30 @@ function is_path_absolute( $path ) {
 }
 
 /**
+ * Expand tilde (~) in path to home directory.
+ *
+ * Expands paths that start with ~ to the current user's home directory.
+ * Only handles the current user's home directory (not ~username patterns).
+ *
+ * @param string $path Path that may contain a tilde.
+ * @return string Path with tilde expanded to home directory, or unchanged if tilde not at start or followed by username.
+ */
+function expand_tilde_path( $path ) {
+	// Check if path starts with tilde
+	if ( isset( $path[0] ) && '~' === $path[0] ) {
+		$home = get_home_dir();
+		// Only expand if we can determine the home directory
+		// Handle both "~" and "~/..." patterns (but not "~username")
+		if ( ! empty( $home ) && ( 1 === strlen( $path ) || '/' === $path[1] ) ) {
+			$path = $home . substr( $path, 1 );
+		}
+		// If followed by anything other than '/', or home is empty, leave it unchanged
+	}
+
+	return $path;
+}
+
+/**
  * Composes positional arguments into a command string.
  *
  * @param array<string> $args Positional arguments to compose.
@@ -280,9 +304,10 @@ function args_to_str( $args ) {
  * Composes associative arguments into a command string.
  *
  * @param array<string, array<int, string>|string|true|int> $assoc_args Associative arguments to compose.
+ * @param array<string> $sensitive_args Optional. Array of argument keys that should be masked.
  * @return string
  */
-function assoc_args_to_str( $assoc_args ) {
+function assoc_args_to_str( $assoc_args, $sensitive_args = [] ) {
 	$str = '';
 
 	foreach ( $assoc_args as $key => $value ) {
@@ -293,9 +318,13 @@ function assoc_args_to_str( $assoc_args ) {
 				$str .= assoc_args_to_str(
 					[
 						$key => $v,
-					]
+					],
+					$sensitive_args
 				);
 			}
+		} elseif ( in_array( $key, $sensitive_args, true ) ) {
+			// Mask the value if this is a sensitive argument
+			$str .= " --$key=" . escapeshellarg( '[REDACTED]' );
 		} else {
 			$str .= " --$key=" . escapeshellarg( (string) $value );
 		}
