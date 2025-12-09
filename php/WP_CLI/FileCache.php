@@ -437,6 +437,10 @@ class FileCache {
 		}
 
 		try {
+			// Match Symfony Finder behavior: do not follow symlinks.
+			// We explicitly do NOT include FilesystemIterator::FOLLOW_SYMLINKS flag.
+			// This prevents the iterator from traversing into symlinked directories.
+			// We also filter out symlink files themselves with !isLink() check.
 			$iterator = new RecursiveIteratorIterator(
 				new RecursiveDirectoryIterator(
 					$this->root,
@@ -446,7 +450,6 @@ class FileCache {
 			);
 
 			foreach ( $iterator as $file ) {
-				// Match Symfony Finder behavior: skip symlinks (Finder doesn't follow them by default).
 				if ( $file instanceof SplFileInfo && $file->isFile() && ! $file->isLink() ) {
 					$files[] = $file;
 				}
