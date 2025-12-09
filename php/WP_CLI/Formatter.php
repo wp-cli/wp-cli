@@ -356,7 +356,11 @@ class Formatter {
 	}
 
 	/**
-	 * Transforms objects and arrays to JSON as necessary
+	 * Transforms item values for string-based output formats (table/CSV).
+	 *
+	 * Converts complex types to strings:
+	 * - Objects and arrays are converted to JSON strings
+	 * - Booleans are converted to "1" or "0"
 	 *
 	 * @param array|object $item
 	 * @return mixed
