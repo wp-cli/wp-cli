@@ -1143,7 +1143,17 @@ class WP_CLI {
 	public static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
 		Utils\check_proc_available( 'launch' );
 
-		$proc    = Process::create( $command );
+		// Forward environment variables when available so child processes can still
+		// read DB_* (and other) values via getenv() / $_ENV in wp-config.php.
+		$env = $_ENV;
+
+		if ( ! empty( $env ) ) {
+			$proc = Process::create( $command, null, $env );
+		} else {
+			// Fallback to previous behavior if no environment array is available.
+			$proc = Process::create( $command );
+		}
+
 		$results = $proc->run();
 
 		if ( -1 === $results->return_code ) {
