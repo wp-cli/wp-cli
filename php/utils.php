@@ -2029,12 +2029,74 @@ function get_mysql_version() {
 }
 
 /**
+ * Determine which SQL dump binary should be used for export operations.
+ *
+ * This helper allows environments to override the dump binary used by WP-CLI
+ * by defining the `WP_CLI_MYSQLDUMP` environment variable.
+ *
+ * Behaviour:
+ * - If `WP_CLI_MYSQLDUMP` is set to an absolute path, it will be used only
+ *   when the file exists and is executable.
+ * - If the variable is set to a bare command name (e.g., "mysqldump"),
+ *   WP-CLI will defer to the system `PATH` resolver without further checks.
+ * - If the variable is not set or unusable, WP-CLI falls back to:
+ *      • `mariadb-dump` on MariaDB systems
+ *      • `mysqldump` otherwise
+ *
+ * Examples:
+ *     # Use a specific absolute path
+ *     WP_CLI_MYSQLDUMP=/usr/local/bin/mysqldump wp db export
+ *
+ *     # Force mysqldump even on MariaDB systems
+ *     WP_CLI_MYSQLDUMP=mysqldump wp db export
+ *
+ * @return string The executable (binary or absolute path) to use for SQL dump operations.
+ */
+function get_mysql_dump_binary() {
+	$env = getenv( 'WP_CLI_MYSQLDUMP' );
+
+	// Honour explicit override when provided.
+	if ( is_string( $env ) && '' !== $env ) {
+
+		// Absolute path override: only trust when executable.
+		if ( is_path_absolute( $env ) ) {
+			if ( is_executable( $env ) ) {
+				WP_CLI::debug( sprintf(
+					'Using dump command from WP_CLI_MYSQLDUMP: %s',
+					$env
+				), 'db' );
+
+				return $env;
+			}
+		} else {
+			// Command name override: allow system PATH resolution.
+			WP_CLI::debug( sprintf(
+				'Using dump command from WP_CLI_MYSQLDUMP via PATH: %s',
+				$env
+			), 'db' );
+
+			return $env;
+		}
+	}
+
+	// Fallback: detect DB type and choose the appropriate default binary.
+	$binary = ( 'mariadb' === get_db_type() ) ? 'mariadb-dump' : 'mysqldump';
+
+	WP_CLI::debug( sprintf(
+		'Final MySQL command: %s',
+		$binary
+	), 'db' );
+
+	return $binary;
+}
+
+/**
  * Returns the correct `dump` command based on the detected database type.
  *
  * @return string The appropriate dump command.
  */
 function get_sql_dump_command() {
-	return 'mariadb' === get_db_type() ? 'mariadb-dump' : 'mysqldump';
+	return get_mysql_dump_binary();
 }
 
 /**
