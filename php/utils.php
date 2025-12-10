@@ -267,6 +267,30 @@ function is_path_absolute( $path ) {
 }
 
 /**
+ * Expand tilde (~) in path to home directory.
+ *
+ * Expands paths that start with ~ to the current user's home directory.
+ * Only handles the current user's home directory (not ~username patterns).
+ *
+ * @param string $path Path that may contain a tilde.
+ * @return string Path with tilde expanded to home directory, or unchanged if tilde not at start or followed by username.
+ */
+function expand_tilde_path( $path ) {
+	// Check if path starts with tilde
+	if ( isset( $path[0] ) && '~' === $path[0] ) {
+		$home = get_home_dir();
+		// Only expand if we can determine the home directory
+		// Handle both "~" and "~/..." patterns (but not "~username")
+		if ( ! empty( $home ) && ( 1 === strlen( $path ) || '/' === $path[1] ) ) {
+			$path = $home . substr( $path, 1 );
+		}
+		// If followed by anything other than '/', or home is empty, leave it unchanged
+	}
+
+	return $path;
+}
+
+/**
  * Composes positional arguments into a command string.
  *
  * @param array<string> $args Positional arguments to compose.
@@ -280,9 +304,10 @@ function args_to_str( $args ) {
  * Composes associative arguments into a command string.
  *
  * @param array<string, array<int, string>|string|true|int> $assoc_args Associative arguments to compose.
+ * @param array<string> $sensitive_args Optional. Array of argument keys that should be masked.
  * @return string
  */
-function assoc_args_to_str( $assoc_args ) {
+function assoc_args_to_str( $assoc_args, $sensitive_args = [] ) {
 	$str = '';
 
 	foreach ( $assoc_args as $key => $value ) {
@@ -293,9 +318,13 @@ function assoc_args_to_str( $assoc_args ) {
 				$str .= assoc_args_to_str(
 					[
 						$key => $v,
-					]
+					],
+					$sensitive_args
 				);
 			}
+		} elseif ( in_array( $key, $sensitive_args, true ) ) {
+			// Mask the value if this is a sensitive argument
+			$str .= " --$key=" . escapeshellarg( '[REDACTED]' );
 		} else {
 			$str .= " --$key=" . escapeshellarg( (string) $value );
 		}
@@ -811,47 +840,9 @@ function replace_path_consts( $source, $path ) {
 }
 
 /**
- * Check if an HTTP exception is a transient error that should be retried.
- *
- * @param \Requests_Exception|\WpOrg\Requests\Exception $exception The exception to check.
- * @return bool True if the error is transient and should be retried.
- */
-function is_transient_http_error( $exception ) {
-	// Check if it's a curl error.
-	if ( 'curlerror' !== $exception->getType() ) {
-		return false;
-	}
-
-	$curl_handle = $exception->getData();
-	if ( ! is_resource( $curl_handle ) && ! $curl_handle instanceof \CurlHandle ) {
-		return false;
-	}
-
-	/**
-	 * @var \CurlHandle $curl_handle
-	 */
-	$curl_errno = curl_errno( $curl_handle );
-
-	// List of curl error codes that are considered transient.
-	// These are typically network-related errors that may succeed on retry.
-	$transient_curl_errors = [
-		CURLE_OPERATION_TIMEDOUT,   // 28 - Operation timeout.
-		CURLE_COULDNT_RESOLVE_HOST, // 6 - Couldn't resolve host.
-		CURLE_COULDNT_CONNECT,      // 7 - Failed to connect to host.
-		CURLE_PARTIAL_FILE,         // 18 - Transferred a partial file.
-		CURLE_GOT_NOTHING,          // 52 - Server returned nothing.
-		CURLE_SEND_ERROR,           // 55 - Failed sending network data.
-		CURLE_RECV_ERROR,           // 56 - Failure in receiving network data.
-	];
-
-	return in_array( $curl_errno, $transient_curl_errors, true );
-}
-
-/**
  * Make a HTTP request to a remote URL.
  *
  * Wraps the Requests HTTP library to ensure every request includes a cert.
- * Automatically retries on transient failures (timeouts, connection issues).
  *
  * ```
  * # `wp core download` verifies the hash for a downloaded WordPress archive
@@ -877,6 +868,7 @@ function is_transient_http_error( $exception ) {
  *                               or string absolute path to CA cert to use.
  *                               Defaults to detected CA cert bundled with the Requests library.
  *     @type bool $insecure      Whether to retry automatically without certificate validation.
+ *     @type int  $max_retries   Maximum number of retries of failed requests. Default 3.
  * }
  * @return \Requests_Response|Response
  * @throws RuntimeException If the request failed.
@@ -887,7 +879,7 @@ function is_transient_http_error( $exception ) {
 function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
-	$max_retries   = 3;
+	$max_retries   = isset( $options['max_retries'] ) ? (int) $options['max_retries'] : 3;
 	unset( $options['halt_on_error'] );
 
 	if ( ! isset( $options['verify'] ) ) {
@@ -913,19 +905,24 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 
 	while ( $attempt <= $max_retries ) {
 		++$attempt;
-
 		try {
 			try {
 				return $request_method( $url, $headers, $data, $method, $options );
 			} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
-				/**
-				 * @var \CurlHandle $curl_handle
-				 */
 				$curl_handle = $exception->getData();
+				// Get curl error code safely - only if curl is available and handle is valid.
+				$curl_errno = null;
+				if ( function_exists( 'curl_errno' ) && ( is_resource( $curl_handle ) || ( is_object( $curl_handle ) && $curl_handle instanceof \CurlHandle ) ) ) {
+					// @phpstan-ignore argument.type
+					$curl_errno = curl_errno( $curl_handle );
+				}
+				// CURLE_SSL_CACERT = 60
+				$is_ssl_cacert_error = null !== $curl_errno && 60 === $curl_errno;
+
 				if (
 					true !== $options['verify']
 					|| 'curlerror' !== $exception->getType()
-					|| curl_errno( $curl_handle ) !== CURLE_SSL_CACERT
+					|| ! $is_ssl_cacert_error
 				) {
 					throw $exception;
 				}
@@ -935,21 +932,29 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 				return $request_method( $url, $headers, $data, $method, $options );
 			}
 		} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
-			/**
-			 * @var \CurlHandle $curl_handle
-			 */
 			$curl_handle = $exception->getData();
+			// Get curl error code safely - only if curl is available and handle is valid.
+			$curl_errno = null;
+			if ( function_exists( 'curl_errno' ) && ( is_resource( $curl_handle ) || ( is_object( $curl_handle ) && $curl_handle instanceof \CurlHandle ) ) ) {
+				// @phpstan-ignore argument.type
+				$curl_errno = curl_errno( $curl_handle );
+			}
+			// CURLE_SSL_CONNECT_ERROR = 35, CURLE_SSL_CERTPROBLEM = 58, CURLE_SSL_CACERT_BADFILE = 77
+			$is_ssl_error = null !== $curl_errno && in_array( $curl_errno, [ 35, 58, 77 ], true );
+
+			// CURLE_COULDNT_RESOLVE_HOST = 6, CURLE_COULDNT_CONNECT = 7, CURLE_PARTIAL_FILE = 18
+			// CURLE_OPERATION_TIMEDOUT = 28, CURLE_GOT_NOTHING = 52, CURLE_SEND_ERROR = 55, CURLE_RECV_ERROR = 56
+			$is_transient_error = null !== $curl_errno && in_array( $curl_errno, [ 6, 7, 18, 28, 52, 55, 56 ], true );
+
 			if (
 				! $insecure
 				||
 				'curlerror' !== $exception->getType()
 				||
-				! in_array( curl_errno( $curl_handle ), [ CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, CURLE_SSL_CACERT_BADFILE ], true )
+				! $is_ssl_error
 			) {
 				// Check if this is a transient error that should be retried.
-				$is_retryable = is_transient_http_error( $exception );
-
-				if ( ! $is_retryable || $attempt > $max_retries ) {
+				if ( ! $is_transient_error || $attempt > $max_retries ) {
 					$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $exception->getMessage() );
 					if ( $halt_on_error ) {
 						WP_CLI::error( $error_msg );
@@ -959,7 +964,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 
 				// Store exception and retry.
 				$last_exception = $exception;
-				WP_CLI::debug( sprintf( 'Retrying HTTP request to %s (attempt %d/%d) after transient error: %s', $url, $attempt, $max_retries + 1, $exception->getMessage() ), 'http' );
+				WP_CLI::debug( sprintf( 'Retrying HTTP request to %s (retry %d/%d) after transient error: %s', $url, $attempt - 1, $max_retries, $exception->getMessage() ), 'http' );
 				sleep( $retry_after_delay );
 				$retry_after_delay = min( $retry_after_delay * 2, 10 ); // Exponential backoff, max 10 seconds.
 				continue;

@@ -327,6 +327,47 @@ class UtilsTest extends TestCase {
 		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
 	}
 
+	public function testAssocArgsToStringWithSensitiveArgs(): void {
+		// Strip quotes for Windows compat.
+		$strip_quotes = function ( $str ) {
+			return str_replace( [ '"', "'" ], '', $str );
+		};
+
+		// Test with sensitive arguments masked
+		$expected       = " --username='admin' --password='[REDACTED]' --api-key='[REDACTED]' --debug";
+		$input          = [
+			'username' => 'admin',
+			'password' => 'secretpassword123',
+			'api-key'  => 'myapikey456',
+			'debug'    => true,
+		];
+		$sensitive_args = [ 'password', 'api-key' ];
+		$actual         = Utils\assoc_args_to_str( $input, $sensitive_args );
+		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
+
+		// Verify sensitive values are not present in output
+		$this->assertStringNotContainsString( 'secretpassword123', $actual );
+		$this->assertStringNotContainsString( 'myapikey456', $actual );
+
+		// Verify non-sensitive values are present
+		$this->assertStringContainsString( 'admin', $actual );
+
+		// Test with array values in sensitive arguments
+		$expected       = " --username='admin' --token='[REDACTED]' --token='[REDACTED]'";
+		$input          = [
+			'username' => 'admin',
+			'token'    => [
+				'token1',
+				'token2',
+			],
+		];
+		$sensitive_args = [ 'token' ];
+		$actual         = Utils\assoc_args_to_str( $input, $sensitive_args );
+		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
+		$this->assertStringNotContainsString( 'token1', $actual );
+		$this->assertStringNotContainsString( 'token2', $actual );
+	}
+
 	public function testMysqlHostToCLIArgs(): void {
 		// Test hostname only, with and without 'p:' modifier.
 		$expected = [
@@ -1114,52 +1155,20 @@ class UtilsTest extends TestCase {
 		];
 	}
 
-	public function testIsTransientHttpError(): void {
-		if ( ! extension_loaded( 'curl' ) ) {
-			$this->markTestSkipped( 'curl not available' );
-		}
+	public function testExpandTildePath(): void {
+		$home = Utils\get_home_dir();
 
-		// Test timeout error (CURLE_OPERATION_TIMEDOUT = 28).
-		$curl_handle = curl_init();
-		curl_setopt( $curl_handle, CURLOPT_URL, 'https://example.com' );
-		curl_setopt( $curl_handle, CURLOPT_TIMEOUT_MS, 1 ); // Very short timeout to force timeout.
-		curl_setopt( $curl_handle, CURLOPT_RETURNTRANSFER, true );
-		curl_exec( $curl_handle );
-		$curl_errno = curl_errno( $curl_handle );
+		// Test tilde expansion for home directory
+		$this->assertEquals( $home, Utils\expand_tilde_path( '~' ) );
 
-		// Create a mock exception with the curl handle.
-		$exception = $this->createMockRequestsException( 'curlerror', $curl_handle );
+		// Test tilde expansion with subdirectory
+		$this->assertEquals( $home . '/sites/wordpress', Utils\expand_tilde_path( '~/sites/wordpress' ) );
 
-		// Only test if we actually got a timeout error.
-		if ( CURLE_OPERATION_TIMEDOUT === $curl_errno ) {
-			$this->assertTrue( Utils\is_transient_http_error( $exception ) );
-		}
+		// Test that paths without tilde are unchanged
+		$this->assertEquals( '/absolute/path', Utils\expand_tilde_path( '/absolute/path' ) );
+		$this->assertEquals( 'relative/path', Utils\expand_tilde_path( 'relative/path' ) );
 
-		// Don't call curl_close if PHP 8.5+ as it's deprecated.
-		if ( PHP_VERSION_ID < 80500 ) {
-			// phpcs:ignore PHPCompatibility.FunctionUse.RemovedFunctions.curl_closeDeprecated
-			curl_close( $curl_handle );
-		}
-	}
-
-	/**
-	 * Create a mock Requests exception.
-	 *
-	 * @param string      $type        Exception type.
-	 * @param \CurlHandle $curl_handle Curl handle.
-	 * @return \WpOrg\Requests\Exception Mock exception.
-	 */
-	private function createMockRequestsException( $type, $curl_handle ) {
-		$exception = $this->getMockBuilder( '\WpOrg\Requests\Exception' )
-			->disableOriginalConstructor()
-			->getMock();
-
-		$exception->method( 'getType' )
-			->willReturn( $type );
-
-		$exception->method( 'getData' )
-			->willReturn( $curl_handle );
-
-		return $exception;
+		// Test that tilde in the middle is not expanded
+		$this->assertEquals( '/path/to/~something', Utils\expand_tilde_path( '/path/to/~something' ) );
 	}
 }
