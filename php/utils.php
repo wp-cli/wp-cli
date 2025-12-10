@@ -2058,34 +2058,52 @@ function get_mysql_dump_binary() {
 	// Honour explicit override when provided.
 	if ( is_string( $env ) && '' !== $env ) {
 
-		// Absolute path override: only trust when executable.
-		if ( is_path_absolute( $env ) ) {
-			if ( is_executable( $env ) ) {
-				WP_CLI::debug( sprintf(
-					'Using dump command from WP_CLI_MYSQLDUMP: %s',
+		// Command name override: allow system PATH resolution.
+		if ( ! is_path_absolute( $env ) ) {
+			WP_CLI::debug(
+				sprintf(
+					'Using dump command from WP_CLI_MYSQLDUMP via PATH: %s',
 					$env
-				), 'db' );
-
-				return $env;
-			}
-		} else {
-			// Command name override: allow system PATH resolution.
-			WP_CLI::debug( sprintf(
-				'Using dump command from WP_CLI_MYSQLDUMP via PATH: %s',
-				$env
-			), 'db' );
+				),
+				'db'
+			);
 
 			return $env;
 		}
+
+		// Absolute path override: only trust when executable.
+		if ( is_executable( $env ) ) {
+			WP_CLI::debug(
+				sprintf(
+					'Using dump command from WP_CLI_MYSQLDUMP: %s',
+					$env
+				),
+				'db'
+			);
+
+			return $env;
+		}
+
+		// Absolute path but not executable → log skip so users know why it was ignored.
+		WP_CLI::debug(
+			sprintf(
+				'Ignoring non-executable dump command from WP_CLI_MYSQLDUMP: %s',
+				$env
+			),
+			'db'
+		);
 	}
 
 	// Fallback: detect DB type and choose the appropriate default binary.
 	$binary = ( 'mariadb' === get_db_type() ) ? 'mariadb-dump' : 'mysqldump';
 
-	WP_CLI::debug( sprintf(
-		'Final MySQL command: %s',
-		$binary
-	), 'db' );
+	WP_CLI::debug(
+		sprintf(
+			'Using default dump command: %s',
+			$binary
+		),
+		'db'
+	);
 
 	return $binary;
 }
