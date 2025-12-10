@@ -1148,10 +1148,11 @@ class WP_CLI {
 		$env = $_ENV;
 
 		if ( ! empty( $env ) ) {
+			// Explicit env array, child process inherits only these entries.
 			$proc = Process::create( $command, null, $env );
 		} else {
-			// Fallback to previous behavior if no environment array is available.
-			$proc = Process::create( $command );
+			// $_ENV is empty → use null to inherit full parent environment.
+			$proc = Process::create( $command, null, null );
 		}
 
 		$results = $proc->run();
