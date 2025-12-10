@@ -905,6 +905,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 			// Get curl error code safely - only if curl is available and handle is valid.
 			$curl_errno = null;
 			if ( function_exists( 'curl_errno' ) && ( is_resource( $curl_handle ) || ( is_object( $curl_handle ) && $curl_handle instanceof \CurlHandle ) ) ) {
+				// @phpstan-ignore argument.type
 				$curl_errno = curl_errno( $curl_handle );
 			}
 			// CURLE_SSL_CACERT = 60
@@ -927,6 +928,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		// Get curl error code safely - only if curl is available and handle is valid.
 		$curl_errno = null;
 		if ( function_exists( 'curl_errno' ) && ( is_resource( $curl_handle ) || ( is_object( $curl_handle ) && $curl_handle instanceof \CurlHandle ) ) ) {
+			// @phpstan-ignore argument.type
 			$curl_errno = curl_errno( $curl_handle );
 		}
 		// CURLE_SSL_CONNECT_ERROR = 35, CURLE_SSL_CERTPROBLEM = 58, CURLE_SSL_CACERT_BADFILE = 77
