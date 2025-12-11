@@ -195,7 +195,33 @@ class Runner {
 	 * @return string|false
 	 */
 	public function get_system_config_path() {
-		$config_path = '/etc/wp-cli/config.yml';
+		// Allow override via environment variable
+		$env_path = getenv( 'WP_CLI_SYSTEM_SETTINGS_PATH' );
+		if ( $env_path ) {
+			$config_path                    = $env_path;
+			$this->system_config_path_debug = 'Using system config from WP_CLI_SYSTEM_SETTINGS_PATH env var: ' . $config_path;
+			if ( is_readable( $config_path ) ) {
+				return $config_path;
+			}
+			$this->system_config_path_debug = 'System config path from WP_CLI_SYSTEM_SETTINGS_PATH not readable: ' . $config_path;
+			return false;
+		}
+
+		// Determine default path based on OS
+		if ( Utils\is_windows() ) {
+			// Windows: C:\ProgramData\wp-cli\config.yml
+			$program_data = getenv( 'ProgramData' );
+			if ( ! $program_data ) {
+				$program_data = 'C:\ProgramData';
+			}
+			$config_path = $program_data . '\wp-cli\config.yml';
+		} elseif ( 'Darwin' === PHP_OS ) {
+			// macOS: /Library/Application Support/WP-CLI/config.yml
+			$config_path = '/Library/Application Support/WP-CLI/config.yml';
+		} else {
+			// Linux and others: /etc/wp-cli/config.yml
+			$config_path = '/etc/wp-cli/config.yml';
+		}
 
 		if ( is_readable( $config_path ) ) {
 			$this->system_config_path_debug = 'Using system config: ' . $config_path;
