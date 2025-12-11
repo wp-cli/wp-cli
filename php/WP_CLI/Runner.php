@@ -1832,15 +1832,15 @@ class Runner {
 			}
 			foreach ( $plugins as $a => $b ) {
 				// active_sitewide_plugins stores plugin name as the key.
-				if ( false !== strpos( current_filter(), 'active_sitewide_plugins' ) && Utils\is_plugin_skipped( $a ) ) {
+				if ( false !== strpos( (string) current_filter(), 'active_sitewide_plugins' ) && Utils\is_plugin_skipped( $a ) ) {
 					unset( $plugins[ $a ] );
 					// active_plugins stores plugin name as the value.
-				} elseif ( false !== strpos( current_filter(), 'active_plugins' ) && Utils\is_plugin_skipped( $b ) ) {
+				} elseif ( false !== strpos( (string) current_filter(), 'active_plugins' ) && Utils\is_plugin_skipped( $b ) ) {
 					unset( $plugins[ $a ] );
 				}
 			}
 			// Reindex because active_plugins expects a numeric index.
-			if ( false !== strpos( current_filter(), 'active_plugins' ) ) {
+			if ( false !== strpos( (string) current_filter(), 'active_plugins' ) ) {
 				$plugins = array_values( $plugins );
 			}
 			return $plugins;
@@ -1882,7 +1882,7 @@ class Runner {
 			$checked_value = $value;
 			// Always check against the stylesheet value
 			// This ensures a child theme can be skipped when template differs
-			if ( false !== stripos( current_filter(), 'option_template' ) ) {
+			if ( false !== stripos( (string) current_filter(), 'option_template' ) ) {
 				$checked_value = get_option( 'stylesheet' );
 			}
 
