@@ -1159,8 +1159,8 @@ class WP_CLI {
 		// Get the first relevant frame (where the error/halt was called from).
 		if ( isset( $backtrace[ $skip_frames ] ) ) {
 			$frame = $backtrace[ $skip_frames ];
-			$file  = isset( $frame['file'] ) ? $frame['file'] : 'unknown';
-			$line  = isset( $frame['line'] ) ? $frame['line'] : 'unknown';
+			$file  = $frame['file'] ?? 'unknown';
+			$line  = $frame['line'] ?? 'unknown';
 
 			self::debug( "Script called exit from: {$file}:{$line}", 'bootstrap' );
 
@@ -1175,11 +1175,11 @@ class WP_CLI {
 				$func  = $frame['function'];
 
 				if ( isset( $frame['class'] ) ) {
-					$func = $frame['class'] . ( isset( $frame['type'] ) ? $frame['type'] : '::' ) . $func;
+					$func = $frame['class'] . ( $frame['type'] ?? '::' ) . $func;
 				}
 
-				$file = isset( $frame['file'] ) ? $frame['file'] : 'unknown';
-				$line = isset( $frame['line'] ) ? $frame['line'] : '?';
+				$file = $frame['file'] ?? 'unknown';
+				$line = $frame['line'] ?? '?';
 
 				$backtrace_output[] = "  #{$frame_count} {$func}() called at [{$file}:{$line}]";
 				++$frame_count;
