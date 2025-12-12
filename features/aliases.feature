@@ -713,3 +713,37 @@ Feature: Create shortcuts to specific WordPress installs
       """
       ${env.NONEXISTENT_VAR}
       """
+
+  Scenario: View aliases without environment variable interpolation using --raw flag
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @dev:
+        user: ${env.TEST_WP_USER}
+        path: ${env.TEST_WP_PATH}
+      @prod:
+        ssh: ${env.SSH_USER}@${env.SSH_HOST}:${env.SSH_PATH}
+      """
+
+    When I run `TEST_WP_USER=admin TEST_WP_PATH=foo wp cli alias get @dev --raw`
+    Then STDOUT should be:
+      """
+      user: ${env.TEST_WP_USER}
+      path: ${env.TEST_WP_PATH}
+      """
+
+    When I run `SSH_USER=admin SSH_HOST=example.com SSH_PATH=/var/www wp cli alias get @prod --raw`
+    Then STDOUT should be:
+      """
+      ssh: ${env.SSH_USER}@${env.SSH_HOST}:${env.SSH_PATH}
+      """
+
+    When I run `wp cli alias list --raw --format=json`
+    Then STDOUT should contain:
+      """
+      ${env.TEST_WP_USER}
+      """
+    And STDOUT should contain:
+      """
+      ${env.SSH_USER}
+      """

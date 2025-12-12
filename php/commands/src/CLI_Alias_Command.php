@@ -18,6 +18,18 @@ use WP_CLI\Utils;
  * Environment variables can be used in alias definitions using the syntax `${env.VARIABLE_NAME}`.
  * This allows you to centralize configuration in environment variables or .env files.
  *
+ * ## SECURITY CONSIDERATIONS
+ *
+ * When environment variables are used in aliases, their interpolated values will appear in command
+ * output (e.g., `wp cli alias list` or `wp cli alias get`). If you have sensitive data in environment
+ * variables (such as passwords or API keys), be aware that these values may be exposed in:
+ *
+ * - Terminal output when listing or viewing aliases
+ * - Log files if command output is redirected
+ * - Shell history if used in command arguments
+ *
+ * To view aliases without interpolating environment variables, use the `--raw` flag.
+ *
  * ## EXAMPLES
  *
  *     # List alias information.
@@ -53,6 +65,9 @@ use WP_CLI\Utils;
  *     $ export PROD_USER=myuser PROD_HOST=example.com PROD_PATH=/var/www PROD_WP_USER=admin
  *     $ wp @prod option get home
  *
+ *     # View aliases without environment variable interpolation.
+ *     $ wp cli alias list --raw
+ *
  * @package wp-cli
  * @when    before_wp_load
  */
@@ -73,6 +88,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *   - var_export
 	 * ---
 	 *
+	 * [--raw]
+	 * : Display aliases without interpolating environment variables.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # List all available aliases.
@@ -87,13 +105,18 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *       - @prod
 	 *       - @dev
 	 *
+	 *     # List aliases without environment variable interpolation.
+	 *     $ wp cli alias list --raw
+	 *
 	 * @subcommand list
 	 *
 	 * @param array                 $args      Positional arguments. Unused.
-	 * @param array{format: string} $assoc_args Associative arguments.
+	 * @param array{format: string, raw?: bool} $assoc_args Associative arguments.
 	 */
 	public function list_( $args, $assoc_args ) {
-		WP_CLI::print_value( WP_CLI::get_runner()->aliases, $assoc_args );
+		$raw     = Utils\get_flag_value( $assoc_args, 'raw', false );
+		$aliases = $raw ? WP_CLI::get_runner()->raw_aliases : WP_CLI::get_runner()->aliases;
+		WP_CLI::print_value( $aliases, $assoc_args );
 	}
 
 	/**
@@ -104,18 +127,27 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * <key>
 	 * : Key for the alias.
 	 *
+	 * [--raw]
+	 * : Display alias without interpolating environment variables.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Get alias.
 	 *     $ wp cli alias get @prod
 	 *     ssh: dev@somedeve.env:12345/home/dev/
 	 *
+	 *     # Get alias without environment variable interpolation.
+	 *     $ wp cli alias get @prod --raw
+	 *     ssh: ${env.PROD_USER}@${env.PROD_HOST}:${env.PROD_PATH}
+	 *
 	 * @param array{string} $args Positional arguments.
+	 * @param array{raw?: bool} $assoc_args Associative arguments.
 	 */
-	public function get( $args ) {
+	public function get( $args, $assoc_args = [] ) {
 		list( $alias ) = $args;
 
-		$aliases = WP_CLI::get_runner()->aliases;
+		$raw     = Utils\get_flag_value( $assoc_args, 'raw', false );
+		$aliases = $raw ? WP_CLI::get_runner()->raw_aliases : WP_CLI::get_runner()->aliases;
 
 		if ( empty( $aliases[ $alias ] ) ) {
 			WP_CLI::error( "No alias found with key '{$alias}'." );
