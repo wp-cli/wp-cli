@@ -751,3 +751,75 @@ Feature: Have a config file
     When I run `wp core version`
     Then STDOUT should not be empty
     And the return code should be 0
+
+  Scenario: Custom system config path via WP_CLI_SYSTEM_SETTINGS_PATH
+    Given an empty directory
+    And a system-config.yml file:
+      """
+      disabled_commands:
+        - eval
+      """
+    And a test-cmd.php file:
+      """
+      <?php
+      $command = function( $_, $assoc_args ) {
+         echo json_encode( $assoc_args );
+      };
+      WP_CLI::add_command( 'test-cmd', $command, array( 'when' => 'before_wp_load' ) );
+      """
+
+    When I run `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml wp --require=test-cmd.php test-cmd --debug`
+    Then STDERR should contain:
+      """
+      Using system config from WP_CLI_SYSTEM_SETTINGS_PATH env var:
+      """
+    And STDERR should contain:
+      """
+      system-config.yml
+      """
+
+    When I try `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml wp eval 'echo "test";'`
+    Then STDERR should contain:
+      """
+      Error: The 'eval' command has been disabled from the config file.
+      """
+
+  Scenario: System config with aliases via WP_CLI_SYSTEM_SETTINGS_PATH
+    Given an empty directory
+    And a system-config.yml file:
+      """
+      @system-alias:
+        ssh: user@example.com/var/www
+      """
+
+    When I run `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml wp cli alias list`
+    Then STDOUT should contain:
+      """
+      @system-alias:
+      """
+    And STDOUT should contain:
+      """
+      ssh: user@example.com/var/www
+      """
+
+  Scenario: System config overridden by user config
+    Given an empty directory
+    And a system-config.yml file:
+      """
+      disabled_commands:
+        - eval
+      """
+    And a user-config.yml file:
+      """
+      disabled_commands:
+        - eval-file
+      """
+
+    When I try `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml WP_CLI_CONFIG_PATH=user-config.yml wp eval 'echo "test";'`
+    Then the return code should be 0
+
+    When I try `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml WP_CLI_CONFIG_PATH=user-config.yml wp eval-file test.php`
+    Then STDERR should contain:
+      """
+      Error: The 'eval-file' command has been disabled from the config file.
+      """
