@@ -57,6 +57,14 @@ class Completions {
 			}
 		}
 
+		// Check if we're trying to complete a flag value (e.g., --format=<cursor>)
+		if ( preg_match( '/^--([a-z-_0-9]+)=(.*)$/i', $this->cur_word, $matches ) ) {
+			$param_name  = $matches[1];
+			$param_value = $matches[2];
+			$this->add_param_values( $command, $param_name, $param_value );
+			return;
+		}
+
 		if ( $command->can_have_subcommands() ) {
 			// Add completion when command is `wp` and alias isn't set.
 			if ( 'wp' === $command->get_name() && false === $is_alias && false === $is_help ) {
@@ -110,7 +118,7 @@ class Completions {
 	 *
 	 * @param array $words Individual input line words.
 	 *
-	 * @return array|mixed Array with command and arguments, or error result if command detection failed.
+	 * @return array{0: \WP_CLI\Dispatcher\CompositeCommand, 1: array, 2: array}|string Array with command, args, and assoc_args on success; error string on failure.
 	 */
 	private function get_command( $words ) {
 		$positional_args = [];
@@ -134,6 +142,10 @@ class Completions {
 		if ( ! is_array( $r ) && array_pop( $positional_args ) === $this->cur_word ) {
 			$r = WP_CLI::get_runner()->find_command_to_run( $positional_args );
 		}
+
+		/**
+		 * @var array{0: \WP_CLI\Dispatcher\CompositeCommand, 1: array, 2: array}|string $r
+		 */
 
 		if ( ! is_array( $r ) ) {
 			return $r;
@@ -172,6 +184,51 @@ class Completions {
 		}
 
 		return $params;
+	}
+
+	/**
+	 * Add parameter values to completions if the parameter has defined options.
+	 *
+	 * Extracts enum options from the command's PHPdoc YAML blocks using DocParser.
+	 * If options are found, they are filtered by the partial value and added to completions.
+	 *
+	 * @param \WP_CLI\Dispatcher\CompositeCommand $command Command object.
+	 * @param string                               $param_name Parameter name.
+	 * @param string                               $param_value Current partial value.
+	 */
+	private function add_param_values( $command, $param_name, $param_value ) {
+		$options = [];
+
+		// First, try to get options from the command's documentation
+		$longdesc = $command->get_longdesc();
+		if ( $longdesc ) {
+			$parser     = new DocParser( $longdesc );
+			$param_args = $parser->get_param_args( $param_name );
+
+			if ( $param_args && isset( $param_args['options'] ) ) {
+				$options = $param_args['options'];
+			}
+		}
+
+		// If no options found in command doc, check global parameters
+		if ( empty( $options ) ) {
+			$global_params = WP_CLI::get_configurator()->get_spec();
+			if ( isset( $global_params[ $param_name ]['enum'] ) ) {
+				$options = $global_params[ $param_name ]['enum'];
+			}
+		}
+
+		if ( empty( $options ) ) {
+			return;
+		}
+
+		// Add each option as a completion
+		foreach ( $options as $option ) {
+			// Check if the option matches the current partial value
+			if ( '' === $param_value || 0 === strpos( (string) $option, $param_value ) ) {
+				$this->opts[] = $option . ' ';
+			}
+		}
 	}
 
 	/**
