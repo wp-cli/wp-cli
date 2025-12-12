@@ -1188,6 +1188,10 @@ class Runner {
 
 		$script_path = $GLOBALS['argv'][0];
 
+		$wp_cli_config_path = (string) getenv( 'WP_CLI_CONFIG_PATH' );
+
+		if ( $wp_cli_config_path ) {
+			$config_path = $wp_cli_config_path;
 		} else {
 			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
 		}
