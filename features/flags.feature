@@ -48,6 +48,24 @@ Feature: Global flags
       Error: Site 'invalid.example.com' not found. Verify `--url=<url>` matches an existing site.
       """
 
+  Scenario: Malformed URL with typo in protocol
+    Given a WP installation
+
+    When I try `wp eval 'echo "test";' --url=http:/example.com`
+    Then STDERR should contain:
+      """
+      Warning: The URL 'http:/example.com' does not appear to be valid.
+      """
+
+  Scenario: URL with typo in scheme
+    Given a WP installation
+
+    When I try `wp eval 'echo "test";' --url=htp://example.com`
+    Then STDERR should contain:
+      """
+      Warning: The URL 'htp://example.com' has an unrecognized scheme 'htp'.
+      """
+
   Scenario: Quiet run
     Given a WP installation
 
