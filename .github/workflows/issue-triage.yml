@@ -1,0 +1,18 @@
+---
+name: Issue Triage
+
+'on':
+  issues:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to triage (leave empty to process all)'
+        required: false
+        type: string
+
+jobs:
+  issue-triage:
+    uses: wp-cli/.github/.github/workflows/reusable-issue-triage.yml@main
+    with:
+      issue_number: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }}
