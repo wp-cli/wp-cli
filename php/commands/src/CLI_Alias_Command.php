@@ -220,7 +220,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		// When adding new aliases, normalize the key (no @ prefix)
 		$normalized_alias = $this->normalize_alias( $alias );
-		
+
 		if ( null === $grouping ) {
 			$aliases = $this->build_aliases( $aliases, $normalized_alias, $assoc_args, false );
 		} else {
@@ -543,7 +543,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	private function validate_alias_type( $aliases, $alias, $assoc_args, $grouping ) {
 
 		$alias_data = $aliases[ $alias ];
-		
+
 		// Handle null or non-array data
 		if ( ! is_array( $alias_data ) ) {
 			$alias_data = [];
@@ -594,7 +594,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 	/**
 	 * Find the actual key used for an alias in YAML data.
-	 * 
+	 *
 	 * Handles both @foo format and aliases: { foo: } format.
 	 *
 	 * @param array  $yaml_data The raw YAML data.
@@ -603,44 +603,20 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 */
 	private function find_alias_key( $yaml_data, $alias ) {
 		$normalized = $this->normalize_alias( $alias );
-		
+
 		// Check for @foo format
 		$at_key = '@' . $normalized;
 		if ( array_key_exists( $at_key, $yaml_data ) ) {
 			return $at_key;
 		}
-		
+
 		// Check for aliases: { foo: } format
 		if ( isset( $yaml_data['aliases'] ) && is_array( $yaml_data['aliases'] ) ) {
 			if ( array_key_exists( $normalized, $yaml_data['aliases'] ) ) {
 				return $normalized;
 			}
 		}
-		
-		return null;
-	}
 
-	/**
-	 * Get alias data from YAML, handling both @foo and aliases: formats.
-	 *
-	 * @param array  $yaml_data The raw YAML data.
-	 * @param string $alias     The alias name (with or without @).
-	 * @return array|null       The alias data, or null if not found.
-	 */
-	private function get_alias_from_yaml( $yaml_data, $alias ) {
-		$normalized = $this->normalize_alias( $alias );
-		
-		// Check for @foo format
-		$at_key = '@' . $normalized;
-		if ( isset( $yaml_data[ $at_key ] ) ) {
-			return $yaml_data[ $at_key ];
-		}
-		
-		// Check for aliases: { foo: } format
-		if ( isset( $yaml_data['aliases'][ $normalized ] ) ) {
-			return $yaml_data['aliases'][ $normalized ];
-		}
-		
 		return null;
 	}
 }
