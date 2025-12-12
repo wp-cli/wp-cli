@@ -258,7 +258,7 @@ class FileCache {
 			// Sort files by accessed time (newest first)
 			usort(
 				$files,
-				function ( $a, $b ) {
+				static function ( $a, $b ) {
 					return $b->getATime() <=> $a->getATime();
 				}
 			);
@@ -311,7 +311,7 @@ class FileCache {
 		// Sort files by name
 		usort(
 			$cache_files,
-			function ( $a, $b ) {
+			static function ( $a, $b ) {
 				return strcmp( $a->getFilename(), $b->getFilename() );
 			}
 		);
@@ -359,7 +359,7 @@ class FileCache {
 			// Sort files: prefer version comparison if available, otherwise use mtime.
 			usort(
 				$files,
-				function ( $a, $b ) {
+				static function ( $a, $b ) {
 					// If both have version strings, use version_compare().
 					if ( null !== $a['version'] && null !== $b['version'] ) {
 						$cmp = version_compare( $b['version'], $a['version'] );
