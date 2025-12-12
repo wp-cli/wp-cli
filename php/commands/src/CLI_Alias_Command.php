@@ -213,14 +213,18 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$this->validate_input( $assoc_args, $grouping );
 
-		if ( isset( $aliases[ $alias ] ) ) {
-			WP_CLI::error( "Key '{$alias}' exists already." );
+		$existing_key = $this->find_alias_key( $aliases, $alias );
+		if ( null !== $existing_key ) {
+			WP_CLI::error( "Key '@" . $this->normalize_alias( $alias ) . "' exists already." );
 		}
 
+		// When adding new aliases, normalize the key (no @ prefix)
+		$normalized_alias = $this->normalize_alias( $alias );
+		
 		if ( null === $grouping ) {
-			$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, false );
+			$aliases = $this->build_aliases( $aliases, $normalized_alias, $assoc_args, false );
 		} else {
-			$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, true, $grouping );
+			$aliases = $this->build_aliases( $aliases, $normalized_alias, $assoc_args, true, $grouping );
 		}
 
 		$this->process_aliases( $aliases, $alias, $config_path, 'Added' );
@@ -265,11 +269,12 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$this->validate_config_file( $config_path );
 
-		if ( empty( $aliases[ $alias ] ) ) {
-			WP_CLI::error( "No alias found with key '{$alias}'." );
+		$alias_key = $this->find_alias_key( $aliases, $alias );
+		if ( null === $alias_key ) {
+			WP_CLI::error( "No alias found with key '@" . $this->normalize_alias( $alias ) . "'." );
 		}
 
-		unset( $aliases[ $alias ] );
+		unset( $aliases[ $alias_key ] );
 		$this->process_aliases( $aliases, $alias, $config_path, 'Deleted' );
 	}
 
@@ -336,14 +341,15 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$this->validate_input( $assoc_args, $grouping );
 
-		if ( empty( $aliases[ $alias ] ) ) {
-			WP_CLI::error( "No alias found with key '{$alias}'." );
+		$alias_key = $this->find_alias_key( $aliases, $alias );
+		if ( null === $alias_key ) {
+			WP_CLI::error( "No alias found with key '@" . $this->normalize_alias( $alias ) . "'." );
 		}
 
 		if ( null === $grouping ) {
-			$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, false, '', true );
+			$aliases = $this->build_aliases( $aliases, $alias_key, $assoc_args, false, '', true );
 		} else {
-			$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, true, $grouping, true );
+			$aliases = $this->build_aliases( $aliases, $alias_key, $assoc_args, true, $grouping, true );
 		}
 
 		$this->process_aliases( $aliases, $alias, $config_path, 'Updated' );
@@ -415,11 +421,11 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			$aliases     = $project_aliases;
 		} else {
 
-			$is_global_alias  = array_key_exists( $alias, $global_aliases );
-			$is_project_alias = array_key_exists( $alias, $project_aliases );
+			$is_global_alias  = null !== $this->find_alias_key( $global_aliases, $alias );
+			$is_project_alias = null !== $this->find_alias_key( $project_aliases, $alias );
 
 			if ( $is_global_alias && $is_project_alias ) {
-				WP_CLI::error( "Key '{$alias}' found in more than one path. Please pass --config param." );
+				WP_CLI::error( "Key '@" . $this->normalize_alias( $alias ) . "' found in more than one path. Please pass --config param." );
 			} elseif ( $is_global_alias ) {
 				$config_path = $global_config_path;
 				$aliases     = $global_aliases;
@@ -537,6 +543,11 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	private function validate_alias_type( $aliases, $alias, $assoc_args, $grouping ) {
 
 		$alias_data = $aliases[ $alias ];
+		
+		// Handle null or non-array data
+		if ( ! is_array( $alias_data ) ) {
+			$alias_data = [];
+		}
 
 		$group_aliases_match = preg_grep( '/^@(\w+)/i', $alias_data );
 		$arg_match           = preg_grep( '/^set-(\w+)/i', array_keys( $assoc_args ) );
@@ -579,5 +590,57 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		// Remove the @ prefix if present for storage
 		// See: https://github.com/wp-cli/wp-cli/issues/5391
 		return ltrim( $alias, '@' );
+	}
+
+	/**
+	 * Find the actual key used for an alias in YAML data.
+	 * 
+	 * Handles both @foo format and aliases: { foo: } format.
+	 *
+	 * @param array  $yaml_data The raw YAML data.
+	 * @param string $alias     The alias name (with or without @).
+	 * @return string|null      The actual key in YAML, or null if not found.
+	 */
+	private function find_alias_key( $yaml_data, $alias ) {
+		$normalized = $this->normalize_alias( $alias );
+		
+		// Check for @foo format
+		$at_key = '@' . $normalized;
+		if ( array_key_exists( $at_key, $yaml_data ) ) {
+			return $at_key;
+		}
+		
+		// Check for aliases: { foo: } format
+		if ( isset( $yaml_data['aliases'] ) && is_array( $yaml_data['aliases'] ) ) {
+			if ( array_key_exists( $normalized, $yaml_data['aliases'] ) ) {
+				return $normalized;
+			}
+		}
+		
+		return null;
+	}
+
+	/**
+	 * Get alias data from YAML, handling both @foo and aliases: formats.
+	 *
+	 * @param array  $yaml_data The raw YAML data.
+	 * @param string $alias     The alias name (with or without @).
+	 * @return array|null       The alias data, or null if not found.
+	 */
+	private function get_alias_from_yaml( $yaml_data, $alias ) {
+		$normalized = $this->normalize_alias( $alias );
+		
+		// Check for @foo format
+		$at_key = '@' . $normalized;
+		if ( isset( $yaml_data[ $at_key ] ) ) {
+			return $yaml_data[ $at_key ];
+		}
+		
+		// Check for aliases: { foo: } format
+		if ( isset( $yaml_data['aliases'][ $normalized ] ) ) {
+			return $yaml_data['aliases'][ $normalized ];
+		}
+		
+		return null;
 	}
 }

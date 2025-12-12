@@ -1283,7 +1283,7 @@ class Runner {
 				$all_aliases   = array_keys( $this->aliases );
 				$diff          = array_diff( $group_aliases, $all_aliases );
 				if ( ! empty( $diff ) ) {
-					WP_CLI::error( "Group '{$this->alias}' contains one or more invalid aliases: " . implode( ', ', $diff ) );
+					WP_CLI::error( "Group '@{$this->alias}' contains one or more invalid aliases: " . implode( ', ', $diff ) );
 				}
 				$this->run_alias_group( $group_aliases );
 				exit;
