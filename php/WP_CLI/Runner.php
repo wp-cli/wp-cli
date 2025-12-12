@@ -22,6 +22,7 @@ use WP_Error;
  * @property-read ContextManager $context_manager
  * @property-read string         $alias
  * @property-read array          $aliases
+ * @property-read array          $raw_aliases
  * @property-read array          $arguments
  * @property-read array          $assoc_args
  * @property-read array          $runtime_config
@@ -57,6 +58,8 @@ class Runner {
 	private $alias;
 
 	private $aliases;
+
+	private $raw_aliases;
 
 	private $arguments;
 	private $assoc_args;
@@ -1173,10 +1176,16 @@ class Runner {
 
 		list( $this->config, $this->extra_config ) = $configurator->to_array();
 		$this->aliases                             = $configurator->get_aliases();
+		$this->raw_aliases                         = $configurator->get_raw_aliases();
 		if ( count( $this->aliases ) && ! isset( $this->aliases['@all'] ) ) {
 			$this->aliases         = array_reverse( $this->aliases );
 			$this->aliases['@all'] = 'Run command against every registered alias.';
 			$this->aliases         = array_reverse( $this->aliases );
+		}
+		if ( count( $this->raw_aliases ) && ! isset( $this->raw_aliases['@all'] ) ) {
+			$this->raw_aliases         = array_reverse( $this->raw_aliases );
+			$this->raw_aliases['@all'] = 'Run command against every registered alias.';
+			$this->raw_aliases         = array_reverse( $this->raw_aliases );
 		}
 		$this->required_files['runtime'] = $this->config['require'];
 	}

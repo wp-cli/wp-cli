@@ -44,6 +44,13 @@ class Configurator {
 	private $aliases = [];
 
 	/**
+	 * Raw aliases without environment variable interpolation.
+	 *
+	 * @var array
+	 */
+	private $raw_aliases = [];
+
+	/**
 	 * Regex pattern used to define an alias.
 	 *
 	 * @var string
@@ -150,7 +157,8 @@ class Configurator {
 					$returned_aliases[ $key ] = [];
 					foreach ( self::$alias_spec as $i ) {
 						if ( isset( $value[ $i ] ) ) {
-							$returned_aliases[ $key ][ $i ] = $value[ $i ];
+							// Interpolate environment variables in runtime alias values.
+							$returned_aliases[ $key ][ $i ] = self::interpolate_env_vars( $value[ $i ] );
 						}
 					}
 				}
@@ -159,6 +167,37 @@ class Configurator {
 		}
 
 		return $this->aliases;
+	}
+
+	/**
+	 * Get raw aliases without environment variable interpolation.
+	 *
+	 * @return array
+	 */
+	public function get_raw_aliases() {
+		$runtime_alias = getenv( 'WP_CLI_RUNTIME_ALIAS' );
+		if ( false !== $runtime_alias ) {
+			$returned_aliases = [];
+
+			/**
+			 * @var string $key
+			 * @var array<string, string> $value
+			 */
+			foreach ( (array) json_decode( $runtime_alias, true ) as $key => $value ) {
+				if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
+					$returned_aliases[ $key ] = [];
+					foreach ( self::$alias_spec as $i ) {
+						if ( isset( $value[ $i ] ) ) {
+							// Return raw value without interpolation.
+							$returned_aliases[ $key ][ $i ] = $value[ $i ];
+						}
+					}
+				}
+			}
+			return $returned_aliases;
+		}
+
+		return $this->raw_aliases;
 	}
 
 	/**
@@ -285,10 +324,16 @@ class Configurator {
 		$yml_file_dir = $path ? dirname( $path ) : '';
 		foreach ( $yaml as $key => $value ) {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
-				$this->aliases[ $key ] = [];
-				$is_alias              = false;
+				$this->aliases[ $key ]     = [];
+				$this->raw_aliases[ $key ] = [];
+				$is_alias                  = false;
 				foreach ( self::$alias_spec as $i ) {
 					if ( isset( $value[ $i ] ) ) {
+						// Store raw value before interpolation.
+						$this->raw_aliases[ $key ][ $i ] = $value[ $i ];
+
+						// Interpolate environment variables in alias values.
+						$value[ $i ] = self::interpolate_env_vars( $value[ $i ] );
 						if ( 'path' === $i && ! isset( $value['ssh'] ) ) {
 							self::absolutize( $value[ $i ], $yml_file_dir );
 						}
@@ -304,7 +349,8 @@ class Configurator {
 							$alias_group[] = $k;
 						}
 					}
-					$this->aliases[ $key ] = $alias_group;
+					$this->aliases[ $key ]     = $alias_group;
+					$this->raw_aliases[ $key ] = $alias_group;
 				}
 			} elseif ( ! isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
 				if ( isset( $this->extra_config[ $key ] )
@@ -422,5 +468,31 @@ class Configurator {
 				$path = $base . DIRECTORY_SEPARATOR . $path;
 			}
 		}
+	}
+
+	/**
+	 * Interpolate environment variables in a string.
+	 *
+	 * Replaces ${env.VARIABLE_NAME} with the value of the VARIABLE_NAME environment variable.
+	 *
+	 * @param string $value The string value to interpolate.
+	 * @return string The interpolated string.
+	 */
+	private static function interpolate_env_vars( $value ) {
+		if ( ! is_string( $value ) ) {
+			return $value;
+		}
+
+		$result = preg_replace_callback(
+			'/\$\{env\.([A-Za-z0-9_]+)\}/',
+			function ( $matches ) {
+				$env_var = getenv( $matches[1] );
+				return false !== $env_var ? $env_var : $matches[0];
+			},
+			$value
+		);
+
+		// Ensure we always return a string, even if preg_replace_callback fails.
+		return is_string( $result ) ? $result : $value;
 	}
 }
