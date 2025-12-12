@@ -147,6 +147,12 @@ class Subcommand extends CompositeCommand {
 			return [ $args, $assoc_args ];
 		}
 
+		// Create a docparser to get default values and descriptions
+		$mock_doc  = [ $this->get_shortdesc(), '' ];
+		$mock_doc  = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
+		$mock_doc  = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
+		$docparser = new DocParser( $mock_doc );
+
 		// To skip the already provided positional arguments, we need to count
 		// how many we had already received.
 		$arg_index = 0;
@@ -237,14 +243,34 @@ class Subcommand extends CompositeCommand {
 				} while ( $repeat );
 
 			} else {
-				$prompt = $current_prompt . $spec_arg['token'];
+				$prompt      = $current_prompt . $spec_arg['token'];
+				$default_val = null;
+
+				// Get default value for the argument (not for flags)
 				if ( 'flag' === $spec_arg['type'] ) {
 					$prompt .= ' (Y/n)';
+				} elseif ( 'positional' === $spec_arg['type'] ) {
+					$spec_args = $docparser->get_arg_args( $spec_arg['name'] );
+					if ( isset( $spec_args['default'] ) ) {
+						$default_val = $spec_args['default'];
+						$prompt     .= ' [' . $default_val . ']';
+					}
+				} elseif ( 'assoc' === $spec_arg['type'] ) {
+					$spec_args = $docparser->get_param_args( $spec_arg['name'] );
+					if ( isset( $spec_args['default'] ) ) {
+						$default_val = $spec_args['default'];
+						$prompt     .= ' [' . $default_val . ']';
+					}
 				}
 
 				$response = $this->prompt( $prompt );
 				if ( false === $response ) {
 					return [ $args, $assoc_args ];
+				}
+
+				// If response is empty and there's a default (not a flag), use the default
+				if ( '' === $response && null !== $default_val ) {
+					$response = $default_val;
 				}
 
 				if ( $response ) {
