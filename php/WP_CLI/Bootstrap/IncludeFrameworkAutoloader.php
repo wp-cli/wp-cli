@@ -32,9 +32,8 @@ final class IncludeFrameworkAutoloader implements BootstrapStep {
 		$autoloader = new Autoloader();
 
 		$mappings = [
-			'WP_CLI'                   => WP_CLI_ROOT . '/php/WP_CLI',
-			'cli'                      => WP_CLI_VENDOR_DIR . '/wp-cli/php-cli-tools/lib/cli',
-			'Symfony\Component\Finder' => WP_CLI_VENDOR_DIR . '/symfony/finder/',
+			'WP_CLI' => WP_CLI_ROOT . '/php/WP_CLI',
+			'cli'    => WP_CLI_VENDOR_DIR . '/wp-cli/php-cli-tools/lib/cli',
 		];
 
 		foreach ( $mappings as $namespace => $folder ) {
