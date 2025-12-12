@@ -330,11 +330,7 @@ class Configurator {
 				foreach ( self::$alias_spec as $i ) {
 					if ( isset( $value[ $i ] ) ) {
 						// Store raw value before interpolation.
-						$raw_value = $value[ $i ];
-						if ( 'path' === $i && ! isset( $value['ssh'] ) ) {
-							self::absolutize( $raw_value, $yml_file_dir );
-						}
-						$this->raw_aliases[ $key ][ $i ] = $raw_value;
+						$this->raw_aliases[ $key ][ $i ] = $value[ $i ];
 
 						// Interpolate environment variables in alias values.
 						$value[ $i ] = self::interpolate_env_vars( $value[ $i ] );
