@@ -441,8 +441,12 @@ class Configurator {
 	 * @param string $base Base path to prepend.
 	 */
 	private static function absolutize( &$path, $base ) {
-		if ( ! empty( $path ) && ! Utils\is_path_absolute( $path ) ) {
-			$path = $base . DIRECTORY_SEPARATOR . $path;
+		if ( ! empty( $path ) ) {
+			// Expand tilde to home directory if present
+			$path = Utils\expand_tilde_path( $path );
+			if ( ! Utils\is_path_absolute( $path ) ) {
+				$path = $base . DIRECTORY_SEPARATOR . $path;
+			}
 		}
 	}
 }
