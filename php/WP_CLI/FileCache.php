@@ -15,7 +15,10 @@ namespace WP_CLI;
 
 use DateTime;
 use Exception;
-use Symfony\Component\Finder\Finder;
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 use WP_CLI;
 
 /**
@@ -235,10 +238,13 @@ class FileCache {
 			try {
 				$expire = new DateTime();
 				$expire->modify( '-' . $ttl . ' seconds' );
+				$expire_time = $expire->getTimestamp();
 
-				$finder = $this->get_finder()->date( 'until ' . $expire->format( 'Y-m-d H:i:s' ) );
-				foreach ( $finder as $file ) {
-					unlink( $file->getRealPath() );
+				$files = $this->get_cache_files();
+				foreach ( $files as $file ) {
+					if ( $file->getMTime() <= $expire_time ) {
+						unlink( $file->getRealPath() );
+					}
 				}
 			} catch ( Exception $e ) {
 				WP_CLI::error( $e->getMessage() );
@@ -247,7 +253,16 @@ class FileCache {
 
 		// Unlink older files if max cache size is exceeded.
 		if ( $max_size > 0 ) {
-			$files = array_reverse( iterator_to_array( $this->get_finder()->sortByAccessedTime()->getIterator() ) );
+			$files = $this->get_cache_files();
+
+			// Sort files by accessed time (newest first)
+			usort(
+				$files,
+				function ( $a, $b ) {
+					return $b->getATime() <=> $a->getATime();
+				}
+			);
+
 			$total = 0;
 
 			foreach ( $files as $file ) {
@@ -272,9 +287,9 @@ class FileCache {
 			return false;
 		}
 
-		$finder = $this->get_finder();
+		$files = $this->get_cache_files();
 
-		foreach ( $finder as $file ) {
+		foreach ( $files as $file ) {
 			unlink( $file->getRealPath() );
 		}
 
@@ -291,13 +306,22 @@ class FileCache {
 			return false;
 		}
 
-		/** @var Finder $finder */
-		$finder = $this->get_finder()->sortByName();
+		$files = $this->get_cache_files();
+
+		// Sort files by name
+		usort(
+			$files,
+			function ( $a, $b ) {
+				return strcmp( $a->getFilename(), $b->getFilename() );
+			}
+		);
 
 		$files_to_delete = [];
 
-		foreach ( $finder as $file ) {
-			$pieces    = explode( '-', $file->getBasename( $file->getExtension() ) );
+		foreach ( $files as $file ) {
+			$extension = $file->getExtension();
+			$suffix    = $extension ? '.' . $extension : '';
+			$pieces    = explode( '-', $file->getBasename( $suffix ) );
 			$timestamp = end( $pieces );
 
 			// No way to compare versions, do nothing.
@@ -401,11 +425,42 @@ class FileCache {
 	}
 
 	/**
-	 * Get a Finder that iterates in cache root only the files
+	 * Get all files in the cache directory recursively
 	 *
-	 * @return Finder
+	 * @return SplFileInfo[]
 	 */
-	protected function get_finder() {
-		return Finder::create()->in( $this->root )->files();
+	protected function get_cache_files() {
+		$files = [];
+
+		if ( ! is_dir( $this->root ) ) {
+			return $files;
+		}
+
+		try {
+			// Match Symfony Finder behavior: do not follow symlinks.
+			// We explicitly do NOT include FilesystemIterator::FOLLOW_SYMLINKS flag.
+			// This prevents the iterator from traversing into symlinked directories.
+			// We also filter out symlink files themselves with !isLink() check.
+			$iterator = new RecursiveIteratorIterator(
+				new RecursiveDirectoryIterator(
+					$this->root,
+					FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS
+				),
+				RecursiveIteratorIterator::LEAVES_ONLY
+			);
+
+			foreach ( $iterator as $file ) {
+				if ( $file instanceof SplFileInfo && $file->isFile() && ! $file->isLink() ) {
+					$files[] = $file;
+				}
+			}
+		} catch ( Exception $e ) {
+			// If directory iteration fails (e.g., permissions issue, directory deleted),
+			// return empty array. This matches the behavior of Symfony Finder which
+			// would also return an empty result for inaccessible directories.
+			return [];
+		}
+
+		return $files;
 	}
 }
