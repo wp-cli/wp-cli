@@ -768,7 +768,7 @@ Feature: Have a config file
       WP_CLI::add_command( 'test-cmd', $command, array( 'when' => 'before_wp_load' ) );
       """
 
-    When I run `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml wp --require=test-cmd.php test-cmd --debug`
+    When I try `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml wp --require=test-cmd.php test-cmd --debug`
     Then STDERR should contain:
       """
       Using system config from WP_CLI_SYSTEM_SETTINGS_PATH env var:
@@ -803,7 +803,7 @@ Feature: Have a config file
       """
 
   Scenario: System config overridden by user config
-    Given an empty directory
+    Given a WP installation
     And a system-config.yml file:
       """
       disabled_commands:
