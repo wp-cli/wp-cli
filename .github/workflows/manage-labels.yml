@@ -1,0 +1,19 @@
+---
+name: Manage Labels
+
+'on':
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'composer.json'
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  manage-labels:
+    uses: wp-cli/.github/.github/workflows/reusable-manage-labels.yml@main
