@@ -1,0 +1,12 @@
+name: Check Branch Alias
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  check-branch-alias:
+    uses: wp-cli/.github/.github/workflows/reusable-check-branch-alias.yml@main
