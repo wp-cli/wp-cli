@@ -346,6 +346,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			WP_CLI::error( "No alias found with key '@" . $this->normalize_alias( $alias ) . "'." );
 		}
 
+		// For updates, we need to work with the actual YAML key
+		// Pass the alias_key to build_aliases which will be normalized internally
+		// But we need to remove the old key and add with the new one if structure changed
 		if ( null === $grouping ) {
 			$aliases = $this->build_aliases( $aliases, $alias_key, $assoc_args, false, '', true );
 		} else {
@@ -462,7 +465,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @return array<string, array<string, mixed>>
 	 */
 	private function build_aliases( $aliases, $alias, $assoc_args, $is_grouping, $grouping = '', $is_update = false ) {
-		$alias = $this->normalize_alias( $alias );
+		// For updates, we might receive @foo or foo depending on YAML format
+		// Normalize it for consistency
+		$normalized_alias = $this->normalize_alias( $alias );
 
 		if ( $is_grouping ) {
 			$valid_assoc_args = [ 'config', 'grouping' ];
@@ -475,8 +480,26 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			}
 		}
 
+		// Validate BEFORE modifying the aliases array
 		if ( $is_update ) {
 			$this->validate_alias_type( $aliases, $alias, $assoc_args, $grouping );
+		}
+		
+		// If updating, remove the old key structure
+		if ( $is_update ) {
+			// Find and remove the old key
+			if ( isset( $aliases[ $alias ] ) ) {
+				unset( $aliases[ $alias ] );
+			}
+			// Also check if it's in the @format
+			$at_key = '@' . $normalized_alias;
+			if ( isset( $aliases[ $at_key ] ) ) {
+				unset( $aliases[ $at_key ] );
+			}
+			// Check if it's under aliases:
+			if ( isset( $aliases['aliases'][ $normalized_alias ] ) ) {
+				unset( $aliases['aliases'][ $normalized_alias ] );
+			}
 		}
 
 		if ( ! $is_grouping ) {
@@ -485,7 +508,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 					$alias_key_info = explode( '-', $key );
 					$alias_key      = empty( $alias_key_info[1] ) ? '' : $alias_key_info[1];
 					if ( ! empty( $alias_key ) && ! empty( $value ) ) {
-						$aliases[ $alias ][ $alias_key ] = $value;
+						$aliases[ $normalized_alias ][ $alias_key ] = $value;
 					}
 				}
 			}
@@ -499,7 +522,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 					},
 					$group_alias_list
 				);
-				$aliases[ $alias ] = $group_alias;
+				$aliases[ $normalized_alias ] = $group_alias;
 		}
 
 		return $aliases;
@@ -534,7 +557,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * Validate alias type before update.
 	 *
 	 * @param array  $aliases    Existing aliases data.
-	 * @param string $alias      Alias Name.
+	 * @param string $alias      Alias Name (can be normalized or with @).
 	 * @param array  $assoc_args Arguments array.
 	 * @param string $grouping   Grouping argument value.
 	 *
@@ -542,7 +565,19 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 */
 	private function validate_alias_type( $aliases, $alias, $assoc_args, $grouping ) {
 
-		$alias_data = $aliases[ $alias ];
+		// Find the actual key in YAML
+		$alias_key = $this->find_alias_key( $aliases, $alias );
+		if ( null === $alias_key ) {
+			// If we can't find it, try direct access (for cases where alias is already the key)
+			$alias_data = isset( $aliases[ $alias ] ) ? $aliases[ $alias ] : null;
+		} else {
+			// Handle both @foo format and aliases: { foo: } format
+			if ( isset( $aliases['aliases'][ $this->normalize_alias( $alias ) ] ) ) {
+				$alias_data = $aliases['aliases'][ $this->normalize_alias( $alias ) ];
+			} else {
+				$alias_data = $aliases[ $alias_key ];
+			}
+		}
 
 		// Handle null or non-array data
 		if ( ! is_array( $alias_data ) ) {
