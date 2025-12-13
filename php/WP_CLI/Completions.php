@@ -62,7 +62,7 @@ class Completions {
 			if ( 'wp' === $command->get_name() && false === $is_alias && false === $is_help ) {
 				$aliases = WP_CLI::get_configurator()->get_aliases();
 				foreach ( $aliases as $name => $_ ) {
-					$this->add( "$name " );
+					$this->add( "@$name " );
 				}
 			}
 			foreach ( $command->get_subcommands() as $name => $_ ) {

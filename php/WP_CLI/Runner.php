@@ -609,7 +609,7 @@ class Runner {
 		$wp_binary = getenv( 'WP_CLI_SSH_BINARY' ) ?: 'wp';
 		$wp_args   = array_slice( $GLOBALS['argv'], 1 );
 
-		if ( $this->alias && ! empty( $wp_args[0] ) && $this->alias === $wp_args[0] ) {
+		if ( $this->alias && ! empty( $wp_args[0] ) && ( '@' . $this->alias === $wp_args[0] || $wp_args[0] === $this->alias ) ) {
 			array_shift( $wp_args );
 			$runtime_alias = [];
 			foreach ( $this->aliases[ $this->alias ] as $key => $value ) {
@@ -629,7 +629,9 @@ class Runner {
 		}
 
 		foreach ( $wp_args as $k => $v ) {
-			if ( preg_match( '#--ssh=#', $v ) ) {
+			if ( preg_match( '#--ssh=|--alias=#', $v ) ) {
+				unset( $wp_args[ $k ] );
+			} elseif ( preg_match( '#' . Configurator::ALIAS_REGEX . '#', $v ) ) {
 				unset( $wp_args[ $k ] );
 			}
 		}
@@ -1141,9 +1143,10 @@ class Runner {
 
 		$argv = array_slice( $GLOBALS['argv'], 1 );
 
+		// Check if we use an alias with @foo syntax (must be done before parsing args)
 		$this->alias = null;
 		if ( ! empty( $argv[0] ) && preg_match( '#' . Configurator::ALIAS_REGEX . '#', $argv[0], $matches ) ) {
-			$this->alias = array_shift( $argv );
+			$this->alias = substr( array_shift( $argv ), 1 ); // Remove the @ prefix and shift from argv
 		}
 
 		// File config
@@ -1171,12 +1174,17 @@ class Runner {
 			$configurator->merge_array( $this->runtime_config );
 		}
 
+		// Check if --alias flag was used (takes precedence over @foo if both provided)
+		if ( ! empty( $this->runtime_config['alias'] ) ) {
+			$this->alias = $this->runtime_config['alias'];
+		}
+
 		list( $this->config, $this->extra_config ) = $configurator->to_array();
 		$this->aliases                             = $configurator->get_aliases();
-		if ( count( $this->aliases ) && ! isset( $this->aliases['@all'] ) ) {
-			$this->aliases         = array_reverse( $this->aliases );
-			$this->aliases['@all'] = 'Run command against every registered alias.';
-			$this->aliases         = array_reverse( $this->aliases );
+		if ( count( $this->aliases ) && ! isset( $this->aliases['all'] ) ) {
+			$this->aliases        = array_reverse( $this->aliases );
+			$this->aliases['all'] = 'Run command against every registered alias.';
+			$this->aliases        = array_reverse( $this->aliases );
 		}
 		$this->required_files['runtime'] = $this->config['require'];
 	}
@@ -1198,11 +1206,26 @@ class Runner {
 		$config_path = escapeshellarg( $config_path );
 
 		foreach ( $aliases as $alias ) {
-			WP_CLI::log( $alias );
-			$args           = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
-			$assoc_args     = Utils\assoc_args_to_str( $this->assoc_args );
-			$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
-			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
+			// Filter out @alias args (needed for Windows OS that need to quote "@alias" in cli)
+			$filtered_arguments = array_filter(
+				$this->arguments,
+				function ( $value ) {
+					return ! preg_match( '#' . Configurator::ALIAS_REGEX . '#', $value );
+				}
+			);
+
+			WP_CLI::log( '@' . $alias );
+			$args = implode( ' ', array_map( 'escapeshellarg', $filtered_arguments ) );
+
+			// Filter out --ssh and --alias args from the ssh command
+			$filtered_assoc_args = $this->assoc_args;
+			unset( $filtered_assoc_args['ssh'], $filtered_assoc_args['alias'] );
+
+			$assoc_args              = Utils\assoc_args_to_str( $filtered_assoc_args );
+			$filtered_runtime_config = $this->runtime_config;
+			unset( $filtered_runtime_config['alias'] );
+			$runtime_config = Utils\assoc_args_to_str( $filtered_runtime_config );
+			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} --alias={$alias} {$args}{$assoc_args}{$runtime_config}";
 			$pipes          = [];
 			$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
 
@@ -1234,13 +1257,13 @@ class Runner {
 		WP_CLI::debug( 'argv: ' . implode( ' ', $GLOBALS['argv'] ), 'bootstrap' );
 
 		if ( $this->alias ) {
-			if ( '@all' === $this->alias && ! isset( $this->aliases['@all'] ) ) {
-				WP_CLI::error( "Cannot use '@all' when no aliases are registered." );
+			if ( 'all' === $this->alias && ! isset( $this->aliases['all'] ) ) {
+				WP_CLI::error( "Cannot use 'all' when no aliases are registered." );
 			}
 
-			if ( '@all' === $this->alias && is_string( $this->aliases['@all'] ) ) {
+			if ( 'all' === $this->alias && is_string( $this->aliases['all'] ) ) {
 				$aliases = array_keys( $this->aliases );
-				$k       = array_search( '@all', $aliases, true );
+				$k       = array_search( 'all', $aliases, true );
 				unset( $aliases[ $k ] );
 				$this->run_alias_group( $aliases );
 				exit;
@@ -1260,7 +1283,7 @@ class Runner {
 				$all_aliases   = array_keys( $this->aliases );
 				$diff          = array_diff( $group_aliases, $all_aliases );
 				if ( ! empty( $diff ) ) {
-					WP_CLI::error( "Group '{$this->alias}' contains one or more invalid aliases: " . implode( ', ', $diff ) );
+					WP_CLI::error( "Group '@{$this->alias}' contains one or more invalid aliases: " . implode( ', ', $diff ) );
 				}
 				$this->run_alias_group( $group_aliases );
 				exit;
