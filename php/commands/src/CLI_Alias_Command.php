@@ -605,8 +605,27 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	private function process_aliases( $aliases, $alias, $config_path, $operation = '' ) {
 		$alias = $this->normalize_alias( $alias );
 
+		// Add @ prefix to top-level alias keys for YAML output (backward compatibility)
+		// But skip special keys like 'aliases', 'require', 'path', etc.
+		$yaml_aliases = [];
+		foreach ( $aliases as $key => $value ) {
+			// If it's an alias-like array (has config keys or is an array of alias names)
+			// and not a special config key, add @ prefix
+			if ( $key !== 'aliases' && $key !== 'require' && $key !== 'path' && 
+			     $key !== '_' && 0 !== strpos( $key, '@' ) ) {
+				// This looks like an alias key that needs @ prefix
+				if ( is_array( $value ) ) {
+					$yaml_aliases[ '@' . $key ] = $value;
+				} else {
+					$yaml_aliases[ $key ] = $value;
+				}
+			} else {
+				$yaml_aliases[ $key ] = $value;
+			}
+		}
+
 		// Convert data to YAML string.
-		$yaml_data = Spyc::YAMLDump( $aliases );
+		$yaml_data = Spyc::YAMLDump( $yaml_aliases );
 
 		// Add data in config file.
 		if ( file_put_contents( $config_path, $yaml_data ) ) {
