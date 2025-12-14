@@ -530,8 +530,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 				}
 			}
 		} elseif ( ! empty( $grouping ) ) {
-			$group_alias_list  = explode( ',', $grouping );
-			$group_alias       = array_map(
+			$group_alias_list             = explode( ',', $grouping );
+			$group_alias                  = array_map(
 				function ( $current_alias ) {
 					// Remove @ prefix if present
 					return ltrim( $current_alias, '@' );
@@ -629,16 +629,16 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		// Convert aliases to use the new 'aliases:' format for better cross-platform compatibility
 		// Move any @-prefixed keys into the aliases: section
-		$yaml_data = [];
+		$yaml_data       = [];
 		$aliases_section = [];
-		
+
 		foreach ( $aliases as $key => $value ) {
 			// Skip special config keys that aren't aliases
 			if ( in_array( $key, [ 'require', 'path', '_', 'url', 'user', 'ssh', 'http' ], true ) ) {
 				$yaml_data[ $key ] = $value;
 			} elseif ( 0 === strpos( $key, '@' ) ) {
 				// Convert @foo to aliases: { foo: } format
-				$normalized_key = substr( $key, 1 );
+				$normalized_key                     = substr( $key, 1 );
 				$aliases_section[ $normalized_key ] = $value;
 			} elseif ( 'aliases' === $key ) {
 				// Already in aliases format, merge it
@@ -653,7 +653,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 				$yaml_data[ $key ] = $value;
 			}
 		}
-		
+
 		// Add the aliases section if we have any
 		if ( ! empty( $aliases_section ) ) {
 			$yaml_data['aliases'] = $aliases_section;

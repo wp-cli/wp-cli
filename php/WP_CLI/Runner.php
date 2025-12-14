@@ -1225,7 +1225,7 @@ class Runner {
 			$filtered_runtime_config = $this->runtime_config;
 			unset( $filtered_runtime_config['alias'] );
 			$runtime_config = Utils\assoc_args_to_str( $filtered_runtime_config );
-			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} --alias=" . escapeshellarg($alias) . " {$args}{$assoc_args}{$runtime_config}";
+			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
 			$pipes          = [];
 			$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
 
@@ -1283,7 +1283,17 @@ class Runner {
 				$all_aliases   = array_keys( $this->aliases );
 				$diff          = array_diff( $group_aliases, $all_aliases );
 				if ( ! empty( $diff ) ) {
-					WP_CLI::error( "Group '@{$this->alias}' contains one or more invalid aliases: " . implode( ', ', array_map( function( $alias ) { return '@' . $alias; }, $diff ) ) );
+					WP_CLI::error(
+						"Group '@{$this->alias}' contains one or more invalid aliases: " . implode(
+							', ',
+							array_map(
+								function ( $alias ) {
+									return '@' . $alias;
+								},
+								$diff
+							)
+						)
+					);
 				}
 				$this->run_alias_group( $group_aliases );
 				exit;
