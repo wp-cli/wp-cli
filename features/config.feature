@@ -751,3 +751,49 @@ Feature: Have a config file
     When I run `wp core version`
     Then STDOUT should not be empty
     And the return code should be 0
+
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_CACHE_DIR
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_CACHE_DIR: /tmp/custom-cache
+      """
+
+    When I run `wp cli info --format=json`
+    Then STDOUT should contain:
+      """
+      /tmp/custom-cache
+      """
+
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_PACKAGES_DIR
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_PACKAGES_DIR: /tmp/custom-packages
+      """
+
+    When I run `wp cli info --format=json`
+    Then STDOUT should contain:
+      """
+      /tmp/custom-packages
+      """
+
+  Scenario: Actual environment variables take precedence over config
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_CACHE_DIR: /tmp/from-config
+      """
+
+    When I run `WP_CLI_CACHE_DIR=/tmp/from-env wp cli info --format=json`
+    Then STDOUT should contain:
+      """
+      /tmp/from-env
+      """
+    And STDOUT should not contain:
+      """
+      /tmp/from-config
+      """

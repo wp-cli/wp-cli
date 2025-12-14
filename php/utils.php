@@ -2085,13 +2085,38 @@ function get_sql_modes() {
 }
 
 /**
+ * Get an environment variable value, with config file fallback.
+ *
+ * Checks the actual environment variable first, then falls back to
+ * values defined in the 'env' configuration key in wp-cli.yml.
+ *
+ * @param string $name Environment variable name.
+ * @return string|false The value of the environment variable, or false if not set.
+ */
+function get_env_or_config( $name ) {
+	$env_value = getenv( $name );
+	if ( false !== $env_value ) {
+		return $env_value;
+	}
+
+	// Try to get from config file
+	$runner = WP_CLI::get_runner();
+	if ( $runner && isset( $runner->config['env'][ $name ] ) ) {
+		return (string) $runner->config['env'][ $name ];
+	}
+
+	return false;
+}
+
+/**
  * Get the WP-CLI cache directory.
  *
  * @return string
  */
 function get_cache_dir() {
-	$home = get_home_dir();
-	return getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
+	$home      = get_home_dir();
+	$cache_dir = get_env_or_config( 'WP_CLI_CACHE_DIR' );
+	return $cache_dir ? : "$home/.wp-cli/cache";
 }
 
 /**

@@ -98,8 +98,8 @@ class WP_CLI {
 
 		if ( ! $cache ) {
 			$dir      = Utils\get_cache_dir();
-			$ttl      = (int) getenv( 'WP_CLI_CACHE_EXPIRY' ) ? : 15552000;
-			$max_size = (int) getenv( 'WP_CLI_CACHE_MAX_SIZE' ) ? : 314572800;
+			$ttl      = (int) Utils\get_env_or_config( 'WP_CLI_CACHE_EXPIRY' ) ? : 15552000;
+			$max_size = (int) Utils\get_env_or_config( 'WP_CLI_CACHE_MAX_SIZE' ) ? : 314572800;
 			// 6 months, 300mb
 			$cache = new FileCache( $dir, $ttl, $max_size );
 
