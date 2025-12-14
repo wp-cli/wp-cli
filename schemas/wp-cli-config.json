@@ -147,7 +147,7 @@
           }
         ]
       },
-      "description": "Set environment variable values. These will be used as fallbacks when the corresponding environment variable is not set in the shell.",
+      "description": "Set environment variable values. These will be used as fallbacks when the corresponding environment variable is not set in the shell. All values are converted to strings.",
       "default": {}
     },
     "_": {
