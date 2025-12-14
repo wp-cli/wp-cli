@@ -763,7 +763,7 @@ Feature: Have a config file
     When I run `wp cli info --format=json`
     Then STDOUT should contain:
       """
-      /tmp/custom-cache
+      \/tmp\/custom-cache
       """
 
   Scenario: Environment variables configured in wp-cli.yml - WP_CLI_PACKAGES_DIR
@@ -777,7 +777,7 @@ Feature: Have a config file
     When I run `wp cli info --format=json`
     Then STDOUT should contain:
       """
-      /tmp/custom-packages
+      \/tmp\/custom-packages
       """
 
   Scenario: Actual environment variables take precedence over config
@@ -791,9 +791,9 @@ Feature: Have a config file
     When I run `WP_CLI_CACHE_DIR=/tmp/from-env wp cli info --format=json`
     Then STDOUT should contain:
       """
-      /tmp/from-env
+      \/tmp\/from-env
       """
     And STDOUT should not contain:
       """
-      /tmp/from-config
+      from-config
       """
