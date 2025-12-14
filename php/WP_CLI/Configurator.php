@@ -189,10 +189,12 @@ class Configurator {
 			 */
 			foreach ( (array) json_decode( $runtime_alias, true ) as $key => $value ) {
 				if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
-					$returned_aliases[ $key ] = [];
+					// Normalize the key by removing @ prefix for internal storage
+					$normalized_key = substr( $key, 1 );
+					$returned_aliases[ $normalized_key ] = [];
 					foreach ( self::$alias_spec as $i ) {
 						if ( isset( $value[ $i ] ) ) {
-							$returned_aliases[ $key ][ $i ] = $value[ $i ];
+							$returned_aliases[ $normalized_key ][ $i ] = $value[ $i ];
 						}
 					}
 				}

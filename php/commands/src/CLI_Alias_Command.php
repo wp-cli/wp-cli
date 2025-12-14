@@ -485,9 +485,21 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			$this->validate_alias_type( $aliases, $alias, $assoc_args, $grouping );
 		}
 		
-		// If updating, remove the old key structure
+		// If updating, we need to preserve existing data and only update specified fields
+		$existing_data = [];
 		if ( $is_update ) {
-			// Find and remove the old key
+			// Find the existing alias data to preserve it
+			$alias_key = $this->find_alias_key( $aliases, $alias );
+			if ( null !== $alias_key ) {
+				// Get existing data based on format
+				if ( isset( $aliases['aliases'][ $normalized_alias ] ) ) {
+					$existing_data = $aliases['aliases'][ $normalized_alias ];
+				} elseif ( isset( $aliases[ $alias_key ] ) ) {
+					$existing_data = $aliases[ $alias_key ];
+				}
+			}
+			
+			// Remove the old key structure
 			if ( isset( $aliases[ $alias ] ) ) {
 				unset( $aliases[ $alias ] );
 			}
@@ -503,6 +515,11 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		}
 
 		if ( ! $is_grouping ) {
+			// Start with existing data for updates, or empty array for new aliases
+			if ( ! isset( $aliases[ $normalized_alias ] ) ) {
+				$aliases[ $normalized_alias ] = $existing_data;
+			}
+			
 			foreach ( $assoc_args as $key => $value ) {
 				if ( strpos( $key, 'set-' ) !== false ) {
 					$alias_key_info = explode( '-', $key );
