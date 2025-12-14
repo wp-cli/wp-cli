@@ -585,11 +585,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		// Find the actual key in YAML
 		$alias_key = $this->find_alias_key( $aliases, $alias );
 		if ( null === $alias_key ) {
-			// If we can't find it, try direct access (for cases where alias is already the key)
-			$alias_data = isset( $aliases[ $alias ] ) ? $aliases[ $alias ] : null;
-			// Handle both @foo format and aliases: { foo: } format
-		} elseif ( isset( $aliases['aliases'][ $this->normalize_alias( $alias ) ] ) ) {
-				$alias_data = $aliases['aliases'][ $this->normalize_alias( $alias ) ];
+			$alias_data = null;
+		} elseif ( isset( $aliases['aliases'] ) && isset( $aliases['aliases'][ $alias_key ] ) ) {
+			$alias_data = $aliases['aliases'][ $alias_key ];
 		} else {
 			$alias_data = $aliases[ $alias_key ];
 		}
