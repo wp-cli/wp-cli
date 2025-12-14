@@ -768,16 +768,17 @@ Feature: Have a config file
 
   Scenario: Environment variables configured in wp-cli.yml - WP_CLI_PACKAGES_DIR
     Given an empty directory
+    And an empty custom-packages directory
     And a wp-cli.yml file:
       """
       env:
-        WP_CLI_PACKAGES_DIR: /tmp/custom-packages
+        WP_CLI_PACKAGES_DIR: ./custom-packages
       """
 
     When I run `wp cli info --format=json`
     Then STDOUT should contain:
       """
-      \/tmp\/custom-packages
+      \/custom-packages
       """
 
   Scenario: Actual environment variables take precedence over config
