@@ -484,7 +484,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		if ( $is_update ) {
 			$this->validate_alias_type( $aliases, $alias, $assoc_args, $grouping );
 		}
-		
+
 		// If updating, we need to preserve existing data and only update specified fields
 		$existing_data = [];
 		if ( $is_update ) {
@@ -498,7 +498,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 					$existing_data = $aliases[ $alias_key ];
 				}
 			}
-			
+
 			// Remove the old key structure
 			if ( isset( $aliases[ $alias ] ) ) {
 				unset( $aliases[ $alias ] );
@@ -519,7 +519,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			if ( ! isset( $aliases[ $normalized_alias ] ) ) {
 				$aliases[ $normalized_alias ] = $existing_data;
 			}
-			
+
 			foreach ( $assoc_args as $key => $value ) {
 				if ( strpos( $key, 'set-' ) !== false ) {
 					$alias_key_info = explode( '-', $key );
@@ -531,8 +531,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			}
 		} elseif ( ! empty( $grouping ) ) {
 
-				$group_alias_list  = explode( ',', $grouping );
-				$group_alias       = array_map(
+				$group_alias_list             = explode( ',', $grouping );
+				$group_alias                  = array_map(
 					function ( $current_alias ) {
 						// Remove @ prefix if present
 						return ltrim( $current_alias, '@' );
@@ -587,13 +587,11 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		if ( null === $alias_key ) {
 			// If we can't find it, try direct access (for cases where alias is already the key)
 			$alias_data = isset( $aliases[ $alias ] ) ? $aliases[ $alias ] : null;
-		} else {
 			// Handle both @foo format and aliases: { foo: } format
-			if ( isset( $aliases['aliases'][ $this->normalize_alias( $alias ) ] ) ) {
+		} elseif ( isset( $aliases['aliases'][ $this->normalize_alias( $alias ) ] ) ) {
 				$alias_data = $aliases['aliases'][ $this->normalize_alias( $alias ) ];
-			} else {
-				$alias_data = $aliases[ $alias_key ];
-			}
+		} else {
+			$alias_data = $aliases[ $alias_key ];
 		}
 
 		// Handle null or non-array data
@@ -628,8 +626,13 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		foreach ( $aliases as $key => $value ) {
 			// If it's an alias-like array (has config keys or is an array of alias names)
 			// and not a special config key, add @ prefix
-			if ( $key !== 'aliases' && $key !== 'require' && $key !== 'path' && 
-			     $key !== '_' && 0 !== strpos( $key, '@' ) ) {
+			if (
+				'aliases' !== $key &&
+				'require' !== $key &&
+				'path' !== $key &&
+				'_' !== $key &&
+				0 !== strpos( $key, '@' )
+			) {
 				// This looks like an alias key that needs @ prefix
 				if ( is_array( $value ) ) {
 					$yaml_aliases[ '@' . $key ] = $value;
