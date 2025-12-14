@@ -413,7 +413,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @invalid option get home`
     Then STDERR should be:
       """
-      Error: Group '@invalid' contains one or more invalid aliases: baz
+      Error: Group '@invalid' contains one or more invalid aliases: @baz
       """
 
     When I run `wp @both option get home`
