@@ -530,16 +530,15 @@ class CLI_Alias_Command extends WP_CLI_Command {
 				}
 			}
 		} elseif ( ! empty( $grouping ) ) {
-
-				$group_alias_list             = explode( ',', $grouping );
-				$group_alias                  = array_map(
-					function ( $current_alias ) {
-						// Remove @ prefix if present
-						return ltrim( $current_alias, '@' );
-					},
-					$group_alias_list
-				);
-				$aliases[ $normalized_alias ] = $group_alias;
+			$group_alias_list  = explode( ',', $grouping );
+			$group_alias       = array_map(
+				function ( $current_alias ) {
+					// Remove @ prefix if present
+					return ltrim( $current_alias, '@' );
+				},
+				$group_alias_list
+			);
+			$aliases[ $normalized_alias ] = $group_alias;
 		}
 
 		return $aliases;
@@ -597,12 +596,22 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			$alias_data = [];
 		}
 
-		$group_aliases_match = preg_grep( '/^@(\w+)/i', $alias_data );
-		$arg_match           = preg_grep( '/^set-(\w+)/i', array_keys( $assoc_args ) );
+		// Check if this is a group alias by looking for numeric keys with string values
+		// Group aliases are stored as arrays like ['foo', 'bar'] without @ prefix
+		$is_group_alias = false;
+		if ( ! empty( $alias_data ) ) {
+			$numeric_keys = array_filter( array_keys( $alias_data ), 'is_numeric' );
+			if ( count( $numeric_keys ) === count( $alias_data ) ) {
+				// All keys are numeric, so this is a group alias
+				$is_group_alias = true;
+			}
+		}
 
-		if ( ! empty( $group_aliases_match ) && ! empty( $arg_match ) ) {
+		$arg_match = preg_grep( '/^set-(\w+)/i', array_keys( $assoc_args ) );
+
+		if ( $is_group_alias && ! empty( $arg_match ) ) {
 			WP_CLI::error( 'Trying to update group alias with invalid arguments.' );
-		} elseif ( empty( $group_aliases_match ) && ! empty( $grouping ) ) {
+		} elseif ( ! $is_group_alias && ! empty( $grouping ) ) {
 			WP_CLI::error( 'Trying to update simple alias with invalid --grouping argument.' );
 		}
 	}
@@ -618,35 +627,43 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	private function process_aliases( $aliases, $alias, $config_path, $operation = '' ) {
 		$alias = $this->normalize_alias( $alias );
 
-		// Add @ prefix to top-level alias keys for YAML output (backward compatibility)
-		// But skip special keys like 'aliases', 'require', 'path', etc.
-		$yaml_aliases = [];
+		// Convert aliases to use the new 'aliases:' format for better cross-platform compatibility
+		// Move any @-prefixed keys into the aliases: section
+		$yaml_data = [];
+		$aliases_section = [];
+		
 		foreach ( $aliases as $key => $value ) {
-			// If it's an alias-like array (has config keys or is an array of alias names)
-			// and not a special config key, add @ prefix
-			if (
-				'aliases' !== $key &&
-				'require' !== $key &&
-				'path' !== $key &&
-				'_' !== $key &&
-				0 !== strpos( $key, '@' )
-			) {
-				// This looks like an alias key that needs @ prefix
+			// Skip special config keys that aren't aliases
+			if ( in_array( $key, [ 'require', 'path', '_', 'url', 'user', 'ssh', 'http' ], true ) ) {
+				$yaml_data[ $key ] = $value;
+			} elseif ( 0 === strpos( $key, '@' ) ) {
+				// Convert @foo to aliases: { foo: } format
+				$normalized_key = substr( $key, 1 );
+				$aliases_section[ $normalized_key ] = $value;
+			} elseif ( 'aliases' === $key ) {
+				// Already in aliases format, merge it
 				if ( is_array( $value ) ) {
-					$yaml_aliases[ '@' . $key ] = $value;
-				} else {
-					$yaml_aliases[ $key ] = $value;
+					$aliases_section = array_merge( $aliases_section, $value );
 				}
+			} elseif ( is_array( $value ) ) {
+				// This is an alias (either config or group), add to aliases section
+				$aliases_section[ $key ] = $value;
 			} else {
-				$yaml_aliases[ $key ] = $value;
+				// Non-alias config value
+				$yaml_data[ $key ] = $value;
 			}
+		}
+		
+		// Add the aliases section if we have any
+		if ( ! empty( $aliases_section ) ) {
+			$yaml_data['aliases'] = $aliases_section;
 		}
 
 		// Convert data to YAML string.
-		$yaml_data = Spyc::YAMLDump( $yaml_aliases );
+		$yaml_output = Spyc::YAMLDump( $yaml_data );
 
 		// Add data in config file.
-		if ( file_put_contents( $config_path, $yaml_data ) ) {
+		if ( file_put_contents( $config_path, $yaml_output ) ) {
 			WP_CLI::success( "$operation '{$alias}' alias." );
 		}
 	}
