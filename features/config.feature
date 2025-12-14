@@ -798,3 +798,76 @@ Feature: Have a config file
       """
       from-config
       """
+
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_CACHE_EXPIRY
+    Given an empty directory
+    And a test-cache-config.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-cache-config', function() {
+          $expiry = WP_CLI\Utils\get_env_or_config('WP_CLI_CACHE_EXPIRY');
+          WP_CLI::log( 'Cache expiry: ' . $expiry );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_CACHE_EXPIRY: 7200
+      """
+
+    When I run `wp --require=test-cache-config.php test-cache-config`
+    Then STDOUT should contain:
+      """
+      Cache expiry: 7200
+      """
+
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_CACHE_MAX_SIZE
+    Given an empty directory
+    And a test-cache-config.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-cache-config', function() {
+          $max_size = WP_CLI\Utils\get_env_or_config('WP_CLI_CACHE_MAX_SIZE');
+          WP_CLI::log( 'Cache max size: ' . $max_size );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_CACHE_MAX_SIZE: 209715200
+      """
+
+    When I run `wp --require=test-cache-config.php test-cache-config`
+    Then STDOUT should contain:
+      """
+      Cache max size: 209715200
+      """
+
+  Scenario: WP_CLI_CACHE_EXPIRY and WP_CLI_CACHE_MAX_SIZE with environment variable precedence
+    Given an empty directory
+    And a test-cache-config.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-cache-config', function() {
+          $expiry = WP_CLI\Utils\get_env_or_config('WP_CLI_CACHE_EXPIRY');
+          $max_size = WP_CLI\Utils\get_env_or_config('WP_CLI_CACHE_MAX_SIZE');
+          WP_CLI::log( 'Cache expiry: ' . $expiry );
+          WP_CLI::log( 'Cache max size: ' . $max_size );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_CACHE_EXPIRY: 3600
+        WP_CLI_CACHE_MAX_SIZE: 104857600
+      """
+
+    When I run `WP_CLI_CACHE_EXPIRY=7200 wp --require=test-cache-config.php test-cache-config`
+    Then STDOUT should contain:
+      """
+      Cache expiry: 7200
+      """
+    And STDOUT should contain:
+      """
+      Cache max size: 104857600
+      """
