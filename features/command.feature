@@ -1686,6 +1686,10 @@ Feature: WP-CLI Commands
         });
       });
       """
+    And a session_no file:
+      """
+      n
+      """
 
     # The command should work when run correctly
     When I run `wp afterload`
@@ -1697,10 +1701,10 @@ Feature: WP-CLI Commands
 
     # Test with a typo - it should not suggest wrong alternatives
     # before WordPress loads. This is the regression we're fixing.
-    When I try `wp afterloa`
+    When I try `wp afterloa < session_no`
     Then STDERR should contain:
       """
-      Error: 'afterloa' is not a registered wp command.
+      Warning: 'afterloa' is not a registered wp command.
       """
     # It should suggest 'afterload' not other commands like 'post'
     And STDOUT should contain:
