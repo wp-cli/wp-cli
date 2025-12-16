@@ -1680,7 +1680,7 @@ Feature: WP-CLI Commands
       <?php
       // Plugin Name: Test CLI After Load
 
-      WP_CLI::add_hook( 'after_wp_load', function(){
+      add_action( 'cli_init', function(){
         WP_CLI::add_command( 'afterload', function () {
           \WP_CLI::success( 'afterload command executed' );
         });
