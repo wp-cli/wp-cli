@@ -5,7 +5,9 @@ on:
     types: [released]
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   check-branch-alias:
