@@ -286,6 +286,52 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Resolve argument aliases to their canonical names.
+	 *
+	 * Takes an associative array of arguments and replaces any aliases
+	 * with their canonical parameter names. This allows commands to define
+	 * shorter versions of arguments (e.g., -w for --with-dependencies).
+	 *
+	 * @param array $assoc_args Arguments passed to command.
+	 * @return array Arguments with aliases resolved to canonical names.
+	 */
+	private function resolve_arg_aliases( $assoc_args ) {
+		$docparser = $this->get_docparser();
+		$aliases   = $docparser->get_arg_aliases();
+
+		if ( empty( $aliases ) ) {
+			return $assoc_args;
+		}
+
+		$resolved_args = [];
+		foreach ( $assoc_args as $key => $value ) {
+			// If this key is an alias, use the canonical name instead
+			if ( isset( $aliases[ $key ] ) ) {
+				$canonical_key = $aliases[ $key ];
+				// Only set if not already set by canonical name
+				if ( ! isset( $resolved_args[ $canonical_key ] ) && ! isset( $assoc_args[ $canonical_key ] ) ) {
+					$resolved_args[ $canonical_key ] = $value;
+				} else {
+					// Canonical name was already provided, ignore alias
+					WP_CLI::debug(
+						sprintf(
+							'Ignoring alias --%s because --%s was already provided.',
+							$key,
+							$canonical_key
+						),
+						'bootstrap'
+					);
+				}
+			} else {
+				// Not an alias, keep as-is
+				$resolved_args[ $key ] = $value;
+			}
+		}
+
+		return $resolved_args;
+	}
+
+	/**
 	 * Validate the supplied arguments to the command.
 	 * Throws warnings or errors if arguments are missing
 	 * or invalid.
@@ -474,6 +520,10 @@ class Subcommand extends CompositeCommand {
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) {
 		static $prompted_once = false;
+
+		// Resolve any argument aliases to canonical names first
+		$assoc_args = $this->resolve_arg_aliases( $assoc_args );
+		$extra_args = $this->resolve_arg_aliases( $extra_args );
 
 		if ( 'help' !== $this->name ) {
 			if ( \WP_CLI::get_config( 'prompt' ) && ! $prompted_once ) {

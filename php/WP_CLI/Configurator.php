@@ -195,6 +195,12 @@ class Configurator {
 				$assoc_arg = [ $matches[1], true ];
 			} elseif ( preg_match( '|^--([^=]+)=(.*)|s', $arg, $matches ) ) {
 				$assoc_arg = [ $matches[1], $matches[2] ];
+			} elseif ( preg_match( '|^-([a-zA-Z])$|', $arg, $matches ) ) {
+				// Support single-dash short arguments (e.g., -w, -v)
+				$assoc_arg = [ $matches[1], true ];
+			} elseif ( preg_match( '|^-([a-zA-Z])=(.*)|s', $arg, $matches ) ) {
+				// Support single-dash short arguments with values (e.g., -n=5)
+				$assoc_arg = [ $matches[1], $matches[2] ];
 			} else {
 				$positional = $arg;
 			}

@@ -156,6 +156,67 @@ class DocParser {
 	}
 
 	/**
+	 * Get the arguments for a given parameter (flag or assoc).
+	 *
+	 * This method works for both flags (--param) and associative parameters (--param=<value>).
+	 *
+	 * @param string $key Parameter's key.
+	 * @return array|null
+	 */
+	private function get_param_or_flag_args( $key ) {
+		// Try to get args for an associative parameter first
+		$args = $this->get_arg_or_param_args( "/^\[?--{$key}=.*/" );
+		if ( $args ) {
+			return $args;
+		}
+
+		// Try to get args for a flag parameter
+		return $this->get_arg_or_param_args( "/^\[?--{$key}\]?$/" );
+	}
+
+	/**
+	 * Build a map of all argument aliases to their canonical names.
+	 *
+	 * Parses the PHPdoc for all parameters that have an 'alias' attribute
+	 * and builds a mapping from alias to canonical parameter name.
+	 *
+	 * @return array Map of alias => canonical_name
+	 */
+	public function get_arg_aliases() {
+		$aliases = [];
+		$bits    = explode( "\n", $this->doc_comment );
+
+		foreach ( $bits as $bit ) {
+			// Skip empty lines and separator lines
+			$bit = trim( $bit );
+			if ( empty( $bit ) || '---' === $bit ) {
+				continue;
+			}
+
+			// Match parameter definitions:
+			// - [--param=<value>]
+			// - --param=<value>
+			// - [--param]
+			// - --param
+			if ( preg_match( '/^\[?--([a-z-_0-9]+)/', $bit, $matches ) ) {
+				$param_name = $matches[1];
+				$param_args = $this->get_param_or_flag_args( $param_name );
+
+				if ( $param_args && isset( $param_args['alias'] ) ) {
+					$param_aliases = (array) $param_args['alias'];
+					foreach ( $param_aliases as $alias ) {
+						// Remove leading dashes if present
+						$alias             = ltrim( $alias, '-' );
+						$aliases[ $alias ] = $param_name;
+					}
+				}
+			}
+		}
+
+		return $aliases;
+	}
+
+	/**
 	 * Get the args for an arg or param
 	 *
 	 * @param string $regex Pattern to match against
