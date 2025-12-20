@@ -1719,3 +1719,96 @@ Feature: WP-CLI Commands
       Success: afterload command executed
       """
     And the return code should be 0
+
+  Scenario: Warn when command overrides global argument
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * My test command
+       *
+       * ## OPTIONS
+       *
+       * [--debug]
+       * : Debug flag that conflicts with global
+       *
+       * @when before_wp_load
+       */
+      $foo = function( $args, $assoc_args ) {
+        WP_CLI::success( 'Command executed' );
+      };
+      WP_CLI::add_command( 'testcommand', $foo );
+      """
+
+    When I try `wp --require=custom-cmd.php help 2>&1`
+    Then STDERR should contain:
+      """
+      Warning: The `testcommand` command is registering an argument '--debug' that conflicts with a global argument of the same name.
+      """
+
+  Scenario: Warn when command overrides multiple global arguments
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * My test command
+       *
+       * ## OPTIONS
+       *
+       * --user=<user>
+       * : User argument that conflicts with global
+       *
+       * [--quiet]
+       * : Quiet flag that conflicts with global
+       *
+       * @when before_wp_load
+       */
+      $foo = function( $args, $assoc_args ) {
+        WP_CLI::success( 'Command executed' );
+      };
+      WP_CLI::add_command( 'multiconflict', $foo );
+      """
+
+    When I try `wp --require=custom-cmd.php help 2>&1`
+    Then STDERR should contain:
+      """
+      Warning: The `multiconflict` command is registering an argument '--user' that conflicts with a global argument of the same name.
+      """
+    And STDERR should contain:
+      """
+      Warning: The `multiconflict` command is registering an argument '--quiet' that conflicts with a global argument of the same name.
+      """
+
+  Scenario: No warning when command uses non-conflicting arguments
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * My test command
+       *
+       * ## OPTIONS
+       *
+       * [--custom]
+       * : Custom flag that does not conflict
+       *
+       * @when before_wp_load
+       */
+      $foo = function( $args, $assoc_args ) {
+        WP_CLI::success( 'Command executed' );
+      };
+      WP_CLI::add_command( 'noconflict', $foo );
+      """
+
+    When I try `wp --require=custom-cmd.php help 2>&1`
+    Then STDERR should not contain:
+      """
+      Warning:
+      """
+    And STDOUT should contain:
+      """
+      noconflict
+      """
+

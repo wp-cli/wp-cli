@@ -649,6 +649,11 @@ class WP_CLI {
 			self::get_runner()->register_early_invoke( $args['when'], $leaf_command );
 		}
 
+		// Check for global argument conflicts
+		if ( $leaf_command instanceof Dispatcher\Subcommand ) {
+			self::check_global_arg_conflicts( $name, $leaf_command );
+		}
+
 		if ( ! empty( $parent ) ) {
 			$sub_command = trim( str_replace( $parent, '', $name ) );
 			self::debug( "Adding command: {$sub_command} in {$parent} Namespace", 'commands' );
@@ -736,6 +741,57 @@ class WP_CLI {
 		}
 
 		unset( self::$deferred_additions[ $name ] );
+	}
+
+	/**
+	 * Check if a command's arguments conflict with global arguments.
+	 *
+	 * @param string                      $command_name The name of the command being registered.
+	 * @param Dispatcher\Subcommand $command      The command object.
+	 */
+	private static function check_global_arg_conflicts( $command_name, $command ) {
+		$synopsis = $command->get_synopsis();
+		if ( ! $synopsis ) {
+			return;
+		}
+
+		// Get global argument names from config spec
+		$global_args = [];
+		foreach ( self::get_configurator()->get_spec() as $key => $details ) {
+			if ( false === $details['runtime'] ) {
+				continue;
+			}
+			if ( isset( $details['deprecated'] ) ) {
+				continue;
+			}
+			if ( isset( $details['hidden'] ) ) {
+				continue;
+			}
+			$global_args[] = $key;
+		}
+
+		// Parse the command's synopsis to get its argument names
+		$synopsis_params = SynopsisParser::parse( $synopsis );
+		$conflicts       = [];
+
+		foreach ( $synopsis_params as $param ) {
+			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) && isset( $param['name'] ) ) {
+				if ( in_array( $param['name'], $global_args, true ) ) {
+					$conflicts[] = $param['name'];
+				}
+			}
+		}
+
+		// Warn about any conflicts found
+		foreach ( $conflicts as $conflict ) {
+			self::warning(
+				sprintf(
+					"The `%s` command is registering an argument '--%s' that conflicts with a global argument of the same name. This can lead to unexpected behavior.",
+					$command_name,
+					$conflict
+				)
+			);
+		}
 	}
 
 	/**
