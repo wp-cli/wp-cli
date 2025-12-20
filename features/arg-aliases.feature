@@ -53,7 +53,7 @@ Feature: Argument aliases support
        * ---
        * alias:
        *   - v
-       *   - debug
+       *   - wordy
        * ---
        */
       $test_command = function( $args, $assoc_args ) {
@@ -78,7 +78,7 @@ Feature: Argument aliases support
       Success: verbose is set
       """
 
-    When I run `wp --require=custom-command.php test-alias --debug`
+    When I run `wp --require=custom-command.php test-alias --wordy`
     Then STDOUT should contain:
       """
       Success: verbose is set
