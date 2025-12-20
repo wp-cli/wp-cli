@@ -746,7 +746,7 @@ class WP_CLI {
 	/**
 	 * Check if a command's arguments conflict with global arguments.
 	 *
-	 * @param string                      $command_name The name of the command being registered.
+	 * @param string                    $command_name The name of the command being registered.
 	 * @param Dispatcher\Subcommand $command      The command object.
 	 */
 	private static function check_global_arg_conflicts( $command_name, $command ) {
@@ -775,6 +775,7 @@ class WP_CLI {
 		$conflicts       = [];
 
 		foreach ( $synopsis_params as $param ) {
+			// Check assoc and flag types; generic type has no specific name to conflict
 			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) && isset( $param['name'] ) ) {
 				if ( in_array( $param['name'], $global_args, true ) ) {
 					$conflicts[] = $param['name'];
