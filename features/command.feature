@@ -1741,7 +1741,7 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'testcommand', $foo );
       """
 
-    When I try `wp --require=custom-cmd.php help 2>&1`
+    When I try `wp --require=custom-cmd.php help`
     Then STDERR should contain:
       """
       Warning: The `testcommand` command is registering an argument '--debug' that conflicts with a global argument of the same name.
@@ -1771,7 +1771,7 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'multiconflict', $foo );
       """
 
-    When I try `wp --require=custom-cmd.php help 2>&1`
+    When I try `wp --require=custom-cmd.php help`
     Then STDERR should contain:
       """
       Warning: The `multiconflict` command is registering an argument '--user' that conflicts with a global argument of the same name.
@@ -1802,7 +1802,7 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'noconflict', $foo );
       """
 
-    When I try `wp --require=custom-cmd.php help 2>&1`
+    When I try `wp --require=custom-cmd.php help`
     Then STDERR should not contain:
       """
       Warning:
