@@ -205,8 +205,25 @@ class DocParser {
 				if ( $param_args && isset( $param_args['alias'] ) ) {
 					$param_aliases = (array) $param_args['alias'];
 					foreach ( $param_aliases as $alias ) {
+						// Handle boolean false (YAML interprets 'n' as false)
+						// Convert to string representation
+						if ( false === $alias ) {
+							$alias = 'n';
+						} elseif ( true === $alias ) {
+							$alias = 'y';
+						}
+
+						// Convert to string if not already
+						$alias = (string) $alias;
+
 						// Remove leading dashes if present
-						$alias             = ltrim( $alias, '-' );
+						$alias = ltrim( $alias, '-' );
+
+						// Skip empty aliases
+						if ( '' === $alias ) {
+							continue;
+						}
+
 						$aliases[ $alias ] = $param_name;
 					}
 				}
