@@ -313,13 +313,25 @@ class Subcommand extends CompositeCommand {
 		WP_CLI::debug( 'Resolving argument aliases: ' . implode( ', ', array_keys( $aliases ) ), 'bootstrap' );
 
 		$resolved_args = [];
+
+		// First pass: collect canonical names that are already provided
+		$canonical_names_present = [];
+		foreach ( $assoc_args as $key => $value ) {
+			if ( ! isset( $aliases[ $key ] ) ) {
+				// This is already a canonical name
+				$canonical_names_present[ $key ] = true;
+			}
+		}
+
+		// Second pass: resolve aliases, skipping if canonical name is present
 		foreach ( $assoc_args as $key => $value ) {
 			// If this key is an alias, use the canonical name instead
 			if ( isset( $aliases[ $key ] ) ) {
 				$canonical_key = $aliases[ $key ];
-				WP_CLI::debug( "Alias resolved: --{$key} => --{$canonical_key}", 'bootstrap' );
-				// Only set if not already set by canonical name
-				if ( ! isset( $resolved_args[ $canonical_key ] ) && ! isset( $assoc_args[ $canonical_key ] ) ) {
+
+				// Only use alias if canonical name wasn't provided
+				if ( ! isset( $canonical_names_present[ $canonical_key ] ) ) {
+					WP_CLI::debug( "Alias resolved: --{$key} => --{$canonical_key}", 'bootstrap' );
 					$resolved_args[ $canonical_key ] = $value;
 				} else {
 					// Canonical name was already provided, ignore alias
