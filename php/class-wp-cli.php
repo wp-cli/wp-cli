@@ -38,6 +38,13 @@ class WP_CLI {
 	private static $deferred_additions = [];
 
 	/**
+	 * Cached list of global argument names.
+	 *
+	 * @var array|null
+	 */
+	private static $global_arg_names;
+
+	/**
 	 * Set the logger instance.
 	 *
 	 * @param object $logger Logger instance to set.
@@ -746,8 +753,11 @@ class WP_CLI {
 	/**
 	 * Check if a command's arguments conflict with global arguments.
 	 *
+	 * Issues warnings for any command arguments that have the same name as
+	 * global WP-CLI arguments (e.g., --debug, --user, --quiet).
+	 *
 	 * @param string                    $command_name The name of the command being registered.
-	 * @param Dispatcher\Subcommand $command      The command object.
+	 * @param Dispatcher\Subcommand $command      The command object to check.
 	 */
 	private static function check_global_arg_conflicts( $command_name, $command ) {
 		$synopsis = $command->get_synopsis();
@@ -755,19 +765,21 @@ class WP_CLI {
 			return;
 		}
 
-		// Get global argument names from config spec
-		$global_args = [];
-		foreach ( self::get_configurator()->get_spec() as $key => $details ) {
-			if ( false === $details['runtime'] ) {
-				continue;
+		// Get global argument names from config spec (cached)
+		if ( null === self::$global_arg_names ) {
+			self::$global_arg_names = [];
+			foreach ( self::get_configurator()->get_spec() as $key => $details ) {
+				if ( false === $details['runtime'] ) {
+					continue;
+				}
+				if ( isset( $details['deprecated'] ) ) {
+					continue;
+				}
+				if ( isset( $details['hidden'] ) ) {
+					continue;
+				}
+				self::$global_arg_names[] = $key;
 			}
-			if ( isset( $details['deprecated'] ) ) {
-				continue;
-			}
-			if ( isset( $details['hidden'] ) ) {
-				continue;
-			}
-			$global_args[] = $key;
 		}
 
 		// Parse the command's synopsis to get its argument names
@@ -777,7 +789,7 @@ class WP_CLI {
 		foreach ( $synopsis_params as $param ) {
 			// Check assoc and flag types; generic type has no specific name to conflict
 			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) && isset( $param['name'] ) ) {
-				if ( in_array( $param['name'], $global_args, true ) ) {
+				if ( in_array( $param['name'], self::$global_arg_names, true ) ) {
 					$conflicts[] = $param['name'];
 				}
 			}
