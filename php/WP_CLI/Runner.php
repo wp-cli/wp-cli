@@ -378,7 +378,7 @@ class Runner {
 	 *
 	 * @param array $args
 	 * @param string $autocorrect Whether to autocorrect commands based on suggestions.
-	 * @return array|string Command, args, and path on success; error message on failure
+	 * @return array{0: CompositeCommand, 1: array, 2: array}|string Command, args, and path on success; error message on failure
 	 *
 	 * @phpstan-param 'none'|'confirm'|'auto' $autocorrect
 	 */
