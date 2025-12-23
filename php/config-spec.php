@@ -129,4 +129,11 @@ return [
 		'hidden'  => true,
 	],
 
+	'env'               => [
+		'file'    => '<map>',
+		'runtime' => false,
+		'default' => [],
+		'desc'    => 'Set environment variable values. These will be used as fallbacks when the corresponding environment variable is not set in the shell.',
+	],
+
 ];
