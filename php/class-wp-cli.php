@@ -38,6 +38,13 @@ class WP_CLI {
 	private static $deferred_additions = [];
 
 	/**
+	 * Cached list of global argument names.
+	 *
+	 * @var array|null
+	 */
+	private static $global_arg_names;
+
+	/**
 	 * Set the logger instance.
 	 *
 	 * @param object $logger Logger instance to set.
@@ -649,6 +656,11 @@ class WP_CLI {
 			self::get_runner()->register_early_invoke( $args['when'], $leaf_command );
 		}
 
+		// Check for global argument conflicts
+		if ( $leaf_command instanceof Dispatcher\Subcommand ) {
+			self::check_global_arg_conflicts( $name, $leaf_command );
+		}
+
 		if ( ! empty( $parent ) ) {
 			$sub_command = trim( str_replace( $parent, '', $name ) );
 			self::debug( "Adding command: {$sub_command} in {$parent} Namespace", 'commands' );
@@ -736,6 +748,63 @@ class WP_CLI {
 		}
 
 		unset( self::$deferred_additions[ $name ] );
+	}
+
+	/**
+	 * Check if a command's arguments conflict with global arguments.
+	 *
+	 * Issues warnings for any command arguments that have the same name as
+	 * global WP-CLI arguments (e.g., --debug, --user, --quiet).
+	 *
+	 * @param string                    $command_name The name of the command being registered.
+	 * @param Dispatcher\Subcommand $command      The command object to check.
+	 */
+	private static function check_global_arg_conflicts( $command_name, $command ) {
+		$synopsis = $command->get_synopsis();
+		if ( ! $synopsis ) {
+			return;
+		}
+
+		// Get global argument names from config spec (cached)
+		if ( null === self::$global_arg_names ) {
+			self::$global_arg_names = [];
+			foreach ( self::get_configurator()->get_spec() as $key => $details ) {
+				if ( false === $details['runtime'] ) {
+					continue;
+				}
+				if ( isset( $details['deprecated'] ) ) {
+					continue;
+				}
+				if ( isset( $details['hidden'] ) ) {
+					continue;
+				}
+				self::$global_arg_names[] = $key;
+			}
+		}
+
+		// Parse the command's synopsis to get its argument names
+		$synopsis_params = SynopsisParser::parse( $synopsis );
+		$conflicts       = [];
+
+		foreach ( $synopsis_params as $param ) {
+			// Check assoc and flag types; generic type has no specific name to conflict
+			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) && isset( $param['name'] ) ) {
+				if ( in_array( $param['name'], self::$global_arg_names, true ) ) {
+					$conflicts[] = $param['name'];
+				}
+			}
+		}
+
+		// Warn about any conflicts found
+		foreach ( $conflicts as $conflict ) {
+			self::warning(
+				sprintf(
+					"The `%s` command is registering an argument '--%s' that conflicts with a global argument of the same name. This can lead to unexpected behavior.",
+					$command_name,
+					$conflict
+				)
+			);
+		}
 	}
 
 	/**
