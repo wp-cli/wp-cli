@@ -339,7 +339,7 @@ Feature: `wp cli completions` tasks
     Then STDOUT should be empty
 
 
- Scenario: Bash Completion for global --url parameter
+  Scenario: Bash Completion for global --url parameter
     Given a WP multisite installation
     And I run `wp site create --slug=foo.example.org`
     And I run `wp site create --slug=foot.example.org`
