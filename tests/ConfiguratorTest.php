@@ -60,6 +60,38 @@ class ConfiguratorTest extends TestCase {
 		$this->assertEquals( 'text--text', $args[1][0][1] );
 	}
 
+	public function testExtractAssocEndOfOptionsDelimiterSimple(): void {
+		$args = Configurator::extract_assoc( [ 'foo', 'bar', '--', '--path=biz/baz', '--json' ] );
+
+		// All tokens after `--` are positional, not associative.
+		$this->assertEquals( [ 'foo', 'bar', '--path=biz/baz', '--json' ], $args[0] );
+		$this->assertCount( 0, $args[1] );
+		$this->assertCount( 0, $args[2] );
+		$this->assertCount( 0, $args[3] );
+	}
+
+	public function testExtractAssocEndOfOptionsDelimiterWithGlobalBefore(): void {
+		$args = Configurator::extract_assoc( [ '--url=foo.dev', 'foo', 'bar', '--', '--path=biz/baz' ] );
+
+		// `--url=foo.dev` captured as global assoc before any positionals.
+		$this->assertEquals( [ 'foo', 'bar', '--path=biz/baz' ], $args[0] );
+		$this->assertCount( 1, $args[1] );
+		$this->assertEquals( 'url', $args[1][0][0] );
+		$this->assertEquals( 'foo.dev', $args[1][0][1] );
+		$this->assertCount( 0, $args[3] );
+	}
+
+	public function testExtractAssocEndOfOptionsDelimiterWithGlobalAfter(): void {
+		$args = Configurator::extract_assoc( [ 'foo', 'bar', '--url=foo.dev', '--', '--path=biz/baz' ] );
+
+		// `--url=foo.dev` captured as global assoc after positionals.
+		$this->assertEquals( [ 'foo', 'bar', '--path=biz/baz' ], $args[0] );
+		$this->assertCount( 1, $args[1] );
+		$this->assertEquals( 'url', $args[1][0][0] );
+		$this->assertEquals( 'foo.dev', $args[1][0][1] );
+		$this->assertCount( 0, $args[3] );
+	}
+
 	/**
 	 * WP_CLI::get_config does not show warnings for null values.
 	 */
