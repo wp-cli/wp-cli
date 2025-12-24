@@ -8,7 +8,6 @@ class Completions {
 
 	private $cur_word;
 	private $words;
-	private $cur_word;
 	private $opts = [];
 
 	/**
@@ -204,10 +203,13 @@ class Completions {
 			// todo get via WP_CLI::launch_self( 'wp option get homeurl' ) ?
 			// todo parse out just the domain/path, not scheme/etc
 			// maybe run through php/wp filter to sanitize filename
-		$cache_key        = sprintf( 'network-urls:%s', $main_site_domain );
-		$cached_urls      = json_decode( $cache->read( $cache_key ) ); //specify ttl?
+		$cache_key   = sprintf( 'network-urls:%s', $main_site_domain );
+		$cached_urls = json_decode( (string) $cache->read( $cache_key ), true ); //specify ttl?
 
 		if ( $cached_urls ) {
+			/**
+			 * @var string[] $cached_urls
+			 */
 			return $cached_urls;
 		}
 
