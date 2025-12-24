@@ -30,9 +30,8 @@ class Completions {
 		}
 
 		// Last word is an incomplete `--url` parameter
-		// todo maybe need php56 compat w/out wp polyfills?
-		if ( str_starts_with( $this->cur_word, '--url' ) ) {
-			$parameter      = explode( '=', $this->cur_word );
+		if ( 0 === strpos( $this->cur_word, '--url' ) ) {
+			$parameter = explode( '=', $this->cur_word );
 				// todo maybe strip out the --
 			$this->cur_word = $parameter[1];
 			$urls           = $this->get_network_urls( 'foo' );
