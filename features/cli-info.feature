@@ -28,6 +28,21 @@ Feature: Review CLI information
       WP-CLI packages dir:
       """
 
+  Scenario: Display memory limit
+    Given an empty directory
+
+    When I run `wp cli info`
+    Then STDOUT should contain:
+      """
+      PHP memory limit:
+      """
+
+    When I run `wp cli info --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {"php_memory_limit":
+      """
+
   Scenario: Packages directory path should be slashed correctly
     When I run `WP_CLI_PACKAGES_DIR=/foo wp package path`
     Then STDOUT should be:
