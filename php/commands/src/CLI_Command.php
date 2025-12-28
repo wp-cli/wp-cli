@@ -194,6 +194,65 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::line( "WP-CLI project config:\t" . $runner->project_config_path );
 			WP_CLI::line( "WP-CLI version:\t" . WP_CLI_VERSION );
 		}
+
+		// Emit a warning if the memory limit is set to a low value.
+		$this->check_memory_limit( $memory_limit );
+	}
+
+	/**
+	 * Checks if the PHP memory limit is too low and emits a warning if needed.
+	 *
+	 * @param string $memory_limit The current memory limit value from ini_get().
+	 */
+	private function check_memory_limit( $memory_limit ) {
+		// If memory limit is -1 (unlimited), no warning needed.
+		if ( '-1' === $memory_limit ) {
+			return;
+		}
+
+		// Convert memory limit string (e.g., "256M", "1G") to bytes.
+		$limit_bytes = $this->convert_to_bytes( $memory_limit );
+
+		// Warn if limit is below 512M (536870912 bytes).
+		// This is a reasonable threshold for CLI operations.
+		if ( $limit_bytes > 0 && $limit_bytes < 536870912 ) {
+			WP_CLI::warning(
+				sprintf(
+					'PHP memory limit is set to %s. This may be too low for some WP-CLI operations. Consider increasing it to at least 512M or setting it to -1 (unlimited) for CLI usage.',
+					$memory_limit
+				)
+			);
+		}
+	}
+
+	/**
+	 * Converts a memory limit string to bytes.
+	 *
+	 * @param string $value The memory limit value (e.g., "256M", "1G", "512K").
+	 * @return int The value in bytes, or -1 if unlimited.
+	 */
+	private function convert_to_bytes( $value ) {
+		$value = trim( $value );
+
+		if ( '-1' === $value ) {
+			return -1;
+		}
+
+		$last  = strtolower( $value[ strlen( $value ) - 1 ] );
+		$value = (int) $value;
+
+		switch ( $last ) {
+			case 'g':
+				$value *= 1024;
+				// Fall through.
+			case 'm':
+				$value *= 1024;
+				// Fall through.
+			case 'k':
+				$value *= 1024;
+		}
+
+		return $value;
 	}
 
 	/**

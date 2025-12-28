@@ -43,6 +43,26 @@ Feature: Review CLI information
       {"php_memory_limit":
       """
 
+  Scenario: Warn about low memory limit
+    Given an empty directory
+
+    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=128M} cli info`
+    Then STDOUT should contain:
+      """
+      PHP memory limit:	128M
+      """
+    And STDERR should contain:
+      """
+      PHP memory limit is set to 128M
+      """
+
+    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=1G} cli info`
+    Then STDOUT should contain:
+      """
+      PHP memory limit:	1G
+      """
+    And STDERR should be empty
+
   Scenario: Packages directory path should be slashed correctly
     When I run `WP_CLI_PACKAGES_DIR=/foo wp package path`
     Then STDOUT should be:
