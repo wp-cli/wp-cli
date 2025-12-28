@@ -238,21 +238,33 @@ class CLI_Command extends WP_CLI_Command {
 			return -1;
 		}
 
-		$last  = strtolower( $value[ strlen( $value ) - 1 ] );
-		$value = (int) $value;
+		// Handle empty string or invalid values.
+		if ( empty( $value ) ) {
+			return 0;
+		}
+
+		$last = strtolower( $value[ strlen( $value ) - 1 ] );
+
+		// Extract numeric value before converting.
+		if ( ! is_numeric( $last ) ) {
+			$numeric_value = (int) substr( $value, 0, -1 );
+		} else {
+			$numeric_value = (int) $value;
+			$last          = '';
+		}
 
 		switch ( $last ) {
 			case 'g':
-				$value *= 1024;
+				$numeric_value *= 1024;
 				// Fall through.
 			case 'm':
-				$value *= 1024;
+				$numeric_value *= 1024;
 				// Fall through.
 			case 'k':
-				$value *= 1024;
+				$numeric_value *= 1024;
 		}
 
-		return $value;
+		return $numeric_value;
 	}
 
 	/**
