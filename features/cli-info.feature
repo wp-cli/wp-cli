@@ -46,7 +46,7 @@ Feature: Review CLI information
   Scenario: Warn about low memory limit
     Given an empty directory
 
-    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=128M} cli info`
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=128M} cli info`
     Then STDOUT should contain:
       """
       PHP memory limit:	128M
