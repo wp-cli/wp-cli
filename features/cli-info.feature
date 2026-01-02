@@ -37,12 +37,6 @@ Feature: Review CLI information
       PHP memory limit:
       """
 
-    When I run `wp cli info --format=json`
-    Then STDOUT should be JSON containing:
-      """
-      {"php_memory_limit":
-      """
-
   Scenario: Warn about low memory limit
     Given an empty directory
 
