@@ -403,6 +403,8 @@ function wp_get_cache_type() {
 					} else {
 						$message = 'WP-Stash';
 					}
+				} else {
+					$message = 'WP-Stash';
 				}
 			} catch ( \Throwable $e ) {
 				// If WP-Stash fails to initialize, we can't determine the driver
