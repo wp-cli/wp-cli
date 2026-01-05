@@ -852,6 +852,8 @@ Feature: Utilities that depend on WordPress code
     And a wp-content/object-cache.php file:
       """
       <?php
+      $_wp_using_ext_object_cache = true;
+
       class Custom_Object_Cache {
         public $cache = [];
         public function get( $key, $group = 'default', $force = false, &$found = null ) {
@@ -868,7 +870,6 @@ Feature: Utilities that depend on WordPress code
         }
       }
       $wp_object_cache = new Custom_Object_Cache();
-      $_wp_using_ext_object_cache = true;
       """
     And a cache_type_test.php file:
       """
@@ -889,6 +890,8 @@ Feature: Utilities that depend on WordPress code
     And a wp-content/object-cache.php file:
       """
       <?php
+      $_wp_using_ext_object_cache = true;
+
       namespace Inpsyde\WpStash;
 
       class WpStash {
@@ -917,26 +920,27 @@ Feature: Utilities that depend on WordPress code
         public function set() {}
       }
 
-      // Initialize WP-Stash
-      \Inpsyde\WpStash\WpStash::instance();
+      namespace {
+        // Initialize WP-Stash
+        \Inpsyde\WpStash\WpStash::instance();
 
-      // WordPress object cache implementation
-      class WP_Object_Cache {
-        public function get( $key, $group = 'default', $force = false, &$found = null ) {
-          return false;
+        // WordPress object cache implementation
+        class WP_Object_Cache {
+          public function get( $key, $group = 'default', $force = false, &$found = null ) {
+            return false;
+          }
+          public function set( $key, $data, $group = 'default', $expire = 0 ) {
+            return true;
+          }
+          public function delete( $key, $group = 'default' ) {
+            return true;
+          }
+          public function flush() {
+            return true;
+          }
         }
-        public function set( $key, $data, $group = 'default', $expire = 0 ) {
-          return true;
-        }
-        public function delete( $key, $group = 'default' ) {
-          return true;
-        }
-        public function flush() {
-          return true;
-        }
+        $wp_object_cache = new WP_Object_Cache();
       }
-      $wp_object_cache = new WP_Object_Cache();
-      $_wp_using_ext_object_cache = true;
       """
     And a cache_type_test.php file:
       """
