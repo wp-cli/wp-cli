@@ -852,6 +852,7 @@ Feature: Utilities that depend on WordPress code
     And a wp-content/object-cache.php file:
       """
       <?php
+      global $_wp_using_ext_object_cache;
       $_wp_using_ext_object_cache = true;
 
       class Custom_Object_Cache {
@@ -890,8 +891,6 @@ Feature: Utilities that depend on WordPress code
     And a wp-content/object-cache.php file:
       """
       <?php
-      $_wp_using_ext_object_cache = true;
-
       namespace Inpsyde\WpStash;
 
       class WpStash {
@@ -921,6 +920,9 @@ Feature: Utilities that depend on WordPress code
       }
 
       namespace {
+        global $_wp_using_ext_object_cache;
+        $_wp_using_ext_object_cache = true;
+
         // Initialize WP-Stash
         \Inpsyde\WpStash\WpStash::instance();
 
