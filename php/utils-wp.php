@@ -404,7 +404,7 @@ function wp_get_cache_type() {
 						$message = 'WP-Stash';
 					}
 				}
-			} catch ( \Exception $e ) {
+			} catch ( \Throwable $e ) {
 				// If WP-Stash fails to initialize, we can't determine the driver
 				$message = 'WP-Stash';
 			}
