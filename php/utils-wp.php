@@ -394,10 +394,20 @@ function wp_get_cache_type() {
 
 			// Test for WP-Stash (https://github.com/inpsyde/WP-Stash)
 		} elseif ( class_exists( 'Inpsyde\WpStash\WpStash' ) ) {
-			$wp_stash = \Inpsyde\WpStash\WpStash::instance();
-			$driver   = $wp_stash->driver();
-			$message  = 'WP-Stash (' . get_class( $driver ) . ')';
-
+			try {
+				$wp_stash = \Inpsyde\WpStash\WpStash::instance();
+				if ( is_object( $wp_stash ) && method_exists( $wp_stash, 'driver' ) ) {
+					$driver = $wp_stash->driver();
+					if ( is_object( $driver ) ) {
+						$message = 'WP-Stash (' . get_class( $driver ) . ')';
+					} else {
+						$message = 'WP-Stash';
+					}
+				}
+			} catch ( \Exception $e ) {
+				// If WP-Stash fails to initialize, we can't determine the driver
+				$message = 'WP-Stash';
+			}
 		} elseif ( function_exists( 'w3_instance' ) ) {
 			$config = w3_instance( 'W3_Config' );
 
