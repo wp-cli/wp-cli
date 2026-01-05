@@ -870,7 +870,18 @@ Feature: Utilities that depend on WordPress code
           return true;
         }
       }
-      $wp_object_cache = new Custom_Object_Cache();
+
+      function wp_cache_init() {
+        global $wp_object_cache;
+        $wp_object_cache = new Custom_Object_Cache();
+      }
+
+      function wp_cache_get() { return false; }
+      function wp_cache_add() { return false; }
+      function wp_cache_set() { return false; }
+      function wp_cache_delete() { return false; }
+      function wp_cache_add_non_persistent_groups() { return false; }
+      function wp_cache_close() { return true; }
       """
     And a cache_type_test.php file:
       """
@@ -891,32 +902,32 @@ Feature: Utilities that depend on WordPress code
     And a wp-content/object-cache.php file:
       """
       <?php
-      namespace Inpsyde\WpStash;
+      namespace Inpsyde\WpStash {
+        class WpStash {
+          private static $instance;
+          private $driver;
 
-      class WpStash {
-        private static $instance;
-        private $driver;
-
-        public static function instance() {
-          if ( ! self::$instance ) {
-            self::$instance = new self();
+          public static function instance() {
+            if ( ! self::$instance ) {
+              self::$instance = new self();
+            }
+            return self::$instance;
           }
-          return self::$instance;
-        }
 
-        public function driver() {
-          if ( ! $this->driver ) {
-            $this->driver = new \Stash\Driver\FileSystem();
+          public function driver() {
+            if ( ! $this->driver ) {
+              $this->driver = new \Stash\Driver\FileSystem();
+            }
+            return $this->driver;
           }
-          return $this->driver;
         }
       }
 
-      namespace Stash\Driver;
-
-      class FileSystem {
-        public function get() {}
-        public function set() {}
+      namespace Stash\Driver {
+        class FileSystem {
+          public function get() {}
+          public function set() {}
+        }
       }
 
       namespace {
@@ -941,7 +952,18 @@ Feature: Utilities that depend on WordPress code
             return true;
           }
         }
-        $wp_object_cache = new WP_Object_Cache();
+
+        function wp_cache_init() {
+          global $wp_object_cache;
+          $wp_object_cache = new WP_Object_Cache();
+        }
+
+        function wp_cache_get() { return false; }
+        function wp_cache_add() { return false; }
+        function wp_cache_set() { return false; }
+        function wp_cache_delete() { return false; }
+        function wp_cache_add_non_persistent_groups() { return false; }
+        function wp_cache_close() { return true; }
       }
       """
     And a cache_type_test.php file:
