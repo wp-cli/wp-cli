@@ -392,12 +392,23 @@ function wp_get_cache_type() {
 		} elseif ( isset( $wp_object_cache->lcache ) && $wp_object_cache->lcache instanceof \LCache\Integrated ) {
 			$message = 'WP LCache';
 
+			// Test for WP-Stash (https://github.com/inpsyde/WP-Stash)
+		} elseif ( class_exists( 'Inpsyde\WpStash\WpStash' ) ) {
+			$wp_stash = \Inpsyde\WpStash\WpStash::instance();
+			$driver   = $wp_stash->driver();
+			$message  = 'WP-Stash (' . get_class( $driver ) . ')';
+
 		} elseif ( function_exists( 'w3_instance' ) ) {
 			$config = w3_instance( 'W3_Config' );
 
 			if ( $config->get_boolean( 'objectcache.enabled' ) ) {
 				$message = 'W3TC ' . $config->get_string( 'objectcache.engine' );
 			}
+		}
+
+		// If still unknown, provide the class name for debugging
+		if ( 'Unknown' === $message && is_object( $wp_object_cache ) ) {
+			$message = 'Unknown: ' . get_class( $wp_object_cache );
 		}
 	} else {
 		$message = 'Default';

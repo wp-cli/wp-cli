@@ -830,3 +830,122 @@ Feature: Utilities that depend on WordPress code
       wp_usermeta
       wp_users
       """
+
+  Scenario: Get cache type - Default
+    Given a WP installation
+    And a cache_type_test.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'cache-type-test', function() {
+        echo WP_CLI\Utils\wp_get_cache_type();
+      } );
+      """
+
+    When I run `wp --require=cache_type_test.php cache-type-test`
+    Then STDOUT should be:
+      """
+      Default
+      """
+
+  Scenario: Get cache type - Unknown custom cache
+    Given a WP installation
+    And a wp-content/object-cache.php file:
+      """
+      <?php
+      class Custom_Object_Cache {
+        public $cache = [];
+        public function get( $key, $group = 'default', $force = false, &$found = null ) {
+          return false;
+        }
+        public function set( $key, $data, $group = 'default', $expire = 0 ) {
+          return true;
+        }
+        public function delete( $key, $group = 'default' ) {
+          return true;
+        }
+        public function flush() {
+          return true;
+        }
+      }
+      $wp_object_cache = new Custom_Object_Cache();
+      """
+    And a cache_type_test.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'cache-type-test', function() {
+        echo WP_CLI\Utils\wp_get_cache_type();
+      } );
+      """
+
+    When I run `wp --require=cache_type_test.php cache-type-test`
+    Then STDOUT should be:
+      """
+      Unknown: Custom_Object_Cache
+      """
+
+  Scenario: Get cache type - WP-Stash
+    Given a WP installation
+    And a wp-content/object-cache.php file:
+      """
+      <?php
+      namespace Inpsyde\WpStash;
+
+      class WpStash {
+        private static $instance;
+        private $driver;
+
+        public static function instance() {
+          if ( ! self::$instance ) {
+            self::$instance = new self();
+          }
+          return self::$instance;
+        }
+
+        public function driver() {
+          if ( ! $this->driver ) {
+            $this->driver = new \Stash\Driver\FileSystem();
+          }
+          return $this->driver;
+        }
+      }
+
+      namespace Stash\Driver;
+
+      class FileSystem {
+        public function get() {}
+        public function set() {}
+      }
+
+      // Initialize WP-Stash
+      \Inpsyde\WpStash\WpStash::instance();
+
+      // WordPress object cache implementation
+      class WP_Object_Cache {
+        public function get( $key, $group = 'default', $force = false, &$found = null ) {
+          return false;
+        }
+        public function set( $key, $data, $group = 'default', $expire = 0 ) {
+          return true;
+        }
+        public function delete( $key, $group = 'default' ) {
+          return true;
+        }
+        public function flush() {
+          return true;
+        }
+      }
+      $wp_object_cache = new WP_Object_Cache();
+      """
+    And a cache_type_test.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'cache-type-test', function() {
+        echo WP_CLI\Utils\wp_get_cache_type();
+      } );
+      """
+
+    When I run `wp --require=cache_type_test.php cache-type-test`
+    Then STDOUT should be:
+      """
+      WP-Stash (Stash\Driver\FileSystem)
+      """
