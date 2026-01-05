@@ -868,6 +868,7 @@ Feature: Utilities that depend on WordPress code
         }
       }
       $wp_object_cache = new Custom_Object_Cache();
+      $_wp_using_ext_object_cache = true;
       """
     And a cache_type_test.php file:
       """
@@ -935,6 +936,7 @@ Feature: Utilities that depend on WordPress code
         }
       }
       $wp_object_cache = new WP_Object_Cache();
+      $_wp_using_ext_object_cache = true;
       """
     And a cache_type_test.php file:
       """
