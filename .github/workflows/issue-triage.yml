@@ -4,7 +4,7 @@ name: Issue and PR Triage
 'on':
   issues:
     types: [opened]
-  pull_request:
+  pull_request_target:
     types: [opened]
   workflow_dispatch:
     inputs:
@@ -20,7 +20,7 @@ jobs:
       issue_number: >-
         ${{
           (github.event_name == 'workflow_dispatch' && inputs.issue_number) ||
-          (github.event_name == 'pull_request' && github.event.pull_request.number) ||
+          (github.event_name == 'pull_request_target' && github.event.pull_request.number) ||
           (github.event_name == 'issues' && github.event.issue.number) ||
           ''
         }}
