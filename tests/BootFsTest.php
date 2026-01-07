@@ -1,6 +1,6 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
+use WP_CLI\Tests\TestCase;
 
 /**
  * Test the boot-fs.php extension checks
