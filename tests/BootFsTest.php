@@ -12,7 +12,10 @@ class BootFsTest extends TestCase {
 	 */
 	public function testExtensionCheckExists() {
 		$boot_fs_content = file_get_contents( WP_CLI_ROOT . '/php/boot-fs.php' );
-		
+
+		// Ensure file was read successfully
+		$this->assertNotFalse( $boot_fs_content, 'Could not read boot-fs.php file' );
+
 		// Check that the file contains the extension check
 		$this->assertStringContainsString( 'extension_loaded', $boot_fs_content );
 		$this->assertStringContainsString( 'mbstring', $boot_fs_content );
@@ -26,7 +29,7 @@ class BootFsTest extends TestCase {
 	public function testAtLeastOneExtensionIsLoaded() {
 		$has_mbstring = extension_loaded( 'mbstring' );
 		$has_iconv    = extension_loaded( 'iconv' );
-		
+
 		// At least one extension should be available
 		$this->assertTrue(
 			$has_mbstring || $has_iconv,
