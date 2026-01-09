@@ -2,6 +2,7 @@
 
 // Utilities that do NOT depend on WordPress code.
 
+
 namespace WP_CLI\Utils;
 
 use ArrayIterator;
@@ -299,6 +300,8 @@ function expand_tilde_path( $path ) {
 function args_to_str( $args ) {
 	return ' ' . implode( ' ', array_map( 'escapeshellarg', $args ) );
 }
+
+// Check if the file exists and is readable.
 
 /**
  * Composes associative arguments into a command string.
