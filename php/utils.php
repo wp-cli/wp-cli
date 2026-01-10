@@ -1949,7 +1949,7 @@ function get_db_type() {
 	$binary = get_mysql_binary_path();
 
 	if ( '' !== $binary ) {
-		$result = Process::create( "$binary --version", null, null )->run();
+		$result = Process::create( esc_cmd( '%s --version', $binary ), null, null )->run();
 
 		if ( 0 === $result->return_code ) {
 			$db_type = ( false !== strpos( $result->stdout, 'MariaDB' ) ) ? 'mariadb' : 'mysql';
@@ -1986,7 +1986,7 @@ function get_mysql_binary_path() {
 	if ( 0 === $mysql->return_code ) {
 		if ( '' !== $mysql_binary ) {
 			$path   = $mysql_binary;
-			$result = Process::create( "$mysql_binary --version", null, null )->run();
+			$result = Process::create( esc_cmd( '%s --version', $mysql_binary ), null, null )->run();
 
 			// It's actually MariaDB disguised as MySQL.
 			if ( 0 === $result->return_code && false !== strpos( $result->stdout, 'MariaDB' ) && 0 === $mariadb->return_code ) {
@@ -2020,7 +2020,7 @@ function get_mysql_version() {
 	$db_type = get_db_type();
 
 	if ( 'sqlite' !== $db_type ) {
-		$result = Process::create( "/usr/bin/env $db_type --version", null, null )->run();
+		$result = Process::create( esc_cmd( '/usr/bin/env %s --version', $db_type ), null, null )->run();
 
 		if ( 0 === $result->return_code ) {
 			$version = trim( $result->stdout );
@@ -2066,7 +2066,7 @@ function get_sql_modes() {
 	if ( '' === $binary ) {
 		$sql_modes = [];
 	} else {
-		$result = Process::create( "$binary --no-auto-rehash --batch --skip-column-names --execute=\"SELECT @@SESSION.sql_mode\"", null, null )->run();
+		$result = Process::create( esc_cmd( '%s --no-auto-rehash --batch --skip-column-names --execute="SELECT @@SESSION.sql_mode"', $binary ), null, null )->run();
 
 		if ( 0 !== $result->return_code ) {
 			$sql_modes = [];
