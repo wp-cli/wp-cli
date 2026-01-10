@@ -16,6 +16,7 @@
     "require-dev": {
         "justinrainbow/json-schema": "^6.3",
         "roave/security-advisories": "dev-latest",
+        "squizlabs/php_codesniffer": "^3.13",
         "wp-cli/db-command": "^2",
         "wp-cli/entity-command": "^2",
         "wp-cli/extension-command": "^2",
