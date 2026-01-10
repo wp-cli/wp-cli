@@ -17,7 +17,7 @@ use Mustache\Engine as Mustache_Engine;
 use ReflectionFunction;
 use RuntimeException;
 use WP_CLI;
-use WP_CLI\ExitException;
+use WP_CLI\ExitException; 
 use WP_CLI\Formatter;
 use WP_CLI\Inflector;
 use WP_CLI\Iterators\Transform;
