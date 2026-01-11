@@ -9,12 +9,12 @@ use Mustangostang\Spyc;
 use WP_CLI;
 
 /**
- * Output one or more items in a given format (e.g. table, JSON).
- *
- * @property-read string      $format
- * @property-read string[]    $fields
- * @property-read string|null $field
- */
+	* Output one or more items in a given format (e.g. table, JSON).
+	*
+	* @property-read string      $format
+	* @property-read string[]    $fields
+	* @property-read string|null $field
+	*/
 class Formatter {
 
 	/**
@@ -179,15 +179,15 @@ class Formatter {
 					}
 				} elseif ( 'yaml' === $this->args['format'] ) {
 					// Ensure falsey scalar values like "0" are preserved correctly
-   					 array_walk_recursive(
-						 $out,
-       						 static function ( &$value ) {
-           						 if ( $value === 0 || $value === '0' ) {
-               							 $value = (string) $value;
-           						 }
-       						 }
-   					 );
-
+					array_walk_recursive(
+						$out,
+						static function ( &$value ) {
+							if ( 0 === $value || '0' === $value ) {
+								$value = (string) $value;
+							}
+						}
+					);
+	
 					echo Spyc::YAMLDump( $out, 2, 0 );
 				}
 				break;
