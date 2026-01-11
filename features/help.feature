@@ -1364,17 +1364,17 @@ Feature: Get help about WP-CLI commands
          * ## EXAMPLES
          *
          *     # Clear the cloudflare cache for a domain.
-         *     wp test-multiline no-alias 12345
+         *     wp test-multiline noalias 12345
          *     Success: The Cloudflare cache has been cleared.
          */
-        public function no_alias( $args ) {}
+        public function noalias( $args ) {}
       }
 
       WP_CLI::add_command( 'test-multiline', 'Test_Multiline_No_Alias' );
       """
     And I run `wp plugin activate test-cli`
 
-    When I run `wp help test-multiline no-alias`
+    When I run `wp help test-multiline noalias`
     Then STDOUT should contain:
       """
       DESCRIPTION
