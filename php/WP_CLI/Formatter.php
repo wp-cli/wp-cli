@@ -208,7 +208,10 @@ class Formatter {
 				$values[] = $item->$key;
 			} else {
 				 // Special-case YAML scalar output (Spyc breaks on scalar 0)
-				if ( 'yaml' === $this->args['format'] && is_scalar( $item->$key ) &&(0 === $item->$key || '0' === $item->$key) ) {
+				if ( 
+					'yaml' === $this->args['format']
+					&& (0 === $item->$key || '0' === $item->$key)
+					&& is_scalar( $item->$key ) ) {
 						WP_CLI::line( '0' );
 				} else {
 					WP_CLI::print_value(
@@ -219,7 +222,7 @@ class Formatter {
 					);
 				}
 			}
-
+		}
 
 		if ( 'json' === $this->args['format'] ) {
 			echo json_encode( $values );
