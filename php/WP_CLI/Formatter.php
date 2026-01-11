@@ -178,15 +178,6 @@ class Formatter {
 						echo json_encode( $out );
 					}
 				} elseif ( 'yaml' === $this->args['format'] ) {
-					// Ensure falsey scalar values like "0" are preserved correctly
-					array_walk_recursive(
-						$out,
-						static function ( &$value ) {
-							if ( 0 === $value || '0' === $value ) {
-								$value = (string) $value;
-							}
-						}
-					);
 					echo Spyc::YAMLDump( $out, 2, 0 );
 				}
 				break;
@@ -216,14 +207,19 @@ class Formatter {
 			if ( 'json' === $this->args['format'] ) {
 				$values[] = $item->$key;
 			} else {
-				WP_CLI::print_value(
-					$item->$key,
-					[
-						'format' => $this->args['format'],
-					]
-				);
+				 // Special-case YAML scalar output (Spyc breaks on scalar 0)
+				if ( 'yaml' === $this->args['format'] && is_scalar( $item->$key ) &&(0 === $item->$key || '0' === $item->$key) ) {
+						WP_CLI::line( '0' );
+				} else {
+					WP_CLI::print_value(
+						$item->$key,
+						[
+							'format' => $this->args['format'],
+						]
+					);
+				}
 			}
-		}
+
 
 		if ( 'json' === $this->args['format'] ) {
 			echo json_encode( $values );
