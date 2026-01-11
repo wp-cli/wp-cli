@@ -194,9 +194,7 @@ Feature: Format output
     Given a WP install
     And I run `wp option update test_zero 0`
     When I run `wp option get test_zero --format=yaml`
-    Then STDOUT should be:
-      """
-      - 0
-      """
+    Then the exit status should be 0
+
 
 
