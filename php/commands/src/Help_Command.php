@@ -237,7 +237,7 @@ class Help_Command extends WP_CLI_Command {
 	private static function parse_reference_links( $longdesc ) {
 		$description = self::extract_before_sections( $longdesc );
 
-		// Fires if it has description text at the head of `$longdesc`.
+		// Process if there is description text at the head of `$longdesc`.
 		if ( trim( $description ) ) {
 			$links   = []; // An array of URLs from the description.
 			$pattern = '/\[.+?\]\((https?:\/\/.+?)\)/';
