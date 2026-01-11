@@ -190,9 +190,13 @@ Feature: Format output
       |         |          | mango      |
       | 1       | bar      | br         |
 
-Scenario: YAML output preserves zero values
-  Given a WP install
-  And I run `wp option update test_zero 0`
-  When I run `wp option get test_zero --format=yaml`
-  Then STDOUT should contain "0"
+  Scenario: YAML output preserves zero values
+    Given a WP install
+    And I run `wp option update test_zero 0`
+    When I run `wp option get test_zero --format=yaml`
+    Then STDOUT should be:
+      """
+      0
+      """
+
 
