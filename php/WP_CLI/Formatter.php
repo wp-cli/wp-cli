@@ -178,8 +178,18 @@ class Formatter {
 						echo json_encode( $out );
 					}
 				} elseif ( 'yaml' === $this->args['format'] ) {
+					// Ensure falsey scalar values like "0" are preserved correctly
+   					 array_walk_recursive(
+						 $out,
+       						 static function ( &$value ) {
+           						 if ( $value === 0 || $value === '0' ) {
+               							 $value = (string) $value;
+           						 }
+       						 }
+   					 );
+
 					echo Spyc::YAMLDump( $out, 2, 0 );
-				}
+			       	}
 				break;
 
 			default:
