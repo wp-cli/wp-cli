@@ -360,7 +360,7 @@ class Formatter {
 	 *
 	 * Converts complex types to strings:
 	 * - Objects and arrays are converted to JSON strings
-	 * - Booleans are converted to "1" or "0"
+	 * - Booleans are converted to "true" or "false"
 	 *
 	 * @param array|object $item
 	 * @return mixed
