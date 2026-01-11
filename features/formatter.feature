@@ -213,8 +213,8 @@ Feature: Format output
     When I run `wp eval-file file.php --skip-wordpress`
     Then STDOUT should be a table containing rows:
       | id | status |
-      | 1  | 1      |
-      | 2  | 0      |
+      | 1  | true   |
+      | 2  | false  |
 
   Scenario: Format boolean values as JSON preserves boolean type
     Given an empty directory
