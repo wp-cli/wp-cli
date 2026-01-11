@@ -189,7 +189,7 @@ class Formatter {
    					 );
 
 					echo Spyc::YAMLDump( $out, 2, 0 );
-			       	}
+				}
 				break;
 
 			default:
