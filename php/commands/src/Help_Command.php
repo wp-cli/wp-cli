@@ -185,7 +185,7 @@ class Help_Command extends WP_CLI_Command {
 		}
 		$longdesc_description = self::get_longdesc_description( $longdesc_with_links );
 		if ( $longdesc_description ) {
-			$binding['shortdesc'] .= "\n" . $longdesc_description;
+			$binding['shortdesc'] .= "\n\n" . $longdesc_description;
 		}
 
 		if ( $command->can_have_subcommands() ) {
