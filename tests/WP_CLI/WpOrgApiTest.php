@@ -131,9 +131,7 @@ class WpOrgApiTest extends TestCase {
 	/**
 	 * @dataProvider data_http_request_verify()
 	 */
-	/**
- * @dataProvider data_http_request_verify
- */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'data_http_request_verify' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function test_http_request_verify( $method, $arguments, $options, $expected_url, $expected_options ): void {
 		if ( isset( $options['insecure'] ) && true === $options['insecure'] ) {
 			// Create temporary file to use as a bad certificate file.

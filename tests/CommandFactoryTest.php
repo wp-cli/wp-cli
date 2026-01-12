@@ -12,9 +12,7 @@ class CommandFactoryTest extends TestCase {
 	/**
 	 * @dataProvider dataProviderExtractLastDocComment
 	 */
-	/**
- * @dataProvider dataProviderExtractLastDocComment
- */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataProviderExtractLastDocComment' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testExtractLastDocComment( $content, $expected ): void {
 		// Save and set test env var.
 		$is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
@@ -38,9 +36,7 @@ class CommandFactoryTest extends TestCase {
 	/**
 	 * @dataProvider dataProviderExtractLastDocComment
 	 */
-	/**
- * @dataProvider dataProviderExtractLastDocComment
- */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataProviderExtractLastDocComment' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testExtractLastDocCommentWin( $content, $expected ): void {
 		// Save and set test env var.
 		$is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );

@@ -293,9 +293,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider parseStrToArgvData
 	 */
-	/**
-	 * @dataProvider parseStrToArgvData
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'parseStrToArgvData' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testParseStrToArgv( $expected, $parseable_string ): void {
 		$this->assertEquals( $expected, Utils\parse_str_to_argv( $parseable_string ) );
 	}
@@ -457,9 +455,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataNormalizePath
 	 */
-	/**
-	 * @dataProvider dataNormalizePath
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataNormalizePath' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testNormalizePath( $path, $expected ): void {
 		$this->assertEquals( $expected, Utils\normalize_path( $path ) );
 	}
@@ -555,9 +551,7 @@ class UtilsTest extends TestCase {
 	 * @param class-string<\Throwable> $exception          Class of the exception to expect.
 	 * @param string                   $exception_message  Message of the exception to expect.
 	 */
-	/**
-	 * @dataProvider dataHttpRequestBadCAcert
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataHttpRequestBadCAcert' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testHttpRequestBadCAcert( $additional_options, $exception, $exception_message ): void {
 		if ( ! extension_loaded( 'curl' ) ) {
 			$this->markTestSkipped( 'curl not available' );
@@ -598,9 +592,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataHttpRequestVerify
 	 */
-	/**
-	 * @dataProvider dataHttpRequestVerify
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataHttpRequestVerify' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testHttpRequestVerify( $expected, $options ): void {
 		$transport_spy        = new Mock_Requests_Transport();
 		$options['transport'] = $transport_spy;
@@ -644,9 +636,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataPastTenseVerb
 	 */
-	/**
-	 * @dataProvider dataPastTenseVerb
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataPastTenseVerb' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testPastTenseVerb( $verb, $expected ): void {
 		$this->assertSame( $expected, Utils\past_tense_verb( $verb ) );
 	}
@@ -684,9 +674,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataExpandGlobs
 	 */
-	/**
-	 * @dataProvider dataExpandGlobs
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataExpandGlobs' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testExpandGlobs( $path, $expected ): void {
 		$expand_globs_no_glob_brace = getenv( 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE' );
 
@@ -731,9 +719,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataReportBatchOperationResults
 	 */
-	/**
-	 * @dataProvider dataReportBatchOperationResults
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataReportBatchOperationResults' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testReportBatchOperationResults( $stdout, $stderr, $noun, $verb, $total, $successes, $failures, $skips ): void {
 		// Save WP_CLI state.
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
@@ -812,9 +798,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataProcOpenCompatWinEnv
 	 */
-	/**
-	 * @dataProvider dataProcOpenCompatWinEnv
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataProcOpenCompatWinEnv' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testProcOpenCompatWinEnv( $cmd, $env, $expected_cmd, $expected_env ): void {
 		$env_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
 
@@ -861,9 +845,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataEscLike
 	 */
-	/**
-	 * @dataProvider dataEscLike
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataEscLike' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function test_esc_like( $input, $expected ): void {
 		$this->assertEquals( $expected, Utils\esc_like( $input ) );
 	}
@@ -871,12 +853,11 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataEscLike
 	 */
-	/**
-	 * @dataProvider dataEscLike
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataEscLike' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function test_esc_like_with_wpdb( $input, $expected ): void {
 		global $wpdb;
 
+		// @phpstan-ignore class.notFound
 		$wpdb = $this->createMock( WP_CLI_Mock_WPDB::class )
 			->expects( $this->any() )
 			->method( 'esc_like' )
@@ -889,9 +870,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataEscLike
 	 */
-	/**
-	 * @dataProvider dataEscLike
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataEscLike' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function test_esc_like_with_wpdb_being_null( $input, $expected ): void {
 		global $wpdb;
 		$wpdb = null;
@@ -901,9 +880,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataIsJson
 	 */
-	/**
-	 * @dataProvider dataIsJson
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataIsJson' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testIsJson( $argument, $ignore_scalars, $expected ): void {
 		$this->assertEquals( $expected, Utils\is_json( $argument, $ignore_scalars ) );
 	}
@@ -928,9 +905,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataParseShellArray
 	 */
-	/**
-	 * @dataProvider dataParseShellArray
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataParseShellArray' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testParseShellArray( $assoc_args, $array_arguments, $expected ): void {
 		$this->assertEquals( $expected, Utils\parse_shell_arrays( $assoc_args, $array_arguments ) );
 	}
@@ -946,9 +921,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataPluralize
 	 */
-	/**
-	 * @dataProvider dataPluralize
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataPluralize' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testPluralize( $singular, $count, $expected ): void {
 		$this->assertEquals( $expected, Utils\pluralize( $singular, $count ) );
 	}
@@ -964,9 +937,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataPickFields
 	 */
-	/**
-	 * @dataProvider dataPickFields
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataPickFields' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testPickFields( $data, $fields, $expected ): void {
 		$this->assertEquals( $expected, Utils\pick_fields( $data, $fields ) );
 	}
@@ -986,9 +957,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataParseUrl
 	 */
-	/**
-	 * @dataProvider dataParseUrl
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataParseUrl' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testParseUrl( $url, $component, $auto_add_scheme, $expected ): void {
 		$this->assertEquals( $expected, Utils\parse_url( $url, $component, $auto_add_scheme ) );
 	}
@@ -1005,9 +974,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataEscapeCsvValue
 	 */
-	/**
-	 * @dataProvider dataEscapeCsvValue
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataEscapeCsvValue' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testEscapeCsvValue( $input, $expected ): void {
 		$this->assertEquals( $expected, Utils\escape_csv_value( $input ) );
 	}
@@ -1170,9 +1137,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataValidClassAndMethodPair
 	 */
-	/**
-	 * @dataProvider dataValidClassAndMethodPair
-	 */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataValidClassAndMethodPair' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testValidClassAndMethodPair( $pair, $is_valid ): void {
 		$this->assertEquals( $is_valid, Utils\is_valid_class_and_method_pair( $pair ) );
 	}

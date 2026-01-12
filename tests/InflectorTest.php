@@ -9,9 +9,7 @@ class InflectorTest extends TestCase {
 	/**
 	 * @dataProvider dataProviderPluralize
 	 */
-	/**
- * @dataProvider dataProviderPluralize
- */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataProviderPluralize' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testPluralize( $singular, $expected ): void {
 		$this->assertEquals( $expected, Inflector::pluralize( $singular ) );
 	}
@@ -27,9 +25,7 @@ class InflectorTest extends TestCase {
 	/**
 	 * @dataProvider dataProviderSingularize
 	 */
-	/**
- * @dataProvider dataProviderSingularize
- */ // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	#[DataProvider( 'dataProviderSingularize' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testSingularize( $singular, $expected ): void {
 		$this->assertEquals( $expected, Inflector::singularize( $singular ) );
 	}

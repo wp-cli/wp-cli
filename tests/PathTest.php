@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 use WP_CLI\Utils;
 
 /**
@@ -10,8 +12,9 @@ use WP_CLI\Utils;
 final class PathTest extends TestCase {
 
 	/**
-	 * @dataProvider providePathCases
+	 * @dataProvider dataProviderPathCases
 	 */
+	#[DataProvider( 'dataProviderPathCases' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testPathIsRecognizedAsAbsolute( $path, $expected ) {
 		$this->assertSame(
 			$expected,
@@ -20,7 +23,7 @@ final class PathTest extends TestCase {
 		);
 	}
 
-	public function providePathCases(): array {
+	public static function dataProviderPathCases(): array {
 		return [
 			// Windows-style absolute paths.
 			[ 'C:\\wp\\public/', true ],
