@@ -196,11 +196,11 @@ Feature: Format output
     When I run `wp option get test_zero --format=yaml`
     Then STDOUT should contain:
       """
-      0
+      ---
+      """
+    And STDOUT should contain:
+      """
+      "0"
       """
     And the return code should be 0
-
-
-
-
 

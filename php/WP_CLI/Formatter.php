@@ -117,17 +117,12 @@ class Formatter {
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) && ( is_object( $value ) || is_array( $value ) ) ) {
 				$value = json_encode( $value );
 			}
-			if ( 'yaml' === $this->args['format'] && is_scalar( $value ) && ! is_bool( $value ) && ( 0 === $value || '0' === $value ) ) {
-				WP_CLI::line( '0' );
-				return;
-			} else {
-				WP_CLI::print_value(
-					$value,
-					[
-						'format' => $this->args['format'],
-					]
-				);
-			}
+			WP_CLI::print_value(
+				$value,
+				[
+					'format' => $this->args['format'],
+				]
+			);
 		} else {
 			/**
 			 * @var array $item
@@ -211,8 +206,6 @@ class Formatter {
 
 			if ( 'json' === $this->args['format'] ) {
 				$values[] = $item->$key;
-			} elseif ( 'yaml' === $this->args['format'] && is_scalar( $item->$key ) && ! is_bool( $item->$key ) && ( 0 === $item->$key || '0' === $item->$key ) ) {
-				WP_CLI::line( '0' );
 			} else {
 				WP_CLI::print_value(
 					$item->$key,
@@ -293,10 +286,6 @@ class Formatter {
 
 			case 'yaml':
 			case 'json':
-				if ( 'yaml' === $format && is_scalar( $data ) && ! is_bool( $data ) && ( 0 === $data || '0' === $data ) ) {
-					WP_CLI::line( '0' );
-					break;
-				}
 				WP_CLI::print_value(
 					$data,
 					[
