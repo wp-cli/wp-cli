@@ -1,5 +1,14 @@
 Feature: Utilities that do NOT depend on WordPress code
 
+  Scenario: Check that `find_file_upward()` does not trigger warnings with open_basedir restrictions
+    Given a WP install
+    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--dopen_basedir={RUN_DIR}/vendor:{RUN_DIR}/php} --skip-wordpress eval 'echo WP_CLI\Utils\find_file_upward( "wp-config.php" );'`
+    Then STDERR should not contain:
+      """
+      open_basedir restriction in effect
+      """
+    And the return code should be 0
+
   @require-mysql
   Scenario Outline: Check that `proc_open()` and `proc_close()` aren't disabled for `Utils\run_mysql_command()`
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} --skip-wordpress eval 'WP_CLI\Utils\run_mysql_command( null, array() );'`
