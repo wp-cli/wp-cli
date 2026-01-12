@@ -248,7 +248,12 @@ function is_path_within_open_basedir( $path ) {
 		}
 		// Check if path starts with allowed directory
 		// We check both with and without directory separator to handle exact matches
-		if ( $path === $allowed || 0 === strpos( $path . DIRECTORY_SEPARATOR, $allowed . DIRECTORY_SEPARATOR ) ) {
+		// On Windows, use case-insensitive comparison as filesystem paths are case-insensitive
+		$is_windows = DIRECTORY_SEPARATOR === '\\';
+		if ( $path === $allowed ||
+			( $is_windows && 0 === strcasecmp( $path, $allowed ) ) ||
+			0 === strpos( $path . DIRECTORY_SEPARATOR, $allowed . DIRECTORY_SEPARATOR ) ||
+			( $is_windows && 0 === stripos( $path . DIRECTORY_SEPARATOR, $allowed . DIRECTORY_SEPARATOR ) ) ) {
 			return true;
 		}
 	}
