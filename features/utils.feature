@@ -1,8 +1,8 @@
 Feature: Utilities that do NOT depend on WordPress code
 
   Scenario: Check that `find_file_upward()` does not trigger warnings with open_basedir restrictions
-    Given a WP install
-    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--dopen_basedir={RUN_DIR}/vendor:{RUN_DIR}/php} --skip-wordpress eval 'echo WP_CLI\Utils\find_file_upward( "wp-config.php" );'`
+    Given an empty directory
+    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--dopen_basedir={RUN_DIR}} --skip-wordpress eval 'echo WP_CLI\Utils\find_file_upward( "composer.json", "{RUN_DIR}" ) ?: "not found";'`
     Then STDERR should not contain:
       """
       open_basedir restriction in effect
