@@ -1071,10 +1071,15 @@ class WP_CLI {
 		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$_value = json_encode( $value );
 		} elseif ( Utils\get_flag_value( $assoc_args, 'format' ) === 'yaml' ) {
-			/**
-			 * @var array $value
-			 */
-			$_value = Spyc::YAMLDump( $value, 2, 0 );
+			// FIX: Handle scalar zero values to avoid Spyc crash
+			if ( is_scalar( $value ) && ! is_bool( $value ) && ( 0 === $value || '0' === $value ) ) {
+				$_value = '0';
+			} else {
+				/**
+				 * @var array $value
+				 */
+				$_value = Spyc::YAMLDump( $value, 2, 0 );
+			}
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
 			$_value = var_export( $value, true );
 		} else {
