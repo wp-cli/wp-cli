@@ -220,7 +220,10 @@ function iterator_map( $it, ...$fns ) {
 /**
  * Check if a path is within open_basedir restrictions.
  *
- * @param string $path The path to check.
+ * This function compares paths using string operations to avoid triggering warnings
+ * when checking paths that may be outside open_basedir restrictions.
+ *
+ * @param string $path The path to check (should be absolute).
  * @return bool True if the path is accessible (no open_basedir or within allowed paths), false otherwise.
  */
 function is_path_within_open_basedir( $path ) {
@@ -229,7 +232,7 @@ function is_path_within_open_basedir( $path ) {
 		return true;
 	}
 
-	// Normalize the path to check - remove trailing slashes and resolve relative paths
+	// Normalize the path to check - remove trailing slashes
 	$path = rtrim( $path, DIRECTORY_SEPARATOR );
 
 	$allowed_paths = explode( PATH_SEPARATOR, $open_basedir );
@@ -237,7 +240,7 @@ function is_path_within_open_basedir( $path ) {
 		if ( empty( $allowed ) ) {
 			continue;
 		}
-		// Normalize the allowed path
+		// Normalize the allowed path using realpath (allowed paths should be accessible)
 		$allowed      = rtrim( $allowed, DIRECTORY_SEPARATOR );
 		$real_allowed = realpath( $allowed );
 		if ( false !== $real_allowed ) {
@@ -264,6 +267,14 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	$files = (array) $files;
 	if ( is_null( $dir ) ) {
 		$dir = getcwd();
+	}
+	// Normalize the directory path if it's accessible (realpath won't trigger open_basedir warnings for accessible paths)
+	// This handles relative paths and symlinks
+	if ( false !== $dir ) {
+		$real_dir = realpath( $dir );
+		if ( false !== $real_dir ) {
+			$dir = $real_dir;
+		}
 	}
 	while ( $dir && is_path_within_open_basedir( $dir ) && is_readable( $dir ) ) {
 		// Stop walking up when the supplied callable returns true being passed the $dir
