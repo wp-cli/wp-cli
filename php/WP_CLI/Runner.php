@@ -116,8 +116,10 @@ class Runner {
 		}
 
 		// Search the value of @when from the command method.
+		// Use 'none' for autocorrect to avoid suggesting wrong alternatives
+		// for commands that may be registered later (e.g., via after_wp_load).
 		$real_when = '';
-		$r         = $this->find_command_to_run( $this->arguments );
+		$r         = $this->find_command_to_run( $this->arguments, 'none' );
 		if ( is_array( $r ) ) {
 			list( $command, $final_args, $cmd_path ) = $r;
 
@@ -276,6 +278,8 @@ class Runner {
 
 		if ( ! empty( $this->config['path'] ) ) {
 			$path = $this->config['path'];
+			// Expand tilde to home directory if present
+			$path = Utils\expand_tilde_path( $path );
 			if ( ! Utils\is_path_absolute( $path ) ) {
 				$path = getcwd() . '/' . $path;
 			}
@@ -377,9 +381,12 @@ class Runner {
 	 * Given positional arguments, find the command to execute.
 	 *
 	 * @param array $args
+	 * @param string $autocorrect Whether to autocorrect commands based on suggestions.
 	 * @return array|string Command, args, and path on success; error message on failure
+	 *
+	 * @phpstan-param 'none'|'confirm'|'auto' $autocorrect
 	 */
-	public function find_command_to_run( $args ) {
+	public function find_command_to_run( $args, $autocorrect = 'none' ) {
 		$command = WP_CLI::get_root_command();
 
 		WP_CLI::do_hook( 'find_command_to_run_pre' );
@@ -402,13 +409,37 @@ class Runner {
 						$suggestion = 'meta';
 					}
 
-					return sprintf(
-						"'%s' is not a registered subcommand of '%s'. See 'wp help %s' for available subcommands.%s",
+					$error = sprintf(
+						"'%s' is not a registered subcommand of '%s'. See 'wp help %s' for available subcommands.",
 						$child,
 						$parent_name,
-						$parent_name,
-						! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
+						$parent_name
 					);
+
+					if ( ! empty( $suggestion ) ) {
+						$suggestion_text = "Did you mean '{$suggestion}'?";
+
+						if ( 'none' !== $autocorrect ) {
+							$suggested_command_to_run = $this->find_command_to_run( explode( ' ', "$parent_name $suggestion" ) );
+
+							if ( is_array( $suggested_command_to_run ) ) {
+								// Override potentially misspelled cmd with the corrected one.
+								$this->arguments = $suggested_command_to_run[2];
+
+								if ( 'auto' === $autocorrect ) {
+									return $suggested_command_to_run;
+								}
+
+								WP_CLI::warning( $error );
+								WP_CLI::confirm( $suggestion_text );
+								return $suggested_command_to_run;
+							}
+						}
+
+						return $error . PHP_EOL . $suggestion_text;
+					}
+
+					return $error;
 				}
 
 				$suggestion = $this->get_subcommand_suggestion( $full_name, $command );
@@ -423,11 +454,57 @@ class Runner {
 					}
 				}
 
-				return sprintf(
-					"'%s' is not a registered wp command. See 'wp help' for available commands.%s",
-					$full_name,
-					! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
+				$error = sprintf(
+					"'%s' is not a registered wp command. See 'wp help' for available commands.",
+					$full_name
 				);
+
+				if ( ! empty( $suggestion ) ) {
+					$suggestion_text = "Did you mean '{$suggestion}'?";
+
+					if ( 'none' !== $autocorrect ) {
+						if ( 'help' === $suggestion ) {
+							// This was a typo suggestion for a help command, so find command without 'help'
+							// and then prepend 'help' again for the corrected command.
+							$suggested_command_to_run = $this->find_command_to_run( $args, 'auto' );
+							if ( is_array( $suggested_command_to_run ) ) {
+								$this->arguments = array_merge( [ $suggestion ], $args );
+
+								$suggested_command_to_run = $this->find_command_to_run( $this->arguments, 'auto' );
+							}
+						}
+
+						if ( ! isset( $suggested_command_to_run ) || ! is_array( $suggested_command_to_run ) ) {
+							$suggested_command_to_run = $this->find_command_to_run( array_merge( [ $suggestion ], $args ), 'auto' );
+
+							if ( is_array( $suggested_command_to_run ) ) {
+								$this->arguments = $suggested_command_to_run[2];
+							}
+						}
+
+						if ( ! is_array( $suggested_command_to_run ) ) {
+							$suggested_command_to_run = $this->find_command_to_run( [ $suggestion ], 'auto' );
+
+							if ( is_array( $suggested_command_to_run ) ) {
+								$this->arguments = $suggested_command_to_run[2];
+							}
+						}
+
+						if ( is_array( $suggested_command_to_run ) ) {
+							if ( 'auto' === $autocorrect ) {
+								return $suggested_command_to_run;
+							}
+
+							WP_CLI::warning( $error );
+							WP_CLI::confirm( $suggestion_text );
+							return $suggested_command_to_run;
+						}
+					}
+
+					return $error . PHP_EOL . $suggestion_text;
+				}
+
+				return $error;
 			}
 
 			if ( $this->is_command_disabled( $subcommand ) ) {
@@ -456,7 +533,7 @@ class Runner {
 		if ( ! empty( $options['back_compat_conversions'] ) ) {
 			list( $args, $assoc_args ) = self::back_compat_conversions( $args, $assoc_args );
 		}
-		$r = $this->find_command_to_run( $args );
+		$r = $this->find_command_to_run( $args, getenv( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
 		if ( is_string( $r ) ) {
 			WP_CLI::error( $r );
 		}
@@ -1239,6 +1316,16 @@ class Runner {
 
 		$this->do_early_invoke( 'before_wp_load' );
 
+		// Second try at showing man page for help commands.
+		if ( $this->cmd_starts_with( [ 'help' ] )
+			&& ( ! $this->wp_exists()
+				|| ! Utils\locate_wp_config()
+				|| count( $this->arguments ) > 2
+			) ) {
+			$this->auto_check_update();
+			$this->run_command( $this->arguments, $this->assoc_args );
+		}
+
 		$this->check_wp_version();
 
 		if ( $this->cmd_starts_with( [ 'config', 'create' ] ) ) {
@@ -1750,15 +1837,15 @@ class Runner {
 			}
 			foreach ( $plugins as $a => $b ) {
 				// active_sitewide_plugins stores plugin name as the key.
-				if ( false !== strpos( current_filter(), 'active_sitewide_plugins' ) && Utils\is_plugin_skipped( $a ) ) {
+				if ( false !== strpos( (string) current_filter(), 'active_sitewide_plugins' ) && Utils\is_plugin_skipped( $a ) ) {
 					unset( $plugins[ $a ] );
 					// active_plugins stores plugin name as the value.
-				} elseif ( false !== strpos( current_filter(), 'active_plugins' ) && Utils\is_plugin_skipped( $b ) ) {
+				} elseif ( false !== strpos( (string) current_filter(), 'active_plugins' ) && Utils\is_plugin_skipped( $b ) ) {
 					unset( $plugins[ $a ] );
 				}
 			}
 			// Reindex because active_plugins expects a numeric index.
-			if ( false !== strpos( current_filter(), 'active_plugins' ) ) {
+			if ( false !== strpos( (string) current_filter(), 'active_plugins' ) ) {
 				$plugins = array_values( $plugins );
 			}
 			return $plugins;
@@ -1800,7 +1887,7 @@ class Runner {
 			$checked_value = $value;
 			// Always check against the stylesheet value
 			// This ensures a child theme can be skipped when template differs
-			if ( false !== stripos( current_filter(), 'option_template' ) ) {
+			if ( false !== stripos( (string) current_filter(), 'option_template' ) ) {
 				$checked_value = get_option( 'stylesheet' );
 			}
 

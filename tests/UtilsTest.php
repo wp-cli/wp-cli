@@ -329,6 +329,47 @@ class UtilsTest extends TestCase {
 		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
 	}
 
+	public function testAssocArgsToStringWithSensitiveArgs(): void {
+		// Strip quotes for Windows compat.
+		$strip_quotes = function ( $str ) {
+			return str_replace( [ '"', "'" ], '', $str );
+		};
+
+		// Test with sensitive arguments masked
+		$expected       = " --username='admin' --password='[REDACTED]' --api-key='[REDACTED]' --debug";
+		$input          = [
+			'username' => 'admin',
+			'password' => 'secretpassword123',
+			'api-key'  => 'myapikey456',
+			'debug'    => true,
+		];
+		$sensitive_args = [ 'password', 'api-key' ];
+		$actual         = Utils\assoc_args_to_str( $input, $sensitive_args );
+		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
+
+		// Verify sensitive values are not present in output
+		$this->assertStringNotContainsString( 'secretpassword123', $actual );
+		$this->assertStringNotContainsString( 'myapikey456', $actual );
+
+		// Verify non-sensitive values are present
+		$this->assertStringContainsString( 'admin', $actual );
+
+		// Test with array values in sensitive arguments
+		$expected       = " --username='admin' --token='[REDACTED]' --token='[REDACTED]'";
+		$input          = [
+			'username' => 'admin',
+			'token'    => [
+				'token1',
+				'token2',
+			],
+		];
+		$sensitive_args = [ 'token' ];
+		$actual         = Utils\assoc_args_to_str( $input, $sensitive_args );
+		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
+		$this->assertStringNotContainsString( 'token1', $actual );
+		$this->assertStringNotContainsString( 'token2', $actual );
+	}
+
 	public function testMysqlHostToCLIArgs(): void {
 		// Test hostname only, with and without 'p:' modifier.
 		$expected = [
@@ -1147,5 +1188,22 @@ class UtilsTest extends TestCase {
 			[ [ 'WP_CLI', 'add_command' ], true ],
 			[ [ 'Exception', 'getMessage' ], true ],
 		];
+	}
+
+	public function testExpandTildePath(): void {
+		$home = Utils\get_home_dir();
+
+		// Test tilde expansion for home directory
+		$this->assertEquals( $home, Utils\expand_tilde_path( '~' ) );
+
+		// Test tilde expansion with subdirectory
+		$this->assertEquals( $home . '/sites/wordpress', Utils\expand_tilde_path( '~/sites/wordpress' ) );
+
+		// Test that paths without tilde are unchanged
+		$this->assertEquals( '/absolute/path', Utils\expand_tilde_path( '/absolute/path' ) );
+		$this->assertEquals( 'relative/path', Utils\expand_tilde_path( 'relative/path' ) );
+
+		// Test that tilde in the middle is not expanded
+		$this->assertEquals( '/path/to/~something', Utils\expand_tilde_path( '/path/to/~something' ) );
 	}
 }

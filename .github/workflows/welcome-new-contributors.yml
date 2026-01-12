@@ -1,0 +1,12 @@
+name: Welcome New Contributors
+
+on:
+  pull_request_target:
+    types: [opened]
+    branches:
+      - main
+      - master
+
+jobs:
+  welcome:
+    uses: wp-cli/.github/.github/workflows/reusable-welcome-new-contributors.yml@main
