@@ -46,6 +46,11 @@ class CLI_Command extends WP_CLI_Command {
 			'hook'        => $command->get_hook(),
 		];
 
+		$alias = $command->get_alias();
+		if ( $alias ) {
+			$dump['alias'] = $alias;
+		}
+
 		foreach ( $command->get_subcommands() as $subcommand ) {
 			$dump['subcommands'][] = $this->command_to_array( $subcommand );
 		}
@@ -114,8 +119,8 @@ class CLI_Command extends WP_CLI_Command {
 	 *     WP-CLI project config:
 	 *     WP-CLI version: 1.5.0
 	 *
-	 * @param array $args                       Positional arguments. Unused.
-	 * @param array $assoc_args{format: string} Associative arguments.
+	 * @param string[]              $args       Positional arguments. Unused.
+	 * @param array{format: string} $assoc_args Associative arguments.
 	 */
 	public function info( $args, $assoc_args ) {
 		$system_os = sprintf(
@@ -236,8 +241,8 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand check-update
 	 *
-	 * @param array $args Positional arguments. Unused.
-	 * @param array $assoc_args{patch?: bool, minor?: bool, major?: bool, field?: string, fields?: string, format: string} Associative arguments.
+	 * @param string[] $args Positional arguments. Unused.
+	 * @param array{patch?: bool, minor?: bool, major?: bool, field?: string, fields?: string, format: string} $assoc_args Associative arguments.
 	 */
 	public function check_update( $args, $assoc_args ) {
 		$updates = $this->get_updates( $assoc_args );
@@ -301,8 +306,8 @@ class CLI_Command extends WP_CLI_Command {
 	 *     New version works. Proceeding to replace.
 	 *     Success: Updated WP-CLI to 0.24.1.
 	 *
-	 * @param array $args Positional arguments. Unused.
-	 * @param array $assoc_args{patch?: bool, minor?: bool, major?: bool, stable?: bool, nightly?: bool, yes?: bool, insecure?: bool} Associative arguments.
+	 * @param string[] $args Positional arguments. Unused.
+	 * @param array{patch?: bool, minor?: bool, major?: bool, stable?: bool, nightly?: bool, yes?: bool, insecure?: bool} $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
 		if ( ! Utils\inside_phar() ) {
@@ -601,7 +606,7 @@ class CLI_Command extends WP_CLI_Command {
 						'version'      => $nightly_version,
 						'update_type'  => 'nightly',
 						'package_url'  => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
-						'status'       => 'unvailable',
+						'status'       => 'unavailable',
 						'requires_php' => $manifest_data->requires_php,
 					];
 				} else {

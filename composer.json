@@ -9,22 +9,21 @@
     "license": "MIT",
     "require": {
         "php": ">=7.2.24 || ^8.0",
-        "ext-curl": "*",
         "mustache/mustache": "^3.0.0",
-        "symfony/finder": ">2.7",
         "wp-cli/mustangostang-spyc": "^0.6.3",
         "wp-cli/php-cli-tools": "~0.12.4"
     },
     "require-dev": {
         "justinrainbow/json-schema": "^6.3",
         "roave/security-advisories": "dev-latest",
-        "wp-cli/db-command": "^1.3 || ^2",
-        "wp-cli/entity-command": "^1.2 || ^2",
-        "wp-cli/extension-command": "^1.1 || ^2",
-        "wp-cli/package-command": "^1 || ^2",
-        "wp-cli/wp-cli-tests": "^4"
+        "wp-cli/db-command": "^2",
+        "wp-cli/entity-command": "^2",
+        "wp-cli/extension-command": "^2",
+        "wp-cli/package-command": "^2",
+        "wp-cli/wp-cli-tests": "^5"
     },
     "suggest": {
+        "ext-curl": "For better performance when making HTTP requests",
         "ext-readline": "Include for a better --prompt implementation",
         "ext-zip": "Needed to support extraction of ZIP archives when doing downloads or updates"
     },
