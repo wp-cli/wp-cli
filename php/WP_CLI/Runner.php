@@ -2057,6 +2057,11 @@ class Runner {
 			exit( 0 );
 		}
 
+		// Skip re-execution if there are no arguments (just running `wp` with no command).
+		if ( empty( $original_args ) ) {
+			exit( 0 );
+		}
+
 		// Get the path to the current (now updated) Phar.
 		$phar_path = (string) realpath( $_SERVER['argv'][0] );
 
