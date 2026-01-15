@@ -2063,7 +2063,7 @@ class Runner {
 		}
 
 		// Get the path to the current (now updated) Phar.
-		$phar_path = realpath( $GLOBALS['argv'][0] );
+		$phar_path = realpath( $_SERVER['argv'][0] );
 		if ( false === $phar_path ) {
 			WP_CLI::error( 'Failed to determine the path to the WP-CLI Phar.' );
 		}
