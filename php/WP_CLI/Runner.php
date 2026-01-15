@@ -2036,10 +2036,18 @@ class Runner {
 		if ( getenv( 'WP_CLI_AUTO_UPDATE_PROMPT' ) === 'no' ) {
 			$update_args['yes'] = true;
 		}
+
+		// Get the current Phar's modification time before the update.
+		$phar_mtime_before = filemtime( $existing_phar );
+
 		WP_CLI::run_command( [ 'cli', 'update' ], $update_args );
 
-		// After update, re-execute the original command with the new Phar.
-		$this->rerun_command_after_update();
+		// Check if the Phar was actually updated by comparing modification times.
+		$phar_mtime_after = filemtime( $existing_phar );
+		if ( $phar_mtime_after > $phar_mtime_before ) {
+			// After update, re-execute the original command with the new Phar.
+			$this->rerun_command_after_update();
+		}
 	}
 
 	/**
