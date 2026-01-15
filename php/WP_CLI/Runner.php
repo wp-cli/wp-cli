@@ -2078,7 +2078,7 @@ class Runner {
 			implode( ' ', $escaped_args )
 		);
 
-		WP_CLI::debug( "Re-executing command after update: {$command}", 'bootstrap' );
+		WP_CLI::debug( 'Re-executing command after update.', 'bootstrap' );
 
 		// Execute the command and pass through the exit code.
 		passthru( $command, $exit_code );
