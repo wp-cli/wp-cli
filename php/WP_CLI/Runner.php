@@ -2062,7 +2062,8 @@ class Runner {
 
 		// Skip re-execution if the original command was a CLI command
 		// to avoid infinite loops or redundant execution.
-		if ( ! empty( $original_args ) && 'cli' === $original_args[0] ) {
+		// Use $this->arguments instead of $original_args to properly handle aliases.
+		if ( ! empty( $this->arguments ) && 'cli' === $this->arguments[0] ) {
 			exit( 0 );
 		}
 
