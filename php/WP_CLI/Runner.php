@@ -2043,6 +2043,7 @@ class Runner {
 		WP_CLI::run_command( [ 'cli', 'update' ], $update_args );
 
 		// Check if the Phar was actually updated by comparing modification times.
+		clearstatcache( true, $existing_phar );
 		$phar_mtime_after = filemtime( $existing_phar );
 		if ( $phar_mtime_after > $phar_mtime_before ) {
 			// After update, re-execute the original command with the new Phar.
