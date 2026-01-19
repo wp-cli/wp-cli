@@ -1319,8 +1319,12 @@ function parse_str_to_argv( $arguments ) {
 		if ( isset( $match[2] ) && '' !== $match[2] ) {
 			// Extract the key part (everything before the quote).
 			if ( preg_match( '/^(--[^=]+=)/', $match[0], $key_match ) ) {
-				// Reconstruct without the outer quotes but preserve escaped quotes inside.
-				$argv[] = $key_match[1] . $match[2];
+				$value = $match[2];
+				// Unescape the quote character that was used to wrap the value.
+				$quote_char = $match[1];
+				$value      = str_replace( '\\' . $quote_char, $quote_char, $value );
+				// Reconstruct without the outer quotes.
+				$argv[] = $key_match[1] . $value;
 			} else {
 				$argv[] = $match[0];
 			}
