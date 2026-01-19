@@ -166,3 +166,10 @@ Feature: Multiple flag values support
       """
       Invalid value 'invalid' specified for 'status'
       """
+
+    When I try `wp --require=test-validation-cmd.php testval list --status=invalid --status=active`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Invalid value 'invalid' specified for 'status'
+      """

@@ -363,7 +363,11 @@ class Subcommand extends CompositeCommand {
 				if ( isset( $assoc_args[ $spec['name'] ] ) && is_array( $assoc_args[ $spec['name'] ] ) ) {
 					// If multiple annotation is not set or is false, use only the last value
 					if ( ! isset( $spec_args['multiple'] ) || false === $spec_args['multiple'] ) {
-						$assoc_args[ $spec['name'] ] = end( $assoc_args[ $spec['name'] ] );
+						$values       = $assoc_args[ $spec['name'] ];
+						$values_count = count( $values );
+						if ( $values_count > 0 ) {
+							$assoc_args[ $spec['name'] ] = $values[ $values_count - 1 ];
+						}
 					}
 				}
 
