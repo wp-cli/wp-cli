@@ -299,23 +299,33 @@ class UtilsTest extends TestCase {
 	}
 
 	/**
+	 * Data provider for testParseStrToArgvStripsQuotesFromAssocValues.
+	 *
+	 * @return array
+	 */
+	public static function parseStrToArgvStripsQuotesFromAssocValuesData() {
+		return [
+			'double quotes with spaces' => [ 'cli foo --bar="baz quax"', [ 'cli', 'foo', '--bar=baz quax' ] ],
+			'single quotes with spaces' => [ "cli foo --bar='baz quax'", [ 'cli', 'foo', '--bar=baz quax' ] ],
+			'no quotes'                 => [ 'cli foo --bar=baz', [ 'cli', 'foo', '--bar=baz' ] ],
+			'empty double quotes'       => [ 'cli foo --bar=""', [ 'cli', 'foo', '--bar=' ] ],
+			'empty single quotes'       => [ "cli foo --bar=''", [ 'cli', 'foo', '--bar=' ] ],
+			'escaped double quotes'     => [ 'cli foo --bar="baz \"quax\""', [ 'cli', 'foo', '--bar=baz "quax"' ] ],
+			'escaped single quotes'     => [ "cli foo --bar='baz \\'quax\\''", [ 'cli', 'foo', "--bar=baz 'quax'" ] ],
+		];
+	}
+
+	/**
 	 * Test that associative arguments with quoted values are properly parsed
 	 * when passed to WP_CLI::runcommand().
 	 *
+	 * @dataProvider parseStrToArgvStripsQuotesFromAssocValuesData
 	 * @see https://github.com/wp-cli/wp-cli/issues/5541
 	 */
-	public function testParseStrToArgvStripsQuotesFromAssocValues(): void {
-		// Test double quotes
-		$result = Utils\parse_str_to_argv( 'cli foo --bar="baz quax"' );
-		$this->assertEquals( [ 'cli', 'foo', '--bar=baz quax' ], $result );
-
-		// Test single quotes
-		$result = Utils\parse_str_to_argv( "cli foo --bar='baz quax'" );
-		$this->assertEquals( [ 'cli', 'foo', '--bar=baz quax' ], $result );
-
-		// Test no quotes (should remain unchanged)
-		$result = Utils\parse_str_to_argv( 'cli foo --bar=baz' );
-		$this->assertEquals( [ 'cli', 'foo', '--bar=baz' ], $result );
+	#[DataProvider( 'parseStrToArgvStripsQuotesFromAssocValuesData' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testParseStrToArgvStripsQuotesFromAssocValues( $input, $expected ): void {
+		$result = Utils\parse_str_to_argv( $input );
+		$this->assertEquals( $expected, $result );
 	}
 
 	public function testAssocArgsToString(): void {
