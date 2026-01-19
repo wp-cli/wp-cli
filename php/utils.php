@@ -1316,8 +1316,9 @@ function parse_str_to_argv( $arguments ) {
 	$argv = [];
 	foreach ( $matches as $match ) {
 		// Check if this is a quoted associative argument (--key="value" or --key='value').
-		// Groups 1 and 2 are set for associative args, groups 5 and 6 for positional args.
-		if ( isset( $match[1], $match[2] ) && 0 === strpos( $match[0], '--' ) ) {
+		// For associative args, groups 1 and 2 contain the quote char and value.
+		// For positional args, groups 5 and 6 contain the quote char and value, and group 1 is empty.
+		if ( isset( $match[1], $match[2] ) && 0 < strlen( $match[1] ) ) {
 			// Extract the key part (everything before the quote).
 			if ( preg_match( '/^(--[^=]+=)/', $match[0], $key_match ) ) {
 				$value = $match[2];
@@ -1329,16 +1330,16 @@ function parse_str_to_argv( $arguments ) {
 			} else {
 				$argv[] = $match[0];
 			}
+		} elseif ( isset( $match[5], $match[6] ) ) {
+			// This is a quoted positional argument.
+			$value = $match[6];
+			// Unescape the quote character that was used to wrap the value.
+			$quote_char = $match[5];
+			$value      = str_replace( '\\' . $quote_char, $quote_char, $value );
+			$argv[]     = $value;
 		} else {
-			// Not a quoted associative argument, handle as before.
-			$arg = $match[0];
-			foreach ( [ '"', "'" ] as $char ) {
-				if ( substr( $arg, 0, 1 ) === $char && substr( $arg, -1 ) === $char ) {
-					$arg = substr( $arg, 1, -1 );
-					break;
-				}
-			}
-			$argv[] = $arg;
+			// Unquoted argument.
+			$argv[] = $match[0];
 		}
 	}
 	return $argv;
