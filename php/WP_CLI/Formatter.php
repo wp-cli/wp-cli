@@ -196,27 +196,29 @@ class Formatter {
 	 * @param string   $field The field to show
 	 */
 	private function show_single_field( $items, $field ): void {
-		$key             = null;
-		$values          = [];
-		$field_found     = false;
-		$checked_for_key = false;
+		$key         = null;
+		$values      = [];
+		$field_found = false;
 
 		foreach ( $items as $item ) {
 			$item = (object) $item;
 
-			if ( ! $checked_for_key ) {
-				$key             = $this->find_item_key( $item, $field, true );
-				$checked_for_key = true;
+			// Resolve the key on first item
+			if ( ! $field_found && null === $key ) {
+				$key = $this->find_item_key( $item, $field, true );
 				if ( null !== $key ) {
 					$field_found = true;
 				}
 			}
 
+			// Get value if key exists
+			$value = ( null !== $key && isset( $item->$key ) ) ? $item->$key : null;
+
 			if ( 'json' === $this->args['format'] ) {
-				$values[] = ( null !== $key && isset( $item->$key ) ) ? $item->$key : null;
+				$values[] = $value;
 			} else {
 				WP_CLI::print_value(
-					( null !== $key && isset( $item->$key ) ) ? $item->$key : null,
+					$value,
 					[
 						'format' => $this->args['format'],
 					]
@@ -224,7 +226,7 @@ class Formatter {
 			}
 		}
 
-		if ( ! $field_found && $checked_for_key ) {
+		if ( ! $field_found ) {
 			WP_CLI::warning( "Field not found in any item: $field." );
 		}
 
@@ -240,27 +242,31 @@ class Formatter {
 	 * @param iterable $items Items to validate
 	 */
 	private function validate_fields( $items ): void {
-		// Convert to array if needed for iteration
-		$items_array = is_array( $items ) ? $items : iterator_to_array( $items );
+		// Track which fields have been found
+		$fields_to_find = array_flip( $this->args['fields'] );
+		$fields_count   = count( $fields_to_find );
+		$found_count    = 0;
 
-		if ( empty( $items_array ) ) {
-			return;
-		}
-
-		// Check each field exists in at least one item
-		foreach ( $this->args['fields'] as $field ) {
-			$found = false;
-			foreach ( $items_array as $item ) {
+		// Iterate through items once and check all fields
+		foreach ( $items as $item ) {
+			// Check each field that hasn't been found yet
+			foreach ( $fields_to_find as $field => $value ) {
 				$key = $this->find_item_key( $item, $field, true );
 				if ( null !== $key ) {
-					$found = true;
-					break;
+					// Mark this field as found
+					unset( $fields_to_find[ $field ] );
+					++$found_count;
+					// If all fields found, we can stop early
+					if ( $found_count === $fields_count ) {
+						return;
+					}
 				}
 			}
+		}
 
-			if ( ! $found ) {
-				WP_CLI::warning( "Field not found in any item: $field." );
-			}
+		// Warn about any fields that weren't found in any item
+		foreach ( $fields_to_find as $field => $value ) {
+			WP_CLI::warning( "Field not found in any item: $field." );
 		}
 	}
 
