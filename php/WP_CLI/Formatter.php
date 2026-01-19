@@ -82,12 +82,9 @@ class Formatter {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
 			if ( in_array( $this->args['format'], [ 'csv', 'json', 'table' ], true ) ) {
-				$item = is_array( $items ) && ! empty( $items ) ? array_shift( $items ) : false;
-				if ( $item && ! empty( $this->args['fields'] ) ) {
-					foreach ( $this->args['fields'] as &$field ) {
-						$field = $this->find_item_key( $item, $field );
-					}
-					array_unshift( $items, $item );
+				// Validate fields exist in at least one item
+				if ( ! empty( $this->args['fields'] ) ) {
+					$this->validate_fields( $items );
 				}
 			}
 
@@ -205,10 +202,10 @@ class Formatter {
 			}
 
 			if ( 'json' === $this->args['format'] ) {
-				$values[] = $item->$key;
+				$values[] = isset( $item->$key ) ? $item->$key : null;
 			} else {
 				WP_CLI::print_value(
-					$item->$key,
+					isset( $item->$key ) ? $item->$key : null,
 					[
 						'format' => $this->args['format'],
 					]
@@ -222,14 +219,46 @@ class Formatter {
 	}
 
 	/**
+	 * Validate that requested fields exist in at least one item.
+	 * Warns if a field doesn't exist in any item.
+	 *
+	 * @param iterable $items Items to validate
+	 */
+	private function validate_fields( $items ): void {
+		// Convert to array if needed for iteration
+		$items_array = is_array( $items ) ? $items : iterator_to_array( $items );
+
+		if ( empty( $items_array ) ) {
+			return;
+		}
+
+		// Check each field exists in at least one item
+		foreach ( $this->args['fields'] as $field ) {
+			$found = false;
+			foreach ( $items_array as $item ) {
+				$key = $this->find_item_key( $item, $field, true );
+				if ( null !== $key ) {
+					$found = true;
+					break;
+				}
+			}
+
+			if ( ! $found ) {
+				WP_CLI::warning( "Field not found in any item: $field." );
+			}
+		}
+	}
+
+	/**
 	 * Find an object's key.
 	 * If $prefix is set, a key with that prefix will be prioritized.
 	 *
 	 * @param array|object $item
 	 * @param string       $field
-	 * @return string
+	 * @param bool         $lenient If true, return null instead of erroring when field is not found.
+	 * @return string|null
 	 */
-	private function find_item_key( $item, $field ) {
+	private function find_item_key( $item, $field, $lenient = false ) {
 		foreach ( [ $field, $this->prefix . '_' . $field ] as $maybe_key ) {
 			if (
 				( is_object( $item ) && ( property_exists( $item, $maybe_key ) || isset( $item->$maybe_key ) ) ) ||
@@ -241,6 +270,9 @@ class Formatter {
 		}
 
 		if ( ! isset( $key ) ) {
+			if ( $lenient ) {
+				return null;
+			}
 			WP_CLI::error( "Invalid field: $field." );
 		}
 
@@ -363,8 +395,12 @@ class Formatter {
 	 */
 	public function transform_item_values_to_json( $item ) {
 		foreach ( $this->args['fields'] as $field ) {
-			$true_field = $this->find_item_key( $item, $field );
-			$value      = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
+			$true_field = $this->find_item_key( $item, $field, true );
+			if ( null === $true_field ) {
+				// Field doesn't exist in this item, skip it
+				continue;
+			}
+			$value = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
 			if ( is_array( $value ) || is_object( $value ) ) {
 				if ( is_object( $item ) ) {
 					$item->$true_field = json_encode( $value );
