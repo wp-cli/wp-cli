@@ -81,7 +81,7 @@ class Formatter {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
-			if ( in_array( $this->args['format'], [ 'csv', 'json', 'table' ], true ) ) {
+			if ( in_array( $this->args['format'], [ 'csv', 'json', 'table', 'yaml' ], true ) ) {
 				// Validate fields exist in at least one item
 				if ( ! empty( $this->args['fields'] ) ) {
 					$this->validate_fields( $items );
@@ -108,9 +108,14 @@ class Formatter {
 	 */
 	public function display_item( $item, $ascii_pre_colorized = false ) {
 		if ( isset( $this->args['field'] ) ) {
-			$item  = (object) $item;
-			$key   = $this->find_item_key( $item, $this->args['field'] );
-			$value = $item->$key;
+			$item = (object) $item;
+			$key  = $this->find_item_key( $item, $this->args['field'], true );
+			if ( null === $key ) {
+				WP_CLI::warning( "Field not found in item: {$this->args['field']}." );
+				$value = null;
+			} else {
+				$value = $item->$key;
+			}
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) && ( is_object( $value ) || is_array( $value ) ) ) {
 				$value = json_encode( $value );
 			}
