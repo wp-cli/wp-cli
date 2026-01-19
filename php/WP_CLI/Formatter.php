@@ -191,26 +191,36 @@ class Formatter {
 	 * @param string   $field The field to show
 	 */
 	private function show_single_field( $items, $field ): void {
-		$key    = null;
-		$values = [];
+		$key             = null;
+		$values          = [];
+		$field_found     = false;
+		$checked_for_key = false;
 
 		foreach ( $items as $item ) {
 			$item = (object) $item;
 
-			if ( null === $key ) {
-				$key = $this->find_item_key( $item, $field );
+			if ( ! $checked_for_key ) {
+				$key             = $this->find_item_key( $item, $field, true );
+				$checked_for_key = true;
+				if ( null !== $key ) {
+					$field_found = true;
+				}
 			}
 
 			if ( 'json' === $this->args['format'] ) {
-				$values[] = isset( $item->$key ) ? $item->$key : null;
+				$values[] = ( null !== $key && isset( $item->$key ) ) ? $item->$key : null;
 			} else {
 				WP_CLI::print_value(
-					isset( $item->$key ) ? $item->$key : null,
+					( null !== $key && isset( $item->$key ) ) ? $item->$key : null,
 					[
 						'format' => $this->args['format'],
 					]
 				);
 			}
+		}
+
+		if ( ! $field_found && $checked_for_key ) {
+			WP_CLI::warning( "Field not found in any item: $field." );
 		}
 
 		if ( 'json' === $this->args['format'] ) {
@@ -289,15 +299,11 @@ class Formatter {
 	private function show_multiple_fields( $data, $format, $ascii_pre_colorized = false ): void {
 
 		$true_fields = [];
-		$has_warning = false;
 		foreach ( $this->args['fields'] as $field ) {
 			$key = $this->find_item_key( $data, $field, true );
 			if ( null === $key ) {
 				// Field doesn't exist, show warning
-				if ( ! $has_warning ) {
-					WP_CLI::warning( "Field not found in item: $field." );
-					$has_warning = true;
-				}
+				WP_CLI::warning( "Field not found in item: $field." );
 			} else {
 				$true_fields[] = $key;
 			}
