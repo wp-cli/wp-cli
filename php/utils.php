@@ -1312,25 +1312,31 @@ function report_batch_operation_results( $noun, $verb, $total, $successes, $fail
  * @return array<string>
  */
 function parse_str_to_argv( $arguments ) {
-	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches );
-	$argv = $matches[0];
-	return array_map(
-		static function ( $arg ) {
-			// Strip quotes from entire argument if it's fully quoted.
+	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches, PREG_SET_ORDER );
+	$argv = [];
+	foreach ( $matches as $match ) {
+		// Check if this is a quoted associative argument (--key="value" or --key='value').
+		if ( isset( $match[2] ) && '' !== $match[2] ) {
+			// Extract the key part (everything before the quote).
+			if ( preg_match( '/^(--[^=]+=)/', $match[0], $key_match ) ) {
+				// Reconstruct without the outer quotes but preserve escaped quotes inside.
+				$argv[] = $key_match[1] . $match[2];
+			} else {
+				$argv[] = $match[0];
+			}
+		} else {
+			// Not a quoted associative argument, handle as before.
+			$arg = $match[0];
 			foreach ( [ '"', "'" ] as $char ) {
 				if ( substr( $arg, 0, 1 ) === $char && substr( $arg, -1 ) === $char ) {
 					$arg = substr( $arg, 1, -1 );
 					break;
 				}
 			}
-			// Strip quotes from associative argument values (e.g., --foo="bar" -> --foo=bar).
-			if ( preg_match( '/^(--[^=]+=)(["\'])(.*)\2$/', $arg, $matches ) ) {
-				$arg = $matches[1] . $matches[3];
-			}
-			return $arg;
-		},
-		$argv
-	);
+			$argv[] = $arg;
+		}
+	}
+	return $argv;
 }
 
 /**
