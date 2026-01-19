@@ -189,3 +189,56 @@ Feature: Format output
       |         |          | banana     |
       |         |          | mango      |
       | 1       | bar      | br         |
+
+  Scenario: Wrapped colorized lines in table
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      use cli\Colors;
+      use cli\table\Ascii;
+      /**
+       * Test command for wrapped colorized text.
+       *
+       * @when before_wp_load
+       */
+      $test_command = function() {
+          Colors::enable( true );
+          $items = array(
+              array(
+                  'name' => Colors::colorize( '%rThis is a very long red text that should wrap across multiple lines%n' ),
+                  'status' => 'active'
+              ),
+              array(
+                  'name' => Colors::colorize( '%gShort green text%n' ),
+                  'status' => 'inactive'
+              ),
+          );
+          $formatter = new \WP_CLI\Formatter( array( 'format' => 'table' ), array( 'name', 'status' ) );
+          // Set a narrow constraint width to force wrapping
+          $table = new \cli\Table();
+          $table->setRenderer( new Ascii() );
+          $renderer = new Ascii();
+          $renderer->setConstraintWidth( 40 );
+          $table->setRenderer( $renderer );
+          $table->setAsciiPreColorized( array( true, false ) );
+          $table->setHeaders( array( 'name', 'status' ) );
+          foreach ( $items as $item ) {
+              $table->addRow( array_values( $item ) );
+          }
+          foreach ( $table->getDisplayLines() as $line ) {
+              WP_CLI::line( $line );
+          }
+      };
+      WP_CLI::add_command( 'test-wrap', $test_command );
+      """
+
+    When I run `wp --require=file.php test-wrap`
+    Then STDOUT should contain:
+      """
+      [31m
+      """
+    And STDOUT should contain:
+      """
+      [0m
+      """
