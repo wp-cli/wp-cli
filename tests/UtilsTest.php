@@ -302,7 +302,7 @@ class UtilsTest extends TestCase {
 	 * Test that associative arguments with quoted values are properly parsed
 	 * when passed to WP_CLI::runcommand().
 	 *
-	 * @see https://github.com/wp-cli/wp-cli/issues/XXXX
+	 * @see https://github.com/wp-cli/wp-cli/issues/5541
 	 */
 	public function testParseStrToArgvStripsQuotesFromAssocValues(): void {
 		// Test double quotes
