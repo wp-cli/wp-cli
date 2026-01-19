@@ -341,28 +341,6 @@ class Formatter {
 	}
 
 	/**
-	 * Truncate cell values in items for table/CSV output.
-	 *
-	 * @param iterable $items  Items to process.
-	 * @param array    $fields Fields to truncate.
-	 * @return array Processed items with truncated values.
-	 */
-	private function truncate_items( $items, $fields ) {
-		$truncated = [];
-		foreach ( $items as $item ) {
-			$row = Utils\pick_fields( $item, $fields );
-			// Truncate each field value
-			foreach ( $row as $key => $value ) {
-				if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
-					$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
-				}
-			}
-			$truncated[] = $row;
-		}
-		return $truncated;
-	}
-
-	/**
 	 * Show items in a \cli\Table.
 	 *
 	 * @param iterable   $items               Items.
