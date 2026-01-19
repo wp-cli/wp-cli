@@ -289,8 +289,18 @@ class Formatter {
 	private function show_multiple_fields( $data, $format, $ascii_pre_colorized = false ): void {
 
 		$true_fields = [];
+		$has_warning = false;
 		foreach ( $this->args['fields'] as $field ) {
-			$true_fields[] = $this->find_item_key( $data, $field );
+			$key = $this->find_item_key( $data, $field, true );
+			if ( null === $key ) {
+				// Field doesn't exist, show warning
+				if ( ! $has_warning ) {
+					WP_CLI::warning( "Field not found in item: $field." );
+					$has_warning = true;
+				}
+			} else {
+				$true_fields[] = $key;
+			}
 		}
 
 		foreach ( $data as $key => $value ) {
