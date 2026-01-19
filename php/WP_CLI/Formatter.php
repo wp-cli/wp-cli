@@ -81,6 +81,11 @@ class Formatter {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
+			// Convert iterator to array early to avoid consumption issues and enable validation
+			if ( $items instanceof Iterator ) {
+				$items = iterator_to_array( $items );
+			}
+
 			if ( in_array( $this->args['format'], [ 'csv', 'json', 'table', 'yaml' ], true ) ) {
 				// Validate fields exist in at least one item
 				if ( ! empty( $this->args['fields'] ) ) {
@@ -89,11 +94,7 @@ class Formatter {
 			}
 
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
-				if ( $items instanceof Iterator ) {
-					$items = Utils\iterator_map( $items, [ $this, 'transform_item_values_to_json' ] );
-				} else {
-					$items = array_map( [ $this, 'transform_item_values_to_json' ], (array) $items );
-				}
+				$items = array_map( [ $this, 'transform_item_values_to_json' ], (array) $items );
 			}
 
 			$this->format( $items, $ascii_pre_colorized );
@@ -238,15 +239,16 @@ class Formatter {
 	/**
 	 * Validate that requested fields exist in at least one item.
 	 * Warns if a field doesn't exist in any item.
+	 * Also resolves field names to their actual keys (including prefixes).
 	 *
 	 * @param iterable $items Items to validate
 	 */
 	private function validate_fields( $items ): void {
-		// Track which fields have been found
-		// Using array_flip creates a hash map with field names as keys for O(1) lookup and removal
-		$fields_to_find = array_flip( $this->args['fields'] );
-		$fields_count   = count( $fields_to_find );
-		$found_count    = 0;
+		// Track which fields have been found and their resolved keys
+		$fields_to_find  = array_flip( $this->args['fields'] );
+		$resolved_fields = [];
+		$fields_count    = count( $fields_to_find );
+		$found_count     = 0;
 
 		// Iterate through items once and check all fields
 		foreach ( $items as $item ) {
@@ -254,14 +256,23 @@ class Formatter {
 			foreach ( $fields_to_find as $field => $_ ) {
 				$key = $this->find_item_key( $item, $field, true );
 				if ( null !== $key ) {
+					// Store the resolved field name
+					$resolved_fields[ $field ] = $key;
 					// Mark this field as found
 					unset( $fields_to_find[ $field ] );
 					++$found_count;
 					// If all fields found, we can stop early
 					if ( $found_count === $fields_count ) {
-						return;
+						break 2;
 					}
 				}
+			}
+		}
+
+		// Update the fields array with resolved field names
+		foreach ( $this->args['fields'] as &$field ) {
+			if ( isset( $resolved_fields[ $field ] ) ) {
+				$field = $resolved_fields[ $field ];
 			}
 		}
 

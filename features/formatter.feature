@@ -279,7 +279,7 @@ Feature: Format output
     When I run `wp eval-file custom-fields-json.php --skip-wordpress`
     Then STDOUT should be JSON containing:
       """
-      [{"name":"Session 1","custom":123},{"name":"Session 2"},{"name":"Session 3","custom":456}]
+      [{"name":"Session 1","custom":123},{"name":"Session 2","custom":null},{"name":"Session 3","custom":456}]
       """
 
   Scenario: Custom fields in YAML format with missing values
@@ -314,6 +314,7 @@ Feature: Format output
         custom: 123
       -
         name: 'Session 2'
+        custom: ~
       -
         name: 'Session 3'
         custom: 456
