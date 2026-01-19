@@ -203,7 +203,7 @@ class Formatter {
 		foreach ( $items as $item ) {
 			$item = (object) $item;
 
-			// Resolve the key on first item
+			// Resolve the key on first item that has the field
 			if ( ! $field_found && null === $key ) {
 				$key = $this->find_item_key( $item, $field, true );
 				if ( null !== $key ) {
