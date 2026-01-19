@@ -243,7 +243,7 @@ class Formatter {
 	 */
 	private function validate_fields( $items ): void {
 		// Track which fields have been found
-		// Using array_flip creates a hash map for O(1) lookup and removal
+		// Using array_flip creates a hash map with field names as keys for O(1) lookup and removal
 		$fields_to_find = array_flip( $this->args['fields'] );
 		$fields_count   = count( $fields_to_find );
 		$found_count    = 0;
