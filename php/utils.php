@@ -1316,7 +1316,7 @@ function parse_str_to_argv( $arguments ) {
 	$argv = [];
 	foreach ( $matches as $match ) {
 		// Check if this is a quoted associative argument (--key="value" or --key='value').
-		if ( isset( $match[2] ) && '' !== $match[2] ) {
+		if ( isset( $match[1], $match[2] ) && '' !== $match[2] ) {
 			// Extract the key part (everything before the quote).
 			if ( preg_match( '/^(--[^=]+=)/', $match[0], $key_match ) ) {
 				$value = $match[2];
