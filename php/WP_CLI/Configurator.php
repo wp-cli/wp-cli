@@ -232,7 +232,16 @@ class Configurator {
 				}
 			}
 			foreach ( $local_assoc as $tmp ) {
-				$assoc_args[ $tmp[0] ] = $tmp[1];
+				list( $key, $value ) = $tmp;
+				// Collect multiple values for the same key into an array
+				if ( isset( $assoc_args[ $key ] ) ) {
+					if ( ! is_array( $assoc_args[ $key ] ) ) {
+						$assoc_args[ $key ] = [ $assoc_args[ $key ] ];
+					}
+					$assoc_args[ $key ][] = $value;
+				} else {
+					$assoc_args[ $key ] = $value;
+				}
 			}
 		} else {
 			foreach ( $mixed_args as $tmp ) {
@@ -241,7 +250,15 @@ class Configurator {
 				if ( isset( $this->spec[ $key ] ) && false !== $this->spec[ $key ]['runtime'] ) {
 					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
 				} else {
-					$assoc_args[ $key ] = $value;
+					// Collect multiple values for the same key into an array
+					if ( isset( $assoc_args[ $key ] ) ) {
+						if ( ! is_array( $assoc_args[ $key ] ) ) {
+							$assoc_args[ $key ] = [ $assoc_args[ $key ] ];
+						}
+						$assoc_args[ $key ][] = $value;
+					} else {
+						$assoc_args[ $key ] = $value;
+					}
 				}
 			}
 		}
