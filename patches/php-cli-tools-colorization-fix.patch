@@ -1,0 +1,84 @@
+--- a/lib/cli/table/Ascii.php
++++ b/lib/cli/table/Ascii.php
+@@ -145,11 +145,34 @@ class Ascii extends Renderer {
+ 
+ 				$wrapped_lines = [];
+ 				foreach ( $split_lines as $line ) {
++					$active_color = '';
+ 					do {
+-						$wrapped_value = \cli\safe_substr( $line, 0, $col_width, true /*is_width*/, $encoding );
++						// Add active color from previous wrap to the beginning
++						$line_to_wrap = $active_color . $line;
++						
++						$wrapped_value = \cli\safe_substr( $line_to_wrap, 0, $col_width, true /*is_width*/, $encoding );
+ 						$val_width     = Colors::width( $wrapped_value, self::isPreColorized( $col ), $encoding );
+ 						if ( $val_width ) {
++							// Calculate the actual length of wrapped content (excluding prepended color code)
++							$wrapped_len = \cli\safe_strlen( $wrapped_value, $encoding );
++							if ( $active_color ) {
++								$wrapped_len -= \cli\safe_strlen( $active_color, $encoding );
++							}
++							
++							// Get the last active ANSI color code from the wrapped portion
++							$last_color = '';
++							if ( self::isPreColorized( $col ) ) {
++								$last_color = $this->getLastActiveAnsiColor( $wrapped_value );
++							}
++							
++							// Calculate remaining line
++							$line = \cli\safe_substr( $line, $wrapped_len, null /*length*/, false /*is_width*/, $encoding );
++							
++							// If there's an active color and more text to wrap, add reset code
++							if ( $last_color && $line ) {
++								$wrapped_value .= "\033[0m";
++								$active_color = $last_color;
++							} else {
++								$active_color = '';
++							}
++							
+ 							$wrapped_lines[] = $wrapped_value;
+-							$line            = \cli\safe_substr( $line, \cli\safe_strlen( $wrapped_value, $encoding ), null /*length*/, false /*is_width*/, $encoding );
+ 						}
+ 					} while ( $line );
+ 				}
+@@ -226,4 +249,35 @@ class Ascii extends Renderer {
+ 		}
+ 		return false;
+ 	}
++
++	/**
++	 * Get the last active ANSI color code from a string.
++	 * 
++	 * Finds the last ANSI color escape sequence that hasn't been reset.
++	 * ANSI color codes follow the pattern: \033[<number>m or \033[<number>;<number>m
++	 * Reset is: \033[0m
++	 * 
++	 * @param string $string The string to analyze.
++	 * @return string The last active ANSI color code, or empty string if none.
++	 */
++	private function getLastActiveAnsiColor( $string ) {
++		// Pattern to match ANSI escape sequences
++		// Matches: \033[<digits>m or \033[<digits>;<digits>m etc.
++		preg_match_all( '/\033\[([0-9;]+)m/', $string, $matches, PREG_OFFSET_CAPTURE );
++		
++		if ( empty( $matches[0] ) ) {
++			return '';
++		}
++		
++		// Walk through matches from the end to find the last active color
++		for ( $i = count( $matches[0] ) - 1; $i >= 0; $i-- ) {
++			$code = $matches[1][ $i ][0];
++			$full_match = $matches[0][ $i ][0];
++			
++			// If we find a reset code (0 or 00), there's no active color
++			if ( $code === '0' || $code === '00' ) {
++				return '';
++			}
++			
++			// Otherwise, this is the last active color
++			return $full_match;
++		}
++		
++		return '';
++	}
+ }
