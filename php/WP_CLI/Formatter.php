@@ -243,6 +243,7 @@ class Formatter {
 	 */
 	private function validate_fields( $items ): void {
 		// Track which fields have been found
+		// Using array_flip creates a hash map for O(1) lookup and removal
 		$fields_to_find = array_flip( $this->args['fields'] );
 		$fields_count   = count( $fields_to_find );
 		$found_count    = 0;
@@ -250,7 +251,7 @@ class Formatter {
 		// Iterate through items once and check all fields
 		foreach ( $items as $item ) {
 			// Check each field that hasn't been found yet
-			foreach ( $fields_to_find as $field => $value ) {
+			foreach ( $fields_to_find as $field => $_ ) {
 				$key = $this->find_item_key( $item, $field, true );
 				if ( null !== $key ) {
 					// Mark this field as found
@@ -265,7 +266,7 @@ class Formatter {
 		}
 
 		// Warn about any fields that weren't found in any item
-		foreach ( $fields_to_find as $field => $value ) {
+		foreach ( $fields_to_find as $field => $_ ) {
 			WP_CLI::warning( "Field not found in any item: $field." );
 		}
 	}
