@@ -275,10 +275,11 @@ class Formatter {
 				$field = $resolved_fields[ $field ];
 			}
 		}
+		unset( $field ); // Break the reference to avoid issues with subsequent foreach loops
 
 		// Warn about any fields that weren't found in any item
-		foreach ( $fields_to_find as $field => $_ ) {
-			WP_CLI::warning( "Field not found in any item: $field." );
+		foreach ( $fields_to_find as $missing_field => $_ ) {
+			WP_CLI::warning( "Field not found in any item: $missing_field." );
 		}
 	}
 
