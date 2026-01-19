@@ -339,7 +339,7 @@ Feature: Format output
       $formatter->display_items( $items );
       """
 
-    When I run `wp eval-file no-field.php --skip-wordpress`
+    When I try `wp eval-file no-field.php --skip-wordpress`
     Then STDERR should contain:
       """
       Warning: Field not found in any item: nonexistent.
