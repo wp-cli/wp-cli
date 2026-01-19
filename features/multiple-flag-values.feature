@@ -164,5 +164,5 @@ Feature: Multiple flag values support
     Then the return code should be 1
     And STDERR should contain:
       """
-      Invalid value specified for 'status'
+      Invalid value 'invalid' specified for 'status'
       """

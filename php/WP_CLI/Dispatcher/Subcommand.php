@@ -362,7 +362,7 @@ class Subcommand extends CompositeCommand {
 				// Handle multiple values annotation
 				if ( isset( $assoc_args[ $spec['name'] ] ) && is_array( $assoc_args[ $spec['name'] ] ) ) {
 					// If multiple annotation is not set or is false, use only the last value
-					if ( ! isset( $spec_args['multiple'] ) || ! $spec_args['multiple'] ) {
+					if ( ! isset( $spec_args['multiple'] ) || false === $spec_args['multiple'] ) {
 						$assoc_args[ $spec['name'] ] = end( $assoc_args[ $spec['name'] ] );
 					}
 				}
@@ -381,7 +381,7 @@ class Subcommand extends CompositeCommand {
 						foreach ( $value as $single_value ) {
 							// phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
 							if ( ! in_array( $single_value, $options ) ) {
-								$errors['fatal'][ $spec['name'] ] = "Invalid value specified for '{$spec['name']}'";
+								$errors['fatal'][ $spec['name'] ] = "Invalid value '{$single_value}' specified for '{$spec['name']}'";
 								break;
 							}
 						}
