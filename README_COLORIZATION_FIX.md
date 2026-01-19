@@ -126,7 +126,7 @@ Added test scenario in `features/formatter.feature` that documents expected beha
 
 ## Related Issues
 
-- Original issue: wp-cli/wp-cli#??? (Wrapped lines in table view break colorization)
+- Addresses: Wrapped lines in table view break colorization
 - Affects: WP-CLI commands that use colorized table output with long text values
 
 ## Verification Status

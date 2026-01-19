@@ -70,8 +70,8 @@
 +			$code = $matches[1][ $i ][0];
 +			$full_match = $matches[0][ $i ][0];
 +			
-+			// If we find a reset code (0 or 00), there's no active color
-+			if ( $code === '0' || $code === '00' ) {
++			// If we find a reset code (0), there's no active color
++			if ( $code === '0' ) {
 +				return '';
 +			}
 +			
