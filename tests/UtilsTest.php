@@ -281,12 +281,12 @@ class UtilsTest extends TestCase {
 			[ [ 'option', 'get', 'home' ], 'option get home' ],
 			[ [ 'core', 'download', '--path=/var/www/' ], 'core download --path=/var/www/' ],
 			[ [ 'eval', 'echo wp_get_current_user()->user_login;' ], 'eval "echo wp_get_current_user()->user_login;"' ],
-			[ [ 'post', 'create', '--post_title="Hello world!"' ], 'post create --post_title="Hello world!"' ],
-			[ [ 'post', 'create', '--post_title=\'Mixed "quotes are working" hopefully\'' ], 'post create --post_title=\'Mixed "quotes are working" hopefully\'' ],
-			[ [ 'post', 'create', '--post_title="Escaped \"double \"quotes!"' ], 'post create --post_title="Escaped \"double \"quotes!"' ],
-			[ [ 'post', 'create', "--post_title='Escaped \'single \'quotes!'" ], "post create --post_title='Escaped \'single \'quotes!'" ],
+			[ [ 'post', 'create', '--post_title=Hello world!' ], 'post create --post_title="Hello world!"' ],
+			[ [ 'post', 'create', '--post_title=Mixed "quotes are working" hopefully' ], 'post create --post_title=\'Mixed "quotes are working" hopefully\'' ],
+			[ [ 'post', 'create', '--post_title=Escaped \"double \"quotes!' ], 'post create --post_title="Escaped \"double \"quotes!"' ],
+			[ [ 'post', 'create', "--post_title=Escaped 'single 'quotes!" ], "post create --post_title='Escaped \'single \'quotes!'" ],
 			[ [ 'search-replace', '//old-domain.com', '//new-domain.com', 'specifictable', '--all-tables' ], 'search-replace "//old-domain.com" "//new-domain.com" "specifictable" --all-tables' ],
-			[ [ 'i18n', 'make-pot', '/home/wporgdev/co/wordpress/trunk', '/home/wporgdev/co/wp-pot/trunk/wordpress-continents-cities.pot', '--include="wp-admin/includes/continents-cities.php"', "--package-name='WordPress'", '--headers=\'{"Report-Msgid-Bugs-To":"https://core.trac.wordpress.org/"}\'', "--file-comment='Copyright (C) 2019 by the contributors\nThis file is distributed under the same license as the WordPress package.'", '--skip-js', '--skip-audit', '--ignore-domain' ], "i18n make-pot '/home/wporgdev/co/wordpress/trunk' '/home/wporgdev/co/wp-pot/trunk/wordpress-continents-cities.pot' --include=\"wp-admin/includes/continents-cities.php\" --package-name='WordPress' --headers='{\"Report-Msgid-Bugs-To\":\"https://core.trac.wordpress.org/\"}' --file-comment='Copyright (C) 2019 by the contributors\nThis file is distributed under the same license as the WordPress package.' --skip-js --skip-audit --ignore-domain" ],
+			[ [ 'i18n', 'make-pot', '/home/wporgdev/co/wordpress/trunk', '/home/wporgdev/co/wp-pot/trunk/wordpress-continents-cities.pot', '--include=wp-admin/includes/continents-cities.php', "--package-name=WordPress", '--headers={"Report-Msgid-Bugs-To":"https://core.trac.wordpress.org/"}', "--file-comment=Copyright (C) 2019 by the contributors\nThis file is distributed under the same license as the WordPress package.", '--skip-js', '--skip-audit', '--ignore-domain' ], "i18n make-pot '/home/wporgdev/co/wordpress/trunk' '/home/wporgdev/co/wp-pot/trunk/wordpress-continents-cities.pot' --include=\"wp-admin/includes/continents-cities.php\" --package-name='WordPress' --headers='{\"Report-Msgid-Bugs-To\":\"https://core.trac.wordpress.org/\"}' --file-comment='Copyright (C) 2019 by the contributors\nThis file is distributed under the same license as the WordPress package.' --skip-js --skip-audit --ignore-domain" ],
 		];
 	}
 
@@ -296,6 +296,26 @@ class UtilsTest extends TestCase {
 	#[DataProvider( 'parseStrToArgvData' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testParseStrToArgv( $expected, $parseable_string ): void {
 		$this->assertEquals( $expected, Utils\parse_str_to_argv( $parseable_string ) );
+	}
+
+	/**
+	 * Test that associative arguments with quoted values are properly parsed
+	 * when passed to WP_CLI::runcommand().
+	 *
+	 * @see https://github.com/wp-cli/wp-cli/issues/XXXX
+	 */
+	public function testParseStrToArgvStripsQuotesFromAssocValues(): void {
+		// Test double quotes
+		$result = Utils\parse_str_to_argv( 'cli foo --bar="baz quax"' );
+		$this->assertEquals( [ 'cli', 'foo', '--bar=baz quax' ], $result );
+
+		// Test single quotes
+		$result = Utils\parse_str_to_argv( "cli foo --bar='baz quax'" );
+		$this->assertEquals( [ 'cli', 'foo', '--bar=baz quax' ], $result );
+
+		// Test no quotes (should remain unchanged)
+		$result = Utils\parse_str_to_argv( 'cli foo --bar=baz' );
+		$this->assertEquals( [ 'cli', 'foo', '--bar=baz' ], $result );
 	}
 
 	public function testAssocArgsToString(): void {
