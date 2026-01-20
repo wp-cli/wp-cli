@@ -273,7 +273,7 @@ class Subcommand extends CompositeCommand {
 					$response = $default_val;
 				}
 
-				if ( $response ) {
+				if ( '' !== $response ) {
 					switch ( $spec_arg['type'] ) {
 						case 'positional':
 							if ( $spec_arg['repeating'] ) {
