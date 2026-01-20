@@ -38,6 +38,11 @@ use WP_CLI\Utils;
  */
 class CLI_Command extends WP_CLI_Command {
 
+	/**
+	 * Memory limit threshold for warnings (512M in bytes).
+	 */
+	private const MEMORY_LIMIT_WARNING_THRESHOLD = 536870912;
+
 	private function command_to_array( $command ) {
 		$dump = [
 			'name'        => $command->get_name(),
@@ -213,9 +218,9 @@ class CLI_Command extends WP_CLI_Command {
 		// Convert memory limit string (e.g., "256M", "1G") to bytes.
 		$limit_bytes = $this->convert_to_bytes( $memory_limit );
 
-		// Warn if limit is below 512M (536870912 bytes).
+		// Warn if limit is below 512M.
 		// This is a reasonable threshold for CLI operations.
-		if ( $limit_bytes > 0 && $limit_bytes < 536870912 ) {
+		if ( $limit_bytes > 0 && $limit_bytes < self::MEMORY_LIMIT_WARNING_THRESHOLD ) {
 			WP_CLI::warning(
 				sprintf(
 					'PHP memory limit is set to %s. This may be too low for some WP-CLI operations. Consider increasing it to at least 512M or setting it to -1 (unlimited) for CLI usage.',

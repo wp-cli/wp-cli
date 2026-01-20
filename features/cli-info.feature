@@ -37,6 +37,12 @@ Feature: Review CLI information
       PHP memory limit:
       """
 
+    When I run `wp cli info --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {"php_memory_limit":
+      """
+
   Scenario: Warn about low memory limit
     Given an empty directory
 
@@ -54,6 +60,30 @@ Feature: Review CLI information
     Then STDOUT should contain:
       """
       PHP memory limit:	1G
+      """
+    And STDERR should be empty
+
+    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=-1} cli info`
+    Then STDOUT should contain:
+      """
+      PHP memory limit:	-1
+      """
+    And STDERR should be empty
+
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=256K} cli info`
+    Then STDOUT should contain:
+      """
+      PHP memory limit:	256K
+      """
+    And STDERR should contain:
+      """
+      PHP memory limit is set to 256K
+      """
+
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=512M} cli info`
+    Then STDOUT should contain:
+      """
+      PHP memory limit:	512M
       """
     And STDERR should be empty
 
