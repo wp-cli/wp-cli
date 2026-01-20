@@ -759,7 +759,7 @@ class WP_CLI {
 	 * @param string                    $command_name The name of the command being registered.
 	 * @param Dispatcher\Subcommand $command      The command object to check.
 	 */
-	private static function check_global_arg_conflicts( $command_name, $command ) {
+	public static function check_global_arg_conflicts( $command_name, $command ) {
 		$synopsis = $command->get_synopsis();
 		if ( ! $synopsis ) {
 			return;

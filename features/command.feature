@@ -1812,3 +1812,64 @@ Feature: WP-CLI Commands
       noconflict
       """
 
+  Scenario: Warn when class-based command methods override global arguments
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * Test class-based command
+       *
+       * @when before_wp_load
+       */
+      class TestCommand {
+        /**
+         * Method with debug conflict
+         *
+         * ## OPTIONS
+         *
+         * [--debug]
+         * : Debug flag that conflicts
+         */
+        public function with_debug( $args, $assoc_args ) {
+          WP_CLI::success( 'Method executed' );
+        }
+
+        /**
+         * Method with user conflict
+         *
+         * ## OPTIONS
+         *
+         * --user=<user>
+         * : User argument that conflicts
+         */
+        public function with_user( $args, $assoc_args ) {
+          WP_CLI::success( 'Method executed' );
+        }
+
+        /**
+         * Method with no conflicts
+         *
+         * ## OPTIONS
+         *
+         * [--custom]
+         * : Custom flag
+         */
+        public function clean( $args, $assoc_args ) {
+          WP_CLI::success( 'Method executed' );
+        }
+      }
+      WP_CLI::add_command( 'testcmd', 'TestCommand' );
+      """
+
+    When I try `wp --require=custom-cmd.php help 2>&1`
+    Then STDERR should contain:
+      """
+      Warning: The `testcmd with_debug` command is registering an argument '--debug' that conflicts with a global argument of the same name.
+      """
+    And STDERR should contain:
+      """
+      Warning: The `testcmd with_user` command is registering an argument '--user' that conflicts with a global argument of the same name.
+      """
+
+
