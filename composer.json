@@ -42,17 +42,17 @@
             "dev-main": "2.13.x-dev"
         },
         "commands": [
-            "wp cli",
-            "wp cli alias",
-            "wp cli cache",
-            "wp cli check-update",
-            "wp cli cmd-dump",
-            "wp cli completions",
-            "wp cli has-command",
-            "wp cli info",
-            "wp cli param-dump",
-            "wp cli update",
-            "wp cli version"
+            "cli",
+            "cli alias",
+            "cli cache",
+            "cli check-update",
+            "cli cmd-dump",
+            "cli completions",
+            "cli has-command",
+            "cli info",
+            "cli param-dump",
+            "cli update",
+            "cli version"
         ]
     },
     "autoload": {
