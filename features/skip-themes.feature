@@ -167,7 +167,7 @@ Feature: Skipping themes
       bool(false)
       """
 
-  @require-wp-6.1 @require-php-7.2
+  @require-wp-6.1 @require-php-7.4
   Scenario: Skip a theme using block patterns with Gutenberg active
     Given a WP installation
     And I run `wp plugin install gutenberg --activate`
