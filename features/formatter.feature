@@ -245,6 +245,81 @@ Feature: Format output
       name,"Custom Name"
       """
 
+  Scenario: Table alignment with right and left aligned columns
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $items = array(
+          array(
+              'key'   => 'A',
+              'value' => '100',
+          ),
+          array(
+              'key'   => 'AB',
+              'value' => '2000',
+          ),
+          array(
+              'key'   => 'ABC',
+              'value' => '30',
+          ),
+      );
+      // 0 = right, 1 = left
+      $assoc_args = array(
+          'format' => 'table',
+          'alignments' => array( 'key' => 0, 'value' => 1 ),
+      );
+      $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'key', 'value' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `SHELL_PIPE=0 wp eval-file file.php --skip-wordpress`
+    Then STDOUT should strictly be:
+      """
+      +-----+-------+
+      | key | value |
+      +-----+-------+
+      |   A | 100   |
+      |  AB | 2000  |
+      | ABC | 30    |
+      +-----+-------+
+      """
+
+  Scenario: Table alignment with center aligned columns
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $items = array(
+          array(
+              'key'   => 'A',
+              'value' => '1',
+          ),
+          array(
+              'key'   => 'ABC',
+              'value' => '123',
+          ),
+      );
+      // 2 = center
+      $assoc_args = array(
+          'format' => 'table',
+          'alignments' => array( 'key' => 2, 'value' => 2 ),
+      );
+      $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'key', 'value' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `SHELL_PIPE=0 wp eval-file file.php --skip-wordpress`
+    Then STDOUT should strictly be:
+      """
+      +-----+-------+
+      | key | value |
+      +-----+-------+
+      |  A  |   1   |
+      | ABC |  123  |
+      +-----+-------+
+      """
+
   Scenario: Table truncates overly large values
     Given an empty directory
     And a file.php file:

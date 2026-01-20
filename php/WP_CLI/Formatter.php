@@ -11,9 +11,10 @@ use WP_CLI;
 /**
  * Output one or more items in a given format (e.g. table, JSON).
  *
- * @property-read string      $format
- * @property-read string[]    $fields
- * @property-read string|null $field
+ * @property-read string             $format
+ * @property-read string[]           $fields
+ * @property-read string|null        $field
+ * @property-read array<string, int> $alignments
  */
 class Formatter {
 
@@ -28,7 +29,7 @@ class Formatter {
 	/**
 	 * How the items should be output.
 	 *
-	 * @var array{format: string, fields: string[], field: string|null}
+	 * @var array{format: string, fields: string[], field: string|null, alignments: array<string, int>}
 	 */
 	private $args;
 
@@ -47,12 +48,13 @@ class Formatter {
 	 */
 	public function __construct( &$assoc_args, $fields = null, $prefix = false ) {
 		$format_args = [
-			'format' => 'table',
-			'fields' => $fields,
-			'field'  => null,
+			'format'     => 'table',
+			'fields'     => $fields,
+			'field'      => null,
+			'alignments' => [],
 		];
 
-		foreach ( [ 'format', 'fields', 'field' ] as $key ) {
+		foreach ( array_keys( $format_args ) as $key ) {
 			if ( isset( $assoc_args[ $key ] ) ) {
 				$format_args[ $key ] = $assoc_args[ $key ];
 				unset( $assoc_args[ $key ] );
@@ -191,7 +193,7 @@ class Formatter {
 					$items = iterator_to_array( $items );
 				}
 				$items = $this->truncate_items( $items, $fields );
-				self::show_table( $items, $fields, $ascii_pre_colorized );
+				$this->show_table( $items, $fields, $ascii_pre_colorized );
 				break;
 
 			case 'csv':
@@ -353,7 +355,7 @@ class Formatter {
 	 * @param array      $fields              Fields.
 	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `Table::setAsciiPreColorized()` if items in the table are pre-colorized. Default false.
 	 */
-	private static function show_table( $items, $fields, $ascii_pre_colorized = false ) {
+	private function show_table( $items, $fields, $ascii_pre_colorized = false ) {
 		$table = new Table();
 
 		$enabled = WP_CLI::get_runner()->in_color();
@@ -363,6 +365,9 @@ class Formatter {
 
 		$table->setAsciiPreColorized( $ascii_pre_colorized );
 		$table->setHeaders( $fields );
+		$table->setAlignments(
+			$this->args['alignments']
+		);
 
 		foreach ( $items as $item ) {
 			$table->addRow( array_values( Utils\pick_fields( $item, $fields ) ) );
