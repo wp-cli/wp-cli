@@ -18,6 +18,14 @@ use WP_CLI;
 class Formatter {
 
 	/**
+	 * Maximum width for a table cell value.
+	 * Values longer than this will be truncated to improve performance.
+	 *
+	 * @var int
+	 */
+	const MAX_CELL_WIDTH = 2048;
+
+	/**
 	 * How the items should be output.
 	 *
 	 * @var array{format: string, fields: string[], field: string|null}
@@ -132,6 +140,28 @@ class Formatter {
 	}
 
 	/**
+	 * Truncate cell values in items for table/CSV output.
+	 *
+	 * @param iterable $items  Items to process.
+	 * @param array    $fields Fields to truncate.
+	 * @return array Processed items with truncated values.
+	 */
+	private function truncate_items( $items, $fields ) {
+		$truncated = [];
+		foreach ( $items as $item ) {
+			$row = Utils\pick_fields( $item, $fields );
+			// Truncate each field value
+			foreach ( $row as $key => $value ) {
+				if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
+					$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
+				}
+			}
+			$truncated[] = $row;
+		}
+		return $truncated;
+	}
+
+	/**
 	 * Format items according to arguments.
 	 *
 	 * @param iterable   $items               Items.
@@ -156,10 +186,20 @@ class Formatter {
 				break;
 
 			case 'table':
+				// Truncate large values before table formatting for performance
+				if ( ! is_array( $items ) ) {
+					$items = iterator_to_array( $items );
+				}
+				$items = $this->truncate_items( $items, $fields );
 				self::show_table( $items, $fields, $ascii_pre_colorized );
 				break;
 
 			case 'csv':
+				// Truncate large values before CSV output for performance
+				if ( ! is_array( $items ) ) {
+					$items = iterator_to_array( $items );
+				}
+				$items = $this->truncate_items( $items, $fields );
 				Utils\write_csv( STDOUT, $items, $fields );
 				break;
 
@@ -350,6 +390,11 @@ class Formatter {
 
 			if ( ! is_string( $value ) ) {
 				$value = json_encode( $value );
+			}
+
+			// Truncate large values for table/CSV output performance
+			if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
+				$value = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
 			}
 
 			$rows[] = (object) [
