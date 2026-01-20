@@ -319,7 +319,7 @@ class Formatter {
 		$table->setAsciiPreColorized( $ascii_pre_colorized );
 		$table->setHeaders( $fields );
 		$table->setAlignments(
-			array_key_exists( 'alignments', $this->args ) ? $this->args['alignments'] : []
+			$this->args['alignments']
 		);
 
 		foreach ( $items as $item ) {
