@@ -75,3 +75,60 @@ Feature: CLI Cache
     And the {SUITE_CACHE_DIR}/file-b-23456.tmp file should exist
     And the {SUITE_CACHE_DIR}/file-b-01234.tmp file should not exist
     And the {SUITE_CACHE_DIR}/file-c-12345.tmp file should exist
+
+  Scenario: Prune plugin cache files with version numbers
+    Given an empty cache
+    And a plugin/jetpack-8.6.1.zip cache file:
+      """
+      -empty-
+      """
+    And a plugin/jetpack-8.7.1.zip cache file:
+      """
+      -empty-
+      """
+    And a plugin/jetpack-8.9.1.zip cache file:
+      """
+      -empty-
+      """
+    And a plugin/loginizer-1.4.4.zip cache file:
+      """
+      -empty-
+      """
+    And a plugin/loginizer-1.4.8.zip cache file:
+      """
+      -empty-
+      """
+    And a plugin/loginizer-1.6.0.zip cache file:
+      """
+      -empty-
+      """
+
+    When I run `wp cli cache prune`
+    Then STDOUT should be:
+      """
+      Success: Cache pruned.
+      """
+    And the {SUITE_CACHE_DIR}/plugin directory should contain:
+      """
+      jetpack-8.9.1.zip
+      """
+    And the {SUITE_CACHE_DIR}/plugin directory should contain:
+      """
+      loginizer-1.6.0.zip
+      """
+    And the {SUITE_CACHE_DIR}/plugin directory should not contain:
+      """
+      jetpack-8.6.1.zip
+      """
+    And the {SUITE_CACHE_DIR}/plugin directory should not contain:
+      """
+      jetpack-8.7.1.zip
+      """
+    And the {SUITE_CACHE_DIR}/plugin directory should not contain:
+      """
+      loginizer-1.4.4.zip
+      """
+    And the {SUITE_CACHE_DIR}/plugin directory should not contain:
+      """
+      loginizer-1.4.8.zip
+      """
