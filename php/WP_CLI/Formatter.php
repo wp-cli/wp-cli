@@ -356,7 +356,11 @@ class Formatter {
 	}
 
 	/**
-	 * Transforms objects and arrays to JSON as necessary
+	 * Transforms item values for string-based output formats (table/CSV).
+	 *
+	 * Converts complex types to strings:
+	 * - Objects and arrays are converted to JSON strings
+	 * - Booleans are converted to "true" or "false"
 	 *
 	 * @param array|object $item
 	 * @return mixed
@@ -370,6 +374,13 @@ class Formatter {
 					$item->$true_field = json_encode( $value );
 				} elseif ( is_array( $item ) ) {
 					$item[ $true_field ] = json_encode( $value );
+				}
+			} elseif ( is_bool( $value ) ) {
+				// Convert boolean to string representation for table/CSV display
+				if ( is_object( $item ) ) {
+					$item->$true_field = $value ? 'true' : 'false';
+				} elseif ( is_array( $item ) ) {
+					$item[ $true_field ] = $value ? 'true' : 'false';
 				}
 			}
 		}

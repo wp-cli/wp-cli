@@ -189,3 +189,55 @@ Feature: Format output
       |         |          | banana     |
       |         |          | mango      |
       | 1       | bar      | br         |
+
+  Scenario: Format boolean values in table and JSON
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $items = array(
+        array(
+          'id' => 1,
+          'status' => true,
+        ),
+        array(
+          'id' => 2,
+          'status' => false,
+        ),
+      );
+      $assoc_args = array();
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'id', 'status' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file file.php --skip-wordpress`
+    Then STDOUT should be a table containing rows:
+      | id | status |
+      | 1  | true   |
+      | 2  | false  |
+
+  Scenario: Format boolean values as JSON preserves boolean type
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $items = array(
+        array(
+          'id' => 1,
+          'status' => true,
+        ),
+        array(
+          'id' => 2,
+          'status' => false,
+        ),
+      );
+      $assoc_args = array( 'format' => 'json' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'id', 'status' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file file.php --skip-wordpress`
+    Then STDOUT should be JSON containing:
+      """
+      [{"id":1,"status":true},{"id":2,"status":false}]
+      """
