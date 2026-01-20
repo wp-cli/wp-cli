@@ -217,12 +217,8 @@ class Subcommand extends CompositeCommand {
 			$prompt_args = explode( ',', $prompt_args );
 		}
 
-		// Create a DocParser to retrieve argument descriptions
-		$longdesc  = $this->get_longdesc();
-		$mock_doc  = [ $this->get_shortdesc(), '' ];
-		$mock_doc  = array_merge( $mock_doc, explode( "\n", $longdesc ) );
-		$mock_doc  = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
-		$docparser = new DocParser( $mock_doc );
+		// Reuse the existing DocParser to retrieve argument descriptions.
+		$docparser = $this->docparser;
 
 		// 'positional' arguments are positional (aka zero-indexed)
 		// so $args needs to be reset before prompting for new arguments
