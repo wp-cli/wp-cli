@@ -183,6 +183,9 @@ class Subcommand extends CompositeCommand {
 			return [ $args, $assoc_args ];
 		}
 
+		// Create a docparser to get default values and descriptions
+		$docparser = $this->get_docparser();
+
 		// To skip the already provided positional arguments, we need to count
 		// how many we had already received.
 		$arg_index = 0;
@@ -276,7 +279,8 @@ class Subcommand extends CompositeCommand {
 				} while ( $repeat );
 
 			} else {
-				$prompt = $current_prompt . $spec_arg['token'];
+				$prompt      = $current_prompt . $spec_arg['token'];
+				$default_val = null;
 
 				// Add description if available
 				$longdesc    = $this->get_longdesc();
@@ -286,8 +290,17 @@ class Subcommand extends CompositeCommand {
 					$prompt .= ' (' . $description . ')';
 				}
 
+				// Get default value for the argument (not for flags)
 				if ( 'flag' === $spec_arg['type'] ) {
 					$prompt .= ' (Y/n)';
+				} elseif ( 'positional' === $spec_arg['type'] || 'assoc' === $spec_arg['type'] ) {
+					$spec_args = ( 'positional' === $spec_arg['type'] )
+						? $docparser->get_arg_args( $spec_arg['name'] )
+						: $docparser->get_param_args( $spec_arg['name'] );
+					if ( null !== $spec_args && isset( $spec_args['default'] ) ) {
+						$default_val = $spec_args['default'];
+						$prompt     .= ' [' . $default_val . ']';
+					}
 				}
 
 				$response = $this->prompt( $prompt );
@@ -295,7 +308,12 @@ class Subcommand extends CompositeCommand {
 					return [ $args, $assoc_args ];
 				}
 
-				if ( $response ) {
+				// If response is empty and there's a default (not a flag), use the default
+				if ( '' === $response && null !== $default_val ) {
+					$response = $default_val;
+				}
+
+				if ( '' !== $response ) {
 					switch ( $spec_arg['type'] ) {
 						case 'positional':
 							if ( $spec_arg['repeating'] ) {

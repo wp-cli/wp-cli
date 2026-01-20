@@ -292,6 +292,135 @@ Feature: Prompt user for input
       wp test-sensitive --username='admin' --password='[REDACTED]' --api-key='[REDACTED]'
       """
 
+  Scenario: Flag prompt should accept Y for yes
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * Test that flag prompt accepts Y.
+       *
+       * ## OPTIONS
+       *
+       * [--flag]
+       * : An optional flag
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'test-flag-y', function( $_, $assoc_args ){
+        $flag_value = isset( $assoc_args['flag'] ) ? 'true' : 'false';
+        WP_CLI::line( 'flag: ' . $flag_value );
+      });
+      """
+    And a yes-response file:
+      """
+      Y
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `wp test-flag-y --prompt < yes-response`
+    Then STDOUT should contain:
+      """
+      wp test-flag-y --flag
+      """
+    And STDOUT should contain:
+      """
+      flag: true
+      """
+
+  Scenario: Assoc param with default should apply default on empty input
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * Test that default value is applied for assoc params.
+       *
+       * ## OPTIONS
+       *
+       * [--format=<format>]
+       * : Output format
+       * ---
+       * default: table
+       * options:
+       *   - table
+       *   - csv
+       *   - json
+       * ---
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'test-assoc-default', function( $_, $assoc_args ){
+        WP_CLI::line( 'format: ' . $assoc_args['format'] );
+      });
+      """
+    And a empty-response file:
+      """
+
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `wp test-assoc-default --prompt < empty-response`
+    Then STDOUT should contain:
+      """
+      wp test-assoc-default --format='table'
+      """
+    And STDOUT should contain:
+      """
+      format: table
+      """
+
+  Scenario: Positional arg with default should apply default on empty input
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * Test that default value is applied for positional args.
+       *
+       * ## OPTIONS
+       *
+       * [<name>]
+       * : The name
+       * ---
+       * default: World
+       * ---
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'test-positional-default', function( $args, $_ ){
+        $name = isset( $args[0] ) ? $args[0] : 'Nobody';
+        WP_CLI::line( 'Hello ' . $name );
+      });
+      """
+    And a empty-response file:
+      """
+
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `wp test-positional-default --prompt < empty-response`
+    Then STDOUT should contain:
+      """
+      wp test-positional-default 'World'
+      """
+    And STDOUT should contain:
+      """
+      Hello World
+      """
+
   Scenario: Prompt should display argument descriptions
     Given an empty directory
     And a cmd.php file:
