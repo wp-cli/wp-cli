@@ -11,16 +11,25 @@ use WP_CLI;
 /**
  * Output one or more items in a given format (e.g. table, JSON).
  *
- * @property-read string      $format
- * @property-read string[]    $fields
- * @property-read string|null $field
+ * @property-read string             $format
+ * @property-read string[]           $fields
+ * @property-read string|null        $field
+ * @property-read array<string, int> $alignments
  */
 class Formatter {
 
 	/**
+	 * Maximum width for a table cell value.
+	 * Values longer than this will be truncated to improve performance.
+	 *
+	 * @var int
+	 */
+	const MAX_CELL_WIDTH = 2048;
+
+	/**
 	 * How the items should be output.
 	 *
-	 * @var array{format: string, fields: string[], field: string|null}
+	 * @var array{format: string, fields: string[], field: string|null, alignments: array<string, int>}
 	 */
 	private $args;
 
@@ -39,12 +48,13 @@ class Formatter {
 	 */
 	public function __construct( &$assoc_args, $fields = null, $prefix = false ) {
 		$format_args = [
-			'format' => 'table',
-			'fields' => $fields,
-			'field'  => null,
+			'format'     => 'table',
+			'fields'     => $fields,
+			'field'      => null,
+			'alignments' => [],
 		];
 
-		foreach ( [ 'format', 'fields', 'field' ] as $key ) {
+		foreach ( array_keys( $format_args ) as $key ) {
 			if ( isset( $assoc_args[ $key ] ) ) {
 				$format_args[ $key ] = $assoc_args[ $key ];
 				unset( $assoc_args[ $key ] );
@@ -132,6 +142,28 @@ class Formatter {
 	}
 
 	/**
+	 * Truncate cell values in items for table/CSV output.
+	 *
+	 * @param iterable $items  Items to process.
+	 * @param array    $fields Fields to truncate.
+	 * @return array Processed items with truncated values.
+	 */
+	private function truncate_items( $items, $fields ) {
+		$truncated = [];
+		foreach ( $items as $item ) {
+			$row = Utils\pick_fields( $item, $fields );
+			// Truncate each field value
+			foreach ( $row as $key => $value ) {
+				if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
+					$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
+				}
+			}
+			$truncated[] = $row;
+		}
+		return $truncated;
+	}
+
+	/**
 	 * Format items according to arguments.
 	 *
 	 * @param iterable   $items               Items.
@@ -156,10 +188,20 @@ class Formatter {
 				break;
 
 			case 'table':
-				self::show_table( $items, $fields, $ascii_pre_colorized );
+				// Truncate large values before table formatting for performance
+				if ( ! is_array( $items ) ) {
+					$items = iterator_to_array( $items );
+				}
+				$items = $this->truncate_items( $items, $fields );
+				$this->show_table( $items, $fields, $ascii_pre_colorized );
 				break;
 
 			case 'csv':
+				// Truncate large values before CSV output for performance
+				if ( ! is_array( $items ) ) {
+					$items = iterator_to_array( $items );
+				}
+				$items = $this->truncate_items( $items, $fields );
 				Utils\write_csv( STDOUT, $items, $fields );
 				break;
 
@@ -271,11 +313,17 @@ class Formatter {
 			}
 		}
 
+		$ordered_data = [];
+
+		foreach ( $this->args['fields'] as $field ) {
+			$ordered_data[ $field ] = ( is_object( $data ) ) ? $data->$field : $data[ $field ];
+		}
+
 		switch ( $format ) {
 
 			case 'table':
 			case 'csv':
-				$rows   = $this->assoc_array_to_rows( $data );
+				$rows   = $this->assoc_array_to_rows( $ordered_data );
 				$fields = [ 'Field', 'Value' ];
 				if ( 'table' === $format ) {
 					self::show_table( $rows, $fields, $ascii_pre_colorized );
@@ -287,7 +335,7 @@ class Formatter {
 			case 'yaml':
 			case 'json':
 				WP_CLI::print_value(
-					$data,
+					$ordered_data,
 					[
 						'format' => $format,
 					]
@@ -307,7 +355,7 @@ class Formatter {
 	 * @param array      $fields              Fields.
 	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `Table::setAsciiPreColorized()` if items in the table are pre-colorized. Default false.
 	 */
-	private static function show_table( $items, $fields, $ascii_pre_colorized = false ) {
+	private function show_table( $items, $fields, $ascii_pre_colorized = false ) {
 		$table = new Table();
 
 		$enabled = WP_CLI::get_runner()->in_color();
@@ -317,6 +365,9 @@ class Formatter {
 
 		$table->setAsciiPreColorized( $ascii_pre_colorized );
 		$table->setHeaders( $fields );
+		$table->setAlignments(
+			$this->args['alignments']
+		);
 
 		foreach ( $items as $item ) {
 			$table->addRow( array_values( Utils\pick_fields( $item, $fields ) ) );
@@ -344,6 +395,11 @@ class Formatter {
 
 			if ( ! is_string( $value ) ) {
 				$value = json_encode( $value );
+			}
+
+			// Truncate large values for table/CSV output performance
+			if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
+				$value = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
 			}
 
 			$rows[] = (object) [
