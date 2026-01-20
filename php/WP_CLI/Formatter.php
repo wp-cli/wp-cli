@@ -11,16 +11,17 @@ use WP_CLI;
 /**
  * Output one or more items in a given format (e.g. table, JSON).
  *
- * @property-read string      $format
- * @property-read string[]    $fields
- * @property-read string|null $field
+ * @property-read string             $format
+ * @property-read string[]           $fields
+ * @property-read string|null        $field
+ * @property-read array<string, int> $alignments
  */
 class Formatter {
 
 	/**
 	 * How the items should be output.
 	 *
-	 * @var array{format: string, fields: string[], field: string|null}
+	 * @var array{format: string, fields: string[], field: string|null, alignments: array<string, int>}
 	 */
 	private $args;
 
