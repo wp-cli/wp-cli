@@ -992,7 +992,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		}
 	}
 
-	// Should never reach here, but just in case.
+	// All retries exhausted, throw the last exception.
 	$error_msg = sprintf( "Failed to get url '%s' after %d attempts.", $url, $max_retries + 1 );
 	if ( $halt_on_error ) {
 		WP_CLI::error( $error_msg );
