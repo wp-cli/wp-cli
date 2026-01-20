@@ -807,7 +807,7 @@ class WP_CLI {
 		foreach ( $conflicts as $conflict ) {
 			self::warning(
 				sprintf(
-					"The `%s` command is registering an argument '--%s' that conflicts with a global argument of the same name. This can lead to unexpected behavior.",
+					"The `%s` command is registering an argument '--%s' that conflicts with a global argument of the same name.",
 					$command_name,
 					$conflict
 				)
@@ -853,8 +853,8 @@ class WP_CLI {
 			return false;
 		}
 
-		// Check if the doc comment contains @skipglobalargcheck
-		return false !== strpos( $doc_comment, '@skipglobalargcheck' );
+		// Check if the doc comment contains @skipglobalargcheck as a tag (not in text)
+		return (bool) preg_match( '/^\s*\*?\s*@skipglobalargcheck\b/m', $doc_comment );
 	}
 
 	/**
