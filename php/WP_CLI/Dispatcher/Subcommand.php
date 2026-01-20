@@ -148,10 +148,7 @@ class Subcommand extends CompositeCommand {
 		}
 
 		// Create a docparser to get default values and descriptions
-		$mock_doc  = [ $this->get_shortdesc(), '' ];
-		$mock_doc  = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
-		$mock_doc  = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
-		$docparser = new DocParser( $mock_doc );
+		$docparser = $this->get_docparser();
 
 		// To skip the already provided positional arguments, we need to count
 		// how many we had already received.
