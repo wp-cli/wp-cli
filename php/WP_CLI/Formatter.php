@@ -313,11 +313,17 @@ class Formatter {
 			}
 		}
 
+		$ordered_data = [];
+
+		foreach ( $this->args['fields'] as $field ) {
+			$ordered_data[ $field ] = ( is_object( $data ) ) ? $data->$field : $data[ $field ];
+		}
+
 		switch ( $format ) {
 
 			case 'table':
 			case 'csv':
-				$rows   = $this->assoc_array_to_rows( $data );
+				$rows   = $this->assoc_array_to_rows( $ordered_data );
 				$fields = [ 'Field', 'Value' ];
 				if ( 'table' === $format ) {
 					self::show_table( $rows, $fields, $ascii_pre_colorized );
@@ -329,7 +335,7 @@ class Formatter {
 			case 'yaml':
 			case 'json':
 				WP_CLI::print_value(
-					$data,
+					$ordered_data,
 					[
 						'format' => $format,
 					]
