@@ -148,7 +148,7 @@ class Subcommand extends CompositeCommand {
 			// try a simpler pattern that matches <arg> followed by : description,
 			// using a pattern consistent with DocParser::get_arg_desc().
 			if ( empty( $description ) ) {
-				$arg_pattern = "/\[?<{$spec_arg['name']}>.+\n:\s*(.+?)(\n|$)/";
+				$arg_pattern = "/\[?<" . preg_quote( $spec_arg['name'], '/' ) . ">.+\n:\s*(.+?)(\n|$)/";
 				if ( preg_match( $arg_pattern, $longdesc, $matches ) ) {
 					$description = trim( $matches[1] );
 				}
@@ -158,7 +158,7 @@ class Subcommand extends CompositeCommand {
 		} elseif ( 'flag' === $spec_arg['type'] ) {
 			// For flags, the pattern is [--flag] not [--flag=<value>]
 			// So we need a custom regex pattern in the longdesc
-			$flag_pattern = "/\[?--{$spec_arg['name']}\]\s*\n:\s*(.+?)(\n|$)/";
+			$flag_pattern = "/\[?--" . preg_quote( $spec_arg['name'], '/' ) . "\]\s*\n:\s*(.+?)(\n|$)/";
 			if ( preg_match( $flag_pattern, $longdesc, $matches ) ) {
 				$description = trim( $matches[1] );
 			}
