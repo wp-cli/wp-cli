@@ -251,13 +251,13 @@ class Subcommand extends CompositeCommand {
 					$prompt .= ' (Y/n)';
 				} elseif ( 'positional' === $spec_arg['type'] ) {
 					$spec_args = $docparser->get_arg_args( $spec_arg['name'] );
-					if ( isset( $spec_args['default'] ) ) {
+					if ( null !== $spec_args && isset( $spec_args['default'] ) ) {
 						$default_val = $spec_args['default'];
 						$prompt     .= ' [' . $default_val . ']';
 					}
 				} elseif ( 'assoc' === $spec_arg['type'] ) {
 					$spec_args = $docparser->get_param_args( $spec_arg['name'] );
-					if ( isset( $spec_args['default'] ) ) {
+					if ( null !== $spec_args && isset( $spec_args['default'] ) ) {
 						$default_val = $spec_args['default'];
 						$prompt     .= ' [' . $default_val . ']';
 					}
