@@ -964,7 +964,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 
 				// Store exception and retry.
 				$last_exception = $exception;
-				WP_CLI::debug( sprintf( 'Retrying HTTP request to %s (retry %d/%d) after transient error: %s', $url, $attempt - 1, $max_retries, $exception->getMessage() ), 'http' );
+				WP_CLI::debug( sprintf( 'Retrying HTTP request to %s (retry %d/%d) after transient error: %s', $url, $attempt, $max_retries, $exception->getMessage() ), 'http' );
 				sleep( $retry_after_delay );
 				$retry_after_delay = min( $retry_after_delay * 2, 10 ); // Exponential backoff, max 10 seconds.
 				continue;
