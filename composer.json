@@ -11,7 +11,7 @@
         "php": ">=7.2.24 || ^8.0",
         "mustache/mustache": "^3.0.0",
         "wp-cli/mustangostang-spyc": "^0.6.3",
-        "wp-cli/php-cli-tools": "~0.12.4"
+        "wp-cli/php-cli-tools": "~0.12.7"
     },
     "require-dev": {
         "justinrainbow/json-schema": "^6.3",
