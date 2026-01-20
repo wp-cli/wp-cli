@@ -355,7 +355,7 @@ Feature: Global flags
       """
 
   Scenario: SSH flag should support Docker
-    When I try `wp --debug --ssh=docker:user@wordpress --version`
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp --debug --ssh=docker:user@wordpress --version`
     Then STDERR should contain:
       """
       Running SSH command: docker exec --user 'user' 'wordpress' sh -c
@@ -384,3 +384,11 @@ Feature: Global flags
       """
       --user=<id|login|email>
       """
+
+  Scenario: Tilde expansion in --path parameter
+    Given a WP installation in 'subdir'
+    And I run `bash -c 'ln -s $(pwd)/subdir $HOME/test-wp-tilde'`
+
+    When I run `wp core version --path=~/test-wp-tilde`
+    Then STDOUT should not be empty
+    And the return code should be 0

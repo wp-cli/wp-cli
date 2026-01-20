@@ -15,7 +15,10 @@ namespace WP_CLI;
 
 use DateTime;
 use Exception;
-use Symfony\Component\Finder\Finder;
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 use WP_CLI;
 
 /**
@@ -85,7 +88,9 @@ class FileCache {
 	 *
 	 * @param string $key cache key
 	 * @param int    $ttl time to live
-	 * @return bool|string filename or false
+	 * @return false|string filename or false
+	 *
+	 * @phpstan-assert-if-true string $this->read()
 	 */
 	public function has( $key, $ttl = null ) {
 		if ( ! $this->enabled ) {
@@ -107,8 +112,12 @@ class FileCache {
 			$ttl = (int) $ttl;
 		}
 
-		//
-		if ( $ttl > 0 && ( filemtime( $filename ) + $ttl ) < time() ) {
+		$modified_time = filemtime( $filename );
+		if ( false === $modified_time ) {
+			$modified_time = 0;
+		}
+
+		if ( $ttl > 0 && ( $modified_time + $ttl ) < time() ) {
 			if ( $this->ttl > 0 && $ttl >= $this->ttl ) {
 				unlink( $filename );
 			}
@@ -140,13 +149,13 @@ class FileCache {
 	 *
 	 * @param string $key cache key
 	 * @param int    $ttl time to live
-	 * @return bool|string file contents or false
+	 * @return false|string file contents or false
 	 */
 	public function read( $key, $ttl = null ) {
 		$filename = $this->has( $key, $ttl );
 
 		if ( $filename ) {
-			return file_get_contents( $filename );
+			return (string) file_get_contents( $filename );
 		}
 
 		return false;
@@ -156,11 +165,15 @@ class FileCache {
 	 * Copy a file into the cache
 	 *
 	 * @param string $key    cache key
-	 * @param string $source source filename
+	 * @param string $source source filename; tmp file filepath from HTTP response
 	 * @return bool
 	 */
 	public function import( $key, $source ) {
 		$filename = $this->prepare_write( $key );
+
+		if ( ! is_readable( $source ) ) {
+			return false;
+		}
 
 		if ( $filename ) {
 			return copy( $source, $filename ) && touch( $filename );
@@ -225,10 +238,13 @@ class FileCache {
 			try {
 				$expire = new DateTime();
 				$expire->modify( '-' . $ttl . ' seconds' );
+				$expire_time = $expire->getTimestamp();
 
-				$finder = $this->get_finder()->date( 'until ' . $expire->format( 'Y-m-d H:i:s' ) );
-				foreach ( $finder as $file ) {
-					unlink( $file->getRealPath() );
+				$files = $this->get_cache_files();
+				foreach ( $files as $file ) {
+					if ( $file->getMTime() <= $expire_time ) {
+						unlink( $file->getRealPath() );
+					}
 				}
 			} catch ( Exception $e ) {
 				WP_CLI::error( $e->getMessage() );
@@ -237,7 +253,16 @@ class FileCache {
 
 		// Unlink older files if max cache size is exceeded.
 		if ( $max_size > 0 ) {
-			$files = array_reverse( iterator_to_array( $this->get_finder()->sortByAccessedTime()->getIterator() ) );
+			$files = $this->get_cache_files();
+
+			// Sort files by accessed time (newest first)
+			usort(
+				$files,
+				static function ( $a, $b ) {
+					return $b->getATime() <=> $a->getATime();
+				}
+			);
+
 			$total = 0;
 
 			foreach ( $files as $file ) {
@@ -262,9 +287,9 @@ class FileCache {
 			return false;
 		}
 
-		$finder = $this->get_finder();
+		$files = $this->get_cache_files();
 
-		foreach ( $finder as $file ) {
+		foreach ( $files as $file ) {
 			unlink( $file->getRealPath() );
 		}
 
@@ -281,28 +306,78 @@ class FileCache {
 			return false;
 		}
 
-		/** @var Finder $finder */
-		$finder = $this->get_finder()->sortByName();
+		$cache_files = $this->get_cache_files();
 
-		$files_to_delete = [];
+		// Sort files by name
+		usort(
+			$cache_files,
+			static function ( $a, $b ) {
+				return strcmp( $a->getFilename(), $b->getFilename() );
+			}
+		);
 
-		foreach ( $finder as $file ) {
-			$pieces    = explode( '-', $file->getBasename( $file->getExtension() ) );
-			$timestamp = end( $pieces );
+		$files_by_base = [];
 
-			// No way to compare versions, do nothing.
-			if ( ! is_numeric( $timestamp ) ) {
+		// Group files by their base name (stripping version/timestamp).
+		foreach ( $cache_files as $file ) {
+			$basename   = $file->getBasename();
+			$pieces     = explode( '-', $file->getBasename( $file->getExtension() ) );
+			$last_piece = end( $pieces );
+
+			// Try to identify a version or timestamp suffix.
+			$basename_without_suffix = $basename;
+			$version_string          = null;
+
+			// Check if last piece is purely numeric (original timestamp format).
+			if ( is_numeric( $last_piece ) ) {
+				$basename_without_suffix = str_replace( '-' . $last_piece, '', $basename );
+				$version_string          = $last_piece; // Store as string for comparison.
+			} elseif ( preg_match( '/^(\d+(?:\.\d+)*)/', $last_piece, $matches ) ) {
+				// Handle version numbers like "8.6.1" in "jetpack-8.6.1.zip".
+				$basename_without_suffix = str_replace( '-' . $last_piece, '', $basename );
+				$version_string          = $matches[0]; // Store the version string.
+			}
+
+			// Store file info: path, modification time, and optional version string.
+			if ( ! isset( $files_by_base[ $basename_without_suffix ] ) ) {
+				$files_by_base[ $basename_without_suffix ] = [];
+			}
+
+			$files_by_base[ $basename_without_suffix ][] = [
+				'path'    => $file->getRealPath(),
+				'mtime'   => $file->getMTime(),
+				'version' => $version_string,
+			];
+		}
+
+		// For each group, keep only the newest file and delete the rest.
+		foreach ( $files_by_base as $files ) {
+			if ( count( $files ) <= 1 ) {
 				continue;
 			}
 
-			$basename_without_timestamp = str_replace( '-' . $timestamp, '', $file->getBasename() );
+			// Sort files: prefer version comparison if available, otherwise use mtime.
+			usort(
+				$files,
+				static function ( $a, $b ) {
+					// If both have version strings, use version_compare().
+					if ( null !== $a['version'] && null !== $b['version'] ) {
+						$cmp = version_compare( $b['version'], $a['version'] );
+						if ( 0 !== $cmp ) {
+							return $cmp;
+						}
+						// If versions are equal, fall through to mtime comparison.
+					}
+					// Otherwise, compare by modification time.
+					return $b['mtime'] <=> $a['mtime'];
+				}
+			);
 
-			// There's a file with an older timestamp, delete it.
-			if ( isset( $files_to_delete[ $basename_without_timestamp ] ) ) {
-				unlink( $files_to_delete[ $basename_without_timestamp ] );
+			// Delete all except the first (newest).
+			$total = count( $files );
+			for ( $i = 1; $i < $total; $i++ ) {
+				unlink( $files[ $i ]['path'] );
 			}
-
-			$files_to_delete[ $basename_without_timestamp ] = $file->getRealPath();
 		}
 
 		return true;
@@ -324,7 +399,7 @@ class FileCache {
 			if ( ! @mkdir( $dir, 0777, true ) ) {
 				$message = "Failed to create directory '{$dir}'";
 				$error   = error_get_last();
-				if ( is_array( $error ) && array_key_exists( 'message', $error ) ) {
+				if ( is_array( $error ) ) {
 					$message .= ": {$error['message']}";
 				}
 				WP_CLI::warning( "{$message}." );
@@ -339,7 +414,7 @@ class FileCache {
 	 * Prepare cache write
 	 *
 	 * @param string $key cache key
-	 * @return bool|string filename or false
+	 * @return false|string The destination filename or false when cache disabled or directory creation fails.
 	 */
 	protected function prepare_write( $key ) {
 		if ( ! $this->enabled ) {
@@ -363,7 +438,7 @@ class FileCache {
 	 */
 	protected function validate_key( $key ) {
 		$url_parts = Utils\parse_url( $key, -1, false );
-		if ( array_key_exists( 'path', $url_parts ) && ! empty( $url_parts['scheme'] ) ) { // is url
+		if ( $url_parts && array_key_exists( 'path', $url_parts ) && ! empty( $url_parts['scheme'] ) ) { // is url
 			$parts   = [ 'misc' ];
 			$parts[] = $url_parts['scheme'] .
 				( empty( $url_parts['host'] ) ? '' : '-' . $url_parts['host'] ) .
@@ -377,11 +452,11 @@ class FileCache {
 
 		$parts = preg_replace( "#[^{$this->whitelist}]#i", '-', $parts );
 
-		return implode( '/', $parts );
+		return rtrim( implode( '/', $parts ), '.' );
 	}
 
 	/**
-	 * Filename from key
+	 * Destination filename from key
 	 *
 	 * @param string $key
 	 * @return string filename
@@ -391,11 +466,42 @@ class FileCache {
 	}
 
 	/**
-	 * Get a Finder that iterates in cache root only the files
+	 * Get all files in the cache directory recursively
 	 *
-	 * @return Finder
+	 * @return SplFileInfo[]
 	 */
-	protected function get_finder() {
-		return Finder::create()->in( $this->root )->files();
+	protected function get_cache_files() {
+		$files = [];
+
+		if ( ! is_dir( $this->root ) ) {
+			return $files;
+		}
+
+		try {
+			// Match Symfony Finder behavior: do not follow symlinks.
+			// We explicitly do NOT include FilesystemIterator::FOLLOW_SYMLINKS flag.
+			// This prevents the iterator from traversing into symlinked directories.
+			// We also filter out symlink files themselves with !isLink() check.
+			$iterator = new RecursiveIteratorIterator(
+				new RecursiveDirectoryIterator(
+					$this->root,
+					FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS
+				),
+				RecursiveIteratorIterator::LEAVES_ONLY
+			);
+
+			foreach ( $iterator as $file ) {
+				if ( $file instanceof SplFileInfo && $file->isFile() && ! $file->isLink() ) {
+					$files[] = $file;
+				}
+			}
+		} catch ( Exception $e ) {
+			// If directory iteration fails (e.g., permissions issue, directory deleted),
+			// return empty array. This matches the behavior of Symfony Finder which
+			// would also return an empty result for inaccessible directories.
+			return [];
+		}
+
+		return $files;
 	}
 }

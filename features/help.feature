@@ -53,6 +53,28 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
+  Scenario: Include when the command is run if a non-standard hook.
+    Given an empty directory
+
+    When I run `COLUMNS=80 wp help db`
+    Then STDOUT should contain:
+      """
+        Unless overridden, these commands run on the 'after_wp_config_load' hook,
+        after wp-config.php has been loaded into scope.
+      """
+
+    When I run `COLUMNS=150 wp help db check`
+    Then STDOUT should contain:
+      """
+      This command runs on the 'after_wp_config_load' hook, after wp-config.php has been loaded into scope.
+      """
+
+    When I run `COLUMNS=150 wp help db size`
+    Then STDOUT should not contain:
+      """
+      This command runs on the
+      """
+
   Scenario: Hide Global parameters when requested
     Given an empty directory
 
@@ -308,79 +330,278 @@ Feature: Get help about WP-CLI commands
 
   Scenario: Suggestions for command typos in help
     Given an empty directory
+    And a session_no file:
+      """
+      n
+      """
+    And a session_yes file:
+      """
+      y
+      """
 
-    When I try `wp help confi`
-    Then the return code should be 1
-    And STDERR should be:
+    When I try `wp help confi < session_no`
+    Then STDERR should contain:
+      """
+      Warning: 'confi' is not a registered wp command. See 'wp help' for available commands.
+      """
+    And STDERR should not contain:
       """
       Warning: No WordPress installation found. If the command 'confi' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'confi' is not a registered wp command. See 'wp help' for available commands.
-      Did you mean 'config'?
       """
-    And STDOUT should be empty
+    And STDOUT should contain:
+      """
+      Did you mean 'config'? [y/n]
+      """
+    And STDOUT should not contain:
+      """
+      SYNOPSIS
+      """
+    And the return code should be 0
 
-    When I try `wp help cor`
-    Then the return code should be 1
-    And STDERR should be:
+    When I try `wp help confi < session_yes`
+    Then STDERR should contain:
       """
-      Warning: No WordPress installation found. If the command 'cor' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'cor' is not a registered wp command. See 'wp help' for available commands.
-      Did you mean 'core'?
+      Warning: 'confi' is not a registered wp command. See 'wp help' for available commands.
       """
-    And STDOUT should be empty
+    And STDERR should not contain:
+      """
+      No WordPress installation found.
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'config'? [y/n]
+      """
+    And STDOUT should contain:
+      """
+      SYNOPSIS
+      """
+    And STDOUT should contain:
+      """
+      wp config <command>
+      """
+    And the return code should be 0
 
-    When I try `wp help d`
-    Then the return code should be 1
-    And STDERR should be:
+    When I try `wp help cor < session_yes`
+    Then STDERR should contain:
       """
-      Warning: No WordPress installation found. If the command 'd' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'd' is not a registered wp command. See 'wp help' for available commands.
-      Did you mean 'db'?
+      Warning: 'cor' is not a registered wp command. See 'wp help' for available commands.
       """
-    And STDOUT should be empty
+    And STDERR should not contain:
+      """
+      No WordPress installation found.
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'core'? [y/n]
+      """
+    And STDOUT should contain:
+      """
+      SYNOPSIS
+      """
+    And STDOUT should contain:
+      """
+      wp core <command>
+      """
+    And the return code should be 0
 
-    When I try `wp help packag`
-    Then the return code should be 1
-    And STDERR should be:
+    When I try `wp help d < session_yes`
+    Then STDERR should contain:
       """
-      Warning: No WordPress installation found. If the command 'packag' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'packag' is not a registered wp command. See 'wp help' for available commands.
-      Did you mean 'package'?
+      Warning: 'd' is not a registered wp command. See 'wp help' for available commands.
       """
-    And STDOUT should be empty
+    And STDERR should not contain:
+      """
+      No WordPress installation found.
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'db'? [y/n]
+      """
+    And STDOUT should contain:
+      """
+      SYNOPSIS
+      """
+    And STDOUT should contain:
+      """
+      wp db <command>
+      """
+    And the return code should be 0
+
+    When I try `wp help packag < session_yes`
+    Then STDERR should contain:
+      """
+      Warning: 'packag' is not a registered wp command. See 'wp help' for available commands.
+      """
+    And STDERR should not contain:
+      """
+      No WordPress installation found.
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'package'? [y/n]
+      """
+    And STDOUT should contain:
+      """
+      SYNOPSIS
+      """
+    And STDOUT should contain:
+      """
+      wp package <command>
+      """
+    And the return code should be 0
 
   Scenario: Suggestions for subcommand typos in help of specially treated commands
     Given an empty directory
+    And a session_no file:
+      """
+      n
+      """
+    And a session_yes file:
+      """
+      y
+      """
 
-    When I try `wp help config creat`
-    Then the return code should be 1
-    And STDERR should be:
+    When I try `wp help config creat < session_no`
+    Then STDERR should contain:
       """
-      Warning: No WordPress installation found. If the command 'config creat' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'creat' is not a registered subcommand of 'config'. See 'wp help config' for available subcommands.
-      Did you mean 'create'?
+      Warning: 'creat' is not a registered subcommand of 'config'. See 'wp help config' for available subcommands.
       """
-    And STDOUT should be empty
+    And STDERR should not contain:
+      """
+      No WordPress installation found.
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'create'? [y/n]
+      """
+    And STDOUT should not contain:
+      """
+      SYNOPSIS
+      """
+    And the return code should be 0
 
-    When I try `wp help core versio`
-    Then the return code should be 1
-    And STDERR should be:
+    When I try `wp help config creat < session_yes`
+    Then STDERR should contain:
       """
-      Warning: No WordPress installation found. If the command 'core versio' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'versio' is not a registered subcommand of 'core'. See 'wp help core' for available subcommands.
-      Did you mean 'version'?
+      Warning: 'creat' is not a registered subcommand of 'config'. See 'wp help config' for available subcommands.
       """
-    And STDOUT should be empty
+    And STDERR should not contain:
+      """
+      No WordPress installation found.
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'create'? [y/n]
+      """
+    And STDOUT should contain:
+      """
+      SYNOPSIS
+      """
+    And STDOUT should contain:
+      """
+      wp config create
+      """
+    And the return code should be 0
 
-    When I try `wp help db chec`
-    Then the return code should be 1
-    And STDERR should be:
+    When I try `wp help core versio < session_yes`
+    Then STDERR should contain:
       """
-      Warning: No WordPress installation found. If the command 'db chec' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'chec' is not a registered subcommand of 'db'. See 'wp help db' for available subcommands.
-      Did you mean 'check'?
+      Warning: 'versio' is not a registered subcommand of 'core'. See 'wp help core' for available subcommands.
       """
-    And STDOUT should be empty
+    And STDERR should not contain:
+      """
+      No WordPress installation found.
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'version'? [y/n]
+      """
+    And STDOUT should contain:
+      """
+      SYNOPSIS
+      """
+    And STDOUT should contain:
+      """
+      wp core version
+      """
+    And the return code should be 0
+
+    When I try `wp help core versio < session_yes`
+    Then STDERR should contain:
+      """
+      Warning: 'versio' is not a registered subcommand of 'core'. See 'wp help core' for available subcommands.
+      """
+    And STDERR should not contain:
+      """
+      No WordPress installation found.
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'version'? [y/n]
+      """
+    And STDOUT should contain:
+      """
+      SYNOPSIS
+      """
+    And STDOUT should contain:
+      """
+      wp core version
+      """
+    And the return code should be 0
+
+    When I try `wp help db chec < session_yes`
+    Then STDERR should contain:
+      """
+      Warning: 'chec' is not a registered subcommand of 'db'. See 'wp help db' for available subcommands.
+      """
+    And STDERR should not contain:
+      """
+      No WordPress installation found.
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'check'? [y/n]
+      """
+    And STDOUT should contain:
+      """
+      SYNOPSIS
+      """
+    And STDOUT should contain:
+      """
+      wp db check
+      """
+    And the return code should be 0
+
+  Scenario: Suggestions for chained command typos in help
+    Given a WP installation
+    And a session_yes_yes file:
+      """
+      y
+      y
+      """
+
+    When I try `wp hel post seta < session_yes_yes`
+    Then STDERR should contain:
+      """
+      Warning: 'hel' is not a registered wp command. See 'wp help' for available commands.
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'help'? [y/n]
+      """
+    And STDERR should contain:
+      """
+      Warning: 'seta' is not a registered subcommand of 'post'. See 'wp help post' for available subcommands.
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'meta'? [y/n]
+      """
+    And STDOUT should contain:
+      """
+      wp post meta <command>
+      """
+    And the return code should be 0
 
   Scenario: No WordPress installation warning or suggestions for disabled commands
     Given an empty directory
@@ -1066,3 +1287,112 @@ Feature: Get help about WP-CLI commands
       | func       |
       | proc_open  |
       | proc_close |
+
+  Scenario: Multi-paragraph description appears in DESCRIPTION section
+    Given a WP installation
+    And a wp-content/plugins/test-cli/command.php file:
+      """
+      <?php
+      // Plugin Name: Test CLI Multi-line Description
+
+      class Test_Multiline_Description extends WP_CLI_Command {
+        /**
+         * Clear the Cloudflare cache. Default: purge everything. Uses $CLOUDFLARE_API_KEY environment variable.
+         *
+         * API documentation: https://developers.cloudflare.com/api/resources/cache/
+         *
+         * ## OPTIONS
+         *
+         * <zone_id>
+         * : Cloudflare zone ID.
+         *
+         * ## EXAMPLES
+         *
+         *     # Clear the cloudflare cache for a domain.
+         *     wp test-multiline clear-cloudflare-cache 12345
+         *     Success: The Cloudflare cache has been cleared.
+         *
+         * @subcommand clear-cloudflare-cache
+         * @alias clear_cloudflare_cache
+         */
+        public function clear_cloudflare_cache( $args ) {}
+      }
+
+      WP_CLI::add_command( 'test-multiline', 'Test_Multiline_Description' );
+      """
+    And I run `wp plugin activate test-cli`
+
+    When I run `wp help test-multiline clear-cloudflare-cache`
+    Then STDOUT should contain:
+      """
+      DESCRIPTION
+
+        Clear the Cloudflare cache. Default: purge everything. Uses
+        $CLOUDFLARE_API_KEY environment variable.
+
+        API documentation: https://developers.cloudflare.com/api/resources/cache/
+
+      SYNOPSIS
+      """
+    And STDOUT should contain:
+      """
+      ALIAS
+
+        clear_cloudflare_cache
+
+      OPTIONS
+      """
+
+  Scenario: Multi-paragraph description appears in DESCRIPTION section without alias
+    Given a WP installation
+    And a wp-content/plugins/test-cli/command.php file:
+      """
+      <?php
+      // Plugin Name: Test CLI Multi-line Description
+
+      class Test_Multiline_No_Alias extends WP_CLI_Command {
+        /**
+         * Clear the Cloudflare cache. Default: purge everything. Uses $CLOUDFLARE_API_KEY environment variable.
+         *
+         * API documentation: https://developers.cloudflare.com/api/resources/cache/
+         *
+         * ## OPTIONS
+         *
+         * <zone_id>
+         * : Cloudflare zone ID.
+         *
+         * ## EXAMPLES
+         *
+         *     # Clear the cloudflare cache for a domain.
+         *     wp test-multiline noalias 12345
+         *     Success: The Cloudflare cache has been cleared.
+         */
+        public function noalias( $args ) {}
+      }
+
+      WP_CLI::add_command( 'test-multiline', 'Test_Multiline_No_Alias' );
+      """
+    And I run `wp plugin activate test-cli`
+
+    When I run `wp help test-multiline noalias`
+    Then STDOUT should contain:
+      """
+      DESCRIPTION
+
+        Clear the Cloudflare cache. Default: purge everything. Uses
+        $CLOUDFLARE_API_KEY environment variable.
+
+        API documentation: https://developers.cloudflare.com/api/resources/cache/
+
+      SYNOPSIS
+      """
+    And STDOUT should not contain:
+      """
+      ALIAS
+      """
+    And STDOUT should contain:
+      """
+      OPTIONS
+
+        <zone_id>
+      """

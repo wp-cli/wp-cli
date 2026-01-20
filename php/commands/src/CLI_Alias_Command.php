@@ -15,6 +15,8 @@ use WP_CLI\Utils;
  * `@dev` could refer to a development install and `@prod` could refer to a production install.
  * This command gives you and option to add, update and delete, the registered aliases you have available.
  *
+ * Learn more about [running commands remotely](https://make.wordpress.org/cli/handbook/guides/running-commands-remotely/).
+ *
  * ## EXAMPLES
  *
  *     # List alias information.
@@ -77,6 +79,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *       - @dev
 	 *
 	 * @subcommand list
+	 *
+	 * @param array                 $args      Positional arguments. Unused.
+	 * @param array{format: string} $assoc_args Associative arguments.
 	 */
 	public function list_( $args, $assoc_args ) {
 		WP_CLI::print_value( WP_CLI::get_runner()->aliases, $assoc_args );
@@ -95,8 +100,10 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     # Get alias.
 	 *     $ wp cli alias get @prod
 	 *     ssh: dev@somedeve.env:12345/home/dev/
+	 *
+	 * @param array{string} $args Positional arguments.
 	 */
-	public function get( $args, $assoc_args ) {
+	public function get( $args ) {
 		list( $alias ) = $args;
 
 		$aliases = WP_CLI::get_runner()->aliases;
@@ -158,6 +165,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     # Add group of aliases.
 	 *     $ wp cli alias add @multiservers --grouping=servera,serverb
 	 *     Success: Added '@multiservers' alias.
+	 *
+	 * @param array{string} $args Positional arguments.
+	 * @param array{'set-user'?: string, 'set-url'?: string, 'set-path'?: string, 'set-ssh'?: string, 'set-http'?: string, grouping?: string, config?: string} $assoc_args Associative arguments.
 	 */
 	public function add( $args, $assoc_args ) {
 
@@ -167,7 +177,11 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$this->validate_config_file( $config_path );
 
-		$alias    = $args[0];
+		$alias = $args[0];
+
+		/**
+		 * @var string|null $grouping
+		 */
 		$grouping = Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		$this->validate_input( $assoc_args, $grouping );
@@ -210,6 +224,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     # Delete project alias.
 	 *     $ wp cli alias delete @prod --config=project
 	 *     Success: Deleted '@prod' alias.
+	 *
+	 * @param array{string}          $args       Positional arguments.
+	 * @param array{config?: string} $assoc_args Associative arguments
 	 */
 	public function delete( $args, $assoc_args ) {
 
@@ -272,11 +289,18 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     # Update project alias.
 	 *     $ wp cli alias update @prod --set-user=newuser --set-path=/new/path/to/wordpress/install/ --config=project
 	 *     Success: Updated 'prod' alias.
+	 *
+	 * @param array{string} $args Positional arguments.
+	 * @param array{'set-user'?: string, 'set-url'?: string, 'set-path'?: string, 'set-ssh'?: string, 'set-http'?: string, grouping?: string, config?: string} $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
 
-		$config   = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
-		$alias    = $args[0];
+		$config = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
+		$alias  = $args[0];
+
+		/**
+		 * @var string|null $grouping
+		 */
 		$grouping = Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		list( $config_path, $aliases ) = $this->get_aliases_data( $config, $alias, true );
@@ -386,10 +410,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * Check if the config file exists and is writable.
 	 *
 	 * @param string $config_path Path to config file.
-	 *
-	 * @return void
 	 */
-	private function validate_config_file( $config_path ) {
+	private function validate_config_file( $config_path ): void {
 		if ( ! file_exists( $config_path ) || ! is_writable( $config_path ) ) {
 			WP_CLI::error( "Config file does not exist: {$config_path}" );
 		}
@@ -405,7 +427,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @param string $grouping    Grouping value.
 	 * @param bool   $is_update   Is this an update operation?
 	 *
-	 * @return mixed
+	 * @return array<string, array<string, mixed>>
 	 */
 	private function build_aliases( $aliases, $alias, $assoc_args, $is_grouping, $grouping = '', $is_update = false ) {
 		$alias = $this->normalize_alias( $alias );
@@ -453,14 +475,14 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	/**
 	 * Validate input of passed arguments.
 	 *
-	 * @param array  $assoc_args Arguments array.
-	 * @param string $grouping   Grouping argument value.
+	 * @param array       $assoc_args Arguments array.
+	 * @param string|null $grouping   Grouping argument value.
 	 *
 	 * @throws ExitException
 	 */
 	private function validate_input( $assoc_args, $grouping ) {
 		// Check if valid arguments were passed.
-		$arg_match = preg_grep( '/^set-(\w+)/i', array_keys( $assoc_args ) );
+		$arg_match = (array) preg_grep( '/^set-(\w+)/i', array_keys( $assoc_args ) );
 
 		// Verify passed-arguments.
 		if ( empty( $grouping ) && empty( $arg_match ) ) {

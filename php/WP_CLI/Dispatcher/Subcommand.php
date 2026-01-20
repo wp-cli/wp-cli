@@ -112,10 +112,10 @@ class Subcommand extends CompositeCommand {
 	 * Wrapper for CLI Tools' prompt() method.
 	 *
 	 * @param string $question
-	 * @param string $default
+	 * @param mixed $default
 	 * @return string|false
 	 */
-	private function prompt( $question, $default ) {
+	private function prompt( $question, $default = null ) {
 
 		$question .= ': ';
 		if ( function_exists( 'readline' ) ) {
@@ -124,7 +124,7 @@ class Subcommand extends CompositeCommand {
 
 		echo $question;
 
-		$ret = stream_get_line( STDIN, 1024, "\n" );
+		$ret = (string) stream_get_line( STDIN, 1024, "\n" );
 		if ( Utils\is_windows() && "\r" === substr( $ret, -1 ) ) {
 			$ret = substr( $ret, 0, -1 );
 		}
@@ -174,6 +174,9 @@ class Subcommand extends CompositeCommand {
 
 		$spec = array_values( $spec );
 
+		/**
+		 * @var string|true $prompt_args
+		 */
 		$prompt_args = WP_CLI::get_config( 'prompt' );
 		if ( true !== $prompt_args ) {
 			$prompt_args = explode( ',', $prompt_args );
@@ -197,7 +200,6 @@ class Subcommand extends CompositeCommand {
 			}
 
 			$current_prompt = ( $key + 1 ) . '/' . count( $spec ) . ' ';
-			$default        = $spec_arg['optional'] ? '' : false;
 
 			// 'generic' permits arbitrary key=value (e.g. [--<field>=<value>] )
 			if ( 'generic' === $spec_arg['type'] ) {
@@ -212,7 +214,7 @@ class Subcommand extends CompositeCommand {
 						$key_prompt = str_repeat( ' ', strlen( $current_prompt ) ) . $key_token;
 					}
 
-					$key = $this->prompt( $key_prompt, $default );
+					$key = $this->prompt( $key_prompt );
 					if ( false === $key ) {
 						return [ $args, $assoc_args ];
 					}
@@ -221,7 +223,7 @@ class Subcommand extends CompositeCommand {
 						$key_prompt_count = strlen( $key_prompt ) - strlen( $value_token ) - 1;
 						$value_prompt     = str_repeat( ' ', $key_prompt_count ) . '=' . $value_token;
 
-						$value = $this->prompt( $value_prompt, $default );
+						$value = $this->prompt( $value_prompt );
 						if ( false === $value ) {
 							return [ $args, $assoc_args ];
 						}
@@ -240,7 +242,7 @@ class Subcommand extends CompositeCommand {
 					$prompt .= ' (Y/n)';
 				}
 
-				$response = $this->prompt( $prompt, $default );
+				$response = $this->prompt( $prompt );
 				if ( false === $response ) {
 					return [ $args, $assoc_args ];
 				}
@@ -269,6 +271,18 @@ class Subcommand extends CompositeCommand {
 		}
 
 		return [ $args, $assoc_args ];
+	}
+
+	/**
+	 * Create a DocParser instance from the command's description.
+	 *
+	 * @return DocParser
+	 */
+	private function get_docparser() {
+		$mock_doc = [ $this->get_shortdesc(), '' ];
+		$mock_doc = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
+		$mock_doc = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
+		return new DocParser( $mock_doc );
 	}
 
 	/**
@@ -319,10 +333,7 @@ class Subcommand extends CompositeCommand {
 			'fatal'   => [],
 			'warning' => [],
 		];
-		$mock_doc      = [ $this->get_shortdesc(), '' ];
-		$mock_doc      = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
-		$mock_doc      = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
-		$docparser     = new DocParser( $mock_doc );
+		$docparser     = $this->get_docparser();
 		foreach ( $synopsis_spec as $spec ) {
 			if ( 'positional' === $spec['type'] ) {
 				$spec_args = $docparser->get_arg_args( $spec['name'] );
@@ -380,8 +391,12 @@ class Subcommand extends CompositeCommand {
 			}
 		}
 
+		/**
+		 * @var array $config
+		 */
+		$config                             = \WP_CLI::get_config();
 		list( $returned_errors, $to_unset ) = $validator->validate_assoc(
-			array_merge( \WP_CLI::get_config(), $extra_args, $assoc_args )
+			array_merge( $config, $extra_args, $assoc_args )
 		);
 		foreach ( [ 'fatal', 'warning' ] as $error_type ) {
 			$errors[ $error_type ] = array_merge( $errors[ $error_type ], $returned_errors[ $error_type ] );
@@ -419,6 +434,34 @@ class Subcommand extends CompositeCommand {
 		array_map( '\\WP_CLI::warning', $errors['warning'] );
 
 		return [ $to_unset, $args, $assoc_args, $extra_args ];
+	}
+
+	/**
+	 * Get the list of sensitive argument names from the synopsis.
+	 * These arguments will have their values masked in log output.
+	 *
+	 * @return array<string> Array of argument names that are marked as sensitive
+	 */
+	private function get_sensitive_args() {
+		$synopsis = $this->get_synopsis();
+		if ( ! $synopsis ) {
+			return [];
+		}
+
+		$synopsis_spec  = SynopsisParser::parse( $synopsis );
+		$docparser      = $this->get_docparser();
+		$sensitive_args = [];
+
+		foreach ( $synopsis_spec as $spec ) {
+			if ( 'assoc' === $spec['type'] ) {
+				$spec_args = $docparser->get_param_args( $spec['name'] );
+				if ( isset( $spec_args['sensitive'] ) && $spec_args['sensitive'] ) {
+					$sensitive_args[] = $spec['name'];
+				}
+			}
+		}
+
+		return $sensitive_args;
 	}
 
 	/**
@@ -470,11 +513,14 @@ class Subcommand extends CompositeCommand {
 		if ( $prompted_once ) {
 			// Unset empty args.
 			$actual_args = $assoc_args;
-			foreach ( $actual_args as $key ) {
-				if ( empty( $actual_args[ $key ] ) ) {
+			foreach ( $actual_args as $key => $value ) {
+				if ( empty( $value ) ) {
 					unset( $actual_args[ $key ] );
 				}
 			}
+
+			// Get list of sensitive arguments to mask in output
+			$sensitive_args = $this->get_sensitive_args();
 
 			WP_CLI::log(
 				sprintf(
@@ -485,7 +531,7 @@ class Subcommand extends CompositeCommand {
 							' ',
 							[
 								ltrim( Utils\args_to_str( $args ), ' ' ),
-								ltrim( Utils\assoc_args_to_str( $actual_args ), ' ' ),
+								ltrim( Utils\assoc_args_to_str( $actual_args, $sensitive_args ), ' ' ),
 							]
 						),
 						' '

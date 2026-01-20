@@ -56,6 +56,12 @@
     "yoast/phpunit-polyfills": "^1.0.0",
     "roave/security-advisories": "dev-latest"
   },
+  "suggest": {
+    "ext-curl": "For improved performance",
+    "ext-openssl": "For secure transport support",
+    "ext-zlib": "For improved performance when decompressing encoded streams",
+    "art4/requests-psr18-adapter": "For using Requests as a PSR-18 HTTP Client"
+  },
   "autoload": {
     "psr-4": {
       "WpOrg\\Requests\\": "src/"
