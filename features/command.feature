@@ -1872,4 +1872,50 @@ Feature: WP-CLI Commands
       Warning: The `testcmd with_user` command is registering an argument '--user' that conflicts with a global argument of the same name.
       """
 
+  Scenario: Skip global argument conflict warning with annotation
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * Command with skip annotation
+       *
+       * ## OPTIONS
+       *
+       * [--debug]
+       * : Debug flag that conflicts with global
+       *
+       * @skipglobalargcheck
+       * @when before_wp_load
+       */
+      $foo = function( $args, $assoc_args ) {
+        WP_CLI::success( 'Command executed' );
+      };
+      WP_CLI::add_command( 'skipwarning', $foo );
+
+      /**
+       * Command without skip annotation
+       *
+       * ## OPTIONS
+       *
+       * [--quiet]
+       * : Quiet flag that conflicts with global
+       *
+       * @when before_wp_load
+       */
+      $bar = function( $args, $assoc_args ) {
+        WP_CLI::success( 'Command executed' );
+      };
+      WP_CLI::add_command( 'showwarning', $bar );
+      """
+
+    When I try `wp --require=custom-cmd.php help 2>&1`
+    Then STDERR should not contain:
+      """
+      Warning: The `skipwarning` command is registering an argument '--debug' that conflicts with a global argument of the same name.
+      """
+    And STDERR should contain:
+      """
+      Warning: The `showwarning` command is registering an argument '--quiet' that conflicts with a global argument of the same name.
+      """
 

@@ -768,6 +768,11 @@ class WP_CLI {
 			return;
 		}
 
+		// Check if command has opted out of this check
+		if ( self::command_skips_global_arg_check( $command ) ) {
+			return;
+		}
+
 		// Get global argument names from config spec (cached)
 		if ( null === self::$global_arg_names ) {
 			self::$global_arg_names = [];
@@ -808,6 +813,48 @@ class WP_CLI {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Check if a command has opted out of global argument conflict checking.
+	 *
+	 * Commands can use the @skipglobalargcheck tag in their PHPdoc to disable
+	 * the warning for global argument conflicts.
+	 *
+	 * @param Dispatcher\Subcommand $command The command object to check.
+	 * @return bool True if the command should skip the check, false otherwise.
+	 */
+	private static function command_skips_global_arg_check( $command ) {
+		// Access the protected docparser property via reflection
+		$reflection = new \ReflectionClass( $command );
+		if ( ! $reflection->hasProperty( 'docparser' ) ) {
+			return false;
+		}
+
+		$property = $reflection->getProperty( 'docparser' );
+		$property->setAccessible( true );
+		$docparser = $property->getValue( $command );
+
+		if ( ! is_object( $docparser ) ) {
+			return false;
+		}
+
+		// Access the doc_comment property from DocParser via reflection
+		$doc_reflection = new \ReflectionClass( $docparser );
+		if ( ! $doc_reflection->hasProperty( 'doc_comment' ) ) {
+			return false;
+		}
+
+		$doc_property = $doc_reflection->getProperty( 'doc_comment' );
+		$doc_property->setAccessible( true );
+		$doc_comment = $doc_property->getValue( $docparser );
+
+		if ( ! is_string( $doc_comment ) ) {
+			return false;
+		}
+
+		// Check if the doc comment contains @skipglobalargcheck
+		return false !== strpos( $doc_comment, '@skipglobalargcheck' );
 	}
 
 	/**
