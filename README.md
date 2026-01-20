@@ -1,7 +1,7 @@
 WP-CLI
 ======
 
-[WP-CLI](https://wp-cli.org/) is the command-line interface for [WordPress](https://wordpress.org/). You can update plugins, configure multisite installations and much more, without using a web browser.
+[WP-CLI](https://wp-cli.org/) is the command-line interface for [WordPress](https://wordpress.org/). You can update plugins, configure multisite installations, and much more, without using a web browser.
 
 Ongoing maintenance is made possible by:
 
@@ -47,7 +47,7 @@ Already feel comfortable with the basics? Jump into the [complete list of comman
 
 ## Installing
 
-Downloading the Phar file is our recommended installation method for most users. Should you need, see also our documentation on [alternative installation methods](https://make.wordpress.org/cli/handbook/installing/) ([Composer](https://make.wordpress.org/cli/handbook/installing/#installing-via-composer), [Homebrew](https://make.wordpress.org/cli/handbook/installing/#installing-via-homebrew), [Docker](https://make.wordpress.org/cli/handbook/installing/#installing-via-docker)).
+Downloading the Phar file is the recommended installation method for most users. See the documentation for [alternative installation methods](https://make.wordpress.org/cli/handbook/installing/) ([Composer](https://make.wordpress.org/cli/handbook/installing/#installing-via-composer), [Homebrew](https://make.wordpress.org/cli/handbook/installing/#installing-via-homebrew), [Docker](https://make.wordpress.org/cli/handbook/installing/#installing-via-docker)).
 
 Before installing WP-CLI, please make sure your environment meets the minimum requirements:
 
