@@ -246,14 +246,10 @@ class Subcommand extends CompositeCommand {
 				// Get default value for the argument (not for flags)
 				if ( 'flag' === $spec_arg['type'] ) {
 					$prompt .= ' (Y/n)';
-				} elseif ( 'positional' === $spec_arg['type'] ) {
-					$spec_args = $docparser->get_arg_args( $spec_arg['name'] );
-					if ( null !== $spec_args && isset( $spec_args['default'] ) ) {
-						$default_val = $spec_args['default'];
-						$prompt     .= ' [' . $default_val . ']';
-					}
-				} elseif ( 'assoc' === $spec_arg['type'] ) {
-					$spec_args = $docparser->get_param_args( $spec_arg['name'] );
+				} elseif ( 'positional' === $spec_arg['type'] || 'assoc' === $spec_arg['type'] ) {
+					$spec_args = ( 'positional' === $spec_arg['type'] )
+						? $docparser->get_arg_args( $spec_arg['name'] )
+						: $docparser->get_param_args( $spec_arg['name'] );
 					if ( null !== $spec_args && isset( $spec_args['default'] ) ) {
 						$default_val = $spec_args['default'];
 						$prompt     .= ' [' . $default_val . ']';
