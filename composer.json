@@ -40,7 +40,20 @@
     "extra": {
         "branch-alias": {
             "dev-main": "2.13.x-dev"
-        }
+        },
+        "commands": [
+            "wp cli",
+            "wp cli alias",
+            "wp cli cache",
+            "wp cli check-update",
+            "wp cli cmd-dump",
+            "wp cli completions",
+            "wp cli has-command",
+            "wp cli info",
+            "wp cli param-dump",
+            "wp cli update",
+            "wp cli version"
+        ]
     },
     "autoload": {
         "psr-0": {
