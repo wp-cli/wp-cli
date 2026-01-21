@@ -116,8 +116,10 @@ class Runner {
 		}
 
 		// Search the value of @when from the command method.
+		// Use 'none' for autocorrect to avoid suggesting wrong alternatives
+		// for commands that may be registered later (e.g., via after_wp_load).
 		$real_when = '';
-		$r         = $this->find_command_to_run( $this->arguments, getenv( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
+		$r         = $this->find_command_to_run( $this->arguments, 'none' );
 		if ( is_array( $r ) ) {
 			list( $command, $final_args, $cmd_path ) = $r;
 
@@ -376,7 +378,7 @@ class Runner {
 	 *
 	 * @param array $args
 	 * @param string $autocorrect Whether to autocorrect commands based on suggestions.
-	 * @return array|string Command, args, and path on success; error message on failure
+	 * @return array{0: CompositeCommand, 1: array, 2: array}|string Command, args, and path on success; error message on failure
 	 *
 	 * @phpstan-param 'none'|'confirm'|'auto' $autocorrect
 	 */
@@ -1337,8 +1339,7 @@ class Runner {
 
 		$this->do_early_invoke( 'before_wp_load' );
 
-		// Second try at showing man page - in case a misspelled command was corrected
-		// in do_early_invoke -> find_command_to_run.
+		// Second try at showing man page for help commands.
 		if ( $this->cmd_starts_with( [ 'help' ] )
 			&& ( ! $this->wp_exists()
 				|| ! Utils\locate_wp_config()
