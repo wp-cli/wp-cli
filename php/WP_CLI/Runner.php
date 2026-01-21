@@ -214,9 +214,9 @@ class Runner {
 			// Windows: C:\ProgramData\wp-cli\config.yml
 			$program_data = getenv( 'ProgramData' );
 			if ( ! $program_data ) {
-				$program_data = 'C:\ProgramData';
+				$program_data = 'C:' . DIRECTORY_SEPARATOR . 'ProgramData';
 			}
-			$config_path = $program_data . '\wp-cli\config.yml';
+			$config_path = $program_data . DIRECTORY_SEPARATOR . 'wp-cli' . DIRECTORY_SEPARATOR . 'config.yml';
 		} elseif ( 'Darwin' === PHP_OS ) {
 			// macOS: /Library/Application Support/WP-CLI/config.yml
 			$config_path = '/Library/Application Support/WP-CLI/config.yml';
