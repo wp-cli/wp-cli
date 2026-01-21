@@ -903,7 +903,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 	$last_exception    = null;
 	$retry_after_delay = 1; // Start with 1 second delay.
 
-	while ( $attempt <= $max_retries ) {
+	while ( $attempt < $max_retries ) {
 		++$attempt;
 		try {
 			try {
@@ -954,7 +954,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 				! $is_ssl_error
 			) {
 				// Check if this is a transient error that should be retried.
-				if ( ! $is_transient_error || $attempt > $max_retries ) {
+				if ( ! $is_transient_error || $attempt >= $max_retries ) {
 					$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $exception->getMessage() );
 					if ( $halt_on_error ) {
 						WP_CLI::error( $error_msg );
@@ -993,7 +993,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 	}
 
 	// All retries exhausted, throw the last exception.
-	$error_msg = sprintf( "Failed to get url '%s' after %d attempts.", $url, $max_retries + 1 );
+	$error_msg = sprintf( "Failed to get url '%s' after %d attempts.", $url, $max_retries );
 	if ( $halt_on_error ) {
 		WP_CLI::error( $error_msg );
 	}
