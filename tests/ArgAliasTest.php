@@ -5,7 +5,7 @@ use WP_CLI\Tests\TestCase;
 
 class ArgAliasTest extends TestCase {
 
-	public function testGetArgAliasesSingleAlias(): void {
+	public function test_get_arg_aliases_single_alias(): void {
 		$doc     = <<<'EOD'
 /**
  * Test command
@@ -25,7 +25,7 @@ EOD;
 		$this->assertEquals( [ 'f' => 'format' ], $aliases );
 	}
 
-	public function testGetArgAliasesMultipleAliases(): void {
+	public function test_get_arg_aliases_multiple_aliases(): void {
 		$doc     = <<<'EOD'
 /**
  * Test command
@@ -53,7 +53,7 @@ EOD;
 		);
 	}
 
-	public function testGetArgAliasesMultipleParams(): void {
+	public function test_get_arg_aliases_multiple_params(): void {
 		$doc     = <<<'EOD'
 /**
  * Test command
@@ -85,7 +85,7 @@ EOD;
 		);
 	}
 
-	public function testGetArgAliasesNoAliases(): void {
+	public function test_get_arg_aliases_no_aliases(): void {
 		$doc     = <<<'EOD'
 /**
  * Test command
@@ -102,7 +102,7 @@ EOD;
 		$this->assertEquals( [], $aliases );
 	}
 
-	public function testGetArgAliasesWithDashes(): void {
+	public function test_get_arg_aliases_with_dashes(): void {
 		$doc     = <<<'EOD'
 /**
  * Test command
@@ -122,7 +122,7 @@ EOD;
 		$this->assertEquals( [ 'w' => 'with-dependencies' ], $aliases );
 	}
 
-	public function testGetArgAliasesWithRequiredParam(): void {
+	public function test_get_arg_aliases_with_required_param(): void {
 		$doc     = <<<'EOD'
 /**
  * Test command
@@ -142,7 +142,7 @@ EOD;
 		$this->assertEquals( [ 't' => 'type' ], $aliases );
 	}
 
-	public function testGetArgAliasesWithLeadingDashes(): void {
+	public function test_get_arg_aliases_with_leading_dashes(): void {
 		$doc     = <<<'EOD'
 /**
  * Test command
@@ -161,5 +161,39 @@ EOD;
 
 		// Leading dashes should be stripped
 		$this->assertEquals( [ 'f' => 'format' ], $aliases );
+	}
+
+	public function test_get_arg_aliases_yaml_boolean_handling(): void {
+		// Test that YAML boolean values are handled correctly
+		$doc     = <<<'EOD'
+/**
+ * Test command
+ *
+ * ## OPTIONS
+ *
+ * [--number=<number>]
+ * : Number parameter.
+ * ---
+ * alias: n
+ * ---
+ *
+ * [--answer=<answer>]
+ * : Answer parameter.
+ * ---
+ * alias: y
+ * ---
+ */
+EOD;
+		$parser  = new DocParser( $doc );
+		$aliases = $parser->get_arg_aliases();
+
+		// YAML interprets 'n' as false and 'y' as true, but we convert them back
+		$this->assertEquals(
+			[
+				'n' => 'number',
+				'y' => 'answer',
+			],
+			$aliases
+		);
 	}
 }
