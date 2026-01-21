@@ -17,17 +17,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: Check existence of composer.json file
         id: check_composer_file
-        uses: andstor/file-existence-action@v3
+        uses: andstor/file-existence-action@076e0072799f4942c8bc574a82233e1e4d13e9d6 # v3
         with:
           files: "composer.json"
 
       - name: Set up PHP environment
         if: steps.check_composer_file.outputs.files_exists == 'true'
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # v2
         with:
           php-version: 'latest'
           ini-values: zend.assertions=1, error_reporting=-1, display_errors=On
@@ -38,7 +38,7 @@ jobs:
 
       - name: Install Composer dependencies & cache dependencies
         if: steps.check_composer_file.outputs.files_exists == 'true'
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520 # v3
         env:
           COMPOSER_ROOT_VERSION: dev-${{ github.event.repository.default_branch }}
         with:

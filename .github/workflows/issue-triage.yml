@@ -13,6 +13,13 @@ name: Issue and PR Triage
         required: false
         type: string
 
+permissions:
+  issues: write
+  pull-requests: write
+  actions: write
+  contents: read
+  models: read
+
 jobs:
   issue-triage:
     uses: wp-cli/.github/.github/workflows/reusable-issue-triage.yml@main
