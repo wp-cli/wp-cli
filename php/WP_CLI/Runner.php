@@ -1188,7 +1188,7 @@ class Runner {
 
 		$php_bin = escapeshellarg( Utils\get_php_binary() );
 
-		$script_path = $GLOBALS['argv'][0];
+		$script_path = escapeshellarg( $GLOBALS['argv'][0] );
 
 		$wp_cli_config_path = (string) getenv( 'WP_CLI_CONFIG_PATH' );
 
@@ -1199,18 +1199,22 @@ class Runner {
 		}
 		$config_path = escapeshellarg( $config_path );
 
+		// Precompute command components that are the same for all aliases
+		$args           = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
+		$assoc_args     = Utils\assoc_args_to_str( $this->assoc_args );
+		$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
+
 		// Check if parallel execution is enabled via environment variable
 		$parallel = (bool) getenv( 'WP_CLI_ALIAS_GROUPS_PARALLEL' );
 
 		if ( $parallel ) {
 			// Run aliases in parallel
+			// Note: Output from multiple processes will be interleaved and non-deterministic
 			$procs = [];
 			foreach ( $aliases as $alias ) {
 				WP_CLI::log( $alias );
-				$args           = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
-				$assoc_args     = Utils\assoc_args_to_str( $this->assoc_args );
-				$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
-				$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
+				$escaped_alias  = escapeshellarg( $alias );
+				$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$escaped_alias} {$args}{$assoc_args}{$runtime_config}";
 				$pipes          = [];
 				$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
 
@@ -1227,10 +1231,8 @@ class Runner {
 			// Run aliases sequentially (original behavior)
 			foreach ( $aliases as $alias ) {
 				WP_CLI::log( $alias );
-				$args           = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
-				$assoc_args     = Utils\assoc_args_to_str( $this->assoc_args );
-				$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
-				$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
+				$escaped_alias  = escapeshellarg( $alias );
+				$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$escaped_alias} {$args}{$assoc_args}{$runtime_config}";
 				$pipes          = [];
 				$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
 
