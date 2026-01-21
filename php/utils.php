@@ -273,7 +273,7 @@ function is_path_absolute( $path ) {
 	}
 
 	// Unix root.
-	if ( '/' === $path[0] ) {
+	if ( isset( $path[0] ) && '/' === $path[0] ) {
 		return true;
 	}
 
