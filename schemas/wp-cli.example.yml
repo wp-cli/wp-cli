@@ -15,6 +15,8 @@ require:
 env:
   WP_CLI_CACHE_DIR: /tmp/wp-cli-cache
   WP_CLI_PACKAGES_DIR: /tmp/wp-cli-packages
+  WP_CLI_CACHE_EXPIRY: 3600
+  WP_CLI_CACHE_MAX_SIZE: 104857600
 
 config create:
   dbuser: root
