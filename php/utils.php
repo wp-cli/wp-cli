@@ -982,12 +982,30 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 
 			try {
 				return $request_method( $url, $headers, $data, $method, $options );
-			} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
-				$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $exception->getMessage() );
+			} catch ( \Requests_Exception | \WpOrg\Requests\Exception $retry_exception ) {
+				// Check if this is a transient error that should be retried.
+				$retry_curl_handle = $retry_exception->getData();
+				$retry_curl_errno  = null;
+				if ( function_exists( 'curl_errno' ) && ( is_resource( $retry_curl_handle ) || ( is_object( $retry_curl_handle ) && $retry_curl_handle instanceof \CurlHandle ) ) ) {
+					// @phpstan-ignore argument.type
+					$retry_curl_errno = curl_errno( $retry_curl_handle );
+				}
+				$is_retry_transient = null !== $retry_curl_errno && in_array( $retry_curl_errno, [ 6, 7, 18, 28, 52, 55, 56 ], true );
+
+				if ( $is_retry_transient && $attempt < $max_retries ) {
+					// Transient error, let the retry loop handle it.
+					$last_exception = $retry_exception;
+					WP_CLI::debug( sprintf( 'Retrying HTTP request to %s (retry %d/%d) after transient error: %s', $url, $attempt, $max_retries, $retry_exception->getMessage() ), 'http' );
+					sleep( $retry_after_delay );
+					$retry_after_delay = min( $retry_after_delay * 2, 10 ); // Exponential backoff, max 10 seconds.
+					continue;
+				}
+
+				$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $retry_exception->getMessage() );
 				if ( $halt_on_error ) {
 					WP_CLI::error( $error_msg );
 				}
-				throw new RuntimeException( $error_msg, 0, $exception );
+				throw new RuntimeException( $error_msg, 0, $retry_exception );
 			}
 		}
 	}
