@@ -315,8 +315,10 @@ class Formatter {
 
 		$ordered_data = [];
 
-		foreach ( $this->args['fields'] as $field ) {
-			$ordered_data[ $field ] = ( is_object( $data ) ) ? $data->$field : $data[ $field ];
+		foreach ( $true_fields as $field ) {
+			if ( array_key_exists( $field, (array) $data ) ) {
+				$ordered_data[ $field ] = ( ( (array) $data )[ $field ] );
+			}
 		}
 
 		switch ( $format ) {
