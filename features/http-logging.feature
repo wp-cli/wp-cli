@@ -1,5 +1,15 @@
 Feature: HTTP request logging
 
+  Scenario: HTTP requests are logged when WordPress isn't loaded
+    Given an empty directory
+
+    When I try `wp cli check-update --debug=http`
+    Then STDERR should contain:
+      """
+      Debug: HTTP GET request to https://api.github.com
+      """
+    And the return code should be 0
+
   Scenario: HTTP requests are logged with --debug=http flag
     Given a WP installation
     And a http-test.php file:

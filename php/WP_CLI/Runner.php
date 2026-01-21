@@ -1290,6 +1290,15 @@ class Runner {
 			return;
 		}
 
+		// Log WP-CLI HTTP requests
+		WP_CLI::add_hook(
+			'http_request_options',
+			static function ( $options, $method, $url ) {
+				WP_CLI::debug( sprintf( 'HTTP %s request to %s', $method, $url ), 'http' );
+				return $options;
+			}
+		);
+
 		// Handle --path parameter
 		self::set_wp_root( $this->find_wp_root() );
 
@@ -1553,15 +1562,6 @@ class Runner {
 		if ( $this->config['skip-themes'] ) {
 			WP_CLI::add_wp_hook( 'setup_theme', [ $this, 'action_setup_theme_wp_cli_skip_themes' ], 999 );
 		}
-
-		// HTTP request logging
-		WP_CLI::add_hook(
-			'http_request_options',
-			static function ( $options, $method, $url ) {
-				WP_CLI::debug( sprintf( 'HTTP %s request to %s', $method, $url ), 'http' );
-				return $options;
-			}
-		);
 
 		// Log WordPress HTTP API requests
 		WP_CLI::add_wp_hook(
