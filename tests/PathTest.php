@@ -31,11 +31,11 @@ final class PathTest extends TestCase {
 			[ 'C:\\wp\\public', true ],
 			[ '\\\\Server\\Share', true ], // UNC path.
 
-		// Unix-style absolute paths.
+			// Unix-style absolute paths.
 			[ '/var/www/html/', true ],
 			[ '/', true ], // Root.
 
-		// Relative paths (not absolute).
+			// Relative paths (not absolute).
 			[ './relative/path', false ],
 			[ '', false ],
 		];
