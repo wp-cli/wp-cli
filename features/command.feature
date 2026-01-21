@@ -1672,3 +1672,50 @@ Feature: WP-CLI Commands
       """
       Hello
       """
+
+  Scenario: Autocorrect should not suggest wrong commands for after_wp_load registered commands
+    Given a WP installation
+    And a wp-content/mu-plugins/test-cli.php file:
+      """
+      <?php
+      // Plugin Name: Test CLI After Load
+
+      add_action( 'cli_init', function(){
+        WP_CLI::add_command( 'afterload', function () {
+          \WP_CLI::success( 'afterload command executed' );
+        });
+      });
+      """
+    And a session_no file:
+      """
+      n
+      """
+
+    # The command should work when run correctly
+    When I run `wp afterload`
+    Then STDOUT should contain:
+      """
+      Success: afterload command executed
+      """
+    And the return code should be 0
+
+    # Test with a typo - it should not suggest wrong alternatives
+    # before WordPress loads. This is the regression we're fixing.
+    When I try `wp afterloa < session_no`
+    Then STDERR should contain:
+      """
+      Warning: 'afterloa' is not a registered wp command.
+      """
+    # It should suggest 'afterload' not other commands like 'post'
+    And STDOUT should contain:
+      """
+      Did you mean 'afterload'?
+      """
+
+    # Test with autocorrect enabled
+    When I try `WP_CLI_AUTOCORRECT=1 wp afterloa`
+    Then STDOUT should contain:
+      """
+      Success: afterload command executed
+      """
+    And the return code should be 0
