@@ -30,6 +30,8 @@ use WP_CLI\Utils;
  *
  * To view aliases without interpolating environment variables, use the `--raw` flag.
  *
+ * Learn more about [running commands remotely](https://make.wordpress.org/cli/handbook/guides/running-commands-remotely/).
+ *
  * ## EXAMPLES
  *
  *     # List alias information.
