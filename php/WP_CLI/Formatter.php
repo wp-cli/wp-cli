@@ -316,9 +316,7 @@ class Formatter {
 		$ordered_data = [];
 
 		foreach ( $true_fields as $field ) {
-			if ( array_key_exists( $field, (array) $data ) ) {
-				$ordered_data[ $field ] = ( ( (array) $data )[ $field ] );
-			}
+			$ordered_data[ $field ] = ( ( (array) $data )[ $field ] );
 		}
 
 		switch ( $format ) {
