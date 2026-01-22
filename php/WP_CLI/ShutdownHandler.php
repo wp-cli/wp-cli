@@ -151,6 +151,10 @@ class ShutdownHandler {
 			return $matches[1];
 		}
 
+		// Check for direct single-file plugins
+		if ( preg_match( '#/wp-content/plugins/([^/]+)\\.php$#', $file, $matches ) ) {
+			return $matches[1];
+		}
 		// Check for mu-plugins in subdirectories
 		if ( preg_match( '#/wp-content/mu-plugins/([^/]+)/#', $file, $matches ) ) {
 			return $matches[1];
