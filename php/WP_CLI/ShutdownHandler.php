@@ -93,7 +93,7 @@ class ShutdownHandler {
 	 */
 	private static function get_error_suggestion( $error ) {
 		$file = $error['file'];
-		
+
 		// Normalize path separators
 		$file = str_replace( '\\', '/', $file );
 
@@ -155,13 +155,15 @@ class ShutdownHandler {
 	 * @return string Formatted suggestion message.
 	 */
 	private static function format_plugin_suggestion( $plugin, $error ) {
-		$message  = "Error: A fatal error occurred";
-		$message .= " in the '{$plugin}' plugin";
-		$message .= ":\n";
-		$message .= basename( $error['file'] ) . ':' . $error['line'] . ' - ' . $error['message'] . "\n";
-		$message .= "\n";
-		$message .= "To skip this plugin, run the command again with:\n";
-		$message .= "  --skip-plugins={$plugin}";
+		// Normalize path for basename to work with Windows paths
+		$normalized_file = str_replace( '\\', '/', $error['file'] );
+		$message         = 'Error: A fatal error occurred';
+		$message        .= " in the '{$plugin}' plugin";
+		$message        .= ":\n";
+		$message        .= basename( $normalized_file ) . ':' . $error['line'] . ' - ' . $error['message'] . "\n";
+		$message        .= "\n";
+		$message        .= "To skip this plugin, run the command again with:\n";
+		$message        .= "  --skip-plugins={$plugin}";
 
 		return $message;
 	}
@@ -174,13 +176,15 @@ class ShutdownHandler {
 	 * @return string Formatted suggestion message.
 	 */
 	private static function format_theme_suggestion( $theme, $error ) {
-		$message  = "Error: A fatal error occurred";
-		$message .= " in the '{$theme}' theme";
-		$message .= ":\n";
-		$message .= basename( $error['file'] ) . ':' . $error['line'] . ' - ' . $error['message'] . "\n";
-		$message .= "\n";
-		$message .= "To skip this theme, run the command again with:\n";
-		$message .= "  --skip-themes={$theme}";
+		// Normalize path for basename to work with Windows paths
+		$normalized_file = str_replace( '\\', '/', $error['file'] );
+		$message         = 'Error: A fatal error occurred';
+		$message        .= " in the '{$theme}' theme";
+		$message        .= ":\n";
+		$message        .= basename( $normalized_file ) . ':' . $error['line'] . ' - ' . $error['message'] . "\n";
+		$message        .= "\n";
+		$message        .= "To skip this theme, run the command again with:\n";
+		$message        .= "  --skip-themes={$theme}";
 
 		return $message;
 	}
