@@ -97,13 +97,13 @@ class ShutdownHandler {
 		// Try to identify if the error is from a plugin
 		$plugin = self::identify_plugin( $file );
 		if ( $plugin ) {
-			return self::format_plugin_suggestion( $plugin, $error );
+			return self::format_suggestion( 'plugin', $plugin, $error );
 		}
 
 		// Try to identify if the error is from a theme
 		$theme = self::identify_theme( $file );
 		if ( $theme ) {
-			return self::format_theme_suggestion( $theme, $error );
+			return self::format_suggestion( 'theme', $theme, $error );
 		}
 
 		return null;
@@ -209,43 +209,23 @@ class ShutdownHandler {
 	}
 
 	/**
-	 * Format a suggestion message for a plugin error.
+	 * Format a suggestion message for a component error.
 	 *
-	 * @param string                                              $plugin Plugin slug.
+	 * @param string                                              $type   Component type ('plugin' or 'theme').
+	 * @param string                                              $slug   Component slug.
 	 * @param array{type: int, message: string, file: string, line: int} $error  Error information.
 	 * @return string Formatted suggestion message.
 	 */
-	private static function format_plugin_suggestion( $plugin, $error ) {
+	private static function format_suggestion( $type, $slug, $error ) {
 		// Normalize path for basename to work with Windows paths
 		$normalized_file = str_replace( '\\', '/', $error['file'] );
 		$message         = 'Error: A fatal error occurred';
-		$message        .= " in the '{$plugin}' plugin";
+		$message        .= " in the '{$slug}' {$type}";
 		$message        .= ":\n";
 		$message        .= basename( $normalized_file ) . ':' . $error['line'] . ' - ' . $error['message'] . "\n";
 		$message        .= "\n";
-		$message        .= "To skip this plugin, run the command again with:\n";
-		$message        .= "  --skip-plugins={$plugin}";
-
-		return $message;
-	}
-
-	/**
-	 * Format a suggestion message for a theme error.
-	 *
-	 * @param string                                              $theme Theme slug.
-	 * @param array{type: int, message: string, file: string, line: int} $error Error information.
-	 * @return string Formatted suggestion message.
-	 */
-	private static function format_theme_suggestion( $theme, $error ) {
-		// Normalize path for basename to work with Windows paths
-		$normalized_file = str_replace( '\\', '/', $error['file'] );
-		$message         = 'Error: A fatal error occurred';
-		$message        .= " in the '{$theme}' theme";
-		$message        .= ":\n";
-		$message        .= basename( $normalized_file ) . ':' . $error['line'] . ' - ' . $error['message'] . "\n";
-		$message        .= "\n";
-		$message        .= "To skip this theme, run the command again with:\n";
-		$message        .= "  --skip-themes={$theme}";
+		$message        .= "To skip this {$type}, run the command again with:\n";
+		$message        .= "  --skip-{$type}s={$slug}";
 
 		return $message;
 	}
