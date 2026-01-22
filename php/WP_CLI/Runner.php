@@ -562,6 +562,7 @@ class Runner {
 
 			if ( $command->can_have_subcommands() ) {
 				$command->show_usage();
+				\WP_CLI\ShutdownHandler::mark_command_completed();
 				exit;
 			}
 		}
@@ -581,6 +582,7 @@ class Runner {
 			}
 			// Should never get here.
 		}
+		\WP_CLI\ShutdownHandler::mark_command_completed();
 		exit;
 	}
 
@@ -1245,6 +1247,7 @@ class Runner {
 				$k       = array_search( '@all', $aliases, true );
 				unset( $aliases[ $k ] );
 				$this->run_alias_group( $aliases );
+				\WP_CLI\ShutdownHandler::mark_command_completed();
 				exit;
 			}
 
@@ -1265,6 +1268,7 @@ class Runner {
 					WP_CLI::error( "Group '{$this->alias}' contains one or more invalid aliases: " . implode( ', ', $diff ) );
 				}
 				$this->run_alias_group( $group_aliases );
+				\WP_CLI\ShutdownHandler::mark_command_completed();
 				exit;
 			}
 
@@ -2054,6 +2058,7 @@ class Runner {
 		// Looks like an update is available, so let's prompt to update.
 		WP_CLI::run_command( [ 'cli', 'update' ] );
 		// If the Phar was replaced, we can't proceed with the original process.
+		\WP_CLI\ShutdownHandler::mark_command_completed();
 		exit;
 	}
 
