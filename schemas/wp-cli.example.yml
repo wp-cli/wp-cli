@@ -9,6 +9,15 @@ disabled_commands:
 require:
  - path-to/command.php
 
+# Environment variables configuration
+# Values defined here will be used as fallbacks when the corresponding
+# environment variable is not set in the shell
+env:
+  WP_CLI_CACHE_DIR: /tmp/wp-cli-cache
+  WP_CLI_PACKAGES_DIR: /tmp/wp-cli-packages
+  WP_CLI_CACHE_EXPIRY: 3600
+  WP_CLI_CACHE_MAX_SIZE: 104857600
+
 config create:
   dbuser: root
   dbpass:
