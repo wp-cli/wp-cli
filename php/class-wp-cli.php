@@ -652,11 +652,12 @@ class WP_CLI {
 			self::get_runner()->register_early_invoke( $args['when'], $leaf_command );
 		}
 
+		$command_type = $leaf_command instanceof Dispatcher\CommandNamespace ? 'namespace' : 'command';
 		if ( ! empty( $parent ) ) {
 			$sub_command = trim( str_replace( $parent, '', $name ) );
-			self::debug( "Adding command: {$sub_command} in {$parent} Namespace", 'commands' );
+			self::debug( "Adding {$command_type}: {$sub_command} in {$parent} Namespace", 'commands' );
 		} else {
-			self::debug( "Adding command: {$name}", 'commands' );
+			self::debug( "Adding {$command_type}: {$name}", 'commands' );
 		}
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
