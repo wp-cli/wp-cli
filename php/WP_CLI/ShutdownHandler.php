@@ -94,9 +94,6 @@ class ShutdownHandler {
 	private static function get_error_suggestion( $error ) {
 		$file = $error['file'];
 
-		// Normalize path separators
-		$file = str_replace( '\\', '/', $file );
-
 		// Try to identify if the error is from a plugin
 		$plugin = self::identify_plugin( $file );
 		if ( $plugin ) {
@@ -119,7 +116,37 @@ class ShutdownHandler {
 	 * @return string|null Plugin slug, or null if not a plugin error.
 	 */
 	private static function identify_plugin( $file ) {
-		// Check for wp-content/plugins pattern
+		// Normalize path separators for consistent matching
+		$file = str_replace( '\\', '/', $file );
+
+		// Use WordPress constants if available for more accurate path detection
+		if ( defined( 'WP_PLUGIN_DIR' ) ) {
+			$plugin_dir = str_replace( '\\', '/', WP_PLUGIN_DIR );
+			if ( 0 === strpos( $file, $plugin_dir . '/' ) ) {
+				$relative = substr( $file, strlen( $plugin_dir ) + 1 );
+				$parts    = explode( '/', $relative );
+				if ( ! empty( $parts[0] ) ) {
+					// For plugins in subdirectories, return the directory name
+					// For single-file plugins, return the filename without .php
+					return false !== strpos( $parts[0], '.php' ) ? basename( $parts[0], '.php' ) : $parts[0];
+				}
+			}
+		}
+
+		if ( defined( 'WPMU_PLUGIN_DIR' ) ) {
+			$mu_plugin_dir = str_replace( '\\', '/', WPMU_PLUGIN_DIR );
+			if ( 0 === strpos( $file, $mu_plugin_dir . '/' ) ) {
+				$relative = substr( $file, strlen( $mu_plugin_dir ) + 1 );
+				$parts    = explode( '/', $relative );
+				if ( ! empty( $parts[0] ) ) {
+					// For mu-plugins in subdirectories, return the directory name
+					// For single-file mu-plugins, return the filename without .php
+					return false !== strpos( $parts[0], '.php' ) ? basename( $parts[0], '.php' ) : $parts[0];
+				}
+			}
+		}
+
+		// Fallback to pattern matching if constants are not available
 		if ( preg_match( '#/wp-content/plugins/([^/]+)/#', $file, $matches ) ) {
 			return $matches[1];
 		}
@@ -144,7 +171,32 @@ class ShutdownHandler {
 	 * @return string|null Theme slug, or null if not a theme error.
 	 */
 	private static function identify_theme( $file ) {
-		// Check for wp-content/themes pattern
+		// Normalize path separators for consistent matching
+		$file = str_replace( '\\', '/', $file );
+
+		// Use get_theme_root() if available for more accurate path detection
+		if ( function_exists( 'get_theme_root' ) ) {
+			$theme_root = str_replace( '\\', '/', get_theme_root() );
+			if ( 0 === strpos( $file, $theme_root . '/' ) ) {
+				$relative = substr( $file, strlen( $theme_root ) + 1 );
+				$parts    = explode( '/', $relative );
+				if ( ! empty( $parts[0] ) ) {
+					return $parts[0];
+				}
+			}
+		} elseif ( defined( 'WP_CONTENT_DIR' ) ) {
+			// Fallback to WP_CONTENT_DIR/themes if get_theme_root() is not available
+			$theme_dir = str_replace( '\\', '/', WP_CONTENT_DIR ) . '/themes';
+			if ( 0 === strpos( $file, $theme_dir . '/' ) ) {
+				$relative = substr( $file, strlen( $theme_dir ) + 1 );
+				$parts    = explode( '/', $relative );
+				if ( ! empty( $parts[0] ) ) {
+					return $parts[0];
+				}
+			}
+		}
+
+		// Fallback to pattern matching if constants/functions are not available
 		if ( preg_match( '#/wp-content/themes/([^/]+)/#', $file, $matches ) ) {
 			return $matches[1];
 		}
