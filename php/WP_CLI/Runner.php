@@ -650,6 +650,7 @@ class Runner {
 		if ( 255 === $exit_code ) {
 			WP_CLI::error( 'Cannot connect over SSH using provided configuration.', 255 );
 		} else {
+			\WP_CLI\ShutdownHandler::mark_command_completed();
 			exit( $exit_code );
 		}
 	}
@@ -1715,6 +1716,7 @@ class Runner {
 						// PHP 5.3 compatible implementation of run_command_and_exit().
 						$runner = WP_CLI::get_runner();
 						$runner->run_command( $runner->arguments, $runner->assoc_args );
+						\WP_CLI\ShutdownHandler::mark_command_completed();
 						exit;
 					},
 					1
