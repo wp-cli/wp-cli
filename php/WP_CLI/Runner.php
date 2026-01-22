@@ -614,12 +614,12 @@ class Runner {
 		if ( $this->alias && ! empty( $wp_args[0] ) && $this->alias === $wp_args[0] ) {
 			array_shift( $wp_args );
 			$runtime_alias = [];
-			
+
 			// Validate that alias configuration is an array before iteration.
 			if ( ! is_array( $this->aliases[ $this->alias ] ) ) {
 				WP_CLI::error( "Alias '{$this->alias}' is misconfigured. Alias configuration must be an associative array of settings." );
 			}
-			
+
 			foreach ( $this->aliases[ $this->alias ] as $key => $value ) {
 				if ( 'ssh' === $key ) {
 					continue;
@@ -1223,17 +1223,17 @@ class Runner {
 	private function set_alias( $alias ): void {
 		$orig_config  = $this->config;
 		$alias_config = $this->aliases[ $alias ];
-		
+
 		// Validate that alias configuration is an array.
 		if ( ! is_array( $alias_config ) ) {
 			WP_CLI::error( "Alias '{$alias}' is misconfigured. Alias configuration must be an associative array of settings." );
 		}
-		
+
 		// Validate SSH alias configuration.
 		if ( isset( $alias_config['ssh'] ) && isset( $alias_config['path'] ) ) {
 			WP_CLI::error( "Alias '{$alias}' is misconfigured. When 'ssh' is specified, 'path' should be included in the SSH connection string (e.g., 'user@host:/path/to/wordpress'), not as a separate key." );
 		}
-		
+
 		$this->config = array_merge( $orig_config, $alias_config );
 		foreach ( $alias_config as $key => $_ ) {
 			if ( isset( $orig_config[ $key ] ) && ! is_null( $orig_config[ $key ] ) ) {
