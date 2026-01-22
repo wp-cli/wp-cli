@@ -44,6 +44,46 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       --skip-plugins=my-problematic-plugin
       """
 
+  Scenario: Fatal error in mu-plugin (direct file) triggers shutdown handler
+    Given a WP installation
+    And a wp-content/mu-plugins/error-mu-plugin.php file:
+      """
+      <?php
+      // This will cause a fatal error
+      call_to_undefined_mu_function();
+      """
+
+    When I try `wp eval '1;'`
+    Then STDERR should contain:
+      """
+      Error: A fatal error occurred in the 'error-mu-plugin' plugin
+      """
+    And STDERR should contain:
+      """
+      --skip-plugins=error-mu-plugin
+      """
+    And the return code should be 255
+
+  Scenario: Fatal error in mu-plugin (subdirectory) triggers shutdown handler
+    Given a WP installation
+    And a wp-content/mu-plugins/my-mu-plugin/main.php file:
+      """
+      <?php
+      // This will cause a fatal error
+      call_to_undefined_mu_subdir_function();
+      """
+
+    When I try `wp eval '1;'`
+    Then STDERR should contain:
+      """
+      Error: A fatal error occurred in the 'my-mu-plugin' plugin
+      """
+    And STDERR should contain:
+      """
+      --skip-plugins=my-mu-plugin
+      """
+    And the return code should be 255
+
   Scenario: Fatal error in theme triggers shutdown handler with suggestion
     Given a WP installation
     And a wp-content/themes/error-theme/style.css file:
@@ -108,3 +148,23 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       --skip-plugins=syntax-error-plugin
       """
+
+  Scenario: Parse error in mu-plugin triggers shutdown handler
+    Given a WP installation
+    And a wp-content/mu-plugins/syntax-error-mu-plugin.php file:
+      """
+      <?php
+      // Missing semicolon causes parse error
+      $var = "test"
+      """
+
+    When I try `wp eval '1;'`
+    Then STDERR should contain:
+      """
+      Error: A fatal error occurred in the 'syntax-error-mu-plugin' plugin
+      """
+    And STDERR should contain:
+      """
+      --skip-plugins=syntax-error-mu-plugin
+      """
+
