@@ -121,47 +121,26 @@ class ShutdownHandler {
 
 		// Use WordPress constants if available for more accurate path detection
 		if ( defined( 'WP_PLUGIN_DIR' ) ) {
-			$plugin_dir = str_replace( '\\', '/', WP_PLUGIN_DIR );
-			if ( 0 === strpos( $file, $plugin_dir . '/' ) ) {
-				$relative = substr( $file, strlen( $plugin_dir ) + 1 );
-				$parts    = explode( '/', $relative );
-				if ( ! empty( $parts[0] ) ) {
-					// For plugins in subdirectories, return the directory name
-					// For single-file plugins, return the filename without .php
-					return false !== strpos( $parts[0], '.php' ) ? basename( $parts[0], '.php' ) : $parts[0];
-				}
+			$slug = self::extract_component_slug( $file, WP_PLUGIN_DIR );
+			if ( $slug ) {
+				return $slug;
 			}
 		}
 
 		if ( defined( 'WPMU_PLUGIN_DIR' ) ) {
-			$mu_plugin_dir = str_replace( '\\', '/', WPMU_PLUGIN_DIR );
-			if ( 0 === strpos( $file, $mu_plugin_dir . '/' ) ) {
-				$relative = substr( $file, strlen( $mu_plugin_dir ) + 1 );
-				$parts    = explode( '/', $relative );
-				if ( ! empty( $parts[0] ) ) {
-					// For mu-plugins in subdirectories, return the directory name
-					// For single-file mu-plugins, return the filename without .php
-					return false !== strpos( $parts[0], '.php' ) ? basename( $parts[0], '.php' ) : $parts[0];
-				}
+			$slug = self::extract_component_slug( $file, WPMU_PLUGIN_DIR );
+			if ( $slug ) {
+				return $slug;
 			}
 		}
 
 		// Fallback to pattern matching if constants are not available
-		if ( preg_match( '#/wp-content/plugins/([^/]+)/#', $file, $matches ) ) {
+		if ( preg_match( '#/wp-content/(?:mu-)?plugins/([^/]+)/#', $file, $matches ) ) {
 			return $matches[1];
 		}
 
 		// Check for direct single-file plugins
-		if ( preg_match( '#/wp-content/plugins/([^/]+)\\.php$#', $file, $matches ) ) {
-			return $matches[1];
-		}
-		// Check for mu-plugins in subdirectories
-		if ( preg_match( '#/wp-content/mu-plugins/([^/]+)/#', $file, $matches ) ) {
-			return $matches[1];
-		}
-
-		// Check for direct mu-plugin PHP files
-		if ( preg_match( '#/wp-content/mu-plugins/([^/]+)\\.php$#', $file, $matches ) ) {
+		if ( preg_match( '#/wp-content/(?:mu-)?plugins/([^/]+)\\.php$#', $file, $matches ) ) {
 			return $matches[1];
 		}
 
@@ -180,23 +159,15 @@ class ShutdownHandler {
 
 		// Use get_theme_root() if available for more accurate path detection
 		if ( function_exists( 'get_theme_root' ) ) {
-			$theme_root = str_replace( '\\', '/', get_theme_root() );
-			if ( 0 === strpos( $file, $theme_root . '/' ) ) {
-				$relative = substr( $file, strlen( $theme_root ) + 1 );
-				$parts    = explode( '/', $relative );
-				if ( ! empty( $parts[0] ) ) {
-					return $parts[0];
-				}
+			$slug = self::extract_theme_slug( $file, get_theme_root() );
+			if ( $slug ) {
+				return $slug;
 			}
 		} elseif ( defined( 'WP_CONTENT_DIR' ) ) {
 			// Fallback to WP_CONTENT_DIR/themes if get_theme_root() is not available
-			$theme_dir = str_replace( '\\', '/', WP_CONTENT_DIR ) . '/themes';
-			if ( 0 === strpos( $file, $theme_dir . '/' ) ) {
-				$relative = substr( $file, strlen( $theme_dir ) + 1 );
-				$parts    = explode( '/', $relative );
-				if ( ! empty( $parts[0] ) ) {
-					return $parts[0];
-				}
+			$slug = self::extract_theme_slug( $file, WP_CONTENT_DIR . '/themes' );
+			if ( $slug ) {
+				return $slug;
 			}
 		}
 
@@ -205,6 +176,46 @@ class ShutdownHandler {
 			return $matches[1];
 		}
 
+		return null;
+	}
+
+	/**
+	 * Extract component slug from a file path given a base directory.
+	 *
+	 * @param string $file    File path where error occurred.
+	 * @param string $base_dir Base directory path.
+	 * @return string|null Component slug, or null if not found.
+	 */
+	private static function extract_component_slug( $file, $base_dir ) {
+		$base_dir = str_replace( '\\', '/', $base_dir );
+		if ( 0 === strpos( $file, $base_dir . '/' ) ) {
+			$relative = substr( $file, strlen( $base_dir ) + 1 );
+			$parts    = explode( '/', $relative );
+			if ( ! empty( $parts[0] ) ) {
+				// For components in subdirectories, return the directory name
+				// For single-file components, return the filename without .php
+				return false !== strpos( $parts[0], '.php' ) ? basename( $parts[0], '.php' ) : $parts[0];
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Extract theme slug from a file path given a theme directory.
+	 *
+	 * @param string $file      File path where error occurred.
+	 * @param string $theme_dir Theme directory path.
+	 * @return string|null Theme slug, or null if not found.
+	 */
+	private static function extract_theme_slug( $file, $theme_dir ) {
+		$theme_dir = str_replace( '\\', '/', $theme_dir );
+		if ( 0 === strpos( $file, $theme_dir . '/' ) ) {
+			$relative = substr( $file, strlen( $theme_dir ) + 1 );
+			$parts    = explode( '/', $relative );
+			if ( ! empty( $parts[0] ) ) {
+				return $parts[0];
+			}
+		}
 		return null;
 	}
 
