@@ -615,11 +615,6 @@ class Runner {
 			array_shift( $wp_args );
 			$runtime_alias = [];
 
-			// Validate that alias configuration is an array before iteration.
-			if ( ! is_array( $this->aliases[ $this->alias ] ) ) {
-				WP_CLI::error( "Alias '{$this->alias}' is misconfigured. Alias configuration must be an associative array of settings." );
-			}
-
 			foreach ( $this->aliases[ $this->alias ] as $key => $value ) {
 				if ( 'ssh' === $key ) {
 					continue;
