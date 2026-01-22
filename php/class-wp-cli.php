@@ -70,6 +70,9 @@ class WP_CLI {
 		return $configurator;
 	}
 
+	/**
+	 * @return RootCommand
+	 */
 	public static function get_root_command() {
 		static $root;
 
@@ -898,6 +901,10 @@ class WP_CLI {
 	 * Use `WP_CLI::warning()` instead when script execution should be permitted
 	 * to continue.
 	 *
+	 * When `--debug` is enabled, this method will also output a backtrace
+	 * showing where the error was triggered from, making it easier to identify
+	 * problematic code.
+	 *
 	 * ```
 	 * # `wp cache flush` considers flush failure to be a fatal error.
 	 * if ( false === wp_cache_flush() ) {
@@ -927,6 +934,7 @@ class WP_CLI {
 		}
 
 		if ( $return_code ) {
+			self::debug_backtrace_on_exit();
 			if ( self::$capture_exit ) {
 				throw new ExitException( '', $return_code );
 			}
@@ -939,6 +947,10 @@ class WP_CLI {
 	 *
 	 * Permits script execution to be overloaded by `WP_CLI::runcommand()`
 	 *
+	 * When `--debug` is enabled, this method will also output a backtrace
+	 * showing where the halt was triggered from, making it easier to identify
+	 * the cause of early termination.
+	 *
 	 * @access public
 	 * @category Output
 	 *
@@ -946,6 +958,7 @@ class WP_CLI {
 	 * @return never
 	 */
 	public static function halt( $return_code ) {
+		self::debug_backtrace_on_exit();
 		if ( self::$capture_exit ) {
 			throw new ExitException( '', $return_code );
 		}
@@ -1116,6 +1129,69 @@ class WP_CLI {
 				gettype( $errors )
 			)
 		);
+	}
+
+	/**
+	 * Output debug backtrace information when --debug is enabled.
+	 *
+	 * This is called when WP_CLI is about to exit (via error() or halt())
+	 * to help identify where the exit originated from.
+	 *
+	 * @access private
+	 */
+	private static function debug_backtrace_on_exit() {
+		// Only output backtrace when debug mode is enabled.
+		if ( ! self::$logger || ! self::get_runner()->config['debug'] ) {
+			return;
+		}
+
+		$backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS );
+
+		// Skip the first few frames (this method, error/halt method, etc.).
+		$skip_frames = 0;
+		foreach ( $backtrace as $index => $frame ) {
+			// Skip internal WP_CLI methods.
+			if ( isset( $frame['class'] ) && 'WP_CLI' === $frame['class'] &&
+				in_array( $frame['function'], [ 'debug_backtrace_on_exit', 'error', 'halt' ], true ) ) {
+				$skip_frames = $index + 1;
+				continue;
+			}
+			break;
+		}
+
+		// Get the first relevant frame (where the error/halt was called from).
+		if ( isset( $backtrace[ $skip_frames ] ) ) {
+			$frame = $backtrace[ $skip_frames ];
+			$file  = $frame['file'] ?? 'unknown';
+			$line  = $frame['line'] ?? 'unknown';
+
+			self::debug( "Script called exit from: {$file}:{$line}", 'bootstrap' );
+
+			// Output a limited backtrace (first 5 frames after skipping internal ones).
+			$backtrace_output = [];
+			$max_frames       = 5;
+			$frame_count      = 0;
+			$backtrace_count  = count( $backtrace );
+
+			for ( $i = $skip_frames; $i < $backtrace_count && $frame_count < $max_frames; $i++ ) {
+				$frame = $backtrace[ $i ];
+				$func  = $frame['function'];
+
+				if ( isset( $frame['class'] ) ) {
+					$func = $frame['class'] . ( $frame['type'] ?? '::' ) . $func;
+				}
+
+				$file = $frame['file'] ?? 'unknown';
+				$line = $frame['line'] ?? '?';
+
+				$backtrace_output[] = "  #{$frame_count} {$func}() called at [{$file}:{$line}]";
+				++$frame_count;
+			}
+
+			if ( ! empty( $backtrace_output ) ) {
+				self::debug( "Backtrace:\n" . implode( "\n", $backtrace_output ), 'bootstrap' );
+			}
+		}
 	}
 
 	/**

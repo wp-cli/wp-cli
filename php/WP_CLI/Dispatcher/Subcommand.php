@@ -132,6 +132,42 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Get the description for an argument from documentation.
+	 *
+	 * @param array $spec_arg Argument specification from SynopsisParser
+	 * @param DocParser $docparser DocParser instance for retrieving descriptions
+	 * @param string $longdesc Long description text for regex matching
+	 * @return string Description text, or empty string if not found
+	 */
+	private function get_arg_description( $spec_arg, $docparser, $longdesc ) {
+		$description = '';
+
+		if ( 'positional' === $spec_arg['type'] ) {
+			$description = $docparser->get_arg_desc( $spec_arg['name'] );
+			// If get_arg_desc doesn't find it (e.g., for simple <arg> without modifiers),
+			// try a simpler pattern that matches <arg> followed by : description,
+			// using a pattern consistent with DocParser::get_arg_desc().
+			if ( empty( $description ) ) {
+				$arg_pattern = '/\[?<' . preg_quote( $spec_arg['name'], '/' ) . ">.+\n:\s*(.+?)(\n|$)/";
+				if ( preg_match( $arg_pattern, $longdesc, $matches ) ) {
+					$description = trim( $matches[1] );
+				}
+			}
+		} elseif ( 'assoc' === $spec_arg['type'] ) {
+			$description = $docparser->get_param_desc( $spec_arg['name'] );
+		} elseif ( 'flag' === $spec_arg['type'] ) {
+			// For flags, the pattern is [--flag] not [--flag=<value>]
+			// So we need a custom regex pattern in the longdesc
+			$flag_pattern = '/\[?--' . preg_quote( $spec_arg['name'], '/' ) . "\]\s*\n:\s*(.+?)(\n|$)/";
+			if ( preg_match( $flag_pattern, $longdesc, $matches ) ) {
+				$description = trim( $matches[1] );
+			}
+		}
+
+		return $description;
+	}
+
+	/**
 	 * Interactively prompt the user for input
 	 * based on defined synopsis and passed arguments.
 	 *
@@ -146,6 +182,9 @@ class Subcommand extends CompositeCommand {
 		if ( ! $synopsis ) {
 			return [ $args, $assoc_args ];
 		}
+
+		// Create a docparser to get default values and descriptions
+		$docparser = $this->get_docparser();
 
 		// To skip the already provided positional arguments, we need to count
 		// how many we had already received.
@@ -181,6 +220,9 @@ class Subcommand extends CompositeCommand {
 		if ( true !== $prompt_args ) {
 			$prompt_args = explode( ',', $prompt_args );
 		}
+
+		// Reuse the existing DocParser to retrieve argument descriptions.
+		$docparser = $this->docparser;
 
 		// 'positional' arguments are positional (aka zero-indexed)
 		// so $args needs to be reset before prompting for new arguments
@@ -237,9 +279,28 @@ class Subcommand extends CompositeCommand {
 				} while ( $repeat );
 
 			} else {
-				$prompt = $current_prompt . $spec_arg['token'];
+				$prompt      = $current_prompt . $spec_arg['token'];
+				$default_val = null;
+
+				// Add description if available
+				$longdesc    = $this->get_longdesc();
+				$description = $this->get_arg_description( $spec_arg, $docparser, $longdesc );
+
+				if ( ! empty( $description ) ) {
+					$prompt .= ' (' . $description . ')';
+				}
+
+				// Get default value for the argument (not for flags)
 				if ( 'flag' === $spec_arg['type'] ) {
 					$prompt .= ' (Y/n)';
+				} elseif ( 'positional' === $spec_arg['type'] || 'assoc' === $spec_arg['type'] ) {
+					$spec_args = ( 'positional' === $spec_arg['type'] )
+						? $docparser->get_arg_args( $spec_arg['name'] )
+						: $docparser->get_param_args( $spec_arg['name'] );
+					if ( null !== $spec_args && isset( $spec_args['default'] ) ) {
+						$default_val = $spec_args['default'];
+						$prompt     .= ' [' . $default_val . ']';
+					}
 				}
 
 				$response = $this->prompt( $prompt );
@@ -247,7 +308,12 @@ class Subcommand extends CompositeCommand {
 					return [ $args, $assoc_args ];
 				}
 
-				if ( $response ) {
+				// If response is empty and there's a default (not a flag), use the default
+				if ( '' === $response && null !== $default_val ) {
+					$response = $default_val;
+				}
+
+				if ( '' !== $response ) {
 					switch ( $spec_arg['type'] ) {
 						case 'positional':
 							if ( $spec_arg['repeating'] ) {
@@ -271,6 +337,18 @@ class Subcommand extends CompositeCommand {
 		}
 
 		return [ $args, $assoc_args ];
+	}
+
+	/**
+	 * Create a DocParser instance from the command's description.
+	 *
+	 * @return DocParser
+	 */
+	private function get_docparser() {
+		$mock_doc = [ $this->get_shortdesc(), '' ];
+		$mock_doc = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
+		$mock_doc = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
+		return new DocParser( $mock_doc );
 	}
 
 	/**
@@ -321,10 +399,7 @@ class Subcommand extends CompositeCommand {
 			'fatal'   => [],
 			'warning' => [],
 		];
-		$mock_doc      = [ $this->get_shortdesc(), '' ];
-		$mock_doc      = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
-		$mock_doc      = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
-		$docparser     = new DocParser( $mock_doc );
+		$docparser     = $this->get_docparser();
 		foreach ( $synopsis_spec as $spec ) {
 			if ( 'positional' === $spec['type'] ) {
 				$spec_args = $docparser->get_arg_args( $spec['name'] );
@@ -428,6 +503,34 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Get the list of sensitive argument names from the synopsis.
+	 * These arguments will have their values masked in log output.
+	 *
+	 * @return array<string> Array of argument names that are marked as sensitive
+	 */
+	private function get_sensitive_args() {
+		$synopsis = $this->get_synopsis();
+		if ( ! $synopsis ) {
+			return [];
+		}
+
+		$synopsis_spec  = SynopsisParser::parse( $synopsis );
+		$docparser      = $this->get_docparser();
+		$sensitive_args = [];
+
+		foreach ( $synopsis_spec as $spec ) {
+			if ( 'assoc' === $spec['type'] ) {
+				$spec_args = $docparser->get_param_args( $spec['name'] );
+				if ( isset( $spec_args['sensitive'] ) && $spec_args['sensitive'] ) {
+					$sensitive_args[] = $spec['name'];
+				}
+			}
+		}
+
+		return $sensitive_args;
+	}
+
+	/**
 	 * Invoke the subcommand with the supplied arguments.
 	 * Given a --prompt argument, interactively request input
 	 * from the end user.
@@ -476,11 +579,14 @@ class Subcommand extends CompositeCommand {
 		if ( $prompted_once ) {
 			// Unset empty args.
 			$actual_args = $assoc_args;
-			foreach ( $actual_args as $key ) {
-				if ( empty( $actual_args[ $key ] ) ) {
+			foreach ( $actual_args as $key => $value ) {
+				if ( empty( $value ) ) {
 					unset( $actual_args[ $key ] );
 				}
 			}
+
+			// Get list of sensitive arguments to mask in output
+			$sensitive_args = $this->get_sensitive_args();
 
 			WP_CLI::log(
 				sprintf(
@@ -491,7 +597,7 @@ class Subcommand extends CompositeCommand {
 							' ',
 							[
 								ltrim( Utils\args_to_str( $args ), ' ' ),
-								ltrim( Utils\assoc_args_to_str( $actual_args ), ' ' ),
+								ltrim( Utils\assoc_args_to_str( $actual_args, $sensitive_args ), ' ' ),
 							]
 						),
 						' '
