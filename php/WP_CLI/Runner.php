@@ -1213,10 +1213,10 @@ class Runner {
 			$procs = [];
 			foreach ( $aliases as $alias ) {
 				WP_CLI::log( $alias );
-				$escaped_alias  = escapeshellarg( $alias );
-				$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$escaped_alias} {$args}{$assoc_args}{$runtime_config}";
-				$pipes          = [];
-				$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
+				$escaped_alias = escapeshellarg( $alias );
+				$full_command  = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$escaped_alias} {$args}{$assoc_args}{$runtime_config}";
+				$pipes         = [];
+				$proc          = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
 
 				if ( $proc ) {
 					$procs[] = $proc;
@@ -1231,10 +1231,10 @@ class Runner {
 			// Run aliases sequentially (original behavior)
 			foreach ( $aliases as $alias ) {
 				WP_CLI::log( $alias );
-				$escaped_alias  = escapeshellarg( $alias );
-				$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$escaped_alias} {$args}{$assoc_args}{$runtime_config}";
-				$pipes          = [];
-				$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
+				$escaped_alias = escapeshellarg( $alias );
+				$full_command  = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$escaped_alias} {$args}{$assoc_args}{$runtime_config}";
+				$pipes         = [];
+				$proc          = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
 
 				if ( $proc ) {
 					proc_close( $proc );
