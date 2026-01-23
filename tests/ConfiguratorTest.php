@@ -84,4 +84,19 @@ class ConfiguratorTest extends TestCase {
 		// Restore.
 		WP_CLI::set_logger( $prev_logger );
 	}
+
+	public function testExtractAssocMultipleValues(): void {
+		$args = Configurator::extract_assoc( [ 'list', '--status=active', '--status=parent' ] );
+
+		$this->assertCount( 1, $args[0] );
+		$this->assertCount( 2, $args[1] );
+
+		$this->assertEquals( 'list', $args[0][0] );
+
+		$this->assertEquals( 'status', $args[1][0][0] );
+		$this->assertEquals( 'active', $args[1][0][1] );
+
+		$this->assertEquals( 'status', $args[1][1][0] );
+		$this->assertEquals( 'parent', $args[1][1][1] );
+	}
 }

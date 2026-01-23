@@ -424,6 +424,19 @@ class Subcommand extends CompositeCommand {
 				++$i;
 			} elseif ( 'assoc' === $spec['type'] ) {
 				$spec_args = $docparser->get_param_args( $spec['name'] );
+
+				// Handle multiple values annotation
+				if ( isset( $assoc_args[ $spec['name'] ] ) && is_array( $assoc_args[ $spec['name'] ] ) ) {
+					// If multiple annotation is not set or is false, use only the last value
+					if ( ! isset( $spec_args['multiple'] ) || false === $spec_args['multiple'] ) {
+						$values       = $assoc_args[ $spec['name'] ];
+						$values_count = count( $values );
+						if ( $values_count > 0 ) {
+							$assoc_args[ $spec['name'] ] = $values[ $values_count - 1 ];
+						}
+					}
+				}
+
 				if ( ! isset( $assoc_args[ $spec['name'] ] ) && ! isset( $extra_args[ $spec['name'] ] ) ) {
 					if ( isset( $spec_args['default'] ) ) {
 						$assoc_args[ $spec['name'] ] = $spec_args['default'];
@@ -432,8 +445,17 @@ class Subcommand extends CompositeCommand {
 				if ( isset( $assoc_args[ $spec['name'] ] ) && isset( $spec_args['options'] ) ) {
 					$value   = $assoc_args[ $spec['name'] ];
 					$options = $spec_args['options'];
-					// phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
-					if ( ! in_array( $value, $options ) ) {
+
+					// Handle validation for multiple values
+					if ( is_array( $value ) ) {
+						foreach ( $value as $single_value ) {
+							// phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
+							if ( ! in_array( $single_value, $options ) ) {
+								$errors['fatal'][ $spec['name'] ] = "Invalid value '{$single_value}' specified for '{$spec['name']}'";
+								break;
+							}
+						}
+					} elseif ( ! in_array( $value, $options ) ) { // phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
 						// Try whether it might be a comma-separated list of multiple values.
 						$values = array_map( 'trim', explode( ',', $value ) );
 						$count  = count( $values );
