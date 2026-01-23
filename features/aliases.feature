@@ -664,3 +664,36 @@ Feature: Create shortcuts to specific WordPress installs
       @foo:
         path: {TEST_DIR}/foo
       """
+
+  Scenario: Error message when SSH alias is misconfigured with separate path key
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      @local:
+        ssh: vagrant@www.site1.test
+        path: /srv/www/site1.test/htdocs/
+      """
+
+    When I try `wp @local core version`
+    Then STDERR should contain:
+      """
+      Error: Alias '@local' is misconfigured. When 'ssh' is specified, 'path' should be included in the SSH connection string (e.g., 'user@host:/path/to/wordpress'), not as a separate key.
+      """
+    And the return code should be 1
+
+  Scenario: Error message when SSH alias is misconfigured with url key
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      @remote:
+        ssh: user@example.com
+        url: https://example.com
+        path: /var/www/html
+      """
+
+    When I try `wp @remote core version`
+    Then STDERR should contain:
+      """
+      Error: Alias '@remote' is misconfigured. When 'ssh' is specified, 'path' should be included in the SSH connection string (e.g., 'user@host:/path/to/wordpress'), not as a separate key.
+      """
+    And the return code should be 1
