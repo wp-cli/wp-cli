@@ -66,6 +66,14 @@ Next, check the Phar file to verify that it's working:
 ```bash
 php wp-cli.phar --info
 ```
+### Verify installation
+
+After moving the executable to your PATH, confirm the `wp` command works:
+
+```bash
+wp --info
+wp --version
+
 
 To use WP-CLI from the command line by typing `wp`, make the file executable and move it to somewhere in your PATH. For example:
 
