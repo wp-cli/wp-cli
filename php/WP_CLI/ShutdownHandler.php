@@ -5,90 +5,70 @@ namespace WP_CLI;
 use WP_CLI;
 
 /**
- * Handles shutdown to detect incomplete execution and suggest workarounds.
+ * Handles fatal errors to detect plugin/theme issues and suggest workarounds.
  *
- * This handler detects when WP-CLI execution fails due to plugin or theme errors
- * and provides helpful suggestions to the user.
+ * This handler hooks into WordPress's fatal error handler to provide
+ * helpful suggestions to the user when plugins or themes cause errors.
  *
  * @package WP_CLI
  */
 class ShutdownHandler {
 
 	/**
-	 * Whether the command completed successfully.
-	 *
-	 * @var bool
-	 */
-	private static $command_completed = false;
-
-	/**
-	 * Whether WordPress has finished loading.
-	 *
-	 * @var bool
-	 */
-	private static $wp_loaded = false;
-
-	/**
-	 * Register the shutdown handler.
+	 * Register the error message filter.
 	 */
 	public static function register() {
-		register_shutdown_function( [ __CLASS__, 'handle_shutdown' ] );
-		WP_CLI::add_hook( 'after_wp_load', [ __CLASS__, 'mark_wp_loaded' ] );
+		WP_CLI::add_hook( 'after_wp_load', [ __CLASS__, 'register_filters' ] );
 	}
 
 	/**
-	 * Mark that WordPress has finished loading.
+	 * Register WordPress filters after WordPress loads.
 	 */
-	public static function mark_wp_loaded() {
-		self::$wp_loaded = true;
+	public static function register_filters() {
+		// Ensure WordPress's fatal error handler is always enabled for WP-CLI
+		WP_CLI::add_wp_hook(
+			'wp_fatal_error_handler_enabled',
+			'__return_true'
+		);
+
+		// Hook into the error message filter to add our suggestions
+		WP_CLI::add_wp_hook(
+			'wp_php_error_message',
+			[ __CLASS__, 'filter_error_message' ],
+			10,
+			2
+		);
 	}
 
 	/**
-	 * Mark that the command completed successfully.
+	 * Filter the PHP error message to add plugin/theme skip suggestions.
+	 *
+	 * @param string $message Error message.
+	 * @param array  $error   Error information from error_get_last().
+	 * @return string Filtered error message.
 	 */
-	public static function mark_command_completed() {
-		self::$command_completed = true;
-	}
+	public static function filter_error_message( $message, $error ) {
+		// Strip HTML tags for CLI output
+		$message = wp_strip_all_tags( $message );
 
-	/**
-	 * Handle the shutdown event.
-	 */
-	public static function handle_shutdown() {
-		// If the command completed successfully, nothing to do
-		if ( self::$command_completed ) {
-			return;
-		}
-
-		// Only handle errors if WordPress was loading or loaded
-		// (errors before WordPress loads are less likely to be plugin/theme related)
-		if ( ! self::$wp_loaded ) {
-			return;
-		}
-
-		// Get the last error
-		$error = error_get_last();
-		if ( null === $error ) {
-			return;
-		}
-
-		// Only handle fatal errors
-		$fatal_error_types = [ E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR ];
-		if ( ! in_array( $error['type'], $fatal_error_types, true ) ) {
-			return;
+		// Ensure $error is an array with required keys
+		if ( ! is_array( $error ) || ! isset( $error['file'] ) ) {
+			return $message;
 		}
 
 		// Try to identify the problematic plugin or theme
 		$suggestion = self::get_error_suggestion( $error );
 		if ( $suggestion ) {
-			// Output to STDERR since we're in shutdown
-			fwrite( STDERR, "\n" . $suggestion . "\n" );
+			$message .= "\n\n" . $suggestion;
 		}
+
+		return $message;
 	}
 
 	/**
 	 * Analyze the error and provide a helpful suggestion.
 	 *
-	 * @param array{type: int, message: string, file: string, line: int} $error Error information from error_get_last().
+	 * @param array $error Error information from error_get_last().
 	 * @return string|null Suggestion message, or null if no suggestion available.
 	 */
 	private static function get_error_suggestion( $error ) {
@@ -97,13 +77,13 @@ class ShutdownHandler {
 		// Try to identify if the error is from a plugin
 		$plugin = self::identify_plugin( $file );
 		if ( $plugin ) {
-			return self::format_suggestion( 'plugin', $plugin, $error );
+			return self::format_suggestion( 'plugin', $plugin );
 		}
 
 		// Try to identify if the error is from a theme
 		$theme = self::identify_theme( $file );
 		if ( $theme ) {
-			return self::format_suggestion( 'theme', $theme, $error );
+			return self::format_suggestion( 'theme', $theme );
 		}
 
 		return null;
@@ -222,21 +202,14 @@ class ShutdownHandler {
 	/**
 	 * Format a suggestion message for a component error.
 	 *
-	 * @param string                                              $type   Component type ('plugin' or 'theme').
-	 * @param string                                              $slug   Component slug.
-	 * @param array{type: int, message: string, file: string, line: int} $error  Error information.
+	 * @param string $type Component type ('plugin' or 'theme').
+	 * @param string $slug Component slug.
 	 * @return string Formatted suggestion message.
 	 */
-	private static function format_suggestion( $type, $slug, $error ) {
-		// Normalize path for basename to work with Windows paths
-		$normalized_file = str_replace( '\\', '/', $error['file'] );
-		$message         = 'Error: A fatal error occurred';
-		$message        .= " in the '{$slug}' {$type}";
-		$message        .= ":\n";
-		$message        .= basename( $normalized_file ) . ':' . $error['line'] . ' - ' . $error['message'] . "\n";
-		$message        .= "\n";
-		$message        .= "To skip this {$type}, run the command again with:\n";
-		$message        .= "  --skip-{$type}s={$slug}";
+	private static function format_suggestion( $type, $slug ) {
+		$message  = "This error may have been caused by the '{$slug}' {$type}.";
+		$message .= "\nTo skip this {$type}, run the command again with:";
+		$message .= "\n  --skip-{$type}s={$slug}";
 
 		return $message;
 	}
