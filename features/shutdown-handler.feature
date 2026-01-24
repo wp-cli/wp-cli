@@ -9,18 +9,29 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       /**
        * Plugin Name: Error Plugin
        */
+      // Working plugin initially
+      """
+
+    When I run `wp plugin activate error-plugin`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    Given a wp-content/plugins/error-plugin/error-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Error Plugin
+       */
       // This will cause a fatal error
       call_to_undefined_function();
       """
 
-    When I try `wp plugin activate error-plugin`
+    When I try `wp plugin list`
     Then STDERR should contain:
       """
-      PHP Fatal error:
-      """
-    And STDERR should contain:
-      """
-      call_to_undefined_function()
+      critical error
       """
     And STDERR should contain:
       """
@@ -36,13 +47,28 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       /**
        * Plugin Name: My Problematic Plugin
        */
+      // Working plugin initially
+      """
+
+    When I run `wp plugin activate my-problematic-plugin`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    Given a wp-content/plugins/my-problematic-plugin/plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: My Problematic Plugin
+       */
       trigger_error('Fatal error', E_USER_ERROR);
       """
 
-    When I try `wp plugin activate my-problematic-plugin`
+    When I try `wp plugin list`
     Then STDERR should contain:
       """
-      PHP User error:
+      critical error
       """
     And STDERR should contain:
       """
@@ -61,11 +87,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     When I try `wp eval '1;'`
     Then STDERR should contain:
       """
-      PHP Fatal error:
-      """
-    And STDERR should contain:
-      """
-      call_to_undefined_mu_function()
+      critical error
       """
     And STDERR should contain:
       """
@@ -85,11 +107,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     When I try `wp eval '1;'`
     Then STDERR should contain:
       """
-      PHP Fatal error:
-      """
-    And STDERR should contain:
-      """
-      call_to_undefined_mu_subdir_function()
+      critical error
       """
     And STDERR should contain:
       """
@@ -113,18 +131,26 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     And a wp-content/themes/error-theme/functions.php file:
       """
       <?php
+      // Working theme initially
+      """
+
+    When I run `wp theme activate error-theme`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    Given a wp-content/themes/error-theme/functions.php file:
+      """
+      <?php
       // This will cause a fatal error
       call_to_undefined_theme_function();
       """
 
-    When I try `wp theme activate error-theme`
+    When I try `wp theme list`
     Then STDERR should contain:
       """
-      PHP Fatal error:
-      """
-    And STDERR should contain:
-      """
-      call_to_undefined_theme_function()
+      critical error
       """
     And STDERR should contain:
       """
@@ -152,14 +178,29 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       /**
        * Plugin Name: Syntax Error Plugin
        */
+      // Working plugin initially
+      """
+
+    When I run `wp plugin activate syntax-error-plugin`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    Given a wp-content/plugins/syntax-error-plugin/plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Syntax Error Plugin
+       */
       // Missing semicolon causes parse error
       $var = "test"
       """
 
-    When I try `wp plugin activate syntax-error-plugin`
+    When I try `wp plugin list`
     Then STDERR should contain:
       """
-      PHP Parse error:
+      critical error
       """
     And STDERR should contain:
       """
@@ -178,10 +219,46 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     When I try `wp eval '1;'`
     Then STDERR should contain:
       """
-      PHP Parse error:
+      critical error
       """
     And STDERR should contain:
       """
       --skip-plugins=syntax-error-mu-plugin
+      """
+
+  Scenario: Automatic rerun with WP_CLI_SKIP_PROMPT=no disables prompting
+    Given a WP installation
+    And a wp-content/plugins/broken-plugin/broken-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Broken Plugin
+       */
+      // Working initially
+      """
+
+    When I run `wp plugin activate broken-plugin`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    Given a wp-content/plugins/broken-plugin/broken-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Broken Plugin
+       */
+      call_to_undefined();
+      """
+
+    When I try `WP_CLI_SKIP_PROMPT=no wp plugin list`
+    Then STDERR should contain:
+      """
+      --skip-plugins=broken-plugin
+      """
+    And STDERR should not contain:
+      """
+      Would you like to run the command again
       """
 

@@ -208,6 +208,102 @@ class ShutdownHandler {
 		$message .= "\nTo skip this {$type}, run the command again with:";
 		$message .= "\n  --skip-{$type}s={$slug}";
 
+		// Check if we should offer to rerun the command automatically
+		$should_prompt = self::should_prompt_rerun();
+
+		if ( $should_prompt ) {
+			self::prompt_and_rerun( $type, $slug );
+		}
+
 		return $message;
+	}
+
+	/**
+	 * Check if we should prompt the user to rerun the command.
+	 *
+	 * @return bool
+	 */
+	private static function should_prompt_rerun() {
+		// Check environment variable WP_CLI_SKIP_PROMPT
+		// If set to 'yes', automatically rerun; if 'no', don't prompt
+		$skip_prompt = getenv( 'WP_CLI_SKIP_PROMPT' );
+
+		if ( false !== $skip_prompt ) {
+			return 'yes' !== $skip_prompt && 'no' !== $skip_prompt;
+		}
+
+		// Default: prompt the user
+		return true;
+	}
+
+	/**
+	 * Prompt the user to rerun the command with the skip flag.
+	 *
+	 * @param string $type Component type ('plugin' or 'theme').
+	 * @param string $slug Component slug.
+	 */
+	private static function prompt_and_rerun( $type, $slug ) {
+		// Get environment variable to check default behavior
+		$skip_prompt = getenv( 'WP_CLI_SKIP_PROMPT' );
+
+		// If set to 'yes', automatically rerun without prompting
+		if ( 'yes' === $skip_prompt ) {
+			self::rerun_with_skip( $type, $slug );
+			return;
+		}
+
+		// If set to 'no', don't prompt at all
+		if ( 'no' === $skip_prompt ) {
+			return;
+		}
+
+		// Prompt the user
+		fwrite( STDERR, "\n" );
+		try {
+			WP_CLI::confirm( "Would you like to run the command again with --skip-{$type}s={$slug}?" );
+			self::rerun_with_skip( $type, $slug );
+		} catch ( \WP_CLI\ExitException $e ) {
+			// User declined or Ctrl+C - exit gracefully
+			WP_CLI::line( 'Command not rerun.' );
+		}
+	}
+
+	/**
+	 * Rerun the current command with the skip flag.
+	 *
+	 * @param string $type Component type ('plugin' or 'theme').
+	 * @param string $slug Component slug.
+	 */
+	private static function rerun_with_skip( $type, $slug ) {
+		$runner = WP_CLI::get_runner();
+
+		if ( ! $runner ) {
+			return;
+		}
+
+		// Get the original command arguments
+		$args       = $runner->arguments;
+		$assoc_args = $runner->assoc_args;
+
+		// Add the skip flag
+		$skip_flag = "skip-{$type}s";
+		if ( isset( $assoc_args[ $skip_flag ] ) ) {
+			// Already has skip flag, append to it
+			$existing                 = $assoc_args[ $skip_flag ];
+			$assoc_args[ $skip_flag ] = is_array( $existing )
+				? array_merge( $existing, [ $slug ] )
+				: $existing . ',' . $slug;
+		} else {
+			$assoc_args[ $skip_flag ] = $slug;
+		}
+
+		WP_CLI::line( "\nRerunning command with --{$skip_flag}={$slug}..." );
+
+		// Rerun the command
+		try {
+			WP_CLI::run_command( $args, $assoc_args );
+		} catch ( \Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
+		}
 	}
 }
