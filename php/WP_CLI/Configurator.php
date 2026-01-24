@@ -184,12 +184,22 @@ class Configurator {
 		$assoc_args      = [];
 		$global_assoc    = [];
 		$local_assoc     = [];
+		$end_of_options  = false;
 
 		foreach ( $arguments as $arg ) {
 			$positional = null;
 			$assoc_arg  = null;
 
-			if ( preg_match( '|^--no-([^=]+)$|', $arg, $matches ) ) {
+			// Check for the `--` delimiter indicating end of options.
+			if ( '--' === $arg ) {
+				$end_of_options = true;
+				continue;
+			}
+
+			// After `--`, treat all arguments as positional.
+			if ( $end_of_options ) {
+				$positional = $arg;
+			} elseif ( preg_match( '|^--no-([^=]+)$|', $arg, $matches ) ) {
 				$assoc_arg = [ $matches[1], false ];
 			} elseif ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
 				$assoc_arg = [ $matches[1], true ];
