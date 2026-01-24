@@ -1,3 +1,4 @@
+@require-wp-5.2
 Feature: Shutdown handler suggests workarounds for plugin/theme errors
 
   Scenario: Fatal error in plugin triggers shutdown handler with suggestion
@@ -15,7 +16,11 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     When I try `wp plugin activate error-plugin`
     Then STDERR should contain:
       """
-      Error: A fatal error occurred in the 'error-plugin' plugin
+      PHP Fatal error:
+      """
+    And STDERR should contain:
+      """
+      call_to_undefined_function()
       """
     And STDERR should contain:
       """
@@ -37,7 +42,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     When I try `wp plugin activate my-problematic-plugin`
     Then STDERR should contain:
       """
-      Error: A fatal error occurred in the 'my-problematic-plugin' plugin
+      PHP User error:
       """
     And STDERR should contain:
       """
@@ -56,7 +61,11 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     When I try `wp eval '1;'`
     Then STDERR should contain:
       """
-      Error: A fatal error occurred in the 'error-mu-plugin' plugin
+      PHP Fatal error:
+      """
+    And STDERR should contain:
+      """
+      call_to_undefined_mu_function()
       """
     And STDERR should contain:
       """
@@ -76,7 +85,11 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     When I try `wp eval '1;'`
     Then STDERR should contain:
       """
-      Error: A fatal error occurred in the 'my-mu-plugin' plugin
+      PHP Fatal error:
+      """
+    And STDERR should contain:
+      """
+      call_to_undefined_mu_subdir_function()
       """
     And STDERR should contain:
       """
@@ -107,7 +120,11 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     When I try `wp theme activate error-theme`
     Then STDERR should contain:
       """
-      Error: A fatal error occurred in the 'error-theme' theme
+      PHP Fatal error:
+      """
+    And STDERR should contain:
+      """
+      call_to_undefined_theme_function()
       """
     And STDERR should contain:
       """
@@ -142,7 +159,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     When I try `wp plugin activate syntax-error-plugin`
     Then STDERR should contain:
       """
-      Error: A fatal error occurred in the 'syntax-error-plugin' plugin
+      PHP Parse error:
       """
     And STDERR should contain:
       """
@@ -161,7 +178,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     When I try `wp eval '1;'`
     Then STDERR should contain:
       """
-      Error: A fatal error occurred in the 'syntax-error-mu-plugin' plugin
+      PHP Parse error:
       """
     And STDERR should contain:
       """

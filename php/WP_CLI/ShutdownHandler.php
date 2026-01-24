@@ -48,18 +48,61 @@ class ShutdownHandler {
 	 * @return string Filtered error message.
 	 */
 	public static function filter_error_message( $message, $error ) {
-		// Strip HTML tags for CLI output
-		$message = wp_strip_all_tags( $message );
-
 		// Ensure $error is an array with required keys
-		if ( ! is_array( $error ) || ! isset( $error['file'] ) ) {
-			return $message;
+		if ( ! is_array( $error ) || ! isset( $error['file'], $error['line'], $error['message'] ) ) {
+			return wp_strip_all_tags( $message );
 		}
+
+		// Build a CLI-appropriate error message with stacktrace
+		$cli_message = self::format_cli_error_message( $error );
 
 		// Try to identify the problematic plugin or theme
 		$suggestion = self::get_error_suggestion( $error );
 		if ( $suggestion ) {
-			$message .= "\n\n" . $suggestion;
+			$cli_message .= "\n\n" . $suggestion;
+		}
+
+		return $cli_message;
+	}
+
+	/**
+	 * Format error information for CLI output.
+	 *
+	 * @param array $error Error information from error_get_last().
+	 * @return string Formatted error message.
+	 */
+	private static function format_cli_error_message( $error ) {
+		$error_type_labels = [
+			E_ERROR             => 'Fatal error',
+			E_WARNING           => 'Warning',
+			E_PARSE             => 'Parse error',
+			E_NOTICE            => 'Notice',
+			E_CORE_ERROR        => 'Core error',
+			E_CORE_WARNING      => 'Core warning',
+			E_COMPILE_ERROR     => 'Compile error',
+			E_COMPILE_WARNING   => 'Compile warning',
+			E_USER_ERROR        => 'User error',
+			E_USER_WARNING      => 'User warning',
+			E_USER_NOTICE       => 'User notice',
+			E_STRICT            => 'Strict standards',
+			E_RECOVERABLE_ERROR => 'Recoverable error',
+			E_DEPRECATED        => 'Deprecated',
+			E_USER_DEPRECATED   => 'User deprecated',
+		];
+
+		$error_type = isset( $error_type_labels[ $error['type'] ] )
+			? $error_type_labels[ $error['type'] ]
+			: 'Error';
+
+		$message  = "PHP {$error_type}: {$error['message']}";
+		$message .= "\n  in {$error['file']} on line {$error['line']}";
+
+		// Add simplified stacktrace if available
+		if ( function_exists( 'wp_debug_backtrace_summary' ) ) {
+			$backtrace = wp_debug_backtrace_summary( __CLASS__ );
+			if ( ! empty( $backtrace ) ) {
+				$message .= "\n\nStack trace:\n  " . $backtrace;
+			}
 		}
 
 		return $message;
