@@ -138,11 +138,11 @@ Feature: Runner WP-CLI
        */
       WP_CLI::add_command( 'test-exception', function() {
         throw new \Exception( 'Test exception message' );
-      });
+      }, array( 'when' => 'before_wp_load' ) );
 
       WP_CLI::add_command( 'test-runtime-exception', function() {
         throw new \RuntimeException( 'Test runtime exception message' );
-      });
+      }, array( 'when' => 'before_wp_load' ) );
       """
 
     When I try `wp --require=test-exception.php test-exception`
