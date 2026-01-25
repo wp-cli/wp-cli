@@ -204,6 +204,46 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -i 'identityfile.key' -T -vvv
       """
 
+  Scenario: Connection-specific properties are not passed to remote WP-CLI
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        proxyjump: proxyhost
+        key: identityfile.key
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -J 'proxyhost' -i 'identityfile.key' -T -vvv
+      """
+    And STDERR should not contain:
+      """
+      WP_CLI_RUNTIME_ALIAS
+      """
+
+  Scenario: WordPress-specific properties are passed to remote WP-CLI
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        user: admin
+        path: /var/www/html
+      """
+
+    When I try `wp @foo --debug core version`
+    Then STDERR should contain:
+      """
+      WP_CLI_RUNTIME_ALIAS
+      """
+    And STDERR should contain:
+      """
+      @foo
+      """
+
   Scenario: Add an alias
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
