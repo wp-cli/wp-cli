@@ -47,43 +47,56 @@ class ShutdownHandler {
 			return wp_strip_all_tags( $message );
 		}
 
-		$message = 'There has been a critical error on this website.';
+		$message = "\nThere has been a critical error on this website.";
 
-		$suggestion = self::get_error_suggestion( $error );
-
-		if ( $suggestion ) {
-			$message .= "\n\n" . $suggestion;
-		} else {
-			$message  = "\n\nThis error may have been caused by a theme or plugin.";
-			$message .= 'To skip all plugins and themes, run the command again with:';
-			$message .= "\n  --skip-plugins --skip-themes";
-		}
-
-		return $message;
-	}
-
-	/**
-	 * Analyze the error and provide a helpful suggestion.
-	 *
-	 * @param array $error Error information from error_get_last().
-	 * @return string|null Suggestion message, or null if no suggestion available.
-	 */
-	private static function get_error_suggestion( $error ) {
 		$file = $error['file'];
 
-		// Try to identify if the error is from a plugin
 		$plugin = self::identify_plugin( $file );
+		$theme  = self::identify_theme( $file );
+		$skip   = '--skip-plugins --skip-themes';
 		if ( $plugin ) {
-			return self::format_suggestion( 'plugin', $plugin );
+			$message .= "\n\nThis error may have been caused by the plugin {$plugin}.";
+			$message .= "\nTo skip this plugin, run the command again with:";
+			$message .= "\n  --skip-plugins={$plugin}";
+
+			$skip = [ 'skip-plugins' => $plugin ];
+		} elseif ( 'functions.php' === $theme ) {
+			$message .= "\n\nAn unexpected functions.php file in the themes directory may have caused this internal server error.";
+
+			// This error cannot be skipped with `--skip-themes`.
+			return $message;
+		} elseif ( $theme ) {
+			$message .= "\n\nThis error may have been caused by the theme {$theme}.";
+			$message .= "\nTo skip this theme, run the command again with:";
+			$message .= "\n  --skip-themes={$theme}";
+
+			$skip = [ 'skip-themes' => $theme ];
+		} else {
+			$message .= "\n\nThis error may have been caused by a theme or plugin.";
+			$message .= "\nTo skip all plugins and themes, run the command again with:";
+			$message .= "\n  --skip-plugins --skip-themes";
+			$skip     = [
+				'skip-plugins' => true,
+				'skip-themes'  => true,
+			];
 		}
 
-		// Try to identify if the error is from a theme
-		$theme = self::identify_theme( $file );
-		if ( $theme ) {
-			return self::format_suggestion( 'theme', $theme );
+		if ( ! self::should_prompt_rerun() ) {
+			return $message;
 		}
 
-		return null;
+		WP_CLI::add_wp_hook(
+			'wp_die_handler',
+			function () use ( $skip ) {
+				return static function ( $wp_error ) use ( $skip ) {
+					WP_CLI::error( $wp_error->get_error_message(), false );
+
+					self::prompt_and_rerun( $skip );
+				};
+			}
+		);
+
+		return $message;
 	}
 
 	/**
@@ -197,28 +210,6 @@ class ShutdownHandler {
 	}
 
 	/**
-	 * Format a suggestion message for a component error.
-	 *
-	 * @param string $type Component type ('plugin' or 'theme').
-	 * @param string $slug Component slug.
-	 * @return string Formatted suggestion message.
-	 */
-	private static function format_suggestion( $type, $slug ) {
-		$message  = "This error may have been caused by the '{$slug}' {$type}.";
-		$message .= "\nTo skip this {$type}, run the command again with:";
-		$message .= "\n  --skip-{$type}s={$slug}";
-
-		// Check if we should offer to rerun the command automatically
-		$should_prompt = self::should_prompt_rerun();
-
-		if ( $should_prompt ) {
-			self::prompt_and_rerun( $type, $slug );
-		}
-
-		return $message;
-	}
-
-	/**
 	 * Check if we should prompt the user to rerun the command.
 	 *
 	 * @return bool
@@ -239,16 +230,15 @@ class ShutdownHandler {
 	/**
 	 * Prompt the user to rerun the command with the skip flag.
 	 *
-	 * @param string $type Component type ('plugin' or 'theme').
-	 * @param string $slug Component slug.
+	 * @param array<string, bool|string> $skip Skip flag(s) to append.
 	 */
-	private static function prompt_and_rerun( $type, $slug ) {
+	private static function prompt_and_rerun( $skip ) {
 		// Get environment variable to check default behavior
 		$skip_prompt = getenv( 'WP_CLI_SKIP_PROMPT' );
 
 		// If set to 'yes', automatically rerun without prompting
 		if ( 'yes' === $skip_prompt ) {
-			self::rerun_with_skip( $type, $slug );
+			self::rerun_with_skip( $skip );
 			return;
 		}
 
@@ -257,11 +247,20 @@ class ShutdownHandler {
 			return;
 		}
 
-		// Prompt the user
-		fwrite( STDERR, "\n" );
+		$skip_string = implode(
+			' ',
+			array_map(
+				static function ( $key, $value ) {
+					return is_bool( $value ) ? "--$key" : "--$key=$value";
+				},
+				array_keys( $skip ),
+				array_values( $skip )
+			)
+		);
+
 		try {
-			WP_CLI::confirm( "Would you like to run the command again with --skip-{$type}s={$slug}?" );
-			self::rerun_with_skip( $type, $slug );
+			WP_CLI::confirm( "\nWould you like to run the command again with $skip_string?" );
+			self::rerun_with_skip( $skip );
 		} catch ( \WP_CLI\ExitException $e ) {
 			// User declined or Ctrl+C - exit gracefully
 			WP_CLI::line( 'Command not rerun.' );
@@ -271,35 +270,30 @@ class ShutdownHandler {
 	/**
 	 * Rerun the current command with the skip flag.
 	 *
-	 * @param string $type Component type ('plugin' or 'theme').
-	 * @param string $slug Component slug.
+	 * @param array<string, bool|string> $skip Skip flag(s) to append.
 	 */
-	private static function rerun_with_skip( $type, $slug ) {
+	private static function rerun_with_skip( $skip ) {
 		$runner = WP_CLI::get_runner();
 
 		if ( ! $runner ) {
 			return;
 		}
 
-		// Get the original command arguments
 		$args       = $runner->arguments;
 		$assoc_args = $runner->assoc_args;
 
-		// Add the skip flag
-		$skip_flag = "skip-{$type}s";
-		if ( isset( $assoc_args[ $skip_flag ] ) ) {
-			// Already has skip flag, append to it
-			$existing                 = $assoc_args[ $skip_flag ];
-			$assoc_args[ $skip_flag ] = is_array( $existing )
-				? array_merge( $existing, [ $slug ] )
-				: $existing . ',' . $slug;
-		} else {
-			$assoc_args[ $skip_flag ] = $slug;
+		foreach ( $skip as $skip_flag => $slug ) {
+			if ( isset( $assoc_args[ $skip_flag ] ) && ! is_bool( $slug ) ) {
+				// Add slug to existing skip list.
+				$existing                  = $assoc_args[ $skip_flag ];
+				$assoc_args[ $skip_flag ] .= ',' . $slug;
+			} else {
+				$assoc_args[ $skip_flag ] = $slug;
+			}
 		}
 
-		WP_CLI::line( "\nRerunning command with --{$skip_flag}={$slug}..." );
+		WP_CLI::line( "\nRerunning command with --{$skip_flag}={$slug}...\n" );
 
-		// Rerun the command
 		try {
 			WP_CLI::run_command( $args, $assoc_args );
 		} catch ( \Exception $e ) {
