@@ -80,6 +80,12 @@ return [
 		'desc'    => 'Load WordPress in a given context.',
 	],
 
+	'locale'            => [
+		'runtime' => '=<locale>',
+		'file'    => '<locale>',
+		'desc'    => 'Set the locale for WP-CLI and WordPress (e.g., en_US, de_DE).',
+	],
+
 	'disabled_commands' => [
 		'file'    => '<list>',
 		'default' => [],

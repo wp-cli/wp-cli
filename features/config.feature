@@ -751,3 +751,25 @@ Feature: Have a config file
     When I run `wp core version`
     Then STDOUT should not be empty
     And the return code should be 0
+
+  Scenario: Set locale via config file
+    Given a WP installation
+    And a wp-cli.yml file:
+      """
+      locale: de_DE
+      """
+
+    When I run `wp eval 'echo get_locale();'`
+    Then STDOUT should be:
+      """
+      de_DE
+      """
+
+  Scenario: Set locale via runtime flag
+    Given a WP installation
+
+    When I run `wp --locale=fr_FR eval 'echo get_locale();'`
+    Then STDOUT should be:
+      """
+      fr_FR
+      """
