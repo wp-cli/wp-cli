@@ -91,6 +91,7 @@ class ShutdownHandler {
 				return static function ( $wp_error ) use ( $skip ) {
 					WP_CLI::error( $wp_error->get_error_message(), false );
 
+					// @phpstan-ignore deadCode.unreachable
 					self::prompt_and_rerun( $skip );
 				};
 			}
@@ -231,6 +232,8 @@ class ShutdownHandler {
 	 * Prompt the user to rerun the command with the skip flag.
 	 *
 	 * @param array<string, bool|string> $skip Skip flag(s) to append.
+	 *
+	 * @phpstan-ignore method.unused
 	 */
 	private static function prompt_and_rerun( $skip ) {
 		// Get environment variable to check default behavior
@@ -247,7 +250,25 @@ class ShutdownHandler {
 			return;
 		}
 
-		$skip_string = implode(
+		$skip_string = self::get_skip_string( $skip );
+
+		try {
+			WP_CLI::confirm( "\nWould you like to run the command again with $skip_string?" );
+			self::rerun_with_skip( $skip );
+		} catch ( \WP_CLI\ExitException $e ) {
+			// User declined or Ctrl+C - exit gracefully
+			WP_CLI::line( 'Command not rerun.' );
+		}
+	}
+
+	/**
+	 * Return a formatted --skip-[...] string.
+	 *
+	 * @param array<string, bool|string> $skip Skip flag(s) to append.
+	 * @return string
+	 */
+	private static function get_skip_string( $skip ) {
+		return implode(
 			' ',
 			array_map(
 				static function ( $key, $value ) {
@@ -257,14 +278,6 @@ class ShutdownHandler {
 				array_values( $skip )
 			)
 		);
-
-		try {
-			WP_CLI::confirm( "\nWould you like to run the command again with $skip_string?" );
-			self::rerun_with_skip( $skip );
-		} catch ( \WP_CLI\ExitException $e ) {
-			// User declined or Ctrl+C - exit gracefully
-			WP_CLI::line( 'Command not rerun.' );
-		}
 	}
 
 	/**
@@ -292,7 +305,9 @@ class ShutdownHandler {
 			}
 		}
 
-		WP_CLI::line( "\nRerunning command with --{$skip_flag}={$slug}...\n" );
+		$skip_string = self::get_skip_string( $skip );
+
+		WP_CLI::line( "\nRerunning command with {$skip_string}...\n" );
 
 		try {
 			WP_CLI::run_command( $args, $assoc_args );
