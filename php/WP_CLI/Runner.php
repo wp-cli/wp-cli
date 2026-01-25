@@ -7,7 +7,6 @@ use WP_CLI\Dispatcher;
 use WP_CLI\Dispatcher\CompositeCommand;
 use WP_CLI\Dispatcher\Subcommand;
 use WP_CLI\Fetchers;
-use WP_CLI\Iterators\Exception;
 use WP_CLI\Loggers;
 use WP_CLI\Utils;
 use WP_Error;
@@ -547,7 +546,7 @@ class Runner {
 		WP_CLI::debug( 'Running command: ' . $name, 'bootstrap' );
 		try {
 			$command->invoke( $final_args, $assoc_args, $extra_args );
-		} catch ( Exception $e ) {
+		} catch ( \Throwable $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}
 	}
