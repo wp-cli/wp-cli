@@ -774,11 +774,11 @@ class Runner {
 
 			// If we could not resolve the bits still, fallback to just `vagrant ssh`
 			if ( 'vagrant' === $bits['scheme'] ) {
-				$command = 'vagrant ssh %s-c %s %s';
+				$ssh_args_part = $ssh_args ? $ssh_args . ' ' : '';
+				$command       = "vagrant ssh {$ssh_args_part}-c %s %s";
 
 				$escaped_command = sprintf(
 					$command,
-					$ssh_args ? $ssh_args . ' ' : '',
 					escapeshellarg( $wp_command ),
 					escapeshellarg( $bits['host'] )
 				);
