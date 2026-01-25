@@ -1566,18 +1566,12 @@ class Runner {
 		// Set the locale if configured
 		if ( ! empty( $this->config['locale'] ) ) {
 			$locale = $this->config['locale'];
-			// Validate locale format: language code (2-3 chars), optional country code (_XX),
-			// and optional modifier (@xxx). Examples: en, en_US, de_DE, pt_BR, zh_CN@traditional
-			if ( is_string( $locale ) && preg_match( '/^[a-z]{2,3}(?:_[A-Z]{2})?(?:@[a-z]+)?$/', $locale ) ) {
-				WP_CLI::add_wp_hook(
-					'locale',
-					static function () use ( $locale ) {
-						return $locale;
-					}
-				);
-			} else {
-				WP_CLI::warning( sprintf( 'Invalid locale format: %s. Locale should follow the format "en_US" or similar.', $locale ) );
-			}
+			WP_CLI::add_wp_hook(
+				'locale',
+				static function () use ( $locale ) {
+					return $locale;
+				}
+			);
 		}
 
 		// Log WordPress HTTP API requests

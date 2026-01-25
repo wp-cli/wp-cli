@@ -773,20 +773,3 @@ Feature: Have a config file
       """
       fr_FR
       """
-
-  Scenario: Invalid locale format shows warning
-    Given a WP installation
-    And a wp-cli.yml file:
-      """
-      locale: invalid_locale_format_123
-      """
-
-    When I try `wp eval 'echo get_locale();'`
-    Then STDERR should contain:
-      """
-      Warning: Invalid locale format
-      """
-    And STDOUT should contain:
-      """
-      en_US
-      """
