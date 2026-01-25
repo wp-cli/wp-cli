@@ -631,7 +631,7 @@ class Runner {
 		}
 
 		foreach ( $wp_args as $k => $v ) {
-			if ( preg_match( '#--ssh=#', $v ) ) {
+			if ( preg_match( '#--ssh(|-args)=#', $v ) ) {
 				unset( $wp_args[ $k ] );
 			}
 		}
@@ -774,8 +774,11 @@ class Runner {
 
 			// If we could not resolve the bits still, fallback to just `vagrant ssh`
 			if ( 'vagrant' === $bits['scheme'] ) {
-				$ssh_args_part = $ssh_args ? $ssh_args . ' ' : '';
-				$command       = "vagrant ssh {$ssh_args_part}-c %s %s";
+				if ( $ssh_args ) {
+					$command = "vagrant ssh {$ssh_args} -c %s %s";
+				} else {
+					$command = 'vagrant ssh -c %s %s';
+				}
 
 				$escaped_command = sprintf(
 					$command,
