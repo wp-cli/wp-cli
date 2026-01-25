@@ -546,6 +546,9 @@ class Runner {
 		WP_CLI::debug( 'Running command: ' . $name, 'bootstrap' );
 		try {
 			$command->invoke( $final_args, $assoc_args, $extra_args );
+		} catch ( ExitException $e ) {
+			// Re-throw control-flow exceptions so callers can handle exit codes/output.
+			throw $e;
 		} catch ( \Throwable $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}
