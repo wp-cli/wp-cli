@@ -361,6 +361,27 @@ Feature: Global flags
       Running SSH command: docker exec --user 'user' 'wordpress' sh -c
       """
 
+  Scenario: SSH args should be passed to SSH command
+    When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh '-o ConnectTimeout=5' -T -vvv 'wordpress' 'wp
+      """
+
+  Scenario: Multiple SSH args should be passed to SSH command
+    When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --ssh-args="-o ServerAliveInterval=10" --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh '-o ConnectTimeout=5' '-o ServerAliveInterval=10' -T -vvv 'wordpress' 'wp
+      """
+
+  Scenario: SSH args should be passed to Docker command
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp --debug --ssh=docker:wordpress --ssh-args="--env MY_VAR=value" --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: docker exec '--env MY_VAR=value' 'wordpress' sh -c
+      """
+
   Scenario: Customize config-spec with WP_CLI_CONFIG_SPEC_FILTER_CALLBACK
     Given a WP installation
     And a wp-cli-early-require.php file:
