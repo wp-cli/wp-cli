@@ -95,26 +95,30 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * <key>
 	 * : Key for the alias.
 	 *
-	 * ## EXAMPLES
-	 *
-	 *     # Get alias.
-	 *     $ wp cli alias get @prod
-	 *     ssh: dev@somedeve.env:12345/home/dev/
-	 *
-	 * @param array{string} $args Positional arguments.
+	 * [<property>]
+	 * : Property to get from the alias.
 	 */
-	public function get( $args ) {
+	public function get( $args, $assoc_args ) {
 		list( $alias ) = $args;
+		$property      = isset( $args[1] ) ? $args[1] : null;
 
 		$aliases = WP_CLI::get_runner()->aliases;
-
-		if ( empty( $aliases[ $alias ] ) ) {
+		if ( ! isset( $aliases[ $alias ] ) ) {
 			WP_CLI::error( "No alias found with key '{$alias}'." );
 		}
 
-		foreach ( $aliases[ $alias ] as $key => $value ) {
-			WP_CLI::log( "{$key}: {$value}" );
+		$config = $aliases[ $alias ];
+
+		if ( $property ) {
+			if ( ! isset( $config[ $property ] ) ) {
+				WP_CLI::error( "Property '{$property}' does not exist for alias '{$alias}'." );
+			}
+			WP_CLI::line( $config[ $property ] );
+			return;
 		}
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_items( $config );
 	}
 
 	/**
