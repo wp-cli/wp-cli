@@ -733,7 +733,7 @@ class Runner {
 
 		// For "vagrant" & "ssh" schemes which don't provide a working-directory option, use `cd`
 		if ( $bits['path'] ) {
-			$wp_command = 'cd ' . escapeshellarg( $bits['path'] ) . '; ' . $wp_command;
+			$wp_command = 'cd ' . Utils\escapeshellarg_preserve_tilde( $bits['path'] ) . '; ' . $wp_command;
 		}
 
 		// Vagrant ssh-config.

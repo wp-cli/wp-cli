@@ -1169,4 +1169,21 @@ class UtilsTest extends TestCase {
 		// Test that tilde in the middle is not expanded
 		$this->assertEquals( '/path/to/~something', Utils\expand_tilde_path( '/path/to/~something' ) );
 	}
+
+	public function testEscapeshellargPreserveTilde() {
+		// Test that ~/ prefix is preserved and remainder is escaped
+		$this->assertEquals( "~/'sites/wordpress'", Utils\escapeshellarg_preserve_tilde( '~/sites/wordpress' ) );
+		$this->assertEquals( "~/'my documents/site'", Utils\escapeshellarg_preserve_tilde( '~/my documents/site' ) );
+		$this->assertEquals( "~/'path with spaces'", Utils\escapeshellarg_preserve_tilde( '~/path with spaces' ) );
+
+		// Test that paths without ~/ are fully escaped
+		$this->assertEquals( escapeshellarg( '/absolute/path' ), Utils\escapeshellarg_preserve_tilde( '/absolute/path' ) );
+		$this->assertEquals( escapeshellarg( 'relative/path' ), Utils\escapeshellarg_preserve_tilde( 'relative/path' ) );
+		$this->assertEquals( escapeshellarg( '/path with spaces' ), Utils\escapeshellarg_preserve_tilde( '/path with spaces' ) );
+
+		// Test that lone ~ or ~username are fully escaped (not expanded)
+		$this->assertEquals( escapeshellarg( '~' ), Utils\escapeshellarg_preserve_tilde( '~' ) );
+		$this->assertEquals( escapeshellarg( '~user' ), Utils\escapeshellarg_preserve_tilde( '~user' ) );
+		$this->assertEquals( escapeshellarg( '~user/path' ), Utils\escapeshellarg_preserve_tilde( '~user/path' ) );
+	}
 }
