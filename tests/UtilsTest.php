@@ -1181,7 +1181,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( escapeshellarg( 'relative/path' ), Utils\escapeshellarg_preserve_tilde( 'relative/path' ) );
 		$this->assertEquals( escapeshellarg( '/path with spaces' ), Utils\escapeshellarg_preserve_tilde( '/path with spaces' ) );
 
-		// Test that lone ~ or ~username are fully escaped (not expanded)
+		// Test that lone ~ or ~username patterns are fully escaped (only ~/ is expanded)
 		$this->assertEquals( escapeshellarg( '~' ), Utils\escapeshellarg_preserve_tilde( '~' ) );
 		$this->assertEquals( escapeshellarg( '~user' ), Utils\escapeshellarg_preserve_tilde( '~user' ) );
 		$this->assertEquals( escapeshellarg( '~user/path' ), Utils\escapeshellarg_preserve_tilde( '~user/path' ) );

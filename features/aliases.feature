@@ -215,7 +215,11 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo --debug --version`
     Then STDERR should contain:
       """
-      cd ~/
+      'cd ~/
+      """
+    And STDERR should contain:
+      """
+      sites/example.com/www
       """
 
   Scenario: Add an alias
