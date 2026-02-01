@@ -1199,11 +1199,15 @@ class Runner {
 		}
 		$config_path = escapeshellarg( $config_path );
 
+		// Exclude 'quiet' from runtime config for subprocesses to allow command output.
+		$subprocess_runtime_config = $this->runtime_config;
+		unset( $subprocess_runtime_config['quiet'] );
+
 		foreach ( $aliases as $alias ) {
 			WP_CLI::log( $alias );
 			$args           = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
 			$assoc_args     = Utils\assoc_args_to_str( $this->assoc_args );
-			$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
+			$runtime_config = Utils\assoc_args_to_str( $subprocess_runtime_config );
 			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
 			$pipes          = [];
 			$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
