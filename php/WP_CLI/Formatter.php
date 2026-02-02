@@ -85,7 +85,30 @@ class Formatter {
 	 * Display multiple items according to the output arguments.
 	 *
 	 * @param iterable   $items               The items to display.
-	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `format()` if items in the table are pre-colorized. Default false.
+	 * @param bool|array $ascii_pre_colorized Optional. Whether the items in the table contain pre-colorized content.
+	 *                                         When displaying table content that has been processed through WP_CLI::colorize(),
+	 *                                         this parameter must be set to inform the table renderer that ANSI color codes
+	 *                                         are present. This is necessary for accurate column width calculations, as color
+	 *                                         codes add extra (invisible) characters that would otherwise cause misalignment.
+	 *
+	 *                                         Can be:
+	 *                                         - `false` (default): No pre-colorized content in any column.
+	 *                                         - `true`: All columns contain pre-colorized content.
+	 *                                         - `array`: Specific columns contain pre-colorized content. Array keys are
+	 *                                           column indices (0-based), and values are booleans indicating whether that
+	 *                                           column is pre-colorized. Example: `array( 0 => true, 2 => true )` indicates
+	 *                                           the first and third columns are pre-colorized.
+	 *
+	 *                                         Example usage with colorized content:
+	 *                                         ```
+	 *                                         $items = array(
+	 *                                             array(
+	 *                                                 'name'   => WP_CLI::colorize( '%Gmy-plugin%n' ),
+	 *                                                 'status' => WP_CLI::colorize( '%gactive%n' ),
+	 *                                             ),
+	 *                                         );
+	 *                                         $formatter->display_items( $items, true );
+	 *                                         ```
 	 */
 	public function display_items( $items, $ascii_pre_colorized = false ) {
 		if ( $this->args['field'] ) {
@@ -117,7 +140,27 @@ class Formatter {
 	 * Display a single item according to the output arguments.
 	 *
 	 * @param mixed      $item
-	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_multiple_fields()` if the item in the table is pre-colorized. Default false.
+	 * @param bool|array $ascii_pre_colorized Optional. Whether the item fields contain pre-colorized content.
+	 *                                         When displaying an item with fields that have been processed through
+	 *                                         WP_CLI::colorize(), this parameter must be set to inform the table renderer
+	 *                                         that ANSI color codes are present. This ensures accurate column width
+	 *                                         calculations when rendering the item in table format.
+	 *
+	 *                                         Can be:
+	 *                                         - `false` (default): No pre-colorized content in any field.
+	 *                                         - `true`: All fields contain pre-colorized content.
+	 *                                         - `array`: Specific fields contain pre-colorized content. Array keys are
+	 *                                           field indices (0-based), and values are booleans. Example:
+	 *                                           `array( 0 => true, 1 => false )` indicates the first field is pre-colorized.
+	 *
+	 *                                         Example usage:
+	 *                                         ```
+	 *                                         $item = array(
+	 *                                             'title'  => WP_CLI::colorize( '%BImportant Title%n' ),
+	 *                                             'status' => WP_CLI::colorize( '%rError%n' ),
+	 *                                         );
+	 *                                         $formatter->display_item( $item, true );
+	 *                                         ```
 	 */
 	public function display_item( $item, $ascii_pre_colorized = false ) {
 		if ( isset( $this->args['field'] ) ) {
@@ -167,7 +210,8 @@ class Formatter {
 	 * Format items according to arguments.
 	 *
 	 * @param iterable   $items               Items.
-	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if items in the table are pre-colorized. Default false.
+	 * @param bool|array $ascii_pre_colorized Optional. Whether items contain pre-colorized content. Passed to
+	 *                                         `show_table()` when rendering in table format. Default false.
 	 */
 	private function format( $items, $ascii_pre_colorized = false ): void {
 		$fields = $this->args['fields'];
@@ -294,7 +338,8 @@ class Formatter {
 	 *
 	 * @param iterable   $data                Data to display
 	 * @param string     $format              Format to display the data in
-	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if the item in the table is pre-colorized. Default false.
+	 * @param bool|array $ascii_pre_colorized Optional. Whether data fields contain pre-colorized content. Passed to
+	 *                                         `show_table()` when rendering in table format. Default false.
 	 */
 	private function show_multiple_fields( $data, $format, $ascii_pre_colorized = false ): void {
 
@@ -353,7 +398,9 @@ class Formatter {
 	 *
 	 * @param iterable   $items               Items.
 	 * @param array      $fields              Fields.
-	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `Table::setAsciiPreColorized()` if items in the table are pre-colorized. Default false.
+	 * @param bool|array $ascii_pre_colorized Optional. Whether items contain pre-colorized content. Passed to
+	 *                                         `Table::setAsciiPreColorized()` for accurate column width calculations
+	 *                                         when ANSI color codes are present. Default false.
 	 */
 	private function show_table( $items, $fields, $ascii_pre_colorized = false ) {
 		$table = new Table();
