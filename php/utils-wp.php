@@ -191,13 +191,14 @@ function maybe_require( $since, $path ) {
 /**
  * @template T of \WP_Upgrader
  *
- * @param class-string<T> $class_name
- * @param bool         $insecure
+ * @param class-string<T>   $class_name Class name.
+ * @param bool              $insecure Optional. Default false.
+ * @param \WP_Upgrader_Skin $skin. Optional. Upgrader skin. Default \WP_CLI\UpgraderSkin.
  *
  * @return T Upgrader instance.
  * @throws \ReflectionException
  */
-function get_upgrader( $class_name, $insecure = false ) {
+function get_upgrader( $class_name, $insecure = false, $skin = null ) {
 	if ( ! class_exists( '\WP_Upgrader' ) ) {
 		if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' ) ) {
 			include ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
@@ -229,7 +230,7 @@ function get_upgrader( $class_name, $insecure = false ) {
 		/**
 		 * @var T $result
 		 */
-		$result = new $class_name( new UpgraderSkin(), $insecure );
+		$result = new $class_name( $skin ?: new UpgraderSkin(), $insecure );
 
 		return $result;
 	}
@@ -237,7 +238,7 @@ function get_upgrader( $class_name, $insecure = false ) {
 	/**
 	 * @var T $result
 	 */
-	$result = new $class_name( new UpgraderSkin() );
+	$result = new $class_name( $skin ?: new UpgraderSkin() );
 
 	return $result;
 }
