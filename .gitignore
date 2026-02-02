@@ -14,3 +14,4 @@ composer.lock
 .phpunit.result.cache
 .phpunit.cache
 /build/logs
+!vendor/wp-cli/php-cli-tools/lib/cli/progress/Bar.php
