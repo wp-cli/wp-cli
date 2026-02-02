@@ -494,7 +494,7 @@ class CLI_Command extends WP_CLI_Command {
 		if ( ! $response->success || 200 !== $response->status_code ) {
 			$error_message = sprintf( 'Failed to get latest version (HTTP code %d).', $response->status_code );
 			if ( 403 === $response->status_code ) {
-				$error_message .= ' You may have exceeded the GitHub API rate limit.';
+				$error_message .= ' This is likely due to GitHub API rate limiting.';
 				if ( false === $github_token ) {
 					$error_message .= ' Try using a GITHUB_TOKEN environment variable to authenticate with GitHub and get a higher rate limit. See https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting for more information.';
 				}
