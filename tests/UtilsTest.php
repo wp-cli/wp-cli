@@ -1176,6 +1176,9 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( "~/'my documents/site'", Utils\escapeshellarg_preserve_tilde( '~/my documents/site' ) );
 		$this->assertEquals( "~/'path with spaces'", Utils\escapeshellarg_preserve_tilde( '~/path with spaces' ) );
 
+		// Test edge case: exactly ~/
+		$this->assertEquals( "~/''", Utils\escapeshellarg_preserve_tilde( '~/' ) );
+
 		// Test that paths without ~/ are fully escaped
 		$this->assertEquals( escapeshellarg( '/absolute/path' ), Utils\escapeshellarg_preserve_tilde( '/absolute/path' ) );
 		$this->assertEquals( escapeshellarg( 'relative/path' ), Utils\escapeshellarg_preserve_tilde( 'relative/path' ) );
