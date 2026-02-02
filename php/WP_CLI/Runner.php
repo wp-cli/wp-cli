@@ -1206,7 +1206,8 @@ class Runner {
 			$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
 			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
 			$pipes          = [];
-			$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
+			$env            = null;
+			$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes, null, $env );
 
 			if ( $proc ) {
 				proc_close( $proc );
