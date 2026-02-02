@@ -358,6 +358,13 @@ class Formatter {
 	private function show_table( $items, $fields, $ascii_pre_colorized = false ) {
 		$table = new Table();
 
+		// When format='table' is explicitly set, always use the Ascii renderer
+		// to ensure formatted table output with borders, regardless of whether
+		// output is piped or in a TTY. This provides consistent behavior and
+		// allows formatted tables in non-TTY environments like Docker/GitHub Actions.
+		// Users who want tab-separated output for piping should use --format=csv.
+		$table->setRenderer( new \cli\table\Ascii() );
+
 		$enabled = WP_CLI::get_runner()->in_color();
 		if ( $enabled ) {
 			Colors::disable( true );

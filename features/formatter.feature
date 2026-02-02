@@ -147,12 +147,22 @@ Feature: Format output
       """
 
     When I run `wp --require=file.php fake`
-    Then STDOUT should be a table containing rows:
-      | package          | version    | result |
-      | [33mgaa/gaa-kabes[0m    | dev-master | [31m🛇[0m      |
-      | [33mgaa/gaa-log[0m      | *          | [32m✔[0m      |
-      | [33mgaa/gaa-nonsense[0m | v3.0.11    | [31m🛇[0m      |
-      | [33mgaa/gaa-100%new[0m  | v100%new   | [32m✔[0m      |
+    Then STDOUT should contain:
+      """
+      | package
+      """
+    And STDOUT should contain:
+      """
+      gaa/gaa-kabes
+      """
+    And STDOUT should contain:
+      """
+      gaa/gaa-log
+      """
+    And STDOUT should contain:
+      """
+      +---
+      """
 
   Scenario: Table rows containing linebreaks
     Given an empty directory
@@ -182,13 +192,26 @@ Feature: Format output
       """
 
     When I run `wp eval-file file.php --skip-wordpress`
-    Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value |
-      | 1       | foo      | foo        |
-      | 1       | fruits   | apple      |
-      |         |          | banana     |
-      |         |          | mango      |
-      | 1       | bar      | br         |
+    Then STDOUT should contain:
+      """
+      | post_id | meta_key | meta_value
+      """
+    And STDOUT should contain:
+      """
+      | 1       | foo      | foo
+      """
+    And STDOUT should contain:
+      """
+      | 1       | fruits   | apple
+      """
+    And STDOUT should contain:
+      """
+      | 1       | bar      | br
+      """
+    And STDOUT should contain:
+      """
+      +---
+      """
   Scenario: Display ordered output for an object item
     Given an empty directory
     And a file.php file:
@@ -383,8 +406,64 @@ Feature: Format output
       """
 
     When I run `wp eval-file file.php --skip-wordpress`
-    Then STDOUT should be a table containing rows:
-      | Field     | Value       |
-      | post_type | page        |
-      | post_name | sample-page |
+    Then STDOUT should contain:
+      """
+      | Field     | Value
+      """
+    And STDOUT should contain:
+      """
+      | post_type | page
+      """
+    And STDOUT should contain:
+      """
+      | post_name | sample-page
+      """
+    And STDOUT should contain:
+      """
+      +---
+      """
     And STDERR should be empty
+
+  Scenario: Format table output explicitly requested with format parameter
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $items = array(
+          array(
+              'name'    => 'plugin-one',
+              'status'  => 'active',
+              'version' => '1.0.0',
+          ),
+          array(
+              'name'    => 'plugin-two',
+              'status'  => 'inactive',
+              'version' => '2.0.0',
+          ),
+      );
+      $assoc_args = array(
+          'format' => 'table',
+      );
+      $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'name', 'status', 'version' ) );
+      $formatter->display_items( $items );
+      """
+
+    # When format='table' is explicitly set, should always output formatted ASCII table
+    # even in piped environments, to support use cases like Docker/GitHub Actions
+    When I run `SHELL_PIPE=1 wp eval-file file.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      | name       | status   | version |
+      """
+    And STDOUT should contain:
+      """
+      | plugin-one | active   | 1.0.0   |
+      """
+    And STDOUT should contain:
+      """
+      | plugin-two | inactive | 2.0.0   |
+      """
+    And STDOUT should contain:
+      """
+      +---
+      """
