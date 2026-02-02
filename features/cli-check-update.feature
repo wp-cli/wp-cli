@@ -14,7 +14,15 @@ Feature: Check for updates
     When I try `wp cli check-update`
     Then STDERR should contain:
       """
-      Error: Failed to get latest version (HTTP code 403). This is likely due to GitHub API rate limiting. Try using a GITHUB_TOKEN environment variable to authenticate with GitHub and get a higher rate limit.
+      Failed to get latest version (HTTP code 403). This is likely due to GitHub API rate limiting.
+      """
+    And STDERR should contain:
+      """
+      Try using a GITHUB_TOKEN environment variable
+      """
+    And STDERR should contain:
+      """
+      https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting
       """
 
   Scenario: Provides error message when hitting GitHub rate limit with token
