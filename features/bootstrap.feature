@@ -546,14 +546,13 @@ Feature: Bootstrap WP-CLI
       <?php
       // Test that package autoloader is loaded after fallback autoloader
       // This ensures packages override phar-bundled versions
-      
       require_once __DIR__ . '/../../php/bootstrap.php';
-      
+
       $steps = \WP_CLI\get_bootstrap_steps();
-      
+
       $fallback_pos = array_search('WP_CLI\Bootstrap\IncludeFallbackAutoloader', $steps);
       $package_pos = array_search('WP_CLI\Bootstrap\IncludePackageAutoloader', $steps);
-      
+
       if ($package_pos > $fallback_pos) {
           echo "PASS: Package autoloader loads after fallback\n";
           exit(0);
