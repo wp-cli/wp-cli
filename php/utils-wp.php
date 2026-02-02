@@ -230,7 +230,7 @@ function get_upgrader( $class_name, $insecure = false, $skin = null ) {
 		/**
 		 * @var T $result
 		 */
-		$result = new $class_name( new UpgraderSkin(), $insecure );
+		$result = new $class_name( $skin ?: new UpgraderSkin(), $insecure );
 
 		return $result;
 	}
