@@ -92,11 +92,32 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <key>
+	 * <alias>
 	 * : Key for the alias.
 	 *
 	 * [<property>]
-	 * : Property to get from the alias.
+	 * : Specific property to get from the alias.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 *  ---
+	 * default: table
+	 * options:
+	 *  - table
+	 *  - json
+	 *  - yaml
+	 *  ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 * # Get the full configuration for an alias.
+	 * $ wp cli alias get @dev
+	 *
+	 * # Get a specific property for an alias.
+	 * $ wp cli alias get @dev path
+	 *
+	 * @param array $args Positional arguments.
+	 * @param array $assoc_args Associative arguments.
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $alias ) = $args;
@@ -113,12 +134,11 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			if ( ! isset( $config[ $property ] ) ) {
 				WP_CLI::error( "Property '{$property}' does not exist for alias '{$alias}'." );
 			}
-			WP_CLI::line( $config[ $property ] );
+			WP_CLI::print_value( $config[ $property ], $assoc_args );
 			return;
 		}
 
-		$formatter = $this->get_formatter( $assoc_args );
-		$formatter->display_items( $config );
+		WP_CLI::print_value( $config, $assoc_args );
 	}
 
 	/**
