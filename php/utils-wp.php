@@ -191,9 +191,9 @@ function maybe_require( $since, $path ) {
 /**
  * @template T of \WP_Upgrader
  *
- * @param class-string<T>   $class_name
- * @param bool              $insecure
- * @param \WP_Upgrader_Skin $skin
+ * @param class-string<T>   $class_name Class name.
+ * @param bool              $insecure Optional. Default false.
+ * @param \WP_Upgrader_Skin $skin. Optional. Upgrader skin. Default \WP_CLI\UpgraderSkin.
  *
  * @return T Upgrader instance.
  * @throws \ReflectionException
