@@ -4,6 +4,14 @@
 
 This feature adds support for customizable format strings to the `Bar` progress indicator, allowing developers to display step-based progress (e.g., "5/10") instead of or in addition to percentage-based progress (e.g., "50%").
 
+## Important Note
+
+This PR includes modifications to `vendor/wp-cli/php-cli-tools/lib/cli/progress/Bar.php`. Normally vendor files should not be tracked in version control. These changes are included here for demonstration purposes. The proper workflow would be to:
+
+1. Submit these changes to the upstream `wp-cli/php-cli-tools` repository
+2. Once accepted, update the dependency version in `composer.json`
+3. Run `composer update` to pull in the new version
+
 ## Changes Made
 
 ### Modified Files
