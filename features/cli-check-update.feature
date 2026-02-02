@@ -14,7 +14,7 @@ Feature: Check for updates
     When I try `wp cli check-update`
     Then STDERR should contain:
       """
-      Failed to get latest version (HTTP code 403). This is likely due to GitHub API rate limiting.
+      Failed to get latest version (HTTP code 403). This is due to GitHub API rate limiting.
       """
     And STDERR should contain:
       """
@@ -39,7 +39,7 @@ Feature: Check for updates
     When I try `GITHUB_TOKEN=test_token wp cli check-update`
     Then STDERR should contain:
       """
-      Error: Failed to get latest version (HTTP code 403). This is likely due to GitHub API rate limiting.
+      Error: Failed to get latest version (HTTP code 403). This is due to GitHub API rate limiting.
       """
     And STDERR should not contain:
       """
