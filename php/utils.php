@@ -305,7 +305,7 @@ function expand_tilde_path( $path ) {
  */
 function escapeshellarg_preserve_tilde( $arg ) {
 	// Check if argument starts with ~/
-	if ( isset( $arg[0] ) && '~' === $arg[0] && isset( $arg[1] ) && '/' === $arg[1] ) {
+	if ( substr( $arg, 0, 2 ) === '~/' ) {
 		// Extract everything after ~/
 		$remainder = substr( $arg, 2 );
 		// Return ~/ followed by the escaped remainder
