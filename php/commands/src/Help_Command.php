@@ -117,14 +117,13 @@ class Help_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Locate an executable binary by name using `which`.
+	 * Locate an executable binary or command by name using a platform-appropriate detector.
 	 *
-	 * If the binary requested is an alias instead of a binary, this function may return an emptystring.
-	 *
+	 * On Windows, this uses `where`, and on POSIX systems it uses `command -v`.
 	 * This may not work accurately in PowerShell.
 	 *
-	 * @param string $binary Name of the binary to be found
-	 * @return boolean True if this command has determined that the binary or other command exists.
+	 * @param string $binary Name of the binary or command to be found.
+	 * @return bool True if this command has determined that the binary or other command exists, false otherwise.
 	 */
 	public static function binary_exists( $binary ) {
 		if ( Utils\is_windows() ) {
