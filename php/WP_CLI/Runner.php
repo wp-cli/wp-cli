@@ -252,7 +252,7 @@ class Runner {
 		}
 
 		$wp_path_src = $matches[1] . $matches[2];
-		$wp_path_src = Utils\replace_path_consts( $wp_path_src, $index_path );
+		$wp_path_src = Utils\replace_path_constants( $wp_path_src, $index_path );
 
 		$wp_path = eval( "return $wp_path_src;" ); // phpcs:ignore Squiz.PHP.Eval.Discouraged
 
@@ -862,7 +862,7 @@ class Runner {
 			WP_CLI::error( 'Strange wp-config.php file: wp-settings.php is not loaded directly.' );
 		}
 
-		$source = Utils\replace_path_consts( $wp_config_code, $wp_config_path );
+		$source = Utils\replace_path_constants( $wp_config_code, $wp_config_path );
 		return (string) preg_replace( '|^\s*\<\?php\s*|', '', $source );
 	}
 

@@ -1128,7 +1128,7 @@ class UtilsTest extends TestCase {
 	public function testReplacePathConstsAddSlashes(): void {
 		$expected = "define( 'ABSPATH', dirname( 'C:\\\\Users\\\\test\'s\\\\site' ) . '/' );";
 		$source   = "define( 'ABSPATH', dirname( __FILE__ ) . '/' );";
-		$actual   = Utils\replace_path_consts( $source, "C:\Users\\test's\site" );
+		$actual   = Utils\replace_path_constants( $source, "C:\Users\\test's\site" );
 		$this->assertSame( $expected, $actual );
 	}
 

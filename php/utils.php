@@ -811,7 +811,7 @@ function is_windows() {
  * @param string $path The path to use instead of the magic constants.
  * @return string Adapted PHP code.
  */
-function replace_path_consts( $source, $path ) {
+function replace_path_constants( $source, $path ) {
 	// Solve issue with Windows allowing single quotes in account names.
 	$file = addslashes( $path );
 

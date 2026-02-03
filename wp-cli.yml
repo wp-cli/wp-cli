@@ -1,0 +1,3 @@
+@test:
+  path: /var/www/html
+  user: wp-dev
