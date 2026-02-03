@@ -148,14 +148,14 @@ Feature: Runner WP-CLI
     When I try `wp --require=test-exception.php test-exception`
     Then STDERR should contain:
       """
-      Error: Test exception message
+      Error: Exception: Test exception message
       """
     And the return code should be 1
 
     When I try `wp --require=test-exception.php test-runtime-exception`
     Then STDERR should contain:
       """
-      Error: Test runtime exception message
+      Error: RuntimeException: Test runtime exception message
       """
     And the return code should be 1
 

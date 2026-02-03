@@ -550,7 +550,7 @@ class Runner {
 			// Re-throw control-flow exceptions so callers can handle exit codes/output.
 			throw $e;
 		} catch ( \Throwable $e ) {
-			WP_CLI::error( $e->getMessage() );
+			WP_CLI::error( $e );
 		}
 	}
 
