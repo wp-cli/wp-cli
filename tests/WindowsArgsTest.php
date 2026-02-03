@@ -24,7 +24,7 @@ class WindowsArgsTest extends TestCase {
 		$method->setAccessible( true );
 
 		// Call the method
-		list( $result_args, ) = $method->invoke( null, $input_args, [] );
+		[ $result_args, $_ ] = $method->invoke( null, $input_args, [] );
 
 		// Verify the results
 		$this->assertCount( $expected_count, $result_args, 'Unexpected number of arguments' );
@@ -73,7 +73,13 @@ class WindowsArgsTest extends TestCase {
 				5,
 				[ 'post', 'delete', '123', '456', '789' ],
 			],
-			'Windows: leading/trailing spaces'                  => [
+			'Windows: normal case without leading/trailing spaces' => [
+				true,
+				[ 'post', 'delete', '123 456' ],
+				4,
+				[ 'post', 'delete', '123', '456' ],
+			],
+			'Windows: leading/trailing spaces prevent splitting' => [
 				true,
 				[ 'post', 'delete', '  123 456  ' ],
 				3,

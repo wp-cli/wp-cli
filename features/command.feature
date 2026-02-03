@@ -1752,6 +1752,9 @@ Feature: WP-CLI Commands
     And the return code should be 0
 
   Scenario: Space-separated numeric arguments should be split on Windows
+    # This test simulates Windows PowerShell behavior using WP_CLI_TEST_IS_WINDOWS=1
+    # which activates the argument splitting logic on Unix-like test environments.
+    # The actual behavior on Windows systems will be identical.
     Given an empty directory
     And a custom-cmd.php file:
       """
