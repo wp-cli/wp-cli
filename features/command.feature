@@ -1750,3 +1750,77 @@ Feature: WP-CLI Commands
       Success: afterload command executed
       """
     And the return code should be 0
+
+  Scenario: Space-separated numeric arguments should be split on Windows
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * Test command for space-separated arguments
+       *
+       * <ids>...
+       * : One or more IDs
+       *
+       * @when before_wp_load
+       */
+      function test_ids_command( $args ) {
+        WP_CLI::log( 'Number of arguments: ' . count( $args ) );
+        foreach ( $args as $id ) {
+          WP_CLI::log( 'ID: ' . $id );
+        }
+      }
+      WP_CLI::add_command( 'test-ids', 'test_ids_command' );
+      """
+
+    # Test on Windows with space-separated IDs as a single argument
+    When I run `WP_CLI_TEST_IS_WINDOWS=1 wp --require=custom-cmd.php test-ids "123 456 789"`
+    Then STDOUT should contain:
+      """
+      Number of arguments: 3
+      """
+    And STDOUT should contain:
+      """
+      ID: 123
+      """
+    And STDOUT should contain:
+      """
+      ID: 456
+      """
+    And STDOUT should contain:
+      """
+      ID: 789
+      """
+
+    # Test on Windows with single ID (should not be split)
+    When I run `WP_CLI_TEST_IS_WINDOWS=1 wp --require=custom-cmd.php test-ids 123`
+    Then STDOUT should contain:
+      """
+      Number of arguments: 1
+      """
+    And STDOUT should contain:
+      """
+      ID: 123
+      """
+
+    # Test on non-Windows (should pass through as-is)
+    When I run `WP_CLI_TEST_IS_WINDOWS=0 wp --require=custom-cmd.php test-ids "123 456"`
+    Then STDOUT should contain:
+      """
+      Number of arguments: 1
+      """
+    And STDOUT should contain:
+      """
+      ID: 123 456
+      """
+
+    # Test on Windows with mixed arguments (non-numeric strings should not be split)
+    When I run `WP_CLI_TEST_IS_WINDOWS=1 wp --require=custom-cmd.php test-ids "hello world"`
+    Then STDOUT should contain:
+      """
+      Number of arguments: 1
+      """
+    And STDOUT should contain:
+      """
+      ID: hello world
+      """

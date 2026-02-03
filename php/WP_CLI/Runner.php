@@ -874,6 +874,27 @@ class Runner {
 	 * @return array
 	 */
 	private static function back_compat_conversions( $args, $assoc_args ) {
+		// On Windows (PowerShell), command substitution like $(wp post list --format=ids)
+		// returns space-separated values as a single string argument instead of separate arguments.
+		// Split such arguments to maintain compatibility with Unix-like behavior.
+		if ( Utils\is_windows() ) {
+			$split_args = [];
+			foreach ( $args as $arg ) {
+				// Check if the argument contains space-separated numeric IDs
+				// We only split if the entire argument matches the pattern of space-separated numbers
+				if ( is_string( $arg ) && preg_match( '/^\d+(\s+\d+)+$/', $arg ) ) {
+					// Split on whitespace and add each ID as a separate argument
+					$ids = preg_split( '/\s+/', $arg, -1, PREG_SPLIT_NO_EMPTY );
+					if ( false !== $ids ) {
+						$split_args = array_merge( $split_args, $ids );
+					}
+				} else {
+					$split_args[] = $arg;
+				}
+			}
+			$args = $split_args;
+		}
+
 		$top_level_aliases = [
 			'sql'  => 'db',
 			'blog' => 'site',
