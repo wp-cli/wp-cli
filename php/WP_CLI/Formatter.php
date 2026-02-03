@@ -101,6 +101,7 @@ class Formatter {
 	 *
 	 *                                         Example usage with colorized content:
 	 *                                         ```
+	 *                                         // All columns are colorized
 	 *                                         $items = array(
 	 *                                             array(
 	 *                                                 'name'   => WP_CLI::colorize( '%Gmy-plugin%n' ),
@@ -108,6 +109,16 @@ class Formatter {
 	 *                                             ),
 	 *                                         );
 	 *                                         $formatter->display_items( $items, true );
+	 *
+	 *                                         // Only specific columns are colorized (columns 0 and 2)
+	 *                                         $items = array(
+	 *                                             array(
+	 *                                                 'name'    => WP_CLI::colorize( '%Gmy-plugin%n' ),
+	 *                                                 'version' => '1.0.0',
+	 *                                                 'status'  => WP_CLI::colorize( '%gactive%n' ),
+	 *                                             ),
+	 *                                         );
+	 *                                         $formatter->display_items( $items, array( 0 => true, 2 => true ) );
 	 *                                         ```
 	 */
 	public function display_items( $items, $ascii_pre_colorized = false ) {
@@ -155,11 +166,20 @@ class Formatter {
 	 *
 	 *                                         Example usage:
 	 *                                         ```
+	 *                                         // All fields are colorized
 	 *                                         $item = array(
 	 *                                             'title'  => WP_CLI::colorize( '%BImportant Title%n' ),
 	 *                                             'status' => WP_CLI::colorize( '%rError%n' ),
 	 *                                         );
 	 *                                         $formatter->display_item( $item, true );
+	 *
+	 *                                         // Only specific fields are colorized (first and third fields)
+	 *                                         $item = array(
+	 *                                             'title'       => WP_CLI::colorize( '%BImportant Title%n' ),
+	 *                                             'description' => 'A plain text description',
+	 *                                             'status'      => WP_CLI::colorize( '%rError%n' ),
+	 *                                         );
+	 *                                         $formatter->display_item( $item, array( 0 => true, 2 => true ) );
 	 *                                         ```
 	 */
 	public function display_item( $item, $ascii_pre_colorized = false ) {
