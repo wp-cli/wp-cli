@@ -1583,6 +1583,37 @@ Feature: WP-CLI Commands
       """
     And STDERR should be empty
 
+  Scenario: Debug output differentiates between commands and namespaces
+    Given an empty directory
+    And a command-and-namespace.php file:
+      """
+      <?php
+      /**
+       * My Command Namespace Description.
+       */
+      class My_Command_Namespace extends \WP_CLI\Dispatcher\CommandNamespace {}
+
+      /**
+       * My Actual Command.
+       */
+      class My_Actual_Command extends WP_CLI_Command {
+        public function test() {}
+      }
+
+      WP_CLI::add_command( 'my-namespace', 'My_Command_Namespace' );
+      WP_CLI::add_command( 'my-command', 'My_Actual_Command' );
+      """
+
+    When I run `wp --debug --require=command-and-namespace.php help 2>&1`
+    Then STDOUT should contain:
+      """
+      Adding namespace: my-namespace
+      """
+    And STDOUT should contain:
+      """
+      Adding command: my-command
+      """
+
   Scenario: Late-registered command should appear in command usage
     Given a WP installation
     And a test-cmd.php file:
@@ -1672,3 +1703,50 @@ Feature: WP-CLI Commands
       """
       Hello
       """
+
+  Scenario: Autocorrect should not suggest wrong commands for after_wp_load registered commands
+    Given a WP installation
+    And a wp-content/mu-plugins/test-cli.php file:
+      """
+      <?php
+      // Plugin Name: Test CLI After Load
+
+      add_action( 'cli_init', function(){
+        WP_CLI::add_command( 'afterload', function () {
+          \WP_CLI::success( 'afterload command executed' );
+        });
+      });
+      """
+    And a session_no file:
+      """
+      n
+      """
+
+    # The command should work when run correctly
+    When I run `wp afterload`
+    Then STDOUT should contain:
+      """
+      Success: afterload command executed
+      """
+    And the return code should be 0
+
+    # Test with a typo - it should not suggest wrong alternatives
+    # before WordPress loads. This is the regression we're fixing.
+    When I try `wp afterloa < session_no`
+    Then STDERR should contain:
+      """
+      Warning: 'afterloa' is not a registered wp command.
+      """
+    # It should suggest 'afterload' not other commands like 'post'
+    And STDOUT should contain:
+      """
+      Did you mean 'afterload'?
+      """
+
+    # Test with autocorrect enabled
+    When I try `WP_CLI_AUTOCORRECT=1 wp afterloa`
+    Then STDOUT should contain:
+      """
+      Success: afterload command executed
+      """
+    And the return code should be 0

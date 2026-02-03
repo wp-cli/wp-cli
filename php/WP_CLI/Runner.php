@@ -116,8 +116,10 @@ class Runner {
 		}
 
 		// Search the value of @when from the command method.
+		// Use 'none' for autocorrect to avoid suggesting wrong alternatives
+		// for commands that may be registered later (e.g., via after_wp_load).
 		$real_when = '';
-		$r         = $this->find_command_to_run( $this->arguments, getenv( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
+		$r         = $this->find_command_to_run( $this->arguments, 'none' );
 		if ( is_array( $r ) ) {
 			list( $command, $final_args, $cmd_path ) = $r;
 
@@ -376,7 +378,7 @@ class Runner {
 	 *
 	 * @param array $args
 	 * @param string $autocorrect Whether to autocorrect commands based on suggestions.
-	 * @return array|string Command, args, and path on success; error message on failure
+	 * @return array{0: CompositeCommand, 1: array, 2: array}|string Command, args, and path on success; error message on failure
 	 *
 	 * @phpstan-param 'none'|'confirm'|'auto' $autocorrect
 	 */
@@ -1288,6 +1290,15 @@ class Runner {
 			return;
 		}
 
+		// Log WP-CLI HTTP requests
+		WP_CLI::add_hook(
+			'http_request_options',
+			static function ( $options, $method, $url ) {
+				WP_CLI::debug( sprintf( 'HTTP %s request to %s', $method, $url ), 'http' );
+				return $options;
+			}
+		);
+
 		// Handle --path parameter
 		self::set_wp_root( $this->find_wp_root() );
 
@@ -1310,8 +1321,7 @@ class Runner {
 
 		$this->do_early_invoke( 'before_wp_load' );
 
-		// Second try at showing man page - in case a misspelled command was corrected
-		// in do_early_invoke -> find_command_to_run.
+		// Second try at showing man page for help commands.
 		if ( $this->cmd_starts_with( [ 'help' ] )
 			&& ( ! $this->wp_exists()
 				|| ! Utils\locate_wp_config()
@@ -1552,6 +1562,18 @@ class Runner {
 		if ( $this->config['skip-themes'] ) {
 			WP_CLI::add_wp_hook( 'setup_theme', [ $this, 'action_setup_theme_wp_cli_skip_themes' ], 999 );
 		}
+
+		// Log WordPress HTTP API requests
+		WP_CLI::add_wp_hook(
+			'pre_http_request',
+			static function ( $response, $args, $url ) {
+				$method = isset( $args['method'] ) ? $args['method'] : 'GET';
+				WP_CLI::debug( sprintf( 'HTTP %s request to %s', $method, $url ), 'http' );
+				return $response;
+			},
+			10,
+			3
+		);
 
 		if ( $this->cmd_starts_with( [ 'help' ] ) ) {
 			// Try to trap errors on help.

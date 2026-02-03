@@ -37,7 +37,10 @@ class Help_Command extends WP_CLI_Command {
 	}
 
 	private static function show_help( $command ) {
-		$out = self::get_initial_markdown( $command );
+		// Parse reference links once for the entire longdesc
+		$longdesc_with_links = self::parse_reference_links( $command->get_longdesc() );
+
+		$out = self::get_initial_markdown( $command, $longdesc_with_links );
 
 		// Remove subcommands if in columns - will wordwrap separately.
 		$subcommands       = '';
@@ -48,7 +51,9 @@ class Help_Command extends WP_CLI_Command {
 			$out                = substr_replace( $out, $subcommands_header, $matches[1][1], strlen( $subcommands ) );
 		}
 
-		$out .= self::parse_reference_links( $command->get_longdesc() );
+		// Extract only the sections part (OPTIONS, EXAMPLES, etc.)
+		$longdesc_sections = self::get_longdesc_sections( $longdesc_with_links );
+		$out              .= $longdesc_sections;
 
 		// Definition lists.
 		$out = (string) preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', [ __CLASS__, 'rewrap_param_desc' ], $out );
@@ -215,7 +220,7 @@ class Help_Command extends WP_CLI_Command {
 		return $process ? proc_close( $process ) : -1;
 	}
 
-	private static function get_initial_markdown( $command ) {
+	private static function get_initial_markdown( $command, $longdesc_with_links = null ) {
 		$name = implode( ' ', Dispatcher\get_path( $command ) );
 
 		$binding = [
@@ -237,6 +242,15 @@ class Help_Command extends WP_CLI_Command {
 			} else {
 				$binding['shortdesc'] .= "\n\nThis command runs on the '$hook_name' hook, $hook_description";
 			}
+		}
+
+		// Add description paragraphs from longdesc to shortdesc for DESCRIPTION section
+		if ( null === $longdesc_with_links ) {
+			$longdesc_with_links = self::parse_reference_links( $command->get_longdesc() );
+		}
+		$longdesc_description = self::get_longdesc_description( $longdesc_with_links );
+		if ( $longdesc_description ) {
+			$binding['shortdesc'] .= "\n\n" . $longdesc_description;
 		}
 
 		if ( $command->can_have_subcommands() ) {
@@ -286,16 +300,10 @@ class Help_Command extends WP_CLI_Command {
 	 * @return string The longdescription which has links as footnote.
 	 */
 	private static function parse_reference_links( $longdesc ) {
-		$description = '';
-		foreach ( explode( "\n", $longdesc ) as $line ) {
-			if ( 0 === strpos( $line, '#' ) ) {
-				break;
-			}
-			$description .= $line . "\n";
-		}
+		$description = self::extract_before_sections( $longdesc );
 
-		// Fires if it has description text at the head of `$longdesc`.
-		if ( $description ) {
+		// Process if there is description text at the head of `$longdesc`.
+		if ( trim( $description ) ) {
 			$links   = []; // An array of URLs from the description.
 			$pattern = '/\[.+?\]\((https?:\/\/.+?)\)/';
 			$newdesc = (string) preg_replace_callback(
@@ -322,5 +330,54 @@ class Help_Command extends WP_CLI_Command {
 		}
 
 		return $longdesc;
+	}
+
+	/**
+	 * Extract description paragraphs from longdesc (content before first section header).
+	 *
+	 * @param  string $longdesc The longdescription from the command.
+	 * @return string The description paragraphs only.
+	 */
+	private static function get_longdesc_description( $longdesc ) {
+		return trim( self::extract_before_sections( $longdesc ) );
+	}
+
+	/**
+	 * Extract section content from longdesc (content from first section header onwards).
+	 *
+	 * @param  string $longdesc The longdescription from the command.
+	 * @return string The section content only (OPTIONS, EXAMPLES, etc.).
+	 */
+	private static function get_longdesc_sections( $longdesc ) {
+		$sections    = '';
+		$in_sections = false;
+		foreach ( explode( "\n", $longdesc ) as $line ) {
+			if ( ! $in_sections && 0 === strpos( $line, '##' ) ) {
+				$in_sections = true;
+			}
+			if ( $in_sections ) {
+				$sections .= $line . "\n";
+			}
+		}
+
+		return $sections;
+	}
+
+	/**
+	 * Extract content before first section header (##).
+	 *
+	 * @param  string $text The text to extract from.
+	 * @return string Content before first section header.
+	 */
+	private static function extract_before_sections( $text ) {
+		$before_sections = '';
+		foreach ( explode( "\n", $text ) as $line ) {
+			if ( 0 === strpos( $line, '##' ) ) {
+				break;
+			}
+			$before_sections .= $line . "\n";
+		}
+
+		return $before_sections;
 	}
 }
