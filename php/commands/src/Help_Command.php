@@ -132,7 +132,7 @@ class Help_Command extends WP_CLI_Command {
 		// Common pagers that don't support colors: more, pg, cat.
 		// Pagers with color support typically use -R flag (less -R, most -R).
 		if ( ! preg_match( '/(-R|--RAW-CONTROL-CHARS|--raw-control-chars)/i', $pager )
-			&& preg_match( '/(^|\s)(more|pg|cat)(\s|$)/i', $pager ) ) {
+			&& preg_match( '/(^|[\s\/])(more|pg|cat)(\s|$)/i', $pager ) ) {
 			$out = \cli\Colors::decolorize( $out );
 			WP_CLI::debug( 'Stripping ANSI color codes for pager without color support: ' . $pager, 'help' );
 		}
