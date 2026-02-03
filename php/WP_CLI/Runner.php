@@ -663,11 +663,26 @@ class Runner {
 		$escaped_command = '';
 
 		// Get additional SSH arguments if provided.
-		$ssh_args_config = WP_CLI::get_config( 'ssh-args' );
-		$ssh_args        = is_array( $ssh_args_config ) && ! empty( $ssh_args_config )
-			? implode( ' ', array_map( 'escapeshellarg', $ssh_args_config ) )
-			: '';
+		$ssh_args_config  = WP_CLI::get_config( 'ssh-args' );
+		$ssh_args_tokens  = [];
 
+		if ( is_array( $ssh_args_config ) && ! empty( $ssh_args_config ) ) {
+			foreach ( $ssh_args_config as $arg ) {
+				if ( null === $arg || '' === $arg ) {
+					continue;
+				}
+
+				foreach ( Utils\parse_str_to_argv( $arg ) as $token ) {
+					$ssh_args_tokens[] = escapeshellarg( $token );
+				}
+			}
+		} elseif ( is_string( $ssh_args_config ) && '' !== $ssh_args_config ) {
+			foreach ( Utils\parse_str_to_argv( $ssh_args_config ) as $token ) {
+				$ssh_args_tokens[] = escapeshellarg( $token );
+			}
+		}
+
+		$ssh_args = implode( ' ', $ssh_args_tokens );
 		// Set default values.
 		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump' ] as $bit ) {
 			if ( ! isset( $bits[ $bit ] ) ) {
