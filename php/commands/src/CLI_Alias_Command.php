@@ -134,7 +134,15 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			if ( ! isset( $config[ $property ] ) ) {
 				WP_CLI::error( "Property '{$property}' does not exist for alias '{$alias}'." );
 			}
-			WP_CLI::print_value( $config[ $property ], $assoc_args );
+
+			$value = $config[ $property ];
+
+			// If no specific format is requested, or it's 'table', output raw value for scripting.
+			if ( empty( $assoc_args['format'] ) || 'table' === $assoc_args['format'] ) {
+				WP_CLI::log( $value );
+			} else {
+				WP_CLI::print_value( $value, $assoc_args );
+			}
 			return;
 		}
 
