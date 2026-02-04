@@ -1319,6 +1319,11 @@ class Runner {
 			WP_CLI::set_url( $url );
 		}
 
+		// Handle --assume-https parameter
+		if ( ! empty( $this->config['assume-https'] ) ) {
+			$_SERVER['HTTPS'] = 'on';
+		}
+
 		$this->do_early_invoke( 'before_wp_load' );
 
 		// Second try at showing man page for help commands.
@@ -1787,76 +1792,6 @@ class Runner {
 				}
 				return $from_email;
 			}
-		);
-
-		// Don't apply set_url_scheme in get_home_url(), get_site_url(), network_home_url(), or network_site_url().
-		WP_CLI::add_wp_hook(
-			'home_url',
-			static function ( $url, $path, $scheme, $blog_id ) {
-				if ( empty( $blog_id ) || ! is_multisite() ) {
-					$url = get_option( 'home' );
-				} else {
-					switch_to_blog( $blog_id );
-					$url = get_option( 'home' );
-					restore_current_blog();
-				}
-
-				if ( $path && is_string( $path ) ) {
-					$url .= '/' . ltrim( $path, '/' );
-				}
-
-				return $url;
-			},
-			0,
-			4
-		);
-		WP_CLI::add_wp_hook(
-			'site_url',
-			static function ( $url, $path, $scheme, $blog_id ) {
-				if ( empty( $blog_id ) || ! is_multisite() ) {
-					$url = get_option( 'siteurl' );
-				} else {
-					switch_to_blog( $blog_id );
-					$url = get_option( 'siteurl' );
-					restore_current_blog();
-				}
-
-				if ( $path && is_string( $path ) ) {
-					$url .= '/' . ltrim( $path, '/' );
-				}
-
-				return $url;
-			},
-			0,
-			4
-		);
-		WP_CLI::add_wp_hook(
-			'network_home_url',
-			static function ( $url, $path, $scheme ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by hook signature.
-				$url = get_site_option( 'home' );
-
-				if ( $path && is_string( $path ) ) {
-					$url .= '/' . ltrim( $path, '/' );
-				}
-
-				return $url;
-			},
-			0,
-			3
-		);
-		WP_CLI::add_wp_hook(
-			'network_site_url',
-			static function ( $url, $path, $scheme ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by hook signature.
-				$url = get_site_option( 'siteurl' );
-
-				if ( $path && is_string( $path ) ) {
-					$url .= '/' . ltrim( $path, '/' );
-				}
-
-				return $url;
-			},
-			0,
-			3
 		);
 
 		// Set up hook for plugins and themes to conditionally add WP-CLI commands.

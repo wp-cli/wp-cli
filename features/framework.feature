@@ -324,9 +324,11 @@ Feature: Load WP-CLI
       2
       """
 
-  Scenario: Don't apply set_url_scheme because it will always be incorrect
+  Scenario: Use --assume-https to preserve HTTPS scheme in URL functions
     Given a WP multisite installation
     And I run `wp option update siteurl https://example.com`
+    And I run `wp site option update siteurl https://example.com`
+    And I run `wp site option update home https://example.com`
 
     When I run `wp option get siteurl`
     Then STDOUT should be:
@@ -334,36 +336,31 @@ Feature: Load WP-CLI
       https://example.com
       """
 
-    When I run `wp site list --field=url`
+    When I run `wp --assume-https site list --field=url`
     Then STDOUT should be:
       """
       https://example.com/
       """
 
-  Scenario: network_site_url and network_home_url should preserve HTTPS scheme
-    Given a WP multisite installation
-    And I run `wp site option update siteurl https://example.com`
-    And I run `wp site option update home https://example.com`
-
-    When I run `wp site option get siteurl`
+    When I run `wp --assume-https eval "echo site_url();"`
     Then STDOUT should be:
       """
       https://example.com
       """
 
-    When I run `wp site option get home`
+    When I run `wp --assume-https eval "echo home_url();"`
     Then STDOUT should be:
       """
       https://example.com
       """
 
-    When I run `wp eval "echo network_site_url();"`
+    When I run `wp --assume-https eval "echo network_site_url();"`
     Then STDOUT should be:
       """
       https://example.com
       """
 
-    When I run `wp eval "echo network_home_url();"`
+    When I run `wp --assume-https eval "echo network_home_url();"`
     Then STDOUT should be:
       """
       https://example.com

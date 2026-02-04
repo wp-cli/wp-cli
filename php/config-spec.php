@@ -129,4 +129,11 @@ return [
 		'hidden'  => true,
 	],
 
+	'assume-https'      => [
+		'runtime' => '',
+		'file'    => '<bool>',
+		'default' => false,
+		'desc'    => 'Assume HTTPS for site URLs to ensure is_ssl() returns true.',
+	],
+
 ];
