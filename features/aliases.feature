@@ -204,6 +204,21 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -i 'identityfile.key' -T -vvv
       """
 
+  Scenario: Uses env command for runtime alias with separate path line
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host
+        path: /path/to/wordpress
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'user@host' 'env WP_CLI_RUNTIME_ALIAS=
+      """
+
   Scenario: Add an alias
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
