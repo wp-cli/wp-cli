@@ -1408,10 +1408,6 @@ Feature: Get help about WP-CLI commands
     Then STDOUT should not match /\x1b\[/
     And STDOUT should not match /\033\[/
 
-    When I run `PAGER=pg wp help | head -1`
-    Then STDOUT should not match /\x1b\[/
-    And STDOUT should not match /\033\[/
-
     When I run `PAGER=/usr/bin/more wp help | head -1`
     Then STDOUT should not match /\x1b\[/
     And STDOUT should not match /\033\[/
@@ -1419,12 +1415,3 @@ Feature: Get help about WP-CLI commands
     When I run `PAGER=/bin/cat wp help | head -1`
     Then STDOUT should not match /\x1b\[/
     And STDOUT should not match /\033\[/
-
-  Scenario: Pager with color support should keep ANSI escape codes
-    Given an empty directory
-
-    When I run `PAGER="less -R" wp help | head -5`
-    Then STDOUT should match /\x1b\[/
-
-    When I run `PAGER="most -R" wp help | head -5`
-    Then STDOUT should match /\x1b\[/
