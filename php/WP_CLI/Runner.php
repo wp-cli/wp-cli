@@ -1320,8 +1320,15 @@ class Runner {
 		}
 
 		// Handle --assume-https parameter
-		if ( ! empty( $this->config['assume-https'] ) && empty( $_SERVER['HTTPS'] ) ) {
-			$_SERVER['HTTPS'] = 'on';
+		if ( ! empty( $this->config['assume-https'] ) ) {
+			if ( ! isset( $_SERVER['HTTPS'] ) ) {
+				$_SERVER['HTTPS'] = 'on';
+			} else {
+				$https_value = strtolower( (string) $_SERVER['HTTPS'] );
+				if ( 'on' !== $https_value && '1' !== $https_value ) {
+					$_SERVER['HTTPS'] = 'on';
+				}
+			}
 		}
 
 		$this->do_early_invoke( 'before_wp_load' );
