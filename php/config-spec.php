@@ -81,7 +81,6 @@ return [
 	],
 
 	'locale'            => [
-		'runtime' => '=<locale>',
 		'file'    => '<locale>',
 		'desc'    => 'Set the locale for WP-CLI and WordPress (e.g., en_US, de_DE).',
 		'default' => '',

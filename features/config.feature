@@ -764,12 +764,3 @@ Feature: Have a config file
       """
       de_DE
       """
-
-  Scenario: Set locale via runtime flag
-    Given a WP installation
-
-    When I run `wp --locale=fr_FR eval 'echo get_locale();'`
-    Then STDOUT should be:
-      """
-      fr_FR
-      """
