@@ -626,7 +626,7 @@ class Runner {
 						$this->alias => $runtime_alias,
 					]
 				);
-				$wp_binary     = "WP_CLI_RUNTIME_ALIAS='{$encoded_alias}' {$wp_binary} {$this->alias}";
+				$wp_binary     = "env WP_CLI_RUNTIME_ALIAS='{$encoded_alias}' {$wp_binary} {$this->alias}";
 			}
 		}
 
