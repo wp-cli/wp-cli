@@ -357,13 +357,13 @@ Feature: Load WP-CLI
     When I run `wp --assume-https eval "echo network_site_url();"`
     Then STDOUT should be:
       """
-      https://example.com
+      https://example.com/
       """
 
     When I run `wp --assume-https eval "echo network_home_url();"`
     Then STDOUT should be:
       """
-      https://example.com
+      https://example.com/
       """
 
   # `wp db reset` does not yet work on SQLite,
