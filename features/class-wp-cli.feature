@@ -14,10 +14,10 @@ Feature: Various utilities for WP-CLI commands
       | proc_open  |
       | proc_close |
 
-  Scenario: HTTP URL scheme does not set HTTPS server variable
+  Scenario: HTTP URL scheme clears pre-existing HTTPS server variable
     Given an empty directory
 
-    When I run `wp --skip-wordpress eval 'WP_CLI::set_url("http://example.com"); echo isset($_SERVER["HTTPS"]) ? "set" : "not set";'`
+    When I run `wp --skip-wordpress eval '$_SERVER["HTTPS"] = "on"; WP_CLI::set_url("http://example.com"); echo isset($_SERVER["HTTPS"]) ? "set" : "not set";'`
     Then STDOUT should be:
       """
       not set
