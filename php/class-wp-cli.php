@@ -137,6 +137,8 @@ class WP_CLI {
 		if ( isset( $url_parts['host'] ) ) {
 			if ( isset( $url_parts['scheme'] ) && 'https' === strtolower( $url_parts['scheme'] ) ) {
 				$_SERVER['HTTPS'] = 'on';
+			} else {
+				unset( $_SERVER['HTTPS'] );
 			}
 
 			$_SERVER['HTTP_HOST'] = $url_parts['host'];
