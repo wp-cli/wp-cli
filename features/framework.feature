@@ -340,6 +340,35 @@ Feature: Load WP-CLI
       https://example.com/
       """
 
+  Scenario: network_site_url and network_home_url should preserve HTTPS scheme
+    Given a WP multisite installation
+    And I run `wp site option update siteurl https://example.com`
+    And I run `wp site option update home https://example.com`
+
+    When I run `wp site option get siteurl`
+    Then STDOUT should be:
+      """
+      https://example.com
+      """
+
+    When I run `wp site option get home`
+    Then STDOUT should be:
+      """
+      https://example.com
+      """
+
+    When I run `wp eval "echo network_site_url();"`
+    Then STDOUT should be:
+      """
+      https://example.com
+      """
+
+    When I run `wp eval "echo network_home_url();"`
+    Then STDOUT should be:
+      """
+      https://example.com
+      """
+
   # `wp db reset` does not yet work on SQLite,
   # See https://github.com/wp-cli/db-command/issues/234
   @require-mysql

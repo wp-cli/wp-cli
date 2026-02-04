@@ -1789,7 +1789,7 @@ class Runner {
 			}
 		);
 
-		// Don't apply set_url_scheme in get_home_url() or get_site_url().
+		// Don't apply set_url_scheme in get_home_url(), get_site_url(), network_home_url(), or network_site_url().
 		WP_CLI::add_wp_hook(
 			'home_url',
 			static function ( $url, $path, $scheme, $blog_id ) {
@@ -1829,6 +1829,34 @@ class Runner {
 			},
 			0,
 			4
+		);
+		WP_CLI::add_wp_hook(
+			'network_home_url',
+			static function ( $url, $path, $scheme ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by hook signature.
+				$url = get_site_option( 'home' );
+
+				if ( $path && is_string( $path ) ) {
+					$url .= '/' . ltrim( $path, '/' );
+				}
+
+				return $url;
+			},
+			0,
+			3
+		);
+		WP_CLI::add_wp_hook(
+			'network_site_url',
+			static function ( $url, $path, $scheme ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by hook signature.
+				$url = get_site_option( 'siteurl' );
+
+				if ( $path && is_string( $path ) ) {
+					$url .= '/' . ltrim( $path, '/' );
+				}
+
+				return $url;
+			},
+			0,
+			3
 		);
 
 		// Set up hook for plugins and themes to conditionally add WP-CLI commands.
