@@ -269,7 +269,7 @@ class Formatter {
 			}
 		}
 
-		if ( ! $field_found && 0 === count( $items ) ) {
+		if ( ! $field_found && 0 !== count( $items ) ) {
 			WP_CLI::warning( "Field not found in any item: $field." );
 		}
 
@@ -291,9 +291,11 @@ class Formatter {
 		$resolved_fields = [];
 		$fields_count    = count( $fields_to_find );
 		$found_count     = 0;
+		$item_count      = 0;
 
 		// Iterate through items once and check all fields
 		foreach ( $items as $item ) {
+			++$item_count;
 			// Check each field that hasn't been found yet
 			foreach ( $fields_to_find as $field => $_ ) {
 				$key = $this->find_item_key( $item, $field, true );
@@ -319,9 +321,12 @@ class Formatter {
 		}
 		unset( $field ); // Break the reference to avoid issues with subsequent foreach loops
 
-		// Warn about any fields that weren't found in any item
-		foreach ( $fields_to_find as $missing_field => $_ ) {
-			WP_CLI::warning( "Field not found in any item: $missing_field." );
+		// Only warn about missing fields if there were items to check
+		if ( $item_count > 0 ) {
+			// Warn about any fields that weren't found in any item
+			foreach ( $fields_to_find as $missing_field => $_ ) {
+				WP_CLI::warning( "Field not found in any item: $missing_field." );
+			}
 		}
 	}
 

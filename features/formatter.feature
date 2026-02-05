@@ -350,6 +350,42 @@ Feature: Format output
       | Session 1 |             | 2018-09-15 |
       | Session 2 |             | 2018-09-16 |
 
+  Scenario: No warning for missing field with empty list
+    Given an empty directory
+    And a empty-list-field.php file:
+      """
+      <?php
+      $items = array();
+      $assoc_args = array( 'format' => 'json', 'field' => 'name' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file empty-list-field.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      []
+      """
+    And STDERR should be empty
+
+  Scenario: No warning for missing fields with empty list
+    Given an empty directory
+    And a empty-list-fields.php file:
+      """
+      <?php
+      $items = array();
+      $assoc_args = array( 'format' => 'json', 'fields' => 'name,login' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'login' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file empty-list-fields.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      []
+      """
+    And STDERR should be empty
+
   Scenario: Display ordered output for an object item
     Given an empty directory
     And a file.php file:
