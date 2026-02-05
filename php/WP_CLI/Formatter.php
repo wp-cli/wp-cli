@@ -242,8 +242,10 @@ class Formatter {
 		$key         = null;
 		$values      = [];
 		$field_found = false;
+		$item_count  = 0;
 
 		foreach ( $items as $item ) {
+			++$item_count;
 			$item = (object) $item;
 
 			// Resolve the key on first item that has the field
@@ -269,7 +271,7 @@ class Formatter {
 			}
 		}
 
-		if ( ! $field_found && 0 !== count( $items ) ) {
+		if ( ! $field_found && $item_count > 0 ) {
 			WP_CLI::warning( "Field not found in any item: $field." );
 		}
 
