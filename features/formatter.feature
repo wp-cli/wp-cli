@@ -352,7 +352,7 @@ Feature: Format output
 
   Scenario: No warning for missing field with empty list
     Given an empty directory
-    And a empty-list-field.php file:
+    And an empty-list-field.php file:
       """
       <?php
       $items = array();
@@ -370,7 +370,7 @@ Feature: Format output
 
   Scenario: No warning for missing fields with empty list
     Given an empty directory
-    And a empty-list-fields.php file:
+    And an empty-list-fields.php file:
       """
       <?php
       $items = array();
