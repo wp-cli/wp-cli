@@ -189,6 +189,167 @@ Feature: Format output
       |         |          | banana     |
       |         |          | mango      |
       | 1       | bar      | br         |
+
+  Scenario: Custom fields that exist in some items but not others
+    Given an empty directory
+    And a custom-fields.php file:
+      """
+      <?php
+      $items = array(
+        array(
+          'name'   => 'Session 1',
+          'custom' => 123,
+          'login'  => '2018-09-15',
+        ),
+        array(
+          'name'   => 'Session 2',
+          'login'  => '2018-09-16',
+        ),
+        array(
+          'name'   => 'Session 3',
+          'custom' => 456,
+          'login'  => '2018-09-17',
+        ),
+      );
+      $assoc_args = array( 'format' => 'table', 'fields' => 'name,custom,login' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom', 'login' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file custom-fields.php --skip-wordpress`
+    Then STDOUT should be a table containing rows:
+      | name      | custom | login      |
+      | Session 1 | 123    | 2018-09-15 |
+      | Session 2 |        | 2018-09-16 |
+      | Session 3 | 456    | 2018-09-17 |
+
+  Scenario: Custom fields in CSV format with missing values
+    Given an empty directory
+    And a custom-fields-csv.php file:
+      """
+      <?php
+      $items = array(
+        array(
+          'name'   => 'Session 1',
+          'custom' => 123,
+        ),
+        array(
+          'name'   => 'Session 2',
+        ),
+        array(
+          'name'   => 'Session 3',
+          'custom' => 456,
+        ),
+      );
+      $assoc_args = array( 'format' => 'csv', 'fields' => 'name,custom' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file custom-fields-csv.php --skip-wordpress`
+    Then STDOUT should be CSV containing:
+      | name      | custom |
+      | Session 1 | 123    |
+      | Session 2 |        |
+      | Session 3 | 456    |
+
+  Scenario: Custom fields in JSON format with missing values
+    Given an empty directory
+    And a custom-fields-json.php file:
+      """
+      <?php
+      $items = array(
+        array(
+          'name'   => 'Session 1',
+          'custom' => 123,
+        ),
+        array(
+          'name'   => 'Session 2',
+        ),
+        array(
+          'name'   => 'Session 3',
+          'custom' => 456,
+        ),
+      );
+      $assoc_args = array( 'format' => 'json', 'fields' => 'name,custom' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file custom-fields-json.php --skip-wordpress`
+    Then STDOUT should be JSON containing:
+      """
+      [{"name":"Session 1","custom":123},{"name":"Session 2","custom":null},{"name":"Session 3","custom":456}]
+      """
+
+  Scenario: Custom fields in YAML format with missing values
+    Given an empty directory
+    And a custom-fields-yaml.php file:
+      """
+      <?php
+      $items = array(
+        array(
+          'name'   => 'Session 1',
+          'custom' => 123,
+        ),
+        array(
+          'name'   => 'Session 2',
+        ),
+        array(
+          'name'   => 'Session 3',
+          'custom' => 456,
+        ),
+      );
+      $assoc_args = array( 'format' => 'yaml', 'fields' => 'name,custom' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file custom-fields-yaml.php --skip-wordpress`
+    Then STDOUT should be YAML containing:
+      """
+      ---
+      -
+        name: 'Session 1'
+        custom: 123
+      -
+        name: 'Session 2'
+        custom: ~
+      -
+        name: 'Session 3'
+        custom: 456
+      """
+
+  Scenario: Warning when field doesn't exist in any items
+    Given an empty directory
+    And a no-field.php file:
+      """
+      <?php
+      $items = array(
+        array(
+          'name'   => 'Session 1',
+          'login'  => '2018-09-15',
+        ),
+        array(
+          'name'   => 'Session 2',
+          'login'  => '2018-09-16',
+        ),
+      );
+      $assoc_args = array( 'format' => 'table', 'fields' => 'name,nonexistent,login' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'nonexistent', 'login' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I try `wp eval-file no-field.php --skip-wordpress`
+    Then STDERR should contain:
+      """
+      Warning: Field not found in any item: nonexistent.
+      """
+    And STDOUT should be a table containing rows:
+      | name      | nonexistent | login      |
+      | Session 1 |             | 2018-09-15 |
+      | Session 2 |             | 2018-09-16 |
+
   Scenario: Display ordered output for an object item
     Given an empty directory
     And a file.php file:
