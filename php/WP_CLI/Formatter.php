@@ -269,7 +269,7 @@ class Formatter {
 			}
 		}
 
-		if ( ! $field_found ) {
+		if ( ! $field_found && 0 === count( $items ) ) {
 			WP_CLI::warning( "Field not found in any item: $field." );
 		}
 
