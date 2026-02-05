@@ -167,7 +167,7 @@ Feature: Skipping themes
       bool(false)
       """
 
-  @require-wp-6.1 @require-php-7.2
+  @require-wp-6.1 @require-php-7.4
   Scenario: Skip a theme using block patterns with Gutenberg active
     Given a WP installation
     And I run `wp plugin install gutenberg --activate`
@@ -197,5 +197,9 @@ Feature: Skipping themes
     When I try `wp --skip-themes plugin list`
     Then STDERR should contain:
       """
-      Error: An unexpected functions.php file in the themes directory may have caused this internal server error.
+      Error: There has been a critical error on this website.
+      """
+    And STDERR should contain:
+      """
+      An unexpected functions.php file in the themes directory may have caused this internal server error.
       """

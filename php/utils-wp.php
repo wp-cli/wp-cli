@@ -113,20 +113,6 @@ function wp_die_handler( $message ) {
 
 	if ( $message instanceof \WP_Error ) {
 		$text_message = $message->get_error_message();
-
-		/**
-		 * @var array{error?: array{file?: string}} $error_data
-		 */
-		$error_data = $message->get_error_data( 'internal_server_error' );
-
-		/**
-		 * @var string $file
-		 */
-		$file = ! empty( $error_data['error']['file'] ) ? $error_data['error']['file'] : '';
-
-		if ( false !== stripos( $file, 'themes/functions.php' ) ) {
-			$text_message = 'An unexpected functions.php file in the themes directory may have caused this internal server error.';
-		}
 	} else {
 		$text_message = $message;
 	}
@@ -191,13 +177,14 @@ function maybe_require( $since, $path ) {
 /**
  * @template T of \WP_Upgrader
  *
- * @param class-string<T> $class_name
- * @param bool         $insecure
+ * @param class-string<T>   $class_name Class name.
+ * @param bool              $insecure Optional. Default false.
+ * @param \WP_Upgrader_Skin $skin. Optional. Upgrader skin. Default \WP_CLI\UpgraderSkin.
  *
  * @return T Upgrader instance.
  * @throws \ReflectionException
  */
-function get_upgrader( $class_name, $insecure = false ) {
+function get_upgrader( $class_name, $insecure = false, $skin = null ) {
 	if ( ! class_exists( '\WP_Upgrader' ) ) {
 		if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' ) ) {
 			include ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
@@ -229,7 +216,7 @@ function get_upgrader( $class_name, $insecure = false ) {
 		/**
 		 * @var T $result
 		 */
-		$result = new $class_name( new UpgraderSkin(), $insecure );
+		$result = new $class_name( $skin ?: new UpgraderSkin(), $insecure );
 
 		return $result;
 	}
@@ -237,7 +224,7 @@ function get_upgrader( $class_name, $insecure = false ) {
 	/**
 	 * @var T $result
 	 */
-	$result = new $class_name( new UpgraderSkin() );
+	$result = new $class_name( $skin ?: new UpgraderSkin() );
 
 	return $result;
 }
@@ -392,12 +379,35 @@ function wp_get_cache_type() {
 		} elseif ( isset( $wp_object_cache->lcache ) && $wp_object_cache->lcache instanceof \LCache\Integrated ) {
 			$message = 'WP LCache';
 
+			// Test for WP-Stash (https://github.com/inpsyde/WP-Stash)
+		} elseif ( class_exists( 'Inpsyde\WpStash\WpStash' ) ) {
+			try {
+				$wp_stash = \Inpsyde\WpStash\WpStash::instance();
+				if ( is_object( $wp_stash ) && method_exists( $wp_stash, 'driver' ) ) {
+					$driver = $wp_stash->driver();
+					if ( is_object( $driver ) ) {
+						$message = 'WP-Stash (' . get_class( $driver ) . ')';
+					} else {
+						$message = 'WP-Stash';
+					}
+				} else {
+					$message = 'WP-Stash';
+				}
+			} catch ( \Throwable $e ) {
+				// If WP-Stash fails to initialize, we can't determine the driver
+				$message = 'WP-Stash';
+			}
 		} elseif ( function_exists( 'w3_instance' ) ) {
 			$config = w3_instance( 'W3_Config' );
 
 			if ( $config->get_boolean( 'objectcache.enabled' ) ) {
 				$message = 'W3TC ' . $config->get_string( 'objectcache.engine' );
 			}
+		}
+
+		// If still unknown, provide the class name for debugging
+		if ( 'Unknown' === $message && is_object( $wp_object_cache ) ) {
+			$message = 'Unknown: ' . get_class( $wp_object_cache );
 		}
 	} else {
 		$message = 'Default';

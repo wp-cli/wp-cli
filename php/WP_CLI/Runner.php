@@ -378,7 +378,7 @@ class Runner {
 	 *
 	 * @param array $args
 	 * @param string $autocorrect Whether to autocorrect commands based on suggestions.
-	 * @return array|string Command, args, and path on success; error message on failure
+	 * @return array{0: CompositeCommand, 1: array, 2: array}|string Command, args, and path on success; error message on failure
 	 *
 	 * @phpstan-param 'none'|'confirm'|'auto' $autocorrect
 	 */
@@ -1199,11 +1199,15 @@ class Runner {
 		}
 		$config_path = escapeshellarg( $config_path );
 
+		// Exclude 'quiet' from runtime config for subprocesses to allow command output.
+		$subprocess_runtime_config = $this->runtime_config;
+		unset( $subprocess_runtime_config['quiet'] );
+
 		foreach ( $aliases as $alias ) {
 			WP_CLI::log( $alias );
 			$args           = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
 			$assoc_args     = Utils\assoc_args_to_str( $this->assoc_args );
-			$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
+			$runtime_config = Utils\assoc_args_to_str( $subprocess_runtime_config );
 			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
 			$pipes          = [];
 			$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
@@ -1289,6 +1293,15 @@ class Runner {
 			$this->run_ssh_command( $this->config['ssh'] );
 			return;
 		}
+
+		// Log WP-CLI HTTP requests
+		WP_CLI::add_hook(
+			'http_request_options',
+			static function ( $options, $method, $url ) {
+				WP_CLI::debug( sprintf( 'HTTP %s request to %s', $method, $url ), 'http' );
+				return $options;
+			}
+		);
 
 		// Handle --path parameter
 		self::set_wp_root( $this->find_wp_root() );
@@ -1553,6 +1566,18 @@ class Runner {
 		if ( $this->config['skip-themes'] ) {
 			WP_CLI::add_wp_hook( 'setup_theme', [ $this, 'action_setup_theme_wp_cli_skip_themes' ], 999 );
 		}
+
+		// Log WordPress HTTP API requests
+		WP_CLI::add_wp_hook(
+			'pre_http_request',
+			static function ( $response, $args, $url ) {
+				$method = isset( $args['method'] ) ? $args['method'] : 'GET';
+				WP_CLI::debug( sprintf( 'HTTP %s request to %s', $method, $url ), 'http' );
+				return $response;
+			},
+			10,
+			3
+		);
 
 		if ( $this->cmd_starts_with( [ 'help' ] ) ) {
 			// Try to trap errors on help.
