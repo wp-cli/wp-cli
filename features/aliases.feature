@@ -746,6 +746,7 @@ Feature: Create shortcuts to specific WordPress installs
     And STDOUT should contain:
       """
       ${env.SSH_USER}
+      """
 
   Scenario: Using --quiet with @all suppresses alias names but still outputs command results
     Given a WP installation in 'foo'
