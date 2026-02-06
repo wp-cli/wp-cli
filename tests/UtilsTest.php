@@ -525,6 +525,7 @@ class UtilsTest extends TestCase {
 		// Save WP_CLI state.
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$class_wp_cli_capture_exit->setAccessible( true );
 		}
 		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
@@ -575,7 +576,7 @@ class UtilsTest extends TestCase {
 	}
 
 	/**
-	 * @dataProvider dataHttpRequestBadCAcert()
+	 * @dataProvider dataHttpRequestBadCAcert
 	 *
 	 * @param array                    $additional_options Associative array of additional options to pass to http_request().
 	 * @param class-string<\Throwable> $exception          Class of the exception to expect.
@@ -754,6 +755,7 @@ class UtilsTest extends TestCase {
 		// Save WP_CLI state.
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$class_wp_cli_capture_exit->setAccessible( true );
 		}
 		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();

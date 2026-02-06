@@ -49,6 +49,9 @@ class ShutdownHandler {
 
 		$message = "\nThere has been a critical error on this website.";
 
+		/**
+		 * @var string $file
+		 */
 		$file = $error['file'];
 
 		$plugin = self::identify_plugin( $file );
@@ -89,9 +92,9 @@ class ShutdownHandler {
 			'wp_die_handler',
 			function () use ( $skip ) {
 				return static function ( $wp_error ) use ( $skip ) {
+					// @phpstan-ignore staticMethod.alreadyNarrowedType
 					WP_CLI::error( $wp_error->get_error_message(), false );
 
-					// @phpstan-ignore deadCode.unreachable
 					self::prompt_and_rerun( $skip );
 				};
 			}
@@ -232,8 +235,6 @@ class ShutdownHandler {
 	 * Prompt the user to rerun the command with the skip flag.
 	 *
 	 * @param array<string, bool|string> $skip Skip flag(s) to append.
-	 *
-	 * @phpstan-ignore method.unused
 	 */
 	private static function prompt_and_rerun( $skip ) {
 		// Get environment variable to check default behavior
