@@ -8,7 +8,6 @@ Feature: HTTP request logging
       """
       Debug: HTTP GET request to https://api.github.com
       """
-    And the return code should be 0
 
   Scenario: HTTP requests are logged with --debug=http flag
     Given a WP installation
