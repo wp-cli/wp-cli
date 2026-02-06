@@ -1360,20 +1360,37 @@ function report_batch_operation_results( $noun, $verb, $total, $successes, $fail
  * @return array<string>
  */
 function parse_str_to_argv( $arguments ) {
-	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches );
-	$argv = $matches[0];
-	return array_map(
-		static function ( $arg ) {
-			foreach ( [ '"', "'" ] as $char ) {
-				if ( substr( $arg, 0, 1 ) === $char && substr( $arg, -1 ) === $char ) {
-					$arg = substr( $arg, 1, -1 );
-					break;
-				}
+	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches, PREG_SET_ORDER );
+	$argv = [];
+	foreach ( $matches as $match ) {
+		// Check if this is a quoted associative argument (--key="value" or --key='value').
+		// For associative args, groups 1 and 2 contain the quote char and value.
+		// For positional args, groups 5 and 6 contain the quote char and value, and group 1 is empty.
+		if ( isset( $match[1], $match[2] ) && 0 < strlen( $match[1] ) ) {
+			// Extract the key part (everything before the quote).
+			if ( preg_match( '/^(--[^=]+=)/', $match[0], $key_match ) ) {
+				$value = $match[2];
+				// Unescape the quote character that was used to wrap the value.
+				$quote_char = $match[1];
+				$value      = str_replace( '\\' . $quote_char, $quote_char, $value );
+				// Reconstruct without the outer quotes.
+				$argv[] = $key_match[1] . $value;
+			} else {
+				$argv[] = $match[0];
 			}
-			return $arg;
-		},
-		$argv
-	);
+		} elseif ( isset( $match[5], $match[6] ) ) {
+			// This is a quoted positional argument.
+			$value = $match[6];
+			// Unescape the quote character that was used to wrap the value.
+			$quote_char = $match[5];
+			$value      = str_replace( '\\' . $quote_char, $quote_char, $value );
+			$argv[]     = $value;
+		} else {
+			// Unquoted argument.
+			$argv[] = $match[0];
+		}
+	}
+	return $argv;
 }
 
 /**
