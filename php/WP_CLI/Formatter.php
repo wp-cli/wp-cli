@@ -11,16 +11,25 @@ use WP_CLI;
 /**
  * Output one or more items in a given format (e.g. table, JSON).
  *
- * @property-read string      $format
- * @property-read string[]    $fields
- * @property-read string|null $field
+ * @property-read string             $format
+ * @property-read string[]           $fields
+ * @property-read string|null        $field
+ * @property-read array<string, int> $alignments
  */
 class Formatter {
 
 	/**
+	 * Maximum width for a table cell value.
+	 * Values longer than this will be truncated to improve performance.
+	 *
+	 * @var int
+	 */
+	const MAX_CELL_WIDTH = 2048;
+
+	/**
 	 * How the items should be output.
 	 *
-	 * @var array{format: string, fields: string[], field: string|null}
+	 * @var array{format: string, fields: string[], field: string|null, alignments: array<string, int>}
 	 */
 	private $args;
 
@@ -39,12 +48,13 @@ class Formatter {
 	 */
 	public function __construct( &$assoc_args, $fields = null, $prefix = false ) {
 		$format_args = [
-			'format' => 'table',
-			'fields' => $fields,
-			'field'  => null,
+			'format'     => 'table',
+			'fields'     => $fields,
+			'field'      => null,
+			'alignments' => [],
 		];
 
-		foreach ( [ 'format', 'fields', 'field' ] as $key ) {
+		foreach ( array_keys( $format_args ) as $key ) {
 			if ( isset( $assoc_args[ $key ] ) ) {
 				$format_args[ $key ] = $assoc_args[ $key ];
 				unset( $assoc_args[ $key ] );
@@ -55,7 +65,10 @@ class Formatter {
 			$format_args['fields'] = explode( ',', $format_args['fields'] );
 		}
 
-		$format_args['fields'] = array_map( 'trim', $format_args['fields'] );
+		/** @var callable(string): string $trim */
+		$trim = 'trim';
+		// @phpstan-ignore argument.type
+		$format_args['fields'] = array_map( $trim, $format_args['fields'] );
 
 		$this->args   = $format_args;
 		$this->prefix = $prefix;
@@ -81,22 +94,20 @@ class Formatter {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
-			if ( in_array( $this->args['format'], [ 'csv', 'json', 'table' ], true ) ) {
-				$item = is_array( $items ) && ! empty( $items ) ? array_shift( $items ) : false;
-				if ( $item && ! empty( $this->args['fields'] ) ) {
-					foreach ( $this->args['fields'] as &$field ) {
-						$field = $this->find_item_key( $item, $field );
-					}
-					array_unshift( $items, $item );
+			// Convert iterator to array early to avoid consumption issues and enable validation
+			if ( $items instanceof Iterator ) {
+				$items = iterator_to_array( $items );
+			}
+
+			if ( in_array( $this->args['format'], [ 'csv', 'json', 'table', 'yaml' ], true ) ) {
+				// Validate fields exist in at least one item
+				if ( ! empty( $this->args['fields'] ) ) {
+					$this->validate_fields( $items );
 				}
 			}
 
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
-				if ( $items instanceof Iterator ) {
-					$items = Utils\iterator_map( $items, [ $this, 'transform_item_values_to_json' ] );
-				} else {
-					$items = array_map( [ $this, 'transform_item_values_to_json' ], (array) $items );
-				}
+				$items = array_map( [ $this, 'transform_item_values_to_json' ], (array) $items );
 			}
 
 			$this->format( $items, $ascii_pre_colorized );
@@ -111,9 +122,14 @@ class Formatter {
 	 */
 	public function display_item( $item, $ascii_pre_colorized = false ) {
 		if ( isset( $this->args['field'] ) ) {
-			$item  = (object) $item;
-			$key   = $this->find_item_key( $item, $this->args['field'] );
-			$value = $item->$key;
+			$item = (object) $item;
+			$key  = $this->find_item_key( $item, $this->args['field'], true );
+			if ( null === $key ) {
+				WP_CLI::warning( "Field not found in item: {$this->args['field']}." );
+				$value = null;
+			} else {
+				$value = $item->$key;
+			}
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) && ( is_object( $value ) || is_array( $value ) ) ) {
 				$value = json_encode( $value );
 			}
@@ -129,6 +145,28 @@ class Formatter {
 			 */
 			$this->show_multiple_fields( $item, $this->args['format'], $ascii_pre_colorized );
 		}
+	}
+
+	/**
+	 * Truncate cell values in items for table/CSV output.
+	 *
+	 * @param iterable $items  Items to process.
+	 * @param array    $fields Fields to truncate.
+	 * @return array Processed items with truncated values.
+	 */
+	private function truncate_items( $items, $fields ) {
+		$truncated = [];
+		foreach ( $items as $item ) {
+			$row = Utils\pick_fields( $item, $fields );
+			// Truncate each field value
+			foreach ( $row as $key => $value ) {
+				if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
+					$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
+				}
+			}
+			$truncated[] = $row;
+		}
+		return $truncated;
 	}
 
 	/**
@@ -156,10 +194,20 @@ class Formatter {
 				break;
 
 			case 'table':
-				self::show_table( $items, $fields, $ascii_pre_colorized );
+				// Truncate large values before table formatting for performance
+				if ( ! is_array( $items ) ) {
+					$items = iterator_to_array( $items );
+				}
+				$items = $this->truncate_items( $items, $fields );
+				$this->show_table( $items, $fields, $ascii_pre_colorized );
 				break;
 
 			case 'csv':
+				// Truncate large values before CSV output for performance
+				if ( ! is_array( $items ) ) {
+					$items = iterator_to_array( $items );
+				}
+				$items = $this->truncate_items( $items, $fields );
 				Utils\write_csv( STDOUT, $items, $fields );
 				break;
 
@@ -194,21 +242,31 @@ class Formatter {
 	 * @param string   $field The field to show
 	 */
 	private function show_single_field( $items, $field ): void {
-		$key    = null;
-		$values = [];
+		$key         = null;
+		$values      = [];
+		$field_found = false;
+		$item_count  = 0;
 
 		foreach ( $items as $item ) {
+			++$item_count;
 			$item = (object) $item;
 
-			if ( null === $key ) {
-				$key = $this->find_item_key( $item, $field );
+			// Resolve the key on first item that has the field
+			if ( ! $field_found && null === $key ) {
+				$key = $this->find_item_key( $item, $field, true );
+				if ( null !== $key ) {
+					$field_found = true;
+				}
 			}
 
+			// Get value if key exists
+			$value = ( null !== $key && isset( $item->$key ) ) ? $item->$key : null;
+
 			if ( 'json' === $this->args['format'] ) {
-				$values[] = $item->$key;
+				$values[] = $value;
 			} else {
 				WP_CLI::print_value(
-					$item->$key,
+					$value,
 					[
 						'format' => $this->args['format'],
 					]
@@ -216,8 +274,64 @@ class Formatter {
 			}
 		}
 
+		if ( ! $field_found && $item_count > 0 ) {
+			WP_CLI::warning( "Field not found in any item: $field." );
+		}
+
 		if ( 'json' === $this->args['format'] ) {
 			echo json_encode( $values );
+		}
+	}
+
+	/**
+	 * Validate that requested fields exist in at least one item.
+	 * Warns if a field doesn't exist in any item.
+	 * Also resolves field names to their actual keys (including prefixes).
+	 *
+	 * @param iterable $items Items to validate
+	 */
+	private function validate_fields( $items ): void {
+		// Track which fields have been found and their resolved keys
+		$fields_to_find  = array_flip( $this->args['fields'] );
+		$resolved_fields = [];
+		$fields_count    = count( $fields_to_find );
+		$found_count     = 0;
+		$item_count      = 0;
+
+		// Iterate through items once and check all fields
+		foreach ( $items as $item ) {
+			++$item_count;
+			// Check each field that hasn't been found yet
+			foreach ( $fields_to_find as $field => $_ ) {
+				$key = $this->find_item_key( $item, $field, true );
+				if ( null !== $key ) {
+					// Store the resolved field name
+					$resolved_fields[ $field ] = $key;
+					// Mark this field as found
+					unset( $fields_to_find[ $field ] );
+					++$found_count;
+					// If all fields found, we can stop early
+					if ( $found_count === $fields_count ) {
+						break 2;
+					}
+				}
+			}
+		}
+
+		// Update the fields array with resolved field names
+		foreach ( $this->args['fields'] as &$field ) {
+			if ( isset( $resolved_fields[ $field ] ) ) {
+				$field = $resolved_fields[ $field ];
+			}
+		}
+		unset( $field ); // Break the reference to avoid issues with subsequent foreach loops
+
+		// Only warn about missing fields if there were items to check
+		if ( $item_count > 0 ) {
+			// Warn about any fields that weren't found in any item
+			foreach ( $fields_to_find as $missing_field => $_ ) {
+				WP_CLI::warning( "Field not found in any item: $missing_field." );
+			}
 		}
 	}
 
@@ -227,9 +341,10 @@ class Formatter {
 	 *
 	 * @param array|object $item
 	 * @param string       $field
-	 * @return string
+	 * @param bool         $lenient If true, return null instead of erroring when field is not found.
+	 * @return string|null
 	 */
-	private function find_item_key( $item, $field ) {
+	private function find_item_key( $item, $field, $lenient = false ) {
 		foreach ( [ $field, $this->prefix . '_' . $field ] as $maybe_key ) {
 			if (
 				( is_object( $item ) && ( property_exists( $item, $maybe_key ) || isset( $item->$maybe_key ) ) ) ||
@@ -241,6 +356,9 @@ class Formatter {
 		}
 
 		if ( ! isset( $key ) ) {
+			if ( $lenient ) {
+				return null;
+			}
 			WP_CLI::error( "Invalid field: $field." );
 		}
 
@@ -258,7 +376,13 @@ class Formatter {
 
 		$true_fields = [];
 		foreach ( $this->args['fields'] as $field ) {
-			$true_fields[] = $this->find_item_key( $data, $field );
+			$key = $this->find_item_key( $data, $field, true );
+			if ( null === $key ) {
+				// Field doesn't exist, show warning
+				WP_CLI::warning( "Field not found in item: $field." );
+			} else {
+				$true_fields[] = $key;
+			}
 		}
 
 		foreach ( $data as $key => $value ) {
@@ -271,11 +395,17 @@ class Formatter {
 			}
 		}
 
+		$ordered_data = [];
+
+		foreach ( $true_fields as $field ) {
+			$ordered_data[ $field ] = ( ( (array) $data )[ $field ] );
+		}
+
 		switch ( $format ) {
 
 			case 'table':
 			case 'csv':
-				$rows   = $this->assoc_array_to_rows( $data );
+				$rows   = $this->assoc_array_to_rows( $ordered_data );
 				$fields = [ 'Field', 'Value' ];
 				if ( 'table' === $format ) {
 					self::show_table( $rows, $fields, $ascii_pre_colorized );
@@ -287,7 +417,7 @@ class Formatter {
 			case 'yaml':
 			case 'json':
 				WP_CLI::print_value(
-					$data,
+					$ordered_data,
 					[
 						'format' => $format,
 					]
@@ -307,7 +437,7 @@ class Formatter {
 	 * @param array      $fields              Fields.
 	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `Table::setAsciiPreColorized()` if items in the table are pre-colorized. Default false.
 	 */
-	private static function show_table( $items, $fields, $ascii_pre_colorized = false ) {
+	private function show_table( $items, $fields, $ascii_pre_colorized = false ) {
 		$table = new Table();
 
 		$enabled = WP_CLI::get_runner()->in_color();
@@ -317,6 +447,9 @@ class Formatter {
 
 		$table->setAsciiPreColorized( $ascii_pre_colorized );
 		$table->setHeaders( $fields );
+		$table->setAlignments(
+			$this->args['alignments']
+		);
 
 		foreach ( $items as $item ) {
 			$table->addRow( array_values( Utils\pick_fields( $item, $fields ) ) );
@@ -346,6 +479,11 @@ class Formatter {
 				$value = json_encode( $value );
 			}
 
+			// Truncate large values for table/CSV output performance
+			if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
+				$value = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
+			}
+
 			$rows[] = (object) [
 				'Field' => $field,
 				'Value' => $value,
@@ -363,8 +501,12 @@ class Formatter {
 	 */
 	public function transform_item_values_to_json( $item ) {
 		foreach ( $this->args['fields'] as $field ) {
-			$true_field = $this->find_item_key( $item, $field );
-			$value      = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
+			$true_field = $this->find_item_key( $item, $field, true );
+			if ( null === $true_field ) {
+				// Field doesn't exist in this item, skip it
+				continue;
+			}
+			$value = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
 			if ( is_array( $value ) || is_object( $value ) ) {
 				if ( is_object( $item ) ) {
 					$item->$true_field = json_encode( $value );

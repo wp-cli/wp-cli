@@ -313,6 +313,9 @@ class Configurator {
 				}
 				// If it's not an alias, it might be a group of aliases.
 				if ( ! $is_alias && is_array( $value ) ) {
+					/**
+					 * @var list<string> $value
+					 */
 					$alias_group = [];
 					foreach ( $value as $k ) {
 						if ( preg_match( '#' . self::ALIAS_REGEX . '#', $k ) ) {
@@ -388,7 +391,8 @@ class Configurator {
 
 		if ( isset( $config['require'] ) ) {
 			self::arrayify( $config['require'] );
-			$config['require'] = Utils\expand_globs( $config['require'] );
+			// @phpstan-ignore argument.type
+			$config['require'] = Utils\expand_globs( array_map( 'strval', $config['require'] ) );
 			foreach ( $config['require'] as &$path ) {
 				self::absolutize( $path, $yml_file_dir );
 			}
@@ -418,6 +422,8 @@ class Configurator {
 	 * Conform a variable to an array.
 	 *
 	 * @param mixed $val A string or an array
+	 *
+	 * @param-out array<mixed> $val
 	 */
 	private static function arrayify( &$val ) {
 		$val = (array) $val;

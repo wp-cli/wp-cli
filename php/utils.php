@@ -297,7 +297,7 @@ function expand_tilde_path( $path ) {
  * @return string
  */
 function args_to_str( $args ) {
-	return ' ' . implode( ' ', array_map( 'escapeshellarg', $args ) );
+	return ' ' . implode( ' ', array_map( 'escapeshellarg', array_map( 'strval', $args ) ) );
 }
 
 /**
@@ -385,7 +385,11 @@ function locate_wp_config() {
  * @return bool
  */
 function wp_version_compare( $since, $operator ) {
-	$wp_version = str_replace( '-src', '', $GLOBALS['wp_version'] );
+	/**
+	 * @var string $wp_version
+	 */
+	$wp_version = $GLOBALS['wp_version'];
+	$wp_version = str_replace( '-src', '', $wp_version );
 	$since      = str_replace( '-src', '', $since );
 	return version_compare( $wp_version, $since, $operator );
 }
@@ -868,6 +872,7 @@ function replace_path_consts( $source, $path ) {
  *                               or string absolute path to CA cert to use.
  *                               Defaults to detected CA cert bundled with the Requests library.
  *     @type bool $insecure      Whether to retry automatically without certificate validation.
+ *     @type int  $max_retries   Maximum number of retries of failed requests. Default 3.
  * }
  * @return \Requests_Response|Response
  * @throws RuntimeException If the request failed.
@@ -878,6 +883,7 @@ function replace_path_consts( $source, $path ) {
 function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
+	$max_retries   = isset( $options['max_retries'] ) ? (int) $options['max_retries'] : 3;
 	unset( $options['halt_on_error'] );
 
 	if ( ! isset( $options['verify'] ) ) {
@@ -888,7 +894,7 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 	/**
 	 * @var array{halt_on_error?: bool, verify: bool|string, insecure?: bool} $options
 	 */
-	$options = WP_CLI::do_hook( 'http_request_options', $options );
+	$options = WP_CLI::do_hook( 'http_request_options', $options, $method, $url, $data, $headers );
 
 	RequestsLibrary::register_autoloader();
 
@@ -897,9 +903,38 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 	 */
 	$request_method = [ RequestsLibrary::get_class_name(), 'request' ];
 
-	try {
+	$attempt           = 0;
+	$last_exception    = null;
+	$retry_after_delay = 1; // Start with 1 second delay.
+
+	while ( $attempt < $max_retries ) {
+		++$attempt;
 		try {
-			return $request_method( $url, $headers, $data, $method, $options );
+			try {
+				return $request_method( $url, $headers, $data, $method, $options );
+			} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
+				$curl_handle = $exception->getData();
+				// Get curl error code safely - only if curl is available and handle is valid.
+				$curl_errno = null;
+				if ( function_exists( 'curl_errno' ) && ( is_resource( $curl_handle ) || ( is_object( $curl_handle ) && $curl_handle instanceof \CurlHandle ) ) ) {
+					// @phpstan-ignore argument.type
+					$curl_errno = curl_errno( $curl_handle );
+				}
+				// CURLE_SSL_CACERT = 60
+				$is_ssl_cacert_error = null !== $curl_errno && 60 === $curl_errno;
+
+				if (
+					true !== $options['verify']
+					|| 'curlerror' !== $exception->getType()
+					|| ! $is_ssl_cacert_error
+				) {
+					throw $exception;
+				}
+
+				$options['verify'] = get_default_cacert( $halt_on_error );
+
+				return $request_method( $url, $headers, $data, $method, $options );
+			}
 		} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
 			$curl_handle = $exception->getData();
 			// Get curl error code safely - only if curl is available and handle is valid.
@@ -908,66 +943,83 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 				// @phpstan-ignore argument.type
 				$curl_errno = curl_errno( $curl_handle );
 			}
-			// CURLE_SSL_CACERT = 60
-			$is_ssl_cacert_error = null !== $curl_errno && 60 === $curl_errno;
+			// CURLE_SSL_CONNECT_ERROR = 35, CURLE_SSL_CERTPROBLEM = 58, CURLE_SSL_CACERT_BADFILE = 77
+			$is_ssl_error = null !== $curl_errno && in_array( $curl_errno, [ 35, 58, 77 ], true );
+
+			// CURLE_COULDNT_RESOLVE_HOST = 6, CURLE_COULDNT_CONNECT = 7, CURLE_PARTIAL_FILE = 18
+			// CURLE_OPERATION_TIMEDOUT = 28, CURLE_GOT_NOTHING = 52, CURLE_SEND_ERROR = 55, CURLE_RECV_ERROR = 56
+			$is_transient_error = null !== $curl_errno && in_array( $curl_errno, [ 6, 7, 18, 28, 52, 55, 56 ], true );
 
 			if (
-				true !== $options['verify']
-				|| 'curlerror' !== $exception->getType()
-				|| ! $is_ssl_cacert_error
+				! $insecure
+				||
+				'curlerror' !== $exception->getType()
+				||
+				! $is_ssl_error
 			) {
-				throw $exception;
+				// Check if this is a transient error that should be retried.
+				if ( ! $is_transient_error || $attempt >= $max_retries ) {
+					$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $exception->getMessage() );
+					if ( $halt_on_error ) {
+						WP_CLI::error( $error_msg );
+					}
+					throw new RuntimeException( $error_msg, 0, $exception );
+				}
+
+				// Store exception and retry.
+				$last_exception = $exception;
+				WP_CLI::debug( sprintf( 'Retrying HTTP request to %s (retry %d/%d) after transient error: %s', $url, $attempt, $max_retries, $exception->getMessage() ), 'http' );
+				sleep( $retry_after_delay );
+				$retry_after_delay = min( $retry_after_delay * 2, 10 ); // Exponential backoff, max 10 seconds.
+				continue;
 			}
 
-			$options['verify'] = get_default_cacert( $halt_on_error );
+			$warning = sprintf(
+				"Re-trying without verify after failing to get verified url '%s' %s.",
+				$url,
+				$exception->getMessage()
+			);
+			WP_CLI::warning( $warning );
 
-			return $request_method( $url, $headers, $data, $method, $options );
-		}
-	} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
-		$curl_handle = $exception->getData();
-		// Get curl error code safely - only if curl is available and handle is valid.
-		$curl_errno = null;
-		if ( function_exists( 'curl_errno' ) && ( is_resource( $curl_handle ) || ( is_object( $curl_handle ) && $curl_handle instanceof \CurlHandle ) ) ) {
-			// @phpstan-ignore argument.type
-			$curl_errno = curl_errno( $curl_handle );
-		}
-		// CURLE_SSL_CONNECT_ERROR = 35, CURLE_SSL_CERTPROBLEM = 58, CURLE_SSL_CACERT_BADFILE = 77
-		$is_ssl_error = null !== $curl_errno && in_array( $curl_errno, [ 35, 58, 77 ], true );
+			// Disable certificate validation for the next try.
+			$options['verify'] = false;
 
-		if (
-			! $insecure
-			||
-			'curlerror' !== $exception->getType()
-			||
-			! $is_ssl_error
-		) {
-			$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $exception->getMessage() );
-			if ( $halt_on_error ) {
-				WP_CLI::error( $error_msg );
+			try {
+				return $request_method( $url, $headers, $data, $method, $options );
+			} catch ( \Requests_Exception | \WpOrg\Requests\Exception $retry_exception ) {
+				// Check if this is a transient error that should be retried.
+				$retry_curl_handle = $retry_exception->getData();
+				$retry_curl_errno  = null;
+				if ( function_exists( 'curl_errno' ) && ( is_resource( $retry_curl_handle ) || ( is_object( $retry_curl_handle ) && $retry_curl_handle instanceof \CurlHandle ) ) ) {
+					// @phpstan-ignore argument.type
+					$retry_curl_errno = curl_errno( $retry_curl_handle );
+				}
+				$is_retry_transient = null !== $retry_curl_errno && in_array( $retry_curl_errno, [ 6, 7, 18, 28, 52, 55, 56 ], true );
+
+				if ( $is_retry_transient && $attempt < $max_retries ) {
+					// Transient error, let the retry loop handle it.
+					$last_exception = $retry_exception;
+					WP_CLI::debug( sprintf( 'Retrying HTTP request to %s (retry %d/%d) after transient error: %s', $url, $attempt, $max_retries, $retry_exception->getMessage() ), 'http' );
+					sleep( $retry_after_delay );
+					$retry_after_delay = min( $retry_after_delay * 2, 10 ); // Exponential backoff, max 10 seconds.
+					continue;
+				}
+
+				$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $retry_exception->getMessage() );
+				if ( $halt_on_error ) {
+					WP_CLI::error( $error_msg );
+				}
+				throw new RuntimeException( $error_msg, 0, $retry_exception );
 			}
-			throw new RuntimeException( $error_msg, 0, $exception );
-		}
-
-		$warning = sprintf(
-			"Re-trying without verify after failing to get verified url '%s' %s.",
-			$url,
-			$exception->getMessage()
-		);
-		WP_CLI::warning( $warning );
-
-		// Disable certificate validation for the next try.
-		$options['verify'] = false;
-
-		try {
-			return $request_method( $url, $headers, $data, $method, $options );
-		} catch ( \Requests_Exception | \WpOrg\Requests\Exception $exception ) {
-			$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $exception->getMessage() );
-			if ( $halt_on_error ) {
-				WP_CLI::error( $error_msg );
-			}
-			throw new RuntimeException( $error_msg, 0, $exception );
 		}
 	}
+
+	// All retries exhausted, throw the last exception.
+	$error_msg = sprintf( "Failed to get url '%s' after %d attempts.", $url, $max_retries );
+	if ( $halt_on_error ) {
+		WP_CLI::error( $error_msg );
+	}
+	throw new RuntimeException( $error_msg, 0, $last_exception );
 }
 
 /**
@@ -1014,30 +1066,32 @@ function increment_version( $current_version, $new_version ) {
 	$_current_version    = explode( '-', $current_version, 2 );
 	$_current_version[0] = explode( '.', $_current_version[0] );
 
-	/**
-	 * @var array{0: list<string>, 1: string} $_current_version
-	 */
+	$_current_version = array_slice( $_current_version, 0, 2 );
 
+	/**
+	 * @var array{0: list<string>, 1?: string|list<string>|null} $_current_version
+	 */
+	// @phpstan-ignore varTag.type
 	switch ( $new_version ) {
 		case 'same':
 			// do nothing.
 			break;
 
 		case 'patch':
-			++$_current_version[0][2];
+			$_current_version[0][2] = (int) $_current_version[0][2] + 1;
 
 			$_current_version = [ $_current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		case 'minor':
-			++$_current_version[0][1];
+			$_current_version[0][1] = (int) $_current_version[0][1] + 1;
 			$_current_version[0][2] = 0;
 
 			$_current_version = [ $_current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		case 'major':
-			++$_current_version[0][0];
+			$_current_version[0][0] = (int) $_current_version[0][0] + 1;
 			$_current_version[0][1] = 0;
 			$_current_version[0][2] = 0;
 
@@ -1051,7 +1105,8 @@ function increment_version( $current_version, $new_version ) {
 
 	// Reconstruct version string.
 	$_current_version[0] = implode( '.', $_current_version[0] );
-	$_current_version    = implode( '-', $_current_version );
+	// @phpstan-ignore argument.type
+	$_current_version = implode( '-', $_current_version );
 
 	return $_current_version;
 }
@@ -1076,9 +1131,6 @@ function get_named_sem_ver( $new_version, $original_version ) {
 	$major = $bits[0];
 	if ( isset( $bits[1] ) ) {
 		$minor = $bits[1];
-	}
-	if ( isset( $bits[2] ) ) {
-		$patch = $bits[2];
 	}
 
 	try {
@@ -1229,6 +1281,9 @@ function get_temp_dir() {
  */
 function parse_ssh_url( $url, $component = -1 ) {
 	preg_match( '#^((docker|docker\-compose|docker\-compose\-run|ssh|vagrant):)?(([^@:]+)@)?([^:/~]+)(:([\d]*))?((/|~)(.+))?$#', $url, $matches );
+	/**
+	 * @var array{scheme?: string, user?: string, host?: string, port?: string, path?: string} $bits
+	 */
 	$bits = [];
 	foreach ( [
 		2 => 'scheme',
@@ -1244,7 +1299,7 @@ function parse_ssh_url( $url, $component = -1 ) {
 
 	// Find the hostname from `vagrant ssh-config` automatically.
 	if ( preg_match( '/^vagrant:?/', $url ) ) {
-		if ( 'vagrant' === $bits['host'] && empty( $bits['scheme'] ) ) {
+		if ( isset( $bits['host'] ) && 'vagrant' === $bits['host'] && empty( $bits['scheme'] ) ) {
 			$bits['scheme'] = 'vagrant';
 			$bits['host']   = '';
 		}
@@ -1312,20 +1367,37 @@ function report_batch_operation_results( $noun, $verb, $total, $successes, $fail
  * @return array<string>
  */
 function parse_str_to_argv( $arguments ) {
-	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches );
-	$argv = $matches[0];
-	return array_map(
-		static function ( $arg ) {
-			foreach ( [ '"', "'" ] as $char ) {
-				if ( substr( $arg, 0, 1 ) === $char && substr( $arg, -1 ) === $char ) {
-					$arg = substr( $arg, 1, -1 );
-					break;
-				}
+	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches, PREG_SET_ORDER );
+	$argv = [];
+	foreach ( $matches as $match ) {
+		// Check if this is a quoted associative argument (--key="value" or --key='value').
+		// For associative args, groups 1 and 2 contain the quote char and value.
+		// For positional args, groups 5 and 6 contain the quote char and value, and group 1 is empty.
+		if ( isset( $match[1], $match[2] ) && 0 < strlen( $match[1] ) ) {
+			// Extract the key part (everything before the quote).
+			if ( preg_match( '/^(--[^=]+=)/', $match[0], $key_match ) ) {
+				$value = $match[2];
+				// Unescape the quote character that was used to wrap the value.
+				$quote_char = $match[1];
+				$value      = str_replace( '\\' . $quote_char, $quote_char, $value );
+				// Reconstruct without the outer quotes.
+				$argv[] = $key_match[1] . $value;
+			} else {
+				$argv[] = $match[0];
 			}
-			return $arg;
-		},
-		$argv
-	);
+		} elseif ( isset( $match[5], $match[6] ) ) {
+			// This is a quoted positional argument.
+			$value = $match[6];
+			// Unescape the quote character that was used to wrap the value.
+			$quote_char = $match[5];
+			$value      = str_replace( '\\' . $quote_char, $quote_char, $value );
+			$argv[]     = $value;
+		} else {
+			// Unquoted argument.
+			$argv[] = $match[0];
+		}
+	}
+	return $argv;
 }
 
 /**
@@ -1714,7 +1786,7 @@ function get_php_binary() {
  * @param array<int, resource>              &$pipes         Indexed array of file pointers that correspond to PHP's end of any pipes that are created.
  * @param string                            $cwd            Initial working directory for the command.
  * @param array<string, string>             $env            Array of environment variables.
- * @param array<string>                     $other_options  Array of additional options (Windows only).
+ * @param array<string, bool>|null          $other_options  Array of additional options (Windows only).
  * @return resource|false Command stripped of any environment variable settings, or false on failure.
  *
  * @param-out array<int, resource> $pipes
@@ -1734,7 +1806,7 @@ function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = n
  * @access private
  *
  * @param string                $cmd  Command to execute.
- * @param array<string, string> &$env Array of existing environment variables. Will be modified if any settings in command.
+ * @param array<string, string>|null &$env Array of existing environment variables. Will be modified if any settings in command.
  * @return string Command stripped of any environment variable settings.
  */
 function _proc_open_compat_win_env( $cmd, &$env ) {
@@ -1866,11 +1938,12 @@ function describe_callable( $callable ) {
 				return sprintf(
 					'%s->%s()',
 					get_class( $callable[0] ),
-					$callable[1]
+					(string) $callable[1]
 				);
 			}
 
-			return sprintf( '%s::%s()', $callable[0], $callable[1] );
+			// @phpstan-ignore cast.string
+			return sprintf( '%s::%s()', (string) $callable[0], (string) $callable[1] );
 		}
 
 		return gettype( $callable );
