@@ -29,6 +29,11 @@ final class PathTest extends TestCase {
 			[ 'C:\\wp\\public/', true ],
 			[ 'C:/wp/public/', true ],
 			[ 'C:\\wp\\public', true ],
+			[ 'C:\\', true ],
+			[ 'c:\\', true ],
+			[ 'c:/path', true ],
+			[ 'C:\\wp/public', true ],
+			[ 'C:', false ],
 			[ '\\\\Server\\Share', true ], // UNC path.
 
 			// Unix-style absolute paths.
