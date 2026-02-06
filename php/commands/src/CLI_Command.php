@@ -160,8 +160,8 @@ class CLI_Command extends WP_CLI_Command {
 				'wp_cli_phar_path'         => defined( 'WP_CLI_PHAR_PATH' ) ? WP_CLI_PHAR_PATH : '',
 				'wp_cli_packages_dir_path' => $packages_dir,
 				'wp_cli_cache_dir_path'    => Utils\get_cache_dir(),
-				'global_config_path'       => $runner->global_config_path,
-				'project_config_path'      => $runner->project_config_path,
+				'global_config_path'       => (string) $runner->global_config_path,
+				'project_config_path'      => (string) $runner->project_config_path,
 				'wp_cli_version'           => WP_CLI_VERSION,
 			];
 
@@ -339,7 +339,12 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( 'You can only self-update Phar files.' );
 		}
 
-		$old_phar = (string) realpath( $_SERVER['argv'][0] );
+		/**
+		 * @var string[] $argv
+		 */
+		$argv = $_SERVER['argv'];
+
+		$old_phar = (string) realpath( $argv[0] );
 
 		if ( ! is_writable( $old_phar ) ) {
 			WP_CLI::error( sprintf( '%s is not writable by current user.', $old_phar ) );
