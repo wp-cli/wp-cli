@@ -1,6 +1,6 @@
 Feature: Multiple flag values support
 
-  Scenario: Command with multiple annotation accepts same flag multiple times
+  Scenario: Command with repeating parameter accepts same flag multiple times
     Given an empty directory
     And a test-cmd.php file:
       """
@@ -17,14 +17,13 @@ Feature: Multiple flag values support
            *
            * ## OPTIONS
            *
-           * [--status=<status>]
+           * [--status=<status>...]
            * : Filter by status
            * ---
            * options:
            *   - active
            *   - inactive
            *   - pending
-           * multiple: true
            * ---
            *
            * @subcommand list
@@ -68,7 +67,7 @@ Feature: Multiple flag values support
       Success: Status filter: active, inactive, pending
       """
 
-  Scenario: Command without multiple annotation uses last value when flag is repeated
+  Scenario: Command without repeating parameter uses last value when flag is repeated
     Given an empty directory
     And a test-single-cmd.php file:
       """
@@ -130,13 +129,12 @@ Feature: Multiple flag values support
            *
            * ## OPTIONS
            *
-           * [--status=<status>]
+           * [--status=<status>...]
            * : Filter by status
            * ---
            * options:
            *   - active
            *   - inactive
-           * multiple: true
            * ---
            *
            * @subcommand list

@@ -359,10 +359,10 @@ class Subcommand extends CompositeCommand {
 			} elseif ( 'assoc' === $spec['type'] ) {
 				$spec_args = $docparser->get_param_args( $spec['name'] );
 
-				// Handle multiple values annotation
+				// Handle repeating parameter (e.g., [--status=<status>...])
 				if ( isset( $assoc_args[ $spec['name'] ] ) && is_array( $assoc_args[ $spec['name'] ] ) ) {
-					// If multiple annotation is not set or is false, use only the last value
-					if ( ! isset( $spec_args['multiple'] ) || false === $spec_args['multiple'] ) {
+					// If repeating is not set, use only the last value
+					if ( empty( $spec['repeating'] ) ) {
 						$values       = $assoc_args[ $spec['name'] ];
 						$values_count = count( $values );
 						if ( $values_count > 0 ) {

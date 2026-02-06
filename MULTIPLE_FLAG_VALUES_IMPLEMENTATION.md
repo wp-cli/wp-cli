@@ -14,10 +14,11 @@ Modified `unmix_assoc_args()` to collect multiple values for the same flag into 
 - Backward compatible: the Subcommand class decides whether to use the array or just the last value
 
 #### 2. Subcommand.php
-Enhanced `validate_args()` to handle the `multiple` annotation:
-- Checks if a parameter has `multiple: true` in its PHPdoc
-- If not set or false, uses only the last value (backward compatible)
-- If set to true, keeps the array of values
+Enhanced `validate_args()` to handle repeating parameters:
+- Checks if a parameter has the ellipsis `...` in its synopsis (e.g., `[--status=<status>...]`)
+- The ellipsis sets `$spec['repeating']` to true when parsing the synopsis
+- If not repeating, uses only the last value (backward compatible)
+- If repeating, keeps the array of values
 - Validates each value in the array against the allowed options
 - Provides better error messages that include the invalid value
 
@@ -38,16 +39,15 @@ if ( is_array( $field_filter ) ) {
 ```
 
 #### Theme_Command.php
-Add `multiple: true` annotation to `--status` parameter:
+Update the synopsis to use ellipsis for `--status` parameter:
 ```
-[--status=<status>]
+[--status=<status>...]
 : Filter the output by theme status.
 ---
 options:
   - active
   - parent
   - inactive
-multiple: true
 ---
 ```
 
@@ -82,7 +82,7 @@ wp theme list --status=active
 
 ## Creating Commands with Multiple Support
 
-To create a command that supports multiple values:
+To create a command that supports multiple values, use the ellipsis `...` in the synopsis:
 
 ```php
 /**
@@ -90,13 +90,12 @@ To create a command that supports multiple values:
  *
  * ## OPTIONS
  *
- * [--status=<status>]
+ * [--status=<status>...]
  * : Filter by status
  * ---
  * options:
  *   - active
  *   - inactive
- * multiple: true
  * ---
  */
 public function list_( $args, $assoc_args ) {
@@ -124,10 +123,10 @@ public function list_( $args, $assoc_args ) {
 
 The implementation is fully backward compatible:
 
-1. **Existing commands without `multiple: true`**: When a flag is repeated, only the last value is used (existing behavior)
+1. **Existing commands without ellipsis**: When a flag is repeated, only the last value is used (existing behavior)
 2. **Comma-separated values**: Still work as before
 3. **Single values**: Still work as before
-4. **Existing code**: No changes needed for commands that don't use `multiple: true`
+4. **Existing code**: No changes needed for commands that don't use the ellipsis syntax
 
 ## Testing
 
@@ -161,7 +160,7 @@ To fully enable this feature for theme and plugin list commands:
 
 2. Update the handbook/documentation with examples of using multiple flags
 
-3. Consider adding `multiple: true` support to other commands that could benefit from it
+3. Consider adding ellipsis syntax to other commands that could benefit from it
 
 ## Related Issues
 
@@ -170,7 +169,8 @@ To fully enable this feature for theme and plugin list commands:
 
 ## Implementation Notes
 
-- The `multiple` annotation is read from the YAML block in PHPdoc, similar to `options` and `default`
-- The annotation is checked using strict comparison: `false === $spec_args['multiple']`
+- The repeating parameter feature uses the ellipsis `...` syntax in the synopsis (e.g., `[--status=<status>...]`)
+- This is the same syntax already used for repeating positional parameters (e.g., `<file>...`)
+- The SynopsisParser detects the ellipsis and sets `$spec['repeating']` to true
 - Error messages for invalid values include the specific invalid value for better debugging
 - The array filtering logic handles both single values and arrays transparently
