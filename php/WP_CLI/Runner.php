@@ -1189,16 +1189,16 @@ class Runner {
 			$this->project_config_path = $this->get_project_config_path();
 
 			$configurator->merge_yml( (string) $this->global_config_path, $this->alias );
-			$config               = $configurator->to_array();
-			$this->required_files = [
-				'global'  => (array) $config[0]['require'],
-				'project' => (array) $config[0]['require'],
-				'runtime' => [],
-			];
-			}
+			$config                         = $configurator->to_array();
+			$this->required_files['global'] = isset( $config[0]['require'] ) ? (array) $config[0]['require'] : [];
+			$configurator->merge_yml( (string) $this->project_config_path, $this->alias );
+			$config                          = $configurator->to_array();
+			$this->required_files['project'] = isset( $config[0]['require'] ) ? (array) $config[0]['require'] : [];
+			$this->required_files['runtime'] = [];
+		}
 
-			// Runtime config and args
-			{
+		// Runtime config and args
+		{
 			list( $args, $assoc_args, $this->runtime_config ) = $configurator->parse_args( $argv );
 
 			list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
