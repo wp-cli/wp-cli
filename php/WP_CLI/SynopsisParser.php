@@ -142,7 +142,8 @@ class SynopsisParser {
 	private static function classify_token( $token ) {
 		$param = [];
 
-		list( $param['optional'], $token ) = self::is_optional( $token );
+		list( $param['optional'], $token )  = self::is_optional( $token );
+		list( $param['repeating'], $token ) = self::is_repeating( $token );
 
 		$p_name  = '([a-z-_0-9]+)';
 		$p_value = '([a-zA-Z-_|,0-9]+)';
@@ -150,14 +151,9 @@ class SynopsisParser {
 		if ( '--<field>=<value>' === $token ) {
 			$param['type'] = 'generic';
 
-			/**
-			 * @phpstan-var GenericParameter $param
-			 */
 		} elseif ( preg_match( "/^<($p_value)>$/", $token, $matches ) ) {
 			$param['type'] = 'positional';
 			$param['name'] = $matches[1];
-
-			list( $param['repeating'], $token ) = self::is_repeating( $token );
 		} elseif ( preg_match( "/^--(?:\\[no-\\])?$p_name/", $token, $matches ) ) {
 			$param['name'] = $matches[1];
 
@@ -184,9 +180,6 @@ class SynopsisParser {
 				}
 			}
 		} else {
-			/**
-			 * @phpstan-var UnknownParameter $param
-			 */
 			$param = [
 				'type' => 'unknown',
 			];
