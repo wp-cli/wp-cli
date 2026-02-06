@@ -273,13 +273,8 @@ function is_path_absolute( $path ) {
 	}
 
 	// Unix root.
-	if ( isset( $path[0] ) && '/' === $path[0] ) {
-		return true;
-	}
-
-	return false;
+	return isset( $path[0] ) && '/' === $path[0];
 }
-
 
 /**
  * Expand tilde (~) in path to home directory.
