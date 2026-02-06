@@ -6,6 +6,13 @@ namespace WP_CLI;
  * Generate a synopsis from a command's PHPdoc arguments.
  * Turns something like "<object-id>..."
  * into [ optional=>false, type=>positional, repeating=>true, name=>object-id ]
+ *
+ * @phpstan-import-type FlagParameter from \WP_CLI
+ * @phpstan-import-type AssocParameter from \WP_CLI
+ * @phpstan-import-type PositionalParameter from \WP_CLI
+ * @phpstan-import-type GenericParameter from \WP_CLI
+ * @phpstan-import-type UnknownParameter from \WP_CLI
+ * @phpstan-import-type CommandSynopsis from \WP_CLI
  */
 class SynopsisParser {
 
@@ -40,6 +47,8 @@ class SynopsisParser {
 	 * @param array $synopsis A structured synopsis. This might get reordered
 	 *                        to match the parsed output.
 	 * @return string Rendered synopsis.
+	 *
+	 * @phpstan-param CommandSynopsis[] $synopsis
 	 */
 	public static function render( &$synopsis ) {
 		if ( ! is_array( $synopsis ) ) {
@@ -69,10 +78,16 @@ class SynopsisParser {
 				}
 
 				if ( 'positional' === $key ) {
+					/**
+					 * @phpstan-var PositionalParameter $arg
+					 */
 					$rendered_arg = "<{$arg['name']}>";
 
 					$reordered_synopsis['positional'] [] = $arg;
 				} elseif ( 'assoc' === $key ) {
+					/**
+					 * @phpstan-var AssocParameter $arg
+					 */
 					$arg_value = isset( $arg['value']['name'] ) ? $arg['value']['name'] : $arg['name'];
 					$arg_value = "=<{$arg_value}>";
 
@@ -88,6 +103,9 @@ class SynopsisParser {
 
 					$reordered_synopsis['generic'] [] = $arg;
 				} elseif ( 'flag' === $key ) {
+					/**
+					 * @phpstan-var FlagParameter $arg
+					 */
 					$rendered_arg = "--{$arg['name']}";
 
 					$reordered_synopsis['flag'] [] = $arg;
@@ -118,21 +136,28 @@ class SynopsisParser {
 	 *
 	 * @param string $token
 	 * @return array
+	 *
+	 * @phpstan-return CommandSynopsis
 	 */
 	private static function classify_token( $token ) {
 		$param = [];
 
-		list( $param['optional'], $token )  = self::is_optional( $token );
-		list( $param['repeating'], $token ) = self::is_repeating( $token );
+		list( $param['optional'], $token ) = self::is_optional( $token );
 
 		$p_name  = '([a-z-_0-9]+)';
 		$p_value = '([a-zA-Z-_|,0-9]+)';
 
 		if ( '--<field>=<value>' === $token ) {
 			$param['type'] = 'generic';
+
+			/**
+			 * @phpstan-var GenericParameter $param
+			 */
 		} elseif ( preg_match( "/^<($p_value)>$/", $token, $matches ) ) {
 			$param['type'] = 'positional';
 			$param['name'] = $matches[1];
+
+			list( $param['repeating'], $token ) = self::is_repeating( $token );
 		} elseif ( preg_match( "/^--(?:\\[no-\\])?$p_name/", $token, $matches ) ) {
 			$param['name'] = $matches[1];
 
@@ -150,13 +175,21 @@ class SynopsisParser {
 				if ( preg_match( "/^=<$p_value>$/", $value, $matches ) ) {
 					$param['value']['name'] = $matches[1];
 				} else {
+					/**
+					 * @phpstan-var UnknownParameter $param
+					 */
 					$param = [
 						'type' => 'unknown',
 					];
 				}
 			}
 		} else {
-			$param['type'] = 'unknown';
+			/**
+			 * @phpstan-var UnknownParameter $param
+			 */
+			$param = [
+				'type' => 'unknown',
+			];
 		}
 
 		return $param;
@@ -166,7 +199,7 @@ class SynopsisParser {
 	 * An optional parameter is surrounded by square brackets.
 	 *
 	 * @param string $token
-	 * @return array
+	 * @return array{0: bool, 1: string}
 	 */
 	private static function is_optional( $token ) {
 		if ( '[' === substr( $token, 0, 1 ) && ']' === substr( $token, -1 ) ) {
@@ -180,7 +213,7 @@ class SynopsisParser {
 	 * A repeating parameter is followed by an ellipsis.
 	 *
 	 * @param string $token
-	 * @return array
+	 * @return array{0: bool, 1: string}
 	 */
 	private static function is_repeating( $token ) {
 		if ( '...' === substr( $token, -3 ) ) {
