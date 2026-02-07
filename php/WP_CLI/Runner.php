@@ -338,8 +338,14 @@ class Runner {
 	 */
 	private static function set_wp_root( $path ) {
 		if ( ! defined( 'ABSPATH' ) ) {
+			$normalized = Utils\normalize_path( Utils\trailingslashit( $path ) );
+			// Adjust Windows-style paths starting with drive letter + forward slash (C:/) so that
+			// WordPress core's path_is_absolute() recognizes them as absolute on Windows.
+			if ( preg_match( '#^[A-Z]:/#i', $normalized ) ) {
+				$normalized = preg_replace( '#^([A-Z]):/#i', '$1:\\\\', $normalized );
+			}
 			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Declaring a WP native constant.
-			define( 'ABSPATH', Utils\normalize_path( Utils\trailingslashit( $path ) ) );
+			define( 'ABSPATH', $normalized );
 		} elseif ( ! is_null( $path ) ) {
 			WP_CLI::error_multi_line(
 				[

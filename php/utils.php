@@ -258,11 +258,21 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
  * @return bool
  */
 function is_path_absolute( $path ) {
-	// Windows.
-	if ( isset( $path[1] ) && ':' === $path[1] ) {
+	// Empty path is not absolute.
+	if ( '' === $path ) {
+		return false;
+	}
+	// Windows drive letter + colon + slash or backslash.
+	if ( preg_match( '#^[A-Z]:[\\\\/]#i', $path ) ) {
 		return true;
 	}
 
+	// UNC path (\\Server\Share).
+	if ( preg_match( '#^\\\\\\\\[^\\\\/]+[\\\\/][^\\\\/]+#', $path ) ) {
+		return true;
+	}
+
+	// Unix root.
 	return isset( $path[0] ) && '/' === $path[0];
 }
 
