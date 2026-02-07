@@ -1290,7 +1290,7 @@ class Runner {
 			// Run aliases sequentially (original behavior)
 			foreach ( $aliases as $alias ) {
 				WP_CLI::log( $alias );
-				$escaped_alias = escapeshellarg( $alias );
+				$escaped_alias  = escapeshellarg( $alias );
 				$assoc_args     = Utils\assoc_args_to_str( (array) $this->assoc_args );
 				$runtime_config = Utils\assoc_args_to_str( (array) $subprocess_runtime_config );
 				$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$escaped_alias} {$args}{$assoc_args}{$runtime_config}";
