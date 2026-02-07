@@ -250,7 +250,7 @@ final class RequestsLibrary {
 			} else {
 				require_once WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests.php';
 			}
-			// @phpstan-ignore staticMethod.deprecated, staticMethod.deprecatedClass
+			// @phpstan-ignore staticMethod.deprecatedClass
 			\Requests::register_autoloader();
 		}
 

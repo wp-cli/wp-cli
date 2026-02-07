@@ -49,6 +49,7 @@ class FileCacheTest extends TestCase {
 		$test_class = new ReflectionClass( $cache );
 		$method     = $test_class->getMethod( 'ensure_dir_exists' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$method->setAccessible( true );
 		}
 
@@ -201,6 +202,7 @@ class FileCacheTest extends TestCase {
 
 		$method = $reflection->getMethod( 'validate_key' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$method->setAccessible( true );
 		}
 
