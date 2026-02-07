@@ -258,11 +258,21 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
  * @return bool
  */
 function is_path_absolute( $path ) {
-	// Windows.
-	if ( isset( $path[1] ) && ':' === $path[1] ) {
+	// Empty path is not absolute.
+	if ( '' === $path ) {
+		return false;
+	}
+	// Windows drive letter + colon + slash or backslash.
+	if ( preg_match( '#^[A-Z]:[\\\\/]#i', $path ) ) {
 		return true;
 	}
 
+	// UNC path (\\Server\Share).
+	if ( preg_match( '#^\\\\\\\\[^\\\\/]+[\\\\/][^\\\\/]+#', $path ) ) {
+		return true;
+	}
+
+	// Unix root.
 	return isset( $path[0] ) && '/' === $path[0];
 }
 
@@ -297,7 +307,7 @@ function expand_tilde_path( $path ) {
  * @return string
  */
 function args_to_str( $args ) {
-	return ' ' . implode( ' ', array_map( 'escapeshellarg', $args ) );
+	return ' ' . implode( ' ', array_map( 'escapeshellarg', array_map( 'strval', $args ) ) );
 }
 
 /**
@@ -385,7 +395,11 @@ function locate_wp_config() {
  * @return bool
  */
 function wp_version_compare( $since, $operator ) {
-	$wp_version = str_replace( '-src', '', $GLOBALS['wp_version'] );
+	/**
+	 * @var string $wp_version
+	 */
+	$wp_version = $GLOBALS['wp_version'];
+	$wp_version = str_replace( '-src', '', $wp_version );
 	$since      = str_replace( '-src', '', $since );
 	return version_compare( $wp_version, $since, $operator );
 }
@@ -1062,30 +1076,32 @@ function increment_version( $current_version, $new_version ) {
 	$_current_version    = explode( '-', $current_version, 2 );
 	$_current_version[0] = explode( '.', $_current_version[0] );
 
-	/**
-	 * @var array{0: list<string>, 1: string} $_current_version
-	 */
+	$_current_version = array_slice( $_current_version, 0, 2 );
 
+	/**
+	 * @var array{0: list<string>, 1?: string|list<string>|null} $_current_version
+	 */
+	// @phpstan-ignore varTag.type
 	switch ( $new_version ) {
 		case 'same':
 			// do nothing.
 			break;
 
 		case 'patch':
-			++$_current_version[0][2];
+			$_current_version[0][2] = (int) $_current_version[0][2] + 1;
 
 			$_current_version = [ $_current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		case 'minor':
-			++$_current_version[0][1];
+			$_current_version[0][1] = (int) $_current_version[0][1] + 1;
 			$_current_version[0][2] = 0;
 
 			$_current_version = [ $_current_version[0] ]; // Drop possible pre-release info.
 			break;
 
 		case 'major':
-			++$_current_version[0][0];
+			$_current_version[0][0] = (int) $_current_version[0][0] + 1;
 			$_current_version[0][1] = 0;
 			$_current_version[0][2] = 0;
 
@@ -1099,7 +1115,8 @@ function increment_version( $current_version, $new_version ) {
 
 	// Reconstruct version string.
 	$_current_version[0] = implode( '.', $_current_version[0] );
-	$_current_version    = implode( '-', $_current_version );
+	// @phpstan-ignore argument.type
+	$_current_version = implode( '-', $_current_version );
 
 	return $_current_version;
 }
@@ -1124,9 +1141,6 @@ function get_named_sem_ver( $new_version, $original_version ) {
 	$major = $bits[0];
 	if ( isset( $bits[1] ) ) {
 		$minor = $bits[1];
-	}
-	if ( isset( $bits[2] ) ) {
-		$patch = $bits[2];
 	}
 
 	try {
@@ -1277,6 +1291,9 @@ function get_temp_dir() {
  */
 function parse_ssh_url( $url, $component = -1 ) {
 	preg_match( '#^((docker|docker\-compose|docker\-compose\-run|ssh|vagrant):)?(([^@:]+)@)?([^:/~]+)(:([\d]*))?((/|~)(.+))?$#', $url, $matches );
+	/**
+	 * @var array{scheme?: string, user?: string, host?: string, port?: string, path?: string} $bits
+	 */
 	$bits = [];
 	foreach ( [
 		2 => 'scheme',
@@ -1292,7 +1309,7 @@ function parse_ssh_url( $url, $component = -1 ) {
 
 	// Find the hostname from `vagrant ssh-config` automatically.
 	if ( preg_match( '/^vagrant:?/', $url ) ) {
-		if ( 'vagrant' === $bits['host'] && empty( $bits['scheme'] ) ) {
+		if ( isset( $bits['host'] ) && 'vagrant' === $bits['host'] && empty( $bits['scheme'] ) ) {
 			$bits['scheme'] = 'vagrant';
 			$bits['host']   = '';
 		}
@@ -1360,20 +1377,37 @@ function report_batch_operation_results( $noun, $verb, $total, $successes, $fail
  * @return array<string>
  */
 function parse_str_to_argv( $arguments ) {
-	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches );
-	$argv = $matches[0];
-	return array_map(
-		static function ( $arg ) {
-			foreach ( [ '"', "'" ] as $char ) {
-				if ( substr( $arg, 0, 1 ) === $char && substr( $arg, -1 ) === $char ) {
-					$arg = substr( $arg, 1, -1 );
-					break;
-				}
+	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches, PREG_SET_ORDER );
+	$argv = [];
+	foreach ( $matches as $match ) {
+		// Check if this is a quoted associative argument (--key="value" or --key='value').
+		// For associative args, groups 1 and 2 contain the quote char and value.
+		// For positional args, groups 5 and 6 contain the quote char and value, and group 1 is empty.
+		if ( isset( $match[1], $match[2] ) && 0 < strlen( $match[1] ) ) {
+			// Extract the key part (everything before the quote).
+			if ( preg_match( '/^(--[^=]+=)/', $match[0], $key_match ) ) {
+				$value = $match[2];
+				// Unescape the quote character that was used to wrap the value.
+				$quote_char = $match[1];
+				$value      = str_replace( '\\' . $quote_char, $quote_char, $value );
+				// Reconstruct without the outer quotes.
+				$argv[] = $key_match[1] . $value;
+			} else {
+				$argv[] = $match[0];
 			}
-			return $arg;
-		},
-		$argv
-	);
+		} elseif ( isset( $match[5], $match[6] ) ) {
+			// This is a quoted positional argument.
+			$value = $match[6];
+			// Unescape the quote character that was used to wrap the value.
+			$quote_char = $match[5];
+			$value      = str_replace( '\\' . $quote_char, $quote_char, $value );
+			$argv[]     = $value;
+		} else {
+			// Unquoted argument.
+			$argv[] = $match[0];
+		}
+	}
+	return $argv;
 }
 
 /**
@@ -1762,7 +1796,7 @@ function get_php_binary() {
  * @param array<int, resource>              &$pipes         Indexed array of file pointers that correspond to PHP's end of any pipes that are created.
  * @param string                            $cwd            Initial working directory for the command.
  * @param array<string, string>             $env            Array of environment variables.
- * @param array<string>                     $other_options  Array of additional options (Windows only).
+ * @param array<string, bool>|null          $other_options  Array of additional options (Windows only).
  * @return resource|false Command stripped of any environment variable settings, or false on failure.
  *
  * @param-out array<int, resource> $pipes
@@ -1782,7 +1816,7 @@ function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = n
  * @access private
  *
  * @param string                $cmd  Command to execute.
- * @param array<string, string> &$env Array of existing environment variables. Will be modified if any settings in command.
+ * @param array<string, string>|null &$env Array of existing environment variables. Will be modified if any settings in command.
  * @return string Command stripped of any environment variable settings.
  */
 function _proc_open_compat_win_env( $cmd, &$env ) {
@@ -1914,11 +1948,12 @@ function describe_callable( $callable ) {
 				return sprintf(
 					'%s->%s()',
 					get_class( $callable[0] ),
-					$callable[1]
+					(string) $callable[1]
 				);
 			}
 
-			return sprintf( '%s::%s()', $callable[0], $callable[1] );
+			// @phpstan-ignore cast.string
+			return sprintf( '%s::%s()', (string) $callable[0], (string) $callable[1] );
 		}
 
 		return gettype( $callable );
