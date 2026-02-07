@@ -3,6 +3,14 @@
 use WP_CLI\SynopsisParser;
 use WP_CLI\Tests\TestCase;
 
+/**
+ * @phpstan-import-type FlagParameter from \WP_CLI
+ * @phpstan-import-type AssocParameter from \WP_CLI
+ * @phpstan-import-type PositionalParameter from \WP_CLI
+ * @phpstan-import-type GenericParameter from \WP_CLI
+ * @phpstan-import-type UnknownParameter from \WP_CLI
+ * @phpstan-import-type CommandSynopsis from \WP_CLI
+ */
 class SynopsisParserTest extends TestCase {
 
 	public function testEmpty(): void {
@@ -138,6 +146,9 @@ class SynopsisParserTest extends TestCase {
 	}
 
 	public function testRender(): void {
+		/**
+		 * @phpstan-var array{0: PositionalParameter, 1: PositionalParameter, 2: AssocParameter, 3: AssocParameter, 4: AssocParameter} $a
+		 */
 		$a = [
 			[
 				'name'        => 'message',

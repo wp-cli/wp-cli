@@ -525,9 +525,6 @@ class Subcommand extends CompositeCommand {
 			}
 		}
 
-		/**
-		 * @var array $config
-		 */
 		$config                             = \WP_CLI::get_config();
 		list( $returned_errors, $to_unset ) = $validator->validate_assoc(
 			array_merge( $config, $extra_args, $assoc_args )
