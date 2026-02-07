@@ -182,9 +182,6 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$alias = $args[0];
 
-		/**
-		 * @var string|null $grouping
-		 */
 		$grouping = Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		$this->validate_input( $assoc_args, $grouping );
@@ -301,9 +298,6 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		$config = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
 		$alias  = $args[0];
 
-		/**
-		 * @var string|null $grouping
-		 */
 		$grouping = Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		list( $config_path, $aliases ) = $this->get_aliases_data( $config, $alias, true );

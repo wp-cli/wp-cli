@@ -708,3 +708,30 @@ Feature: Create shortcuts to specific WordPress installs
       """
       http://parallel-bar.com
       """
+
+  Scenario: Using --quiet with @all suppresses alias names but still outputs command results
+    Given a WP installation in 'foo'
+    And a WP installation in 'bar'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      @bar:
+        path: bar
+      """
+
+    When I run `wp @all eval 'echo "output-from-alias\n";'`
+    Then STDOUT should be:
+      """
+      @foo
+      output-from-alias
+      @bar
+      output-from-alias
+      """
+
+    When I run `wp @all eval 'echo "output-from-alias\n";' --quiet`
+    Then STDOUT should be:
+      """
+      output-from-alias
+      output-from-alias
+      """
