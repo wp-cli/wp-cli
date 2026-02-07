@@ -367,16 +367,13 @@ class Subcommand extends CompositeCommand {
 	 * shorter versions of arguments (e.g., -w for --with-dependencies).
 	 *
 	 * @param array $assoc_args Arguments passed to command.
+	 * @param array $aliases    Map of alias => canonical_name.
 	 * @return array Arguments with aliases resolved to canonical names.
 	 */
-	private function resolve_arg_aliases( $assoc_args ) {
-		$aliases = $this->original_docparser->get_arg_aliases();
-
+	private function resolve_arg_aliases( $assoc_args, $aliases ) {
 		if ( empty( $aliases ) ) {
 			return $assoc_args;
 		}
-
-		WP_CLI::debug( 'Resolving argument aliases: ' . implode( ', ', array_keys( $aliases ) ), 'bootstrap' );
 
 		$resolved_args = [];
 
@@ -607,8 +604,13 @@ class Subcommand extends CompositeCommand {
 		static $prompted_once = false;
 
 		// Resolve any argument aliases to canonical names first
-		$assoc_args = $this->resolve_arg_aliases( $assoc_args );
-		$extra_args = $this->resolve_arg_aliases( $extra_args );
+		// Compute aliases once and reuse for both assoc_args and extra_args
+		$aliases = $this->original_docparser->get_arg_aliases();
+		if ( ! empty( $aliases ) ) {
+			WP_CLI::debug( 'Resolving argument aliases: ' . implode( ', ', array_keys( $aliases ) ), 'bootstrap' );
+		}
+		$assoc_args = $this->resolve_arg_aliases( $assoc_args, $aliases );
+		$extra_args = $this->resolve_arg_aliases( $extra_args, $aliases );
 
 		if ( 'help' !== $this->name ) {
 			if ( \WP_CLI::get_config( 'prompt' ) && ! $prompted_once ) {
