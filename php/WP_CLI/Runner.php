@@ -1385,6 +1385,9 @@ class Runner {
 
 		// Handle --assume-https parameter
 		if ( ! empty( $this->config['assume-https'] ) ) {
+			/**
+			 * @var array{HTTPS: string|int} $_SERVER
+			 */
 			if ( ! isset( $_SERVER['HTTPS'] ) ) {
 				$_SERVER['HTTPS'] = 'on';
 			} else {
