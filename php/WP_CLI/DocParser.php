@@ -156,25 +156,6 @@ class DocParser {
 	}
 
 	/**
-	 * Get the arguments for a given parameter (flag or assoc).
-	 *
-	 * This method works for both flags (--param) and associative parameters (--param=<value>).
-	 *
-	 * @param string $key Parameter's key.
-	 * @return array|null
-	 */
-	private function get_param_or_flag_args( $key ) {
-		// Try to get args for an associative parameter first
-		$args = $this->get_arg_or_param_args( "/^\[?--{$key}=.*/" );
-		if ( $args ) {
-			return $args;
-		}
-
-		// Try to get args for a flag parameter
-		return $this->get_arg_or_param_args( "/^\[?--{$key}\]?$/" );
-	}
-
-	/**
 	 * Build a map of all argument aliases to their canonical names.
 	 *
 	 * Parses the PHPdoc for all parameters that have an 'alias' attribute
