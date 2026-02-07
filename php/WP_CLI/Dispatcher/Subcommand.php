@@ -443,6 +443,9 @@ class Subcommand extends CompositeCommand {
 					}
 				}
 				if ( isset( $assoc_args[ $spec['name'] ] ) && isset( $spec_args['options'] ) ) {
+					/**
+					 * @var string|string[] $value
+					 */
 					$value   = $assoc_args[ $spec['name'] ];
 					$options = $spec_args['options'];
 
