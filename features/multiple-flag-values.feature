@@ -144,7 +144,7 @@ Feature: Multiple flag values support
                   if ( is_array( $assoc_args['status'] ) ) {
                       WP_CLI::success( 'Filters: ' . implode( ', ', $assoc_args['status'] ) );
                   } else {
-                      WP_CLI::success( 'Filter: ' . $assoc_args['status'] );
+                      WP_CLI::success( 'Filters: ' . $assoc_args['status'] );
                   }
               }
           }
