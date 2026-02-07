@@ -1627,6 +1627,17 @@ class Runner {
 			WP_CLI::add_wp_hook( 'setup_theme', [ $this, 'action_setup_theme_wp_cli_skip_themes' ], 999 );
 		}
 
+		// Set the locale if configured
+		if ( ! empty( $this->config['locale'] ) ) {
+			$locale = $this->config['locale'];
+			WP_CLI::add_wp_hook(
+				'locale',
+				static function () use ( $locale ) {
+					return $locale;
+				}
+			);
+		}
+
 		// Log WordPress HTTP API requests
 		WP_CLI::add_wp_hook(
 			'pre_http_request',
