@@ -1179,17 +1179,22 @@ class Runner {
 		list( $this->config, $this->extra_config ) = $configurator->to_array();
 		$this->aliases                             = $configurator->get_aliases();
 		$this->raw_aliases                         = $configurator->get_raw_aliases();
-		if ( count( $this->aliases ) && ! isset( $this->aliases['@all'] ) ) {
-			$this->aliases         = array_reverse( $this->aliases );
-			$this->aliases['@all'] = 'Run command against every registered alias.';
-			$this->aliases         = array_reverse( $this->aliases );
-		}
-		if ( count( $this->raw_aliases ) && ! isset( $this->raw_aliases['@all'] ) ) {
-			$this->raw_aliases         = array_reverse( $this->raw_aliases );
-			$this->raw_aliases['@all'] = 'Run command against every registered alias.';
-			$this->raw_aliases         = array_reverse( $this->raw_aliases );
-		}
+		$this->add_at_all_alias( $this->aliases );
+		$this->add_at_all_alias( $this->raw_aliases );
 		$this->required_files['runtime'] = $this->config['require'];
+	}
+
+	/**
+	 * Add the @all alias to an aliases array if it doesn't already exist.
+	 *
+	 * @param array $aliases Aliases array passed by reference.
+	 */
+	private function add_at_all_alias( &$aliases ) {
+		if ( count( $aliases ) && ! isset( $aliases['@all'] ) ) {
+			$aliases         = array_reverse( $aliases );
+			$aliases['@all'] = 'Run command against every registered alias.';
+			$aliases         = array_reverse( $aliases );
+		}
 	}
 
 	private function run_alias_group( $aliases ): void {
