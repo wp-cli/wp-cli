@@ -144,26 +144,9 @@ class Configurator {
 	 * @return array
 	 */
 	public function get_aliases() {
-		$runtime_alias = getenv( 'WP_CLI_RUNTIME_ALIAS' );
-		if ( false !== $runtime_alias ) {
-			$returned_aliases = [];
-
-			/**
-			 * @var string $key
-			 * @var array<string, string> $value
-			 */
-			foreach ( (array) json_decode( $runtime_alias, true ) as $key => $value ) {
-				if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
-					$returned_aliases[ $key ] = [];
-					foreach ( self::$alias_spec as $i ) {
-						if ( isset( $value[ $i ] ) ) {
-							// Interpolate environment variables in runtime alias values.
-							$returned_aliases[ $key ][ $i ] = self::interpolate_env_vars( $value[ $i ] );
-						}
-					}
-				}
-			}
-			return $returned_aliases;
+		$runtime_aliases = $this->get_runtime_aliases( true );
+		if ( null !== $runtime_aliases ) {
+			return $runtime_aliases;
 		}
 
 		return $this->aliases;
@@ -175,29 +158,46 @@ class Configurator {
 	 * @return array
 	 */
 	public function get_raw_aliases() {
-		$runtime_alias = getenv( 'WP_CLI_RUNTIME_ALIAS' );
-		if ( false !== $runtime_alias ) {
-			$returned_aliases = [];
-
-			/**
-			 * @var string $key
-			 * @var array<string, string> $value
-			 */
-			foreach ( (array) json_decode( $runtime_alias, true ) as $key => $value ) {
-				if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
-					$returned_aliases[ $key ] = [];
-					foreach ( self::$alias_spec as $i ) {
-						if ( isset( $value[ $i ] ) ) {
-							// Return raw value without interpolation.
-							$returned_aliases[ $key ][ $i ] = $value[ $i ];
-						}
-					}
-				}
-			}
-			return $returned_aliases;
+		$runtime_aliases = $this->get_runtime_aliases( false );
+		if ( null !== $runtime_aliases ) {
+			return $runtime_aliases;
 		}
 
 		return $this->raw_aliases;
+	}
+
+	/**
+	 * Get runtime aliases from environment variable.
+	 *
+	 * @param bool $interpolate Whether to interpolate environment variables.
+	 * @return array|null Returns aliases array if runtime alias is set, null otherwise.
+	 */
+	private function get_runtime_aliases( $interpolate ) {
+		$runtime_alias = getenv( 'WP_CLI_RUNTIME_ALIAS' );
+		if ( false === $runtime_alias ) {
+			return null;
+		}
+
+		$returned_aliases = [];
+
+		/**
+		 * @var string $key
+		 * @var array<string, string> $value
+		 */
+		foreach ( (array) json_decode( $runtime_alias, true ) as $key => $value ) {
+			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
+				$returned_aliases[ $key ] = [];
+				foreach ( self::$alias_spec as $i ) {
+					if ( isset( $value[ $i ] ) ) {
+						$returned_aliases[ $key ][ $i ] = $interpolate
+							? self::interpolate_env_vars( $value[ $i ] )
+							: $value[ $i ];
+					}
+				}
+			}
+		}
+
+		return $returned_aliases;
 	}
 
 	/**
