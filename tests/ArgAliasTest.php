@@ -164,8 +164,8 @@ EOD;
 	}
 
 	public function test_get_arg_aliases_yaml_boolean_handling(): void {
-		// Test that YAML boolean values need to be quoted to avoid interpretation
-		// Without quotes, 'n' becomes false and 'y' becomes true
+		// Test that YAML boolean values are handled correctly
+		// YAML 1.1 interprets 'n' as false and 'y' as true, but we convert them back
 		$doc     = <<<'EOD'
 /**
  * Test command
@@ -175,20 +175,20 @@ EOD;
  * [--number=<number>]
  * : Number parameter.
  * ---
- * alias: 'n'
+ * alias: n
  * ---
  *
  * [--answer=<answer>]
  * : Answer parameter.
  * ---
- * alias: 'y'
+ * alias: y
  * ---
  */
 EOD;
 		$parser  = new DocParser( $doc );
 		$aliases = $parser->get_arg_aliases();
 
-		// With quotes, YAML preserves the string values
+		// YAML interprets 'n' as false and 'y' as true, but we convert them back
 		$this->assertEquals(
 			[
 				'n' => 'number',
