@@ -187,18 +187,6 @@ class DocParser {
 						if ( $param_args && isset( $param_args['alias'] ) ) {
 							$param_aliases = (array) $param_args['alias'];
 							foreach ( $param_aliases as $alias ) {
-								// Handle YAML boolean values (YAML 1.1 spec interprets certain
-								// values as booleans: y/Y/yes/YES/n/N/no/NO/true/false/on/off)
-								// For single-letter aliases, we preserve the intent by converting
-								// boolean values back to their likely string representations.
-								// Note: This means 'n' and 'N' both become 'n', and 'y' and 'Y' become 'y'.
-								// Users can avoid this by quoting the alias in YAML: alias: 'N'
-								if ( false === $alias ) {
-									$alias = 'n';
-								} elseif ( true === $alias ) {
-									$alias = 'y';
-								}
-
 								// Convert to string if not already
 								$alias = (string) $alias;
 
