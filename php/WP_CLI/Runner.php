@@ -571,7 +571,10 @@ class Runner {
 		} catch ( ExitException $e ) {
 			// Re-throw control-flow exceptions so callers can handle exit codes/output.
 			throw $e;
-		} catch ( \Throwable $e ) {
+		} catch ( \Exception $e ) {
+			// Catch exceptions but not Error types, as Error types represent
+			// fatal errors that should be handled by ShutdownHandler for
+			// helpful plugin/theme skip suggestions.
 			WP_CLI::error( $e );
 		}
 	}
