@@ -160,8 +160,8 @@ class CLI_Command extends WP_CLI_Command {
 				'wp_cli_phar_path'         => defined( 'WP_CLI_PHAR_PATH' ) ? WP_CLI_PHAR_PATH : '',
 				'wp_cli_packages_dir_path' => $packages_dir,
 				'wp_cli_cache_dir_path'    => Utils\get_cache_dir(),
-				'global_config_path'       => $runner->global_config_path,
-				'project_config_path'      => $runner->project_config_path,
+				'global_config_path'       => (string) $runner->global_config_path,
+				'project_config_path'      => (string) $runner->project_config_path,
 				'wp_cli_version'           => WP_CLI_VERSION,
 			];
 
@@ -195,6 +195,13 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * Queries the GitHub releases API. Returns available versions if there are
 	 * updates available, or success message if using the latest release.
+	 *
+	 * Unauthenticated requests to the GitHub API are rate limited to 60 per hour
+	 * per IP address. If you are experiencing rate limit issues, you can generate
+	 * a GitHub personal access token and set the GITHUB_TOKEN environment variable
+	 * before running this command. Authenticated requests have a higher rate limit
+	 * of 5,000 per hour. The token only needs public repository read access (no
+	 * specific scopes required for public data).
 	 *
 	 * ## OPTIONS
 	 *
@@ -239,6 +246,10 @@ class CLI_Command extends WP_CLI_Command {
 	 *     | 0.24.1  | patch       | https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar |
 	 *     +---------+-------------+-------------------------------------------------------------------------------+
 	 *
+	 *     # Check for update using a GitHub token to increase rate limit.
+	 *     $ GITHUB_TOKEN=ghp_... wp cli check-update
+	 *     Success: WP-CLI is at the latest version.
+	 *
 	 * @subcommand check-update
 	 *
 	 * @param string[] $args Positional arguments. Unused.
@@ -274,6 +285,13 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * Only works for the Phar installation mechanism.
 	 *
+	 * Unauthenticated requests to the GitHub API are rate limited to 60 per hour
+	 * per IP address. If you are experiencing rate limit issues, you can generate
+	 * a GitHub personal access token and set the GITHUB_TOKEN environment variable
+	 * before running this command. Authenticated requests have a higher rate limit
+	 * of 5,000 per hour. The token only needs public repository read access (no
+	 * specific scopes required for public data).
+	 *
 	 * ## OPTIONS
 	 *
 	 * [--patch]
@@ -306,6 +324,13 @@ class CLI_Command extends WP_CLI_Command {
 	 *     New version works. Proceeding to replace.
 	 *     Success: Updated WP-CLI to 0.24.1.
 	 *
+	 *     # Update CLI using a GitHub token to increase rate limit.
+	 *     $ GITHUB_TOKEN=ghp_... wp cli update
+	 *     You are currently using WP-CLI version 0.24.0. Would you like to update to 0.24.1? [y/n] y
+	 *     Downloading from https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar...
+	 *     New version works. Proceeding to replace.
+	 *     Success: Updated WP-CLI to 0.24.1.
+	 *
 	 * @param string[] $args Positional arguments. Unused.
 	 * @param array{patch?: bool, minor?: bool, major?: bool, stable?: bool, nightly?: bool, yes?: bool, insecure?: bool} $assoc_args Associative arguments.
 	 */
@@ -314,7 +339,12 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( 'You can only self-update Phar files.' );
 		}
 
-		$old_phar = (string) realpath( $_SERVER['argv'][0] );
+		/**
+		 * @var string[] $argv
+		 */
+		$argv = $_SERVER['argv'];
+
+		$old_phar = (string) realpath( $argv[0] );
 
 		if ( ! is_writable( $old_phar ) ) {
 			WP_CLI::error( sprintf( '%s is not writable by current user.', $old_phar ) );
@@ -377,7 +407,7 @@ class CLI_Command extends WP_CLI_Command {
 		$this->validate_hashes( $temp, $sha512_url, $md5_url );
 
 		$allow_root = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
-		$php_binary = Utils\get_php_binary();
+		$php_binary = escapeshellarg( Utils\get_php_binary() );
 		$process    = Process::create( "{$php_binary} $temp --info {$allow_root}" );
 		$result     = $process->run();
 		if ( 0 !== $result->return_code || false === stripos( $result->stdout, 'WP-CLI version' ) ) {
@@ -467,7 +497,15 @@ class CLI_Command extends WP_CLI_Command {
 		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
 
 		if ( ! $response->success || 200 !== $response->status_code ) {
-			WP_CLI::error( sprintf( 'Failed to get latest version (HTTP code %d).', $response->status_code ) );
+			$error_message = sprintf( 'Failed to get latest version (HTTP code %d).', $response->status_code );
+			if ( 403 === $response->status_code ) {
+				$error_message .= ' This is due to GitHub API rate limiting.';
+				if ( false === $github_token ) {
+					$error_message .= ' Try using a GITHUB_TOKEN environment variable to authenticate with GitHub and get a higher rate limit.';
+					$error_message .= ' See https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting for more information.';
+				}
+			}
+			WP_CLI::error( $error_message );
 		}
 
 		/**

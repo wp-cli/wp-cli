@@ -1583,6 +1583,37 @@ Feature: WP-CLI Commands
       """
     And STDERR should be empty
 
+  Scenario: Debug output differentiates between commands and namespaces
+    Given an empty directory
+    And a command-and-namespace.php file:
+      """
+      <?php
+      /**
+       * My Command Namespace Description.
+       */
+      class My_Command_Namespace extends \WP_CLI\Dispatcher\CommandNamespace {}
+
+      /**
+       * My Actual Command.
+       */
+      class My_Actual_Command extends WP_CLI_Command {
+        public function test() {}
+      }
+
+      WP_CLI::add_command( 'my-namespace', 'My_Command_Namespace' );
+      WP_CLI::add_command( 'my-command', 'My_Actual_Command' );
+      """
+
+    When I run `wp --debug --require=command-and-namespace.php help 2>&1`
+    Then STDOUT should contain:
+      """
+      Adding namespace: my-namespace
+      """
+    And STDOUT should contain:
+      """
+      Adding command: my-command
+      """
+
   Scenario: Late-registered command should appear in command usage
     Given a WP installation
     And a test-cmd.php file:
