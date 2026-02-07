@@ -843,7 +843,10 @@ class WP_CLI {
 		}
 
 		$property = $reflection->getProperty( 'docparser' );
-		$property->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$property->setAccessible( true );
+		}
 		$docparser = $property->getValue( $command );
 
 		if ( ! is_object( $docparser ) ) {
@@ -857,7 +860,10 @@ class WP_CLI {
 		}
 
 		$doc_property = $doc_reflection->getProperty( 'doc_comment' );
-		$doc_property->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$doc_property->setAccessible( true );
+		}
 		$doc_comment = $doc_property->getValue( $docparser );
 
 		if ( ! is_string( $doc_comment ) ) {
