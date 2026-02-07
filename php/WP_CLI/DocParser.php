@@ -180,57 +180,88 @@ class DocParser {
 	 * Parses the PHPdoc for all parameters that have an 'alias' attribute
 	 * and builds a mapping from alias to canonical parameter name.
 	 *
+	 * This method uses a single-pass state machine to avoid nested iteration,
+	 * improving performance from O(n²) to O(n) where n is the number of lines.
+	 *
 	 * @return array Map of alias => canonical_name
 	 */
 	public function get_arg_aliases() {
-		$aliases = [];
-		$bits    = explode( "\n", $this->doc_comment );
+		$aliases       = [];
+		$bits          = explode( "\n", $this->doc_comment );
+		$current_param = null;
+		$within_yaml   = false;
+		$yaml_document = [];
 
 		foreach ( $bits as $bit ) {
-			// Skip empty lines and separator lines
-			$bit = trim( $bit );
-			if ( empty( $bit ) || '---' === $bit ) {
+			$trimmed_bit = trim( $bit );
+
+			// Check if we're starting or ending a YAML block
+			if ( '---' === $trimmed_bit ) {
+				if ( $within_yaml ) {
+					// End of YAML block - parse it if we have a current parameter
+					if ( $current_param && ! empty( $yaml_document ) ) {
+						$yaml_string = implode( "\n", $yaml_document );
+						$param_args  = Spyc::YAMLLoadString( $yaml_string );
+
+						if ( $param_args && isset( $param_args['alias'] ) ) {
+							$param_aliases = (array) $param_args['alias'];
+							foreach ( $param_aliases as $alias ) {
+								// Handle YAML boolean values (YAML 1.1 spec interprets certain
+								// values as booleans: y/Y/yes/YES/n/N/no/NO/true/false/on/off)
+								// For single-letter aliases, we preserve the intent by converting
+								// boolean values back to their likely string representations.
+								// Note: This means 'n' and 'N' both become 'n', and 'y' and 'Y' become 'y'.
+								// Users can avoid this by quoting the alias in YAML: alias: 'N'
+								if ( false === $alias ) {
+									$alias = 'n';
+								} elseif ( true === $alias ) {
+									$alias = 'y';
+								}
+
+								// Convert to string if not already
+								$alias = (string) $alias;
+
+								// Remove leading dashes if present
+								$alias = ltrim( $alias, '-' );
+
+								// Skip empty aliases
+								if ( '' === $alias ) {
+									continue;
+								}
+
+								$aliases[ $alias ] = $current_param;
+							}
+						}
+					}
+					$within_yaml   = false;
+					$yaml_document = [];
+				} else {
+					// Start of YAML block - don't include the --- marker itself
+					$within_yaml = true;
+				}
 				continue;
 			}
 
+			// If we're within a YAML block, collect the lines (preserving original text, not trimmed)
+			if ( $within_yaml ) {
+				$yaml_document[] = $bit;
+				continue;
+			}
+
+			// Check if this line is a parameter definition
 			// Match parameter definitions:
 			// - [--param=<value>]
 			// - --param=<value>
 			// - [--param]
 			// - --param
-			if ( preg_match( '/^\[?--([a-z-_0-9]+)/', $bit, $matches ) ) {
-				$param_name = $matches[1];
-				$param_args = $this->get_param_or_flag_args( $param_name );
+			if ( preg_match( '/^\[?--([a-z-_0-9]+)/', $trimmed_bit, $matches ) ) {
+				$current_param = $matches[1];
+				continue;
+			}
 
-				if ( $param_args && isset( $param_args['alias'] ) ) {
-					$param_aliases = (array) $param_args['alias'];
-					foreach ( $param_aliases as $alias ) {
-						// Handle YAML boolean values (YAML 1.1 spec interprets certain
-						// values as booleans: y/Y/yes/YES/n/N/no/NO/true/false/on/off)
-						// For single-letter aliases, we preserve the intent by converting
-						// boolean values back to their likely string representations.
-						// Note: This means 'n' and 'N' both become 'n', and 'y' and 'Y' become 'y'.
-						// Users can avoid this by quoting the alias in YAML: alias: 'N'
-						if ( false === $alias ) {
-							$alias = 'n';
-						} elseif ( true === $alias ) {
-							$alias = 'y';
-						}
-
-						// Convert to string if not already
-						$alias = (string) $alias;
-
-						// Remove leading dashes if present
-						$alias = ltrim( $alias, '-' );
-
-						// Skip empty aliases
-						if ( '' === $alias ) {
-							continue;
-						}
-
-						$aliases[ $alias ] = $param_name;
-					}
-				}
+			// Empty line ends the current parameter context (unless we're in YAML)
+			if ( empty( $trimmed_bit ) ) {
+				$current_param = null;
 			}
 		}
 
