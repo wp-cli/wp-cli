@@ -831,42 +831,13 @@ class WP_CLI {
 	 * @return bool True if the command should skip the check, false otherwise.
 	 */
 	private static function command_skips_global_arg_check( $command ) {
-		// Access the protected docparser property via reflection
-		$reflection = new \ReflectionClass( $command );
-		if ( ! $reflection->hasProperty( 'docparser' ) ) {
+		$docparser = $command->get_docparser();
+
+		if ( ! $docparser ) {
 			return false;
 		}
 
-		$property = $reflection->getProperty( 'docparser' );
-		if ( PHP_VERSION_ID < 80100 ) {
-			// @phpstan-ignore method.deprecated
-			$property->setAccessible( true );
-		}
-		$docparser = $property->getValue( $command );
-
-		if ( ! is_object( $docparser ) ) {
-			return false;
-		}
-
-		// Access the doc_comment property from DocParser via reflection
-		$doc_reflection = new \ReflectionClass( $docparser );
-		if ( ! $doc_reflection->hasProperty( 'doc_comment' ) ) {
-			return false;
-		}
-
-		$doc_property = $doc_reflection->getProperty( 'doc_comment' );
-		if ( PHP_VERSION_ID < 80100 ) {
-			// @phpstan-ignore method.deprecated
-			$doc_property->setAccessible( true );
-		}
-		$doc_comment = $doc_property->getValue( $docparser );
-
-		if ( ! is_string( $doc_comment ) ) {
-			return false;
-		}
-
-		// Check if the doc comment contains @skipglobalargcheck as a tag (not in text)
-		return (bool) preg_match( '/^\s*\*?\s*@skipglobalargcheck\b/m', $doc_comment );
+		return $docparser->has_tag( 'skipglobalargcheck' );
 	}
 
 	/**

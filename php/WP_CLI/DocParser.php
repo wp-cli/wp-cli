@@ -93,6 +93,18 @@ class DocParser {
 	}
 
 	/**
+	 * Check if a given tag exists (e.g. "@skipglobalargcheck")
+	 *
+	 * Useful for checking the presence of valueless tags in PHPdoc.
+	 *
+	 * @param string $name Name for the tag, without '@'
+	 * @return bool True if the tag exists, false otherwise.
+	 */
+	public function has_tag( $name ) {
+		return (bool) preg_match( '/^\s*\*?\s*@' . preg_quote( $name, '/' ) . '\b/m', $this->doc_comment );
+	}
+
+	/**
 	 * Get the command's synopsis.
 	 *
 	 * @return string

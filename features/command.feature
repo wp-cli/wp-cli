@@ -1893,7 +1893,7 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'testcmd', 'TestCommand' );
       """
 
-    When I try `wp --require=custom-cmd.php help 2>&1`
+    When I try `wp --require=custom-cmd.php help`
     Then STDERR should contain:
       """
       Warning: The `testcmd with_debug` command is registering an argument '--debug' that conflicts with a global argument of the same name.
@@ -1940,7 +1940,7 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'showwarning', $bar );
       """
 
-    When I try `wp --require=custom-cmd.php help 2>&1`
+    When I try `wp --require=custom-cmd.php help`
     Then STDERR should not contain:
       """
       Warning: The `skipwarning` command is registering an argument '--debug' that conflicts with a global argument of the same name.
