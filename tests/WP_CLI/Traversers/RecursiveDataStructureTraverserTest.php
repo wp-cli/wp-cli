@@ -142,6 +142,7 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 		try {
 			$traverser->insert( array( 'key' ), 'value' );
 		} catch ( \Exception $e ) {
+			// @phpstan-ignore method.alreadyNarrowedType
 			$this->assertSame( 'a string', $data );
 			return;
 		}
