@@ -669,11 +669,6 @@ class WP_CLI {
 			self::get_runner()->register_early_invoke( $args['when'], $leaf_command );
 		}
 
-		// Check for global argument conflicts
-		if ( $leaf_command instanceof Dispatcher\Subcommand ) {
-			self::check_global_arg_conflicts( $name, $leaf_command );
-		}
-
 		$command_type = $leaf_command instanceof CommandNamespace ? 'namespace' : 'command';
 		if ( ! empty( $parent ) ) {
 			$sub_command = trim( str_replace( $parent, '', $name ) );
