@@ -233,7 +233,7 @@ class CLI_Command extends WP_CLI_Command {
 	/**
 	 * Converts a memory limit string to bytes.
 	 *
-	 * @param string $value The memory limit value (e.g., "256M", "1G", "512K").
+	 * @param string $value The memory limit value (e.g., "256M", "1G", "512K", "2.5G").
 	 * @return int The value in bytes, or -1 if unlimited.
 	 */
 	private function convert_to_bytes( $value ) {
@@ -252,9 +252,9 @@ class CLI_Command extends WP_CLI_Command {
 
 		// Extract numeric value before converting.
 		if ( ! is_numeric( $last ) ) {
-			$numeric_value = (int) substr( $value, 0, -1 );
+			$numeric_value = (float) substr( $value, 0, -1 );
 		} else {
-			$numeric_value = (int) $value;
+			$numeric_value = (float) $value;
 			$last          = '';
 		}
 
@@ -269,7 +269,7 @@ class CLI_Command extends WP_CLI_Command {
 				$numeric_value *= 1024;
 		}
 
-		return $numeric_value;
+		return (int) $numeric_value;
 	}
 
 	/**
