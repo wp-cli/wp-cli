@@ -84,13 +84,13 @@ class CSV implements Countable, Iterator {
 	}
 
 	/**
-	 * @return int
+	 * @return int<0, max>
 	 */
 	#[ReturnTypeWillChange]
 	public function count() {
 		$file = new SplFileObject( $this->filename, 'r' );
 		$file->seek( PHP_INT_MAX );
-		return $file->key() + 1;
+		return max( 0, $file->key() + 1 );
 	}
 
 	#[ReturnTypeWillChange]

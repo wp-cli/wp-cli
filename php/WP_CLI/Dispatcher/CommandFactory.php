@@ -34,6 +34,7 @@ class CommandFactory {
 			$reflection = new ReflectionFunction( $callable );
 			$command    = self::create_subcommand( $parent, $name, $callable, $reflection );
 		} elseif ( is_array( $callable ) && ( is_callable( $callable ) || Utils\is_valid_class_and_method_pair( $callable ) ) ) {
+			/** @var array{0:object|class-string,1:string} $callable */
 			$reflection = new ReflectionClass( $callable[0] );
 			$command    = self::create_subcommand(
 				$parent,

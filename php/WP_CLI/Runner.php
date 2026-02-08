@@ -49,21 +49,31 @@ class Runner {
 	private $global_config_path;
 	private $project_config_path;
 
-	private $config;
+	/** @var array<string, mixed> */
+	private $config = [
+		'disabled_commands' => [],
+	];
+	/** @var array<string, mixed> */
 	private $extra_config;
 
 	private $context_manager;
 
+	/** @var string|null */
 	private $alias;
 
-	private $aliases;
+	/** @var array<string, array<string|int, array<string, string>>|string> */
+	private $aliases = [];
 
-	private $arguments;
-	private $assoc_args;
+	/** @var array<string> */
+	private $arguments = [];
+	/** @var array<string, array<int, string>|int|string|true> */
+	private $assoc_args = [];
+	/** @var array<string, mixed> */
 	private $runtime_config;
 
 	private $colorize = false;
 
+	/** @var array<string, array<int, array<string>>> */
 	private $early_invoke = [];
 
 	private $global_config_path_debug;
@@ -132,7 +142,9 @@ class Runner {
 			}
 		}
 
-		foreach ( $this->early_invoke[ $when ] as $path ) {
+		/** @var array<array<string>> $invoke_cmds */
+		$invoke_cmds = (array) $this->early_invoke[ $when ];
+		foreach ( (array) $invoke_cmds as $path ) {
 			if ( $this->cmd_starts_with( $path ) ) {
 				if ( empty( $real_when ) || $real_when === $when ) {
 					$this->run_command_and_exit();
@@ -277,7 +289,11 @@ class Runner {
 		}
 
 		if ( ! empty( $this->config['path'] ) ) {
+			/**
+			 * @var string $path
+			 */
 			$path = $this->config['path'];
+
 			// Expand tilde to home directory if present
 			$path = Utils\expand_tilde_path( $path );
 			if ( ! Utils\is_path_absolute( $path ) ) {
@@ -322,8 +338,14 @@ class Runner {
 	 */
 	private static function set_wp_root( $path ) {
 		if ( ! defined( 'ABSPATH' ) ) {
+			$normalized = Utils\normalize_path( Utils\trailingslashit( $path ) );
+			// Adjust Windows-style paths starting with drive letter + forward slash (C:/) so that
+			// WordPress core's path_is_absolute() recognizes them as absolute on Windows.
+			if ( preg_match( '#^[A-Z]:/#i', $normalized ) ) {
+				$normalized = preg_replace( '#^([A-Z]):/#i', '$1:\\\\', $normalized );
+			}
 			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Declaring a WP native constant.
-			define( 'ABSPATH', Utils\normalize_path( Utils\trailingslashit( $path ) ) );
+			define( 'ABSPATH', $normalized );
 		} elseif ( ! is_null( $path ) ) {
 			WP_CLI::error_multi_line(
 				[
@@ -370,7 +392,7 @@ class Runner {
 	 * @return bool `true` if the arguments passed to the WP-CLI binary start with the specified prefix, `false` otherwise.
 	 */
 	private function cmd_starts_with( $prefix ): bool {
-		return array_slice( $this->arguments, 0, count( $prefix ) ) === $prefix;
+		return array_slice( (array) $this->arguments, 0, count( $prefix ) ) === $prefix;
 	}
 
 	/**
@@ -546,7 +568,7 @@ class Runner {
 
 		WP_CLI::debug( 'Running command: ' . $name, 'bootstrap' );
 		try {
-			$command->invoke( $final_args, $assoc_args, $extra_args );
+			$command->invoke( $final_args, $assoc_args, (array) $extra_args );
 		} catch ( Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}
@@ -590,7 +612,7 @@ class Runner {
 	 *
 	 * @param string $connection_string Passed connection string.
 	 */
-	private function run_ssh_command( $connection_string ): void {
+	private function run_ssh_command( string $connection_string ): void {
 
 		WP_CLI::do_hook( 'before_ssh' );
 
@@ -609,16 +631,19 @@ class Runner {
 		}
 
 		$wp_binary = getenv( 'WP_CLI_SSH_BINARY' ) ?: 'wp';
-		$wp_args   = array_slice( $GLOBALS['argv'], 1 );
+		$wp_args   = array_slice( (array) $GLOBALS['argv'], 1 );
 
 		if ( $this->alias && ! empty( $wp_args[0] ) && ( '@' . $this->alias === $wp_args[0] ) ) {
 			array_shift( $wp_args );
 			$runtime_alias = [];
-			foreach ( $this->aliases[ $this->alias ] as $key => $value ) {
-				if ( 'ssh' === $key ) {
-					continue;
+			$alias_config  = $this->aliases[ $this->alias ];
+			if ( is_array( $alias_config ) ) {
+				foreach ( $alias_config as $key => $value ) {
+					if ( 'ssh' === $key ) {
+						continue;
+					}
+					$runtime_alias[ $key ] = $value;
 				}
-				$runtime_alias[ $key ] = $value;
 			}
 			if ( ! empty( $runtime_alias ) ) {
 				$encoded_alias = json_encode(
@@ -633,12 +658,19 @@ class Runner {
 		foreach ( $wp_args as $k => $v ) {
 			if ( preg_match( '#--ssh=|--alias=#', $v ) ) {
 				unset( $wp_args[ $k ] );
-			} elseif ( preg_match( '#' . Configurator::ALIAS_REGEX . '#', $v ) ) {
+			} elseif ( preg_match( '#' . Configurator::ALIAS_REGEX . '#', (string) $v ) ) {
 				unset( $wp_args[ $k ] );
 			}
 		}
 
-		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) );
+		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode(
+			' ',
+			array_map(
+				static function ( $arg ): string {
+					return escapeshellarg( (string) $arg ); },
+				$wp_args
+			)
+		);
 
 		if ( isset( $bits['scheme'] ) && 'docker-compose-run' === $bits['scheme'] ) {
 			$wp_command = implode( ' ', $wp_args );
@@ -657,7 +689,7 @@ class Runner {
 	/**
 	 * Generate a shell command from the parsed connection string.
 	 *
-	 * @param array $bits Parsed connection string.
+	 * @param array{scheme?: string, user?: string, host?: string, port?: string, path?: string} $bits Parsed connection string.
 	 * @param string $wp_command WP-CLI command to run.
 	 * @return string
 	 */
@@ -674,7 +706,7 @@ class Runner {
 		}
 
 		/**
-		 * @var array{scheme: string|null, user: string|null, host: string, port: int|null, path: string|null, key: string|null, proxyjump: string|null} $bits
+		 * @var array{scheme: string|null, user: string|null, host: string, port: string|null, path: string|null, key: string|null, proxyjump: string|null} $bits
 		 */
 
 		/*
@@ -795,9 +827,11 @@ class Runner {
 			}
 
 			$command_args = [
-				$bits['proxyjump'] ? sprintf( '-J %s', escapeshellarg( $bits['proxyjump'] ) ) : '',
+				// @phpstan-ignore cast.string
+				$bits['proxyjump'] ? sprintf( '-J %s', escapeshellarg( (string) $bits['proxyjump'] ) ) : '',
 				$bits['port'] ? sprintf( '-p %d', (int) $bits['port'] ) : '',
-				$bits['key'] ? sprintf( '-i %s', escapeshellarg( $bits['key'] ) ) : '',
+				// @phpstan-ignore cast.string
+				$bits['key'] ? sprintf( '-i %s', escapeshellarg( (string) $bits['key'] ) ) : '',
 				$is_stdout_tty ? '-t' : '-T',
 				WP_CLI::get_config( 'debug' ) ? '-vvv' : '-q',
 			];
@@ -822,7 +856,11 @@ class Runner {
 	 */
 	public function is_command_disabled( $command ) {
 		$path = implode( ' ', array_slice( Dispatcher\get_path( $command ), 1 ) );
-		return in_array( $path, $this->config['disabled_commands'], true );
+		/**
+		 * @var string[] $disabled_commands
+		 */
+		$disabled_commands = $this->config['disabled_commands'];
+		return in_array( $path, $disabled_commands, true );
 	}
 
 	/**
@@ -890,7 +928,7 @@ class Runner {
 		}
 
 		// *-meta  ->  * meta
-		if ( ! empty( $args ) && preg_match( '/(post|comment|user|network)-meta/', $args[0], $matches ) ) {
+		if ( ! empty( $args ) && preg_match( '/(post|comment|user|network)-meta/', (string) $args[0], $matches ) ) {
 			array_shift( $args );
 			array_unshift( $args, 'meta' );
 			array_unshift( $args, $matches[1] );
@@ -1143,7 +1181,10 @@ class Runner {
 	public function init_config() {
 		$configurator = WP_CLI::get_configurator();
 
-		$argv = array_slice( $GLOBALS['argv'], 1 );
+		/**
+		 * @var string[] $argv
+		 */
+		$argv = array_slice( (array) $GLOBALS['argv'], 1 );
 
 		// Check if we use an alias with @foo syntax (must be done before parsing args)
 		$this->alias = null;
@@ -1156,12 +1197,13 @@ class Runner {
 			$this->global_config_path  = $this->get_global_config_path();
 			$this->project_config_path = $this->get_project_config_path();
 
-			$configurator->merge_yml( $this->global_config_path, $this->alias );
+			$configurator->merge_yml( (string) $this->global_config_path, $this->alias );
 			$config                         = $configurator->to_array();
-			$this->required_files['global'] = $config[0]['require'];
-			$configurator->merge_yml( $this->project_config_path, $this->alias );
+			$this->required_files['global'] = isset( $config[0]['require'] ) ? (array) $config[0]['require'] : [];
+			$configurator->merge_yml( (string) $this->project_config_path, $this->alias );
 			$config                          = $configurator->to_array();
-			$this->required_files['project'] = $config[0]['require'];
+			$this->required_files['project'] = isset( $config[0]['require'] ) ? (array) $config[0]['require'] : [];
+			$this->required_files['runtime'] = [];
 		}
 
 		// Runtime config and args
@@ -1173,12 +1215,16 @@ class Runner {
 				$assoc_args
 			);
 
-			$configurator->merge_array( $this->runtime_config );
+			$configurator->merge_array( (array) $this->runtime_config );
 		}
 
 		// Check if --alias flag was used (takes precedence over @foo if both provided)
 		if ( ! empty( $this->runtime_config['alias'] ) ) {
-			$this->alias = $this->runtime_config['alias'];
+			/**
+			 * @var string $runtime_alias
+			 */
+			$runtime_alias = $this->runtime_config['alias'];
+			$this->alias   = $runtime_alias;
 		}
 
 		list( $this->config, $this->extra_config ) = $configurator->to_array();
@@ -1196,7 +1242,12 @@ class Runner {
 
 		$php_bin = escapeshellarg( Utils\get_php_binary() );
 
-		$script_path = $GLOBALS['argv'][0];
+		/**
+		 * @var string[] $argv
+		 */
+		$argv = $GLOBALS['argv'];
+
+		$script_path = $argv[0];
 
 		$wp_cli_config_path = (string) getenv( 'WP_CLI_CONFIG_PATH' );
 
@@ -1207,6 +1258,10 @@ class Runner {
 		}
 		$config_path = escapeshellarg( $config_path );
 
+		// Exclude 'quiet' from runtime config for subprocesses to allow command output.
+		$subprocess_runtime_config = $this->runtime_config;
+		unset( $subprocess_runtime_config['quiet'] );
+
 		foreach ( $aliases as $alias ) {
 			// Filter out @alias args (needed for Windows OS that need to quote "@alias" in cli)
 			$filtered_arguments = array_filter(
@@ -1214,6 +1269,16 @@ class Runner {
 				function ( $value ) {
 					return ! preg_match( '#' . Configurator::ALIAS_REGEX . '#', $value );
 				}
+			);
+			WP_CLI::log( $alias );
+			$args = implode(
+				' ',
+				array_map(
+					static function ( string $arg ): string {
+						return escapeshellarg( $arg );
+					},
+					(array) $filtered_arguments
+				)
 			);
 
 			WP_CLI::log( '@' . $alias );
@@ -1238,12 +1303,15 @@ class Runner {
 	}
 
 	private function set_alias( $alias ): void {
-		$orig_config  = $this->config;
-		$alias_config = $this->aliases[ $alias ];
+		$orig_config = $this->config;
+		/** @var array<string, mixed> $alias_config */
+		// @phpstan-ignore varTag.type
+		$alias_config = (array) $this->aliases[ $alias ];
 		$this->config = array_merge( $orig_config, $alias_config );
 		foreach ( $alias_config as $key => $_ ) {
-			if ( isset( $orig_config[ $key ] ) && ! is_null( $orig_config[ $key ] ) ) {
-				$this->assoc_args[ $key ] = $orig_config[ $key ];
+			if ( isset( $orig_config[ (string) $key ] ) && ! is_null( $orig_config[ (string) $key ] ) ) {
+				// @phpstan-ignore assign.propertyType
+				$this->assoc_args[ (string) $key ] = $orig_config[ (string) $key ];
 			}
 		}
 	}
@@ -1256,7 +1324,7 @@ class Runner {
 
 		WP_CLI::debug( $this->global_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( $this->project_config_path_debug, 'bootstrap' );
-		WP_CLI::debug( 'argv: ' . implode( ' ', $GLOBALS['argv'] ), 'bootstrap' );
+		WP_CLI::debug( 'argv: ' . implode( ' ', (array) $GLOBALS['argv'] ), 'bootstrap' );
 
 		if ( $this->alias ) {
 			if ( 'all' === $this->alias && ! isset( $this->aliases['all'] ) ) {
@@ -1273,7 +1341,7 @@ class Runner {
 
 			if ( ! array_key_exists( $this->alias, $this->aliases ) ) {
 				$error_msg  = "Alias '{$this->alias}' not found.";
-				$suggestion = Utils\get_suggestion( $this->alias, array_keys( $this->aliases ), $threshold = 2 );
+				$suggestion = Utils\get_suggestion( (string) $this->alias, array_keys( $this->aliases ), $threshold = 2 );
 				if ( $suggestion ) {
 					$error_msg .= PHP_EOL . "Did you mean '{$suggestion}'?";
 				}
@@ -1281,7 +1349,8 @@ class Runner {
 			}
 			// Numerically indexed means a group of aliases
 			if ( isset( $this->aliases[ $this->alias ][0] ) ) {
-				$group_aliases = $this->aliases[ $this->alias ];
+				/** @var array<string> $group_aliases */
+				$group_aliases = (array) $this->aliases[ $this->alias ];
 				$all_aliases   = array_keys( $this->aliases );
 				$diff          = array_diff( $group_aliases, $all_aliases );
 				if ( ! empty( $diff ) ) {
@@ -1319,9 +1388,19 @@ class Runner {
 		}
 
 		if ( $this->config['ssh'] ) {
-			$this->run_ssh_command( $this->config['ssh'] );
+			// @phpstan-ignore cast.string
+			$this->run_ssh_command( (string) $this->config['ssh'] );
 			return;
 		}
+
+		// Log WP-CLI HTTP requests
+		WP_CLI::add_hook(
+			'http_request_options',
+			static function ( $options, $method, $url ) {
+				WP_CLI::debug( sprintf( 'HTTP %s request to %s', $method, $url ), 'http' );
+				return $options;
+			}
+		);
 
 		// Handle --path parameter
 		self::set_wp_root( $this->find_wp_root() );
@@ -1403,7 +1482,7 @@ class Runner {
 				self::fake_current_site_blog( $url_parts );
 
 				if ( ! defined( 'COOKIEHASH' ) ) {
-					define( 'COOKIEHASH', md5( $url_parts['host'] ?? '' ) );
+					define( 'COOKIEHASH', md5( (string) ( $url_parts['host'] ?? '' ) ) );
 				}
 			}
 		}
@@ -1586,6 +1665,18 @@ class Runner {
 		if ( $this->config['skip-themes'] ) {
 			WP_CLI::add_wp_hook( 'setup_theme', [ $this, 'action_setup_theme_wp_cli_skip_themes' ], 999 );
 		}
+
+		// Log WordPress HTTP API requests
+		WP_CLI::add_wp_hook(
+			'pre_http_request',
+			static function ( $response, $args, $url ) {
+				$method = isset( $args['method'] ) ? $args['method'] : 'GET';
+				WP_CLI::debug( sprintf( 'HTTP %s request to %s', $method, $url ), 'http' );
+				return $response;
+			},
+			10,
+			3
+		);
 
 		if ( $this->cmd_starts_with( [ 'help' ] ) ) {
 			// Try to trap errors on help.
@@ -1773,10 +1864,16 @@ class Runner {
 				static function () use ( $config ) {
 					if ( isset( $config['user'] ) ) {
 						$fetcher = new Fetchers\User();
+
+						/**
+						 * @var string $user
+						 */
+						$user = $config['user'];
+
 						/**
 						 * @var \WP_User $user
 						 */
-						$user = $fetcher->get_check( $config['user'] );
+						$user = $fetcher->get_check( $user );
 						wp_set_current_user( $user->ID );
 					} else {
 						add_action( 'init', 'kses_remove_filters', 11 );
@@ -1806,12 +1903,20 @@ class Runner {
 			'home_url',
 			static function ( $url, $path, $scheme, $blog_id ) {
 				if ( empty( $blog_id ) || ! is_multisite() ) {
+					/**
+					 * @var string|false $url
+					 */
 					$url = get_option( 'home' );
 				} else {
 					switch_to_blog( $blog_id );
+					/**
+					 * @var string|false $url
+					 */
 					$url = get_option( 'home' );
 					restore_current_blog();
 				}
+
+				$url = (string) $url;
 
 				if ( $path && is_string( $path ) ) {
 					$url .= '/' . ltrim( $path, '/' );
@@ -1826,12 +1931,20 @@ class Runner {
 			'site_url',
 			static function ( $url, $path, $scheme, $blog_id ) {
 				if ( empty( $blog_id ) || ! is_multisite() ) {
+					/**
+					 * @var string|false $url
+					 */
 					$url = get_option( 'siteurl' );
 				} else {
 					switch_to_blog( $blog_id );
+					/**
+					 * @var string|false $url
+					 */
 					$url = get_option( 'siteurl' );
 					restore_current_blog();
 				}
+
+				$url = (string) $url;
 
 				if ( $path && is_string( $path ) ) {
 					$url .= '/' . ltrim( $path, '/' );
@@ -1857,6 +1970,9 @@ class Runner {
 	 */
 	private function setup_skip_plugins_filters() {
 		$wp_cli_filter_active_plugins = static function ( $plugins ) {
+			/**
+			 * @var array<int|string, string> $plugins
+			 */
 			$skipped_plugins = WP_CLI::get_runner()->config['skip-plugins'];
 			if ( true === $skipped_plugins ) {
 				return [];
@@ -1866,10 +1982,10 @@ class Runner {
 			}
 			foreach ( $plugins as $a => $b ) {
 				// active_sitewide_plugins stores plugin name as the key.
-				if ( false !== strpos( (string) current_filter(), 'active_sitewide_plugins' ) && Utils\is_plugin_skipped( $a ) ) {
+				if ( false !== strpos( (string) current_filter(), 'active_sitewide_plugins' ) && Utils\is_plugin_skipped( (string) $a ) ) {
 					unset( $plugins[ $a ] );
 					// active_plugins stores plugin name as the value.
-				} elseif ( false !== strpos( (string) current_filter(), 'active_plugins' ) && Utils\is_plugin_skipped( $b ) ) {
+				} elseif ( false !== strpos( (string) current_filter(), 'active_plugins' ) && Utils\is_plugin_skipped( (string) $b ) ) {
 					unset( $plugins[ $a ] );
 				}
 			}
@@ -1978,7 +2094,7 @@ class Runner {
 	 */
 	private function is_multisite(): bool {
 		if ( defined( 'MULTISITE' ) ) {
-			return MULTISITE;
+			return MULTISITE; // @phpstan-ignore phpstanWP.wpConstant.fetch
 		}
 
 		if ( defined( 'SUBDOMAIN_INSTALL' ) || defined( 'VHOST' ) || defined( 'SUNRISE' ) ) {
@@ -2011,7 +2127,12 @@ class Runner {
 			return;
 		}
 
-		$existing_phar = (string) realpath( $_SERVER['argv'][0] );
+		/**
+		 * @var array<int, string> $argv
+		 */
+		$argv = $_SERVER['argv'];
+
+		$existing_phar = (string) realpath( (string) $argv[0] );
 		// Phar needs to be writable to be easily updateable.
 		if ( ! is_writable( $existing_phar ) || ! is_writable( dirname( $existing_phar ) ) ) {
 			return;
