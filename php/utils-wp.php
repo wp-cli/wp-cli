@@ -540,7 +540,16 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 
 		// Note: BC change 1.5.0, tables are sorted (via TABLES view).
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- uses esc_sql_ident() and $wpdb->_escape().
-		$tables = $wpdb->get_col( sprintf( "SHOW TABLES WHERE %s IN ('%s')", esc_sql_ident( 'Tables_in_' . $wpdb->dbname ), implode( "', '", $wpdb->_escape( $wp_tables ) ) ) );
+		$tables = $wpdb->get_col( 'SHOW TABLES' );
+
+		// Filter tables after the query for improved SQLite compatibility
+
+		$tables = array_filter(
+			$tables,
+			static function ( $table ) use ( $wp_tables ) {
+				return in_array( $table, $wp_tables, true );
+			}
+		);
 
 		if ( get_flag_value( $assoc_args, 'base-tables-only' ) || get_flag_value( $assoc_args, 'views-only' ) ) {
 			// Apply Views restriction args if needed.
