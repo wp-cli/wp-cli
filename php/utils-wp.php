@@ -545,7 +545,7 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 		// Filter tables after the query for improved SQLite compatibility.
 		// See https://github.com/WordPress/sqlite-database-integration/issues/319.
 		if ( 'sqlite' === get_db_type() ) {
-			$tables = array_intersect( $tables, $wp_tables );
+			$tables = array_values( array_intersect( $tables, $wp_tables ) );
 		}
 
 		if ( get_flag_value( $assoc_args, 'base-tables-only' ) || get_flag_value( $assoc_args, 'views-only' ) ) {
