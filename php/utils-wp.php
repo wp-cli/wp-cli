@@ -542,9 +542,11 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- uses esc_sql_ident() and $wpdb->_escape().
 		$tables = $wpdb->get_col( 'SHOW TABLES' );
 
-		// Filter tables after the query for improved SQLite compatibility
-
-		$tables = array_intersect( $tables, $wp_tables );
+		// Filter tables after the query for improved SQLite compatibility.
+		// See https://github.com/WordPress/sqlite-database-integration/issues/319.
+		if ( 'sqlite' === get_db_type() ) {
+			$tables = array_intersect( $tables, $wp_tables );
+		}
 
 		if ( get_flag_value( $assoc_args, 'base-tables-only' ) || get_flag_value( $assoc_args, 'views-only' ) ) {
 			// Apply Views restriction args if needed.
