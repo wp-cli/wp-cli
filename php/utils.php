@@ -2140,19 +2140,7 @@ function get_size_string_from_bytes( $bytes, $decimals = 0, $unit = '' ) {
 		return '0 B';
 	}
 
-	// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Backfilling WP native constants.
-	if ( ! defined( 'KB_IN_BYTES' ) ) {
-		define( 'KB_IN_BYTES', 1024 );
-	}
-	if ( ! defined( 'MB_IN_BYTES' ) ) {
-		define( 'MB_IN_BYTES', 1024 * KB_IN_BYTES );
-	}
-	if ( ! defined( 'GB_IN_BYTES' ) ) {
-		define( 'GB_IN_BYTES', 1024 * MB_IN_BYTES );
-	}
-	if ( ! defined( 'TB_IN_BYTES' ) ) {
-		define( 'TB_IN_BYTES', 1024 * GB_IN_BYTES );
-	}
+
 
 	$sizes    = [ 'B', 'KB', 'MB', 'GB', 'TB' ];
 	$size_key = 0;
@@ -2166,7 +2154,7 @@ function get_size_string_from_bytes( $bytes, $decimals = 0, $unit = '' ) {
 	}
 
 	$divisor             = pow( 1000, $size_key );
-	$size_format_display = preg_replace( '/IB$/u', 'iB', $unit );
+	$size_format_display = $unit;
 
 	return round( $bytes / $divisor, $decimals ) . ' ' . $size_format_display;
 }
