@@ -2140,8 +2140,6 @@ function get_size_string_from_bytes( $bytes, $decimals = 0, $unit = '' ) {
 		return '0 B';
 	}
 
-
-
 	$sizes    = [ 'B', 'KB', 'MB', 'GB', 'TB' ];
 	$size_key = 0;
 
