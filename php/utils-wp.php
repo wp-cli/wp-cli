@@ -544,12 +544,7 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 
 		// Filter tables after the query for improved SQLite compatibility
 
-		$tables = array_filter(
-			$tables,
-			static function ( $table ) use ( $wp_tables ) {
-				return in_array( $table, $wp_tables, true );
-			}
-		);
+		$tables = array_intersect( $tables, $wp_tables );
 
 		if ( get_flag_value( $assoc_args, 'base-tables-only' ) || get_flag_value( $assoc_args, 'views-only' ) ) {
 			// Apply Views restriction args if needed.
