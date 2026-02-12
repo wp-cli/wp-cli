@@ -665,11 +665,12 @@ class Runner {
 		$escaped_args = [];
 		foreach ( $wp_args as $arg ) {
 			$arg_str = (string) $arg;
-			// Check if argument needs quoting (contains spaces, quotes, or shell metacharacters).
-			if ( preg_match( '/[\s\'"`$&|;<>(){}\\[\\]!*?~]/', $arg_str ) ) {
-				$escaped_args[] = escapeshellarg( $arg_str );
-			} else {
+			// Only skip quoting for simple alphanumeric arguments (with hyphens, underscores, equals, dots, forward slashes).
+			// Everything else gets quoted for safety.
+			if ( '' !== $arg_str && preg_match( '/^[a-zA-Z0-9_=.\/:-]+$/', $arg_str ) ) {
 				$escaped_args[] = $arg_str;
+			} else {
+				$escaped_args[] = escapeshellarg( $arg_str );
 			}
 		}
 		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', $escaped_args );
