@@ -661,18 +661,7 @@ class Runner {
 			}
 		}
 
-		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode(
-			' ',
-			array_map(
-				static function ( $arg ): string {
-					return escapeshellarg( (string) $arg ); },
-				$wp_args
-			)
-		);
-
-		if ( isset( $bits['scheme'] ) && 'docker-compose-run' === $bits['scheme'] ) {
-			$wp_command = implode( ' ', $wp_args );
-		}
+		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', $wp_args );
 
 		$escaped_command = $this->generate_ssh_command( $bits, $wp_command );
 

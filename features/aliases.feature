@@ -204,6 +204,28 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -i 'identityfile.key' -T -vvv
       """
 
+  Scenario: SSH commands should not be double-escaped
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+      """
+
+    When I try `wp @foo plugin list --debug`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; wp plugin list --debug'
+      """
+    And STDERR should not contain:
+      """
+      '\'\''plugin'\'\''
+      """
+    And STDERR should not contain:
+      """
+      '\'\''list'\'\''
+      """
+
   Scenario: Add an alias
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
