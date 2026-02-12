@@ -204,6 +204,24 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -i 'identityfile.key' -T -vvv
       """
 
+  Scenario: SSH alias expands tilde in path
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:~/sites/example.com/www
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      'cd ~/
+      """
+    And STDERR should contain:
+      """
+      sites/example.com/www
+      """
+
   Scenario: Add an alias
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
