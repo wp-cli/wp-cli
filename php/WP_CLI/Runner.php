@@ -1539,6 +1539,13 @@ class Runner {
 				define( 'WP_DEBUG_DISPLAY', true );
 			}
 		}
+
+		// Define WP_ADMIN to make is_admin() return true, which allows ms_not_installed()
+		// and similar functions to provide detailed error messages instead of generic ones.
+		if ( ! defined( 'WP_ADMIN' ) ) {
+			define( 'WP_ADMIN', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
+		}
+
 		require ABSPATH . 'wp-settings.php';
 
 		// Fix memory limit. See https://core.trac.wordpress.org/ticket/14889
