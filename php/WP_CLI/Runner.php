@@ -668,14 +668,16 @@ class Runner {
 		// 2. generate_ssh_command(): Wrap entire command for local shell
 		//
 		// Safe characters: alphanumeric, hyphen, underscore, equals, dot, forward slash, colon
+		// - Hyphens (including at start like --debug) are safe because they're part of the
+		//   wp-cli command string that's passed to the remote shell, not SSH options
 		// - Forward slash and colon are included because they're common in paths and URLs
 		//   (e.g., --url=https://example.com/path) and are not shell metacharacters
 		// - All other characters (spaces, quotes, $, &, |, etc.) trigger quoting via escapeshellarg()
 		$escaped_args = [];
 		foreach ( $wp_args as $arg ) {
 			$arg_str = (string) $arg;
-			// Only skip quoting for simple alphanumeric arguments (with hyphens, underscores, equals, dots, forward slashes, colons).
-			// Everything else gets quoted for safety.
+			// Quote empty strings and arguments with any characters outside the safe set.
+			// The empty string check is explicit for clarity, though regex would also catch it.
 			if ( '' !== $arg_str && preg_match( '/^[a-zA-Z0-9_=.\/:-]+$/', $arg_str ) ) {
 				$escaped_args[] = $arg_str;
 			} else {
