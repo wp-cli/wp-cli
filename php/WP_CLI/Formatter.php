@@ -27,6 +27,13 @@ class Formatter {
 	const MAX_CELL_WIDTH = 2048;
 
 	/**
+	 * Custom format handlers registered by extensions.
+	 *
+	 * @var array<string, callable>
+	 */
+	private static $custom_formatters = [];
+
+	/**
 	 * How the items should be output.
 	 *
 	 * @var array{format: string, fields: string[], field: string|null, alignments: array<string, int>}
@@ -72,6 +79,44 @@ class Formatter {
 
 		$this->args   = $format_args;
 		$this->prefix = $prefix;
+	}
+
+	/**
+	 * Register a custom format handler.
+	 *
+	 * Allows extensions to add custom output formats.
+	 *
+	 * @param string   $format_name Name of the format (e.g. 'xml', 'nagios').
+	 * @param callable $handler     Callback to handle formatting. Receives ($items, $fields) and should output directly.
+	 */
+	public static function add_format( $format_name, $handler ) {
+		if ( ! is_callable( $handler ) ) {
+			WP_CLI::error( 'Format handler must be callable.' );
+		}
+		self::$custom_formatters[ $format_name ] = $handler;
+	}
+
+	/**
+	 * Get list of all available format names.
+	 *
+	 * Returns built-in formats plus any custom formats that have been registered.
+	 * The list can be filtered via the 'formatter_available_formats' hook.
+	 *
+	 * @return string[] Array of format names.
+	 */
+	public static function get_available_formats() {
+		$builtin_formats = [ 'table', 'json', 'csv', 'yaml', 'count', 'ids' ];
+		$custom_formats  = array_keys( self::$custom_formatters );
+		$all_formats     = array_merge( $builtin_formats, $custom_formats );
+
+		/**
+		 * Filter the list of available output formats.
+		 *
+		 * @param string[] $formats Array of format names.
+		 */
+		$filtered = WP_CLI::do_hook( 'formatter_available_formats', $all_formats );
+		// @phpstan-ignore-next-line - WP_CLI::do_hook can return mixed but we ensure it's array<string>
+		return is_array( $filtered ) ? $filtered : $all_formats;
 	}
 
 	/**
@@ -231,7 +276,25 @@ class Formatter {
 				break;
 
 			default:
-				WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
+				// Check if a custom formatter is registered for this format
+				if ( isset( self::$custom_formatters[ $this->args['format'] ] ) ) {
+					// Convert iterator to array for custom formatters
+					if ( ! is_array( $items ) ) {
+						$items = iterator_to_array( $items );
+					}
+					// Extract fields from items for custom formatter
+					$formatted_items = [];
+					foreach ( $items as $item ) {
+						if ( is_array( $item ) || is_object( $item ) ) {
+							// @phpstan-ignore-next-line - $item is guaranteed to be array|object here
+							$formatted_items[] = Utils\pick_fields( $item, $fields );
+						}
+					}
+					// Call the custom formatter
+					call_user_func( self::$custom_formatters[ $this->args['format'] ], $formatted_items, $fields );
+				} else {
+					WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
+				}
 		}
 	}
 
@@ -425,8 +488,13 @@ class Formatter {
 				break;
 
 			default:
-				WP_CLI::error( 'Invalid format: ' . $format );
-
+				// Check if a custom formatter is registered for this format
+				if ( isset( self::$custom_formatters[ $format ] ) ) {
+					// Call the custom formatter with a single-item array
+					call_user_func( self::$custom_formatters[ $format ], [ $ordered_data ], array_keys( $ordered_data ) );
+				} else {
+					WP_CLI::error( 'Invalid format: ' . $format );
+				}
 		}
 	}
 
