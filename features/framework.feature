@@ -442,6 +442,8 @@ Feature: Load WP-CLI
     And I run `wp db query "DROP TABLE wp_blogs"`
     And I run `wp db query "DROP TABLE wp_site"`
 
+    # WordPress core's ms_not_installed() should provide a detailed error message
+    # instead of the generic "Error establishing a database connection" message.
     When I try `wp option get home`
     Then STDERR should contain:
       """
