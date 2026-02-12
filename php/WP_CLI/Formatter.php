@@ -11,6 +11,9 @@ use WP_CLI;
 /**
  * Output one or more items in a given format (e.g. table, JSON).
  *
+ * Supports built-in formats (table, json, csv, yaml, count, ids) and allows
+ * extensions to register custom formats via Formatter::add_format().
+ *
  * @property-read string             $format
  * @property-read string[]           $fields
  * @property-read string|null        $field
@@ -84,7 +87,24 @@ class Formatter {
 	/**
 	 * Register a custom format handler.
 	 *
-	 * Allows extensions to add custom output formats.
+	 * Allows extensions to add custom output formats. The handler receives an array
+	 * of items (each item is an array of field => value pairs) and an array of field
+	 * names, and should output the formatted data directly.
+	 *
+	 * ## EXAMPLE
+	 *
+	 *     // Register a custom XML format
+	 *     WP_CLI\Formatter::add_format( 'xml', function( $items, $fields ) {
+	 *         echo "<?xml version=\"1.0\"?>\n<items>\n";
+	 *         foreach ( $items as $item ) {
+	 *             echo "  <item>\n";
+	 *             foreach ( $item as $key => $value ) {
+	 *                 echo "    <{$key}>" . htmlspecialchars( $value ) . "</{$key}>\n";
+	 *             }
+	 *             echo "  </item>\n";
+	 *         }
+	 *         echo "</items>\n";
+	 *     });
 	 *
 	 * @param string   $format_name Name of the format (e.g. 'xml', 'nagios').
 	 * @param callable $handler     Callback to handle formatting. Receives ($items, $fields) and should output directly.
@@ -101,6 +121,18 @@ class Formatter {
 	 *
 	 * Returns built-in formats plus any custom formats that have been registered.
 	 * The list can be filtered via the 'formatter_available_formats' hook.
+	 *
+	 * ## EXAMPLE
+	 *
+	 *     // Get all available formats
+	 *     $formats = WP_CLI\Formatter::get_available_formats();
+	 *     // Returns: [ 'table', 'json', 'csv', 'yaml', 'count', 'ids', ... custom formats ]
+	 *
+	 *     // Filter to add a format to the list
+	 *     WP_CLI::add_hook( 'formatter_available_formats', function( $formats ) {
+	 *         $formats[] = 'my_custom_format';
+	 *         return $formats;
+	 *     });
 	 *
 	 * @return string[] Array of format names.
 	 */
