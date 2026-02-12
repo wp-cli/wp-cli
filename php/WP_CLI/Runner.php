@@ -661,11 +661,20 @@ class Runner {
 			}
 		}
 
-		// Build command with minimal quoting - only quote arguments that need it.
+		// Build command with minimal quoting to improve readability in debug output.
+		// Arguments are only quoted if they contain characters outside the safe set.
+		// This avoids double-escaping appearance while maintaining security:
+		// 1. Here: Quote args with special chars for the remote shell
+		// 2. generate_ssh_command(): Wrap entire command for local shell
+		//
+		// Safe characters: alphanumeric, hyphen, underscore, equals, dot, forward slash, colon
+		// - Forward slash and colon are included because they're common in paths and URLs
+		//   (e.g., --url=https://example.com/path) and are not shell metacharacters
+		// - All other characters (spaces, quotes, $, &, |, etc.) trigger quoting via escapeshellarg()
 		$escaped_args = [];
 		foreach ( $wp_args as $arg ) {
 			$arg_str = (string) $arg;
-			// Only skip quoting for simple alphanumeric arguments (with hyphens, underscores, equals, dots, forward slashes).
+			// Only skip quoting for simple alphanumeric arguments (with hyphens, underscores, equals, dots, forward slashes, colons).
 			// Everything else gets quoted for safety.
 			if ( '' !== $arg_str && preg_match( '/^[a-zA-Z0-9_=.\/:-]+$/', $arg_str ) ) {
 				$escaped_args[] = $arg_str;
