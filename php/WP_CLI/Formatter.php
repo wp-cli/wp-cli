@@ -30,6 +30,13 @@ class Formatter {
 	const MAX_CELL_WIDTH = 2048;
 
 	/**
+	 * Built-in format names.
+	 *
+	 * @var string[]
+	 */
+	const BUILTIN_FORMATS = [ 'table', 'json', 'csv', 'yaml', 'count', 'ids' ];
+
+	/**
 	 * Custom format handlers registered by extensions.
 	 *
 	 * @var array<string, callable>
@@ -137,7 +144,7 @@ class Formatter {
 	 * @return string[] Array of format names.
 	 */
 	public static function get_available_formats() {
-		$builtin_formats = [ 'table', 'json', 'csv', 'yaml', 'count', 'ids' ];
+		$builtin_formats = self::BUILTIN_FORMATS;
 		$custom_formats  = array_keys( self::$custom_formatters );
 		$all_formats     = array_merge( $builtin_formats, $custom_formats );
 
@@ -320,6 +327,8 @@ class Formatter {
 						if ( is_array( $item ) || is_object( $item ) ) {
 							// @phpstan-ignore-next-line - $item is guaranteed to be array|object here
 							$formatted_items[] = Utils\pick_fields( $item, $fields );
+						} else {
+							WP_CLI::debug( 'Skipping item that is neither array nor object in custom format handler.', 'formatter' );
 						}
 					}
 					// Call the custom formatter
