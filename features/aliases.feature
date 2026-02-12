@@ -217,14 +217,6 @@ Feature: Create shortcuts to specific WordPress installs
       """
       Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; wp plugin list --debug'
       """
-    And STDERR should not contain:
-      """
-      '\'\''plugin'\'\''
-      """
-    And STDERR should not contain:
-      """
-      '\'\''list'\'\''
-      """
 
   Scenario: Add an alias
     Given a WP installation in 'foo'

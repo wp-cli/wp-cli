@@ -661,7 +661,22 @@ class Runner {
 			}
 		}
 
-		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', $wp_args );
+		// Build command with minimal quoting - only quote arguments that need it.
+		$escaped_args = [];
+		foreach ( $wp_args as $arg ) {
+			$arg_str = (string) $arg;
+			// Check if argument needs quoting (contains spaces, quotes, or shell metacharacters).
+			if ( preg_match( '/[\s\'"`$&|;<>(){}\\[\\]!*?~]/', $arg_str ) ) {
+				$escaped_args[] = escapeshellarg( $arg_str );
+			} else {
+				$escaped_args[] = $arg_str;
+			}
+		}
+		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', $escaped_args );
+
+		if ( isset( $bits['scheme'] ) && 'docker-compose-run' === $bits['scheme'] ) {
+			$wp_command = implode( ' ', $wp_args );
+		}
 
 		$escaped_command = $this->generate_ssh_command( $bits, $wp_command );
 
