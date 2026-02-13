@@ -434,6 +434,26 @@ Feature: Load WP-CLI
       Error: Site 'example.io' not found. Verify `--url=<url>` matches an existing site.
       """
 
+  # `wp db query` does not yet work on SQLite,
+  # See https://github.com/wp-cli/db-command/issues/234
+  @require-wp-3.9 @require-mysql
+  Scenario: Show detailed error when multisite database tables are missing
+    Given a WP multisite installation
+    And I run `wp db query "DROP TABLE wp_blogs"`
+    And I run `wp db query "DROP TABLE wp_site"`
+
+    # WordPress core's ms_not_installed() should provide a detailed error message
+    # instead of the generic "Error establishing a database connection" message.
+    When I try `wp option get home`
+    Then STDERR should contain:
+      """
+      Error: The site you have requested is not installed.
+      """
+    And STDERR should not contain:
+      """
+      Error establishing a database connection.
+      """
+
   Scenario: Don't show 'sitecategories' table unless global terms are enabled
     Given a WP multisite installation
 
