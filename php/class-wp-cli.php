@@ -1162,7 +1162,7 @@ class WP_CLI {
 	 */
 	private static function debug_backtrace_on_exit() {
 		// Only output backtrace when debug mode is enabled.
-		if ( ! self::$logger || ! self::get_runner()->config['debug'] ) {
+		if ( ! self::$logger || ! self::get_config( 'debug' ) ) {
 			return;
 		}
 
