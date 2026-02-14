@@ -1221,7 +1221,10 @@ class UtilsTest extends TestCase {
 	}
 
 	public function testPharSafePath(): void {
-		// When not running from a phar, phar_safe_path should return the path unchanged
+		// When not running from a phar, phar_safe_path should return the path unchanged.
+		// Note: Testing the phar context scenario requires actually running from a phar,
+		// which is not feasible in unit tests. The phar functionality is tested as part
+		// of the build and release process.
 		$path = '/home/user/wp-cli/vendor/wp-cli/config-command';
 		$this->assertEquals( $path, Utils\phar_safe_path( $path ) );
 
