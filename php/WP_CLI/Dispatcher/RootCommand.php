@@ -17,6 +17,8 @@ class RootCommand extends CompositeCommand {
 		$this->name = 'wp';
 
 		$this->shortdesc = 'Manage WordPress through the command-line.';
+
+		$this->hook = '';
 	}
 
 	/**
