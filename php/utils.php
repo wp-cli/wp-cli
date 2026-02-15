@@ -1709,18 +1709,12 @@ function phar_safe_path( $path ) {
 		return $path;
 	}
 
-	// Determine the phar file path.
-	// Phar::running(false) returns the filesystem path to the phar (e.g., "/home/user/.local/bin/wp").
-	$phar_path = \Phar::running( false );
+	$phar_path = WP_CLI_PHAR_PATH;
 
-	// Fall back to WP_CLI_PHAR_PATH constant if Phar::running() is unavailable or returns empty.
-	if ( ! $phar_path && defined( 'WP_CLI_PHAR_PATH' ) ) {
-		$phar_path = WP_CLI_PHAR_PATH;
-	}
-
-	if ( ! $phar_path ) {
-		// If we can't determine the phar path, return as-is.
-		return $path;
+	// WP_CLI_PHAR_PATH is set to Phar::running(true) in the Phar stub, which includes the phar:// prefix.
+	// Strip it to get just the filesystem path.
+	if ( 0 === strpos( $phar_path, PHAR_STREAM_PREFIX ) ) {
+		$phar_path = substr( $phar_path, strlen( PHAR_STREAM_PREFIX ) );
 	}
 
 	return str_replace(
