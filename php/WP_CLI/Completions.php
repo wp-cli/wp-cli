@@ -237,7 +237,7 @@ class Completions {
 		// todo how to get it to fill up to the point where the matches differ? e.g., 'foo' should autocomplete to 'foo.example.org/' if the urls are
 		// 'foo.example.org/bar' and 'foo.example.org/quix'
 
-		// In mutli-network installs, it should probably just search all networks, since everything is stored in wp_blogs anyway.
+		// In multi-network installs, it should probably just search all networks, since everything is stored in wp_blogs anyway.
 
 		// $cache->write( $cache_key, json_encode( $urls ) );
 
