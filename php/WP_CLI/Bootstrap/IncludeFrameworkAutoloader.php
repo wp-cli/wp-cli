@@ -45,7 +45,7 @@ final class IncludeFrameworkAutoloader implements BootstrapStep {
 
 		include_once WP_CLI_VENDOR_DIR . '/wp-cli/mustangostang-spyc/Spyc.php';
 
-		$autoloader->register();
+		$autoloader->register( true );
 
 		return $state;
 	}
