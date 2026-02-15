@@ -348,7 +348,7 @@ Feature: `wp cli completions` tasks
     And I run `wp site create --slug=waldo.example.org`
 
     # show all matches
-    When I run `wp cli completions --line="wp plugin list --url=foo"`
+    When I run `wp cli completions --line="wp plugin list --url=foo" --point=100`
     Then STDOUT should contain:
       """
       foo.example.org       foot.example.org      football.example.org
@@ -357,14 +357,14 @@ Feature: `wp cli completions` tasks
     # autocomplete up to where the matches diverge
     # todo probably needs to check in a different way than the others?
     # todo not necessary if cant autocomplete when multiple
-    When I run `wp cli completions --line="wp plugin list --url=bar"`
+    When I run `wp cli completions --line="wp plugin list --url=bar" --point=100`
     Then STDOUT should contain:
       """
       bar.example.org/qui
       """
 
     # autocomplete entirely when only 1 match
-    When I run `wp cli completions --line="wp plugin list --url=wal"`
+    When I run `wp cli completions --line="wp plugin list --url=wal" --point=100`
     Then STDOUT should contain:
       """
       waldo.example.org
