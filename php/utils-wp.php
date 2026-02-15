@@ -145,8 +145,8 @@ function get_multisite_db_error_message() {
 
 	// Check if the multisite tables exist
 	$suppress_errors    = $wpdb->suppress_errors();
-	$site_table_exists  = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $wpdb->site ) ) );
-	$blogs_table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $wpdb->blogs ) ) );
+	$site_table_exists  = $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->esc_like( $wpdb->site )}'" );
+	$blogs_table_exists = $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->esc_like( $wpdb->blogs )}'" );
 	$wpdb->suppress_errors( $suppress_errors );
 
 	if ( ! $site_table_exists || ! $blogs_table_exists ) {
@@ -158,9 +158,11 @@ function get_multisite_db_error_message() {
 			$missing_tables[] = $wpdb->blogs;
 		}
 		$message .= "\nMissing database table(s): " . implode( ', ', $missing_tables ) . '.';
+		$message .= "\nRun `wp core multisite-install` to create the tables, or restore them from a backup.";
+	} else {
+		$message .= "\nDatabase tables exist but the site could not be found.";
+		$message .= "\nVerify the domain and path are correct, or run `wp db query 'SELECT * FROM {$wpdb->blogs}'` to check existing sites.";
 	}
-
-	$message .= "\nRun `wp core multisite-install` to create the database tables.";
 
 	return $message;
 }
