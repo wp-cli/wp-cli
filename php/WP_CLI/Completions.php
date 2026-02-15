@@ -29,16 +29,17 @@ class Completions {
 		}
 
 		// Last word is an incomplete `--url` parameter
-		if ( 0 === strpos( $this->cur_word, '--url' ) ) {
-			$parameter = explode( '=', $this->cur_word );
-				// todo maybe strip out the --
-			$this->cur_word = $parameter[1];
-			$urls           = $this->get_network_urls( 'foo' );
+		if ( 0 === strpos( $this->cur_word, '--url=' ) ) {
+			$parameter      = explode( '=', $this->cur_word );
+			$this->cur_word = isset( $parameter[1] ) ? $parameter[1] : '';
+			$urls           = $this->get_network_urls();
 
 			foreach ( $urls as $url ) {
 				$this->add( $url );
-				// todo parse out just the domain/path, no scheme
-				// or maybe accept 'http://foo', 'https://foo', and 'foo', and adjust output accordingly?
+				$url_no_scheme = preg_replace( '#^https?://#', '', $url );
+				if ( $url_no_scheme && $url_no_scheme !== $url ) {
+					$this->add( $url_no_scheme );
+				}
 			}
 
 			return;
@@ -205,41 +206,37 @@ class Completions {
 	/**
 	 * Get URLs in the Multisite network matching the input.
 	 *
-	 * @param string $prefix Beginning of a domain. e.g., `foo` for `football.example.org`
-	 *
-	 * @return string[] All of the URLs that start with $prefix
+	 * @return string[] All of the URLs.
 	 */
-	private function get_network_urls( $prefix ) {
-		$cache            = WP_CLI::get_cache();
-		$main_site_domain = 'example.org';
-			// todo get via WP_CLI::launch_self( 'wp option get homeurl' ) ?
-			// todo parse out just the domain/path, not scheme/etc
-			// maybe run through php/wp filter to sanitize filename
-		$cache_key   = sprintf( 'network-urls:%s', $main_site_domain );
-		$cached_urls = json_decode( (string) $cache->read( $cache_key ), true ); //specify ttl?
+	private function get_network_urls() {
+		$cache = WP_CLI::get_cache();
 
+		// Use the WP root to key the cache, so we don't mix results from different projects.
+		$wp_root   = WP_CLI::get_runner()->find_wp_root();
+		$cache_key = sprintf( 'network-urls:%s', md5( $wp_root ) );
+
+		$cached_urls = $cache->read( $cache_key, 300 ); // 5 minutes TTL
 		if ( $cached_urls ) {
-			/**
-			 * @var string[] $cached_urls
-			 */
-			return $cached_urls;
+			return json_decode( $cached_urls, true );
 		}
 
-		// todo get via wp site list --format...
-		$urls = array(
-			'foo.example.org',
-			'foot.example.org',
-			'football.example.org',
+		$result = WP_CLI::launch_self(
+			'site list',
+			[],
+			[
+				'field'  => 'url',
+				'number' => -1,
+			],
+			false,
+			true
 		);
 
-		// todo how to get it to autocomplete when there's only 1 match found?
+		$urls = [];
+		if ( 0 === $result->return_code ) {
+			$urls = array_filter( explode( "\n", $result->stdout ) );
+		}
 
-		// todo how to get it to fill up to the point where the matches differ? e.g., 'foo' should autocomplete to 'foo.example.org/' if the urls are
-		// 'foo.example.org/bar' and 'foo.example.org/quix'
-
-		// In multi-network installs, it should probably just search all networks, since everything is stored in wp_blogs anyway.
-
-		// $cache->write( $cache_key, json_encode( $urls ) );
+		$cache->write( $cache_key, json_encode( $urls ) );
 
 		return $urls;
 	}

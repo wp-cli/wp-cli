@@ -338,36 +338,34 @@ Feature: `wp cli completions` tasks
     When I run `wp cli completions --line="wp core download --no-color --no-color" --point=100`
     Then STDOUT should be empty
 
-  Scenario: Bash Completion for global --url parameter
-    Given a WP multisite installation
-    And I run `wp site create --slug=foo.example.org`
-    And I run `wp site create --slug=foot.example.org`
-    And I run `wp site create --slug=football.example.org`
-    And I run `wp site create --slug=bar.example.org/quix`
-    And I run `wp site create --slug=bar.example.org/quiz`
-    And I run `wp site create --slug=waldo.example.org`
+  Scenario: Bash Completion for global --url parameter in subdirectory installation
+    Given a WP multisite subdirectory installation
+    And I run `wp site create --slug=foo`
+    And I run `wp site create --slug=foot`
+    And I run `wp site create --slug=football`
+    And I run `wp site create --slug=bar`
+    And I run `wp site create --slug=baz`
+    And I run `wp site create --slug=waldo`
 
     # show all matches
-    When I run `wp cli completions --line="wp plugin list --url=foo" --point=100`
+    When I run `wp cli completions --line="wp plugin list --url=https://example.com/fo" --point=100`
     Then STDOUT should contain:
       """
-      foo.example.org       foot.example.org      football.example.org
+      https://example.com/foo/
+      """
+    And STDOUT should contain:
+      """
+      https://example.com/foot/
+      """
+    And STDOUT should contain:
+      """
+      https://example.com/football/
       """
 
-    # autocomplete up to where the matches diverge
-    # todo probably needs to check in a different way than the others?
-    # todo not necessary if cant autocomplete when multiple
-    When I run `wp cli completions --line="wp plugin list --url=bar" --point=100`
+    When I run `wp cli completions --line="wp plugin list --url=https://example.com/bar" --point=100`
     Then STDOUT should contain:
       """
-      bar.example.org/qui
-      """
-
-    # autocomplete entirely when only 1 match
-    When I run `wp cli completions --line="wp plugin list --url=wal" --point=100`
-    Then STDOUT should contain:
-      """
-      waldo.example.org
+      https://example.com/bar/
       """
 
   Scenario: Bash Completion for flag values with enum options
