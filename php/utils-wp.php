@@ -121,7 +121,48 @@ function wp_die_handler( $message ) {
 
 	$text_message = wp_clean_error_message( $text_message );
 
+	// For multisite, enhance generic database error with more specific information
+	if ( is_multisite() && 'Error establishing a database connection.' === $text_message ) {
+		$text_message = get_multisite_db_error_message();
+	}
+
 	WP_CLI::error( $text_message );
+}
+
+/**
+ * Get a detailed error message for multisite database issues.
+ *
+ * Provides more specific information about what's wrong with the multisite
+ * database, similar to what WordPress core's ms_not_installed() shows when
+ * is_admin() is true.
+ *
+ * @return string Detailed error message.
+ */
+function get_multisite_db_error_message() {
+	global $wpdb;
+
+	$message = 'The site you have requested is not installed.';
+
+	// Check if the multisite tables exist
+	$suppress_errors    = $wpdb->suppress_errors();
+	$site_table_exists  = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $wpdb->site ) ) );
+	$blogs_table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $wpdb->blogs ) ) );
+	$wpdb->suppress_errors( $suppress_errors );
+
+	if ( ! $site_table_exists || ! $blogs_table_exists ) {
+		$missing_tables = [];
+		if ( ! $site_table_exists ) {
+			$missing_tables[] = $wpdb->site;
+		}
+		if ( ! $blogs_table_exists ) {
+			$missing_tables[] = $wpdb->blogs;
+		}
+		$message .= "\nMissing database table(s): " . implode( ', ', $missing_tables ) . '.';
+	}
+
+	$message .= "\nRun `wp core multisite-install` to create the database tables.";
+
+	return $message;
 }
 
 /**

@@ -442,12 +442,16 @@ Feature: Load WP-CLI
     And I run `wp db query "DROP TABLE wp_blogs"`
     And I run `wp db query "DROP TABLE wp_site"`
 
-    # WordPress core's ms_not_installed() should provide a detailed error message
-    # instead of the generic "Error establishing a database connection" message.
+    # WordPress core's ms_not_installed() shows a generic error when is_admin() is false.
+    # WP-CLI enhances this to show detailed information about missing tables.
     When I try `wp option get home`
     Then STDERR should contain:
       """
       Error: The site you have requested is not installed.
+      """
+    And STDERR should contain:
+      """
+      Missing database table(s):
       """
     And STDERR should not contain:
       """
