@@ -281,12 +281,12 @@ class UtilsTest extends TestCase {
 			[ [ 'option', 'get', 'home' ], 'option get home' ],
 			[ [ 'core', 'download', '--path=/var/www/' ], 'core download --path=/var/www/' ],
 			[ [ 'eval', 'echo wp_get_current_user()->user_login;' ], 'eval "echo wp_get_current_user()->user_login;"' ],
-			[ [ 'post', 'create', '--post_title="Hello world!"' ], 'post create --post_title="Hello world!"' ],
-			[ [ 'post', 'create', '--post_title=\'Mixed "quotes are working" hopefully\'' ], 'post create --post_title=\'Mixed "quotes are working" hopefully\'' ],
-			[ [ 'post', 'create', '--post_title="Escaped \"double \"quotes!"' ], 'post create --post_title="Escaped \"double \"quotes!"' ],
-			[ [ 'post', 'create', "--post_title='Escaped \'single \'quotes!'" ], "post create --post_title='Escaped \'single \'quotes!'" ],
+			[ [ 'post', 'create', '--post_title=Hello world!' ], 'post create --post_title="Hello world!"' ],
+			[ [ 'post', 'create', '--post_title=Mixed "quotes are working" hopefully' ], 'post create --post_title=\'Mixed "quotes are working" hopefully\'' ],
+			[ [ 'post', 'create', '--post_title=Escaped "double "quotes!' ], 'post create --post_title="Escaped \"double \"quotes!"' ],
+			[ [ 'post', 'create', "--post_title=Escaped 'single 'quotes!" ], "post create --post_title='Escaped \'single \'quotes!'" ],
 			[ [ 'search-replace', '//old-domain.com', '//new-domain.com', 'specifictable', '--all-tables' ], 'search-replace "//old-domain.com" "//new-domain.com" "specifictable" --all-tables' ],
-			[ [ 'i18n', 'make-pot', '/home/wporgdev/co/wordpress/trunk', '/home/wporgdev/co/wp-pot/trunk/wordpress-continents-cities.pot', '--include="wp-admin/includes/continents-cities.php"', "--package-name='WordPress'", '--headers=\'{"Report-Msgid-Bugs-To":"https://core.trac.wordpress.org/"}\'', "--file-comment='Copyright (C) 2019 by the contributors\nThis file is distributed under the same license as the WordPress package.'", '--skip-js', '--skip-audit', '--ignore-domain' ], "i18n make-pot '/home/wporgdev/co/wordpress/trunk' '/home/wporgdev/co/wp-pot/trunk/wordpress-continents-cities.pot' --include=\"wp-admin/includes/continents-cities.php\" --package-name='WordPress' --headers='{\"Report-Msgid-Bugs-To\":\"https://core.trac.wordpress.org/\"}' --file-comment='Copyright (C) 2019 by the contributors\nThis file is distributed under the same license as the WordPress package.' --skip-js --skip-audit --ignore-domain" ],
+			[ [ 'i18n', 'make-pot', '/home/wporgdev/co/wordpress/trunk', '/home/wporgdev/co/wp-pot/trunk/wordpress-continents-cities.pot', '--include=wp-admin/includes/continents-cities.php', '--package-name=WordPress', '--headers={"Report-Msgid-Bugs-To":"https://core.trac.wordpress.org/"}', "--file-comment=Copyright (C) 2019 by the contributors\nThis file is distributed under the same license as the WordPress package.", '--skip-js', '--skip-audit', '--ignore-domain' ], "i18n make-pot '/home/wporgdev/co/wordpress/trunk' '/home/wporgdev/co/wp-pot/trunk/wordpress-continents-cities.pot' --include=\"wp-admin/includes/continents-cities.php\" --package-name='WordPress' --headers='{\"Report-Msgid-Bugs-To\":\"https://core.trac.wordpress.org/\"}' --file-comment='Copyright (C) 2019 by the contributors\nThis file is distributed under the same license as the WordPress package.' --skip-js --skip-audit --ignore-domain" ],
 		];
 	}
 
@@ -296,6 +296,36 @@ class UtilsTest extends TestCase {
 	#[DataProvider( 'parseStrToArgvData' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testParseStrToArgv( $expected, $parseable_string ): void {
 		$this->assertEquals( $expected, Utils\parse_str_to_argv( $parseable_string ) );
+	}
+
+	/**
+	 * Data provider for testParseStrToArgvStripsQuotesFromAssocValues.
+	 *
+	 * @return array
+	 */
+	public static function parseStrToArgvStripsQuotesFromAssocValuesData() {
+		return [
+			'double quotes with spaces' => [ 'cli foo --bar="baz quax"', [ 'cli', 'foo', '--bar=baz quax' ] ],
+			'single quotes with spaces' => [ "cli foo --bar='baz quax'", [ 'cli', 'foo', '--bar=baz quax' ] ],
+			'no quotes'                 => [ 'cli foo --bar=baz', [ 'cli', 'foo', '--bar=baz' ] ],
+			'empty double quotes'       => [ 'cli foo --bar=""', [ 'cli', 'foo', '--bar=' ] ],
+			'empty single quotes'       => [ "cli foo --bar=''", [ 'cli', 'foo', '--bar=' ] ],
+			'escaped double quotes'     => [ 'cli foo --bar="baz \"quax\""', [ 'cli', 'foo', '--bar=baz "quax"' ] ],
+			'escaped single quotes'     => [ "cli foo --bar='baz \\'quax\\''", [ 'cli', 'foo', "--bar=baz 'quax'" ] ],
+		];
+	}
+
+	/**
+	 * Test that associative arguments with quoted values are properly parsed
+	 * when passed to WP_CLI::runcommand().
+	 *
+	 * @dataProvider parseStrToArgvStripsQuotesFromAssocValuesData
+	 * @see https://github.com/wp-cli/wp-cli/issues/5541
+	 */
+	#[DataProvider( 'parseStrToArgvStripsQuotesFromAssocValuesData' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testParseStrToArgvStripsQuotesFromAssocValues( $input, $expected ): void {
+		$result = Utils\parse_str_to_argv( $input );
+		$this->assertEquals( $expected, $result );
 	}
 
 	public function testAssocArgsToString(): void {
@@ -495,6 +525,7 @@ class UtilsTest extends TestCase {
 		// Save WP_CLI state.
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$class_wp_cli_capture_exit->setAccessible( true );
 		}
 		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
@@ -545,7 +576,7 @@ class UtilsTest extends TestCase {
 	}
 
 	/**
-	 * @dataProvider dataHttpRequestBadCAcert()
+	 * @dataProvider dataHttpRequestBadCAcert
 	 *
 	 * @param array                    $additional_options Associative array of additional options to pass to http_request().
 	 * @param class-string<\Throwable> $exception          Class of the exception to expect.
@@ -724,6 +755,7 @@ class UtilsTest extends TestCase {
 		// Save WP_CLI state.
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$class_wp_cli_capture_exit->setAccessible( true );
 		}
 		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
@@ -857,10 +889,8 @@ class UtilsTest extends TestCase {
 	public function test_esc_like_with_wpdb( $input, $expected ): void {
 		global $wpdb;
 
-		// @phpstan-ignore class.notFound
-		$wpdb = $this->createMock( WP_CLI_Mock_WPDB::class )
-			->expects( $this->any() )
-			->method( 'esc_like' )
+		$wpdb = $this->createMock( WP_CLI_Mock_WPDB::class );
+		$wpdb->method( 'esc_like' )
 			->willReturn( addcslashes( $input, '_%\\' ) );
 
 		$this->assertEquals( $expected, Utils\esc_like( $input ) );

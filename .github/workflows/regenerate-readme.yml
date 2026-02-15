@@ -10,6 +10,10 @@ on:
       - "features/**"
       - "README.md"
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   regenerate-readme:
     uses: wp-cli/.github/.github/workflows/reusable-regenerate-readme.yml@main

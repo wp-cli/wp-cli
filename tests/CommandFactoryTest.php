@@ -22,6 +22,7 @@ class CommandFactoryTest extends TestCase {
 		if ( null === $extract_last_doc_comment ) {
 			$extract_last_doc_comment = new \ReflectionMethod( 'WP_CLI\Dispatcher\CommandFactory', 'extract_last_doc_comment' );
 			if ( PHP_VERSION_ID < 80100 ) {
+				// @phpstan-ignore method.deprecated
 				$extract_last_doc_comment->setAccessible( true );
 			}
 		}
@@ -46,6 +47,7 @@ class CommandFactoryTest extends TestCase {
 		if ( null === $extract_last_doc_comment ) {
 			$extract_last_doc_comment = new \ReflectionMethod( 'WP_CLI\Dispatcher\CommandFactory', 'extract_last_doc_comment' );
 			if ( PHP_VERSION_ID < 80100 ) {
+				// @phpstan-ignore method.deprecated
 				$extract_last_doc_comment->setAccessible( true );
 			}
 		}
@@ -100,6 +102,7 @@ class CommandFactoryTest extends TestCase {
 		// Make private function accessible.
 		$get_doc_comment = new \ReflectionMethod( 'WP_CLI\Dispatcher\CommandFactory', 'get_doc_comment' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$get_doc_comment->setAccessible( true );
 		}
 
@@ -275,6 +278,7 @@ class CommandFactoryTest extends TestCase {
 		// Make private function accessible.
 		$get_doc_comment = new \ReflectionMethod( 'WP_CLI\Dispatcher\CommandFactory', 'get_doc_comment' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$get_doc_comment->setAccessible( true );
 		}
 
