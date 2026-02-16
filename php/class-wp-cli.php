@@ -1240,7 +1240,18 @@ class WP_CLI {
 	public static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
 		Utils\check_proc_available( 'launch' );
 
-		$proc    = Process::create( $command );
+		// Forward environment variables when available so child processes can still
+		// read DB_* (and other) values via getenv() / $_ENV in wp-config.php.
+		$env = $_ENV;
+
+		if ( ! empty( $env ) ) {
+			// Explicit env array, child process inherits only these entries.
+			$proc = Process::create( $command, null, $env );
+		} else {
+			// $_ENV is empty → use null to inherit full parent environment.
+			$proc = Process::create( $command, null, null );
+		}
+
 		$results = $proc->run();
 
 		if ( -1 === $results->return_code ) {
