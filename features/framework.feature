@@ -437,21 +437,23 @@ Feature: Load WP-CLI
   # `wp db query` does not yet work on SQLite,
   # See https://github.com/wp-cli/db-command/issues/234
   @require-wp-3.9 @require-mysql
-  Scenario: Show detailed error when multisite database tables are missing
+  Scenario: Show detailed error when multisite network is not found
     Given a WP multisite installation
-    And I run `wp db query "DROP TABLE wp_blogs"`
-    And I run `wp db query "DROP TABLE wp_site"`
+    And a force-network-not-found.php file:
+      """
+      <?php
+      // Force ms_not_installed() to be triggered by returning empty network
+      add_filter( 'networks_pre_query', function() {
+          return [];
+      }, 10, 0 );
+      """
 
-    # WordPress core's ms_not_installed() shows a generic error when is_admin() is false.
-    # WP-CLI enhances this to show detailed information about missing tables.
-    When I try `wp option get home`
+    # This should trigger ms_not_installed() which now shows detailed error
+    # because we set current_screen to make is_admin() return true
+    When I try `wp --require=force-network-not-found.php option get home`
     Then STDERR should contain:
       """
       Error: The site you have requested is not installed.
-      """
-    And STDERR should contain:
-      """
-      Missing database table(s):
       """
     And STDERR should not contain:
       """

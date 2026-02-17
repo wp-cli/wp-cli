@@ -1539,7 +1539,25 @@ class Runner {
 				define( 'WP_DEBUG_DISPLAY', true );
 			}
 		}
+
+		// For multisite, set a pseudo WP_Screen to make is_admin() return true.
+		// This ensures ms_not_installed() shows detailed error messages instead of
+		// the generic "Error establishing a database connection" message.
+		if ( $this->is_multisite() ) {
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Intentional temporary override for error messaging.
+			$GLOBALS['current_screen'] = new class() {
+				public function in_admin() {
+					return true;
+				}
+			};
+		}
+
 		require ABSPATH . 'wp-settings.php';
+
+		// Clean up the pseudo screen object after WordPress has loaded
+		if ( isset( $GLOBALS['current_screen'] ) && ! ( $GLOBALS['current_screen'] instanceof \WP_Screen ) ) {
+			unset( $GLOBALS['current_screen'] );
+		}
 
 		// Fix memory limit. See https://core.trac.wordpress.org/ticket/14889
 		// phpcs:ignore WordPress.PHP.IniSet.memory_limit_Disallowed -- This is perfectly fine for CLI usage.
@@ -1802,6 +1820,19 @@ class Runner {
 				},
 				10,
 				3
+			);
+
+			// Handle ms_network_not_found to provide better error messages
+			WP_CLI::add_wp_hook(
+				'ms_network_not_found',
+				static function ( $domain, $path ) {
+					$url      = $domain . $path;
+					$message  = $url ? "Network '{$url}' not found." : 'Network not found.';
+					$message .= ' Verify the network exists in the database or run `wp core multisite-install`.';
+					WP_CLI::error( $message );
+				},
+				10,
+				2
 			);
 		}
 
