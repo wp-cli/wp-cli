@@ -443,21 +443,22 @@ Feature: Load WP-CLI
       """
       <?php
       // Force ms_not_installed() to be triggered by returning empty network
-      add_filter( 'networks_pre_query', function() {
+      WP_CLI::add_wp_hook( 'networks_pre_query', function() {
           return [];
       }, 10, 0 );
       """
+    And I run `wp config delete DOMAIN_CURRENT_SITE --type=constant`
 
     # This should trigger ms_not_installed() which now shows detailed error
     # because we set current_screen to make is_admin() return true
     When I try `wp --require=force-network-not-found.php option get home`
     Then STDERR should contain:
       """
-      Error: The site you have requested is not installed.
-      """
-    And STDERR should not contain:
-      """
       Error establishing a database connection.
+      """
+    And STDERR should contain:
+      """
+      If your site does not display, please contact the owner of this network.
       """
 
   Scenario: Don't show 'sitecategories' table unless global terms are enabled
