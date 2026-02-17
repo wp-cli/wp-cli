@@ -20,7 +20,7 @@
         "wp-cli/entity-command": "^2",
         "wp-cli/extension-command": "^2",
         "wp-cli/package-command": "^2",
-        "wp-cli/wp-cli-tests": "^5"
+        "wp-cli/wp-cli-tests": "dev-try/os"
     },
     "suggest": {
         "ext-curl": "For better performance when making HTTP requests",
