@@ -1566,7 +1566,7 @@ class Runner {
 		// Load all the admin APIs, for convenience
 		require ABSPATH . 'wp-admin/includes/admin.php';
 
-		add_filter(
+		WP_CLI::add_wp_hook(
 			'filesystem_method',
 			static function () {
 				return 'direct';
