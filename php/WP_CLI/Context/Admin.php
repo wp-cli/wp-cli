@@ -20,6 +20,7 @@ final class Admin implements Context {
 	 */
 	public function process( $config ) {
 		if ( defined( 'WP_ADMIN' ) ) {
+			// @phpstan-ignore phpstanWP.wpConstant.fetch
 			if ( ! WP_ADMIN ) {
 				WP_CLI::warning( 'Could not fake admin request.' );
 			}
