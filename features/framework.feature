@@ -436,16 +436,19 @@ Feature: Load WP-CLI
 
   # `wp db query` does not yet work on SQLite,
   # See https://github.com/wp-cli/db-command/issues/234
-  @require-wp-3.9 @require-mysql
+  @require-mysql
   Scenario: Show detailed error when multisite network is not found
     Given a WP multisite installation
     And a force-network-not-found.php file:
       """
       <?php
       // Force ms_not_installed() to be triggered by returning empty network
-      WP_CLI::add_wp_hook( 'networks_pre_query', function() {
+      WP_CLI::add_wp_hook(
+        'the_networks',
+        static function() {
           return [];
-      }, 10, 0 );
+        }
+      );
       """
     And I run `wp config delete DOMAIN_CURRENT_SITE --type=constant`
 
