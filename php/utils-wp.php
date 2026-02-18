@@ -85,6 +85,8 @@ function wp_debug_mode() {
 			error_reporting( E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_ERROR | E_WARNING | E_PARSE | E_USER_ERROR | E_USER_WARNING | E_RECOVERABLE_ERROR );
 		}
 
+		// wp_doing_ajax() might not be available.
+		// @phpstan-ignore phpstanWP.wpConstant.fetch
 		if ( defined( 'XMLRPC_REQUEST' ) || defined( 'REST_REQUEST' ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
 			ini_set( 'display_errors', 0 );
 		}
@@ -115,20 +117,6 @@ function wp_die_handler( $message ) {
 
 	if ( $message instanceof \WP_Error ) {
 		$text_message = $message->get_error_message();
-
-		/**
-		 * @var array{error?: array{file?: string}} $error_data
-		 */
-		$error_data = $message->get_error_data( 'internal_server_error' );
-
-		/**
-		 * @var string $file
-		 */
-		$file = ! empty( $error_data['error']['file'] ) ? $error_data['error']['file'] : '';
-
-		if ( false !== stripos( $file, 'themes/functions.php' ) ) {
-			$text_message = 'An unexpected functions.php file in the themes directory may have caused this internal server error.';
-		}
 	} else {
 		$text_message = $message;
 	}
@@ -193,13 +181,14 @@ function maybe_require( $since, $path ) {
 /**
  * @template T of \WP_Upgrader
  *
- * @param class-string<T> $class_name
- * @param bool         $insecure
+ * @param class-string<T>   $class_name Class name.
+ * @param bool              $insecure Optional. Default false.
+ * @param \WP_Upgrader_Skin $skin. Optional. Upgrader skin. Default \WP_CLI\UpgraderSkin.
  *
  * @return T Upgrader instance.
  * @throws \ReflectionException
  */
-function get_upgrader( $class_name, $insecure = false ) {
+function get_upgrader( $class_name, $insecure = false, $skin = null ) {
 	if ( ! class_exists( '\WP_Upgrader' ) ) {
 		if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' ) ) {
 			include ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
@@ -231,7 +220,9 @@ function get_upgrader( $class_name, $insecure = false ) {
 		/**
 		 * @var T $result
 		 */
-		$result = new $class_name( new UpgraderSkin(), $insecure );
+		// TODO: Introduce custom upgrader interface supporting two arguments.
+		// @phpstan-ignore arguments.count
+		$result = new $class_name( $skin ?: new UpgraderSkin(), $insecure );
 
 		return $result;
 	}
@@ -239,7 +230,7 @@ function get_upgrader( $class_name, $insecure = false ) {
 	/**
 	 * @var T $result
 	 */
-	$result = new $class_name( new UpgraderSkin() );
+	$result = new $class_name( $skin ?: new UpgraderSkin() );
 
 	return $result;
 }
@@ -461,16 +452,20 @@ function wp_clear_object_cache() {
 	}
 
 	// The following are Memcached (Redux) plugin specific (see https://core.trac.wordpress.org/ticket/31463).
+	// @phpstan-ignore property.notFound
 	if ( isset( $wp_object_cache->group_ops ) ) {
 		$wp_object_cache->group_ops = [];
 	}
+	// @phpstan-ignore property.notFound
 	if ( isset( $wp_object_cache->stats ) ) {
 		$wp_object_cache->stats = [];
 	}
+	// @phpstan-ignore property.notFound
 	if ( isset( $wp_object_cache->memcache_debug ) ) {
 		$wp_object_cache->memcache_debug = [];
 	}
 	// Used by `WP_Object_Cache` also.
+	// @phpstan-ignore property.notFound
 	if ( isset( $wp_object_cache->cache ) ) {
 		$wp_object_cache->cache = [];
 	}
@@ -548,6 +543,12 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 		// Note: BC change 1.5.0, tables are sorted (via TABLES view).
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- uses esc_sql_ident() and $wpdb->_escape().
 		$tables = $wpdb->get_col( sprintf( "SHOW TABLES WHERE %s IN ('%s')", esc_sql_ident( 'Tables_in_' . $wpdb->dbname ), implode( "', '", $wpdb->_escape( $wp_tables ) ) ) );
+
+		// Filter tables after the query for improved SQLite compatibility.
+		// See https://github.com/WordPress/sqlite-database-integration/issues/319.
+		if ( 'sqlite' === get_db_type() ) {
+			$tables = array_values( array_intersect( $tables, $wp_tables ) );
+		}
 
 		if ( get_flag_value( $assoc_args, 'base-tables-only' ) || get_flag_value( $assoc_args, 'views-only' ) ) {
 			// Apply Views restriction args if needed.
