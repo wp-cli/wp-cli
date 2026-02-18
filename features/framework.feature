@@ -434,6 +434,65 @@ Feature: Load WP-CLI
       Error: Site 'example.io' not found. Verify `--url=<url>` matches an existing site.
       """
 
+  # `wp db query` does not yet work on SQLite,
+  # See https://github.com/wp-cli/db-command/issues/234
+  @require-mysql
+  Scenario: Show detailed error when multisite network is not found
+    Given a WP multisite installation
+    And a force-network-not-found.php file:
+      """
+      <?php
+      // Force ms_not_installed() to be triggered by returning empty network
+      WP_CLI::add_wp_hook(
+        'the_networks',
+        static function() {
+          return [];
+        }
+      );
+      """
+    And I run `wp config delete DOMAIN_CURRENT_SITE --type=constant`
+
+    # This should trigger ms_not_installed() which now shows detailed error
+    # because we set current_screen to make is_admin() return true
+    When I try `wp --require=force-network-not-found.php option get home`
+    Then STDERR should contain:
+      """
+      Error establishing a database connection.
+      """
+    And STDERR should contain:
+      """
+      If your site does not display, please contact the owner of this network.
+      """
+
+  # `wp db query` does not yet work on SQLite,
+  # See https://github.com/wp-cli/db-command/issues/234
+  @require-mysql
+  Scenario: Show detailed error when hitting ms_network_not_found
+    Given a WP multisite installation
+    And a force-network-not-found.php file:
+      """
+      <?php
+      // Force ms_not_installed() to be triggered by returning empty network
+      WP_CLI::add_wp_hook(
+        'the_networks',
+        static function() {
+          return [
+            new \WP_Network( new stdClass() ),
+            new \WP_Network( new stdClass() ),
+          ];
+        }
+      );
+      """
+    And I run `wp config delete DOMAIN_CURRENT_SITE --type=constant`
+
+    # This should trigger ms_not_installed() which now shows detailed error
+    # because we set current_screen to make is_admin() return true
+    When I try `wp --require=force-network-not-found.php option get home`
+    Then STDERR should contain:
+      """
+      Error: Network not found. Verify the network exists in the database or run `wp core multisite-install`.
+      """
+
   Scenario: Don't show 'sitecategories' table unless global terms are enabled
     Given a WP multisite installation
 
