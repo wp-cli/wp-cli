@@ -233,12 +233,17 @@ class Configurator {
 			}
 			foreach ( $local_assoc as $tmp ) {
 				[ $key, $value ] = $tmp;
-				// Collect multiple values for the same key into an array
+				// Collect multiple values for the same key into an array, except for boolean flags
 				if ( isset( $assoc_args[ $key ] ) ) {
-					if ( ! is_array( $assoc_args[ $key ] ) ) {
-						$assoc_args[ $key ] = [ $assoc_args[ $key ] ];
+					// Boolean flags (--flag or --no-flag) use last-wins behavior
+					if ( is_bool( $value ) ) {
+						$assoc_args[ $key ] = $value;
+					} else {
+						if ( ! is_array( $assoc_args[ $key ] ) ) {
+							$assoc_args[ $key ] = [ $assoc_args[ $key ] ];
+						}
+						$assoc_args[ $key ][] = $value;
 					}
-					$assoc_args[ $key ][] = $value;
 				} else {
 					$assoc_args[ $key ] = $value;
 				}
@@ -250,11 +255,16 @@ class Configurator {
 				if ( isset( $this->spec[ $key ] ) && false !== $this->spec[ $key ]['runtime'] ) {
 					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
 				} elseif ( isset( $assoc_args[ $key ] ) ) {
-					// Collect multiple values for the same key into an array
-					if ( ! is_array( $assoc_args[ $key ] ) ) {
-						$assoc_args[ $key ] = [ $assoc_args[ $key ] ];
+					// Collect multiple values for the same key into an array, except for boolean flags
+					// Boolean flags (--flag or --no-flag) use last-wins behavior
+					if ( is_bool( $value ) ) {
+						$assoc_args[ $key ] = $value;
+					} else {
+						if ( ! is_array( $assoc_args[ $key ] ) ) {
+							$assoc_args[ $key ] = [ $assoc_args[ $key ] ];
+						}
+						$assoc_args[ $key ][] = $value;
 					}
-					$assoc_args[ $key ][] = $value;
 				} else {
 					$assoc_args[ $key ] = $value;
 				}

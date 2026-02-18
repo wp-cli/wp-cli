@@ -171,3 +171,70 @@ Feature: Multiple flag values support
       """
       Invalid value 'invalid' specified for 'status'
       """
+
+  Scenario: Boolean flags use last-wins behavior when repeated
+    Given an empty directory
+    And a test-boolean-cmd.php file:
+      """
+      <?php
+      /**
+       * Test command for boolean flag behavior
+       *
+       * @when before_wp_load
+       */
+      class Test_Boolean_Command extends WP_CLI_Command {
+
+          /**
+           * Test boolean flags
+           *
+           * ## OPTIONS
+           *
+           * [--verbose]
+           * : Enable verbose mode
+           *
+           * [--no-verbose]
+           * : Disable verbose mode
+           *
+           * @subcommand test
+           */
+          public function test( $args, $assoc_args ) {
+              $verbose = isset( $assoc_args['verbose'] ) ? $assoc_args['verbose'] : 'not set';
+              if ( is_bool( $verbose ) ) {
+                  WP_CLI::success( 'Verbose: ' . ( $verbose ? 'true' : 'false' ) );
+              } else {
+                  WP_CLI::success( 'Verbose: ' . $verbose );
+              }
+          }
+      }
+      WP_CLI::add_command( 'testbool', 'Test_Boolean_Command' );
+      """
+
+    When I run `wp --require=test-boolean-cmd.php testbool test --verbose`
+    Then STDOUT should contain:
+      """
+      Success: Verbose: true
+      """
+
+    When I run `wp --require=test-boolean-cmd.php testbool test --no-verbose`
+    Then STDOUT should contain:
+      """
+      Success: Verbose: false
+      """
+
+    When I run `wp --require=test-boolean-cmd.php testbool test --verbose --no-verbose`
+    Then STDOUT should contain:
+      """
+      Success: Verbose: false
+      """
+
+    When I run `wp --require=test-boolean-cmd.php testbool test --no-verbose --verbose`
+    Then STDOUT should contain:
+      """
+      Success: Verbose: true
+      """
+
+    When I run `wp --require=test-boolean-cmd.php testbool test --verbose --verbose --no-verbose --verbose`
+    Then STDOUT should contain:
+      """
+      Success: Verbose: true
+      """
