@@ -59,10 +59,8 @@ function wp_debug_mode() {
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			error_reporting( E_ALL );
 
-			if ( defined( 'WP_DEBUG_DISPLAY' ) && WP_DEBUG_DISPLAY ) {
-				ini_set( 'display_errors', 1 );
-			} elseif ( defined( 'WP_DEBUG_DISPLAY' ) && false === WP_DEBUG_DISPLAY ) {
-				ini_set( 'display_errors', 0 );
+			if ( defined( 'WP_DEBUG_DISPLAY' ) ) {
+				ini_set( 'display_errors', WP_DEBUG_DISPLAY ? 1 : 0 );
 			}
 
 			if ( defined( 'WP_DEBUG_LOG' ) ) {
