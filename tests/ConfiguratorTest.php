@@ -99,4 +99,32 @@ class ConfiguratorTest extends TestCase {
 		$this->assertEquals( 'status', $args[1][1][0] );
 		$this->assertEquals( 'parent', $args[1][1][1] );
 	}
+
+	public function testParseArgsAggregatesMultipleValues(): void {
+		// Use reflection so this test continues to work even if parse_args() is non-public.
+		$ref_class  = new \ReflectionClass( Configurator::class );
+		$ref_method = $ref_class->getMethod( 'parse_args' );
+		$ref_method->setAccessible( true );
+
+		// Simulate a command with repeated and non-repeated associative arguments.
+		$argv = [ 'list', '--status=active', '--status=parent', '--field=name' ];
+
+		// parse_args() is expected to return an array where index 0 holds positional
+		// arguments and index 1 holds the final associative arguments.
+		$parsed = $ref_method->invoke( null, $argv );
+
+		$positional = $parsed[0];
+		$assoc_args = $parsed[1];
+
+		// Positional arguments should remain unchanged.
+		$this->assertSame( [ 'list' ], $positional );
+
+		// Repeated flags should be aggregated into an array.
+		$this->assertArrayHasKey( 'status', $assoc_args );
+		$this->assertSame( [ 'active', 'parent' ], $assoc_args['status'] );
+
+		// Non-repeating parameters should collapse to their last value.
+		$this->assertArrayHasKey( 'field', $assoc_args );
+		$this->assertSame( 'name', $assoc_args['field'] );
+	}
 }
