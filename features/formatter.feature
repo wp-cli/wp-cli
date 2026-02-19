@@ -648,7 +648,7 @@ Feature: Format output
     And the return code should be 0
 
   Scenario: Filter available formats
-    Given a WordPress installation
+    Given a WP installation
     And a filter-formats.php file:
       """
       <?php
