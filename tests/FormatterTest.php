@@ -60,7 +60,7 @@ class FormatterTest extends TestCase {
 		// Add a custom format
 		Formatter::add_format(
 			'xml',
-			function ( $items, $fields ) {
+			static function () {
 				echo 'XML';
 			}
 		);
@@ -71,7 +71,7 @@ class FormatterTest extends TestCase {
 
 	public function test_custom_format_with_single_item() {
 		$output_collected = '';
-		$handler          = function ( $items, $fields ) use ( &$output_collected ) {
+		$handler          = static function ( $items ) use ( &$output_collected ) {
 			foreach ( $items as $item ) {
 				foreach ( $item as $key => $value ) {
 					$output_collected .= "$key:$value ";
@@ -98,7 +98,7 @@ class FormatterTest extends TestCase {
 
 	public function test_custom_format_field_filtering() {
 		$received_items = null;
-		$handler        = function ( $items, $fields ) use ( &$received_items ) {
+		$handler        = function ( $items ) use ( &$received_items ) {
 			$received_items = $items;
 		};
 
