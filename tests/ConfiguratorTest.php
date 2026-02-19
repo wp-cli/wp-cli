@@ -101,69 +101,42 @@ class ConfiguratorTest extends TestCase {
 	}
 
 	public function testParseArgsAggregatesMultipleValues(): void {
-		// Create a Configurator instance
-		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
-
-		// Use reflection to access parse_args() method
-		$ref_class  = new \ReflectionClass( Configurator::class );
-		$ref_method = $ref_class->getMethod( 'parse_args' );
-		$ref_method->setAccessible( true );
-
-		// Simulate a command with repeated and non-repeated associative arguments.
 		$argv = [ 'list', '--status=active', '--status=parent', '--field=name' ];
 
-		// parse_args() is expected to return an array where index 0 holds positional
-		// arguments and index 1 holds the final associative arguments.
-		$parsed = $ref_method->invoke( $configurator, $argv );
-
-		$positional = $parsed[0];
-		$assoc_args = $parsed[1];
+		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+		$parsed       = $configurator->parse_args( $argv );
 
 		// Positional arguments should remain unchanged.
-		$this->assertSame( [ 'list' ], $positional );
+		$this->assertSame( [ 'list' ], $parsed[0] );
 
 		// Repeated flags should be aggregated into an array.
-		$this->assertArrayHasKey( 'status', $assoc_args );
-		$this->assertSame( [ 'active', 'parent' ], $assoc_args['status'] );
+		$this->assertArrayHasKey( 'status', $parsed[1] );
+		$this->assertSame( [ 'active', 'parent' ], $parsed[1]['status'] );
 
 		// Non-repeating parameters should collapse to their last value.
-		$this->assertArrayHasKey( 'field', $assoc_args );
-		$this->assertSame( 'name', $assoc_args['field'] );
+		$this->assertArrayHasKey( 'field', $parsed[1] );
+		$this->assertSame( 'name', $parsed[1]['field'] );
 	}
 
 	public function testParseArgsBooleanFlagsUseLastWins(): void {
-		// Create a Configurator instance
-		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
-
-		// Use reflection to access parse_args() method
-		$ref_class  = new \ReflectionClass( Configurator::class );
-		$ref_method = $ref_class->getMethod( 'parse_args' );
-		$ref_method->setAccessible( true );
-
-		// Test that repeated boolean flags use last-wins behavior.
-		// Using --verbose as it's not in the runtime config spec
-		$argv = [ 'command', '--verbose', '--no-verbose', '--verbose' ];
-
-		$parsed = $ref_method->invoke( $configurator, $argv );
-
-		$positional = $parsed[0];
-		$assoc_args = $parsed[1];
-
-		// Positional arguments should remain unchanged.
-		$this->assertSame( [ 'command' ], $positional );
-
-		// The last --verbose should win, so verbose should be true.
-		$this->assertArrayHasKey( 'verbose', $assoc_args );
-		$this->assertSame( true, $assoc_args['verbose'] );
-
-		// Test with --no-verbose as the last flag.
+		$argv  = [ 'command', '--verbose', '--no-verbose', '--verbose' ];
 		$argv2 = [ 'command', '--verbose', '--verbose', '--no-verbose' ];
 
-		$parsed2     = $ref_method->invoke( $configurator, $argv2 );
+		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+		$parsed       = $configurator->parse_args( $argv );
+
+		// Positional arguments should remain unchanged.
+		$this->assertSame( [ 'command' ], $parsed[0] );
+
+		// The last --verbose should win, so verbose should be true.
+		$this->assertArrayHasKey( 'verbose', $parsed[1] );
+		$this->assertTrue( $parsed[1]['verbose'] );
+
+		$parsed2     = $configurator->parse_args( $argv2 );
 		$assoc_args2 = $parsed2[1];
 
 		// The last --no-verbose should win, so verbose should be false.
 		$this->assertArrayHasKey( 'verbose', $assoc_args2 );
-		$this->assertSame( false, $assoc_args2['verbose'] );
+		$this->assertFalse( $assoc_args2['verbose'] );
 	}
 }

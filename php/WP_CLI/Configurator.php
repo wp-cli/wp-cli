@@ -165,7 +165,7 @@ class Configurator {
 	 * Splits a list of arguments into positional, associative and config.
 	 *
 	 * @param array<string> $arguments
-	 * @return array<array<string>>
+	 * @return array{0: array<string>, 1: array<string, mixed>, 2: array<string, array<int, string>|int|string|true>}
 	 */
 	public function parse_args( $arguments ) {
 		list( $positional_args, $mixed_args, $global_assoc, $local_assoc ) = self::extract_assoc( $arguments );
@@ -218,7 +218,7 @@ class Configurator {
 	 * Separate runtime parameters from command-specific parameters.
 	 *
 	 * @param array $mixed_args
-	 * @return array
+	 * @return array{0: array<string, mixed>, 1: array<string, array<int, string>|int|string|true>}
 	 */
 	private function unmix_assoc_args( $mixed_args, $global_assoc = [], $local_assoc = [] ) {
 		$assoc_args     = [];

@@ -192,9 +192,6 @@ Feature: Multiple flag values support
            * [--verbose]
            * : Enable verbose mode
            *
-           * [--no-verbose]
-           * : Disable verbose mode
-           *
            * @subcommand test
            */
           public function test( $args, $assoc_args ) {
