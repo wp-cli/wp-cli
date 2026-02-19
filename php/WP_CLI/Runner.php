@@ -1550,14 +1550,19 @@ class Runner {
 					return true;
 				}
 			};
+
+			WP_CLI::add_wp_hook(
+				'ms_loaded',
+				static function () {
+					// Clean up the pseudo screen object after the network has loaded
+					if ( isset( $GLOBALS['current_screen'] ) && ! ( $GLOBALS['current_screen'] instanceof \WP_Screen ) ) {
+						unset( $GLOBALS['current_screen'] );
+					}
+				}
+			);
 		}
 
 		require ABSPATH . 'wp-settings.php';
-
-		// Clean up the pseudo screen object after WordPress has loaded
-		if ( isset( $GLOBALS['current_screen'] ) && ! ( $GLOBALS['current_screen'] instanceof \WP_Screen ) ) {
-			unset( $GLOBALS['current_screen'] );
-		}
 
 		// Fix memory limit. See https://core.trac.wordpress.org/ticket/14889
 		// phpcs:ignore WordPress.PHP.IniSet.memory_limit_Disallowed -- This is perfectly fine for CLI usage.
