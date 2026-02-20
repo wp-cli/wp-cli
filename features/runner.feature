@@ -125,3 +125,37 @@ Feature: Runner WP-CLI
       Did you mean 'wp post --post_type=page <command>'?
       """
     And the return code should be 1
+
+  Scenario: Uncaught exceptions should be transformed to WP-CLI errors
+    Given an empty directory
+    And a test-exception.php file:
+      """
+      <?php
+      /**
+       * Test command that throws various exceptions
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'test-exception', function() {
+        throw new \Exception( 'Test exception message' );
+      }, array( 'when' => 'before_wp_load' ) );
+
+      WP_CLI::add_command( 'test-runtime-exception', function() {
+        throw new \RuntimeException( 'Test runtime exception message' );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+
+    When I try `wp --require=test-exception.php test-exception`
+    Then STDERR should contain:
+      """
+      Error: Exception: Test exception message
+      """
+    And the return code should be 1
+
+    When I try `wp --require=test-exception.php test-runtime-exception`
+    Then STDERR should contain:
+      """
+      Error: RuntimeException: Test runtime exception message
+      """
+    And the return code should be 1
+
