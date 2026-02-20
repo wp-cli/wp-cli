@@ -145,6 +145,35 @@ Feature: Have a config file
       Error: The 'core multisite-convert' command has been disabled from the config file.
       """
 
+  Scenario: Disabled commands inheritance with merge
+    Given a WP installation
+    And a prod.yml file:
+      """
+      disabled_commands:
+        - eval
+      """
+    And a wp-cli.yml file:
+      """
+      disabled_commands:
+        - eval-file
+        - cache
+      _:
+        merge: true
+        inherit: prod.yml
+      """
+
+    When I try `wp cli has-command eval`
+    Then the return code should be 1
+
+    When I try `wp cli has-command eval-file`
+    Then the return code should be 1
+
+    When I try `wp cli has-command cache`
+    Then the return code should be 1
+
+    When I run `wp cli has-command core`
+    Then the return code should be 0
+
   Scenario: 'core config' parameters
     Given an empty directory
     And WP files
