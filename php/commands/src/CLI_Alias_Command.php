@@ -630,7 +630,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		foreach ( $aliases as $key => $value ) {
 			// Skip special config keys that aren't aliases
-			if ( in_array( $key, [ 'require', 'path', '_', 'url', 'user', 'ssh', 'http' ], true ) ) {
+			if ( in_array( $key, [ 'require', 'exec', 'disabled_commands', 'apache_modules', 'path', '_', 'url', 'user', 'ssh', 'http', 'color', 'debug', 'prompt', 'quiet', 'allow-root', 'skip-plugins', 'skip-themes', 'skip-packages', 'context', 'alias' ], true ) ) {
 				$yaml_data[ $key ] = $value;
 			} elseif ( 0 === strpos( $key, '@' ) ) {
 				// Convert @foo to aliases: { foo: } format

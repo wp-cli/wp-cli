@@ -633,7 +633,7 @@ class Runner {
 		$wp_binary = getenv( 'WP_CLI_SSH_BINARY' ) ?: 'wp';
 		$wp_args   = array_slice( (array) $GLOBALS['argv'], 1 );
 
-		if ( $this->alias && ! empty( $wp_args[0] ) && ( '@' . $this->alias === $wp_args[0] ) ) {
+		if ( $this->alias && ! empty( $wp_args[0] ) && ( '@' . $this->alias === $wp_args[0] || "--alias={$this->alias}" === $wp_args[0] ) ) {
 			array_shift( $wp_args );
 			$runtime_alias = [];
 			$alias_config  = $this->aliases[ $this->alias ];
@@ -1269,16 +1269,6 @@ class Runner {
 				function ( $value ) {
 					return ! preg_match( '#' . Configurator::ALIAS_REGEX . '#', $value );
 				}
-			);
-			WP_CLI::log( $alias );
-			$args = implode(
-				' ',
-				array_map(
-					static function ( string $arg ): string {
-						return escapeshellarg( $arg );
-					},
-					(array) $filtered_arguments
-				)
 			);
 
 			WP_CLI::log( '@' . $alias );
