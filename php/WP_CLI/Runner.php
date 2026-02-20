@@ -656,7 +656,7 @@ class Runner {
 		}
 
 		foreach ( $wp_args as $k => $v ) {
-			if ( preg_match( '#--ssh(|-args)=#', (string) $v ) ) {
+			if ( preg_match( '#^--ssh(?:-args)?(?:=|$)#', (string) $v ) ) {
 				unset( $wp_args[ $k ] );
 			}
 		}
