@@ -23,7 +23,14 @@ use WP_CLI\WpHttpCacheManager;
 /**
  * Various utilities for WP-CLI commands.
  *
- * @phpstan-type GlobalConfig array{path: string|null, ssh: string|null, http: string|null, url: string|null, user: string|null, 'skip-plugins': true|string[], 'skip-themes': true|string[], 'skip-packages': bool, require: string[], exec: string[], context: string, debug: string|true, prompt: false|string, quiet: bool}
+ * @phpstan-type GlobalConfig array{path: string|null, ssh: string|null, http: string|null, url: string|null, user: string|null, 'skip-plugins': true|string[], 'skip-themes': true|string[], 'skip-packages': bool, require: string[], exec: string[], context: string, debug: string|true, prompt: false|string, quiet: bool, apache_modules: string[]}
+ *
+ * @phpstan-type FlagParameter array{type: 'flag', name: string, description?: string, optional?: bool, repeating?: bool}
+ * @phpstan-type AssocParameter array{type: 'assoc', name: string, description?: string, options?: string[], default?: string, optional?: bool, value: array{optional: bool, name?: string}, repeating?: bool}
+ * @phpstan-type PositionalParameter array{type: 'positional', name: string, description?: string, optional?: bool, repeating?: bool}
+ * @phpstan-type GenericParameter array{type: 'generic', optional?: bool, repeating?: bool}
+ * @phpstan-type UnknownParameter array{type:'unknown', optional?: bool, repeating?: bool}
+ * @phpstan-type CommandSynopsis FlagParameter|AssocParameter|PositionalParameter|GenericParameter|UnknownParameter
  */
 class WP_CLI {
 
@@ -411,6 +418,7 @@ class WP_CLI {
 			}
 
 			$obj_idx = get_class( $function[0] ) . $function[1];
+			// @phpstan-ignore property.notFound
 			if ( ! isset( $function[0]->wp_filter_id ) ) {
 				if ( false === $priority ) {
 					return false;
@@ -483,6 +491,8 @@ class WP_CLI {
 	 *    @type bool     $is_deferred   Whether the command addition had already been deferred.
 	 * }
 	 * @return bool True on success, false if deferred, hard error if registration failed.
+	 *
+	 * @phpstan-param array{before_invoke?: callable, after_invoke?: callable, shortdesc?: string, longdesc?: string, synopsis?: string|CommandSynopsis[], when?: string, is_deferred?: bool} $args
 	 */
 	public static function add_command( $name, $callable, $args = [] ) {
 		// Bail immediately if the WP-CLI executable has not been run.
@@ -917,7 +927,7 @@ class WP_CLI {
 	 * @category Output
 	 *
 	 * @param string|WP_Error|Exception|Throwable $message Message to write to STDERR.
-	 * @param boolean|integer            $exit    True defaults to exit(1).
+	 * @param boolean|int                         $exit    True defaults to exit(1).
 	 * @return null
 	 *
 	 * @phpstan-return ($exit is true|positive-int ? never : void)
@@ -974,7 +984,7 @@ class WP_CLI {
 	 * @access public
 	 * @category Output
 	 *
-	 * @param array $message_lines Multi-line error message to be displayed.
+	 * @param array<string|\WP_Error|\Exception|\Throwable> $message_lines Multi-line error message to be displayed.
 	 */
 	public static function error_multi_line( $message_lines ) {
 		if ( null === self::$logger ) {
@@ -982,7 +992,14 @@ class WP_CLI {
 		}
 
 		if ( ! isset( self::get_runner()->assoc_args['completions'] ) && is_array( $message_lines ) ) {
-			self::$logger->error_multi_line( array_map( [ __CLASS__, 'error_to_string' ], $message_lines ) );
+			self::$logger->error_multi_line(
+				array_map(
+					static function ( $message ) {
+						return self::error_to_string( $message );
+					},
+					$message_lines
+				)
+			);
 		}
 	}
 
@@ -1026,7 +1043,7 @@ class WP_CLI {
 	 */
 	public static function get_value_from_arg_or_stdin( $args, $index ) {
 		if ( isset( $args[ $index ] ) ) {
-			$raw_value = $args[ $index ];
+			$raw_value = (string) $args[ $index ];
 		} else {
 			// We don't use file_get_contents() here because it doesn't handle
 			// Ctrl-D properly, when typing in the value interactively.
@@ -1082,6 +1099,9 @@ class WP_CLI {
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
 			$_value = var_export( $value, true );
 		} else {
+			/**
+			 * @var string|int $_value
+			 */
 			$_value = $value;
 		}
 
@@ -1113,7 +1133,7 @@ class WP_CLI {
 		if ( $errors instanceof WP_Error ) {
 			foreach ( $errors->get_error_messages() as $message ) {
 				if ( $errors->get_error_data() ) {
-					return $message . ' ' . $render_data( $errors->get_error_data() );
+					return $message . ' ' . (string) $render_data( $errors->get_error_data() );
 				}
 
 				return $message;
@@ -1142,7 +1162,7 @@ class WP_CLI {
 	 */
 	private static function debug_backtrace_on_exit() {
 		// Only output backtrace when debug mode is enabled.
-		if ( ! self::$logger || ! self::get_runner()->config['debug'] ) {
+		if ( ! self::$logger || ! self::get_config( 'debug' ) ) {
 			return;
 		}
 
@@ -1281,7 +1301,12 @@ class WP_CLI {
 
 		$php_bin = escapeshellarg( Utils\get_php_binary() );
 
-		$script_path = $GLOBALS['argv'][0];
+		/**
+		 * @var string[] $argv
+		 */
+		$argv = $GLOBALS['argv'];
+
+		$script_path = $argv[0];
 
 		$wp_cli_config_path = (string) getenv( 'WP_CLI_CONFIG_PATH' );
 
@@ -1292,7 +1317,7 @@ class WP_CLI {
 		}
 		$config_path = escapeshellarg( $config_path );
 
-		$args       = implode( ' ', array_map( 'escapeshellarg', $args ) );
+		$args       = implode( ' ', array_map( 'escapeshellarg', (array) $args ) );
 		$assoc_args = Utils\assoc_args_to_str( $assoc_args );
 
 		$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$command} {$args} {$assoc_args}";
@@ -1440,15 +1465,20 @@ class WP_CLI {
 			}
 
 			/**
+			 * @var string[] $argv
+			 */
+			$argv = $GLOBALS['argv'];
+
+			/**
 			 * @var array<resource> $descriptors
 			 */
 
 			$php_bin     = escapeshellarg( Utils\get_php_binary() );
-			$script_path = $GLOBALS['argv'][0];
+			$script_path = $argv[0];
 
 			// Persist runtime arguments unless they've been specified otherwise.
 			$configurator = self::get_configurator();
-			$argv         = array_slice( $GLOBALS['argv'], 1 );
+			$argv         = array_slice( $argv, 1 );
 
 			list( $ignore1, $ignore2, $runtime_config ) = $configurator->parse_args( $argv );
 			foreach ( $runtime_config as $k => $v ) {

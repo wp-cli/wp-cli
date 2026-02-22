@@ -145,6 +145,35 @@ Feature: Have a config file
       Error: The 'core multisite-convert' command has been disabled from the config file.
       """
 
+  Scenario: Disabled commands inheritance with merge
+    Given a WP installation
+    And a prod.yml file:
+      """
+      disabled_commands:
+        - eval
+      """
+    And a wp-cli.yml file:
+      """
+      disabled_commands:
+        - eval-file
+        - cache
+      _:
+        merge: true
+        inherit: prod.yml
+      """
+
+    When I try `wp cli has-command eval`
+    Then the return code should be 1
+
+    When I try `wp cli has-command eval-file`
+    Then the return code should be 1
+
+    When I try `wp cli has-command cache`
+    Then the return code should be 1
+
+    When I run `wp cli has-command core`
+    Then the return code should be 0
+
   Scenario: 'core config' parameters
     Given an empty directory
     And WP files
@@ -751,3 +780,76 @@ Feature: Have a config file
     When I run `wp core version`
     Then STDOUT should not be empty
     And the return code should be 0
+
+  Scenario: Custom system config path via WP_CLI_SYSTEM_SETTINGS_PATH
+    Given an empty directory
+    And a system-config.yml file:
+      """
+      disabled_commands:
+        - eval
+      """
+    And a test-cmd.php file:
+      """
+      <?php
+      $command = function( $_, $assoc_args ) {
+         echo json_encode( $assoc_args );
+      };
+      WP_CLI::add_command( 'test-cmd', $command, array( 'when' => 'before_wp_load' ) );
+      """
+
+    When I try `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml wp --require=test-cmd.php test-cmd --debug`
+    Then STDERR should contain:
+      """
+      Using system config from WP_CLI_SYSTEM_SETTINGS_PATH env var:
+      """
+    And STDERR should contain:
+      """
+      system-config.yml
+      """
+
+    When I try `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml wp eval 'echo "test";'`
+    Then STDERR should contain:
+      """
+      Error: The 'eval' command has been disabled from the config file.
+      """
+
+  Scenario: System config with aliases via WP_CLI_SYSTEM_SETTINGS_PATH
+    Given an empty directory
+    And a system-config.yml file:
+      """
+      @system-alias:
+        ssh: user@example.com/var/www
+      """
+
+    When I run `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml wp cli alias list`
+    Then STDOUT should contain:
+      """
+      @system-alias:
+      """
+    And STDOUT should contain:
+      """
+      ssh: user@example.com/var/www
+      """
+
+  Scenario: System config overridden by user config
+    Given a WP installation
+    And a system-config.yml file:
+      """
+      @system-alias:
+        ssh: user@example.com/var/www/foo
+      """
+    And a user-config.yml file:
+      """
+      @system-alias:
+        ssh: user@example.com/var/www/bar
+      """
+
+    When I run `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml WP_CLI_CONFIG_PATH=user-config.yml wp cli alias list`
+    Then STDOUT should contain:
+      """
+      @system-alias:
+      """
+    And STDOUT should contain:
+      """
+      ssh: user@example.com/var/www/bar
+      """
