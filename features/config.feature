@@ -835,20 +835,21 @@ Feature: Have a config file
     Given a WP installation
     And a system-config.yml file:
       """
-      disabled_commands:
-        - eval
+      @system-alias:
+        ssh: user@example.com/var/www/foo
       """
     And a user-config.yml file:
       """
-      disabled_commands:
-        - eval-file
+      @system-alias:
+        ssh: user@example.com/var/www/bar
       """
 
-    When I try `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml WP_CLI_CONFIG_PATH=user-config.yml wp eval 'echo "test";'`
-    Then the return code should be 0
-
-    When I try `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml WP_CLI_CONFIG_PATH=user-config.yml wp eval-file test.php`
-    Then STDERR should contain:
+    When I run `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml WP_CLI_CONFIG_PATH=user-config.yml wp cli alias list`
+    Then STDOUT should contain:
       """
-      Error: The 'eval-file' command has been disabled from the config file.
+      @system-alias:
+      """
+    And STDOUT should contain:
+      """
+      ssh: user@example.com/var/www/bar
       """
