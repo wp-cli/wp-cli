@@ -114,6 +114,51 @@ class Configurator {
 	}
 
 	/**
+	 * Add the given alias to the internal aliases array.
+	 *
+	 * @param string $key The alias name (with or without @ prefix).
+	 * @param array  $value The alias configuration.
+	 * @param string $yml_file_dir The directory of the YAML file for path resolution.
+	 * @return void
+	 */
+	private function add_alias( $key, $value, $yml_file_dir ) {
+		if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
+			// Remove the @ character from the alias name
+			$key = substr( $key, 1 );
+		}
+
+		$this->aliases[ $key ] = [];
+		$is_alias              = false;
+		foreach ( self::$alias_spec as $i ) {
+			if ( isset( $value[ $i ] ) ) {
+				if ( 'path' === $i && ! isset( $value['ssh'] ) ) {
+					self::absolutize( $value[ $i ], $yml_file_dir );
+				}
+				$this->aliases[ $key ][ $i ] = $value[ $i ];
+				$is_alias                    = true;
+			}
+		}
+
+		// If it's not an alias, it might be a group of aliases.
+		if ( ! $is_alias && is_array( $value ) ) {
+			/**
+			 * @var list<string> $value
+			 */
+			$alias_group = [];
+			foreach ( $value as $k ) {
+				if ( preg_match( '#' . self::ALIAS_REGEX . '#', $k ) ) {
+					// Remove the @ character from the alias name
+					$alias_group[] = substr( $k, 1 );
+				} elseif ( array_key_exists( $k, $this->aliases ) ) {
+					// Check if the alias has been properly declared before adding it to the group
+					$alias_group[] = $k;
+				}
+			}
+			$this->aliases[ $key ] = $alias_group;
+		}
+	}
+
+	/**
 	 * Get declared configuration values as an array.
 	 *
 	 * @return array
@@ -147,10 +192,12 @@ class Configurator {
 			 */
 			foreach ( (array) json_decode( $runtime_alias, true ) as $key => $value ) {
 				if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
-					$returned_aliases[ $key ] = [];
+					// Normalize the key by removing @ prefix for internal storage
+					$normalized_key                      = substr( $key, 1 );
+					$returned_aliases[ $normalized_key ] = [];
 					foreach ( self::$alias_spec as $i ) {
 						if ( isset( $value[ $i ] ) ) {
-							$returned_aliases[ $key ][ $i ] = $value[ $i ];
+							$returned_aliases[ $normalized_key ][ $i ] = $value[ $i ];
 						}
 					}
 				}
@@ -285,29 +332,10 @@ class Configurator {
 		$yml_file_dir = $path ? dirname( $path ) : '';
 		foreach ( $yaml as $key => $value ) {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
-				$this->aliases[ $key ] = [];
-				$is_alias              = false;
-				foreach ( self::$alias_spec as $i ) {
-					if ( isset( $value[ $i ] ) ) {
-						if ( 'path' === $i && ! isset( $value['ssh'] ) ) {
-							self::absolutize( $value[ $i ], $yml_file_dir );
-						}
-						$this->aliases[ $key ][ $i ] = $value[ $i ];
-						$is_alias                    = true;
-					}
-				}
-				// If it's not an alias, it might be a group of aliases.
-				if ( ! $is_alias && is_array( $value ) ) {
-					/**
-					 * @var list<string> $value
-					 */
-					$alias_group = [];
-					foreach ( $value as $k ) {
-						if ( preg_match( '#' . self::ALIAS_REGEX . '#', $k ) ) {
-							$alias_group[] = $k;
-						}
-					}
-					$this->aliases[ $key ] = $alias_group;
+				$this->add_alias( $key, $value, $yml_file_dir );
+			} elseif ( 'aliases' === $key ) {
+				foreach ( $value as $alias => $alias_config ) {
+					$this->add_alias( $alias, $alias_config, $yml_file_dir );
 				}
 			} elseif ( ! isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
 				if ( isset( $this->extra_config[ $key ] )

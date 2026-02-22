@@ -130,4 +130,12 @@ return [
 		'hidden'  => true,
 	],
 
+	'alias'             => [
+		'runtime'  => '=<name>',
+		'file'     => '<name>',
+		'desc'     => 'Name of the alias to use. Aliases can reference local WordPress installations or remote SSH connections. Aliases are defined in the wp-cli.yml file.',
+		'multiple' => false,
+		'default'  => '',
+	],
+
 ];
