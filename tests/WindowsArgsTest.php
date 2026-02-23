@@ -37,25 +37,25 @@ class WindowsArgsTest extends TestCase {
 	public static function provideWindowsArguments() {
 		return [
 			// is_windows, input_args, expected_count, expected_values
-			'Windows: space-separated IDs should be split'      => [
+			'Windows: space-separated IDs should be split' => [
 				true,
 				[ 'post', 'delete', '123 456 789' ],
 				5,
 				[ 'post', 'delete', '123', '456', '789' ],
 			],
-			'Windows: single ID should not be split'            => [
+			'Windows: single ID should not be split'       => [
 				true,
 				[ 'post', 'delete', '123' ],
 				3,
 				[ 'post', 'delete', '123' ],
 			],
-			'Windows: non-numeric strings should not be split'  => [
+			'Windows: non-numeric strings should not be split' => [
 				true,
 				[ 'post', 'delete', 'hello world' ],
 				3,
 				[ 'post', 'delete', 'hello world' ],
 			],
-			'Windows: mixed args (numeric at start)'            => [
+			'Windows: mixed args (numeric at start)'       => [
 				true,
 				[ 'post', 'delete', '123 456', 'some-slug' ],
 				5,
@@ -67,7 +67,7 @@ class WindowsArgsTest extends TestCase {
 				3,
 				[ 'post', 'delete', '123 456' ],
 			],
-			'Windows: IDs with tabs and spaces'                 => [
+			'Windows: IDs with tabs and spaces'            => [
 				true,
 				[ 'post', 'delete', "123\t456  789" ],
 				5,
