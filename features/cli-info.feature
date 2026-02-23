@@ -28,6 +28,55 @@ Feature: Review CLI information
       WP-CLI packages dir:
       """
 
+  Scenario: Display memory limit
+    Given an empty directory
+
+    When I run `wp cli info`
+    Then STDOUT should contain:
+      """
+      PHP memory limit:
+      """
+
+    When I run `wp cli info --format=json`
+    Then STDOUT should contain:
+      """
+      "php_memory_limit":
+      """
+
+  Scenario: Warn about low memory limit
+    Given an empty directory
+
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=256M} cli info`
+    Then STDOUT should contain:
+      """
+      PHP memory limit:	256M
+      """
+    And STDERR should contain:
+      """
+      PHP memory limit is set to 256M
+      """
+
+    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=1G} cli info`
+    Then STDOUT should contain:
+      """
+      PHP memory limit:	1G
+      """
+    And STDERR should be empty
+
+    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=-1} cli info`
+    Then STDOUT should contain:
+      """
+      PHP memory limit:	-1
+      """
+    And STDERR should be empty
+
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=512M} cli info`
+    Then STDOUT should contain:
+      """
+      PHP memory limit:	512M
+      """
+    And STDERR should be empty
+
   Scenario: Packages directory path should be slashed correctly
     When I run `WP_CLI_PACKAGES_DIR=/foo wp package path`
     Then STDOUT should be:

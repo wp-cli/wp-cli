@@ -38,6 +38,11 @@ use WP_CLI\Utils;
  */
 class CLI_Command extends WP_CLI_Command {
 
+	/**
+	 * Memory limit threshold for warnings (512M in bytes).
+	 */
+	private const MEMORY_LIMIT_WARNING_THRESHOLD = 536870912;
+
 	private function command_to_array( $command ) {
 		$dump = [
 			'name'        => $command->get_name(),
@@ -84,6 +89,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * * Shell information.
 	 * * PHP binary used.
 	 * * PHP binary version.
+	 * * PHP memory limit.
 	 * * php.ini configuration file used (which is typically different than web).
 	 * * WP-CLI root dir: where WP-CLI is installed (if non-Phar install).
 	 * * WP-CLI global config: where the global config YAML file is located.
@@ -112,6 +118,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *     Shell:   /usr/bin/zsh
 	 *     PHP binary:  /usr/bin/php
 	 *     PHP version: 7.1.12-1+ubuntu16.04.1+deb.sury.org+1
+	 *     PHP memory limit: 512M
 	 *     php.ini used:    /etc/php/7.1/cli/php.ini
 	 *     WP-CLI root dir:    phar://wp-cli.phar
 	 *     WP-CLI packages dir:    /home/person/.wp-cli/packages/
@@ -145,12 +152,15 @@ class CLI_Command extends WP_CLI_Command {
 			$packages_dir = null;
 		}
 
+		$memory_limit = ini_get( 'memory_limit' );
+
 		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$info = [
 				'system_os'                => $system_os,
 				'shell'                    => $shell,
 				'php_binary_path'          => $php_bin,
 				'php_version'              => PHP_VERSION,
+				'php_memory_limit'         => $memory_limit,
 				'php_ini_used'             => get_cfg_var( 'cfg_file_path' ),
 				'mysql_binary_path'        => Utils\get_mysql_binary_path(),
 				'mysql_version'            => Utils\get_mysql_version(),
@@ -175,6 +185,7 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::line( "Shell:\t" . $shell );
 			WP_CLI::line( "PHP binary:\t" . $php_bin );
 			WP_CLI::line( "PHP version:\t" . PHP_VERSION );
+			WP_CLI::line( "PHP memory limit:\t" . $memory_limit );
 			WP_CLI::line( "php.ini used:\t" . $cfg_file_path );
 			WP_CLI::line( "MySQL binary:\t" . Utils\get_mysql_binary_path() );
 			WP_CLI::line( "MySQL version:\t" . Utils\get_mysql_version() );
@@ -188,6 +199,77 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::line( "WP-CLI project config:\t" . $runner->project_config_path );
 			WP_CLI::line( "WP-CLI version:\t" . WP_CLI_VERSION );
 		}
+
+		// Emit a warning if the memory limit is set to a low value.
+		$this->check_memory_limit( $memory_limit );
+	}
+
+	/**
+	 * Checks if the PHP memory limit is too low and emits a warning if needed.
+	 *
+	 * @param string $memory_limit The current memory limit value from ini_get().
+	 */
+	private function check_memory_limit( $memory_limit ) {
+		// If memory limit is -1 (unlimited), no warning needed.
+		if ( '-1' === $memory_limit ) {
+			return;
+		}
+
+		// Convert memory limit string (e.g., "256M", "1G") to bytes.
+		$limit_bytes = $this->convert_to_bytes( $memory_limit );
+
+		// Warn if limit is below 512M.
+		// This is a reasonable threshold for CLI operations.
+		if ( $limit_bytes > 0 && $limit_bytes < self::MEMORY_LIMIT_WARNING_THRESHOLD ) {
+			WP_CLI::warning(
+				sprintf(
+					'PHP memory limit is set to %s. This may be too low for some WP-CLI operations. Consider increasing it to at least 512M or setting it to -1 (unlimited) for CLI usage.',
+					$memory_limit
+				)
+			);
+		}
+	}
+
+	/**
+	 * Converts a memory limit string to bytes.
+	 *
+	 * @param string $value The memory limit value (e.g., "256M", "1G", "512K", "2.5G").
+	 * @return int The value in bytes, or -1 if unlimited.
+	 */
+	private function convert_to_bytes( $value ) {
+		$value = trim( $value );
+
+		if ( '-1' === $value ) {
+			return -1;
+		}
+
+		// Handle empty string or invalid values.
+		if ( empty( $value ) ) {
+			return 0;
+		}
+
+		$last = strtolower( $value[ strlen( $value ) - 1 ] );
+
+		// Extract numeric value before converting.
+		if ( ! is_numeric( $last ) ) {
+			$numeric_value = (float) substr( $value, 0, -1 );
+		} else {
+			$numeric_value = (float) $value;
+			$last          = '';
+		}
+
+		switch ( $last ) {
+			case 'g':
+				$numeric_value *= 1024;
+				// Fall through.
+			case 'm':
+				$numeric_value *= 1024;
+				// Fall through.
+			case 'k':
+				$numeric_value *= 1024;
+		}
+
+		return (int) $numeric_value;
 	}
 
 	/**
