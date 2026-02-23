@@ -146,7 +146,7 @@ class Formatter {
 	public static function get_available_formats() {
 		$builtin_formats = self::BUILTIN_FORMATS;
 		$custom_formats  = array_keys( self::$custom_formatters );
-		$all_formats     = array_merge( $builtin_formats, $custom_formats );
+		$all_formats     = array_unique( array_merge( $builtin_formats, $custom_formats ) );
 
 		/**
 		 * Filter the list of available output formats.
