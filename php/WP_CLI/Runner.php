@@ -688,7 +688,8 @@ class Runner {
 			$alias_config  = $this->aliases[ $this->alias ];
 			if ( is_array( $alias_config ) ) {
 				foreach ( $alias_config as $key => $value ) {
-					if ( 'ssh' === $key ) {
+					// Skip connection-specific keys as they are not relevant to the remote WP-CLI instance.
+					if ( in_array( $key, [ 'ssh', 'http', 'proxyjump', 'key' ], true ) ) {
 						continue;
 					}
 					$runtime_alias[ $key ] = $value;
