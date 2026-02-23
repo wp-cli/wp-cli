@@ -15,6 +15,7 @@ use WP_Error;
 /**
  * Performs the execution of a command.
  *
+ * @property-read string         $system_config_path
  * @property-read string         $global_config_path
  * @property-read string         $project_config_path
  * @property-read array          $config
@@ -27,6 +28,7 @@ use WP_Error;
  * @property-read array          $runtime_config
  * @property-read bool           $colorize
  * @property-read array          $early_invoke
+ * @property-read string         $system_config_path_debug
  * @property-read string         $global_config_path_debug
  * @property-read string         $project_config_path_debug
  * @property-read array          $required_files
@@ -46,6 +48,7 @@ class Runner {
 		'UTF-16 (LE)' => "\xFF\xFE",
 	];
 
+	private $system_config_path;
 	private $global_config_path;
 	private $project_config_path;
 
@@ -75,6 +78,8 @@ class Runner {
 
 	/** @var array<string, array<int, array<string>>> */
 	private $early_invoke = [];
+
+	private $system_config_path_debug;
 
 	private $global_config_path_debug;
 
@@ -194,6 +199,50 @@ class Runner {
 		}
 
 		$this->global_config_path_debug = 'No readable global config found';
+
+		return false;
+	}
+
+	/**
+	 * Get the path to the system-wide configuration YAML file.
+	 *
+	 * @return string|false
+	 */
+	public function get_system_config_path() {
+		// Allow override via environment variable
+		$env_path = getenv( 'WP_CLI_SYSTEM_SETTINGS_PATH' );
+		if ( $env_path ) {
+			$config_path                    = $env_path;
+			$this->system_config_path_debug = 'Using system config from WP_CLI_SYSTEM_SETTINGS_PATH env var: ' . $config_path;
+			if ( is_readable( $config_path ) ) {
+				return $config_path;
+			}
+			$this->system_config_path_debug = 'System config path from WP_CLI_SYSTEM_SETTINGS_PATH not readable: ' . $config_path;
+			return false;
+		}
+
+		// Determine default path based on OS
+		if ( Utils\is_windows() ) {
+			// Windows: C:\ProgramData\wp-cli\config.yml
+			$program_data = getenv( 'ProgramData' );
+			if ( ! $program_data ) {
+				$program_data = 'C:' . DIRECTORY_SEPARATOR . 'ProgramData';
+			}
+			$config_path = $program_data . DIRECTORY_SEPARATOR . 'wp-cli' . DIRECTORY_SEPARATOR . 'config.yml';
+		} elseif ( 'Darwin' === PHP_OS ) {
+			// macOS: /Library/Application Support/WP-CLI/config.yml
+			$config_path = '/Library/Application Support/WP-CLI/config.yml';
+		} else {
+			// Linux and others: /etc/wp-cli/config.yml
+			$config_path = '/etc/wp-cli/config.yml';
+		}
+
+		if ( is_readable( $config_path ) ) {
+			$this->system_config_path_debug = 'Using system config: ' . $config_path;
+			return $config_path;
+		}
+
+		$this->system_config_path_debug = 'No readable system config found';
 
 		return false;
 	}
@@ -1191,9 +1240,13 @@ class Runner {
 
 		// File config
 		{
+			$this->system_config_path  = $this->get_system_config_path();
 			$this->global_config_path  = $this->get_global_config_path();
 			$this->project_config_path = $this->get_project_config_path();
 
+			$configurator->merge_yml( (string) $this->system_config_path, $this->alias );
+			$config                         = $configurator->to_array();
+			$this->required_files['system'] = $config[0]['require'];
 			$configurator->merge_yml( (string) $this->global_config_path, $this->alias );
 			$config                         = $configurator->to_array();
 			$this->required_files['global'] = isset( $config[0]['require'] ) ? (array) $config[0]['require'] : [];
@@ -1293,6 +1346,7 @@ class Runner {
 			$this->enable_error_reporting();
 		}
 
+		WP_CLI::debug( $this->system_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( $this->global_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( $this->project_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( 'argv: ' . implode( ' ', (array) $GLOBALS['argv'] ), 'bootstrap' );
@@ -1539,6 +1593,29 @@ class Runner {
 				define( 'WP_DEBUG_DISPLAY', true );
 			}
 		}
+
+		// For multisite, set a pseudo WP_Screen to make is_admin() return true.
+		// This ensures ms_not_installed() shows detailed error messages instead of
+		// the generic "Error establishing a database connection" message.
+		if ( $this->is_multisite() ) {
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Intentional temporary override for error messaging.
+			$GLOBALS['current_screen'] = new class() {
+				public function in_admin() {
+					return true;
+				}
+			};
+
+			WP_CLI::add_wp_hook(
+				'ms_loaded',
+				static function () {
+					// Clean up the pseudo screen object after the network has loaded
+					if ( isset( $GLOBALS['current_screen'] ) && ! ( $GLOBALS['current_screen'] instanceof \WP_Screen ) ) {
+						unset( $GLOBALS['current_screen'] );
+					}
+				}
+			);
+		}
+
 		require ABSPATH . 'wp-settings.php';
 
 		// Fix memory limit. See https://core.trac.wordpress.org/ticket/14889
@@ -1548,7 +1625,7 @@ class Runner {
 		// Load all the admin APIs, for convenience
 		require ABSPATH . 'wp-admin/includes/admin.php';
 
-		add_filter(
+		WP_CLI::add_wp_hook(
 			'filesystem_method',
 			static function () {
 				return 'direct';
@@ -1802,6 +1879,19 @@ class Runner {
 				},
 				10,
 				3
+			);
+
+			// Handle ms_network_not_found to provide better error messages
+			WP_CLI::add_wp_hook(
+				'ms_network_not_found',
+				static function ( $domain, $path ) {
+					$url      = $domain . $path;
+					$message  = $url ? "Network '{$url}' not found." : 'Network not found.';
+					$message .= ' Verify the network exists in the database or run `wp core multisite-install`.';
+					WP_CLI::error( $message );
+				},
+				10,
+				2
 			);
 		}
 
