@@ -18,13 +18,18 @@ class WindowsArgsTest extends TestCase {
 		// Set the Windows environment variable
 		putenv( $is_windows ? 'WP_CLI_TEST_IS_WINDOWS=1' : 'WP_CLI_TEST_IS_WINDOWS=0' );
 
-		// Use reflection to access the private method
 		$reflection = new ReflectionClass( Runner::class );
 		$method     = $reflection->getMethod( 'back_compat_conversions' );
-		$method->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$method->setAccessible( true );
+		}
 
-		// Call the method
-		[ $result_args, $_ ] = $method->invoke( null, $input_args, [] );
+		/**
+		 * @var array{0: array<string>, 1: array<string, string>} $result
+		 */
+		$result              = $method->invoke( null, $input_args, [] );
+		[ $result_args, $_ ] = $result;
 
 		// Verify the results
 		$this->assertCount( $expected_count, $result_args, 'Unexpected number of arguments' );
