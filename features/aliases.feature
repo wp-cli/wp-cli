@@ -229,8 +229,9 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo post create --post_title=My Title --debug`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; wp post create --post_title='\''My Title'\''' 
+      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; wp post create --post_title=My Title
       """
+
   Scenario: Add an alias
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
