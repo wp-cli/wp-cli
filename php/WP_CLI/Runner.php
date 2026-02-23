@@ -973,7 +973,7 @@ class Runner {
 					// Split on whitespace and add each ID as a separate argument
 					$ids = preg_split( '/\s+/', $arg, -1, PREG_SPLIT_NO_EMPTY );
 					if ( false !== $ids ) {
-						$split_args = array_merge( $split_args, $ids );
+						array_push( $split_args, ...$ids );
 					}
 				} else {
 					$split_args[] = $arg;
