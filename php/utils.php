@@ -301,6 +301,32 @@ function expand_tilde_path( $path ) {
 }
 
 /**
+ * Escape a shell argument while preserving tilde expansion.
+ *
+ * This function is useful when passing paths to remote shells (e.g., via SSH)
+ * where tilde expansion should occur on the remote system. Unlike escapeshellarg(),
+ * this function allows tilde at the start of a path to be expanded by the remote shell.
+ *
+ * For paths starting with ~/: returns ~/ followed by the escaped remainder.
+ * For all other paths: returns the fully escaped path using escapeshellarg().
+ *
+ * @param string $arg The argument to escape.
+ * @return string The escaped argument.
+ */
+function escapeshellarg_preserve_tilde( $arg ) {
+	// Check if argument starts with ~/
+	if ( substr( $arg, 0, 2 ) === '~/' ) {
+		// Extract everything after ~/
+		$remainder = substr( $arg, 2 );
+		// Return ~/ followed by the escaped remainder
+		return '~/' . escapeshellarg( $remainder );
+	}
+
+	// For all other cases, use standard escapeshellarg
+	return escapeshellarg( $arg );
+}
+
+/**
  * Composes positional arguments into a command string.
  *
  * @param array<string> $args Positional arguments to compose.
