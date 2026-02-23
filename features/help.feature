@@ -1415,3 +1415,7 @@ Feature: Get help about WP-CLI commands
     When I run `PAGER=/bin/cat wp help | head -1`
     Then STDOUT should not match /\x1b\[/
     And STDOUT should not match /\033\[/
+
+    When I run `PAGER=less wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
