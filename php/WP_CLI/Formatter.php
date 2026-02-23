@@ -117,6 +117,9 @@ class Formatter {
 	 * @param callable $handler     Callback to handle formatting. Receives ($items, $fields) and should output directly.
 	 */
 	public static function add_format( $format_name, $handler ) {
+		if ( in_array( $format_name, self::BUILTIN_FORMATS, true ) ) {
+			WP_CLI::error( "Cannot register custom format '{$format_name}' as it conflicts with a built-in format." );
+		}
 		if ( ! is_callable( $handler ) ) {
 			WP_CLI::error( 'Format handler must be callable.' );
 		}
