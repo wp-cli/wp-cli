@@ -664,3 +664,74 @@ Feature: Create shortcuts to specific WordPress installs
       @foo:
         path: {TEST_DIR}/foo
       """
+
+  Scenario: Run alias groups in parallel with WP_CLI_ALIAS_GROUPS_PARALLEL environment variable
+    Given a WP installation in 'foo'
+    And a WP installation in 'bar'
+    And a wp-cli.yml file:
+      """
+      @both:
+        - @foo
+        - @bar
+      @foo:
+        path: foo
+      @bar:
+        path: bar
+      """
+
+    When I run `wp @foo option update home 'http://parallel-foo.com'`
+    And I run `wp @bar option update home 'http://parallel-bar.com'`
+    And I run `WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both option get home`
+    Then STDOUT should contain:
+      """
+      @foo
+      """
+    And STDOUT should contain:
+      """
+      http://parallel-foo.com
+      """
+    And STDOUT should contain:
+      """
+      @bar
+      """
+    And STDOUT should contain:
+      """
+      http://parallel-bar.com
+      """
+
+    When I run `WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both option get home --quiet`
+    Then STDOUT should contain:
+      """
+      http://parallel-foo.com
+      """
+    And STDOUT should contain:
+      """
+      http://parallel-bar.com
+      """
+
+  Scenario: Using --quiet with @all suppresses alias names but still outputs command results
+    Given a WP installation in 'foo'
+    And a WP installation in 'bar'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      @bar:
+        path: bar
+      """
+
+    When I run `wp @all eval 'echo "output-from-alias\n";'`
+    Then STDOUT should be:
+      """
+      @foo
+      output-from-alias
+      @bar
+      output-from-alias
+      """
+
+    When I run `wp @all eval 'echo "output-from-alias\n";' --quiet`
+    Then STDOUT should be:
+      """
+      output-from-alias
+      output-from-alias
+      """
