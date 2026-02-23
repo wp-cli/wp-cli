@@ -44,6 +44,9 @@ use WP_CLI\Utils;
  *     $ wp cli alias delete @prod
  *     Success: Deleted '@prod' alias.
  *
+ *     # Run a command against a group of aliases in parallel.
+ *     $ WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @all plugin status
+ *
  * @package wp-cli
  * @when    before_wp_load
  */
@@ -179,9 +182,6 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$alias = $args[0];
 
-		/**
-		 * @var string|null $grouping
-		 */
 		$grouping = Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		$this->validate_input( $assoc_args, $grouping );
@@ -298,9 +298,6 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		$config = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
 		$alias  = $args[0];
 
-		/**
-		 * @var string|null $grouping
-		 */
 		$grouping = Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		list( $config_path, $aliases ) = $this->get_aliases_data( $config, $alias, true );

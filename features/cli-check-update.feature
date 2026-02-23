@@ -1,5 +1,51 @@
 Feature: Check for updates
 
+  Scenario: Provides helpful error message when hitting GitHub rate limit without token
+    Given that HTTP requests to https://api.github.com/repos/wp-cli/wp-cli/releases?per_page=100 will respond with:
+      """
+      HTTP/1.1 403
+      Content-Type: application/json
+
+      {
+        "message": "API rate limit exceeded"
+      }
+      """
+
+    When I try `wp cli check-update`
+    Then STDERR should contain:
+      """
+      Failed to get latest version (HTTP code 403). This is due to GitHub API rate limiting.
+      """
+    And STDERR should contain:
+      """
+      Try using a GITHUB_TOKEN environment variable
+      """
+    And STDERR should contain:
+      """
+      https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting
+      """
+
+  Scenario: Provides error message when hitting GitHub rate limit with token
+    Given that HTTP requests to https://api.github.com/repos/wp-cli/wp-cli/releases?per_page=100 will respond with:
+      """
+      HTTP/1.1 403
+      Content-Type: application/json
+
+      {
+        "message": "API rate limit exceeded"
+      }
+      """
+
+    When I try `GITHUB_TOKEN=test_token wp cli check-update`
+    Then STDERR should contain:
+      """
+      Error: Failed to get latest version (HTTP code 403). This is due to GitHub API rate limiting.
+      """
+    And STDERR should not contain:
+      """
+      Try using a GITHUB_TOKEN
+      """
+
   Scenario: Ignores updates with a higher PHP version requirement
     Given that HTTP requests to https://api.github.com/repos/wp-cli/wp-cli/releases?per_page=100 will respond with:
       """
