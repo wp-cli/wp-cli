@@ -710,14 +710,30 @@ class Runner {
 			}
 		}
 
-		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode(
-			' ',
-			array_map(
-				static function ( $arg ): string {
-					return escapeshellarg( (string) $arg ); },
-				$wp_args
-			)
-		);
+		// Build command with minimal quoting to improve readability in debug output.
+		// Arguments are only quoted if they contain characters outside the safe set.
+		// This avoids double-escaping appearance while maintaining security:
+		// 1. Here: Quote args with special chars for the remote shell
+		// 2. generate_ssh_command(): Wrap entire command for local shell
+		//
+		// Safe characters: alphanumeric, hyphen, underscore, equals, dot, forward slash, colon
+		// - Hyphens (including at start like --debug) are safe because they're part of the
+		//   wp-cli command string that's passed to the remote shell, not SSH options
+		// - Forward slash and colon are included because they're common in paths and URLs
+		//   (e.g., --url=https://example.com/path) and are not shell metacharacters
+		// - All other characters (spaces, quotes, $, &, |, etc.) trigger quoting via escapeshellarg()
+		$escaped_args = [];
+		foreach ( $wp_args as $arg ) {
+			$arg_str = (string) $arg;
+			// Quote empty strings and arguments with any characters outside the safe set.
+			// The empty string check is explicit for clarity, though regex would also catch it.
+			if ( '' !== $arg_str && preg_match( '/^[a-zA-Z0-9_=.\/:-]+$/', $arg_str ) ) {
+				$escaped_args[] = $arg_str;
+			} else {
+				$escaped_args[] = escapeshellarg( $arg_str );
+			}
+		}
+		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', $escaped_args );
 
 		if ( isset( $bits['scheme'] ) && 'docker-compose-run' === $bits['scheme'] ) {
 			$wp_command = implode( ' ', $wp_args );
