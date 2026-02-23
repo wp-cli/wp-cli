@@ -2185,6 +2185,7 @@ function get_env_or_config( $name ) {
 	// Try to get from config file
 	$runner = WP_CLI::get_runner();
 	if ( $runner && is_array( $runner->config ) && isset( $runner->config['env'] ) && is_array( $runner->config['env'] ) && isset( $runner->config['env'][ $name ] ) ) {
+		// @phpstan-ignore cast.string
 		return (string) $runner->config['env'][ $name ];
 	}
 
