@@ -235,7 +235,7 @@ Feature: Create shortcuts to specific WordPress installs
       """
     And STDERR should contain:
       """
-      \/path\/to\/user'\''s\/wordpress
+      \/path\/to\/user'\''\'\'''\''s\/wordpress
       """
 
   Scenario: Add an alias
