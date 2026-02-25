@@ -1213,6 +1213,27 @@ function trailingslashit( $string ) {
 }
 
 /**
+ * Check if a path is a PHP stream URL.
+ *
+ * @access public
+ * @category System
+ *
+ * @param string $path The resource path or URL.
+ * @return bool True if the path is a PHP stream URL, false otherwise.
+ */
+function is_stream( $path ) {
+	$scheme_separator = strpos( $path, '://' );
+
+	if ( false === $scheme_separator ) {
+		return false;
+	}
+
+	$stream = strtolower( substr( $path, 0, $scheme_separator ) );
+
+	return in_array( $stream, stream_get_wrappers(), true );
+}
+
+/**
  * Normalize a filesystem path.
  *
  * On Windows systems, replaces backslashes with forward slashes
@@ -1220,6 +1241,7 @@ function trailingslashit( $string ) {
  * Allows for two leading slashes for Windows network shares, but
  * ensures that all other duplicate slashes are reduced to a single one.
  * Ensures upper-case drive letters on Windows systems.
+ * Allows for PHP file wrappers.
  *
  * @access public
  * @category System
@@ -1228,12 +1250,17 @@ function trailingslashit( $string ) {
  * @return string Normalized path.
  */
 function normalize_path( $path ) {
+	$wrapper = '';
+	if ( is_stream( $path ) ) {
+		list( $wrapper, $path ) = explode( '://', $path, 2 );
+		$wrapper               .= '://';
+	}
 	$path = str_replace( '\\', '/', $path );
 	$path = (string) preg_replace( '|(?<=.)/+|', '/', $path );
 	if ( ':' === substr( $path, 1, 1 ) ) {
 		$path = ucfirst( $path );
 	}
-	return $path;
+	return $wrapper . $path;
 }
 
 
