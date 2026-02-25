@@ -515,6 +515,8 @@ class UtilsTest extends TestCase {
 			[ 'php://stdin', 'php://stdin' ],
 			[ 'phar:///path/to/file.phar/some//dir', 'phar:///path/to/file.phar/some/dir' ],
 			[ 'phar:///path/to/file.phar/some\\dir/file', 'phar:///path/to/file.phar/some/dir/file' ],
+			[ 'PHAR:///path/to/file.phar/some//dir', 'PHAR:///path/to/file.phar/some/dir' ],
+			[ 'PhAr:///path/to/file.phar/some\\dir/file', 'PhAr:///path/to/file.phar/some/dir/file' ],
 		];
 	}
 
