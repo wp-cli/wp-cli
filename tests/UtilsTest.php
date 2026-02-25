@@ -523,6 +523,8 @@ class UtilsTest extends TestCase {
 	public function testIsStream(): void {
 		$this->assertTrue( Utils\is_stream( 'phar:///path/to/file.phar' ) );
 		$this->assertTrue( Utils\is_stream( 'php://stdin' ) );
+		$this->assertTrue( Utils\is_stream( 'PHAR:///path/to/file.phar' ) );
+		$this->assertTrue( Utils\is_stream( 'PhAr:///path/to/file.phar' ) );
 		$this->assertFalse( Utils\is_stream( '/www/path' ) );
 		$this->assertFalse( Utils\is_stream( 'C:/www/path' ) );
 		$this->assertFalse( Utils\is_stream( '' ) );
