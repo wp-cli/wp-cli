@@ -510,7 +510,19 @@ class UtilsTest extends TestCase {
 			[ '/www/path/////', '/www/path/' ],
 			[ '/www/path', '/www/path' ],
 			[ '/www/path', '/www/path' ],
+			// PHP stream wrapper paths.
+			[ 'phar:///path/to/file.phar/www/path', 'phar:///path/to/file.phar/www/path' ],
+			[ 'php://stdin', 'php://stdin' ],
 		];
+	}
+
+	public function testIsStream(): void {
+		$this->assertTrue( Utils\is_stream( 'phar:///path/to/file.phar' ) );
+		$this->assertTrue( Utils\is_stream( 'php://stdin' ) );
+		$this->assertFalse( Utils\is_stream( '/www/path' ) );
+		$this->assertFalse( Utils\is_stream( 'C:/www/path' ) );
+		$this->assertFalse( Utils\is_stream( '' ) );
+		$this->assertFalse( Utils\is_stream( 'nonexistent_wrapper://path' ) );
 	}
 
 	public function testNormalizeEols(): void {
