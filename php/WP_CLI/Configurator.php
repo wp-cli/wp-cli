@@ -322,7 +322,7 @@ class Configurator {
 				self::arrayify( $value );
 				$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
 			} else {
-				if ( $current_alias && in_array( $key, self::$alias_spec, true ) ) {
+				if ( $current_alias && in_array( $key, self::$alias_spec, true ) && 'ssh' !== $key ) {
 					continue;
 				}
 				$this->config[ $key ] = $value;
