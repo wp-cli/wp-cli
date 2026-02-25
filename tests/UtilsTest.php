@@ -513,6 +513,8 @@ class UtilsTest extends TestCase {
 			// PHP stream wrapper paths.
 			[ 'phar:///path/to/file.phar/www/path', 'phar:///path/to/file.phar/www/path' ],
 			[ 'php://stdin', 'php://stdin' ],
+			[ 'phar:///path/to/file.phar/some//dir', 'phar:///path/to/file.phar/some/dir' ],
+			[ 'phar:///path/to/file.phar/some\\dir/file', 'phar:///path/to/file.phar/some/dir/file' ],
 		];
 	}
 
