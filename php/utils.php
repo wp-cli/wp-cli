@@ -1228,7 +1228,7 @@ function is_stream( $path ) {
 		return false;
 	}
 
-	$stream = substr( $path, 0, $scheme_separator );
+	$stream = strtolower( substr( $path, 0, $scheme_separator ) );
 
 	return in_array( $stream, stream_get_wrappers(), true );
 }
