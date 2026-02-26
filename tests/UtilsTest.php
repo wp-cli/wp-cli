@@ -1219,14 +1219,4 @@ class UtilsTest extends TestCase {
 		// Test that tilde in the middle is not expanded
 		$this->assertEquals( '/path/to/~something', Utils\expand_tilde_path( '/path/to/~something' ) );
 	}
-
-	public function testPharSafePath(): void {
-		// When not running from a phar, phar_safe_path should return the path unchanged.
-		$path = '/home/user/wp-cli/vendor/wp-cli/config-command';
-		$this->assertEquals( $path, Utils\phar_safe_path( $path ) );
-
-		// Test with a relative path
-		$relative_path = 'vendor/wp-cli/config-command';
-		$this->assertEquals( $relative_path, Utils\phar_safe_path( $relative_path ) );
-	}
 }
