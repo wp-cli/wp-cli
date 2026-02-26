@@ -7,7 +7,6 @@ use WP_CLI\Dispatcher;
 use WP_CLI\Dispatcher\CompositeCommand;
 use WP_CLI\Dispatcher\Subcommand;
 use WP_CLI\Fetchers;
-use WP_CLI\Iterators\Exception;
 use WP_CLI\Loggers;
 use WP_CLI\Utils;
 use WP_Error;
@@ -618,8 +617,14 @@ class Runner {
 		WP_CLI::debug( 'Running command: ' . $name, 'bootstrap' );
 		try {
 			$command->invoke( $final_args, $assoc_args, (array) $extra_args );
-		} catch ( Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
+		} catch ( ExitException $e ) {
+			// Re-throw control-flow exceptions so callers can handle exit codes/output.
+			throw $e;
+		} catch ( \Exception $e ) {
+			// Catch exceptions but not Error types, as Error types represent
+			// fatal errors that should be handled by ShutdownHandler for
+			// helpful plugin/theme skip suggestions.
+			WP_CLI::error( $e );
 		}
 	}
 
