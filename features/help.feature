@@ -1396,3 +1396,26 @@ Feature: Get help about WP-CLI commands
 
         <zone_id>
       """
+
+  Scenario: Pager without color support should not show ANSI escape codes
+    Given an empty directory
+
+    When I run `PAGER=cat wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
+
+    When I run `PAGER=more wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
+
+    When I run `PAGER=/usr/bin/more wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
+
+    When I run `PAGER=/bin/cat wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
+
+    When I run `PAGER=less wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
