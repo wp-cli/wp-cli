@@ -927,6 +927,9 @@ class Runner {
 
 		$wp_config_code = (string) file_get_contents( $wp_config_path );
 
+		// Normalize CRLF line endings to LF to ensure cross-platform compatibility.
+		$wp_config_code = str_replace( "\r\n", "\n", $wp_config_code );
+
 		// Detect and strip byte-order marks (BOMs).
 		// This code assumes they can only be found on the first line.
 		foreach ( self::BYTE_ORDER_MARKS as $bom_name => $bom_sequence ) {
