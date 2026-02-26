@@ -133,6 +133,20 @@ class WP_CLI {
 	public static function set_url( $url ) {
 		self::debug( 'Set URL: ' . $url, 'bootstrap' );
 		$url_parts = Utils\parse_url( $url );
+
+		// Validate that the URL has a host component and the scheme looks valid
+		if ( ! isset( $url_parts['host'] ) || empty( $url_parts['host'] ) ) {
+			self::warning(
+				"The URL '{$url}' does not appear to be valid. " .
+				'Please check for typos (e.g., missing slashes in the protocol like "http://").'
+			);
+		} elseif ( isset( $url_parts['scheme'] ) && ! in_array( strtolower( $url_parts['scheme'] ), [ 'http', 'https' ], true ) ) {
+			self::warning(
+				"The URL '{$url}' has an unrecognized scheme '{$url_parts['scheme']}'. " .
+				'Expected "http" or "https".'
+			);
+		}
+
 		self::set_url_params( $url_parts );
 	}
 

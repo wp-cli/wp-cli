@@ -1671,6 +1671,9 @@ class Runner {
 
 		WP_CLI::debug( 'Loaded WordPress', 'bootstrap' );
 		WP_CLI::do_hook( 'after_wp_load' );
+
+		// Validate multisite URL if applicable
+		$this->validate_multisite_url();
 	}
 
 	private static function fake_current_site_blog( $url_parts ): void {
@@ -2184,6 +2187,57 @@ class Runner {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Validate that the URL matches an existing site in a multisite installation.
+	 *
+	 * For use after WordPress is fully loaded.
+	 * Checks if the provided --url parameter corresponds to an existing site
+	 * in a multisite installation.
+	 */
+	private function validate_multisite_url(): void {
+		// Only validate if this is a multisite and a URL was explicitly provided
+		if ( ! is_multisite() || empty( $this->config['url'] ) ) {
+			return;
+		}
+
+		// Parse the URL to get domain and path
+		$url_parts = Utils\parse_url( $this->config['url'] );
+		if ( empty( $url_parts['host'] ) ) {
+			// URL is malformed - already warned about in WP_CLI::set_url()
+			return;
+		}
+
+		$domain = $url_parts['host'];
+		$path   = isset( $url_parts['path'] ) ? $url_parts['path'] : '/';
+
+		// Ensure path ends with a slash for multisite lookup
+		if ( '/' !== substr( $path, -1 ) ) {
+			$path .= '/';
+		}
+
+		// Use WP_Site_Query to check if site exists
+		$sites = get_sites(
+			[
+				'domain' => $domain,
+				'path'   => $path,
+				'number' => 1,
+			]
+		);
+
+		if ( empty( $sites ) ) {
+			// Format URL the same way as ms_site_not_found hook
+			$url = $domain . $path;
+			// Remove trailing slash if path is just '/'
+			if ( '/' === $path ) {
+				$url = $domain;
+			}
+			WP_CLI::error(
+				"Site '{$url}' not found. " .
+				'Verify `--url=<url>` matches an existing site.'
+			);
+		}
 	}
 
 	/**
