@@ -1439,7 +1439,7 @@ class Runner {
 			// Still allow SSH if it was explicitly passed via --ssh= on the CLI (present in runtime_config).
 			$ssh_from_cli = isset( $this->runtime_config['ssh'] ) && '' !== $this->runtime_config['ssh'];
 			if ( getenv( 'WP_CLI_SSH_RUN' ) && ! $ssh_from_cli ) {
-				WP_CLI::debug( 'Skipping SSH from config file: already running inside an SSH/container session. Use --ssh= flag to override.', 'bootstrap' );
+				WP_CLI::debug( 'Skipping SSH from config file: already running inside an SSH/container session. Use the `--ssh` flag to override.', 'bootstrap' );
 			} else {
 				// @phpstan-ignore cast.string
 				$this->run_ssh_command( (string) $this->config['ssh'] );
