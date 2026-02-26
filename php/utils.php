@@ -1709,17 +1709,12 @@ function phar_safe_path( $path ) {
 		return $path;
 	}
 
-	$phar_path = WP_CLI_PHAR_PATH;
-
-	// WP_CLI_PHAR_PATH is set to Phar::running(true) in the Phar stub, which includes the phar:// prefix.
-	// Strip it to get just the filesystem path.
-	if ( 0 === strpos( $phar_path, PHAR_STREAM_PREFIX ) ) {
-		$phar_path = substr( $phar_path, strlen( PHAR_STREAM_PREFIX ) );
-	}
+	$phar_alias  = parse_url( WP_CLI_ROOT, PHP_URL_HOST );
+	$phar_prefix = PHAR_STREAM_PREFIX . ( $phar_alias ? $phar_alias . '/' : '' );
 
 	return str_replace(
-		PHAR_STREAM_PREFIX . rtrim( $phar_path, '/' ) . '/',
-		PHAR_STREAM_PREFIX,
+		PHAR_STREAM_PREFIX . rtrim( WP_CLI_PHAR_PATH, '/' ) . '/',
+		$phar_prefix,
 		$path
 	);
 }
