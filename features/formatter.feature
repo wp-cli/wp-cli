@@ -585,3 +585,119 @@ Feature: Format output
       | post_type | page        |
       | post_name | sample-page |
     And STDERR should be empty
+
+  Scenario: Register and use custom format
+    Given an empty directory
+    And a custom-format.php file:
+      """
+      <?php
+      // Register a custom XML format
+      WP_CLI\Formatter::add_format( 'xml', function( $items, $fields ) {
+          echo "<?xml version=\"1.0\"?>\n<items>\n";
+          foreach ( $items as $item ) {
+              echo "  <item>\n";
+              foreach ( $item as $key => $value ) {
+                  echo "    <{$key}>" . htmlspecialchars( $value ) . "</{$key}>\n";
+              }
+              echo "  </item>\n";
+          }
+          echo "</items>\n";
+      });
+
+      /**
+       * Test command with custom format
+       *
+       * [--format=<format>]
+       * : Output format
+       * ---
+       * default: table
+       * options:
+       *   - table
+       *   - json
+       *   - xml
+       * ---
+       *
+       * @when before_wp_load
+       */
+      $test_command = function( $args, $assoc_args ) {
+          $items = array(
+              array( 'name' => 'Alice', 'age' => '30' ),
+              array( 'name' => 'Bob', 'age' => '25' ),
+          );
+          $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'name', 'age' ) );
+          $formatter->display_items( $items );
+      };
+      WP_CLI::add_command( 'test-format', $test_command );
+      """
+
+    When I run `wp --require=custom-format.php test-format --format=xml`
+    Then STDOUT should contain:
+      """
+      <?xml version="1.0"?>
+      <items>
+        <item>
+          <name>Alice</name>
+          <age>30</age>
+        </item>
+        <item>
+          <name>Bob</name>
+          <age>25</age>
+        </item>
+      </items>
+      """
+    And the return code should be 0
+
+  Scenario: Filter available formats
+    Given a WP installation
+    And a filter-formats.php file:
+      """
+      <?php
+      // Add a custom format
+      WP_CLI\Formatter::add_format( 'custom1', function( $items, $fields ) {
+          echo "CUSTOM1\n";
+      });
+
+      // Filter to add another format to the list
+      WP_CLI::add_hook( 'formatter_available_formats', function( $formats ) {
+          $formats[] = 'custom2';
+          return $formats;
+      });
+
+      // Get available formats
+      $formats = WP_CLI\Formatter::get_available_formats();
+      WP_CLI::line( 'Available formats: ' . implode( ', ', $formats ) );
+      """
+
+    When I run `wp --require=filter-formats.php eval 'exit(0);'`
+    Then STDOUT should contain:
+      """
+      Available formats: table, json, csv, yaml, count, ids, custom1, custom2
+      """
+    And the return code should be 0
+
+  Scenario: Custom format error handling
+    Given an empty directory
+    And a invalid-format.php file:
+      """
+      <?php
+      /**
+       * Test command
+       *
+       * @when before_wp_load
+       */
+      $test_command = function( $args, $assoc_args ) {
+          $items = array(
+              array( 'name' => 'Test' ),
+          );
+          $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'name' ) );
+          $formatter->display_items( $items );
+      };
+      WP_CLI::add_command( 'test-invalid', $test_command );
+      """
+
+    When I try `wp --require=invalid-format.php test-invalid --format=nonexistent`
+    Then STDERR should contain:
+      """
+      Invalid format: nonexistent
+      """
+    And the return code should be 1
