@@ -385,6 +385,73 @@ Feature: Global flags
       --user=<id|login|email>
       """
 
+  Scenario: Double dash delimiter separates options from operands
+    Given an empty directory
+    And a test-cmd.php file:
+      """
+      <?php
+      /**
+       * Test command to echo positional arguments.
+       *
+       * @when before_wp_load
+       */
+      $test_cmd = function( $args, $assoc_args ) {
+          WP_CLI::log( 'Positional args: ' . implode( ', ', $args ) );
+          WP_CLI::log( 'Assoc args: ' . json_encode( $assoc_args ) );
+      };
+      WP_CLI::add_command( 'test-args', $test_cmd );
+      """
+
+    # Arguments after -- should be treated as positional
+    When I run `wp --require=test-cmd.php test-args foo -- --bar --baz=value`
+    Then STDOUT should be:
+      """
+      Positional args: foo, --bar, --baz=value
+      Assoc args: []
+      """
+
+    # -- should work between command and operands
+    When I run `wp --require=test-cmd.php test-args -- --option=value --no-color`
+    Then STDOUT should be:
+      """
+      Positional args: --option=value, --no-color
+      Assoc args: []
+      """
+
+    # Global args before -- should still work
+    When I run `wp --require=test-cmd.php test-args foo -- --path=/some/path`
+    Then STDOUT should be:
+      """
+      Positional args: foo, --path=/some/path
+      Assoc args: []
+      """
+
+  Scenario: Double dash delimiter prevents global option parsing after delimiter
+    Given an empty directory
+    And a test-cmd.php file:
+      """
+      <?php
+      /**
+       * Test command to verify global options are not parsed after --.
+       *
+       * @when before_wp_load
+       */
+      $test_cmd = function( $args, $assoc_args ) {
+          // If --require was parsed as a global option, this file would fail to load
+          // because /nonexistent doesn't exist. If we get here, -- worked correctly.
+          WP_CLI::log( 'Args: ' . implode( ', ', $args ) );
+      };
+      WP_CLI::add_command( 'test-global', $test_cmd );
+      """
+
+    # Without --, --require would be parsed as a global option and fail
+    When I run `wp --require=test-cmd.php test-global foo -- --require=/nonexistent`
+    Then STDOUT should be:
+      """
+      Args: foo, --require=/nonexistent
+      """
+    And the return code should be 0
+
   Scenario: Tilde expansion in --path parameter
     Given a WP installation in 'subdir'
     And I run `bash -c 'ln -s $(pwd)/subdir $HOME/test-wp-tilde'`
