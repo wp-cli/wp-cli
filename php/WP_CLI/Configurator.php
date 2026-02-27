@@ -165,7 +165,7 @@ class Configurator {
 	 * Splits a list of arguments into positional, associative and config.
 	 *
 	 * @param array<string> $arguments
-	 * @return array<array<string>>
+	 * @return array{0: array<string>, 1: array<string, mixed>, 2: array<string, array<int, string>|int|string|true>}
 	 */
 	public function parse_args( $arguments ) {
 		list( $positional_args, $mixed_args, $global_assoc, $local_assoc ) = self::extract_assoc( $arguments );
@@ -218,7 +218,7 @@ class Configurator {
 	 * Separate runtime parameters from command-specific parameters.
 	 *
 	 * @param array $mixed_args
-	 * @return array
+	 * @return array{0: array<string, mixed>, 1: array<string, array<int, string>|int|string|true>}
 	 */
 	private function unmix_assoc_args( $mixed_args, $global_assoc = [], $local_assoc = [] ) {
 		$assoc_args     = [];
@@ -226,20 +226,45 @@ class Configurator {
 
 		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
 			foreach ( $global_assoc as $tmp ) {
-				list( $key, $value ) = $tmp;
+				[ $key, $value ] = $tmp;
 				if ( isset( $this->spec[ $key ] ) && false !== $this->spec[ $key ]['runtime'] ) {
 					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
 				}
 			}
 			foreach ( $local_assoc as $tmp ) {
-				$assoc_args[ $tmp[0] ] = $tmp[1];
+				[ $key, $value ] = $tmp;
+				// Collect multiple values for the same key into an array, except for boolean flags
+				if ( isset( $assoc_args[ $key ] ) ) {
+					// Boolean flags (--flag or --no-flag) use last-wins behavior
+					if ( is_bool( $value ) ) {
+						$assoc_args[ $key ] = $value;
+					} else {
+						if ( ! is_array( $assoc_args[ $key ] ) ) {
+							$assoc_args[ $key ] = [ $assoc_args[ $key ] ];
+						}
+						$assoc_args[ $key ][] = $value;
+					}
+				} else {
+					$assoc_args[ $key ] = $value;
+				}
 			}
 		} else {
 			foreach ( $mixed_args as $tmp ) {
-				list( $key, $value ) = $tmp;
+				[ $key, $value ] = $tmp;
 
 				if ( isset( $this->spec[ $key ] ) && false !== $this->spec[ $key ]['runtime'] ) {
 					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
+				} elseif ( isset( $assoc_args[ $key ] ) ) {
+					// Collect multiple values for the same key into an array, except for boolean flags
+					// Boolean flags (--flag or --no-flag) use last-wins behavior
+					if ( is_bool( $value ) ) {
+						$assoc_args[ $key ] = $value;
+					} else {
+						if ( ! is_array( $assoc_args[ $key ] ) ) {
+							$assoc_args[ $key ] = [ $assoc_args[ $key ] ];
+						}
+						$assoc_args[ $key ][] = $value;
+					}
 				} else {
 					$assoc_args[ $key ] = $value;
 				}
