@@ -1468,6 +1468,21 @@ class Runner {
 			WP_CLI::set_url( $url );
 		}
 
+		// Handle --assume-https parameter
+		if ( ! empty( $this->config['assume-https'] ) ) {
+			/**
+			 * @var array{HTTPS: string|int} $_SERVER
+			 */
+			if ( ! isset( $_SERVER['HTTPS'] ) ) {
+				$_SERVER['HTTPS'] = 'on';
+			} else {
+				$https_value = strtolower( (string) $_SERVER['HTTPS'] );
+				if ( 'on' !== $https_value && '1' !== $https_value ) {
+					$_SERVER['HTTPS'] = 'on';
+				}
+			}
+		}
+
 		$this->do_early_invoke( 'before_wp_load' );
 
 		// Second try at showing man page for help commands.
@@ -1978,64 +1993,6 @@ class Runner {
 				}
 				return $from_email;
 			}
-		);
-
-		// Don't apply set_url_scheme in get_home_url() or get_site_url().
-		WP_CLI::add_wp_hook(
-			'home_url',
-			static function ( $url, $path, $scheme, $blog_id ) {
-				if ( empty( $blog_id ) || ! is_multisite() ) {
-					/**
-					 * @var string|false $url
-					 */
-					$url = get_option( 'home' );
-				} else {
-					switch_to_blog( $blog_id );
-					/**
-					 * @var string|false $url
-					 */
-					$url = get_option( 'home' );
-					restore_current_blog();
-				}
-
-				$url = (string) $url;
-
-				if ( $path && is_string( $path ) ) {
-					$url .= '/' . ltrim( $path, '/' );
-				}
-
-				return $url;
-			},
-			0,
-			4
-		);
-		WP_CLI::add_wp_hook(
-			'site_url',
-			static function ( $url, $path, $scheme, $blog_id ) {
-				if ( empty( $blog_id ) || ! is_multisite() ) {
-					/**
-					 * @var string|false $url
-					 */
-					$url = get_option( 'siteurl' );
-				} else {
-					switch_to_blog( $blog_id );
-					/**
-					 * @var string|false $url
-					 */
-					$url = get_option( 'siteurl' );
-					restore_current_blog();
-				}
-
-				$url = (string) $url;
-
-				if ( $path && is_string( $path ) ) {
-					$url .= '/' . ltrim( $path, '/' );
-				}
-
-				return $url;
-			},
-			0,
-			4
 		);
 
 		// Set up hook for plugins and themes to conditionally add WP-CLI commands.

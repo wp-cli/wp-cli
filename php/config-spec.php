@@ -130,4 +130,11 @@ return [
 		'hidden'  => true,
 	],
 
+	'assume-https'      => [
+		'runtime' => '',
+		'file'    => '<bool>',
+		'default' => false,
+		'desc'    => 'Set $_SERVER[\'HTTPS\'] to make WordPress treat the site as HTTPS. Use when WordPress is behind an HTTPS proxy or load balancer.',
+	],
+
 ];
