@@ -19,6 +19,14 @@ return [
 		'desc'    => 'Perform operation against a remote server over SSH (or a container using scheme of "docker", "docker-compose", "docker-compose-run", "vagrant").',
 	],
 
+	'ssh-args'          => [
+		'runtime'  => '=<args>',
+		'file'     => '<args>',
+		'desc'     => 'Pass additional arguments to SSH (or other tools specified by --ssh scheme).',
+		'multiple' => true,
+		'default'  => [],
+	],
+
 	'http'              => [
 		'runtime' => '=<http>',
 		'file'    => '<http>',

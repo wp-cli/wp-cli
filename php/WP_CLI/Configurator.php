@@ -60,6 +60,7 @@ class Configurator {
 		'url',
 		'path',
 		'ssh',
+		'ssh-args',
 		'http',
 		'proxyjump',
 		'key',

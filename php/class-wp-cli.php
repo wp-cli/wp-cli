@@ -23,7 +23,7 @@ use WP_CLI\WpHttpCacheManager;
 /**
  * Various utilities for WP-CLI commands.
  *
- * @phpstan-type GlobalConfig array{path: string|null, ssh: string|null, http: string|null, url: string|null, user: string|null, 'skip-plugins': true|string[], 'skip-themes': true|string[], 'skip-packages': bool, require: string[], exec: string[], context: string, debug: string|true, prompt: false|string, quiet: bool, apache_modules: string[]}
+ * @phpstan-type GlobalConfig array{path: string|null, ssh: string|null, 'ssh-args': string[], http: string|null, url: string|null, user: string|null, 'skip-plugins': true|string[], 'skip-themes': true|string[], 'skip-packages': bool, require: string[], exec: string[], context: string, debug: string|true, prompt: false|string, quiet: bool, apache_modules: string[]}
  *
  * @phpstan-type FlagParameter array{type: 'flag', name: string, description?: string, optional?: bool, repeating?: bool}
  * @phpstan-type AssocParameter array{type: 'assoc', name: string, description?: string, options?: string[], default?: string, optional?: bool, value: array{optional: bool, name?: string}, repeating?: bool}
