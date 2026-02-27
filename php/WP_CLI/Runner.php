@@ -2267,9 +2267,68 @@ class Runner {
 		}
 
 		// Looks like an update is available, so let's prompt to update.
-		WP_CLI::run_command( [ 'cli', 'update' ] );
-		// If the Phar was replaced, we can't proceed with the original process.
-		exit;
+		$update_args = [];
+		// Allow skipping the confirmation prompt via environment variable.
+		if ( getenv( 'WP_CLI_AUTO_UPDATE_PROMPT' ) === 'no' ) {
+			$update_args['yes'] = true;
+		}
+
+		// Get the current Phar's modification time before the update.
+		$phar_mtime_before = filemtime( $existing_phar );
+
+		WP_CLI::run_command( [ 'cli', 'update' ], $update_args );
+
+		// Check if the Phar was actually updated by comparing modification times.
+		clearstatcache( true, $existing_phar );
+		$phar_mtime_after = filemtime( $existing_phar );
+		if ( $phar_mtime_after > $phar_mtime_before ) {
+			// After update, re-execute the original command with the new Phar.
+			$this->rerun_command_after_update();
+		}
+	}
+
+	/**
+	 * Re-execute the original command with the updated Phar.
+	 *
+	 * This method is called after a successful auto-update to transparently
+	 * continue with the user's original command using the new Phar version.
+	 */
+	private function rerun_command_after_update(): void {
+		$original_args = array_slice( $GLOBALS['argv'], 1 );
+
+		// Skip re-execution if the original command was a CLI command
+		// to avoid infinite loops or redundant execution.
+		// Use $this->arguments instead of $original_args to properly handle aliases.
+		if ( ! empty( $this->arguments ) && 'cli' === $this->arguments[0] ) {
+			exit( 0 );
+		}
+
+		// Skip re-execution if there are no arguments (just running `wp` with no command).
+		if ( empty( $original_args ) ) {
+			exit( 0 );
+		}
+
+		// Get the path to the current (now updated) Phar.
+		$phar_path = realpath( $_SERVER['argv'][0] );
+		if ( false === $phar_path ) {
+			WP_CLI::error( 'Failed to determine the path to the WP-CLI Phar.' );
+		}
+
+		// Build the command to re-execute.
+		$php_binary   = Utils\get_php_binary();
+		$escaped_args = array_map( 'escapeshellarg', $original_args );
+		$command      = sprintf(
+			'%s %s %s',
+			escapeshellarg( $php_binary ),
+			escapeshellarg( $phar_path ),
+			implode( ' ', $escaped_args )
+		);
+
+		WP_CLI::debug( 'Re-executing command after update.', 'bootstrap' );
+
+		// Execute the command and pass through the exit code.
+		passthru( $command, $exit_code );
+		exit( $exit_code );
 	}
 
 	/**
