@@ -1709,9 +1709,13 @@ function phar_safe_path( $path ) {
 		return $path;
 	}
 
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Own version.
+	$phar_alias  = parse_url( WP_CLI_ROOT, PHP_URL_HOST );
+	$phar_prefix = PHAR_STREAM_PREFIX . ( $phar_alias ? $phar_alias . '/' : '' );
+
 	return str_replace(
 		PHAR_STREAM_PREFIX . rtrim( WP_CLI_PHAR_PATH, '/' ) . '/',
-		PHAR_STREAM_PREFIX,
+		$phar_prefix,
 		$path
 	);
 }
