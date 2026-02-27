@@ -678,6 +678,7 @@ class Runner {
 		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
 			$env_vars .= 'WP_CLI_STRICT_ARGS_MODE=1 ';
 		}
+		$env_vars .= 'WP_CLI_SSH_RUN=1 ';
 
 		$wp_binary = getenv( 'WP_CLI_SSH_BINARY' ) ?: 'wp';
 		$wp_args   = array_slice( (array) $GLOBALS['argv'], 1 );
@@ -800,7 +801,12 @@ class Runner {
 		}
 
 		if ( 'docker-compose-run' === $bits['scheme'] ) {
-			$command = '%s run %s%s%s%s%s %s';
+			$command = '%s run %s%s%s%s%s%s %s';
+
+			$env_flags = '-e WP_CLI_SSH_RUN=1 ';
+			if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
+				$env_flags .= '-e WP_CLI_STRICT_ARGS_MODE=1 ';
+			}
 
 			$escaped_command = sprintf(
 				$command,
@@ -809,6 +815,7 @@ class Runner {
 				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
 				$is_stdout_tty || getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
 				$is_stdin_tty || getenv( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '' : '-i ',
+				$env_flags,
 				escapeshellarg( $bits['host'] ),
 				$wp_command
 			);
@@ -1434,9 +1441,16 @@ class Runner {
 		}
 
 		if ( $this->config['ssh'] ) {
-			// @phpstan-ignore cast.string
-			$this->run_ssh_command( (string) $this->config['ssh'] );
-			return;
+			// Don't recurse if SSH came from config file and we're already in an SSH/container session.
+			// Still allow SSH if it was explicitly passed via --ssh= on the CLI (present in runtime_config).
+			$ssh_from_cli = isset( $this->runtime_config['ssh'] ) && '' !== $this->runtime_config['ssh'];
+			if ( getenv( 'WP_CLI_SSH_RUN' ) && ! $ssh_from_cli ) {
+				WP_CLI::debug( 'Skipping SSH from config file: already running inside an SSH/container session. Use the `--ssh` flag to override.', 'bootstrap' );
+			} else {
+				// @phpstan-ignore cast.string
+				$this->run_ssh_command( (string) $this->config['ssh'] );
+				return;
+			}
 		}
 
 		// Log WP-CLI HTTP requests
