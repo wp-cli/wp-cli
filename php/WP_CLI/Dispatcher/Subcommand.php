@@ -184,7 +184,7 @@ class Subcommand extends CompositeCommand {
 		}
 
 		// Create a docparser to get default values and descriptions
-		$docparser = $this->get_docparser();
+		$docparser = $this->create_mock_docparser();
 
 		// To skip the already provided positional arguments, we need to count
 		// how many we had already received.
@@ -342,9 +342,12 @@ class Subcommand extends CompositeCommand {
 	/**
 	 * Create a DocParser instance from the command's description.
 	 *
+	 * This creates a mock DocParser from the command's short and long descriptions,
+	 * used internally for getting argument metadata.
+	 *
 	 * @return DocParser
 	 */
-	private function get_docparser() {
+	private function create_mock_docparser() {
 		$mock_doc = [ $this->get_shortdesc(), '' ];
 		$mock_doc = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
 		$mock_doc = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
@@ -399,7 +402,7 @@ class Subcommand extends CompositeCommand {
 			'fatal'   => [],
 			'warning' => [],
 		];
-		$docparser     = $this->get_docparser();
+		$docparser     = $this->create_mock_docparser();
 		foreach ( $synopsis_spec as $spec ) {
 			if ( 'positional' === $spec['type'] ) {
 				$spec_args = $docparser->get_arg_args( $spec['name'] );
@@ -512,7 +515,7 @@ class Subcommand extends CompositeCommand {
 		}
 
 		$synopsis_spec  = SynopsisParser::parse( $synopsis );
-		$docparser      = $this->get_docparser();
+		$docparser      = $this->create_mock_docparser();
 		$sensitive_args = [];
 
 		foreach ( $synopsis_spec as $spec ) {

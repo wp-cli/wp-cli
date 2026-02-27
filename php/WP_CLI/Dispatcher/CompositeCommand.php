@@ -136,6 +136,15 @@ class CompositeCommand {
 	}
 
 	/**
+	 * Get the DocParser instance for this command.
+	 *
+	 * @return DocParser|null
+	 */
+	public function get_docparser() {
+		return $this->docparser;
+	}
+
+	/**
 	 * Set the short description for this composite command.
 	 *
 	 * @param string $shortdesc
