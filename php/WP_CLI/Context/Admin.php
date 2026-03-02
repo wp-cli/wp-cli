@@ -36,8 +36,9 @@ final class Admin implements Context {
 
 		// Set a fake entry point to ensure wp-includes/vars.php does not throw
 		// notices/errors. This will be reflected in the global `$pagenow`
-		// variable being set to 'wp-cli-fake-admin-file.php'.
-		$_SERVER['PHP_SELF'] = '/wp-admin/wp-cli-fake-admin-file.php';
+		// variable. We try to use a realistic admin page based on the current
+		// command so that plugins which check `$pagenow` behave correctly.
+		$_SERVER['PHP_SELF'] = '/wp-admin/' . $this->get_fake_admin_page();
 
 		// Bootstrap the WordPress administration area.
 		WP_CLI::add_wp_hook(
@@ -70,6 +71,29 @@ final class Admin implements Context {
 			defined( 'PHP_INT_MAX' ) ? PHP_INT_MAX : 2147483648, // phpcs:ignore PHPCompatibility.Constants.NewConstants.php_int_maxFound
 			0
 		);
+	}
+
+	/**
+	 * Get a fake admin page filename that reflects the current command.
+	 *
+	 * Returns 'plugins.php' for `wp plugin` commands, 'themes.php' for
+	 * `wp theme` commands, and 'wp-cli-fake-admin-file.php' otherwise.
+	 *
+	 * @return string Admin page filename.
+	 */
+	private function get_fake_admin_page(): string {
+		$command = WP_CLI::get_runner()->arguments;
+
+		$command_map = [
+			'plugin' => 'plugins.php',
+			'theme'  => 'themes.php',
+		];
+
+		if ( isset( $command[0], $command_map[ $command[0] ] ) ) {
+			return $command_map[ $command[0] ];
+		}
+
+		return 'wp-cli-fake-admin-file.php';
 	}
 
 	/**
