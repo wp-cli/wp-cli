@@ -1,14 +1,32 @@
 Feature: Context handling via --context global flag
 
-  Scenario: CLI context can be selected, but is same as default
+  Scenario: Auto context is the default
     Given a WP install
+    And a context-logger.php file:
+      """
+      <?php
+      WP_CLI::add_hook( 'before_run_command', static function () {
+        $context = WP_CLI::get_runner()->context_manager->get_context();
+        WP_CLI::log( "Current context: {$context}" );
+      } );
+      """
 
-    When I run `wp eval 'var_export( is_admin() );'`
+    When I run `wp --require=context-logger.php eval ''`
     Then the return code should be 0
-    And STDOUT should be:
+    And STDOUT should contain:
       """
-      false
+      Current context: cli
       """
+
+    When I run `wp --require=context-logger.php plugin list`
+    Then the return code should be 0
+    And STDOUT should contain:
+      """
+      Current context: admin
+      """
+
+  Scenario: CLI context can be selected
+    Given a WP install
 
     When I run `wp --context=cli eval 'var_export( is_admin() );'`
     Then the return code should be 0
@@ -17,25 +35,11 @@ Feature: Context handling via --context global flag
       false
       """
 
-    When I run `wp eval 'var_export( function_exists( "media_handle_upload" ) );'`
-    Then the return code should be 0
-    And STDOUT should be:
-      """
-      true
-      """
-
     When I run `wp --context=cli eval 'var_export( function_exists( "media_handle_upload" ) );'`
     Then the return code should be 0
     And STDOUT should be:
       """
       true
-      """
-
-    When I run `wp eval 'add_action( "admin_init", static function () { WP_CLI::warning( "admin_init was triggered." ); } );'`
-    Then the return code should be 0
-    And STDERR should not contain:
-      """
-      admin_init was triggered.
       """
 
     When I run `wp --context=cli eval 'add_action( "admin_init", static function () { WP_CLI::warning( "admin_init was triggered." ); } );'`
