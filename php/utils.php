@@ -2214,14 +2214,15 @@ function has_stdin() {
 	// both interactive terminals (TTY) and /dev/null. In non-interactive
 	// environments (cron, atd, puppet exec), STDIN is often connected to
 	// /dev/null, which stream_select() incorrectly reports as readable
-	// (since EOF is immediately available). Neither a TTY nor /dev/null
-	// ever provides meaningful stdin data.
+	// (since EOF is immediately available). For the purposes of this
+	// helper, character devices are treated as "no stdin" to avoid
+	// blocking on interactive input or mis-detecting /dev/null as input.
 	$stat = fstat( STDIN );
 	if ( false !== $stat ) {
 		// S_IFMT  (0170000): bitmask to extract the POSIX file type.
 		// S_IFCHR (0020000): file type constant for character devices.
 		// Character devices include both interactive terminals (TTY) and
-		// /dev/null, neither of which provides meaningful stdin data.
+		// /dev/null, all of which are treated as not providing stdin here.
 		if ( 0020000 === ( $stat['mode'] & 0170000 ) ) {
 			return false;
 		}
