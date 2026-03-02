@@ -1252,6 +1252,6 @@ class UtilsTest extends TestCase {
 			var_export( $root . '/php/utils.php', true )
 		);
 
-		return $php . ' -r ' . escapeshellarg( $code );
+		return escapeshellarg( $php ) . ' -r ' . escapeshellarg( $code );
 	}
 }
