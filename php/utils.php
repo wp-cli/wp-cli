@@ -2210,6 +2210,23 @@ function get_cache_dir() {
  * @return bool
  */
 function has_stdin() {
+	// Use fstat() to detect character devices (S_IFCHR), which includes
+	// both interactive terminals (TTY) and /dev/null. In non-interactive
+	// environments (cron, atd, puppet exec), STDIN is often connected to
+	// /dev/null, which stream_select() incorrectly reports as readable
+	// (since EOF is immediately available). Neither a TTY nor /dev/null
+	// ever provides meaningful stdin data.
+	$stat = fstat( STDIN );
+	if ( false !== $stat ) {
+		// S_IFMT  (0170000): bitmask to extract the POSIX file type.
+		// S_IFCHR (0020000): file type constant for character devices.
+		// Character devices include both interactive terminals (TTY) and
+		// /dev/null, neither of which provides meaningful stdin data.
+		if ( 0020000 === ( $stat['mode'] & 0170000 ) ) {
+			return false;
+		}
+	}
+
 	$handle = fopen( 'php://stdin', 'r' );
 	if ( ! $handle ) {
 		return false;
