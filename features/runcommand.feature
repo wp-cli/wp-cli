@@ -367,7 +367,7 @@ Feature: Run a WP-CLI command
       echo 'ENVIRONMENT REQUIRE 2' . PHP_EOL;
       """
 
-    When I run `WP_CLI_REQUIRE=env.php wp eval 'return null;' --skip-wordpress`
+    When I run `WP_CLI_REQUIRE=env.php wp eval "return null;" --skip-wordpress`
     Then STDOUT should be:
       """
       ENVIRONMENT REQUIRE

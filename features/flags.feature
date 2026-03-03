@@ -3,8 +3,13 @@ Feature: Global flags
   @require-wp-5.5
   Scenario: Setting the URL
     Given a WP installation
+    And a eval-server.php file:
+      """
+      <?php
+      echo json_encode( $_SERVER );
+      """
 
-    When I run `wp --url=localhost:8001 eval 'echo json_encode( $_SERVER );'`
+    When I run `wp --url=localhost:8001 eval-file eval-server.php`
     Then STDOUT should be JSON containing:
       """
       {
@@ -17,8 +22,13 @@ Feature: Global flags
   @less-than-wp-5.5
   Scenario: Setting the URL
     Given a WP installation
+    And a eval-server.php file:
+      """
+      <?php
+      echo json_encode( $_SERVER );
+      """
 
-    When I run `wp --url=localhost:8001 eval 'echo json_encode( $_SERVER );'`
+    When I run `wp --url=localhost:8001 eval-file eval-server.php`
     Then STDOUT should be JSON containing:
       """
       {
@@ -62,7 +72,7 @@ Feature: Global flags
   Scenario: Debug run
     Given a WP installation
 
-    When I try `wp eval 'echo CONST_WITHOUT_QUOTES;'`
+    When I try `wp eval "echo CONST_WITHOUT_QUOTES;"`
     Then STDOUT should be:
       """
       CONST_WITHOUT_QUOTES
@@ -73,7 +83,7 @@ Feature: Global flags
       """
     And the return code should be 0
 
-    When I try `wp eval 'echo CONST_WITHOUT_QUOTES;' --debug`
+    When I try `wp eval "echo CONST_WITHOUT_QUOTES;" --debug`
     Then the return code should be 0
     And STDOUT should be:
       """
@@ -87,28 +97,28 @@ Feature: Global flags
   Scenario: Setting the WP user
     Given a WP installation
 
-    When I run `wp eval 'var_export( is_user_logged_in() );'`
+    When I run `wp eval "var_export( is_user_logged_in() );"`
     Then STDOUT should be:
       """
       false
       """
     And STDERR should be empty
 
-    When I run `wp --user=admin eval 'echo wp_get_current_user()->user_login;'`
+    When I run `wp --user=admin eval "echo wp_get_current_user()->user_login;"`
     Then STDOUT should be:
       """
       admin
       """
     And STDERR should be empty
 
-    When I run `wp --user=admin@example.com eval 'echo wp_get_current_user()->user_login;'`
+    When I run `wp --user=admin@example.com eval "echo wp_get_current_user()->user_login;"`
     Then STDOUT should be:
       """
       admin
       """
     And STDERR should be empty
 
-    When I try `wp --user=non-existing-user eval 'echo wp_get_current_user()->user_login;'`
+    When I try `wp --user=non-existing-user eval "echo wp_get_current_user()->user_login;"`
     Then the return code should be 1
     And STDERR should be:
       """
@@ -118,7 +128,7 @@ Feature: Global flags
   Scenario: Warn when provided user is ambiguous
     Given a WP installation
 
-    When I run `wp --user=1 eval 'echo wp_get_current_user()->user_email;'`
+    When I run `wp --user=1 eval "echo wp_get_current_user()->user_email;"`
     Then STDOUT should be:
       """
       admin@example.com
@@ -131,7 +141,7 @@ Feature: Global flags
       Success:
       """
 
-    When I try `wp --user=1 eval 'echo wp_get_current_user()->user_email;'`
+    When I try `wp --user=1 eval "echo wp_get_current_user()->user_email;"`
     Then STDOUT should be:
       """
       admin@example.com
@@ -141,21 +151,21 @@ Feature: Global flags
       Warning: Ambiguous user match detected (both ID and user_login exist for identifier '1'). WP-CLI will default to the ID, but you can force user_login instead with WP_CLI_FORCE_USER_LOGIN=1.
       """
 
-    When I run `WP_CLI_FORCE_USER_LOGIN=1 wp --user=1 eval 'echo wp_get_current_user()->user_email;'`
+    When I run `WP_CLI_FORCE_USER_LOGIN=1 wp --user=1 eval "echo wp_get_current_user()->user_email;"`
     Then STDOUT should be:
       """
       user1@example.com
       """
     And STDERR should be empty
 
-    When I run `wp --user=user1@example.com eval 'echo wp_get_current_user()->user_email;'`
+    When I run `wp --user=user1@example.com eval "echo wp_get_current_user()->user_email;"`
     Then STDOUT should be:
       """
       user1@example.com
       """
     And STDERR should be empty
 
-    When I try `WP_CLI_FORCE_USER_LOGIN=1 wp --user=user1@example.com eval 'echo wp_get_current_user()->user_email;'`
+    When I try `WP_CLI_FORCE_USER_LOGIN=1 wp --user=user1@example.com eval "echo wp_get_current_user()->user_email;"`
     Then STDERR should be:
       """
       Error: Invalid user login: 'user1@example.com'

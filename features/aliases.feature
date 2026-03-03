@@ -70,7 +70,7 @@ Feature: Create shortcuts to specific WordPress installs
       unknown --path parameter
       """
 
-    When I run `wp @foo eval 'echo get_current_user_id();' --user=admin`
+    When I run `wp @foo eval "echo get_current_user_id();" --user=admin`
     Then STDOUT should be:
       """
       1
@@ -83,13 +83,13 @@ Feature: Create shortcuts to specific WordPress installs
         user: admin
       """
 
-    When I run `wp @foo eval 'echo get_current_user_id();'`
+    When I run `wp @foo eval "echo get_current_user_id();"`
     Then STDOUT should be:
       """
       1
       """
 
-    When I try `wp @foo eval 'echo get_current_user_id();' --user=admin`
+    When I try `wp @foo eval "echo get_current_user_id();" --user=admin`
     Then STDERR should contain:
       """
       Parameter errors:
@@ -676,7 +676,7 @@ Feature: Create shortcuts to specific WordPress installs
         path: bar
       """
 
-    When I run `wp @all eval 'echo "output-from-alias\n";'`
+    When I run `wp @all eval "echo 'output-from-alias' . PHP_EOL;"`
     Then STDOUT should be:
       """
       @foo
@@ -685,7 +685,7 @@ Feature: Create shortcuts to specific WordPress installs
       output-from-alias
       """
 
-    When I run `wp @all eval 'echo "output-from-alias\n";' --quiet`
+    When I run `wp @all eval "echo 'output-from-alias' . PHP_EOL;" --quiet`
     Then STDOUT should be:
       """
       output-from-alias

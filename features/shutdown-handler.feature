@@ -145,7 +145,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
 
   Scenario: No suggestion for errors outside plugins/themes
-    When I try `wp eval 'call_to_undefined_function();' < session_yes`
+    When I try `wp eval "call_to_undefined_function();" < session_yes`
     Then STDERR should contain:
       """
       This error may have been caused by a theme or plugin

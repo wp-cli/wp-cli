@@ -1805,12 +1805,6 @@ function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = n
 	if ( is_windows() ) {
 		// @phpstan-ignore no.private.function
 		$cmd = _proc_open_compat_win_env( $cmd, $env );
-		// cmd.exe does not treat single quotes as string delimiters, so commands
-		// like `wp eval 'code'` are tokenized incorrectly. Use bash (available
-		// via Git for Windows) to handle POSIX shell quoting when needed.
-		if ( false !== strpos( $cmd, "'" ) ) {
-			$cmd = 'bash --norc --noprofile -c ' . escapeshellarg( $cmd );
-		}
 	}
 	return proc_open( $cmd, $descriptorspec, $pipes, $cwd, $env, $other_options );
 }

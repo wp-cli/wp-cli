@@ -36,7 +36,7 @@ Feature: Requests integration with both v1 and v2
       5.8
       """
 
-    When I run `vendor/bin/wp eval 'var_dump( \WP_CLI\Utils\http_request( "GET", "https://example.com/" ) );'`
+    When I run `vendor/bin/wp eval "var_dump( \WP_CLI\Utils\http_request( 'GET', 'https://example.com/' ) );"`
     Then STDOUT should contain:
       """
       object(Requests_Response)
@@ -60,7 +60,7 @@ Feature: Requests integration with both v1 and v2
       5.8
       """
 
-    When I run `wp eval 'var_dump( \WP_CLI\Utils\http_request( "GET", "https://example.com/" ) );'`
+    When I run `wp eval "var_dump( \WP_CLI\Utils\http_request( 'GET', 'https://example.com/' ) );"`
     Then STDOUT should contain:
       """
       object(Requests_Response)
@@ -91,7 +91,7 @@ Feature: Requests integration with both v1 and v2
       6.2
       """
 
-    When I run `wp eval 'var_dump( \WP_CLI\Utils\http_request( "GET", "https://example.com/" ) );'`
+    When I run `wp eval "var_dump( \WP_CLI\Utils\http_request( 'GET', 'https://example.com/' ) );"`
     Then STDOUT should contain:
       """
       object(WpOrg\Requests\Response)
