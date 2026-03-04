@@ -2294,7 +2294,10 @@ class Runner {
 	 * continue with the user's original command using the new Phar version.
 	 */
 	private function rerun_command_after_update(): void {
-		$original_args = array_slice( $GLOBALS['argv'], 1 );
+		/**
+		 * @var string[] $original_args
+		 */
+		$original_args = array_slice( (array) $GLOBALS['argv'], 1 );
 
 		// Skip re-execution if the original command was a CLI command
 		// to avoid infinite loops or redundant execution.
@@ -2308,8 +2311,13 @@ class Runner {
 			exit( 0 );
 		}
 
+		/**
+		 * @var string[] $argv
+		 */
+		$argv = $_SERVER['argv'];
+
 		// Get the path to the current (now updated) Phar.
-		$phar_path = realpath( $_SERVER['argv'][0] );
+		$phar_path = realpath( $argv[0] );
 		if ( false === $phar_path ) {
 			WP_CLI::error( 'Failed to determine the path to the WP-CLI Phar.' );
 		}
