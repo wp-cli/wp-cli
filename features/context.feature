@@ -130,6 +130,38 @@ Feature: Context handling via --context global flag
       Current context: admin
       """
 
+  Scenario: Admin context sets $pagenow based on the current command
+    Given a WP install
+    And a pagenow-logger.php file:
+      """
+      <?php
+      WP_CLI::add_wp_hook( 'admin_init', static function () {
+        global $pagenow;
+        WP_CLI::log( "pagenow: {$pagenow}" );
+      } );
+      """
+
+    When I run `wp --require=pagenow-logger.php --context=admin eval ''`
+    Then the return code should be 0
+    And STDOUT should contain:
+      """
+      pagenow: wp-cli-fake-admin-file.php
+      """
+
+    When I run `wp --require=pagenow-logger.php --context=auto plugin list`
+    Then the return code should be 0
+    And STDOUT should contain:
+      """
+      pagenow: plugins.php
+      """
+
+    When I run `wp --require=pagenow-logger.php --context=auto theme list`
+    Then the return code should be 0
+    And STDOUT should contain:
+      """
+      pagenow: themes.php
+      """
+
   Scenario: Unknown contexts throw an exception
     Given a WP install
 
