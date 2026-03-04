@@ -596,12 +596,42 @@ class Subcommand extends CompositeCommand {
 		static $prompted_once = false;
 
 		// Build alias map from the parsed synopsis and resolve to canonical names
-		$aliases = [];
-		foreach ( SynopsisParser::parse( $this->get_synopsis() ) as $param ) {
-			if ( ! empty( $param['aliases'] ) ) {
-				foreach ( $param['aliases'] as $alias ) {
-					$aliases[ $alias ] = $param['name'];
+		$aliases        = [];
+		$synopsis_spec  = SynopsisParser::parse( $this->get_synopsis() );
+		$canonical_names = $this->get_parameters( $synopsis_spec );
+
+		foreach ( $synopsis_spec as $param ) {
+			if ( empty( $param['aliases'] ) ) {
+				continue;
+			}
+
+			foreach ( $param['aliases'] as $alias ) {
+				// Detect duplicate aliases (same alias used for different params).
+				if ( isset( $aliases[ $alias ] ) && $aliases[ $alias ] !== $param['name'] ) {
+					WP_CLI::warning(
+						sprintf(
+							"Alias '%s' for parameter '%s' conflicts with existing alias for parameter '%s'. Skipping.",
+							$alias,
+							$param['name'],
+							$aliases[ $alias ]
+						)
+					);
+					continue;
 				}
+
+				// Detect aliases that conflict with any canonical parameter name.
+				if ( in_array( $alias, $canonical_names, true ) && $alias !== $param['name'] ) {
+					WP_CLI::warning(
+						sprintf(
+							"Alias '%s' for parameter '%s' conflicts with an existing parameter name. Skipping.",
+							$alias,
+							$param['name']
+						)
+					);
+					continue;
+				}
+
+				$aliases[ $alias ] = $param['name'];
 			}
 		}
 		if ( ! empty( $aliases ) ) {
