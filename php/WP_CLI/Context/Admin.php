@@ -89,11 +89,9 @@ final class Admin implements Context {
 			'theme'  => 'themes.php',
 		];
 
-		if ( isset( $command[0], $command_map[ $command[0] ] ) ) {
-			return $command_map[ $command[0] ];
-		}
+		$command_name = $command[0] ?? '';
 
-		return 'wp-cli-fake-admin-file.php';
+		return $command_map[ $command_name ] ?? 'wp-cli-fake-admin-file.php';
 	}
 
 	/**
