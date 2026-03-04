@@ -69,6 +69,18 @@ Feature: Context handling via --context global flag
       admin_init was triggered.
       """
 
+  Scenario: No warnings for custom menu order in admin context.
+    Given a WP install
+    And a custom-menu-order.php file:
+      """
+      <?php
+      WP_CLI::add_wp_hook( 'custom_menu_order', '__return_true' );
+      """
+
+    When I run `wp --require=custom-menu-order.php --context=auto plugin list`
+    Then the return code should be 0
+    And STDERR should be empty
+
   Scenario: Frontend context can be selected (and does nothing yet...)
     Given a WP install
 
@@ -116,6 +128,38 @@ Feature: Context handling via --context global flag
     And STDOUT should contain:
       """
       Current context: admin
+      """
+
+  Scenario: Admin context sets $pagenow based on the current command
+    Given a WP install
+    And a pagenow-logger.php file:
+      """
+      <?php
+      WP_CLI::add_wp_hook( 'admin_init', static function () {
+        global $pagenow;
+        WP_CLI::log( "pagenow: {$pagenow}" );
+      } );
+      """
+
+    When I run `wp --require=pagenow-logger.php --context=admin eval ''`
+    Then the return code should be 0
+    And STDOUT should contain:
+      """
+      pagenow: wp-cli-fake-admin-file.php
+      """
+
+    When I run `wp --require=pagenow-logger.php --context=auto plugin list`
+    Then the return code should be 0
+    And STDOUT should contain:
+      """
+      pagenow: plugins.php
+      """
+
+    When I run `wp --require=pagenow-logger.php --context=auto theme list`
+    Then the return code should be 0
+    And STDOUT should contain:
+      """
+      pagenow: themes.php
       """
 
   Scenario: Unknown contexts throw an exception
