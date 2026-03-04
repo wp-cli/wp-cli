@@ -204,6 +204,40 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -i 'identityfile.key' -T -vvv
       """
 
+  Scenario: Uses env command for runtime alias with separate path line
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host
+        path: /path/to/wordpress
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'user@host' 'env WP_CLI_RUNTIME_ALIAS=
+      """
+
+  Scenario: Properly escapes single quotes in runtime alias path
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host
+        path: /path/to/user's/wordpress
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'user@host' 'env WP_CLI_RUNTIME_ALIAS=
+      """
+    And STDERR should contain:
+      """
+      \/path\/to\/user'\''\'\'''\''s\/wordpress
+      """
+
   Scenario: Add an alias
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -663,6 +697,50 @@ Feature: Create shortcuts to specific WordPress installs
         path: /path/to/wordpress
       @foo:
         path: {TEST_DIR}/foo
+      """
+
+  Scenario: Run alias groups in parallel with WP_CLI_ALIAS_GROUPS_PARALLEL environment variable
+    Given a WP installation in 'foo'
+    And a WP installation in 'bar'
+    And a wp-cli.yml file:
+      """
+      @both:
+        - @foo
+        - @bar
+      @foo:
+        path: foo
+      @bar:
+        path: bar
+      """
+
+    When I run `wp @foo option update home 'http://parallel-foo.com'`
+    And I run `wp @bar option update home 'http://parallel-bar.com'`
+    And I run `WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both option get home`
+    Then STDOUT should contain:
+      """
+      @foo
+      """
+    And STDOUT should contain:
+      """
+      http://parallel-foo.com
+      """
+    And STDOUT should contain:
+      """
+      @bar
+      """
+    And STDOUT should contain:
+      """
+      http://parallel-bar.com
+      """
+
+    When I run `WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both option get home --quiet`
+    Then STDOUT should contain:
+      """
+      http://parallel-foo.com
+      """
+    And STDOUT should contain:
+      """
+      http://parallel-bar.com
       """
 
   Scenario: Using --quiet with @all suppresses alias names but still outputs command results
