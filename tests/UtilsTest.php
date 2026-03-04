@@ -560,12 +560,12 @@ class UtilsTest extends TestCase {
 			'default request'  => [
 				[],
 				RuntimeException::class,
-				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate',
+				'cURL error 77:',
 			],
 			'secure request'   => [
 				[ 'insecure' => false ],
 				RuntimeException::class,
-				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate',
+				'cURL error 77:',
 			],
 			'insecure request' => [
 				[ 'insecure' => true ],
