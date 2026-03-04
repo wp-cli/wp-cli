@@ -95,7 +95,12 @@ class SynopsisParser {
 						$arg_value = "[{$arg_value}]";
 					}
 
-					$rendered_arg = "--{$arg['name']}{$arg_value}";
+					$alias_suffix = '';
+					if ( ! empty( $arg['aliases'] ) ) {
+						$alias_suffix = '|' . implode( '|', $arg['aliases'] );
+					}
+
+					$rendered_arg = "--{$arg['name']}{$arg_value}{$alias_suffix}";
 
 					$reordered_synopsis['assoc'] [] = $arg;
 				} elseif ( 'generic' === $key ) {
@@ -106,7 +111,12 @@ class SynopsisParser {
 					/**
 					 * @phpstan-var FlagParameter $arg
 					 */
-					$rendered_arg = "--{$arg['name']}";
+					$alias_suffix = '';
+					if ( ! empty( $arg['aliases'] ) ) {
+						$alias_suffix = '|' . implode( '|', $arg['aliases'] );
+					}
+
+					$rendered_arg = "--{$arg['name']}{$alias_suffix}";
 
 					$reordered_synopsis['flag'] [] = $arg;
 				}
@@ -144,6 +154,7 @@ class SynopsisParser {
 
 		list( $param['optional'], $token )  = self::is_optional( $token );
 		list( $param['repeating'], $token ) = self::is_repeating( $token );
+		list( $aliases, $token )            = self::extract_aliases( $token );
 
 		$p_name  = '([a-z-_0-9]+)';
 		$p_value = '([a-zA-Z-_|,0-9]+)';
@@ -185,7 +196,46 @@ class SynopsisParser {
 			];
 		}
 
+		if ( ! empty( $aliases ) && in_array( $param['type'], [ 'flag', 'assoc' ], true ) ) {
+			$param['aliases'] = $aliases;
+		}
+
 		return $param;
+	}
+
+	/**
+	 * Extract pipe-separated aliases from a token.
+	 *
+	 * Given `--flag|alias1|alias2`, returns `[['alias1', 'alias2'], '--flag']`.
+	 * The `|` separator inside `<value>` brackets is ignored.
+	 *
+	 * @param string $token
+	 * @return array{0: string[], 1: string}
+	 */
+	private static function extract_aliases( $token ) {
+		$depth = 0;
+		$len   = strlen( $token );
+
+		for ( $i = 0; $i < $len; $i++ ) {
+			$char = $token[ $i ];
+			if ( '<' === $char ) {
+				++$depth;
+			} elseif ( '>' === $char ) {
+				--$depth;
+			} elseif ( '|' === $char && 0 === $depth ) {
+				$aliases = array_values(
+					array_filter(
+						explode( '|', substr( $token, $i + 1 ) ),
+						static function ( $alias ) {
+							return '' !== $alias;
+						}
+					)
+				);
+				return [ $aliases, substr( $token, 0, $i ) ];
+			}
+		}
+
+		return [ [], $token ];
 	}
 
 	/**

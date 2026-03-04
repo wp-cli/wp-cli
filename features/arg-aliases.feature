@@ -10,11 +10,8 @@ Feature: Argument aliases support
        *
        * ## OPTIONS
        *
-       * [--with-dependencies]
+       * [--with-dependencies|w]
        * : Include dependencies in the operation.
-       * ---
-       * alias: w
-       * ---
        */
       $test_command = function( $args, $assoc_args ) {
         if ( isset( $assoc_args['with-dependencies'] ) ) {
@@ -48,13 +45,8 @@ Feature: Argument aliases support
        *
        * ## OPTIONS
        *
-       * [--verbose]
+       * [--verbose|v|wordy]
        * : Enable verbose output.
-       * ---
-       * alias:
-       *   - v
-       *   - wordy
-       * ---
        */
       $test_command = function( $args, $assoc_args ) {
         if ( isset( $assoc_args['verbose'] ) ) {
@@ -94,11 +86,8 @@ Feature: Argument aliases support
        *
        * ## OPTIONS
        *
-       * [--number=<number>]
+       * [--number=<number>|n]
        * : A number value.
-       * ---
-       * alias: n
-       * ---
        */
       $test_command = function( $args, $assoc_args ) {
         if ( isset( $assoc_args['number'] ) ) {
@@ -132,11 +121,8 @@ Feature: Argument aliases support
        *
        * ## OPTIONS
        *
-       * [--include-deps]
+       * [--include-deps|with-dependencies]
        * : Include dependencies.
-       * ---
-       * alias: with-dependencies
-       * ---
        */
       $test_command = function( $args, $assoc_args ) {
         if ( isset( $assoc_args['include-deps'] ) ) {
@@ -170,11 +156,8 @@ Feature: Argument aliases support
        *
        * ## OPTIONS
        *
-       * [--format=<format>]
+       * [--format=<format>|f]
        * : Output format.
-       * ---
-       * alias: f
-       * ---
        */
       $test_command = function( $args, $assoc_args ) {
         WP_CLI::success( 'format is ' . $assoc_args['format'] );
@@ -198,11 +181,8 @@ Feature: Argument aliases support
        *
        * ## OPTIONS
        *
-       * --type=<type>
+       * --type=<type>|t
        * : Required type parameter.
-       * ---
-       * alias: t
-       * ---
        */
       $test_command = function( $args, $assoc_args ) {
         WP_CLI::success( 'type is ' . $assoc_args['type'] );
@@ -227,4 +207,34 @@ Feature: Argument aliases support
     Then STDOUT should contain:
       """
       Success: type is post
+      """
+
+  Scenario: Aliases are shown in help output
+    Given a WP install
+    And a custom-command.php file:
+      """
+      <?php
+      /**
+       * Test command for help output.
+       *
+       * ## OPTIONS
+       *
+       * [--verbose|v|wordy]
+       * : Enable verbose output.
+       *
+       * [--format=<format>|f]
+       * : Output format.
+       */
+      $test_command = function( $args, $assoc_args ) {};
+      WP_CLI::add_command( 'test-alias', $test_command );
+      """
+
+    When I run `wp --require=custom-command.php help test-alias`
+    Then STDOUT should contain:
+      """
+      [--verbose|v|wordy]
+      """
+    And STDOUT should contain:
+      """
+      [--format=<format>|f]
       """

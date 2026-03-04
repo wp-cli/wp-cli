@@ -19,20 +19,12 @@ class Subcommand extends CompositeCommand {
 
 	private $when_invoked;
 
-	/**
-	 * Store the original docparser to access alias metadata.
-	 *
-	 * @var DocParser
-	 */
-	private $original_docparser;
-
 	public function __construct( $parent, $name, $docparser, $when_invoked ) {
 		$this->alias = $docparser->get_tag( 'alias' );
 
 		parent::__construct( $parent, $name, $docparser );
 
-		$this->when_invoked       = $when_invoked;
-		$this->original_docparser = $docparser;
+		$this->when_invoked = $when_invoked;
 
 		$this->synopsis = $docparser->get_synopsis();
 		if ( ! $this->synopsis && $this->longdesc ) {
@@ -603,9 +595,15 @@ class Subcommand extends CompositeCommand {
 	public function invoke( $args, $assoc_args, $extra_args ) {
 		static $prompted_once = false;
 
-		// Resolve any argument aliases to canonical names first
-		// Compute aliases once and reuse for both assoc_args and extra_args
-		$aliases = $this->original_docparser->get_arg_aliases();
+		// Build alias map from the parsed synopsis and resolve to canonical names
+		$aliases = [];
+		foreach ( SynopsisParser::parse( $this->get_synopsis() ) as $param ) {
+			if ( ! empty( $param['aliases'] ) ) {
+				foreach ( $param['aliases'] as $alias ) {
+					$aliases[ $alias ] = $param['name'];
+				}
+			}
+		}
 		if ( ! empty( $aliases ) ) {
 			WP_CLI::debug( 'Resolving argument aliases: ' . implode( ', ', array_keys( $aliases ) ), 'bootstrap' );
 		}
