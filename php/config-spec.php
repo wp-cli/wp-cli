@@ -81,9 +81,10 @@ return [
 	],
 
 	'disabled_commands' => [
-		'file'    => '<list>',
-		'default' => [],
-		'desc'    => '(Sub)commands to disable.',
+		'file'     => '<list>',
+		'default'  => [],
+		'multiple' => true,
+		'desc'     => '(Sub)commands to disable.',
 	],
 
 	'color'             => [
