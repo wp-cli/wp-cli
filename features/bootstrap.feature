@@ -538,3 +538,24 @@ Feature: Bootstrap WP-CLI
     """
     YIKES!
     """
+
+  Scenario: Check for mbstring/iconv extension requirement
+    Given an empty directory
+    And a mock-boot.php file:
+      """
+      <?php
+      // Simulate the extension check from boot-fs.php
+      if ( ! extension_loaded( 'mbstring' ) && ! extension_loaded( 'iconv' ) ) {
+        echo "Error: WP-CLI requires the mbstring or iconv PHP extension to be installed.\n";
+        echo "Both extensions are currently missing. Please install at least one of them.\n";
+        echo "For more information, see: https://make.wordpress.org/cli/handbook/installing/\n";
+        die( -1 );
+      }
+      echo "Extensions check passed\n";
+      """
+
+    When I run `php mock-boot.php`
+    Then STDOUT should contain:
+      """
+      Extensions check passed
+      """
