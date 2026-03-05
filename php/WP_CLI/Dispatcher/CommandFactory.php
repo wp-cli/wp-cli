@@ -123,7 +123,14 @@ class CommandFactory {
 		 * @var string $name
 		 */
 
-		return new Subcommand( $parent, $name, $docparser, $when_invoked );
+		$subcommand = new Subcommand( $parent, $name, $docparser, $when_invoked );
+
+		// Check for global argument conflicts
+		$path         = \WP_CLI\Dispatcher\get_path( $subcommand );
+		$command_name = implode( ' ', array_slice( $path, 1 ) );
+		\WP_CLI::check_global_arg_conflicts( $command_name, $subcommand );
+
+		return $subcommand;
 	}
 
 	/**
