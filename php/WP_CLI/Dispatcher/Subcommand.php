@@ -596,8 +596,8 @@ class Subcommand extends CompositeCommand {
 		static $prompted_once = false;
 
 		// Build alias map from the parsed synopsis and resolve to canonical names
-		$aliases        = [];
-		$synopsis_spec  = SynopsisParser::parse( $this->get_synopsis() );
+		$aliases         = [];
+		$synopsis_spec   = SynopsisParser::parse( $this->get_synopsis() );
 		$canonical_names = $this->get_parameters( $synopsis_spec );
 
 		foreach ( $synopsis_spec as $param ) {
