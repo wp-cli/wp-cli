@@ -1649,10 +1649,6 @@ class Runner {
 
 		require ABSPATH . 'wp-settings.php';
 
-		// Fix memory limit. See https://core.trac.wordpress.org/ticket/14889
-		// phpcs:ignore WordPress.PHP.IniSet.memory_limit_Disallowed -- This is perfectly fine for CLI usage.
-		ini_set( 'memory_limit', -1 );
-
 		// Load all the admin APIs, for convenience
 		require ABSPATH . 'wp-admin/includes/admin.php';
 
