@@ -150,57 +150,70 @@ class SynopsisParser {
 	 * @phpstan-return CommandSynopsis
 	 */
 	private static function classify_token( $token ) {
-		$param = [];
-
-		list( $param['optional'], $token )  = self::is_optional( $token );
-		list( $param['repeating'], $token ) = self::is_repeating( $token );
-		list( $aliases, $token )            = self::extract_aliases( $token );
+		list( $optional, $token )  = self::is_optional( $token );
+		list( $repeating, $token ) = self::is_repeating( $token );
+		list( $aliases, $token )   = self::extract_aliases( $token );
 
 		$p_name  = '([a-z-_0-9]+)';
 		$p_value = '([a-zA-Z-_|,0-9]+)';
 
 		if ( '--<field>=<value>' === $token ) {
-			$param['type'] = 'generic';
-
+			return [
+				'type'      => 'generic',
+				'optional'  => $optional,
+				'repeating' => $repeating,
+			];
 		} elseif ( preg_match( "/^<($p_value)>$/", $token, $matches ) ) {
-			$param['type'] = 'positional';
-			$param['name'] = $matches[1];
+			return [
+				'type'      => 'positional',
+				'name'      => $matches[1],
+				'optional'  => $optional,
+				'repeating' => $repeating,
+			];
 		} elseif ( preg_match( "/^--(?:\\[no-\\])?$p_name/", $token, $matches ) ) {
-			$param['name'] = $matches[1];
-
+			$name  = $matches[1];
 			$value = substr( $token, strlen( $matches[0] ) );
 
 			// substr can return false <= PHP 8.0.
 			// @phpstan-ignore identical.alwaysFalse
 			if ( false === $value || '' === $value ) {
-				$param['type'] = 'flag';
+				$param = [
+					'type'      => 'flag',
+					'name'      => $name,
+					'optional'  => $optional,
+					'repeating' => $repeating,
+				];
+				if ( ! empty( $aliases ) ) {
+					$param['aliases'] = $aliases;
+				}
+				return $param;
 			} else {
-				$param['type'] = 'assoc';
+				list( $value_optional, $value ) = self::is_optional( $value );
 
-				list( $param['value']['optional'], $value ) = self::is_optional( $value );
-
-				if ( preg_match( "/^=<$p_value>$/", $value, $matches ) ) {
-					$param['value']['name'] = $matches[1];
-				} else {
-					/**
-					 * @phpstan-var UnknownParameter $param
-					 */
+				if ( preg_match( "/^=<$p_value>$/", $value, $matches_value ) ) {
 					$param = [
-						'type' => 'unknown',
+						'type'      => 'assoc',
+						'name'      => $name,
+						'optional'  => $optional,
+						'repeating' => $repeating,
+						'value'     => [
+							'optional' => $value_optional,
+							'name'     => $matches_value[1],
+						],
 					];
+					if ( ! empty( $aliases ) ) {
+						$param['aliases'] = $aliases;
+					}
+					return $param;
 				}
 			}
-		} else {
-			$param = [
-				'type' => 'unknown',
-			];
 		}
 
-		if ( ! empty( $aliases ) && in_array( $param['type'], [ 'flag', 'assoc' ], true ) ) {
-			$param['aliases'] = $aliases;
-		}
-
-		return $param;
+		return [
+			'type'      => 'unknown',
+			'optional'  => $optional,
+			'repeating' => $repeating,
+		];
 	}
 
 	/**
