@@ -138,9 +138,12 @@ final class Admin implements Context {
 	 * @global array  $_wp_submenu_nopriv
 	 * @global array  $menu_order
 	 * @global array  $default_menu_order
+	 * @global array  $menu
+	 * @global array  $submenu
+	 * @global array  $compat
 	 */
 	private function load_admin_environment(): void {
-		global $hook_suffix, $pagenow, $wp_db_version, $_wp_submenu_nopriv, $menu_order, $default_menu_order;
+		global $compat, $default_menu_order, $hook_suffix, $menu, $menu_order, $pagenow, $submenu, $wp_db_version, $_wp_submenu_nopriv;
 
 		if ( ! isset( $hook_suffix ) ) {
 			$hook_suffix = 'index'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
