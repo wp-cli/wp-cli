@@ -47,7 +47,7 @@ class ShutdownHandler {
 			return wp_strip_all_tags( $message );
 		}
 
-		$message = "\nThere has been a critical error on this website.";
+		$message = "There has been a critical error on this website.";
 
 		/**
 		 * @var string $file
