@@ -290,7 +290,7 @@ class Runner {
 	 * @return string
 	 */
 	public function get_packages_dir_path() {
-		$packages_dir = (string) getenv( 'WP_CLI_PACKAGES_DIR' );
+		$packages_dir = (string) Utils\get_env_or_config( 'WP_CLI_PACKAGES_DIR' );
 		if ( $packages_dir ) {
 			$packages_dir = Utils\trailingslashit( $packages_dir );
 		} else {
