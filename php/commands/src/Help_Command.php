@@ -128,6 +128,15 @@ class Help_Command extends WP_CLI_Command {
 			$pager = Utils\is_windows() ? 'more' : 'less -R';
 		}
 
+		// If pager doesn't support ANSI colors, strip them from output.
+		// Common pagers that don't support colors: more, pg, cat, and less without -R.
+		// Pagers with color support typically use -R flag (less -R, most -R).
+		if ( ! preg_match( '/(-R|--RAW-CONTROL-CHARS|--raw-control-chars)/i', $pager )
+			&& preg_match( '/(^|[\s\/\\\\])(less|more|pg|cat)(\s|$)/i', $pager ) ) {
+			$out = \cli\Colors::decolorize( $out );
+			WP_CLI::debug( 'Stripping ANSI color codes for pager without color support: ' . $pager, 'help' );
+		}
+
 		// For Windows 7 need to set code page to something other than Unicode (65001) to get around "Not enough memory." error with `more.com` on PHP 7.1+.
 		if ( 'more' === $pager && defined( 'PHP_WINDOWS_VERSION_MAJOR' ) && PHP_WINDOWS_VERSION_MAJOR < 10 ) {
 			// Note will also apply to Windows 8 (see https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832.aspx) but probably harmless anyway.
