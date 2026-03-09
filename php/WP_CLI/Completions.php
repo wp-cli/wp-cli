@@ -30,7 +30,7 @@ class Completions {
 
 		// Last word is an incomplete `--url` parameter
 		if ( 0 === strpos( $this->cur_word, '--url=' ) ) {
-			$parameter      = explode( '=', $this->cur_word );
+			$parameter      = explode( '=', $this->cur_word, 2 );
 			$this->cur_word = isset( $parameter[1] ) ? $parameter[1] : '';
 			$urls           = $this->get_network_urls();
 
