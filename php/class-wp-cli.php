@@ -1377,6 +1377,8 @@ class WP_CLI {
 	 * @param bool $return_detailed Whether to return an exit status (default) or detailed execution results.
 	 * @param array $runtime_args Override one or more global args (path,url,user,allow-root)
 	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
+	 * 
+	 * @phpstan-return ($return_detailed is false ? int : ProcessRun)
 	 */
 	public static function launch_self( $command, $args = [], $assoc_args = [], $exit_on_error = true, $return_detailed = false, $runtime_args = [] ) {
 		$reused_runtime_args = [

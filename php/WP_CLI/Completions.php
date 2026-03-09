@@ -217,7 +217,12 @@ class Completions {
 
 		$cached_urls = $cache->read( $cache_key, 300 ); // 5 minutes TTL
 		if ( $cached_urls ) {
-			return json_decode( $cached_urls, true );
+			$cached_urls = json_decode( $cached_urls, true );
+
+			/**
+			 * @var string[] $cached_urls
+			 */
+			return $cached_urls;
 		}
 
 		$result = WP_CLI::launch_self(
@@ -236,7 +241,7 @@ class Completions {
 			$urls = array_filter( explode( "\n", $result->stdout ) );
 		}
 
-		$cache->write( $cache_key, json_encode( $urls ) );
+		$cache->write( $cache_key, (string) json_encode( $urls ) );
 
 		return $urls;
 	}
