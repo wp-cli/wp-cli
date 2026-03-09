@@ -510,7 +510,25 @@ class UtilsTest extends TestCase {
 			[ '/www/path/////', '/www/path/' ],
 			[ '/www/path', '/www/path' ],
 			[ '/www/path', '/www/path' ],
+			// PHP stream wrapper paths.
+			[ 'phar:///path/to/file.phar/www/path', 'phar:///path/to/file.phar/www/path' ],
+			[ 'php://stdin', 'php://stdin' ],
+			[ 'phar:///path/to/file.phar/some//dir', 'phar:///path/to/file.phar/some/dir' ],
+			[ 'phar:///path/to/file.phar/some\\dir/file', 'phar:///path/to/file.phar/some/dir/file' ],
+			[ 'PHAR:///path/to/file.phar/some//dir', 'PHAR:///path/to/file.phar/some/dir' ],
+			[ 'PhAr:///path/to/file.phar/some\\dir/file', 'PhAr:///path/to/file.phar/some/dir/file' ],
 		];
+	}
+
+	public function testIsStream(): void {
+		$this->assertTrue( Utils\is_stream( 'phar:///path/to/file.phar' ) );
+		$this->assertTrue( Utils\is_stream( 'php://stdin' ) );
+		$this->assertTrue( Utils\is_stream( 'PHAR:///path/to/file.phar' ) );
+		$this->assertTrue( Utils\is_stream( 'PhAr:///path/to/file.phar' ) );
+		$this->assertFalse( Utils\is_stream( '/www/path' ) );
+		$this->assertFalse( Utils\is_stream( 'C:/www/path' ) );
+		$this->assertFalse( Utils\is_stream( '' ) );
+		$this->assertFalse( Utils\is_stream( 'nonexistent_wrapper://path' ) );
 	}
 
 	public function testNormalizeEols(): void {
