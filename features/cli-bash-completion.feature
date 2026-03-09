@@ -348,24 +348,54 @@ Feature: `wp cli completions` tasks
     And I run `wp site create --slug=waldo`
 
     # show all matches
-    When I run `wp cli completions --line="wp plugin list --url=https://example.com/fo" --point=100`
+    When I run `wp cli completions --line="wp plugin list --url=fo" --point=100`
     Then STDOUT should contain:
       """
-      https://example.com/foo/
+      foo
       """
     And STDOUT should contain:
       """
-      https://example.com/foot/
+      foot
       """
     And STDOUT should contain:
       """
-      https://example.com/football/
+      football
       """
 
     When I run `wp cli completions --line="wp plugin list --url=https://example.com/bar" --point=100`
     Then STDOUT should contain:
       """
       https://example.com/bar/
+      """
+
+  Scenario: Bash Completion for global --url parameter in subdomain installation
+    Given a WP multisite subdomain installation
+    And I run `wp site create --slug=foo`
+    And I run `wp site create --slug=foot`
+    And I run `wp site create --slug=football`
+    And I run `wp site create --slug=bar`
+    And I run `wp site create --slug=baz`
+    And I run `wp site create --slug=waldo`
+
+    # show all matches
+    When I run `wp cli completions --line="wp plugin list --url=fo" --point=100`
+    Then STDOUT should contain:
+      """
+      foo.example.com/
+      """
+    And STDOUT should contain:
+      """
+      foot.example.com/
+      """
+    And STDOUT should contain:
+      """
+      football.example.com/
+      """
+
+    When I run `wp cli completions --line="wp plugin list --url=http://bar" --point=100`
+    Then STDOUT should contain:
+      """
+      http://bar.example.com/
       """
 
   Scenario: Bash Completion for flag values with enum options

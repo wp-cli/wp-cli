@@ -34,11 +34,24 @@ class Completions {
 			$this->cur_word = isset( $parameter[1] ) ? $parameter[1] : '';
 			$urls           = $this->get_network_urls();
 
+			// So we can remove the network URL from the subdirectory
+			$home_url = WP_CLI::runcommand(
+				'option get home',
+				[
+					'return' => 'stdout',
+				]
+			);
+
 			foreach ( $urls as $url ) {
 				$this->add( $url );
 				$url_no_scheme = preg_replace( '#^https?://#', '', $url );
 				if ( $url_no_scheme && $url_no_scheme !== $url ) {
 					$this->add( $url_no_scheme );
+				}
+
+				$url_no_home = str_replace( Utils\trailingslashit( $home_url ), '', $url );
+				if ( $url_no_home !== $url ) {
+					$this->add( $url_no_home );
 				}
 			}
 
@@ -215,34 +228,30 @@ class Completions {
 		$wp_root   = WP_CLI::get_runner()->find_wp_root();
 		$cache_key = sprintf( 'network-urls:%s', md5( $wp_root ) );
 
-		$cached_urls = $cache->read( $cache_key, 300 ); // 5 minutes TTL
-		if ( $cached_urls ) {
-			$cached_urls = json_decode( $cached_urls, true );
+		$urls = $cache->read( $cache_key, 300 ); // 5 minutes TTL
+		if ( $urls ) {
+			$urls = json_decode( $urls, true );
 
 			/**
-			 * @var string[] $cached_urls
+			 * @var string[] $urls
 			 */
-			return $cached_urls;
+			return $urls;
 		}
 
-		$result = WP_CLI::launch_self(
+		$result = WP_CLI::runcommand(
 			'site list',
-			[],
 			[
-				'field'  => 'url',
-				'number' => -1,
-			],
-			false,
-			true
+				'return'       => 'stdout',
+				'command_args' => [ '--field=url', '--number=-1', '--format=json' ],
+			]
 		);
 
-		$urls = [];
-		if ( 0 === $result->return_code ) {
-			$urls = array_filter( explode( "\n", $result->stdout ) );
-		}
+		$cache->write( $cache_key, $result );
 
-		$cache->write( $cache_key, (string) json_encode( $urls ) );
-
+		/**
+		 * @var string[] $urls
+		 */
+		$urls = json_decode( $result );
 		return $urls;
 	}
 
