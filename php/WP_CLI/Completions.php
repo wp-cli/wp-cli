@@ -251,7 +251,7 @@ class Completions {
 		/**
 		 * @var string[] $urls
 		 */
-		$urls = json_decode( $result );
+		$urls = json_decode( $result, true );
 		return $urls;
 	}
 
