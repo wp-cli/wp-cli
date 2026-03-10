@@ -84,4 +84,59 @@ class ConfiguratorTest extends TestCase {
 		// Restore.
 		WP_CLI::set_logger( $prev_logger );
 	}
+
+	public function testExtractAssocMultipleValues(): void {
+		$args = Configurator::extract_assoc( [ 'list', '--status=active', '--status=parent' ] );
+
+		$this->assertCount( 1, $args[0] );
+		$this->assertCount( 2, $args[1] );
+
+		$this->assertEquals( 'list', $args[0][0] );
+
+		$this->assertEquals( 'status', $args[1][0][0] );
+		$this->assertEquals( 'active', $args[1][0][1] );
+
+		$this->assertEquals( 'status', $args[1][1][0] );
+		$this->assertEquals( 'parent', $args[1][1][1] );
+	}
+
+	public function testParseArgsAggregatesMultipleValues(): void {
+		$argv = [ 'list', '--status=active', '--status=parent', '--field=name' ];
+
+		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+		$parsed       = $configurator->parse_args( $argv );
+
+		// Positional arguments should remain unchanged.
+		$this->assertSame( [ 'list' ], $parsed[0] );
+
+		// Repeated flags should be aggregated into an array.
+		$this->assertArrayHasKey( 'status', $parsed[1] );
+		$this->assertSame( [ 'active', 'parent' ], $parsed[1]['status'] );
+
+		// Non-repeating parameters should collapse to their last value.
+		$this->assertArrayHasKey( 'field', $parsed[1] );
+		$this->assertSame( 'name', $parsed[1]['field'] );
+	}
+
+	public function testParseArgsBooleanFlagsUseLastWins(): void {
+		$argv  = [ 'command', '--verbose', '--no-verbose', '--verbose' ];
+		$argv2 = [ 'command', '--verbose', '--verbose', '--no-verbose' ];
+
+		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+		$parsed       = $configurator->parse_args( $argv );
+
+		// Positional arguments should remain unchanged.
+		$this->assertSame( [ 'command' ], $parsed[0] );
+
+		// The last --verbose should win, so verbose should be true.
+		$this->assertArrayHasKey( 'verbose', $parsed[1] );
+		$this->assertTrue( $parsed[1]['verbose'] );
+
+		$parsed2     = $configurator->parse_args( $argv2 );
+		$assoc_args2 = $parsed2[1];
+
+		// The last --no-verbose should win, so verbose should be false.
+		$this->assertArrayHasKey( 'verbose', $assoc_args2 );
+		$this->assertFalse( $assoc_args2['verbose'] );
+	}
 }
