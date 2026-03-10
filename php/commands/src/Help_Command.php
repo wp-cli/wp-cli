@@ -188,6 +188,10 @@ class Help_Command extends WP_CLI_Command {
 
 		$pager = getenv( 'PAGER' );
 		// if '' we should assume that the user has explicitly disabled the pager by setting `PAGER=`
+		if ( '' === $pager ) {
+			WP_CLI::line( $out );
+			return 0;
+		}
 		if ( false === $pager ) {
 			$pager = self::locate_pager();
 		}
