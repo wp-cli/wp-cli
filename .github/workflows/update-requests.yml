@@ -5,6 +5,9 @@ on:
     - cron: '0 3 * * 1' # Run every Monday at 03:00 UTC.
   workflow_dispatch:
 
+concurrency:
+  group: update-requests
+  cancel-in-progress: true
 permissions:
   contents: write
   pull-requests: write
