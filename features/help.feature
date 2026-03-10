@@ -1287,3 +1287,112 @@ Feature: Get help about WP-CLI commands
       | func       |
       | proc_open  |
       | proc_close |
+
+  Scenario: Multi-paragraph description appears in DESCRIPTION section
+    Given a WP installation
+    And a wp-content/plugins/test-cli/command.php file:
+      """
+      <?php
+      // Plugin Name: Test CLI Multi-line Description
+
+      class Test_Multiline_Description extends WP_CLI_Command {
+        /**
+         * Clear the Cloudflare cache. Default: purge everything. Uses $CLOUDFLARE_API_KEY environment variable.
+         *
+         * API documentation: https://developers.cloudflare.com/api/resources/cache/
+         *
+         * ## OPTIONS
+         *
+         * <zone_id>
+         * : Cloudflare zone ID.
+         *
+         * ## EXAMPLES
+         *
+         *     # Clear the cloudflare cache for a domain.
+         *     wp test-multiline clear-cloudflare-cache 12345
+         *     Success: The Cloudflare cache has been cleared.
+         *
+         * @subcommand clear-cloudflare-cache
+         * @alias clear_cloudflare_cache
+         */
+        public function clear_cloudflare_cache( $args ) {}
+      }
+
+      WP_CLI::add_command( 'test-multiline', 'Test_Multiline_Description' );
+      """
+    And I run `wp plugin activate test-cli`
+
+    When I run `wp help test-multiline clear-cloudflare-cache`
+    Then STDOUT should contain:
+      """
+      DESCRIPTION
+
+        Clear the Cloudflare cache. Default: purge everything. Uses
+        $CLOUDFLARE_API_KEY environment variable.
+
+        API documentation: https://developers.cloudflare.com/api/resources/cache/
+
+      SYNOPSIS
+      """
+    And STDOUT should contain:
+      """
+      ALIAS
+
+        clear_cloudflare_cache
+
+      OPTIONS
+      """
+
+  Scenario: Multi-paragraph description appears in DESCRIPTION section without alias
+    Given a WP installation
+    And a wp-content/plugins/test-cli/command.php file:
+      """
+      <?php
+      // Plugin Name: Test CLI Multi-line Description
+
+      class Test_Multiline_No_Alias extends WP_CLI_Command {
+        /**
+         * Clear the Cloudflare cache. Default: purge everything. Uses $CLOUDFLARE_API_KEY environment variable.
+         *
+         * API documentation: https://developers.cloudflare.com/api/resources/cache/
+         *
+         * ## OPTIONS
+         *
+         * <zone_id>
+         * : Cloudflare zone ID.
+         *
+         * ## EXAMPLES
+         *
+         *     # Clear the cloudflare cache for a domain.
+         *     wp test-multiline noalias 12345
+         *     Success: The Cloudflare cache has been cleared.
+         */
+        public function noalias( $args ) {}
+      }
+
+      WP_CLI::add_command( 'test-multiline', 'Test_Multiline_No_Alias' );
+      """
+    And I run `wp plugin activate test-cli`
+
+    When I run `wp help test-multiline noalias`
+    Then STDOUT should contain:
+      """
+      DESCRIPTION
+
+        Clear the Cloudflare cache. Default: purge everything. Uses
+        $CLOUDFLARE_API_KEY environment variable.
+
+        API documentation: https://developers.cloudflare.com/api/resources/cache/
+
+      SYNOPSIS
+      """
+    And STDOUT should not contain:
+      """
+      ALIAS
+      """
+    And STDOUT should contain:
+      """
+      OPTIONS
+
+        <zone_id>
+      """

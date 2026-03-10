@@ -189,3 +189,399 @@ Feature: Format output
       |         |          | banana     |
       |         |          | mango      |
       | 1       | bar      | br         |
+
+  Scenario: Custom fields that exist in some items but not others
+    Given an empty directory
+    And a custom-fields.php file:
+      """
+      <?php
+      $items = array(
+        array(
+          'name'   => 'Session 1',
+          'custom' => 123,
+          'login'  => '2018-09-15',
+        ),
+        array(
+          'name'   => 'Session 2',
+          'login'  => '2018-09-16',
+        ),
+        array(
+          'name'   => 'Session 3',
+          'custom' => 456,
+          'login'  => '2018-09-17',
+        ),
+      );
+      $assoc_args = array( 'format' => 'table', 'fields' => 'name,custom,login' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom', 'login' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file custom-fields.php --skip-wordpress`
+    Then STDOUT should be a table containing rows:
+      | name      | custom | login      |
+      | Session 1 | 123    | 2018-09-15 |
+      | Session 2 |        | 2018-09-16 |
+      | Session 3 | 456    | 2018-09-17 |
+
+  Scenario: Custom fields in CSV format with missing values
+    Given an empty directory
+    And a custom-fields-csv.php file:
+      """
+      <?php
+      $items = array(
+        array(
+          'name'   => 'Session 1',
+          'custom' => 123,
+        ),
+        array(
+          'name'   => 'Session 2',
+        ),
+        array(
+          'name'   => 'Session 3',
+          'custom' => 456,
+        ),
+      );
+      $assoc_args = array( 'format' => 'csv', 'fields' => 'name,custom' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file custom-fields-csv.php --skip-wordpress`
+    Then STDOUT should be CSV containing:
+      | name      | custom |
+      | Session 1 | 123    |
+      | Session 2 |        |
+      | Session 3 | 456    |
+
+  Scenario: Custom fields in JSON format with missing values
+    Given an empty directory
+    And a custom-fields-json.php file:
+      """
+      <?php
+      $items = array(
+        array(
+          'name'   => 'Session 1',
+          'custom' => 123,
+        ),
+        array(
+          'name'   => 'Session 2',
+        ),
+        array(
+          'name'   => 'Session 3',
+          'custom' => 456,
+        ),
+      );
+      $assoc_args = array( 'format' => 'json', 'fields' => 'name,custom' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file custom-fields-json.php --skip-wordpress`
+    Then STDOUT should be JSON containing:
+      """
+      [{"name":"Session 1","custom":123},{"name":"Session 2","custom":null},{"name":"Session 3","custom":456}]
+      """
+
+  Scenario: Custom fields in YAML format with missing values
+    Given an empty directory
+    And a custom-fields-yaml.php file:
+      """
+      <?php
+      $items = array(
+        array(
+          'name'   => 'Session 1',
+          'custom' => 123,
+        ),
+        array(
+          'name'   => 'Session 2',
+        ),
+        array(
+          'name'   => 'Session 3',
+          'custom' => 456,
+        ),
+      );
+      $assoc_args = array( 'format' => 'yaml', 'fields' => 'name,custom' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file custom-fields-yaml.php --skip-wordpress`
+    Then STDOUT should be YAML containing:
+      """
+      ---
+      -
+        name: 'Session 1'
+        custom: 123
+      -
+        name: 'Session 2'
+        custom: ~
+      -
+        name: 'Session 3'
+        custom: 456
+      """
+
+  Scenario: Warning when field doesn't exist in any items
+    Given an empty directory
+    And a no-field.php file:
+      """
+      <?php
+      $items = array(
+        array(
+          'name'   => 'Session 1',
+          'login'  => '2018-09-15',
+        ),
+        array(
+          'name'   => 'Session 2',
+          'login'  => '2018-09-16',
+        ),
+      );
+      $assoc_args = array( 'format' => 'table', 'fields' => 'name,nonexistent,login' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'nonexistent', 'login' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I try `wp eval-file no-field.php --skip-wordpress`
+    Then STDERR should contain:
+      """
+      Warning: Field not found in any item: nonexistent.
+      """
+    And STDOUT should be a table containing rows:
+      | name      | nonexistent | login      |
+      | Session 1 |             | 2018-09-15 |
+      | Session 2 |             | 2018-09-16 |
+
+  Scenario: No warning for missing field with empty list
+    Given an empty directory
+    And an empty-list-field.php file:
+      """
+      <?php
+      $items = array();
+      $assoc_args = array( 'format' => 'json', 'field' => 'name' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file empty-list-field.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      []
+      """
+    And STDERR should be empty
+
+  Scenario: No warning for missing fields with empty list
+    Given an empty directory
+    And an empty-list-fields.php file:
+      """
+      <?php
+      $items = array();
+      $assoc_args = array( 'format' => 'json', 'fields' => 'name,login' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'login' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file empty-list-fields.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      []
+      """
+    And STDERR should be empty
+
+  Scenario: Display ordered output for an object item
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $custom_obj = (object) [
+        'name'    => 'Custom Name',
+        'author'  => 'John Doe',
+        'version' => '1.0'
+      ];
+
+      $assoc_args = [
+        'format' => 'csv',
+        'fields' => [ 'version', 'author', 'name' ],
+      ];
+
+      $formatter = new WP_CLI\Formatter( $assoc_args );
+      $formatter->display_item( $custom_obj );
+      """
+
+    When I run `wp eval-file file.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      version,1.0
+      author,"John Doe"
+      name,"Custom Name"
+      """
+
+  Scenario: Display ordered output for an array item
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $custom_obj = [
+        'name'    => 'Custom Name',
+        'author'  => 'John Doe',
+        'version' => '1.0'
+      ];
+
+      $assoc_args = [
+        'format' => 'csv',
+        'fields' => [ 'version', 'author', 'name' ],
+      ];
+
+      $formatter = new WP_CLI\Formatter( $assoc_args );
+      $formatter->display_item( $custom_obj );
+      """
+
+    When I run `wp eval-file file.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      version,1.0
+      author,"John Doe"
+      name,"Custom Name"
+      """
+
+  Scenario: Table alignment with right and left aligned columns
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $items = array(
+          array(
+              'key'   => 'A',
+              'value' => '100',
+          ),
+          array(
+              'key'   => 'AB',
+              'value' => '2000',
+          ),
+          array(
+              'key'   => 'ABC',
+              'value' => '30',
+          ),
+      );
+      // 0 = right, 1 = left
+      $assoc_args = array(
+          'format' => 'table',
+          'alignments' => array( 'key' => 0, 'value' => 1 ),
+      );
+      $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'key', 'value' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `SHELL_PIPE=0 wp eval-file file.php --skip-wordpress`
+    Then STDOUT should strictly be:
+      """
+      +-----+-------+
+      | key | value |
+      +-----+-------+
+      |   A | 100   |
+      |  AB | 2000  |
+      | ABC | 30    |
+      +-----+-------+
+      """
+
+  Scenario: Table alignment with center aligned columns
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $items = array(
+          array(
+              'key'   => 'A',
+              'value' => '1',
+          ),
+          array(
+              'key'   => 'ABC',
+              'value' => '123',
+          ),
+      );
+      // 2 = center
+      $assoc_args = array(
+          'format' => 'table',
+          'alignments' => array( 'key' => 2, 'value' => 2 ),
+      );
+      $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'key', 'value' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `SHELL_PIPE=0 wp eval-file file.php --skip-wordpress`
+    Then STDOUT should strictly be:
+      """
+      +-----+-------+
+      | key | value |
+      +-----+-------+
+      |  A  |   1   |
+      | ABC |  123  |
+      +-----+-------+
+      """
+
+  Scenario: Table truncates overly large values
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $large_value = str_repeat( 'x', 3000 ); // Create a 3000 character string
+      $items = array(
+        (object) array(
+          'id'    => 1,
+          'value' => 'short',
+        ),
+        (object) array(
+          'id'    => 2,
+          'value' => $large_value,
+        ),
+        (object) array(
+          'id'    => 3,
+          'value' => 'another short',
+        ),
+      );
+      $assoc_args = array();
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'id', 'value' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file file.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      short
+      """
+    And STDOUT should contain:
+      """
+      xxx...
+      """
+    And STDOUT should contain:
+      """
+      another short
+      """
+    And STDOUT should not contain:
+      """
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      """
+
+  Scenario: Format output using prefix without warnings
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $items = array(
+          array(
+              'post_type' => 'page',
+              'post_name' => 'sample-page',
+          ),
+      );
+      $assoc_args = array(
+          'format' => 'table',
+      );
+      // 'post' prefix should map 'type' to 'post_type' and 'name' to 'post_name'
+      $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'type', 'name' ), 'post' );
+      $formatter->display_item( $items[0] );
+      """
+
+    When I run `wp eval-file file.php --skip-wordpress`
+    Then STDOUT should be a table containing rows:
+      | Field     | Value       |
+      | post_type | page        |
+      | post_name | sample-page |
+    And STDERR should be empty
