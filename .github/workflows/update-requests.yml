@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Get the latest Requests release tag
         id: latest_release
@@ -80,7 +80,7 @@ jobs:
           echo "All modified files are within the allowed paths."
       - name: Create pull request
         if: steps.latest_release.outputs.tag != steps.current_version.outputs.tag
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "Update bundled Requests library to ${{ steps.latest_release.outputs.tag }}"
           branch: "update/requests-${{ steps.latest_release.outputs.tag }}"
