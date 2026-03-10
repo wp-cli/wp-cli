@@ -137,7 +137,7 @@ class Help_Command extends WP_CLI_Command {
 			$detector = 'command -v';
 		}
 
-		$result = Process::create( "$detector $binary", null, null )->run();
+		$result = Process::create( $detector . ' ' . escapeshellarg( $binary ), null, null )->run();
 
 		if ( 0 !== $result->return_code ) {
 			// We could not reliably determine that the binary exists
