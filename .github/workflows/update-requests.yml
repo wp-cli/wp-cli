@@ -22,8 +22,10 @@ jobs:
 
       - name: Get the latest Requests release tag
         id: latest_release
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          LATEST_TAG=$(curl -sf "https://api.github.com/repos/WordPress/Requests/releases/latest" | jq -r '.tag_name')
+          LATEST_TAG=$(gh api repos/WordPress/Requests/releases/latest --jq '.tag_name')
           if [[ -z "${LATEST_TAG}" || "${LATEST_TAG}" == "null" ]]; then
             echo "Failed to retrieve latest Requests release tag." >&2
             exit 1
