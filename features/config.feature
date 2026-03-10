@@ -771,7 +771,7 @@ Feature: Have a config file
 
   Scenario: Tilde expansion in config file path
     Given a WP installation in 'subdir'
-    And I run `bash -c 'ln -s $(pwd)/subdir $HOME/test-wp-config-tilde'`
+    And I run `bash -c "ln -s $(pwd)/subdir $HOME/test-wp-config-tilde"`
     And a wp-cli.yml file:
       """
       path: ~/test-wp-config-tilde
