@@ -901,9 +901,73 @@ Feature: Have a config file
       Cache max size: 104857600
       """
 
-  Scenario: Custom system config path via WP_CLI_SYSTEM_SETTINGS_PATH
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_SKIP_PROMPT
     Given an empty directory
-    And a system-config.yml file:
+    And a test-skip-prompt.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-skip-prompt', function() {
+          $skip_prompt = WP_CLI\Utils\get_env_or_config('WP_CLI_SKIP_PROMPT');
+          WP_CLI::log( 'WP_CLI_SKIP_PROMPT: ' . $skip_prompt );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_SKIP_PROMPT: "yes"
+      """
+
+    When I run `wp --require=test-skip-prompt.php test-skip-prompt`
+    Then STDOUT should contain:
+      """
+      WP_CLI_SKIP_PROMPT: yes
+      """
+
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_AUTO_UPDATE_PROMPT
+    Given an empty directory
+    And a test-auto-update.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-auto-update', function() {
+          $auto_update = WP_CLI\Utils\get_env_or_config('WP_CLI_AUTO_UPDATE_PROMPT');
+          WP_CLI::log( 'WP_CLI_AUTO_UPDATE_PROMPT: ' . $auto_update );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_AUTO_UPDATE_PROMPT: "no"
+      """
+
+    When I run `wp --require=test-auto-update.php test-auto-update`
+    Then STDOUT should contain:
+      """
+      WP_CLI_AUTO_UPDATE_PROMPT: no
+      """
+
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_AUTOCORRECT
+    Given an empty directory
+    And a test-autocorrect.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-autocorrect', function() {
+          $autocorrect = WP_CLI\Utils\get_env_or_config('WP_CLI_AUTOCORRECT');
+          WP_CLI::log( 'WP_CLI_AUTOCORRECT: ' . $autocorrect );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_AUTOCORRECT: "1"
+      """
+
+    When I run `wp --require=test-autocorrect.php test-autocorrect`
+    Then STDOUT should contain:
+      """
+      WP_CLI_AUTOCORRECT: 1
+      """
+
+  Scenario: Custom system config path via WP_CLI_SYSTEM_SETTINGS_PATH
       """
       disabled_commands:
         - eval
