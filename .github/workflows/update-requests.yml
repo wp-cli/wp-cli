@@ -1,0 +1,93 @@
+name: Update Requests library
+
+on:
+  schedule:
+    - cron: '0 3 * * 1' # Run every Monday at 03:00 UTC.
+  workflow_dispatch:
+
+concurrency:
+  group: update-requests
+  cancel-in-progress: true
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-requests:
+    name: Check and update Requests library
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Get the latest Requests release tag
+        id: latest_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LATEST_TAG=$(gh api repos/WordPress/Requests/releases/latest --jq '.tag_name')
+          if [[ -z "${LATEST_TAG}" || "${LATEST_TAG}" == "null" ]]; then
+            echo "Failed to retrieve latest Requests release tag." >&2
+            exit 1
+          fi
+          echo "tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Get the current Requests version from install script
+        id: current_version
+        run: |
+          CURRENT_TAG=$(grep -oP 'REQUESTS_TAG="\K[^"]+' utils/install-requests.sh)
+          if [[ -z "${CURRENT_TAG}" ]]; then
+            echo "Failed to determine current Requests version from utils/install-requests.sh." >&2
+            exit 1
+          fi
+          echo "tag=${CURRENT_TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Update install script and bundle if versions differ
+        if: steps.latest_release.outputs.tag != steps.current_version.outputs.tag
+        env:
+          LATEST_TAG: ${{ steps.latest_release.outputs.tag }}
+          CURRENT_TAG: ${{ steps.current_version.outputs.tag }}
+        run: |
+          sed -i "s/REQUESTS_TAG=\"${CURRENT_TAG}\"/REQUESTS_TAG=\"${LATEST_TAG}\"/" utils/install-requests.sh
+          grep -q "REQUESTS_TAG=\"${LATEST_TAG}\"" utils/install-requests.sh || { echo "Failed to update REQUESTS_TAG in install script." >&2; exit 1; }
+          bash utils/install-requests.sh
+
+      - name: Validate modified files
+        if: steps.latest_release.outputs.tag != steps.current_version.outputs.tag
+        run: |
+          mapfile -t changed_files < <(git diff --name-only)
+
+          if [ "${#changed_files[@]}" -eq 0 ]; then
+            echo "No files changed by update; nothing to validate."
+            exit 0
+          fi
+
+          allowed_regex='^(utils/install-requests\.sh|bundle/rmccue/requests(/|$))'
+          disallowed=()
+
+          for f in "${changed_files[@]}"; do
+            if ! [[ "$f" =~ $allowed_regex ]]; then
+              disallowed+=("$f")
+            fi
+          done
+
+          if [ "${#disallowed[@]}" -ne 0 ]; then
+            echo "Error: Unexpected files were modified by utils/install-requests.sh:"
+            printf '  %s\n' "${disallowed[@]}"
+            exit 1
+          fi
+
+          echo "All modified files are within the allowed paths."
+      - name: Create pull request
+        if: steps.latest_release.outputs.tag != steps.current_version.outputs.tag
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "Update bundled Requests library to ${{ steps.latest_release.outputs.tag }}"
+          branch: "update/requests-${{ steps.latest_release.outputs.tag }}"
+          delete-branch: true
+          title: "Update bundled Requests library to ${{ steps.latest_release.outputs.tag }}"
+          body: |
+            This automated PR updates the bundled [Requests](https://github.com/WordPress/Requests) library from `${{ steps.current_version.outputs.tag }}` to `${{ steps.latest_release.outputs.tag }}`.
+
+            Please review the [Requests changelog](https://github.com/WordPress/Requests/releases/tag/${{ steps.latest_release.outputs.tag }}) before merging.
+          labels: "Requests"
