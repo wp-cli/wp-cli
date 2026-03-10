@@ -52,7 +52,7 @@ Feature: Utilities that do NOT depend on WordPress code
   @require-mysql
   Scenario: Check that `Utils\run_mysql_command()` can return data and errors if requested
     Given an empty directory
-    When I run `wp --skip-wordpress eval "list( $stdout, $stderr, $exit_code ) = WP_CLI\Utils\run_mysql_command( \"{MYSQL_BINARY} --no-defaults\", [ \"user\" => \"{DB_USER}\", \"pass\" => \"{DB_PASSWORD}\", \"host\" => \"{DB_HOST}\", \"execute\" => \"SHOW DATABASES;\" ], null, false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );"`
+    When I run `wp --skip-wordpress eval "list( \$stdout, \$stderr, \$exit_code ) = WP_CLI\\Utils\\run_mysql_command( \"{MYSQL_BINARY} --no-defaults\", [ \"user\" => \"{DB_USER}\", \"pass\" => \"{DB_PASSWORD}\", \"host\" => \"{DB_HOST}\", \"execute\" => \"SHOW DATABASES;\" ], null, false ); fwrite( STDOUT, strtoupper( \$stdout ) ); fwrite( STDERR, strtoupper( \$stderr ) );"`
     Then STDOUT should not contain:
       """
       Database
@@ -71,7 +71,7 @@ Feature: Utilities that do NOT depend on WordPress code
       """
     And STDERR should be empty
 
-    When I try `wp --skip-wordpress eval "list( $stdout, $stderr, $exit_code ) = WP_CLI\Utils\run_mysql_command( \"{MYSQL_BINARY} --no-defaults\", [ \"user\" => \"{DB_USER}\", \"pass\" => \"{DB_PASSWORD}\", \"host\" => "{DB_HOST}", \"execute\" => \"broken query\" ], null, false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );"`
+    When I try `wp --skip-wordpress eval "list( \$stdout, \$stderr, \$exit_code ) = WP_CLI\\Utils\\run_mysql_command( \"{MYSQL_BINARY} --no-defaults\", [ \"user\" => \"{DB_USER}\", \"pass\" => \"{DB_PASSWORD}\", \"host\" => "{DB_HOST}", \"execute\" => \"broken query\" ], null, false ); fwrite( STDOUT, strtoupper( \$stdout ) ); fwrite( STDERR, strtoupper( \$stderr ) );"`
     Then STDOUT should be empty
     And STDERR should not contain:
       """
