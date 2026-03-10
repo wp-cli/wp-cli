@@ -76,7 +76,7 @@ return [
 	'context'           => [
 		'runtime' => '=<context>',
 		'file'    => '<context>',
-		'default' => 'cli',
+		'default' => 'auto',
 		'desc'    => 'Load WordPress in a given context.',
 	],
 
@@ -87,9 +87,10 @@ return [
 	],
 
 	'disabled_commands' => [
-		'file'    => '<list>',
-		'default' => [],
-		'desc'    => '(Sub)commands to disable.',
+		'file'     => '<list>',
+		'default'  => [],
+		'multiple' => true,
+		'desc'     => '(Sub)commands to disable.',
 	],
 
 	'color'             => [
