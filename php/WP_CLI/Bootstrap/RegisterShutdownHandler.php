@@ -2,14 +2,16 @@
 
 namespace WP_CLI\Bootstrap;
 
+use WP_CLI\ShutdownHandler;
+
 /**
- * Class LoadDispatcher.
+ * Class RegisterShutdownHandler.
  *
- * Loads the dispatcher that will dispatch command names to file locations.
+ * Registers the shutdown handler to detect incomplete execution and suggest workarounds.
  *
  * @package WP_CLI\Bootstrap
  */
-final class LoadDispatcher implements BootstrapStep {
+final class RegisterShutdownHandler implements BootstrapStep {
 
 	/**
 	 * Process this single bootstrapping step.
@@ -19,7 +21,7 @@ final class LoadDispatcher implements BootstrapStep {
 	 * @return BootstrapState Modified state to pass to the next step.
 	 */
 	public function process( BootstrapState $state ) {
-		require_once WP_CLI_ROOT . '/php/dispatcher.php';
+		ShutdownHandler::register();
 
 		return $state;
 	}
