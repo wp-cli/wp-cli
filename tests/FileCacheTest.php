@@ -142,6 +142,11 @@ class FileCacheTest extends TestCase {
 	 * @see https://github.com/wp-cli/wp-cli/pull/5947
 	 */
 	public function test_import_do_not_use_cache_file_cannot_be_read(): void {
+		// `chmod()` doesn't work on Windows.
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'chmod() does not restrict file read access on Windows.' );
+		}
+
 		$max_size  = 32;
 		$ttl       = 60;
 		$cache_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache', true );

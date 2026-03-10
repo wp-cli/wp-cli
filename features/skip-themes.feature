@@ -7,7 +7,7 @@ Feature: Skipping themes
     And I try `wp theme install twentysixteen`
     And I try `wp theme install twentyseventeen --activate`
 
-    When I run `wp eval 'var_export( function_exists( "twentyseventeen_body_classes" ) );'`
+    When I run `wp eval "var_export( function_exists( 'twentyseventeen_body_classes' ) );"`
     Then STDOUT should be:
       """
       true
@@ -15,7 +15,7 @@ Feature: Skipping themes
     And STDERR should be empty
 
     # The specified theme should be skipped
-    When I run `wp --skip-themes=twentyseventeen eval 'var_export( function_exists( "twentyseventeen_body_classes" ) );'`
+    When I run `wp --skip-themes=twentyseventeen eval "var_export( function_exists( 'twentyseventeen_body_classes' ) );"`
     Then STDOUT should be:
       """
       false
@@ -23,7 +23,7 @@ Feature: Skipping themes
     And STDERR should be empty
 
     # All themes should be skipped
-    When I run `wp --skip-themes eval 'var_export( function_exists( "twentyseventeen_body_classes" ) );'`
+    When I run `wp --skip-themes eval "var_export( function_exists( 'twentyseventeen_body_classes' ) );"`
     Then STDOUT should be:
       """
       false
@@ -31,7 +31,7 @@ Feature: Skipping themes
     And STDERR should be empty
 
     # Skip another theme
-    When I run `wp --skip-themes=twentysixteen eval 'var_export( function_exists( "twentyseventeen_body_classes" ) );'`
+    When I run `wp --skip-themes=twentysixteen eval "var_export( function_exists( 'twentyseventeen_body_classes' ) );"`
     Then STDOUT should be:
       """
       true
@@ -47,7 +47,7 @@ Feature: Skipping themes
     And STDERR should be empty
 
     # Skip several themes
-    When I run `wp --skip-themes=twentysixteen,twentyseventeen eval 'var_export( function_exists( "twentyseventeen_body_classes" ) );'`
+    When I run `wp --skip-themes=twentysixteen,twentyseventeen eval "var_export( function_exists( 'twentyseventeen_body_classes' ) );"`
     Then STDOUT should be:
       """
       false
@@ -59,13 +59,13 @@ Feature: Skipping themes
     And I run `wp theme install moina moina-blog`
 
     When I run `wp theme activate moina`
-    And I run `wp eval 'var_export( function_exists( "moina_setup" ) );'`
+    And I run `wp eval "var_export( function_exists( 'moina_setup' ) );"`
     Then STDOUT should be:
       """
       true
       """
 
-    When I run `wp --skip-themes=moina eval 'var_export( function_exists( "moina_setup" ) );'`
+    When I run `wp --skip-themes=moina eval "var_export( function_exists( 'moina_setup' ) );"`
     Then STDOUT should be:
       """
       false
@@ -73,40 +73,40 @@ Feature: Skipping themes
     And STDERR should be empty
 
     When I run `wp theme activate moina-blog`
-    And I run `wp eval 'var_export( function_exists( "moina_setup" ) );'`
+    And I run `wp eval "var_export( function_exists( 'moina_setup' ) );"`
     Then STDOUT should be:
       """
       true
       """
 
-    When I run `wp eval 'var_export( function_exists( "moina_blog_scripts" ) );'`
+    When I run `wp eval "var_export( function_exists( 'moina_blog_scripts' ) );"`
     Then STDOUT should be:
       """
       true
       """
 
-    When I run `wp --skip-themes=moina-blog eval 'var_export( function_exists( "moina_setup" ) );'`
+    When I run `wp --skip-themes=moina-blog eval "var_export( function_exists( 'moina_setup' ) );"`
     Then STDOUT should be:
       """
       false
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=moina-blog eval 'var_export( function_exists( "moina_blog_scripts" ) );'`
+    When I run `wp --skip-themes=moina-blog eval "var_export( function_exists( 'moina_blog_scripts' ) );"`
     Then STDOUT should be:
       """
       false
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=moina-blog eval 'echo get_template_directory();'`
+    When I run `wp --skip-themes=moina-blog eval "echo get_template_directory();"`
     Then STDOUT should contain:
       """
       wp-content/themes/moina
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=moina-blog eval 'echo get_stylesheet_directory();'`
+    When I run `wp --skip-themes=moina-blog eval "echo get_stylesheet_directory();"`
     Then STDOUT should contain:
       """
       wp-content/themes/moina-blog
@@ -143,7 +143,7 @@ Feature: Skipping themes
     And I run `wp theme activate default`
 
     # The default theme should be skipped
-    When I run `wp eval 'var_export( function_exists( "kubrick_head" ) );'`
+    When I run `wp eval "var_export( function_exists( 'kubrick_head' ) );"`
     Then STDOUT should be:
       """
       false
@@ -155,13 +155,13 @@ Feature: Skipping themes
     Given a WP installation
     And I run `wp theme install blockline --activate`
 
-    When I run `wp eval 'var_dump( function_exists( "blockline_support" ) );'`
+    When I run `wp eval "var_dump( function_exists( 'blockline_support' ) );"`
     Then STDOUT should be:
       """
       bool(true)
       """
 
-    When I run `wp --skip-themes=blockline eval 'var_dump( function_exists( "blockline_support" ) );'`
+    When I run `wp --skip-themes=blockline eval "var_dump( function_exists( 'blockline_support' ) );"`
     Then STDOUT should be:
       """
       bool(false)
@@ -173,13 +173,13 @@ Feature: Skipping themes
     And I run `wp plugin install gutenberg --activate`
     And I run `wp theme install blockline --activate`
 
-    When I run `wp eval 'var_dump( function_exists( "blockline_support" ) );'`
+    When I run `wp eval "var_dump( function_exists( 'blockline_support' ) );"`
     Then STDOUT should be:
       """
       bool(true)
       """
 
-    When I run `wp --skip-themes=blockline eval 'var_dump( function_exists( "blockline_support" ) );'`
+    When I run `wp --skip-themes=blockline eval "var_dump( function_exists( 'blockline_support' ) );"`
     Then STDOUT should be:
       """
       bool(false)

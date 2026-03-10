@@ -11,7 +11,7 @@ Feature: Context handling via --context global flag
       } );
       """
 
-    When I run `wp --require=context-logger.php eval ''`
+    When I run `wp --require=context-logger.php eval ""`
     Then the return code should be 0
     And STDOUT should contain:
       """
@@ -28,21 +28,21 @@ Feature: Context handling via --context global flag
   Scenario: CLI context can be selected
     Given a WP install
 
-    When I run `wp --context=cli eval 'var_export( is_admin() );'`
+    When I run `wp --context=cli eval "var_export( is_admin() );"`
     Then the return code should be 0
     And STDOUT should be:
       """
       false
       """
 
-    When I run `wp --context=cli eval 'var_export( function_exists( "media_handle_upload" ) );'`
+    When I run `wp --context=cli eval "var_export( function_exists( \"media_handle_upload\" ) );"`
     Then the return code should be 0
     And STDOUT should be:
       """
       true
       """
 
-    When I run `wp --context=cli eval 'add_action( "admin_init", static function () { WP_CLI::warning( "admin_init was triggered." ); } );'`
+    When I run `wp --context=cli eval "add_action( \"admin_init\", static function () { WP_CLI::warning( \"admin_init was triggered.\" ); } );"`
     Then the return code should be 0
     And STDERR should not contain:
       """
@@ -52,21 +52,21 @@ Feature: Context handling via --context global flag
   Scenario: Admin context can be selected
     Given a WP install
 
-    When I run `wp --context=admin eval 'var_export( is_admin() );'`
+    When I run `wp --context=admin eval "var_export( is_admin() );"`
     Then the return code should be 0
     And STDOUT should be:
       """
       true
       """
 
-    When I run `wp --context=admin eval 'var_export( function_exists( "media_handle_upload" ) );'`
+    When I run `wp --context=admin eval "var_export( function_exists( \"media_handle_upload\" ) );"`
     Then the return code should be 0
     And STDOUT should be:
       """
       true
       """
 
-    When I run `wp eval --context=admin 'add_action( "admin_init", static function () { WP_CLI::warning( "admin_init was triggered." ); } );'`
+    When I run `wp eval --context=admin "add_action( \"admin_init\", static function () { WP_CLI::warning( \"admin_init was triggered.\" ); } );"`
     Then the return code should be 0
     And STDERR should not contain:
       """
@@ -88,21 +88,21 @@ Feature: Context handling via --context global flag
   Scenario: Frontend context can be selected (and does nothing yet...)
     Given a WP install
 
-    When I run `wp --context=frontend eval 'var_export( is_admin() );'`
+    When I run `wp --context=frontend eval "var_export( is_admin() );"`
     Then the return code should be 0
     And STDOUT should be:
       """
       false
       """
 
-    When I run `wp --context=frontend eval 'var_export( function_exists( "media_handle_upload" ) );'`
+    When I run `wp --context=frontend eval "var_export( function_exists( \"media_handle_upload\" ) );"`
     Then the return code should be 0
     And STDOUT should be:
       """
       true
       """
 
-    When I run `wp --context=frontend eval 'add_action( "admin_init", static function () { WP_CLI::warning( "admin_init was triggered." ); } );'`
+    When I run `wp --context=frontend eval "add_action( \"admin_init\", static function () { WP_CLI::warning( \"admin_init was triggered.\" ); } );"`
     Then the return code should be 0
     And STDERR should not contain:
       """
@@ -145,7 +145,7 @@ Feature: Context handling via --context global flag
       } );
       """
 
-    When I run `wp --require=pagenow-logger.php --context=admin eval ''`
+    When I run `wp --require=pagenow-logger.php --context=admin eval ""`
     Then the return code should be 0
     And STDOUT should contain:
       """
@@ -236,7 +236,7 @@ Feature: Context handling via --context global flag
       unset( $admin_php_file );
       """
 
-    When I run `wp --require=modify-wp-admin.php --context=admin eval 'var_export( is_admin() );'`
+    When I run `wp --require=modify-wp-admin.php --context=admin eval "var_export( is_admin() );"`
     And STDOUT should be:
       """
       true
@@ -268,7 +268,7 @@ Feature: Context handling via --context global flag
 
     # There might be PHP warnings due to `header()` calls from
     # `send_frame_options_header()` and `wp_admin_headers()`.
-    When I try `wp --require=test.php --context=admin eval ''`
+    When I try `wp --require=test.php --context=admin eval ""`
     Then the return code should be 0
     And STDOUT should contain:
       """
@@ -290,7 +290,7 @@ Feature: Context handling via --context global flag
       }
       WP_CLI::add_wp_hook( 'plugins_loaded', 'plugins_loaded_cb', PHP_INT_MAX );
       """
-    When I try `wp --require=test.php --context=admin eval 'echo get_current_user_id();'`
+    When I try `wp --require=test.php --context=admin eval "echo get_current_user_id();"`
     Then the return code should be 1
     And STDOUT should not contain:
       """
