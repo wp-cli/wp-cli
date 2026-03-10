@@ -182,7 +182,7 @@ class Help_Command extends WP_CLI_Command {
 
 		if ( ! Utils\check_proc_available( null /*context*/, true /*return*/ ) ) {
 			WP_CLI::line( $out );
-			WP_CLI::debug( 'Warning: check_proc_available() failed in pass_through_pager().' );
+			WP_CLI::debug( 'Warning: check_proc_available() failed in pass_through_pager().', 'help' );
 			return -1;
 		}
 
