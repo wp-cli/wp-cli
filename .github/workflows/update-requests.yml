@@ -52,6 +52,32 @@ jobs:
           grep -q "REQUESTS_TAG=\"${LATEST_TAG}\"" utils/install-requests.sh || { echo "Failed to update REQUESTS_TAG in install script." >&2; exit 1; }
           bash utils/install-requests.sh
 
+      - name: Validate modified files
+        if: steps.latest_release.outputs.tag != steps.current_version.outputs.tag
+        run: |
+          mapfile -t changed_files < <(git diff --name-only)
+
+          if [ "${#changed_files[@]}" -eq 0 ]; then
+            echo "No files changed by update; nothing to validate."
+            exit 0
+          fi
+
+          allowed_regex='^(utils/install-requests\.sh|bundle/rmccue/requests(/|$))'
+          disallowed=()
+
+          for f in "${changed_files[@]}"; do
+            if ! [[ "$f" =~ $allowed_regex ]]; then
+              disallowed+=("$f")
+            fi
+          done
+
+          if [ "${#disallowed[@]}" -ne 0 ]; then
+            echo "Error: Unexpected files were modified by utils/install-requests.sh:"
+            printf '  %s\n' "${disallowed[@]}"
+            exit 1
+          fi
+
+          echo "All modified files are within the allowed paths."
       - name: Create pull request
         if: steps.latest_release.outputs.tag != steps.current_version.outputs.tag
         uses: peter-evans/create-pull-request@v7
