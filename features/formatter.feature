@@ -677,7 +677,7 @@ Feature: Format output
 
   Scenario: Custom format error handling
     Given an empty directory
-    And a invalid-format.php file:
+    And an invalid-format.php file:
       """
       <?php
       /**
