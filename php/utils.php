@@ -1269,6 +1269,8 @@ function normalize_path( $path ) {
 	}
 	// Resolve leading ./ (e.g., ./foo/bar becomes foo/bar).
 	$path = (string) preg_replace( '#^(?:\./)+#', '', $path );
+	// Collapse any duplicate slashes introduced by dot-segment resolution.
+	$path = (string) preg_replace( '|(?<=.)/+|', '/', $path );
 	return $wrapper . $path;
 }
 
