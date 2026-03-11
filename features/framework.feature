@@ -514,16 +514,18 @@ Feature: Load WP-CLI
       """
       <?php
       // Simulate a plugin that prepends its own autoloader.
+      function wpcli_test_mu_autoload( $class ) {
+          // This intentionally does nothing but exists to be prepended.
+      }
+
       spl_autoload_register(
-          function ( $class ) {
-              // This intentionally does nothing but exists to be prepended.
-          },
+          'wpcli_test_mu_autoload',
           true,
           true
       );
       """
 
-    When I run `wp eval '$autoloaders = spl_autoload_functions(); $first = $autoloaders[0]; $has_closure = array_filter( $autoloaders, function( $fn ) { return $fn instanceof Closure; } ); echo ( ! ( $first instanceof Closure ) && ! empty( $has_closure ) ) ? "WP-CLI autoloader is first" : "Plugin autoloader is first";'`
+    When I run `wp eval '$autoloaders = spl_autoload_functions(); $first = $autoloaders[0]; $plugin_index = array_search( "wpcli_test_mu_autoload", $autoloaders, true ); echo ( $plugin_index !== false && 0 !== $plugin_index ) ? "WP-CLI autoloader is first" : "Plugin autoloader is first";'`
     Then STDOUT should contain:
       """
       WP-CLI autoloader is first
