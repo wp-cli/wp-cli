@@ -51,9 +51,9 @@ Feature: Global flags
     Given a WP installation
 
     When I try `wp eval 'echo "done";' --url=http:/example.com`
-    Then STDERR should contain:
+    Then STDERR should be:
       """
-      Warning: The --url parameter value 'http:/example.com' is not valid.
+      Warning: The --url parameter value 'http:/example.com' is not valid. Check for typos in the protocol, e.g. 'http://' not 'http:/'.
       """
     And STDOUT should contain:
       """
