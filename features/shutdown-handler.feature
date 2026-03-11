@@ -205,6 +205,29 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       --skip-plugins=syntax-error-mu-plugin
       """
 
+  Scenario: Fatal error in WordPress core file outputs meaningful error
+    Given a wp-includes/broken-core-ext.php file:
+      """
+      <?php
+      trigger_error( 'mysqli extension is not loaded', E_USER_ERROR );
+      """
+    And a wp-settings.php file:
+      """
+      <?php
+      require __DIR__ . '/wp-includes/broken-core-ext.php';
+      """
+
+    When I try `wp option list`
+    Then STDERR should contain:
+      """
+      There has been a critical error on this website.
+      """
+    And STDERR should contain:
+      """
+      broken-core-ext.php
+      """
+    And the return code should be 1
+
   Scenario: Automatic rerun with WP_CLI_SKIP_PROMPT=no disables prompting
     Given a wp-content/plugins/broken-plugin/broken-plugin.php file:
       """
