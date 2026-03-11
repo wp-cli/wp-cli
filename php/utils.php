@@ -1261,7 +1261,7 @@ function normalize_path( $path ) {
 		$path = ucfirst( $path );
 	}
 	// Resolve single-dot path segments (e.g., /foo/./bar becomes /foo/bar).
-	$path = (string) preg_replace( '#(?:/\./)+#', '/', $path );
+	$path = (string) preg_replace( '#/(?:\./)+#', '/', $path );
 	if ( '/.' === substr( $path, -2 ) ) {
 		$path = substr( $path, 0, -1 );
 	}
