@@ -226,3 +226,252 @@ Feature: Prompt user for input
       """
       Created category
       """
+
+  Scenario: Prompt should mask sensitive argument values
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * Test that sensitive arguments are masked in output.
+       *
+       * ## OPTIONS
+       *
+       * [--username=<value>]
+       * : A username.
+       *
+       * [--password=<value>]
+       * : A password that should be masked.
+       * ---
+       * sensitive: true
+       * ---
+       *
+       * [--api-key=<value>]
+       * : An API key that should be masked.
+       * ---
+       * sensitive: true
+       * ---
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'test-sensitive', function( $args, $assoc_args ) {
+        WP_CLI::line( 'username: ' . ( isset( $assoc_args['username'] ) ? $assoc_args['username'] : 'none' ) );
+        WP_CLI::line( 'password: ' . ( isset( $assoc_args['password'] ) ? $assoc_args['password'] : 'none' ) );
+        WP_CLI::line( 'api-key: ' . ( isset( $assoc_args['api-key'] ) ? $assoc_args['api-key'] : 'none' ) );
+      } );
+      """
+    And a value-file file:
+      """
+      admin
+      secretpassword123
+      myapikey456
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `wp test-sensitive --prompt < value-file`
+    Then the return code should be 0
+    And STDERR should be empty
+    And STDOUT should contain:
+      """
+      username: admin
+      """
+    And STDOUT should contain:
+      """
+      password: secretpassword123
+      """
+    And STDOUT should contain:
+      """
+      api-key: myapikey456
+      """
+    And STDOUT should contain:
+      """
+      wp test-sensitive --username='admin' --password='[REDACTED]' --api-key='[REDACTED]'
+      """
+
+  Scenario: Flag prompt should accept Y for yes
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * Test that flag prompt accepts Y.
+       *
+       * ## OPTIONS
+       *
+       * [--flag]
+       * : An optional flag
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'test-flag-y', function( $_, $assoc_args ){
+        $flag_value = isset( $assoc_args['flag'] ) ? 'true' : 'false';
+        WP_CLI::line( 'flag: ' . $flag_value );
+      });
+      """
+    And a yes-response file:
+      """
+      Y
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `wp test-flag-y --prompt < yes-response`
+    Then STDOUT should contain:
+      """
+      wp test-flag-y --flag
+      """
+    And STDOUT should contain:
+      """
+      flag: true
+      """
+
+  Scenario: Assoc param with default should apply default on empty input
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * Test that default value is applied for assoc params.
+       *
+       * ## OPTIONS
+       *
+       * [--format=<format>]
+       * : Output format
+       * ---
+       * default: table
+       * options:
+       *   - table
+       *   - csv
+       *   - json
+       * ---
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'test-assoc-default', function( $_, $assoc_args ){
+        WP_CLI::line( 'format: ' . $assoc_args['format'] );
+      });
+      """
+    And a empty-response file:
+      """
+
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `wp test-assoc-default --prompt < empty-response`
+    Then STDOUT should contain:
+      """
+      wp test-assoc-default --format='table'
+      """
+    And STDOUT should contain:
+      """
+      format: table
+      """
+
+  Scenario: Positional arg with default should apply default on empty input
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * Test that default value is applied for positional args.
+       *
+       * ## OPTIONS
+       *
+       * [<name>]
+       * : The name
+       * ---
+       * default: World
+       * ---
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'test-positional-default', function( $args, $_ ){
+        $name = isset( $args[0] ) ? $args[0] : 'Nobody';
+        WP_CLI::line( 'Hello ' . $name );
+      });
+      """
+    And a empty-response file:
+      """
+
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `wp test-positional-default --prompt < empty-response`
+    Then STDOUT should contain:
+      """
+      wp test-positional-default 'World'
+      """
+    And STDOUT should contain:
+      """
+      Hello World
+      """
+
+  Scenario: Prompt should display argument descriptions
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * Test command with descriptions.
+       *
+       * ## OPTIONS
+       *
+       * <name>
+       * : The name of the item.
+       *
+       * [--type=<type>]
+       * : The type of the item.
+       *
+       * [--enabled]
+       * : Whether the item is enabled.
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'test-desc', function( $args, $assoc_args ) {
+        WP_CLI::line( 'name: ' . ( isset( $args[0] ) ? $args[0] : 'none' ) );
+        WP_CLI::line( 'type: ' . ( isset( $assoc_args['type'] ) ? $assoc_args['type'] : 'none' ) );
+        WP_CLI::line( 'enabled: ' . ( isset( $assoc_args['enabled'] ) ? 'yes' : 'no' ) );
+      } );
+      """
+    And a value-file file:
+      """
+      test-item
+      special
+      Y
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `wp test-desc --prompt < value-file`
+    Then STDERR should be empty
+    And STDOUT should contain:
+      """
+      name: test-item
+      """
+    And STDOUT should contain:
+      """
+      type: special
+      """
+    And STDOUT should contain:
+      """
+      enabled: yes
+      """
+

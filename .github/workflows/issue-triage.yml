@@ -1,0 +1,33 @@
+---
+name: Issue and PR Triage
+
+'on':
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue/PR number to triage (leave empty to process all)'
+        required: false
+        type: string
+
+permissions:
+  issues: write
+  pull-requests: write
+  actions: write
+  contents: read
+  models: read
+
+jobs:
+  issue-triage:
+    uses: wp-cli/.github/.github/workflows/reusable-issue-triage.yml@main
+    with:
+      issue_number: >-
+        ${{
+          (github.event_name == 'workflow_dispatch' && inputs.issue_number) ||
+          (github.event_name == 'pull_request_target' && github.event.pull_request.number) ||
+          (github.event_name == 'issues' && github.event.issue.number) ||
+          ''
+        }}

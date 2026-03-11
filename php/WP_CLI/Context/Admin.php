@@ -20,6 +20,7 @@ final class Admin implements Context {
 	 */
 	public function process( $config ) {
 		if ( defined( 'WP_ADMIN' ) ) {
+			// @phpstan-ignore phpstanWP.wpConstant.fetch
 			if ( ! WP_ADMIN ) {
 				WP_CLI::warning( 'Could not fake admin request.' );
 			}
@@ -35,8 +36,9 @@ final class Admin implements Context {
 
 		// Set a fake entry point to ensure wp-includes/vars.php does not throw
 		// notices/errors. This will be reflected in the global `$pagenow`
-		// variable being set to 'wp-cli-fake-admin-file.php'.
-		$_SERVER['PHP_SELF'] = '/wp-admin/wp-cli-fake-admin-file.php';
+		// variable. We try to use a realistic admin page based on the current
+		// command so that plugins which check `$pagenow` behave correctly.
+		$_SERVER['PHP_SELF'] = '/wp-admin/' . $this->get_fake_admin_page();
 
 		// Bootstrap the WordPress administration area.
 		WP_CLI::add_wp_hook(
@@ -69,6 +71,27 @@ final class Admin implements Context {
 			defined( 'PHP_INT_MAX' ) ? PHP_INT_MAX : 2147483648, // phpcs:ignore PHPCompatibility.Constants.NewConstants.php_int_maxFound
 			0
 		);
+	}
+
+	/**
+	 * Get a fake admin page filename that reflects the current command.
+	 *
+	 * Returns 'plugins.php' for `wp plugin` commands, 'themes.php' for
+	 * `wp theme` commands, and 'wp-cli-fake-admin-file.php' otherwise.
+	 *
+	 * @return string Admin page filename.
+	 */
+	private function get_fake_admin_page(): string {
+		$command = WP_CLI::get_runner()->arguments;
+
+		$command_map = [
+			'plugin' => 'plugins.php',
+			'theme'  => 'themes.php',
+		];
+
+		$command_name = $command[0] ?? '';
+
+		return $command_map[ $command_name ] ?? 'wp-cli-fake-admin-file.php';
 	}
 
 	/**
@@ -113,9 +136,14 @@ final class Admin implements Context {
 	 * @global string $pagenow
 	 * @global int    $wp_db_version
 	 * @global array  $_wp_submenu_nopriv
+	 * @global array  $menu_order
+	 * @global array  $default_menu_order
+	 * @global array  $menu
+	 * @global array  $submenu
+	 * @global array  $compat
 	 */
 	private function load_admin_environment(): void {
-		global $hook_suffix, $pagenow, $wp_db_version, $_wp_submenu_nopriv;
+		global $compat, $default_menu_order, $hook_suffix, $menu, $menu_order, $pagenow, $submenu, $wp_db_version, $_wp_submenu_nopriv;
 
 		if ( ! isset( $hook_suffix ) ) {
 			$hook_suffix = 'index'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited

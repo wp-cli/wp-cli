@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manages the internal WP-CLI cache,.
+ * Manages the internal WP-CLI cache.
  *
  * ## EXAMPLES
  *

@@ -70,7 +70,8 @@ class CheckRoot implements BootstrapStep {
 			"run the following to become the respective user:\n" .
 			"\n" .
 			"    sudo -u USER -i -- wp <command>\n" .
-			"\n"
+			"\n" .
+			"(without -i in the case of system user)\n"
 		);
 	}
 }

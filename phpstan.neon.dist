@@ -25,6 +25,7 @@ parameters:
     - php/boot-fs.php
   treatPhpDocTypesAsCertain: false
   dynamicConstantNames:
+    - WP_CLI_ROOT
     - WP_DEBUG
     - WP_DEBUG_LOG
     - WP_DEBUG_DISPLAY

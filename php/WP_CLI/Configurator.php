@@ -165,7 +165,7 @@ class Configurator {
 	 * Splits a list of arguments into positional, associative and config.
 	 *
 	 * @param array<string> $arguments
-	 * @return array<array<string>>
+	 * @return array{0: array<string>, 1: array<string, mixed>, 2: array<string, array<int, string>|int|string|true>}
 	 */
 	public function parse_args( $arguments ) {
 		list( $positional_args, $mixed_args, $global_assoc, $local_assoc ) = self::extract_assoc( $arguments );
@@ -184,16 +184,34 @@ class Configurator {
 		$assoc_args      = [];
 		$global_assoc    = [];
 		$local_assoc     = [];
+		$end_of_options  = false;
 
 		foreach ( $arguments as $arg ) {
 			$positional = null;
 			$assoc_arg  = null;
 
-			if ( preg_match( '|^--no-([^=]+)$|', $arg, $matches ) ) {
+			// Check for the `--` delimiter indicating end of options.
+			if ( '--' === $arg ) {
+				$end_of_options = true;
+				continue;
+			}
+
+			// After `--`, treat all arguments as positional.
+			if ( $end_of_options ) {
+				$positional = $arg;
+			} elseif ( preg_match( '|^--no-([^=]+)$|', $arg, $matches ) ) {
 				$assoc_arg = [ $matches[1], false ];
 			} elseif ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
 				$assoc_arg = [ $matches[1], true ];
 			} elseif ( preg_match( '|^--([^=]+)=(.*)|s', $arg, $matches ) ) {
+				$assoc_arg = [ $matches[1], $matches[2] ];
+			} elseif ( preg_match( '|^-([a-zA-Z])$|', $arg, $matches ) ) {
+				// Support single-dash single-letter short arguments (e.g., -w, -v)
+				// Note: Only single letters are supported to follow common CLI conventions
+				// Multi-character aliases should use double-dash (e.g., --debug not -debug)
+				$assoc_arg = [ $matches[1], true ];
+			} elseif ( preg_match( '|^-([a-zA-Z])=(.*)|s', $arg, $matches ) ) {
+				// Support single-dash single-letter short arguments with values (e.g., -n=5)
 				$assoc_arg = [ $matches[1], $matches[2] ];
 			} else {
 				$positional = $arg;
@@ -218,7 +236,7 @@ class Configurator {
 	 * Separate runtime parameters from command-specific parameters.
 	 *
 	 * @param array $mixed_args
-	 * @return array
+	 * @return array{0: array<string, mixed>, 1: array<string, array<int, string>|int|string|true>}
 	 */
 	private function unmix_assoc_args( $mixed_args, $global_assoc = [], $local_assoc = [] ) {
 		$assoc_args     = [];
@@ -226,20 +244,45 @@ class Configurator {
 
 		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
 			foreach ( $global_assoc as $tmp ) {
-				list( $key, $value ) = $tmp;
+				[ $key, $value ] = $tmp;
 				if ( isset( $this->spec[ $key ] ) && false !== $this->spec[ $key ]['runtime'] ) {
 					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
 				}
 			}
 			foreach ( $local_assoc as $tmp ) {
-				$assoc_args[ $tmp[0] ] = $tmp[1];
+				[ $key, $value ] = $tmp;
+				// Collect multiple values for the same key into an array, except for boolean flags
+				if ( isset( $assoc_args[ $key ] ) ) {
+					// Boolean flags (--flag or --no-flag) use last-wins behavior
+					if ( is_bool( $value ) ) {
+						$assoc_args[ $key ] = $value;
+					} else {
+						if ( ! is_array( $assoc_args[ $key ] ) ) {
+							$assoc_args[ $key ] = [ $assoc_args[ $key ] ];
+						}
+						$assoc_args[ $key ][] = $value;
+					}
+				} else {
+					$assoc_args[ $key ] = $value;
+				}
 			}
 		} else {
 			foreach ( $mixed_args as $tmp ) {
-				list( $key, $value ) = $tmp;
+				[ $key, $value ] = $tmp;
 
 				if ( isset( $this->spec[ $key ] ) && false !== $this->spec[ $key ]['runtime'] ) {
 					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
+				} elseif ( isset( $assoc_args[ $key ] ) ) {
+					// Collect multiple values for the same key into an array, except for boolean flags
+					// Boolean flags (--flag or --no-flag) use last-wins behavior
+					if ( is_bool( $value ) ) {
+						$assoc_args[ $key ] = $value;
+					} else {
+						if ( ! is_array( $assoc_args[ $key ] ) ) {
+							$assoc_args[ $key ] = [ $assoc_args[ $key ] ];
+						}
+						$assoc_args[ $key ][] = $value;
+					}
 				} else {
 					$assoc_args[ $key ] = $value;
 				}
@@ -298,6 +341,9 @@ class Configurator {
 				}
 				// If it's not an alias, it might be a group of aliases.
 				if ( ! $is_alias && is_array( $value ) ) {
+					/**
+					 * @var list<string> $value
+					 */
 					$alias_group = [];
 					foreach ( $value as $k ) {
 						if ( preg_match( '#' . self::ALIAS_REGEX . '#', $k ) ) {
@@ -373,7 +419,8 @@ class Configurator {
 
 		if ( isset( $config['require'] ) ) {
 			self::arrayify( $config['require'] );
-			$config['require'] = Utils\expand_globs( $config['require'] );
+			// @phpstan-ignore argument.type
+			$config['require'] = Utils\expand_globs( array_map( 'strval', $config['require'] ) );
 			foreach ( $config['require'] as &$path ) {
 				self::absolutize( $path, $yml_file_dir );
 			}
@@ -403,6 +450,8 @@ class Configurator {
 	 * Conform a variable to an array.
 	 *
 	 * @param mixed $val A string or an array
+	 *
+	 * @param-out array<mixed> $val
 	 */
 	private static function arrayify( &$val ) {
 		$val = (array) $val;
@@ -415,8 +464,12 @@ class Configurator {
 	 * @param string $base Base path to prepend.
 	 */
 	private static function absolutize( &$path, $base ) {
-		if ( ! empty( $path ) && ! Utils\is_path_absolute( $path ) ) {
-			$path = $base . DIRECTORY_SEPARATOR . $path;
+		if ( ! empty( $path ) ) {
+			// Expand tilde to home directory if present
+			$path = Utils\expand_tilde_path( $path );
+			if ( ! Utils\is_path_absolute( $path ) ) {
+				$path = $base . DIRECTORY_SEPARATOR . $path;
+			}
 		}
 	}
 }
