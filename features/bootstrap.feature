@@ -538,3 +538,38 @@ Feature: Bootstrap WP-CLI
     """
     YIKES!
     """
+
+  @require-wp-5.2
+  Scenario: Core install should provide helpful error when WordPress file has fatal error from missing extension
+    Given an empty directory
+    And WP files
+    And wp-config.php
+    And a database
+
+    Given a wp-admin/includes/upgrade.php file:
+      """
+      <?php
+      trigger_error( 'Call to undefined function mysqli_connect()', E_USER_ERROR );
+      """
+
+    When I try `wp core install --url=example.org --title=Test --admin_user=testadmin --admin_email=testadmin@example.com --admin_password=testpass`
+    Then STDERR should contain:
+      """
+      There has been a critical error on this website.
+      """
+    And STDERR should contain:
+      """
+      WordPress core files
+      """
+    And STDERR should contain:
+      """
+      missing PHP extension
+      """
+    And STDERR should not contain:
+      """
+      --skip-plugins
+      """
+    And STDERR should not contain:
+      """
+      --skip-themes
+      """
