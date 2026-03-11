@@ -1660,8 +1660,11 @@ class Runner {
 		// Restore WP-CLI autoloaders to the front of the stack so they take
 		// precedence over plugin autoloaders that may have been registered
 		// during wp-settings.php loading.
+		$current_autoloaders = spl_autoload_functions();
 		foreach ( array_reverse( $wp_cli_autoloaders ) as $autoloader ) {
-			spl_autoload_unregister( $autoloader );
+			if ( is_array( $current_autoloaders ) && in_array( $autoloader, $current_autoloaders, true ) ) {
+				spl_autoload_unregister( $autoloader );
+			}
 			spl_autoload_register( $autoloader, true, true );
 		}
 
