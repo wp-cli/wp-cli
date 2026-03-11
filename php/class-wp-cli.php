@@ -23,7 +23,14 @@ use WP_CLI\WpHttpCacheManager;
 /**
  * Various utilities for WP-CLI commands.
  *
- * @phpstan-type GlobalConfig array{path: string|null, ssh: string|null, http: string|null, url: string|null, user: string|null, 'skip-plugins': true|string[], 'skip-themes': true|string[], 'skip-packages': bool, require: string[], exec: string[], context: string, debug: string|true, prompt: false|string, quiet: bool}
+ * @phpstan-type GlobalConfig array{path: string|null, ssh: string|null, http: string|null, url: string|null, user: string|null, 'skip-plugins': true|string[], 'skip-themes': true|string[], 'skip-packages': bool, require: string[], exec: string[], context: string, debug: string|true, prompt: false|string, quiet: bool, apache_modules: string[]}
+ *
+ * @phpstan-type FlagParameter array{type: 'flag', name: string, description?: string, optional?: bool, repeating?: bool, aliases?: string[]}
+ * @phpstan-type AssocParameter array{type: 'assoc', name: string, description?: string, options?: string[], default?: string, optional?: bool, value: array{optional: bool, name?: string}, repeating?: bool, aliases?: string[]}
+ * @phpstan-type PositionalParameter array{type: 'positional', name: string, description?: string, optional?: bool, repeating?: bool}
+ * @phpstan-type GenericParameter array{type: 'generic', optional?: bool, repeating?: bool}
+ * @phpstan-type UnknownParameter array{type:'unknown', optional?: bool, repeating?: bool}
+ * @phpstan-type CommandSynopsis FlagParameter|AssocParameter|PositionalParameter|GenericParameter|UnknownParameter
  */
 class WP_CLI {
 
@@ -36,6 +43,13 @@ class WP_CLI {
 	private static $capture_exit = false;
 
 	private static $deferred_additions = [];
+
+	/**
+	 * Cached list of global argument names.
+	 *
+	 * @var array|null
+	 */
+	private static $global_arg_names;
 
 	/**
 	 * Set the logger instance.
@@ -70,6 +84,9 @@ class WP_CLI {
 		return $configurator;
 	}
 
+	/**
+	 * @return RootCommand
+	 */
 	public static function get_root_command() {
 		static $root;
 
@@ -408,6 +425,7 @@ class WP_CLI {
 			}
 
 			$obj_idx = get_class( $function[0] ) . $function[1];
+			// @phpstan-ignore property.notFound
 			if ( ! isset( $function[0]->wp_filter_id ) ) {
 				if ( false === $priority ) {
 					return false;
@@ -480,6 +498,8 @@ class WP_CLI {
 	 *    @type bool     $is_deferred   Whether the command addition had already been deferred.
 	 * }
 	 * @return bool True on success, false if deferred, hard error if registration failed.
+	 *
+	 * @phpstan-param array{before_invoke?: callable, after_invoke?: callable, shortdesc?: string, longdesc?: string, synopsis?: string|CommandSynopsis[], when?: string, is_deferred?: bool} $args
 	 */
 	public static function add_command( $name, $callable, $args = [] ) {
 		// Bail immediately if the WP-CLI executable has not been run.
@@ -649,11 +669,12 @@ class WP_CLI {
 			self::get_runner()->register_early_invoke( $args['when'], $leaf_command );
 		}
 
+		$command_type = $leaf_command instanceof CommandNamespace ? 'namespace' : 'command';
 		if ( ! empty( $parent ) ) {
 			$sub_command = trim( str_replace( $parent, '', $name ) );
-			self::debug( "Adding command: {$sub_command} in {$parent} Namespace", 'commands' );
+			self::debug( "Adding {$command_type}: {$sub_command} in {$parent} Namespace", 'commands' );
 		} else {
-			self::debug( "Adding command: {$name}", 'commands' );
+			self::debug( "Adding {$command_type}: {$name}", 'commands' );
 		}
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
@@ -736,6 +757,87 @@ class WP_CLI {
 		}
 
 		unset( self::$deferred_additions[ $name ] );
+	}
+
+	/**
+	 * Check if a command's arguments conflict with global arguments.
+	 *
+	 * Issues warnings for any command arguments that have the same name as
+	 * global WP-CLI arguments (e.g., --debug, --user, --quiet).
+	 *
+	 * @param string                    $command_name The name of the command being registered.
+	 * @param Dispatcher\Subcommand $command      The command object to check.
+	 */
+	public static function check_global_arg_conflicts( $command_name, $command ) {
+		$synopsis = $command->get_synopsis();
+		if ( ! $synopsis ) {
+			return;
+		}
+
+		// Check if command has opted out of this check
+		if ( self::command_skips_global_arg_check( $command ) ) {
+			return;
+		}
+
+		// Get global argument names from config spec (cached)
+		if ( null === self::$global_arg_names ) {
+			self::$global_arg_names = [];
+			foreach ( self::get_configurator()->get_spec() as $key => $details ) {
+				if ( false === $details['runtime'] ) {
+					continue;
+				}
+				if ( isset( $details['deprecated'] ) ) {
+					continue;
+				}
+				if ( isset( $details['hidden'] ) ) {
+					continue;
+				}
+				self::$global_arg_names[] = $key;
+			}
+		}
+
+		// Parse the command's synopsis to get its argument names
+		$synopsis_params = SynopsisParser::parse( $synopsis );
+		$conflicts       = [];
+
+		foreach ( $synopsis_params as $param ) {
+			// Check assoc and flag types; generic type has no specific name to conflict
+			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) && isset( $param['name'] ) ) {
+				if ( in_array( $param['name'], self::$global_arg_names, true ) ) {
+					$conflicts[] = $param['name'];
+				}
+			}
+		}
+
+		// Warn about any conflicts found
+		foreach ( $conflicts as $conflict ) {
+			self::warning(
+				sprintf(
+					"The `%s` command is registering an argument '--%s' that conflicts with a global argument of the same name.",
+					$command_name,
+					$conflict
+				)
+			);
+		}
+	}
+
+	/**
+	 * Check if a command has opted out of global argument conflict checking.
+	 *
+	 * Commands can use the @skipglobalargcheck tag in their PHPdoc to disable
+	 * the warning for global argument conflicts.
+	 *
+	 * @param Dispatcher\Subcommand $command The command object to check.
+	 * @return bool True if the command should skip the check, false otherwise.
+	 */
+	private static function command_skips_global_arg_check( $command ) {
+		$docparser = $command->get_docparser();
+
+		if ( ! $docparser ) {
+			return false;
+		}
+
+		return $docparser->has_tag( 'skipglobalargcheck' );
 	}
 
 	/**
@@ -898,6 +1000,10 @@ class WP_CLI {
 	 * Use `WP_CLI::warning()` instead when script execution should be permitted
 	 * to continue.
 	 *
+	 * When `--debug` is enabled, this method will also output a backtrace
+	 * showing where the error was triggered from, making it easier to identify
+	 * problematic code.
+	 *
 	 * ```
 	 * # `wp cache flush` considers flush failure to be a fatal error.
 	 * if ( false === wp_cache_flush() ) {
@@ -909,7 +1015,7 @@ class WP_CLI {
 	 * @category Output
 	 *
 	 * @param string|WP_Error|Exception|Throwable $message Message to write to STDERR.
-	 * @param boolean|integer            $exit    True defaults to exit(1).
+	 * @param boolean|int                         $exit    True defaults to exit(1).
 	 * @return null
 	 *
 	 * @phpstan-return ($exit is true|positive-int ? never : void)
@@ -927,6 +1033,7 @@ class WP_CLI {
 		}
 
 		if ( $return_code ) {
+			self::debug_backtrace_on_exit();
 			if ( self::$capture_exit ) {
 				throw new ExitException( '', $return_code );
 			}
@@ -939,6 +1046,10 @@ class WP_CLI {
 	 *
 	 * Permits script execution to be overloaded by `WP_CLI::runcommand()`
 	 *
+	 * When `--debug` is enabled, this method will also output a backtrace
+	 * showing where the halt was triggered from, making it easier to identify
+	 * the cause of early termination.
+	 *
 	 * @access public
 	 * @category Output
 	 *
@@ -946,6 +1057,7 @@ class WP_CLI {
 	 * @return never
 	 */
 	public static function halt( $return_code ) {
+		self::debug_backtrace_on_exit();
 		if ( self::$capture_exit ) {
 			throw new ExitException( '', $return_code );
 		}
@@ -960,7 +1072,7 @@ class WP_CLI {
 	 * @access public
 	 * @category Output
 	 *
-	 * @param array $message_lines Multi-line error message to be displayed.
+	 * @param array<string|\WP_Error|\Exception|\Throwable> $message_lines Multi-line error message to be displayed.
 	 */
 	public static function error_multi_line( $message_lines ) {
 		if ( null === self::$logger ) {
@@ -968,7 +1080,14 @@ class WP_CLI {
 		}
 
 		if ( ! isset( self::get_runner()->assoc_args['completions'] ) && is_array( $message_lines ) ) {
-			self::$logger->error_multi_line( array_map( [ __CLASS__, 'error_to_string' ], $message_lines ) );
+			self::$logger->error_multi_line(
+				array_map(
+					static function ( $message ) {
+						return self::error_to_string( $message );
+					},
+					$message_lines
+				)
+			);
 		}
 	}
 
@@ -1012,7 +1131,7 @@ class WP_CLI {
 	 */
 	public static function get_value_from_arg_or_stdin( $args, $index ) {
 		if ( isset( $args[ $index ] ) ) {
-			$raw_value = $args[ $index ];
+			$raw_value = (string) $args[ $index ];
 		} else {
 			// We don't use file_get_contents() here because it doesn't handle
 			// Ctrl-D properly, when typing in the value interactively.
@@ -1068,6 +1187,9 @@ class WP_CLI {
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
 			$_value = var_export( $value, true );
 		} else {
+			/**
+			 * @var string|int $_value
+			 */
 			$_value = $value;
 		}
 
@@ -1099,7 +1221,7 @@ class WP_CLI {
 		if ( $errors instanceof WP_Error ) {
 			foreach ( $errors->get_error_messages() as $message ) {
 				if ( $errors->get_error_data() ) {
-					return $message . ' ' . $render_data( $errors->get_error_data() );
+					return $message . ' ' . (string) $render_data( $errors->get_error_data() );
 				}
 
 				return $message;
@@ -1116,6 +1238,69 @@ class WP_CLI {
 				gettype( $errors )
 			)
 		);
+	}
+
+	/**
+	 * Output debug backtrace information when --debug is enabled.
+	 *
+	 * This is called when WP_CLI is about to exit (via error() or halt())
+	 * to help identify where the exit originated from.
+	 *
+	 * @access private
+	 */
+	private static function debug_backtrace_on_exit() {
+		// Only output backtrace when debug mode is enabled.
+		if ( ! self::$logger || ! self::get_config( 'debug' ) ) {
+			return;
+		}
+
+		$backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS );
+
+		// Skip the first few frames (this method, error/halt method, etc.).
+		$skip_frames = 0;
+		foreach ( $backtrace as $index => $frame ) {
+			// Skip internal WP_CLI methods.
+			if ( isset( $frame['class'] ) && 'WP_CLI' === $frame['class'] &&
+				in_array( $frame['function'], [ 'debug_backtrace_on_exit', 'error', 'halt' ], true ) ) {
+				$skip_frames = $index + 1;
+				continue;
+			}
+			break;
+		}
+
+		// Get the first relevant frame (where the error/halt was called from).
+		if ( isset( $backtrace[ $skip_frames ] ) ) {
+			$frame = $backtrace[ $skip_frames ];
+			$file  = $frame['file'] ?? 'unknown';
+			$line  = $frame['line'] ?? 'unknown';
+
+			self::debug( "Script called exit from: {$file}:{$line}", 'bootstrap' );
+
+			// Output a limited backtrace (first 5 frames after skipping internal ones).
+			$backtrace_output = [];
+			$max_frames       = 5;
+			$frame_count      = 0;
+			$backtrace_count  = count( $backtrace );
+
+			for ( $i = $skip_frames; $i < $backtrace_count && $frame_count < $max_frames; $i++ ) {
+				$frame = $backtrace[ $i ];
+				$func  = $frame['function'];
+
+				if ( isset( $frame['class'] ) ) {
+					$func = $frame['class'] . ( $frame['type'] ?? '::' ) . $func;
+				}
+
+				$file = $frame['file'] ?? 'unknown';
+				$line = $frame['line'] ?? '?';
+
+				$backtrace_output[] = "  #{$frame_count} {$func}() called at [{$file}:{$line}]";
+				++$frame_count;
+			}
+
+			if ( ! empty( $backtrace_output ) ) {
+				self::debug( "Backtrace:\n" . implode( "\n", $backtrace_output ), 'bootstrap' );
+			}
+		}
 	}
 
 	/**
@@ -1143,7 +1328,18 @@ class WP_CLI {
 	public static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
 		Utils\check_proc_available( 'launch' );
 
-		$proc    = Process::create( $command );
+		// Forward environment variables when available so child processes can still
+		// read DB_* (and other) values via getenv() / $_ENV in wp-config.php.
+		$env = $_ENV;
+
+		if ( ! empty( $env ) ) {
+			// Explicit env array, child process inherits only these entries.
+			$proc = Process::create( $command, null, $env );
+		} else {
+			// $_ENV is empty → use null to inherit full parent environment.
+			$proc = Process::create( $command, null, null );
+		}
+
 		$results = $proc->run();
 
 		if ( -1 === $results->return_code ) {
@@ -1204,7 +1400,12 @@ class WP_CLI {
 
 		$php_bin = escapeshellarg( Utils\get_php_binary() );
 
-		$script_path = $GLOBALS['argv'][0];
+		/**
+		 * @var string[] $argv
+		 */
+		$argv = $GLOBALS['argv'];
+
+		$script_path = $argv[0];
 
 		$wp_cli_config_path = (string) getenv( 'WP_CLI_CONFIG_PATH' );
 
@@ -1215,7 +1416,7 @@ class WP_CLI {
 		}
 		$config_path = escapeshellarg( $config_path );
 
-		$args       = implode( ' ', array_map( 'escapeshellarg', $args ) );
+		$args       = implode( ' ', array_map( 'escapeshellarg', (array) $args ) );
 		$assoc_args = Utils\assoc_args_to_str( $assoc_args );
 
 		$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$command} {$args} {$assoc_args}";
@@ -1363,15 +1564,20 @@ class WP_CLI {
 			}
 
 			/**
+			 * @var string[] $argv
+			 */
+			$argv = $GLOBALS['argv'];
+
+			/**
 			 * @var array<resource> $descriptors
 			 */
 
 			$php_bin     = escapeshellarg( Utils\get_php_binary() );
-			$script_path = $GLOBALS['argv'][0];
+			$script_path = $argv[0];
 
 			// Persist runtime arguments unless they've been specified otherwise.
 			$configurator = self::get_configurator();
-			$argv         = array_slice( $GLOBALS['argv'], 1 );
+			$argv         = array_slice( $argv, 1 );
 
 			list( $ignore1, $ignore2, $runtime_config ) = $configurator->parse_args( $argv );
 			foreach ( $runtime_config as $k => $v ) {
