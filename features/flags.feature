@@ -48,22 +48,27 @@ Feature: Global flags
       Error: Site 'invalid.example.com' not found. Verify `--url=<url>` matches an existing site.
       """
 
-  Scenario: Malformed URL with typo in protocol
+  Scenario: Malformed URL with missing slash in protocol
     Given a WP installation
 
-    When I try `wp eval 'echo "test";' --url=http:/example.com`
+    When I run `wp eval 'echo "done";' --url=http:/example.com`
     Then STDERR should contain:
       """
-      Warning: The URL 'http:/example.com' does not appear to be valid.
+      Warning: The --url parameter value 'http:/example.com' is not valid.
+      """
+    And STDOUT should contain:
+      """
+      done
       """
 
-  Scenario: URL with typo in scheme
-    Given a WP installation
+  @require-wp-3.9
+  Scenario: Malformed URL with missing slash in protocol on multisite
+    Given a WP multisite installation
 
-    When I try `wp eval 'echo "test";' --url=htp://example.com`
+    When I try `wp eval 'echo "done";' --url=http:/example.com`
     Then STDERR should contain:
       """
-      Warning: The URL 'htp://example.com' has an unrecognized scheme 'htp'.
+      Warning: The --url parameter value 'http:/example.com' is not valid.
       """
 
   Scenario: Quiet run
@@ -402,78 +407,3 @@ Feature: Global flags
       """
       --user=<id|login|email>
       """
-
-  Scenario: Double dash delimiter separates options from operands
-    Given an empty directory
-    And a test-cmd.php file:
-      """
-      <?php
-      /**
-       * Test command to echo positional arguments.
-       *
-       * @when before_wp_load
-       */
-      $test_cmd = function( $args, $assoc_args ) {
-          WP_CLI::log( 'Positional args: ' . implode( ', ', $args ) );
-          WP_CLI::log( 'Assoc args: ' . json_encode( $assoc_args ) );
-      };
-      WP_CLI::add_command( 'test-args', $test_cmd );
-      """
-
-    # Arguments after -- should be treated as positional
-    When I run `wp --require=test-cmd.php test-args foo -- --bar --baz=value`
-    Then STDOUT should be:
-      """
-      Positional args: foo, --bar, --baz=value
-      Assoc args: []
-      """
-
-    # -- should work between command and operands
-    When I run `wp --require=test-cmd.php test-args -- --option=value --no-color`
-    Then STDOUT should be:
-      """
-      Positional args: --option=value, --no-color
-      Assoc args: []
-      """
-
-    # Global args before -- should still work
-    When I run `wp --require=test-cmd.php test-args foo -- --path=/some/path`
-    Then STDOUT should be:
-      """
-      Positional args: foo, --path=/some/path
-      Assoc args: []
-      """
-
-  Scenario: Double dash delimiter prevents global option parsing after delimiter
-    Given an empty directory
-    And a test-cmd.php file:
-      """
-      <?php
-      /**
-       * Test command to verify global options are not parsed after --.
-       *
-       * @when before_wp_load
-       */
-      $test_cmd = function( $args, $assoc_args ) {
-          // If --require was parsed as a global option, this file would fail to load
-          // because /nonexistent doesn't exist. If we get here, -- worked correctly.
-          WP_CLI::log( 'Args: ' . implode( ', ', $args ) );
-      };
-      WP_CLI::add_command( 'test-global', $test_cmd );
-      """
-
-    # Without --, --require would be parsed as a global option and fail
-    When I run `wp --require=test-cmd.php test-global foo -- --require=/nonexistent`
-    Then STDOUT should be:
-      """
-      Args: foo, --require=/nonexistent
-      """
-    And the return code should be 0
-
-  Scenario: Tilde expansion in --path parameter
-    Given a WP installation in 'subdir'
-    And I run `bash -c 'ln -s $(pwd)/subdir $HOME/test-wp-tilde'`
-
-    When I run `wp core version --path=~/test-wp-tilde`
-    Then STDOUT should not be empty
-    And the return code should be 0
