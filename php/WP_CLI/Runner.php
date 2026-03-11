@@ -700,7 +700,9 @@ class Runner {
 						$this->alias => $runtime_alias,
 					]
 				);
-				$wp_binary     = "WP_CLI_RUNTIME_ALIAS='{$encoded_alias}' {$wp_binary} {$this->alias}";
+				if ( false !== $encoded_alias ) {
+					$wp_binary = "env WP_CLI_RUNTIME_ALIAS='" . str_replace( "'", "'\\''", $encoded_alias ) . "' {$wp_binary} {$this->alias}";
+				}
 			}
 		}
 
@@ -1298,7 +1300,7 @@ class Runner {
 		 */
 		$argv = $GLOBALS['argv'];
 
-		$script_path = $argv[0];
+		$script_path = escapeshellarg( $argv[0] );
 
 		$wp_cli_config_path = (string) getenv( 'WP_CLI_CONFIG_PATH' );
 
@@ -1313,25 +1315,54 @@ class Runner {
 		$subprocess_runtime_config = $this->runtime_config;
 		unset( $subprocess_runtime_config['quiet'] );
 
-		foreach ( $aliases as $alias ) {
-			WP_CLI::log( $alias );
-			$args           = implode(
-				' ',
-				array_map(
-					static function ( string $arg ): string {
+		// Precompute command components that are the same for all aliases.
+		$args           = implode(
+			' ',
+			array_map(
+				static function ( string $arg ): string {
 						return escapeshellarg( $arg );
-					},
-					(array) $this->arguments
-				)
-			);
-			$assoc_args     = Utils\assoc_args_to_str( (array) $this->assoc_args );
-			$runtime_config = Utils\assoc_args_to_str( (array) $subprocess_runtime_config );
-			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
-			$pipes          = [];
-			$proc           = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
+				},
+				(array) $this->arguments
+			)
+		);
+		$assoc_args     = Utils\assoc_args_to_str( (array) $this->assoc_args );
+		$runtime_config = Utils\assoc_args_to_str( (array) $subprocess_runtime_config );
 
-			if ( $proc ) {
+		// Check if parallel execution is enabled via environment variable.
+		$parallel = (bool) getenv( 'WP_CLI_ALIAS_GROUPS_PARALLEL' );
+
+		if ( $parallel ) {
+			// Run aliases in parallel.
+			// Note: Output from multiple processes will be interleaved and non-deterministic.
+			$procs = [];
+			foreach ( $aliases as $alias ) {
+				WP_CLI::log( $alias );
+				$escaped_alias = escapeshellarg( $alias );
+				$full_command  = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$escaped_alias} {$args}{$assoc_args}{$runtime_config}";
+				$pipes         = [];
+				$proc          = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
+
+				if ( $proc ) {
+					$procs[] = $proc;
+				}
+			}
+
+			// Wait for all processes to complete.
+			foreach ( $procs as $proc ) {
 				proc_close( $proc );
+			}
+		} else {
+			// Run aliases sequentially (original behavior).
+			foreach ( $aliases as $alias ) {
+				WP_CLI::log( $alias );
+				$escaped_alias = escapeshellarg( $alias );
+				$full_command  = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$escaped_alias} {$args}{$assoc_args}{$runtime_config}";
+				$pipes         = [];
+				$proc          = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
+
+				if ( $proc ) {
+					proc_close( $proc );
+				}
 			}
 		}
 	}
@@ -1627,10 +1658,6 @@ class Runner {
 		}
 
 		require ABSPATH . 'wp-settings.php';
-
-		// Fix memory limit. See https://core.trac.wordpress.org/ticket/14889
-		// phpcs:ignore WordPress.PHP.IniSet.memory_limit_Disallowed -- This is perfectly fine for CLI usage.
-		ini_set( 'memory_limit', -1 );
 
 		// Load all the admin APIs, for convenience
 		require ABSPATH . 'wp-admin/includes/admin.php';
@@ -2246,9 +2273,76 @@ class Runner {
 		}
 
 		// Looks like an update is available, so let's prompt to update.
-		WP_CLI::run_command( [ 'cli', 'update' ] );
-		// If the Phar was replaced, we can't proceed with the original process.
-		exit;
+		$update_args = [];
+		// Allow skipping the confirmation prompt via environment variable.
+		if ( getenv( 'WP_CLI_AUTO_UPDATE_PROMPT' ) === 'no' ) {
+			$update_args['yes'] = true;
+		}
+
+		// Get the current Phar's modification time before the update.
+		$phar_mtime_before = filemtime( $existing_phar );
+
+		WP_CLI::run_command( [ 'cli', 'update' ], $update_args );
+
+		// Check if the Phar was actually updated by comparing modification times.
+		clearstatcache( true, $existing_phar );
+		$phar_mtime_after = filemtime( $existing_phar );
+		if ( $phar_mtime_after > $phar_mtime_before ) {
+			// After update, re-execute the original command with the new Phar.
+			$this->rerun_command_after_update();
+		}
+	}
+
+	/**
+	 * Re-execute the original command with the updated Phar.
+	 *
+	 * This method is called after a successful auto-update to transparently
+	 * continue with the user's original command using the new Phar version.
+	 */
+	private function rerun_command_after_update(): void {
+		/**
+		 * @var string[] $original_args
+		 */
+		$original_args = array_slice( (array) $GLOBALS['argv'], 1 );
+
+		// Skip re-execution if the original command was a CLI command
+		// to avoid infinite loops or redundant execution.
+		// Use $this->arguments instead of $original_args to properly handle aliases.
+		if ( ! empty( $this->arguments ) && 'cli' === $this->arguments[0] ) {
+			exit( 0 );
+		}
+
+		// Skip re-execution if there are no arguments (just running `wp` with no command).
+		if ( empty( $original_args ) ) {
+			exit( 0 );
+		}
+
+		/**
+		 * @var string[] $argv
+		 */
+		$argv = $_SERVER['argv'];
+
+		// Get the path to the current (now updated) Phar.
+		$phar_path = realpath( $argv[0] );
+		if ( false === $phar_path ) {
+			WP_CLI::error( 'Failed to determine the path to the WP-CLI Phar.' );
+		}
+
+		// Build the command to re-execute.
+		$php_binary   = Utils\get_php_binary();
+		$escaped_args = array_map( 'escapeshellarg', $original_args );
+		$command      = sprintf(
+			'%s %s %s',
+			escapeshellarg( $php_binary ),
+			escapeshellarg( $phar_path ),
+			implode( ' ', $escaped_args )
+		);
+
+		WP_CLI::debug( 'Re-executing command after update.', 'bootstrap' );
+
+		// Execute the command and pass through the exit code.
+		passthru( $command, $exit_code );
+		exit( $exit_code );
 	}
 
 	/**
