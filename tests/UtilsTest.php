@@ -522,6 +522,7 @@ class UtilsTest extends TestCase {
 			[ '/www/html/./public/wp/', '/www/html/public/wp/' ],
 			[ '/www/./path', '/www/path' ],
 			[ '/www/path/.', '/www/path/' ],
+			[ '/www/path/./', '/www/path/' ],
 			[ '/www/././path/', '/www/path/' ],
 			[ './public/wp', 'public/wp' ],
 		];
