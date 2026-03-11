@@ -1647,10 +1647,23 @@ class Runner {
 			);
 		}
 
+		// Save the current autoloaders so they can be restored after WordPress
+		// loads. This ensures that WP-CLI and package autoloaders take
+		// precedence over autoloaders registered by plugins.
+		$wp_cli_autoloaders = spl_autoload_functions();
+
 		require ABSPATH . 'wp-settings.php';
 
 		// Load all the admin APIs, for convenience
 		require ABSPATH . 'wp-admin/includes/admin.php';
+
+		// Restore WP-CLI autoloaders to the front of the stack so they take
+		// precedence over plugin autoloaders that may have been registered
+		// during wp-settings.php loading.
+		foreach ( array_reverse( $wp_cli_autoloaders ) as $autoloader ) {
+			spl_autoload_unregister( $autoloader );
+			spl_autoload_register( $autoloader, true, true );
+		}
 
 		WP_CLI::add_wp_hook(
 			'filesystem_method',
