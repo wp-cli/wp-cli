@@ -517,6 +517,13 @@ class UtilsTest extends TestCase {
 			[ 'phar:///path/to/file.phar/some\\dir/file', 'phar:///path/to/file.phar/some/dir/file' ],
 			[ 'PHAR:///path/to/file.phar/some//dir', 'PHAR:///path/to/file.phar/some/dir' ],
 			[ 'PhAr:///path/to/file.phar/some\\dir/file', 'PhAr:///path/to/file.phar/some/dir/file' ],
+			// Paths with single-dot segments.
+			[ '/www/./path/', '/www/path/' ],
+			[ '/www/html/./public/wp/', '/www/html/public/wp/' ],
+			[ '/www/./path', '/www/path' ],
+			[ '/www/path/.', '/www/path/' ],
+			[ '/www/././path/', '/www/path/' ],
+			[ './public/wp', 'public/wp' ],
 		];
 	}
 

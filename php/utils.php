@@ -1260,6 +1260,15 @@ function normalize_path( $path ) {
 	if ( ':' === substr( $path, 1, 1 ) ) {
 		$path = ucfirst( $path );
 	}
+	// Resolve single-dot path segments (e.g., /foo/./bar becomes /foo/bar).
+	while ( false !== strpos( $path, '/./' ) ) {
+		$path = str_replace( '/./', '/', $path );
+	}
+	if ( '/.' === substr( $path, -2 ) ) {
+		$path = substr( $path, 0, -1 );
+	}
+	// Resolve leading ./ (e.g., ./foo/bar becomes foo/bar).
+	$path = (string) preg_replace( '#^(?:\./)+#', '', $path );
 	return $wrapper . $path;
 }
 
