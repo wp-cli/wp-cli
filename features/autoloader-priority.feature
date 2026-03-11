@@ -16,21 +16,32 @@ Feature: Framework autoloader takes priority over package autoloaders
           $count = count( $autoloaders );
           WP_CLI::log( "Total autoloaders registered: {$count}" );
 
+          $first_wpcli_position = null;
+
           foreach ( $autoloaders as $index => $loader ) {
             if ( is_array( $loader ) && isset( $loader[0] ) ) {
               $class = is_object( $loader[0] ) ? get_class( $loader[0] ) : $loader[0];
               $method = isset( $loader[1] ) ? $loader[1] : '';
               WP_CLI::log( "Autoloader {$index}: {$class}::{$method}" );
 
-              // Check if this is WP_CLI's autoloader
-              if ( $class === 'WP_CLI\\Autoloader' ) {
-                WP_CLI::success( "WP_CLI\\Autoloader found at position {$index}" );
-                return;
+              // Track first WP_CLI autoloader position
+              if ( $first_wpcli_position === null && $class === 'WP_CLI\\Autoloader' ) {
+                $first_wpcli_position = $index;
               }
             }
           }
 
-          WP_CLI::error( "WP_CLI\\Autoloader not found in registered autoloaders" );
+          if ( $first_wpcli_position === null ) {
+            WP_CLI::error( "WP_CLI\\Autoloader not found in registered autoloaders" );
+          }
+
+          // Verify the WP_CLI autoloader is in an early position (0, 1, or 2)
+          // Position 0 might be WP-CLI's own Composer autoloader, which is acceptable
+          if ( $first_wpcli_position <= 2 ) {
+            WP_CLI::success( "WP_CLI\\Autoloader is at position {$first_wpcli_position} (early in the queue)" );
+          } else {
+            WP_CLI::error( "WP_CLI\\Autoloader is at position {$first_wpcli_position}, should be in first 3 positions!" );
+          }
         }
       }
       WP_CLI::add_command( 'test-autoloader', 'Test_Autoloader_Command' );
@@ -39,7 +50,7 @@ Feature: Framework autoloader takes priority over package autoloaders
     When I run `wp --require=test-command.php test-autoloader check`
     Then STDOUT should contain:
       """
-      WP_CLI\Autoloader found at position
+      early in the queue
       """
     And STDOUT should contain:
       """
