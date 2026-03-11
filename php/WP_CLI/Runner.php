@@ -1650,7 +1650,7 @@ class Runner {
 		// Save the current autoloaders so they can be restored after WordPress
 		// loads. This ensures that WP-CLI and package autoloaders take
 		// precedence over autoloaders registered by plugins.
-		$wp_cli_autoloaders = spl_autoload_functions();
+		$wp_cli_autoloaders = spl_autoload_functions() ?: [];
 
 		require ABSPATH . 'wp-settings.php';
 
