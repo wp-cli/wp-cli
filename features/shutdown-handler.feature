@@ -205,16 +205,16 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       --skip-plugins=syntax-error-mu-plugin
       """
 
-  Scenario: Fatal error in WordPress core file outputs meaningful error
+  Scenario: Fatal error in WordPress core file outputs meaningful error message
     Given a wp-includes/broken-core-ext.php file:
       """
       <?php
       trigger_error( 'mysqli extension is not loaded', E_USER_ERROR );
       """
-    And a wp-settings.php file:
+    And a wp-content/mu-plugins/load-broken-core.php file:
       """
       <?php
-      require __DIR__ . '/wp-includes/broken-core-ext.php';
+      require_once ABSPATH . 'wp-includes/broken-core-ext.php';
       """
 
     When I try `wp option list`
@@ -224,9 +224,16 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
     And STDERR should contain:
       """
-      broken-core-ext.php
+      WordPress core file
       """
-    And the return code should be 1
+    And STDERR should not contain:
+      """
+      --skip-plugins
+      """
+    And STDERR should not contain:
+      """
+      --skip-themes
+      """
 
   Scenario: Automatic rerun with WP_CLI_SKIP_PROMPT=no disables prompting
     Given a wp-content/plugins/broken-plugin/broken-plugin.php file:

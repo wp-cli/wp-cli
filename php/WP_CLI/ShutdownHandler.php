@@ -18,10 +18,6 @@ class ShutdownHandler {
 	 * Register the error message filter.
 	 */
 	public static function register() {
-		// Register a native PHP shutdown function to handle fatal errors that occur
-		// before or during WordPress core loading (e.g., missing PHP extensions).
-		register_shutdown_function( [ __CLASS__, 'handle_shutdown' ] );
-
 		// Ensure WordPress's fatal error handler is always enabled for WP-CLI
 		WP_CLI::add_wp_hook(
 			'wp_fatal_error_handler_enabled',
@@ -37,58 +33,6 @@ class ShutdownHandler {
 			10,
 			2
 		);
-	}
-
-	/**
-	 * Handle PHP shutdown to catch fatal errors in WordPress core files.
-	 *
-	 * This catches fatal errors that occur before or during WordPress loading,
-	 * such as missing PHP extensions (e.g., mysqli) that prevent WordPress from
-	 * initializing its core files. Without this handler, such errors result in
-	 * a silent exit with code 255.
-	 *
-	 * This handler only acts on errors in WordPress core files (wp-includes/ or
-	 * wp-admin/). Errors in plugins or themes are handled by WordPress's own
-	 * fatal error handler via the wp_php_error_message filter.
-	 *
-	 * Note: PHP runs shutdown functions in registration order (FIFO). Since this
-	 * handler is registered before WordPress loads, it runs before WordPress's
-	 * own WP_Fatal_Error_Handler. Calling exit() here prevents subsequent
-	 * shutdown functions from running.
-	 */
-	public static function handle_shutdown() {
-		$error = error_get_last();
-
-		if ( null === $error ) {
-			return;
-		}
-
-		$fatal_error_types = [ E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR ];
-		if ( ! in_array( $error['type'], $fatal_error_types, true ) ) {
-			return;
-		}
-
-		$file = str_replace( '\\', '/', $error['file'] );
-
-		// Skip errors in wp-content (plugins/themes): handled by WordPress's own handler.
-		if ( false !== strpos( $file, '/wp-content/' ) ) {
-			return;
-		}
-
-		// Only handle errors in WordPress core files.
-		if ( false === strpos( $file, '/wp-includes/' )
-			&& false === strpos( $file, '/wp-admin/' ) ) {
-			return;
-		}
-
-		$message = sprintf(
-			"There has been a critical error on this website.\n\n%s in %s on line %d",
-			$error['message'],
-			$error['file'],
-			$error['line']
-		);
-
-		WP_CLI::error( $message );
 	}
 
 	/**
@@ -130,6 +74,12 @@ class ShutdownHandler {
 			$message .= "\n  --skip-themes={$theme}";
 
 			$skip = [ 'skip-themes' => $theme ];
+		} elseif ( self::is_wordpress_core_file( $file ) ) {
+			$message .= "\n\nThis error is in a WordPress core file and is not caused by a plugin or theme.";
+			$message .= "\nThis may indicate a missing PHP extension or a corrupted WordPress installation.";
+
+			// Cannot be resolved by skipping plugins/themes.
+			return $message;
 		} else {
 			$message .= "\n\nThis error may have been caused by a theme or plugin.";
 			$message .= "\nTo skip all plugins and themes, run the command again with:";
@@ -157,6 +107,33 @@ class ShutdownHandler {
 		);
 
 		return $message;
+	}
+
+	/**
+	 * Check whether a file path is in a WordPress core directory (wp-includes/ or wp-admin/).
+	 *
+	 * @param string $file File path to check.
+	 * @return bool True if the file is in a WordPress core directory.
+	 */
+	private static function is_wordpress_core_file( $file ) {
+		$file = str_replace( '\\', '/', $file );
+
+		// Files in wp-content are plugins/themes, not core.
+		if ( false !== strpos( $file, '/wp-content/' ) ) {
+			return false;
+		}
+
+		if ( defined( 'ABSPATH' ) ) {
+			$abspath = rtrim( str_replace( '\\', '/', ABSPATH ), '/' );
+			if ( 0 === strpos( $file, $abspath . '/wp-includes/' )
+				|| 0 === strpos( $file, $abspath . '/wp-admin/' ) ) {
+				return true;
+			}
+		}
+
+		// Fallback to pattern matching when ABSPATH is unavailable.
+		// Using regex ensures wp-includes/wp-admin are matched as complete directory path segments.
+		return preg_match( '#/wp-(?:includes|admin)/#', $file ) === 1;
 	}
 
 	/**
