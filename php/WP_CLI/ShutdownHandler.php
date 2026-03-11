@@ -75,8 +75,13 @@ class ShutdownHandler {
 
 			$skip = [ 'skip-themes' => $theme ];
 		} elseif ( self::is_wordpress_core_file( $file ) ) {
-			$message .= "\n\nThis error is in a WordPress core file and is not caused by a plugin or theme.";
-			$message .= "\nThis may indicate a missing PHP extension or a corrupted WordPress installation.";
+			$message .= "\n\nThis error is in WordPress core files, not a plugin or theme.";
+			$message .= "\nIt often indicates a missing PHP extension (like mysqli) or corrupted WordPress installation.";
+			$message .= "\nPlease check that all required PHP extensions are installed and that your WordPress installation is complete.";
+
+			if ( isset( $error['message'] ) && false !== stripos( $error['message'], 'Call to undefined function' ) ) {
+				$message .= "\nThe error message specifically suggests a missing PHP extension.";
+			}
 
 			// Cannot be resolved by skipping plugins/themes.
 			return $message;

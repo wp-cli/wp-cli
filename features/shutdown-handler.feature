@@ -224,7 +224,11 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
     And STDERR should contain:
       """
-      WordPress core file
+      WordPress core files
+      """
+    And STDERR should contain:
+      """
+      missing PHP extension
       """
     And STDERR should not contain:
       """
@@ -233,6 +237,28 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     And STDERR should not contain:
       """
       --skip-themes
+      """
+
+  Scenario: Fatal error with undefined function in WordPress core outputs PHP extension hint
+    Given a wp-includes/broken-core-func.php file:
+      """
+      <?php
+      trigger_error( 'Call to undefined function mysqli_connect()', E_USER_ERROR );
+      """
+    And a wp-content/mu-plugins/load-broken-core-func.php file:
+      """
+      <?php
+      require_once ABSPATH . 'wp-includes/broken-core-func.php';
+      """
+
+    When I try `wp option list`
+    Then STDERR should contain:
+      """
+      There has been a critical error on this website.
+      """
+    And STDERR should contain:
+      """
+      missing PHP extension
       """
 
   Scenario: Automatic rerun with WP_CLI_SKIP_PROMPT=no disables prompting
