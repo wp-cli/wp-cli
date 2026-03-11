@@ -129,7 +129,7 @@ class WpOrgApiTest extends TestCase {
 	}
 
 	/**
-	 * @dataProvider data_http_request_verify()
+	 * @dataProvider data_http_request_verify
 	 */
 	#[DataProvider( 'data_http_request_verify' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function test_http_request_verify( $method, $arguments, $options, $expected_url, $expected_options ): void {
