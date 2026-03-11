@@ -56,28 +56,28 @@ function wp_debug_mode() {
 
 		error_reporting( E_ALL & ~E_DEPRECATED );
 	} else {
-		if ( WP_DEBUG ) {
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			error_reporting( E_ALL );
 
-			if ( WP_DEBUG_DISPLAY ) {
-				ini_set( 'display_errors', 1 );
-			} elseif ( null !== WP_DEBUG_DISPLAY ) {
-				ini_set( 'display_errors', 0 );
+			if ( defined( 'WP_DEBUG_DISPLAY' ) ) {
+				ini_set( 'display_errors', WP_DEBUG_DISPLAY ? 1 : 0 );
 			}
 
-			// @phpstan-ignore cast.useless
-			if ( in_array( strtolower( (string) WP_DEBUG_LOG ), [ 'true', '1' ], true ) ) {
-				$log_path = WP_CONTENT_DIR . '/debug.log';
-				// @phpstan-ignore function.alreadyNarrowedType
-			} elseif ( is_string( WP_DEBUG_LOG ) ) {
-				$log_path = WP_DEBUG_LOG;
-			} else {
-				$log_path = false;
-			}
+			if ( defined( 'WP_DEBUG_LOG' ) ) {
+				// @phpstan-ignore cast.useless
+				if ( in_array( strtolower( (string) WP_DEBUG_LOG ), [ 'true', '1' ], true ) ) {
+					$log_path = WP_CONTENT_DIR . '/debug.log';
+					// @phpstan-ignore function.alreadyNarrowedType
+				} elseif ( is_string( WP_DEBUG_LOG ) ) {
+					$log_path = WP_DEBUG_LOG;
+				} else {
+					$log_path = false;
+				}
 
-			if ( false !== $log_path ) {
-				ini_set( 'log_errors', 1 );
-				ini_set( 'error_log', $log_path );
+				if ( false !== $log_path ) {
+					ini_set( 'log_errors', 1 );
+					ini_set( 'error_log', $log_path );
+				}
 			}
 		} else {
 			error_reporting( E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_ERROR | E_WARNING | E_PARSE | E_USER_ERROR | E_USER_WARNING | E_RECOVERABLE_ERROR );
@@ -541,6 +541,12 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 		// Note: BC change 1.5.0, tables are sorted (via TABLES view).
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- uses esc_sql_ident() and $wpdb->_escape().
 		$tables = $wpdb->get_col( sprintf( "SHOW TABLES WHERE %s IN ('%s')", esc_sql_ident( 'Tables_in_' . $wpdb->dbname ), implode( "', '", $wpdb->_escape( $wp_tables ) ) ) );
+
+		// Filter tables after the query for improved SQLite compatibility.
+		// See https://github.com/WordPress/sqlite-database-integration/issues/319.
+		if ( 'sqlite' === get_db_type() ) {
+			$tables = array_values( array_intersect( $tables, $wp_tables ) );
+		}
 
 		if ( get_flag_value( $assoc_args, 'base-tables-only' ) || get_flag_value( $assoc_args, 'views-only' ) ) {
 			// Apply Views restriction args if needed.
