@@ -1662,6 +1662,8 @@ class Runner {
 		// during wp-settings.php loading.
 		$current_autoloaders = spl_autoload_functions();
 		foreach ( array_reverse( $wp_cli_autoloaders ) as $autoloader ) {
+			// Can be false prior to PHP 8.0.
+			// @phpstan-ignore function.alreadyNarrowedType
 			if ( is_array( $current_autoloaders ) && in_array( $autoloader, $current_autoloaders, true ) ) {
 				spl_autoload_unregister( $autoloader );
 			}
