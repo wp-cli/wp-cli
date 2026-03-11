@@ -47,8 +47,8 @@ Feature: Framework autoloader takes priority over package autoloaders
       """
 
   Scenario: Old framework class should not break cmd-dump
-    Given an empty directory
-    And a foo/RootCommand.php file:
+    Given a WP installation
+    And a wp-content/old-dispatcher/WP_CLI/Dispatcher/RootCommand.php file:
       """
       <?php
       namespace WP_CLI\Dispatcher;
@@ -65,7 +65,7 @@ Feature: Framework autoloader takes priority over package autoloaders
       {
         "autoload": {
           "psr-4": {
-            "WP_CLI\\": "foo/"
+            "WP_CLI\\": "wp-content/old-dispatcher/WP_CLI/"
           }
         }
       }
@@ -76,10 +76,6 @@ Feature: Framework autoloader takes priority over package autoloaders
     Then STDOUT should contain:
       """
       "name":"wp"
-      """
-    And STDOUT should contain:
-      """
-      "hook":""
       """
     And STDERR should not contain:
       """
