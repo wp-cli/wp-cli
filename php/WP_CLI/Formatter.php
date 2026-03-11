@@ -98,6 +98,8 @@ class Formatter {
 	 * of items (each item is an array of field => value pairs) and an array of field
 	 * names, and should output the formatted data directly.
 	 *
+	 * Built-in formats can be overridden by registering a handler with the same name.
+	 *
 	 * ## EXAMPLE
 	 *
 	 *     // Register a custom XML format
@@ -117,9 +119,6 @@ class Formatter {
 	 * @param callable $handler     Callback to handle formatting. Receives ($items, $fields) and should output directly.
 	 */
 	public static function add_format( $format_name, $handler ) {
-		if ( in_array( $format_name, self::BUILTIN_FORMATS, true ) ) {
-			WP_CLI::error( "Cannot register custom format '{$format_name}' as it conflicts with a built-in format." );
-		}
 		if ( ! is_callable( $handler ) ) {
 			WP_CLI::error( 'Format handler must be callable.' );
 		}
@@ -186,8 +185,12 @@ class Formatter {
 				$items = iterator_to_array( $items );
 			}
 
-			if ( in_array( $this->args['format'], [ 'csv', 'json', 'table', 'yaml' ], true ) ) {
-				// Validate fields exist in at least one item
+			// Check if this is a custom formatter or a built-in format that needs field validation
+			$is_custom_format       = isset( self::$custom_formatters[ $this->args['format'] ] );
+			$needs_field_validation = in_array( $this->args['format'], [ 'csv', 'json', 'table', 'yaml' ], true ) || $is_custom_format;
+
+			if ( $needs_field_validation ) {
+				// Validate fields exist in at least one item and resolve field names with prefix support
 				if ( ! empty( $this->args['fields'] ) ) {
 					$this->validate_fields( $items );
 				}
@@ -265,6 +268,27 @@ class Formatter {
 	private function format( $items, $ascii_pre_colorized = false ): void {
 		$fields = $this->args['fields'];
 
+		// Check if a custom formatter is registered for this format (including overrides of built-in formats)
+		if ( isset( self::$custom_formatters[ $this->args['format'] ] ) ) {
+			// Convert iterator to array for custom formatters
+			if ( ! is_array( $items ) ) {
+				$items = iterator_to_array( $items );
+			}
+			// Extract fields from items for custom formatter
+			$formatted_items = [];
+			foreach ( $items as $item ) {
+				if ( is_array( $item ) || is_object( $item ) ) {
+					// @phpstan-ignore-next-line - $item is guaranteed to be array|object here
+					$formatted_items[] = Utils\pick_fields( $item, $fields );
+				} else {
+					WP_CLI::debug( 'Skipping item that is neither array nor object in custom format handler.', 'formatter' );
+				}
+			}
+			// Call the custom formatter
+			call_user_func( self::$custom_formatters[ $this->args['format'] ], $formatted_items, $fields );
+			return;
+		}
+
 		switch ( $this->args['format'] ) {
 			case 'count':
 				if ( ! is_array( $items ) ) {
@@ -318,27 +342,7 @@ class Formatter {
 				break;
 
 			default:
-				// Check if a custom formatter is registered for this format
-				if ( isset( self::$custom_formatters[ $this->args['format'] ] ) ) {
-					// Convert iterator to array for custom formatters
-					if ( ! is_array( $items ) ) {
-						$items = iterator_to_array( $items );
-					}
-					// Extract fields from items for custom formatter
-					$formatted_items = [];
-					foreach ( $items as $item ) {
-						if ( is_array( $item ) || is_object( $item ) ) {
-							// @phpstan-ignore-next-line - $item is guaranteed to be array|object here
-							$formatted_items[] = Utils\pick_fields( $item, $fields );
-						} else {
-							WP_CLI::debug( 'Skipping item that is neither array nor object in custom format handler.', 'formatter' );
-						}
-					}
-					// Call the custom formatter
-					call_user_func( self::$custom_formatters[ $this->args['format'] ], $formatted_items, $fields );
-				} else {
-					WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
-				}
+				WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
 		}
 	}
 

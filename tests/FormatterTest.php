@@ -60,7 +60,7 @@ class FormatterTest extends TestCase {
 		// Add a custom format
 		Formatter::add_format(
 			'xml',
-			static function () {
+			static function ( $items, $fields ) {
 				echo 'XML';
 			}
 		);
@@ -71,7 +71,7 @@ class FormatterTest extends TestCase {
 
 	public function test_custom_format_with_single_item() {
 		$output_collected = '';
-		$handler          = static function ( $items ) use ( &$output_collected ) {
+		$handler          = static function ( $items, $fields ) use ( &$output_collected ) {
 			foreach ( $items as $item ) {
 				foreach ( $item as $key => $value ) {
 					$output_collected .= "$key:$value ";
@@ -98,7 +98,7 @@ class FormatterTest extends TestCase {
 
 	public function test_custom_format_field_filtering() {
 		$received_items = null;
-		$handler        = function ( $items ) use ( &$received_items ) {
+		$handler        = function ( $items, $fields ) use ( &$received_items ) {
 			$received_items = $items;
 		};
 
@@ -127,5 +127,64 @@ class FormatterTest extends TestCase {
 		$this->assertArrayHasKey( 'name', $received_items[0] );
 		$this->assertArrayHasKey( 'age', $received_items[0] );
 		$this->assertArrayNotHasKey( 'email', $received_items[0], 'Non-requested field should be filtered out' );
+	}
+
+	public function test_custom_format_with_prefix() {
+		$received_items = null;
+		$handler        = function ( $items, $fields ) use ( &$received_items ) {
+			$received_items = $items;
+		};
+
+		Formatter::add_format( 'test_prefix', $handler );
+
+		$items = [
+			[
+				'post_title'  => 'Test Post',
+				'post_status' => 'publish',
+			],
+		];
+
+		// Request fields without prefix, but items have prefix
+		$assoc_args = [ 'format' => 'test_prefix' ];
+		$formatter  = new Formatter( $assoc_args, [ 'title', 'status' ], 'post' );
+
+		ob_start();
+		$formatter->display_items( $items );
+		ob_get_clean();
+
+		// Handler should receive items with resolved prefixed field names
+		$this->assertIsArray( $received_items, 'Handler should receive items array' );
+		$this->assertCount( 1, $received_items, 'Handler should receive 1 item' );
+		$this->assertIsArray( $received_items[0], 'First item should be an array' );
+		// The fields should be resolved to the prefixed versions
+		$this->assertArrayHasKey( 'post_title', $received_items[0], 'Should have resolved post_title field' );
+		$this->assertArrayHasKey( 'post_status', $received_items[0], 'Should have resolved post_status field' );
+		$this->assertSame( 'Test Post', $received_items[0]['post_title'] );
+		$this->assertSame( 'publish', $received_items[0]['post_status'] );
+	}
+
+	public function test_override_builtin_format() {
+		$called = false;
+		$handler = function ( $items, $fields ) use ( &$called ) {
+			$called = true;
+			echo 'OVERRIDDEN';
+		};
+
+		// Override the built-in json format
+		Formatter::add_format( 'json', $handler );
+
+		$items = [
+			[ 'name' => 'Test' ],
+		];
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+
+		ob_start();
+		$formatter->display_items( $items );
+		$output = ob_get_clean();
+
+		$this->assertTrue( $called, 'Custom handler should override built-in format' );
+		$this->assertSame( 'OVERRIDDEN', $output );
 	}
 }
