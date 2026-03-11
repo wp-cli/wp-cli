@@ -50,7 +50,7 @@ Feature: Global flags
   Scenario: Malformed URL with missing slash in protocol
     Given a WP installation
 
-    When I run `wp eval 'echo "done";' --url=http:/example.com`
+    When I try `wp eval 'echo "done";' --url=http:/example.com`
     Then STDERR should contain:
       """
       Warning: The --url parameter value 'http:/example.com' is not valid.
