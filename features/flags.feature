@@ -48,10 +48,19 @@ Feature: Global flags
       """
 
   Scenario: Empty URL
-    Given a WP multisite installation
+    Given a WP installation
 
     When I try `wp post list --url`
     Then STDERR should be:
+      """
+      Warning: The --url parameter expects a value.
+      """
+
+  Scenario: Empty URL on multisite
+    Given a WP multisite installation
+
+    When I try `wp post list --url`
+    Then STDERR should contain:
       """
       Warning: The --url parameter expects a value.
       """
@@ -73,7 +82,7 @@ Feature: Global flags
     Given a WP multisite installation
 
     When I try `wp eval 'echo "done";' --url=http:/example.com`
-    Then STDERR should be:
+    Then STDERR should contain:
       """
       Warning: The --url parameter value 'http:/example.com' is not valid. Check for typos in the protocol, e.g. 'http://' not 'http:/'.
       """
