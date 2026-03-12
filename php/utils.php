@@ -2304,11 +2304,11 @@ function get_size_string_from_bytes( $bytes, $decimals = 0, $unit = '' ) {
 	$size_key = 0;
 
 	if ( empty( $unit ) ) {
-		$size_key = floor( log( $bytes ) / log( 1000 ) );
+		$size_key = (int) floor( log( $bytes ) / log( 1000 ) );
 		$unit     = isset( $sizes[ $size_key ] ) ? $sizes[ $size_key ] : $sizes[0];
 	} else {
 		$unit     = strtoupper( $unit );
-		$size_key = array_search( $unit, $sizes, true );
+		$size_key = (int) array_search( $unit, $sizes, true );
 	}
 
 	$divisor             = pow( 1000, $size_key );
