@@ -542,7 +542,7 @@ Feature: Bootstrap WP-CLI
     # Verify both autoloaders are loaded in debug output
     # The order (Fallback before Package) ensures locally installed packages
     # override phar-bundled versions due to spl_autoload_register prepend behavior
-    When I run `wp cli version --debug`
+    When I try `wp cli version --debug`
     Then STDERR should contain:
       """
       WP_CLI\Bootstrap\IncludeFallbackAutoloader
