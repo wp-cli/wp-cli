@@ -232,28 +232,35 @@ function is_path_within_open_basedir( $path ) {
 		return true;
 	}
 
-	// Normalize the path to check - remove trailing slashes
-	$path = rtrim( $path, DIRECTORY_SEPARATOR );
+	// Normalize the path to check and remove trailing slashes.
+	if ( function_exists( __NAMESPACE__ . '\\normalize_path' ) ) {
+		$path = normalize_path( $path );
+	}
+	$path = rtrim( $path, "/\\" );
 
 	$allowed_paths = explode( PATH_SEPARATOR, $open_basedir );
 	foreach ( $allowed_paths as $allowed ) {
 		if ( empty( $allowed ) ) {
 			continue;
 		}
-		// Normalize the allowed path using realpath (allowed paths should be accessible)
-		$allowed      = rtrim( $allowed, DIRECTORY_SEPARATOR );
+		// Normalize the allowed path using realpath (allowed paths should be accessible).
+		$allowed      = rtrim( $allowed, "/\\" );
 		$real_allowed = realpath( $allowed );
 		if ( false !== $real_allowed ) {
 			$allowed = $real_allowed;
 		}
-		// Check if path starts with allowed directory
-		// On Windows, use case-insensitive comparison as filesystem paths are case-insensitive
-		$is_windows = is_windows();
+		if ( function_exists( __NAMESPACE__ . '\\normalize_path' ) ) {
+			$allowed = normalize_path( $allowed );
+		}
+		$allowed = rtrim( $allowed, "/\\" );
+		// Check if path starts with allowed directory.
+		// On Windows, use case-insensitive comparison as filesystem paths are case-insensitive.
+		$is_windows = DIRECTORY_SEPARATOR === '\\';
 		if ( $is_windows ) {
-			if ( 0 === stripos( $path . DIRECTORY_SEPARATOR, $allowed . DIRECTORY_SEPARATOR ) ) {
+			if ( 0 === stripos( $path . '/', $allowed . '/' ) ) {
 				return true;
 			}
-		} elseif ( 0 === strpos( $path . DIRECTORY_SEPARATOR, $allowed . DIRECTORY_SEPARATOR ) ) {
+		} elseif ( 0 === strpos( $path . '/', $allowed . '/' ) ) {
 			return true;
 		}
 	}
