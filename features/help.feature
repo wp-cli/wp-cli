@@ -124,8 +124,6 @@ Feature: Get help about WP-CLI commands
       Path to the WordPress files.
       """
 
-  # Prior to WP 4.3 widgets & others used PHP 4 style constructors and prior to WP 3.9 wpdb used the mysql extension which can all lead (depending on PHP version) to PHP Deprecated notices.
-  @require-wp-4.3
   Scenario: Help for internal commands with WP
     Given a WP installation
 
@@ -165,7 +163,6 @@ Feature: Get help about WP-CLI commands
       GLOBAL PARAMETERS
       """
 
-  @require-php-7.0
   Scenario: Help when WordPress is downloaded but not installed
     Given an empty directory
 
