@@ -7,7 +7,6 @@ use WP_CLI\Dispatcher;
 use WP_CLI\Dispatcher\CompositeCommand;
 use WP_CLI\Dispatcher\Subcommand;
 use WP_CLI\Fetchers;
-use WP_CLI\Iterators\Exception;
 use WP_CLI\Loggers;
 use WP_CLI\Utils;
 use WP_Error;
@@ -622,8 +621,14 @@ class Runner {
 		WP_CLI::debug( 'Running command: ' . $name, 'bootstrap' );
 		try {
 			$command->invoke( $final_args, $assoc_args, (array) $extra_args );
-		} catch ( Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
+		} catch ( ExitException $e ) {
+			// Re-throw control-flow exceptions so callers can handle exit codes/output.
+			throw $e;
+		} catch ( \Exception $e ) {
+			// Catch exceptions but not Error types, as Error types represent
+			// fatal errors that should be handled by ShutdownHandler for
+			// helpful plugin/theme skip suggestions.
+			WP_CLI::error( $e );
 		}
 	}
 
@@ -692,7 +697,8 @@ class Runner {
 			$alias_config  = $this->aliases[ $this->alias ];
 			if ( is_array( $alias_config ) ) {
 				foreach ( $alias_config as $key => $value ) {
-					if ( 'ssh' === $key ) {
+					// Skip connection-specific keys as they are not relevant to the remote WP-CLI instance.
+					if ( in_array( $key, [ 'ssh', 'http', 'proxyjump', 'key' ], true ) ) {
 						continue;
 					}
 					$runtime_alias[ $key ] = $value;
@@ -841,8 +847,8 @@ class Runner {
 		}
 
 		// For "vagrant" & "ssh" schemes which don't provide a working-directory option, use `cd`
-		if ( $bits['path'] ) {
-			$wp_command = 'cd ' . escapeshellarg( $bits['path'] ) . '; ' . $wp_command;
+		if ( $bits['path'] && in_array( $bits['scheme'], [ 'vagrant', 'ssh', null ], true ) ) {
+			$wp_command = 'cd ' . Utils\escapeshellarg_preserve_tilde( $bits['path'] ) . '; ' . $wp_command;
 		}
 
 		// Vagrant ssh-config.
