@@ -169,7 +169,7 @@ final class WpOrgApi {
 
 		$offer = $response['offers'][0];
 
-		if ( ! array_key_exists( 'locale', $offer ) || $locale !== $offer['locale'] ) {
+		if ( ! is_array( $offer ) || ! array_key_exists( 'locale', $offer ) || $locale !== $offer['locale'] ) {
 			return false;
 		}
 

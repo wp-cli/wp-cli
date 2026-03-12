@@ -20,6 +20,7 @@ final class LoadUtilityFunctions implements BootstrapStep {
 	 */
 	public function process( BootstrapState $state ) {
 		require_once WP_CLI_ROOT . '/php/utils.php';
+		require_once WP_CLI_ROOT . '/php/dispatcher.php';
 
 		return $state;
 	}

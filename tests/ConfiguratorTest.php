@@ -60,6 +60,63 @@ class ConfiguratorTest extends TestCase {
 		$this->assertEquals( 'text--text', $args[1][0][1] );
 	}
 
+	public function testExtractAssocDoubleDashDelimiter(): void {
+		// Arguments after `--` should be treated as positional.
+		$args = Configurator::extract_assoc( [ 'foo', '--bar', '--', '--baz=text' ] );
+
+		$this->assertCount( 2, $args[0] );
+		$this->assertCount( 1, $args[1] );
+
+		$this->assertEquals( 'foo', $args[0][0] );
+		$this->assertEquals( '--baz=text', $args[0][1] );
+
+		$this->assertEquals( 'bar', $args[1][0][0] );
+		$this->assertTrue( $args[1][0][1] );
+	}
+
+	public function testExtractAssocDoubleDashDelimiterWithGlobalAssoc(): void {
+		// Global assoc args before `--` should still be captured.
+		$args = Configurator::extract_assoc( [ '--url=foo.dev', 'command', '--', '--require=/blah' ] );
+
+		$this->assertCount( 2, $args[0] );
+		$this->assertCount( 1, $args[1] );
+		$this->assertCount( 1, $args[2] );
+		$this->assertCount( 0, $args[3] );
+
+		$this->assertEquals( 'command', $args[0][0] );
+		$this->assertEquals( '--require=/blah', $args[0][1] );
+
+		$this->assertEquals( 'url', $args[2][0][0] );
+		$this->assertEquals( 'foo.dev', $args[2][0][1] );
+	}
+
+	public function testExtractAssocDoubleDashDelimiterAtStart(): void {
+		// `--` at the beginning should make all following args positional.
+		$args = Configurator::extract_assoc( [ '--', 'command', '--option=value' ] );
+
+		$this->assertCount( 2, $args[0] );
+		$this->assertCount( 0, $args[1] );
+		$this->assertCount( 0, $args[2] );
+		$this->assertCount( 0, $args[3] );
+
+		$this->assertEquals( 'command', $args[0][0] );
+		$this->assertEquals( '--option=value', $args[0][1] );
+	}
+
+	public function testExtractAssocDoubleDashDelimiterMultipleArgs(): void {
+		// Multiple option-like arguments after `--` should all be positional.
+		$args = Configurator::extract_assoc( [ 'option', 'get', 'home', '--', '--require=/blah', '--no-color' ] );
+
+		$this->assertCount( 5, $args[0] );
+		$this->assertCount( 0, $args[1] );
+
+		$this->assertEquals( 'option', $args[0][0] );
+		$this->assertEquals( 'get', $args[0][1] );
+		$this->assertEquals( 'home', $args[0][2] );
+		$this->assertEquals( '--require=/blah', $args[0][3] );
+		$this->assertEquals( '--no-color', $args[0][4] );
+	}
+
 	/**
 	 * WP_CLI::get_config does not show warnings for null values.
 	 */
@@ -83,5 +140,60 @@ class ConfiguratorTest extends TestCase {
 
 		// Restore.
 		WP_CLI::set_logger( $prev_logger );
+	}
+
+	public function testExtractAssocMultipleValues(): void {
+		$args = Configurator::extract_assoc( [ 'list', '--status=active', '--status=parent' ] );
+
+		$this->assertCount( 1, $args[0] );
+		$this->assertCount( 2, $args[1] );
+
+		$this->assertEquals( 'list', $args[0][0] );
+
+		$this->assertEquals( 'status', $args[1][0][0] );
+		$this->assertEquals( 'active', $args[1][0][1] );
+
+		$this->assertEquals( 'status', $args[1][1][0] );
+		$this->assertEquals( 'parent', $args[1][1][1] );
+	}
+
+	public function testParseArgsAggregatesMultipleValues(): void {
+		$argv = [ 'list', '--status=active', '--status=parent', '--field=name' ];
+
+		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+		$parsed       = $configurator->parse_args( $argv );
+
+		// Positional arguments should remain unchanged.
+		$this->assertSame( [ 'list' ], $parsed[0] );
+
+		// Repeated flags should be aggregated into an array.
+		$this->assertArrayHasKey( 'status', $parsed[1] );
+		$this->assertSame( [ 'active', 'parent' ], $parsed[1]['status'] );
+
+		// Non-repeating parameters should collapse to their last value.
+		$this->assertArrayHasKey( 'field', $parsed[1] );
+		$this->assertSame( 'name', $parsed[1]['field'] );
+	}
+
+	public function testParseArgsBooleanFlagsUseLastWins(): void {
+		$argv  = [ 'command', '--verbose', '--no-verbose', '--verbose' ];
+		$argv2 = [ 'command', '--verbose', '--verbose', '--no-verbose' ];
+
+		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+		$parsed       = $configurator->parse_args( $argv );
+
+		// Positional arguments should remain unchanged.
+		$this->assertSame( [ 'command' ], $parsed[0] );
+
+		// The last --verbose should win, so verbose should be true.
+		$this->assertArrayHasKey( 'verbose', $parsed[1] );
+		$this->assertTrue( $parsed[1]['verbose'] );
+
+		$parsed2     = $configurator->parse_args( $argv2 );
+		$assoc_args2 = $parsed2[1];
+
+		// The last --no-verbose should win, so verbose should be false.
+		$this->assertArrayHasKey( 'verbose', $assoc_args2 );
+		$this->assertFalse( $assoc_args2['verbose'] );
 	}
 }

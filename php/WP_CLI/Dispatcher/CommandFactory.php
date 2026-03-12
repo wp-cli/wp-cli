@@ -34,6 +34,7 @@ class CommandFactory {
 			$reflection = new ReflectionFunction( $callable );
 			$command    = self::create_subcommand( $parent, $name, $callable, $reflection );
 		} elseif ( is_array( $callable ) && ( is_callable( $callable ) || Utils\is_valid_class_and_method_pair( $callable ) ) ) {
+			/** @var array{0:object|class-string,1:string} $callable */
 			$reflection = new ReflectionClass( $callable[0] );
 			$command    = self::create_subcommand(
 				$parent,
@@ -122,7 +123,14 @@ class CommandFactory {
 		 * @var string $name
 		 */
 
-		return new Subcommand( $parent, $name, $docparser, $when_invoked );
+		$subcommand = new Subcommand( $parent, $name, $docparser, $when_invoked );
+
+		// Check for global argument conflicts
+		$path         = \WP_CLI\Dispatcher\get_path( $subcommand );
+		$command_name = implode( ' ', array_slice( $path, 1 ) );
+		\WP_CLI::check_global_arg_conflicts( $command_name, $subcommand );
+
+		return $subcommand;
 	}
 
 	/**
