@@ -424,6 +424,10 @@ class Runner {
 
 			if ( true === $url ) {
 				WP_CLI::warning( 'The --url parameter expects a value.' );
+				return false;
+			} elseif ( is_string( $url ) && ! Utils\parse_url( $url, PHP_URL_HOST ) ) {
+				WP_CLI::warning( "The --url parameter value '{$url}' is not valid. Check for typos in the protocol, e.g. 'http://' not 'http:/'." );
+				return false;
 			}
 
 			return $url;
