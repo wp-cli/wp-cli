@@ -19,6 +19,14 @@ return [
 		'desc'    => 'Perform operation against a remote server over SSH (or a container using scheme of "docker", "docker-compose", "docker-compose-run", "vagrant").',
 	],
 
+	'ssh-args'          => [
+		'runtime'  => '=<args>',
+		'file'     => '<args>',
+		'desc'     => 'Pass additional arguments to SSH (or other tools specified by --ssh scheme).',
+		'multiple' => true,
+		'default'  => [],
+	],
+
 	'http'              => [
 		'runtime' => '=<http>',
 		'file'    => '<http>',
@@ -76,14 +84,15 @@ return [
 	'context'           => [
 		'runtime' => '=<context>',
 		'file'    => '<context>',
-		'default' => 'cli',
+		'default' => 'auto',
 		'desc'    => 'Load WordPress in a given context.',
 	],
 
 	'disabled_commands' => [
-		'file'    => '<list>',
-		'default' => [],
-		'desc'    => '(Sub)commands to disable.',
+		'file'     => '<list>',
+		'default'  => [],
+		'multiple' => true,
+		'desc'     => '(Sub)commands to disable.',
 	],
 
 	'color'             => [

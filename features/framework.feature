@@ -389,7 +389,7 @@ Feature: Load WP-CLI
 
   # `wp db query` does not yet work on SQLite,
   # See https://github.com/wp-cli/db-command/issues/234
-  @require-wp-3.9 @require-mysql
+  @require-mysql
   Scenario: Display a more helpful error message when site can't be found
     Given a WP multisite installation
     And "define( 'DOMAIN_CURRENT_SITE', 'example.com' );" replaced with "define( 'DOMAIN_CURRENT_SITE', 'example.org' );" in the wp-config.php file
