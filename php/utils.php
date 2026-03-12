@@ -218,6 +218,56 @@ function iterator_map( $it, ...$fns ) {
 }
 
 /**
+ * Check if a path is within open_basedir restrictions.
+ *
+ * This function compares paths using string operations to avoid triggering warnings
+ * when checking paths that may be outside open_basedir restrictions.
+ *
+ * @param string $path The path to check (should be absolute).
+ * @return bool True if the path is accessible (no open_basedir or within allowed paths), false otherwise.
+ */
+function is_path_within_open_basedir( $path ) {
+	$open_basedir = ini_get( 'open_basedir' );
+	if ( empty( $open_basedir ) ) {
+		return true;
+	}
+
+	// Normalize the path to check and remove trailing slashes.
+	if ( function_exists( __NAMESPACE__ . '\\normalize_path' ) ) {
+		$path = normalize_path( $path );
+	}
+	$path = rtrim( $path, '/\\' );
+
+	$allowed_paths = explode( PATH_SEPARATOR, $open_basedir );
+	foreach ( $allowed_paths as $allowed ) {
+		if ( empty( $allowed ) ) {
+			continue;
+		}
+		// Normalize the allowed path using realpath (allowed paths should be accessible).
+		$allowed      = rtrim( $allowed, '/\\' );
+		$real_allowed = realpath( $allowed );
+		if ( false !== $real_allowed ) {
+			$allowed = $real_allowed;
+		}
+		if ( function_exists( __NAMESPACE__ . '\\normalize_path' ) ) {
+			$allowed = normalize_path( $allowed );
+		}
+		$allowed = rtrim( $allowed, '/\\' );
+		// Check if path starts with allowed directory.
+		// On Windows, use case-insensitive comparison as filesystem paths are case-insensitive.
+		$is_windows = is_windows();
+		if ( $is_windows ) {
+			if ( 0 === stripos( $path . '/', $allowed . '/' ) ) {
+				return true;
+			}
+		} elseif ( 0 === strpos( $path . '/', $allowed . '/' ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
  * Search for file by walking up the directory tree until the first file is found or until $stop_check($dir) returns true.
  *
  * @param string|array<string> $files      The files (or file) to search for.
@@ -230,7 +280,12 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	if ( is_null( $dir ) ) {
 		$dir = getcwd();
 	}
-	while ( $dir && is_readable( $dir ) ) {
+	// Normalize the directory path using string operations to avoid filesystem access
+	// that could trigger open_basedir warnings
+	if ( false !== $dir && function_exists( __NAMESPACE__ . '\\normalize_path' ) ) {
+		$dir = normalize_path( $dir );
+	}
+	while ( $dir && is_path_within_open_basedir( $dir ) && is_readable( $dir ) ) {
 		// Stop walking up when the supplied callable returns true being passed the $dir
 		if ( is_callable( $stop_check ) && call_user_func( $stop_check, $dir ) ) {
 			return null;
@@ -2245,6 +2300,24 @@ function get_cache_dir() {
  * @return bool
  */
 function has_stdin() {
+	// Use fstat() to detect character devices (S_IFCHR), which includes
+	// both interactive terminals (TTY) and /dev/null. In non-interactive
+	// environments (cron, atd, puppet exec), STDIN is often connected to
+	// /dev/null, which stream_select() incorrectly reports as readable
+	// (since EOF is immediately available). For the purposes of this
+	// helper, character devices are treated as "no stdin" to avoid
+	// blocking on interactive input or misdetecting /dev/null as input.
+	$stat = fstat( STDIN );
+	if ( false !== $stat ) {
+		// S_IFMT  (0170000): bitmask to extract the POSIX file type.
+		// S_IFCHR (0020000): file type constant for character devices.
+		// Character devices include both interactive terminals (TTY) and
+		// /dev/null, all of which are treated as not providing stdin here.
+		if ( 0020000 === ( $stat['mode'] & 0170000 ) ) {
+			return false;
+		}
+	}
+
 	$handle = fopen( 'php://stdin', 'r' );
 	if ( ! $handle ) {
 		return false;

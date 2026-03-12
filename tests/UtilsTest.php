@@ -1247,4 +1247,39 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( escapeshellarg( '~user' ), Utils\escapeshellarg_preserve_tilde( '~user' ) );
 		$this->assertEquals( escapeshellarg( '~user/path' ), Utils\escapeshellarg_preserve_tilde( '~user/path' ) );
 	}
+
+	public function testHasStdinReturnsFalseForDevNull(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Stdin redirection from /dev/null not supported on Windows.' );
+		}
+
+		// Simulate non-interactive environments (cron, atd, puppet exec) where
+		// STDIN is connected to /dev/null. has_stdin() must return false.
+		$process = \WP_CLI\Process::create( $this->buildHasStdinCommand() . ' < /dev/null' )->run();
+
+		$this->assertSame( 'false', $process->stdout );
+	}
+
+	public function testHasStdinReturnsTrueForPipedData(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Piped stdin not supported on Windows.' );
+		}
+
+		// Simulate a real pipe with data: has_stdin() must return true.
+		$process = \WP_CLI\Process::create( 'echo somedata | ' . $this->buildHasStdinCommand() )->run();
+
+		$this->assertSame( 'true', $process->stdout );
+	}
+
+	private function buildHasStdinCommand(): string {
+		$php  = Utils\get_php_binary();
+		$root = WP_CLI_ROOT;
+		$code = sprintf(
+			'require %s; require %s; echo WP_CLI\Utils\has_stdin() ? "true" : "false";',
+			var_export( $root . '/vendor/autoload.php', true ),
+			var_export( $root . '/php/utils.php', true )
+		);
+
+		return escapeshellarg( $php ) . ' -r ' . escapeshellarg( $code );
+	}
 }
