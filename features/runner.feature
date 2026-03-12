@@ -125,3 +125,25 @@ Feature: Runner WP-CLI
       Did you mean 'wp post --post_type=page <command>'?
       """
     And the return code should be 1
+
+  Scenario: Path argument with single-dot segment should produce canonical ABSPATH
+    When I try `wp no-such-command --path=/foo/./bar --debug`
+    Then STDERR should contain:
+      """
+      ABSPATH defined: /foo/bar/
+      """
+
+    When I try `wp no-such-command --path=/foo/./bar/ --debug`
+    Then STDERR should contain:
+      """
+      ABSPATH defined: /foo/bar/
+      """
+
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      path: ./public/wp
+      """
+
+    When I try `wp no-such-command --debug`
+    Then STDERR should not match /ABSPATH defined: .*\/\.\//

@@ -76,7 +76,7 @@ return [
 	'context'           => [
 		'runtime' => '=<context>',
 		'file'    => '<context>',
-		'default' => 'cli',
+		'default' => 'auto',
 		'desc'    => 'Load WordPress in a given context.',
 	],
 
