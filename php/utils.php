@@ -236,7 +236,7 @@ function is_path_within_open_basedir( $path ) {
 	if ( function_exists( __NAMESPACE__ . '\\normalize_path' ) ) {
 		$path = normalize_path( $path );
 	}
-	$path = rtrim( $path, "/\\" );
+	$path = rtrim( $path, '/\\' );
 
 	$allowed_paths = explode( PATH_SEPARATOR, $open_basedir );
 	foreach ( $allowed_paths as $allowed ) {
@@ -244,7 +244,7 @@ function is_path_within_open_basedir( $path ) {
 			continue;
 		}
 		// Normalize the allowed path using realpath (allowed paths should be accessible).
-		$allowed      = rtrim( $allowed, "/\\" );
+		$allowed      = rtrim( $allowed, '/\\' );
 		$real_allowed = realpath( $allowed );
 		if ( false !== $real_allowed ) {
 			$allowed = $real_allowed;
@@ -252,10 +252,10 @@ function is_path_within_open_basedir( $path ) {
 		if ( function_exists( __NAMESPACE__ . '\\normalize_path' ) ) {
 			$allowed = normalize_path( $allowed );
 		}
-		$allowed = rtrim( $allowed, "/\\" );
+		$allowed = rtrim( $allowed, '/\\' );
 		// Check if path starts with allowed directory.
 		// On Windows, use case-insensitive comparison as filesystem paths are case-insensitive.
-		$is_windows = DIRECTORY_SEPARATOR === '\\';
+		$is_windows = is_windows();
 		if ( $is_windows ) {
 			if ( 0 === stripos( $path . '/', $allowed . '/' ) ) {
 				return true;
@@ -280,13 +280,10 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	if ( is_null( $dir ) ) {
 		$dir = getcwd();
 	}
-	// Normalize the directory path if it's accessible (realpath won't trigger open_basedir warnings for accessible paths)
-	// This handles relative paths and symlinks
-	if ( false !== $dir ) {
-		$real_dir = realpath( $dir );
-		if ( false !== $real_dir ) {
-			$dir = $real_dir;
-		}
+	// Normalize the directory path using string operations to avoid filesystem access
+	// that could trigger open_basedir warnings
+	if ( false !== $dir && function_exists( __NAMESPACE__ . '\\normalize_path' ) ) {
+		$dir = normalize_path( $dir );
 	}
 	while ( $dir && is_path_within_open_basedir( $dir ) && is_readable( $dir ) ) {
 		// Stop walking up when the supplied callable returns true being passed the $dir
