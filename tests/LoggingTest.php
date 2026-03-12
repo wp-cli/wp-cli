@@ -60,6 +60,7 @@ class LoggingTest extends TestCase {
 		$runner        = WP_CLI::get_runner();
 		$runner_config = new \ReflectionProperty( $runner, 'config' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$runner_config->setAccessible( true );
 		}
 
