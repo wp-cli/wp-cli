@@ -78,3 +78,33 @@ Feature: `wp cli` tasks
       """
       Global configuration 'dummy' does not exist.
       """
+
+  Scenario: Dump command list with alias included
+    Given a WP installation
+    And a custom-cmd-with-alias.php file:
+      """
+      <?php
+      class Custom_Alias_Command extends WP_CLI_Command {
+
+          /**
+           * Custom command with an alias.
+           *
+           * @alias custom-alias
+           * @when after_wp_load
+           */
+          public function __invoke( $args ) {
+              WP_CLI::success( 'Command executed.' );
+          }
+      }
+      WP_CLI::add_command( 'custom-command-with-alias', 'Custom_Alias_Command' );
+      """
+
+    When I run `wp --require=custom-cmd-with-alias.php cli cmd-dump`
+    Then STDOUT should contain:
+      """
+      "name":"custom-command-with-alias"
+      """
+    And STDOUT should contain:
+      """
+      "alias":"custom-alias"
+      """

@@ -27,6 +27,14 @@ Feature: WP-CLI Commands
 
   Scenario: Invalid subcommand of valid command
     Given an empty directory
+    And a session_no file:
+      """
+      n
+      """
+    And a session_yes file:
+      """
+      y
+      """
     And a custom-cmd.php file:
       """
       <?php
@@ -43,10 +51,10 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'command', 'Custom_Command_Class' );
       """
 
-    When I try `wp --require=custom-cmd.php command invalid`
+    When I try `wp --require=custom-cmd.php command invalid < session_no`
     Then STDERR should contain:
       """
-      Error: 'invalid' is not a registered subcommand of 'command'. See 'wp help command' for available subcommands.
+      Warning: 'invalid' is not a registered subcommand of 'command'. See 'wp help command' for available subcommands.
       """
 
   Scenario: Use a closure as a command
@@ -975,17 +983,129 @@ Feature: WP-CLI Commands
 
   Scenario: WP-CLI suggests matching commands when user entry contains typos
     Given a WP installation
+    And a session_no file:
+      """
+      n
+      """
 
-    When I try `wp clu`
+    When I try `wp clu < session_no`
     Then STDERR should contain:
+      """
+      Warning: 'clu' is not a registered wp command
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'cli'? [y/n]
+      """
+
+    When I try `wp cli nfo < session_no`
+    Then STDERR should contain:
+      """
+      Warning: 'nfo' is not a registered subcommand of 'cli'
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'info'? [y/n]
+      """
+
+    When I try `wp cli beyondlevenshteinthreshold`
+    Then STDOUT should not contain:
+      """
+      Did you mean
+      """
+
+  Scenario: WP-CLI optionally runs matching commands when user entry contains typos
+    Given a WP installation
+    And a session_yes file:
+      """
+      y
+      """
+
+    When I try `wp clu < session_yes`
+    Then STDERR should contain:
+      """
+      Warning: 'clu' is not a registered wp command
+      """
+    And STDOUT should contain:
       """
       Did you mean 'cli'?
       """
+    And STDOUT should contain:
+      """
+      See 'wp help cli <command>' for more information on a specific command.
+      """
 
-    When I try `wp cli nfo`
+    When I try `wp cli nfo < session_yes`
     Then STDERR should contain:
       """
+      Warning: 'nfo' is not a registered subcommand of 'cli'
+      """
+    And STDOUT should contain:
+      """
       Did you mean 'info'?
+      """
+    And STDOUT should contain:
+      """
+      WP-CLI version:
+      """
+
+    When I try `wp cli beyondlevenshteinthreshold`
+    Then STDERR should not contain:
+      """
+      Did you mean
+      """
+
+  Scenario: WP-CLI automatically runs matching commands when user entry contains typos
+    Given a WP installation
+
+    When I try `WP_CLI_AUTOCORRECT=1 wp clu`
+    Then STDERR should not contain:
+      """
+      Warning: 'clu' is not a registered wp command
+      """
+    And STDOUT should not contain:
+      """
+      Did you mean 'cli'?
+      """
+    And STDOUT should contain:
+      """
+      See 'wp help cli <command>' for more information on a specific command.
+      """
+
+    When I try `WP_CLI_AUTOCORRECT=1 wp cli nfo`
+    Then STDERR should not contain:
+      """
+      Warning: 'nfo' is not a registered subcommand of 'cli'
+      """
+    And STDOUT should not contain:
+      """
+      Did you mean 'info'?
+      """
+    And STDOUT should contain:
+      """
+      WP-CLI version:
+      """
+
+    When I try `WP_CLI_AUTOCORRECT=1 wp hel post mota`
+    Then STDERR should not contain:
+      """
+      is not a registered wp command
+      """
+    And STDERR should not contain:
+      """
+      is not a registered subcommand
+      """
+    And STDOUT should not contain:
+      """
+      Did you mean
+      """
+    And STDOUT should contain:
+      """
+      SYNOPSIS
+      """
+    And STDOUT should contain:
+      """
+      wp post meta <command>
       """
 
     When I try `wp cli beyondlevenshteinthreshold`
@@ -1463,6 +1583,37 @@ Feature: WP-CLI Commands
       """
     And STDERR should be empty
 
+  Scenario: Debug output differentiates between commands and namespaces
+    Given an empty directory
+    And a command-and-namespace.php file:
+      """
+      <?php
+      /**
+       * My Command Namespace Description.
+       */
+      class My_Command_Namespace extends \WP_CLI\Dispatcher\CommandNamespace {}
+
+      /**
+       * My Actual Command.
+       */
+      class My_Actual_Command extends WP_CLI_Command {
+        public function test() {}
+      }
+
+      WP_CLI::add_command( 'my-namespace', 'My_Command_Namespace' );
+      WP_CLI::add_command( 'my-command', 'My_Actual_Command' );
+      """
+
+    When I run `wp --debug --require=command-and-namespace.php help 2>&1`
+    Then STDOUT should contain:
+      """
+      Adding namespace: my-namespace
+      """
+    And STDOUT should contain:
+      """
+      Adding command: my-command
+      """
+
   Scenario: Late-registered command should appear in command usage
     Given a WP installation
     And a test-cmd.php file:
@@ -1552,3 +1703,250 @@ Feature: WP-CLI Commands
       """
       Hello
       """
+
+  Scenario: Autocorrect should not suggest wrong commands for after_wp_load registered commands
+    Given a WP installation
+    And a wp-content/mu-plugins/test-cli.php file:
+      """
+      <?php
+      // Plugin Name: Test CLI After Load
+
+      add_action( 'cli_init', function(){
+        WP_CLI::add_command( 'afterload', function () {
+          \WP_CLI::success( 'afterload command executed' );
+        });
+      });
+      """
+    And a session_no file:
+      """
+      n
+      """
+
+    # The command should work when run correctly
+    When I run `wp afterload`
+    Then STDOUT should contain:
+      """
+      Success: afterload command executed
+      """
+    And the return code should be 0
+
+    # Test with a typo - it should not suggest wrong alternatives
+    # before WordPress loads. This is the regression we're fixing.
+    When I try `wp afterloa < session_no`
+    Then STDERR should contain:
+      """
+      Warning: 'afterloa' is not a registered wp command.
+      """
+    # It should suggest 'afterload' not other commands like 'post'
+    And STDOUT should contain:
+      """
+      Did you mean 'afterload'?
+      """
+
+    # Test with autocorrect enabled
+    When I try `WP_CLI_AUTOCORRECT=1 wp afterloa`
+    Then STDOUT should contain:
+      """
+      Success: afterload command executed
+      """
+    And the return code should be 0
+
+  Scenario: Warn when command overrides global argument
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * My test command
+       *
+       * ## OPTIONS
+       *
+       * [--debug]
+       * : Debug flag that conflicts with global
+       *
+       * @when before_wp_load
+       */
+      $foo = function( $args, $assoc_args ) {
+        WP_CLI::success( 'Command executed' );
+      };
+      WP_CLI::add_command( 'testcommand', $foo );
+      """
+
+    When I try `wp --require=custom-cmd.php help`
+    Then STDERR should contain:
+      """
+      Warning: The `testcommand` command is registering an argument '--debug' that conflicts with a global argument of the same name.
+      """
+
+  Scenario: Warn when command overrides multiple global arguments
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * My test command
+       *
+       * ## OPTIONS
+       *
+       * --user=<user>
+       * : User argument that conflicts with global
+       *
+       * [--quiet]
+       * : Quiet flag that conflicts with global
+       *
+       * @when before_wp_load
+       */
+      $foo = function( $args, $assoc_args ) {
+        WP_CLI::success( 'Command executed' );
+      };
+      WP_CLI::add_command( 'multiconflict', $foo );
+      """
+
+    When I try `wp --require=custom-cmd.php help`
+    Then STDERR should contain:
+      """
+      Warning: The `multiconflict` command is registering an argument '--user' that conflicts with a global argument of the same name.
+      """
+    And STDERR should contain:
+      """
+      Warning: The `multiconflict` command is registering an argument '--quiet' that conflicts with a global argument of the same name.
+      """
+
+  Scenario: No warning when command uses non-conflicting arguments
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * My test command
+       *
+       * ## OPTIONS
+       *
+       * [--custom]
+       * : Custom flag that does not conflict
+       *
+       * @when before_wp_load
+       */
+      $foo = function( $args, $assoc_args ) {
+        WP_CLI::success( 'Command executed' );
+      };
+      WP_CLI::add_command( 'noconflict', $foo );
+      """
+
+    When I try `wp --require=custom-cmd.php help`
+    Then STDERR should not contain:
+      """
+      Warning:
+      """
+    And STDOUT should contain:
+      """
+      noconflict
+      """
+
+  Scenario: Warn when class-based command methods override global arguments
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * Test class-based command
+       *
+       * @when before_wp_load
+       */
+      class TestCommand {
+        /**
+         * Method with debug conflict
+         *
+         * ## OPTIONS
+         *
+         * [--debug]
+         * : Debug flag that conflicts
+         */
+        public function with_debug( $args, $assoc_args ) {
+          WP_CLI::success( 'Method executed' );
+        }
+
+        /**
+         * Method with user conflict
+         *
+         * ## OPTIONS
+         *
+         * --user=<user>
+         * : User argument that conflicts
+         */
+        public function with_user( $args, $assoc_args ) {
+          WP_CLI::success( 'Method executed' );
+        }
+
+        /**
+         * Method with no conflicts
+         *
+         * ## OPTIONS
+         *
+         * [--custom]
+         * : Custom flag
+         */
+        public function clean( $args, $assoc_args ) {
+          WP_CLI::success( 'Method executed' );
+        }
+      }
+      WP_CLI::add_command( 'testcmd', 'TestCommand' );
+      """
+
+    When I try `wp --require=custom-cmd.php help`
+    Then STDERR should contain:
+      """
+      Warning: The `testcmd with_debug` command is registering an argument '--debug' that conflicts with a global argument of the same name.
+      """
+    And STDERR should contain:
+      """
+      Warning: The `testcmd with_user` command is registering an argument '--user' that conflicts with a global argument of the same name.
+      """
+
+  Scenario: Skip global argument conflict warning with annotation
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * Command with skip annotation
+       *
+       * ## OPTIONS
+       *
+       * [--debug]
+       * : Debug flag that conflicts with global
+       *
+       * @skipglobalargcheck
+       * @when before_wp_load
+       */
+      $foo = function( $args, $assoc_args ) {
+        WP_CLI::success( 'Command executed' );
+      };
+      WP_CLI::add_command( 'skipwarning', $foo );
+
+      /**
+       * Command without skip annotation
+       *
+       * ## OPTIONS
+       *
+       * [--quiet]
+       * : Quiet flag that conflicts with global
+       *
+       * @when before_wp_load
+       */
+      $bar = function( $args, $assoc_args ) {
+        WP_CLI::success( 'Command executed' );
+      };
+      WP_CLI::add_command( 'showwarning', $bar );
+      """
+
+    When I try `wp --require=custom-cmd.php help`
+    Then STDERR should not contain:
+      """
+      Warning: The `skipwarning` command is registering an argument '--debug' that conflicts with a global argument of the same name.
+      """
+    And STDERR should contain:
+      """
+      Warning: The `showwarning` command is registering an argument '--quiet' that conflicts with a global argument of the same name.
+      """
+

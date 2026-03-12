@@ -14,6 +14,7 @@ class HelpTest extends TestCase {
 		$test_class = new ReflectionClass( 'Help_Command' );
 		$method     = $test_class->getMethod( 'parse_reference_links' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$method->setAccessible( true );
 		}
 

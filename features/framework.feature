@@ -152,6 +152,77 @@ Feature: Load WP-CLI
       Error: So I can use multiple lines.
       """
 
+  Scenario: Debug flag shows backtrace on error
+    Given an empty directory
+    And a debug-error.php file:
+      """
+      <?php
+      function my_custom_function() {
+          WP_CLI::error( 'Test error message.' );
+      }
+      my_custom_function();
+      """
+
+    When I try `wp --require=debug-error.php --debug`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Error: Test error message.
+      """
+    And STDERR should contain:
+      """
+      Script called exit from:
+      """
+    And STDERR should contain:
+      """
+      debug-error.php:
+      """
+    And STDERR should contain:
+      """
+      Backtrace:
+      """
+
+  Scenario: Debug flag shows backtrace on halt
+    Given an empty directory
+    And a debug-halt.php file:
+      """
+      <?php
+      function trigger_halt() {
+          WP_CLI::halt( 2 );
+      }
+      trigger_halt();
+      """
+
+    When I try `wp --require=debug-halt.php --debug`
+    Then the return code should be 2
+    And STDERR should contain:
+      """
+      Script called exit from:
+      """
+    And STDERR should contain:
+      """
+      debug-halt.php:
+      """
+    And STDERR should contain:
+      """
+      Backtrace:
+      """
+
+  Scenario: Without debug flag, no backtrace is shown
+    Given an empty directory
+    And a no-debug-error.php file:
+      """
+      <?php
+      WP_CLI::error( 'Simple error.' );
+      """
+
+    When I try `wp --require=no-debug-error.php`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Simple error.
+      """
+
   Scenario: A plugin calling wp_redirect() shouldn't redirect
     Given a WP installation
     And a wp-content/mu-plugins/redirect.php file:
@@ -318,7 +389,7 @@ Feature: Load WP-CLI
 
   # `wp db query` does not yet work on SQLite,
   # See https://github.com/wp-cli/db-command/issues/234
-  @require-wp-3.9 @require-mysql
+  @require-mysql
   Scenario: Display a more helpful error message when site can't be found
     Given a WP multisite installation
     And "define( 'DOMAIN_CURRENT_SITE', 'example.com' );" replaced with "define( 'DOMAIN_CURRENT_SITE', 'example.org' );" in the wp-config.php file
@@ -361,6 +432,65 @@ Feature: Load WP-CLI
     Then STDERR should be:
       """
       Error: Site 'example.io' not found. Verify `--url=<url>` matches an existing site.
+      """
+
+  # `wp db query` does not yet work on SQLite,
+  # See https://github.com/wp-cli/db-command/issues/234
+  @require-mysql
+  Scenario: Show detailed error when multisite network is not found
+    Given a WP multisite installation
+    And a force-network-not-found.php file:
+      """
+      <?php
+      // Force ms_not_installed() to be triggered by returning empty network
+      WP_CLI::add_wp_hook(
+        'the_networks',
+        static function() {
+          return [];
+        }
+      );
+      """
+    And I run `wp config delete DOMAIN_CURRENT_SITE --type=constant`
+
+    # This should trigger ms_not_installed() which now shows detailed error
+    # because we set current_screen to make is_admin() return true
+    When I try `wp --require=force-network-not-found.php option get home`
+    Then STDERR should contain:
+      """
+      Error establishing a database connection.
+      """
+    And STDERR should contain:
+      """
+      If your site does not display, please contact the owner of this network.
+      """
+
+  # `wp db query` does not yet work on SQLite,
+  # See https://github.com/wp-cli/db-command/issues/234
+  @require-mysql
+  Scenario: Show detailed error when hitting ms_network_not_found
+    Given a WP multisite installation
+    And a force-network-not-found.php file:
+      """
+      <?php
+      // Force ms_not_installed() to be triggered by returning empty network
+      WP_CLI::add_wp_hook(
+        'the_networks',
+        static function() {
+          return [
+            new \WP_Network( new stdClass() ),
+            new \WP_Network( new stdClass() ),
+          ];
+        }
+      );
+      """
+    And I run `wp config delete DOMAIN_CURRENT_SITE --type=constant`
+
+    # This should trigger ms_not_installed() which now shows detailed error
+    # because we set current_screen to make is_admin() return true
+    When I try `wp --require=force-network-not-found.php option get home`
+    Then STDERR should contain:
+      """
+      Error: Network not found. Verify the network exists in the database or run `wp core multisite-install`.
       """
 
   Scenario: Don't show 'sitecategories' table unless global terms are enabled

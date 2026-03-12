@@ -71,14 +71,40 @@ Feature: Runner WP-CLI
 
   Scenario: Suggest 'meta' when 'option' subcommand is run
     Given a WP install
+    And a session_no file:
+      """
+      n
+      """
+    And a session_yes file:
+      """
+      y
+      """
 
-    When I try `wp network option`
+    When I try `wp network option < session_no`
     Then STDERR should contain:
       """
-      Error: 'option' is not a registered subcommand of 'network'. See 'wp help network' for available subcommands.
-      Did you mean 'meta'?
+      Warning: 'option' is not a registered subcommand of 'network'. See 'wp help network' for available subcommands.
       """
-    And the return code should be 1
+    And STDOUT should contain:
+      """
+      Did you mean 'meta'? [y/n]
+      """
+    And the return code should be 0
+
+    When I try `wp network option < session_yes`
+    Then STDERR should contain:
+      """
+      Warning: 'option' is not a registered subcommand of 'network'. See 'wp help network' for available subcommands.
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'meta'? [y/n]
+      """
+    And STDOUT should contain:
+      """
+      See 'wp help network meta <command>' for more information
+      """
+    And the return code should be 0
 
   Scenario: Suggest 'wp term <command>' when an invalid taxonomy command is run
     Given a WP install
@@ -99,3 +125,25 @@ Feature: Runner WP-CLI
       Did you mean 'wp post --post_type=page <command>'?
       """
     And the return code should be 1
+
+  Scenario: Path argument with single-dot segment should produce canonical ABSPATH
+    When I try `wp no-such-command --path=/foo/./bar --debug`
+    Then STDERR should contain:
+      """
+      ABSPATH defined: /foo/bar/
+      """
+
+    When I try `wp no-such-command --path=/foo/./bar/ --debug`
+    Then STDERR should contain:
+      """
+      ABSPATH defined: /foo/bar/
+      """
+
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      path: ./public/wp
+      """
+
+    When I try `wp no-such-command --debug`
+    Then STDERR should not match /ABSPATH defined: .*\/\.\//

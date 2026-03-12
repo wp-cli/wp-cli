@@ -9,11 +9,9 @@
     "license": "MIT",
     "require": {
         "php": ">=7.2.24 || ^8.0",
-        "ext-curl": "*",
         "mustache/mustache": "^3.0.0",
-        "symfony/finder": ">2.7",
         "wp-cli/mustangostang-spyc": "^0.6.3",
-        "wp-cli/php-cli-tools": "~0.12.4"
+        "wp-cli/php-cli-tools": "~0.12.7"
     },
     "require-dev": {
         "justinrainbow/json-schema": "^6.3",
@@ -25,6 +23,7 @@
         "wp-cli/wp-cli-tests": "^5"
     },
     "suggest": {
+        "ext-curl": "For better performance when making HTTP requests",
         "ext-readline": "Include for a better --prompt implementation",
         "ext-zip": "Needed to support extraction of ZIP archives when doing downloads or updates"
     },
@@ -41,7 +40,20 @@
     "extra": {
         "branch-alias": {
             "dev-main": "2.13.x-dev"
-        }
+        },
+        "commands": [
+            "cli",
+            "cli alias",
+            "cli cache",
+            "cli check-update",
+            "cli cmd-dump",
+            "cli completions",
+            "cli has-command",
+            "cli info",
+            "cli param-dump",
+            "cli update",
+            "cli version"
+        ]
     },
     "autoload": {
         "psr-0": {
