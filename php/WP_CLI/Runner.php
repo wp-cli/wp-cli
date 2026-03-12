@@ -1351,7 +1351,7 @@ class Runner {
 				array_filter(
 					(array) $this->arguments,
 					function ( $value ) use ( $alias_regex ) {
-						return ! preg_match( $alias_regex, (string) $value );
+						return ! preg_match( $alias_regex, $value );
 					}
 				)
 			)
