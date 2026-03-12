@@ -216,7 +216,7 @@ Feature: Format output
       | 1  | true   |
       | 2  | false  |
 
-  Scenario: Format boolean values as JSON preserves boolean type
+  Scenario: JSON format preserves boolean types
     Given an empty directory
     And a file.php file:
       """
