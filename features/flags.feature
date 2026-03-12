@@ -47,6 +47,15 @@ Feature: Global flags
       Error: Site 'invalid.example.com' not found. Verify `--url=<url>` matches an existing site.
       """
 
+  Scenario: Empty URL
+    Given a WP multisite installation
+
+    When I try `wp post list --url`
+    Then STDERR should be:
+      """
+      Warning: The --url parameter expects a value.
+      """
+
   Scenario: Malformed URL with missing slash in protocol
     Given a WP installation
 
