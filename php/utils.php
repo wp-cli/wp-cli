@@ -248,7 +248,7 @@ function is_path_within_open_basedir( $path ) {
 		}
 		// Check if path starts with allowed directory
 		// On Windows, use case-insensitive comparison as filesystem paths are case-insensitive
-		$is_windows = DIRECTORY_SEPARATOR === '\\';
+		$is_windows = is_windows();
 		if ( $is_windows ) {
 			if ( 0 === stripos( $path . DIRECTORY_SEPARATOR, $allowed . DIRECTORY_SEPARATOR ) ) {
 				return true;
