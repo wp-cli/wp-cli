@@ -56,6 +56,8 @@ final class Admin implements Context {
 				 * @var int<1, max> $admin_user_id
 				 */
 
+				WP_CLI::debug( sprintf( 'Continuing as admin user %d', $admin_user_id ), Context::DEBUG_GROUP );
+
 				$this->log_in_as_admin_user( $admin_user_id );
 			},
 			defined( 'PHP_INT_MIN' ) ? PHP_INT_MIN : -2147483648, // phpcs:ignore PHPCompatibility.Constants.NewConstants.php_int_minFound
@@ -84,18 +86,10 @@ final class Admin implements Context {
 		if ( is_multisite() ) {
 			$super_admins = get_super_admins();
 
-			if ( ! empty( $super_admins ) ) {
-				$users = get_users(
-					[
-						'login__in' => $super_admins,
-						'number'    => 1,
-						'orderby'   => 'ID',
-						'order'     => 'ASC',
-					]
-				);
-
-				if ( ! empty( $users ) ) {
-					return $users[0]->ID;
+			foreach ( $super_admins as $super_admin_login ) {
+				$user = get_user_by( 'login', $super_admin_login );
+				if ( $user ) {
+					return $user->ID;
 				}
 			}
 
