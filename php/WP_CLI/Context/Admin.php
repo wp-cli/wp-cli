@@ -99,7 +99,7 @@ final class Admin implements Context {
 				}
 			}
 
-			WP_CLI::error( "No super admin user found. Specify one with --user=<login>." );
+			WP_CLI::error( 'No super admin user found. Specify one with --user=<login>.' );
 		}
 
 		$admins = get_users(
@@ -115,7 +115,7 @@ final class Admin implements Context {
 			return $admins[0]->ID;
 		}
 
-		WP_CLI::error( "No administrator user found. Specify one with --user=<login>." );
+		WP_CLI::error( 'No administrator user found. Specify one with --user=<login>.' );
 	}
 
 	/**
