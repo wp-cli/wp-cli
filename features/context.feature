@@ -276,6 +276,43 @@ Feature: Context handling via --context global flag
       User ID in admin_init: {EDITOR_ID}
       """
 
+  Scenario: Admin context resolves a super admin on multisite when no user is specified
+    Given a WP install
+    When I run `wp core install --url=example.com --title=Test --admin_user=wpcli --admin_email=admin@example.com`
+    And I run `wp core multisite-convert`
+    And I run `wp user create anotheradmin anotheradmin@example.com --role=administrator`
+    And I run `wp super-admin add anotheradmin`
+    And I run `wp super-admin remove wpcli`
+
+    When I run `wp --context=admin eval 'echo "Current user: " . wp_get_current_user()->user_login;'`
+    Then the return code should be 0
+    And STDOUT should contain:
+      """
+      Current user: anotheradmin
+      """
+
+  Scenario: Admin context resolves an administrator on single site when no user is specified
+    Given a WP install
+    When I run `wp --context=admin eval 'echo "User ID: " . get_current_user_id();'`
+    Then the return code should be 0
+    And STDOUT should contain:
+      """
+      User ID: 1
+      """
+
+  Scenario: Admin context emits error when no suitable admin user is found on multisite
+    Given a WP install
+    When I run `wp core install --url=example.com --title=Test --admin_user=wpcli --admin_email=admin@example.com`
+    And I run `wp core multisite-convert`
+    And I run `wp super-admin remove wpcli`
+
+    When I try `wp --context=admin eval ''`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Error: No super admin user found. Specify one with --user=<login>.
+      """
+
   Scenario: Admin context throws an error for a non-existent user
     Given a WP install
     And a wp-cli.yml file:
