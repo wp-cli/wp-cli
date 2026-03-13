@@ -381,21 +381,21 @@ Feature: `wp cli completions` tasks
     When I run `wp cli completions --line="wp plugin list --url=fo" --point=100`
     Then STDOUT should contain:
       """
-      foo.example.com/
+      foo.example.com
       """
     And STDOUT should contain:
       """
-      foot.example.com/
+      foot.example.com
       """
     And STDOUT should contain:
       """
-      football.example.com/
+      football.example.com
       """
 
     When I run `wp cli completions --line="wp plugin list --url=http://bar" --point=100`
     Then STDOUT should contain:
       """
-      http://bar.example.com/
+      http://bar.example.com
       """
 
   Scenario: Bash Completion for flag values with enum options

@@ -28,30 +28,26 @@ class Completions {
 			array_pop( $this->words );
 		}
 
-		// Last word is an incomplete `--url` parameter
+		// Last word is an incomplete `--url` parameter.
 		if ( 0 === strpos( $this->cur_word, '--url=' ) ) {
 			$parameter      = explode( '=', $this->cur_word, 2 );
 			$this->cur_word = isset( $parameter[1] ) ? $parameter[1] : '';
 			$urls           = $this->get_network_urls();
 
-			// So we can remove the network URL from the subdirectory
-			$home_url = WP_CLI::runcommand(
-				'option get home',
-				[
-					'return' => 'stdout',
-				]
-			);
+			// So we can remove the network URL from the subdirectory.
+			$home_url           = $this->get_network_home_url();
+			$home_url_no_scheme = preg_replace( '#^https?://#', '', $home_url );
 
 			foreach ( $urls as $url ) {
 				$this->add( $url );
 				$url_no_scheme = preg_replace( '#^https?://#', '', $url );
 				if ( $url_no_scheme && $url_no_scheme !== $url ) {
-					$this->add( $url_no_scheme );
+					$this->add( rtrim( $url_no_scheme, '/\\' ) );
 				}
 
-				$url_no_home = str_replace( Utils\trailingslashit( $home_url ), '', $url );
+				$url_no_home = str_replace( Utils\trailingslashit( $home_url_no_scheme ), '', $url_no_scheme );
 				if ( $url_no_home !== $url ) {
-					$this->add( $url_no_home );
+					$this->add( rtrim( $url_no_home, '/\\' ) );
 				}
 			}
 
@@ -217,6 +213,34 @@ class Completions {
 	}
 
 	/**
+	 * Get the current network's home URL.
+	 *
+	 * @return string Home URL.
+	 */
+	private function get_network_home_url() {
+		$cache = WP_CLI::get_cache();
+
+		// Use the WP root to key the cache, so we don't mix results from different projects.
+		$wp_root   = WP_CLI::get_runner()->find_wp_root();
+		$cache_key = sprintf( 'network-home:%s', md5( $wp_root ) );
+
+		$result = $cache->read( $cache_key, 300 ); // 5 minutes TTL
+
+		if ( false === $result ) {
+			$result = WP_CLI::runcommand(
+				'option get home',
+				[
+					'return' => 'stdout',
+				]
+			);
+
+			$cache->write( $cache_key, $result );
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Get URLs in the Multisite network matching the input.
 	 *
 	 * @return string[] All of the URLs.
@@ -228,31 +252,26 @@ class Completions {
 		$wp_root   = WP_CLI::get_runner()->find_wp_root();
 		$cache_key = sprintf( 'network-urls:%s', md5( $wp_root ) );
 
-		$urls = $cache->read( $cache_key, 300 ); // 5 minutes TTL
-		if ( $urls ) {
-			$urls = json_decode( $urls, true );
+		$result = $cache->read( $cache_key, 300 ); // 5 minutes TTL
 
-			/**
-			 * @var string[] $urls
-			 */
-			return $urls;
+		if ( false === $result ) {
+			$result = WP_CLI::runcommand(
+				'site list',
+				[
+					'return'       => 'stdout',
+					'command_args' => [ '--field=url', '--number=-1', '--format=json' ],
+				]
+			);
+
+			$cache->write( $cache_key, $result );
 		}
 
-		$result = WP_CLI::runcommand(
-			'site list',
-			[
-				'return'       => 'stdout',
-				'command_args' => [ '--field=url', '--number=-1', '--format=json' ],
-			]
-		);
-
-		$cache->write( $cache_key, $result );
-
 		/**
-		 * @var string[] $urls
+		 * @var string[]|null $urls
 		 */
-		$urls = json_decode( $result, true );
-		return $urls;
+		$urls = json_decode( (string) $result, true );
+
+		return is_array( $urls ) ? $urls : [];
 	}
 
 	/**
