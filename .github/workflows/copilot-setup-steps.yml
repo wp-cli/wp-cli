@@ -21,9 +21,7 @@ jobs:
 
       - name: Check existence of composer.json file
         id: check_composer_file
-        uses: andstor/file-existence-action@076e0072799f4942c8bc574a82233e1e4d13e9d6 # v3
-        with:
-          files: "composer.json"
+        run: echo "files_exists=$(test -f composer.json && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
       - name: Set up PHP environment
         if: steps.check_composer_file.outputs.files_exists == 'true'

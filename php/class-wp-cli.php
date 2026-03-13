@@ -23,7 +23,7 @@ use WP_CLI\WpHttpCacheManager;
 /**
  * Various utilities for WP-CLI commands.
  *
- * @phpstan-type GlobalConfig array{path: string|null, ssh: string|null, http: string|null, url: string|null, user: string|null, 'skip-plugins': true|string[], 'skip-themes': true|string[], 'skip-packages': bool, require: string[], exec: string[], context: string, debug: string|true, prompt: false|string, quiet: bool, apache_modules: string[]}
+ * @phpstan-type GlobalConfig array{path: string|null, ssh: string|null, 'ssh-args': string[], http: string|null, url: string|null, user: string|null, 'skip-plugins': true|string[], 'skip-themes': true|string[], 'skip-packages': bool, require: string[], exec: string[], context: string, debug: string|true, prompt: false|string, quiet: bool, apache_modules: string[]}
  *
  * @phpstan-type FlagParameter array{type: 'flag', name: string, description?: string, optional?: bool, repeating?: bool, aliases?: string[]}
  * @phpstan-type AssocParameter array{type: 'assoc', name: string, description?: string, options?: string[], default?: string, optional?: bool, value: array{optional: bool, name?: string}, repeating?: bool, aliases?: string[]}
@@ -115,8 +115,8 @@ class WP_CLI {
 
 		if ( ! $cache ) {
 			$dir      = Utils\get_cache_dir();
-			$ttl      = (int) getenv( 'WP_CLI_CACHE_EXPIRY' ) ? : 15552000;
-			$max_size = (int) getenv( 'WP_CLI_CACHE_MAX_SIZE' ) ? : 314572800;
+			$ttl      = (int) Utils\get_env_or_config( 'WP_CLI_CACHE_EXPIRY' ) ? : 15552000;
+			$max_size = (int) Utils\get_env_or_config( 'WP_CLI_CACHE_MAX_SIZE' ) ? : 314572800;
 			// 6 months, 300mb
 			$cache = new FileCache( $dir, $ttl, $max_size );
 
@@ -1377,6 +1377,8 @@ class WP_CLI {
 	 * @param bool $return_detailed Whether to return an exit status (default) or detailed execution results.
 	 * @param array $runtime_args Override one or more global args (path,url,user,allow-root)
 	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
+	 *
+	 * @phpstan-return ($return_detailed is false ? int : ProcessRun)
 	 */
 	public static function launch_self( $command, $args = [], $assoc_args = [], $exit_on_error = true, $return_detailed = false, $runtime_args = [] ) {
 		$reused_runtime_args = [
