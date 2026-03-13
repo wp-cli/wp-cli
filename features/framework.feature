@@ -507,3 +507,26 @@ Feature: Load WP-CLI
       """
       wp_sitecategories
       """
+
+  Scenario: WP-CLI autoloaders take precedence over plugin autoloaders after WordPress loads
+    Given a WP installation
+    And a wp-content/mu-plugins/prepend-autoloader.php file:
+      """
+      <?php
+      // Simulate a plugin that prepends its own autoloader.
+      function wpcli_test_mu_autoload( $class ) {
+          // This intentionally does nothing but exists to be prepended.
+      }
+
+      spl_autoload_register(
+          'wpcli_test_mu_autoload',
+          true,
+          true
+      );
+      """
+
+    When I run `wp eval '$autoloaders = spl_autoload_functions(); $first = $autoloaders[0]; $plugin_index = array_search( "wpcli_test_mu_autoload", $autoloaders, true ); echo ( $plugin_index !== false && 0 !== $plugin_index ) ? "WP-CLI autoloader is first" : "Plugin autoloader is first";'`
+    Then STDOUT should contain:
+      """
+      WP-CLI autoloader is first
+      """
