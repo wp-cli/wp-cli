@@ -539,15 +539,11 @@ Feature: Bootstrap WP-CLI
   Scenario: Package autoloader has priority over fallback autoloader
     Given an empty directory
 
-    # Verify both autoloaders are loaded in debug output
-    # The order (Fallback before Package) ensures locally installed packages
-    # override phar-bundled versions due to spl_autoload_register prepend behavior
+    # Verify both autoloaders are loaded in debug output, and that the fallback
+    # autoloader is initialized before the package autoloader so that locally
+    # installed packages override phar-bundled versions.
     When I try `wp cli version --debug`
-    Then STDERR should contain:
+    Then STDERR should match:
       """
-      WP_CLI\Bootstrap\IncludeFallbackAutoloader
-      """
-    And STDERR should contain:
-      """
-      WP_CLI\Bootstrap\IncludePackageAutoloader
+      WP_CLI\\Bootstrap\\IncludeFallbackAutoloader[\s\S]*WP_CLI\\Bootstrap\\IncludePackageAutoloader
       """
