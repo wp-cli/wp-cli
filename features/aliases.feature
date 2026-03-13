@@ -842,6 +842,12 @@ Feature: Create shortcuts to specific WordPress installs
       https://example.com
       """
 
+    When I run `wp --alias=bar option get home`
+    Then STDOUT should be:
+      """
+      https://example.com
+      """
+
   Scenario: Use environment variables in SSH alias definitions
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -902,11 +908,6 @@ Feature: Create shortcuts to specific WordPress installs
     And STDOUT should contain:
       """
       ${env.SSH_USER}
-      """
-    When I run `wp --alias=bar option get home`
-    Then STDOUT should be:
-      """
-      https://example.com
       """
 
   Scenario: Use --alias flag with groups
