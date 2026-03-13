@@ -902,6 +902,7 @@ Feature: Create shortcuts to specific WordPress installs
     And STDOUT should contain:
       """
       ${env.SSH_USER}
+      """
     When I run `wp --alias=bar option get home`
     Then STDOUT should be:
       """
