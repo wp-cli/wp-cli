@@ -2,7 +2,7 @@ Feature: Utilities that do NOT depend on WordPress code
 
   @require-mysql
   Scenario Outline: Check that `proc_open()` and `proc_close()` aren't disabled for `Utils\run_mysql_command()`
-    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} --skip-wordpress eval 'WP_CLI\Utils\run_mysql_command( null, array() );'`
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} --skip-wordpress eval "WP_CLI\Utils\run_mysql_command( null, array() );"`
     Then STDERR should contain:
       """
       Error: Cannot do 'run_mysql_command': The PHP functions `proc_open()` and/or `proc_close()` are disabled
@@ -16,7 +16,7 @@ Feature: Utilities that do NOT depend on WordPress code
       | proc_close |
 
   Scenario Outline: Check that `proc_open()` and `proc_close()` aren't disabled for `Utils\launch_editor_for_input()`
-    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} --skip-wordpress eval 'WP_CLI\Utils\launch_editor_for_input( null, null );'`
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} --skip-wordpress eval "WP_CLI\Utils\launch_editor_for_input( null, null );"`
     Then STDERR should contain:
       """
       Error: Cannot do 'launch_editor_for_input': The PHP functions `proc_open()` and/or `proc_close()` are disabled
@@ -31,7 +31,7 @@ Feature: Utilities that do NOT depend on WordPress code
 
   @require-mysql
   Scenario: Check that `Utils\run_mysql_command()` uses STDOUT and STDERR by default
-    When I run `wp --skip-wordpress eval 'WP_CLI\Utils\run_mysql_command( "{MYSQL_BINARY} --no-defaults", [ "user" => "{DB_USER}", "pass" => "{DB_PASSWORD}", "host" => "{DB_HOST}", "execute" => "SHOW DATABASES;" ] );'`
+    When I run `wp --skip-wordpress eval "WP_CLI\Utils\run_mysql_command( '{MYSQL_BINARY} --no-defaults', [ 'user' => '{DB_USER}', 'pass' => '{DB_PASSWORD}', 'host' => '{DB_HOST}', 'execute' => 'SHOW DATABASES;' ] );"`
     Then STDOUT should contain:
       """
       Database
@@ -42,7 +42,7 @@ Feature: Utilities that do NOT depend on WordPress code
       """
     And STDERR should be empty
 
-    When I try `wp --skip-wordpress eval 'WP_CLI\Utils\run_mysql_command( "{MYSQL_BINARY} --no-defaults", [ "user" => "{DB_USER}", "pass" => "{DB_PASSWORD}", "host" => "{DB_HOST}", "execute" => "broken query" ]);'`
+    When I try `wp --skip-wordpress eval "WP_CLI\Utils\run_mysql_command( '{MYSQL_BINARY} --no-defaults', [ 'user' => '{DB_USER}', 'pass' => '{DB_PASSWORD}', 'host' => '{DB_HOST}', 'execute' => 'broken query' ]);"`
     Then STDOUT should be empty
     And STDERR should contain:
       """
@@ -51,7 +51,8 @@ Feature: Utilities that do NOT depend on WordPress code
 
   @require-mysql
   Scenario: Check that `Utils\run_mysql_command()` can return data and errors if requested
-    When I run `wp --skip-wordpress eval 'list( $stdout, $stderr, $exit_code ) = WP_CLI\Utils\run_mysql_command( "{MYSQL_BINARY} --no-defaults", [ "user" => "{DB_USER}", "pass" => "{DB_PASSWORD}", "host" => "{DB_HOST}", "execute" => "SHOW DATABASES;" ], null, false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );'`
+    Given an empty directory
+    When I run `wp --skip-wordpress eval "list( \$stdout, \$stderr, \$exit_code ) = WP_CLI\\Utils\\run_mysql_command( \"{MYSQL_BINARY} --no-defaults\", [ \"user\" => \"{DB_USER}\", \"pass\" => \"{DB_PASSWORD}\", \"host\" => \"{DB_HOST}\", \"execute\" => \"SHOW DATABASES;\" ], null, false ); fwrite( STDOUT, strtoupper( \$stdout ) ); fwrite( STDERR, strtoupper( \$stderr ) );"`
     Then STDOUT should not contain:
       """
       Database
@@ -70,7 +71,7 @@ Feature: Utilities that do NOT depend on WordPress code
       """
     And STDERR should be empty
 
-    When I try `wp --skip-wordpress eval 'list( $stdout, $stderr, $exit_code ) = WP_CLI\Utils\run_mysql_command( "{MYSQL_BINARY} --no-defaults", [ "user" => "{DB_USER}", "pass" => "{DB_PASSWORD}", "host" => "{DB_HOST}", "execute" => "broken query" ], null, false ); fwrite( STDOUT, strtoupper( $stdout ) ); fwrite( STDERR, strtoupper( $stderr ) );'`
+    When I try `wp --skip-wordpress eval "list( \$stdout, \$stderr, \$exit_code ) = WP_CLI\\Utils\\run_mysql_command( \"{MYSQL_BINARY} --no-defaults\", [ \"user\" => \"{DB_USER}\", \"pass\" => \"{DB_PASSWORD}\", \"host\" => \"{DB_HOST}\", \"execute\" => \"broken query\" ], null, false ); fwrite( STDOUT, strtoupper( \$stdout ) ); fwrite( STDERR, strtoupper( \$stderr ) );"`
     Then STDOUT should be empty
     And STDERR should not contain:
       """
@@ -83,7 +84,7 @@ Feature: Utilities that do NOT depend on WordPress code
 
   Scenario: Check `Utils\get_temp_dir()` when `sys_temp_dir` directive set
     # `sys_temp_dir` set to unwritable.
-    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dsys_temp_dir=\\tmp\\} --skip-wordpress eval 'echo WP_CLI\Utils\get_temp_dir();'`
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dsys_temp_dir=\\tmp\\} --skip-wordpress eval "echo WP_CLI\Utils\get_temp_dir();"`
     Then STDERR should contain:
       """
       Warning: Temp directory isn't writable
@@ -99,7 +100,7 @@ Feature: Utilities that do NOT depend on WordPress code
     And the return code should be 0
 
     # `sys_temp_dir` unset.
-    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--dsys_temp_dir=} --skip-wordpress eval 'echo WP_CLI\Utils\get_temp_dir();'`
+    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--dsys_temp_dir=} --skip-wordpress eval "echo WP_CLI\Utils\get_temp_dir();"`
     Then STDOUT should match /\/$/
 
   @require-mysql
@@ -159,7 +160,7 @@ Feature: Utilities that do NOT depend on WordPress code
     Then save STDOUT as {SKIP_COLUMN_STATISTICS_FLAG}
 
     # This throws a warning because of the password.
-    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=256M -ddisable_functions=ini_set} eval '\WP_CLI\Utils\run_mysql_command("/usr/bin/env {SQL_DUMP_COMMAND} {SKIP_COLUMN_STATISTICS_FLAG} --no-tablespaces {DB_NAME}", [ "user" => "{DB_USER}", "pass" => "{DB_PASSWORD}", "host" => "{DB_HOST}" ], null, true);'`
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=256M -ddisable_functions=ini_set} eval "\WP_CLI\Utils\run_mysql_command('/usr/bin/env {SQL_DUMP_COMMAND} {SKIP_COLUMN_STATISTICS_FLAG} --no-tablespaces {DB_NAME}', [ 'user' => '{DB_USER}', 'pass' => '{DB_PASSWORD}', 'host' => '{DB_HOST}' ], null, true);"`
     Then the return code should be 0
     And STDOUT should not be empty
     And STDOUT should contain:

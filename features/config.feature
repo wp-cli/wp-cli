@@ -237,7 +237,7 @@ Feature: Have a config file
       """
 
     # Arbitrary values should be passed, without warnings
-    When I run `wp eval 'echo json_encode( $assoc_args );'`
+    When I run `wp eval "echo json_encode( compact('assoc_args')['assoc_args'] );"`
     Then STDOUT should be JSON containing:
       """
       {"foo": "bar"}
@@ -750,13 +750,13 @@ Feature: Have a config file
       Error: Strange wp-config.php file: wp-settings.php is not loaded directly.
       """
 
-    When I run `wp eval 'var_export( defined("MY_CONSTANT") );'`
+    When I run `wp eval "var_export( defined('MY_CONSTANT') );"`
     Then STDOUT should be:
       """
       true
       """
 
-    When I run `wp eval 'var_export( defined("MY_OTHER_CONSTANT") );'`
+    When I run `wp eval "var_export( defined('MY_OTHER_CONSTANT') );"`
     Then STDOUT should be:
       """
       true
@@ -770,7 +770,7 @@ Feature: Have a config file
 
   Scenario: Tilde expansion in config file path
     Given a WP installation in 'subdir'
-    And I run `bash -c 'ln -s $(pwd)/subdir $HOME/test-wp-config-tilde'`
+    And I run `bash -c "ln -s $(pwd)/subdir $HOME/test-wp-config-tilde"`
     And a wp-cli.yml file:
       """
       path: ~/test-wp-config-tilde

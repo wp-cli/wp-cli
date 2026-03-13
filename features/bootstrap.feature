@@ -89,7 +89,7 @@ Feature: Bootstrap WP-CLI
       """
     And I run `composer install --no-interaction 2>&1`
 
-    When I run `vendor/bin/wp eval '\WP_CLI::Success( "WP-Standard-Eval" );'`
+    When I run `vendor/bin/wp eval "\WP_CLI::Success( 'WP-Standard-Eval' );"`
     Then STDOUT should contain:
       """
       Success: WP-Override-Eval
@@ -165,7 +165,7 @@ Feature: Bootstrap WP-CLI
       WP-CLI
       """
 
-    When I run `wp eval '\WP_CLI::Success( "WP-Standard-Eval" );'`
+    When I run `wp eval "\WP_CLI::Success( 'WP-Standard-Eval' );"`
     Then STDOUT should contain:
       """
       Success: WP-Standard-Eval
@@ -177,7 +177,7 @@ Feature: Bootstrap WP-CLI
       WP-Override-CLI
       """
 
-    When I run `wp --require=override/override.php eval '\WP_CLI::Success( "WP-Standard-Eval" );'`
+    When I run `wp --require=override/override.php eval "\WP_CLI::Success( 'WP-Standard-Eval' );"`
     Then STDOUT should contain:
       """
       Success: WP-Override-Eval
@@ -253,7 +253,7 @@ Feature: Bootstrap WP-CLI
       WP-CLI
       """
 
-    When I run `wp eval '\WP_CLI::Success( "WP-Standard-Eval" );' --skip-packages`
+    When I run `wp eval "\WP_CLI::Success( 'WP-Standard-Eval' );" --skip-packages`
     Then STDOUT should contain:
       """
       Success: WP-Standard-Eval
@@ -265,7 +265,7 @@ Feature: Bootstrap WP-CLI
       WP-Override-CLI
       """
 
-    When I run `wp eval '\WP_CLI::Success( "WP-Standard-Eval" );'`
+    When I run `wp eval "\WP_CLI::Success( 'WP-Standard-Eval' );"`
     Then STDOUT should contain:
       """
       Success: WP-Override-Eval
@@ -397,7 +397,7 @@ Feature: Bootstrap WP-CLI
       """
     And the return code should be 0
 
-    When I run `wp eval 'echo constant( "WP_CLI_TEST_CONSTANT" );'`
+    When I run `wp eval "echo constant( 'WP_CLI_TEST_CONSTANT' );"`
     Then STDOUT should be:
       """
       foo

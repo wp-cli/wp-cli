@@ -14,7 +14,7 @@ Feature: Utilities that depend on WordPress code
       """
 
     When I run `wp post create --post_title="Foo Bar" --porcelain`
-    And I run `wp --require=test.php eval ''`
+    And I run `wp --require=test.php eval ""`
     Then STDOUT should be:
       """
       ,,,
