@@ -3,6 +3,7 @@
 namespace WP_CLI;
 
 use WP_CLI;
+use WP_CLI\Utils;
 
 /**
  * Handles fatal errors to detect plugin/theme issues and suggest workarounds.
@@ -221,7 +222,7 @@ class ShutdownHandler {
 	private static function should_prompt_rerun() {
 		// Check environment variable WP_CLI_SKIP_PROMPT
 		// If set to 'yes', automatically rerun; if 'no', don't prompt
-		$skip_prompt = getenv( 'WP_CLI_SKIP_PROMPT' );
+		$skip_prompt = Utils\get_env_or_config( 'WP_CLI_SKIP_PROMPT' );
 
 		if ( false !== $skip_prompt ) {
 			return 'yes' !== $skip_prompt && 'no' !== $skip_prompt;
@@ -238,7 +239,7 @@ class ShutdownHandler {
 	 */
 	private static function prompt_and_rerun( $skip ) {
 		// Get environment variable to check default behavior
-		$skip_prompt = getenv( 'WP_CLI_SKIP_PROMPT' );
+		$skip_prompt = Utils\get_env_or_config( 'WP_CLI_SKIP_PROMPT' );
 
 		// If set to 'yes', automatically rerun without prompting
 		if ( 'yes' === $skip_prompt ) {
