@@ -967,6 +967,8 @@ Feature: Have a config file
       """
 
   Scenario: Custom system config path via WP_CLI_SYSTEM_SETTINGS_PATH
+    Given an empty directory
+    And a system-config.yml file:
       """
       disabled_commands:
         - eval
