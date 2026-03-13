@@ -543,7 +543,4 @@ Feature: Bootstrap WP-CLI
     # autoloader is initialized before the package autoloader so that locally
     # installed packages override phar-bundled versions.
     When I try `wp cli version --debug`
-    Then STDERR should match:
-      """
-      WP_CLI\\Bootstrap\\IncludeFallbackAutoloader[\s\S]*WP_CLI\\Bootstrap\\IncludePackageAutoloader
-      """
+    Then STDERR should match /WP_CLI\\Bootstrap\\IncludeFallbackAutoloader[\s\S]*WP_CLI\\Bootstrap\\IncludePackageAutoloader/
