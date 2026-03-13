@@ -36,12 +36,12 @@ class Completions {
 
 			// So we can remove the network URL from the subdirectory.
 			$home_url           = $this->get_network_home_url();
-			$home_url_no_scheme = preg_replace( '#^https?://#', '', $home_url );
+			$home_url_no_scheme = (string) preg_replace( '#^https?://#', '', $home_url );
 
 			foreach ( $urls as $url ) {
 				$this->add( $url );
-				$url_no_scheme = preg_replace( '#^https?://#', '', $url );
-				if ( $url_no_scheme && $url_no_scheme !== $url ) {
+				$url_no_scheme = (string) preg_replace( '#^https?://#', '', $url );
+				if ( $url_no_scheme !== $url ) {
 					$this->add( rtrim( $url_no_scheme, '/\\' ) );
 				}
 
