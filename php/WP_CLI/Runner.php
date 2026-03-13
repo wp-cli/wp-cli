@@ -292,7 +292,7 @@ class Runner {
 	 * @return string
 	 */
 	public function get_packages_dir_path() {
-		$packages_dir = (string) getenv( 'WP_CLI_PACKAGES_DIR' );
+		$packages_dir = (string) Utils\get_env_or_config( 'WP_CLI_PACKAGES_DIR' );
 		if ( $packages_dir ) {
 			$packages_dir = Utils\trailingslashit( $packages_dir );
 		} else {
@@ -606,7 +606,7 @@ class Runner {
 		if ( ! empty( $options['back_compat_conversions'] ) ) {
 			list( $args, $assoc_args ) = self::back_compat_conversions( $args, $assoc_args );
 		}
-		$r = $this->find_command_to_run( $args, getenv( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
+		$r = $this->find_command_to_run( $args, Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
 		if ( is_string( $r ) ) {
 			WP_CLI::error( $r );
 		}
@@ -679,7 +679,7 @@ class Runner {
 
 		$bits = Utils\parse_ssh_url( $connection_string );
 
-		$pre_cmd = getenv( 'WP_CLI_SSH_PRE_CMD' );
+		$pre_cmd = Utils\get_env_or_config( 'WP_CLI_SSH_PRE_CMD' );
 		if ( $pre_cmd ) {
 			WP_CLI::warning( "WP_CLI_SSH_PRE_CMD found, executing the following command(s) on the remote machine:\n $pre_cmd" );
 
@@ -691,7 +691,7 @@ class Runner {
 			$env_vars .= 'WP_CLI_STRICT_ARGS_MODE=1 ';
 		}
 
-		$wp_binary = getenv( 'WP_CLI_SSH_BINARY' ) ?: 'wp';
+		$wp_binary = Utils\get_env_or_config( 'WP_CLI_SSH_BINARY' ) ?: 'wp';
 		$wp_args   = array_slice( (array) $GLOBALS['argv'], 1 );
 
 		if ( $this->alias && ! empty( $wp_args[0] ) && ( '@' . $this->alias === $wp_args[0] || "--alias={$this->alias}" === $wp_args[0] ) ) {
@@ -811,8 +811,8 @@ class Runner {
 				$ssh_args ? $ssh_args . ' ' : '',
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
 				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
-				$is_stdout_tty && ! getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '-t  ' : '',
-				$is_stdin_tty || getenv( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '' : '-i ',
+				$is_stdout_tty && ! Utils\get_env_or_config( 'WP_CLI_DOCKER_NO_TTY' ) ? '-t  ' : '',
+				$is_stdin_tty || Utils\get_env_or_config( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '' : '-i ',
 				escapeshellarg( $bits['host'] ),
 				escapeshellarg( $wp_command )
 			);
@@ -827,7 +827,7 @@ class Runner {
 				$ssh_args ? $ssh_args . ' ' : '',
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
 				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
-				$is_stdout_tty || getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
+				$is_stdout_tty || Utils\get_env_or_config( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
 				escapeshellarg( $bits['host'] ),
 				escapeshellarg( $wp_command )
 			);
@@ -842,8 +842,8 @@ class Runner {
 				$ssh_args ? $ssh_args . ' ' : '',
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
 				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
-				$is_stdout_tty || getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
-				$is_stdin_tty || getenv( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '' : '-i ',
+				$is_stdout_tty || Utils\get_env_or_config( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
+				$is_stdin_tty || Utils\get_env_or_config( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '' : '-i ',
 				escapeshellarg( $bits['host'] ),
 				$wp_command
 			);
@@ -1388,7 +1388,7 @@ class Runner {
 		$runtime_config = Utils\assoc_args_to_str( $filtered_runtime_config );
 
 		// Check if parallel execution is enabled via environment variable.
-		$parallel = (bool) getenv( 'WP_CLI_ALIAS_GROUPS_PARALLEL' );
+		$parallel = (bool) Utils\get_env_or_config( 'WP_CLI_ALIAS_GROUPS_PARALLEL' );
 
 		if ( $parallel ) {
 			// Run aliases in parallel.
@@ -2317,12 +2317,12 @@ class Runner {
 		}
 
 		// Allow hosts and other providers to disable automatic check update.
-		if ( getenv( 'WP_CLI_DISABLE_AUTO_CHECK_UPDATE' ) ) {
+		if ( Utils\get_env_or_config( 'WP_CLI_DISABLE_AUTO_CHECK_UPDATE' ) ) {
 			return;
 		}
 
 		// Permit configuration of number of days between checks.
-		$days_between_checks = getenv( 'WP_CLI_AUTO_CHECK_UPDATE_DAYS' );
+		$days_between_checks = Utils\get_env_or_config( 'WP_CLI_AUTO_CHECK_UPDATE_DAYS' );
 		if ( false === $days_between_checks ) {
 			$days_between_checks = 1;
 		}
@@ -2360,7 +2360,7 @@ class Runner {
 		// Looks like an update is available, so let's prompt to update.
 		$update_args = [];
 		// Allow skipping the confirmation prompt via environment variable.
-		if ( getenv( 'WP_CLI_AUTO_UPDATE_PROMPT' ) === 'no' ) {
+		if ( Utils\get_env_or_config( 'WP_CLI_AUTO_UPDATE_PROMPT' ) === 'no' ) {
 			$update_args['yes'] = true;
 		}
 

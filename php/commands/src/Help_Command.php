@@ -26,7 +26,7 @@ class Help_Command extends WP_CLI_Command {
 	 * @param string[] $args
 	 */
 	public function __invoke( $args ) {
-		$r = WP_CLI::get_runner()->find_command_to_run( $args, getenv( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
+		$r = WP_CLI::get_runner()->find_command_to_run( $args, Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
 
 		if ( is_array( $r ) ) {
 			list( $command ) = $r;
@@ -208,7 +208,7 @@ class Help_Command extends WP_CLI_Command {
 		// For Windows 7 need to set code page to something other than Unicode (65001) to get around "Not enough memory." error with `more.com` on PHP 7.1+.
 		if ( 'more' === $pager && defined( 'PHP_WINDOWS_VERSION_MAJOR' ) && PHP_WINDOWS_VERSION_MAJOR < 10 ) {
 			// Note will also apply to Windows 8 (see https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832.aspx) but probably harmless anyway.
-			$cp = (int) getenv( 'WP_CLI_WINDOWS_CODE_PAGE' ) ?: 1252; // Code page 1252 is the most used so probably the most compat.
+			$cp = (int) Utils\get_env_or_config( 'WP_CLI_WINDOWS_CODE_PAGE' ) ?: 1252; // Code page 1252 is the most used so probably the most compat.
 			sapi_windows_cp_set( $cp );
 		}
 
