@@ -6,6 +6,7 @@ use WP_CLI;
 use WP_CLI\Context;
 use WP_CLI\Fetchers\User;
 use WP_Session_Tokens;
+use WP_User;
 
 /**
  * Context which simulates the administrator backend.
@@ -88,7 +89,8 @@ final class Admin implements Context {
 
 			foreach ( $super_admins as $super_admin_login ) {
 				$user = get_user_by( 'login', $super_admin_login );
-				if ( $user ) {
+				if ( $user instanceof WP_User ) {
+					/** @var int<1, max> */
 					return $user->ID;
 				}
 			}
