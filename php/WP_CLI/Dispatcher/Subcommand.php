@@ -355,6 +355,70 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Resolve argument aliases to their canonical names.
+	 *
+	 * Takes an associative array of arguments and replaces any aliases
+	 * with their canonical parameter names. This allows commands to define
+	 * shorter versions of arguments (e.g., -w for --with-dependencies).
+	 *
+	 * For repeating parameters, alias values are merged with any canonical
+	 * values already provided rather than being discarded.
+	 *
+	 * @param array $assoc_args      Arguments passed to command.
+	 * @param array $aliases         Map of alias => canonical_name.
+	 * @param array $repeating_params Map of canonical_name => true for repeating params.
+	 * @return array Arguments with aliases resolved to canonical names.
+	 */
+	private function resolve_arg_aliases( $assoc_args, $aliases, $repeating_params = [] ) {
+		if ( empty( $aliases ) ) {
+			return $assoc_args;
+		}
+
+		// First pass: copy all non-alias entries to $resolved_args.
+		$resolved_args = [];
+		foreach ( $assoc_args as $key => $value ) {
+			if ( ! isset( $aliases[ $key ] ) ) {
+				$resolved_args[ $key ] = $value;
+			}
+		}
+
+		// Second pass: resolve aliases.
+		foreach ( $assoc_args as $key => $value ) {
+			if ( ! isset( $aliases[ $key ] ) ) {
+				continue;
+			}
+
+			$canonical_key = $aliases[ $key ];
+			WP_CLI::debug( "Alias resolved: --{$key} => --{$canonical_key}", 'bootstrap' );
+
+			if ( ! array_key_exists( $canonical_key, $resolved_args ) ) {
+				// Canonical name not yet present; use alias value.
+				$resolved_args[ $canonical_key ] = $value;
+			} elseif ( ! empty( $repeating_params[ $canonical_key ] ) ) {
+				// Canonical name present and parameter is repeating; merge values.
+				$existing = $resolved_args[ $canonical_key ];
+				if ( ! is_array( $existing ) ) {
+					$existing = [ $existing ];
+				}
+				$alias_values                    = is_array( $value ) ? $value : [ $value ];
+				$resolved_args[ $canonical_key ] = array_merge( $existing, $alias_values );
+			} else {
+				// Canonical name present and not repeating; canonical wins.
+				WP_CLI::debug(
+					sprintf(
+						'Ignoring alias --%s because --%s was already provided.',
+						$key,
+						$canonical_key
+					),
+					'bootstrap'
+				);
+			}
+		}
+
+		return $resolved_args;
+	}
+
+	/**
 	 * Validate the supplied arguments to the command.
 	 * Throws warnings or errors if arguments are missing
 	 * or invalid.
@@ -565,6 +629,70 @@ class Subcommand extends CompositeCommand {
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) {
 		static $prompted_once = false;
+
+		// Build alias map from the parsed synopsis and resolve to canonical names.
+		$aliases          = [];
+		$repeating_params = [];
+		$synopsis_spec    = SynopsisParser::parse( $this->get_synopsis() );
+
+		// Build a set of assoc/flag canonical names (local + global) for conflict detection.
+		// Positional parameter names are excluded because an alias matching a positional
+		// name would not cause any real ambiguity (--alias vs bare positional).
+		$assoc_flag_names = [];
+		foreach ( $synopsis_spec as $param ) {
+			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) ) {
+				$assoc_flag_names[] = $param['name'];
+			}
+			if ( 'assoc' === $param['type'] && ! empty( $param['repeating'] ) ) {
+				$repeating_params[ $param['name'] ] = true;
+			}
+		}
+		foreach ( SynopsisParser::parse( $this->get_global_params() ) as $param ) {
+			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) ) {
+				$assoc_flag_names[] = $param['name'];
+			}
+		}
+		$assoc_flag_names = array_unique( $assoc_flag_names );
+
+		foreach ( $synopsis_spec as $param ) {
+			if ( empty( $param['aliases'] ) ) {
+				continue;
+			}
+
+			foreach ( $param['aliases'] as $alias ) {
+				// Detect duplicate aliases (same alias used for different params).
+				if ( isset( $aliases[ $alias ] ) && $aliases[ $alias ] !== $param['name'] ) {
+					WP_CLI::warning(
+						sprintf(
+							"Alias '%s' for parameter '%s' conflicts with existing alias for parameter '%s'. Skipping.",
+							$alias,
+							$param['name'],
+							$aliases[ $alias ]
+						)
+					);
+					continue;
+				}
+
+				// Detect aliases that conflict with an assoc/flag canonical parameter name.
+				if ( in_array( $alias, $assoc_flag_names, true ) && $alias !== $param['name'] ) {
+					WP_CLI::warning(
+						sprintf(
+							"Alias '%s' for parameter '%s' conflicts with an existing parameter name. Skipping.",
+							$alias,
+							$param['name']
+						)
+					);
+					continue;
+				}
+
+				$aliases[ $alias ] = $param['name'];
+			}
+		}
+		if ( ! empty( $aliases ) ) {
+			WP_CLI::debug( 'Resolving argument aliases: ' . implode( ', ', array_keys( $aliases ) ), 'bootstrap' );
+		}
+		$assoc_args = $this->resolve_arg_aliases( $assoc_args, $aliases, $repeating_params );
+		$extra_args = $this->resolve_arg_aliases( $extra_args, $aliases, $repeating_params );
 
 		if ( 'help' !== $this->name ) {
 			if ( \WP_CLI::get_config( 'prompt' ) && ! $prompted_once ) {

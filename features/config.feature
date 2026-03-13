@@ -556,7 +556,6 @@ Feature: Have a config file
         ssh: vagrant@otherexample.test/srv/www/otherexample.com/current
       """
 
-  @require-wp-3.9
   Scenario: WordPress installation with local dev DOMAIN_CURRENT_SITE
     Given a WP multisite installation
     And a local-dev.php file:

@@ -81,8 +81,6 @@ Feature: Utilities that do NOT depend on WordPress code
       YOU HAVE AN ERROR IN YOUR SQL SYNTAX
       """
 
-  # INI directive `sys_temp_dir` introduced PHP 5.5.0.
-  @require-php-5.5
   Scenario: Check `Utils\get_temp_dir()` when `sys_temp_dir` directive set
     # `sys_temp_dir` set to unwritable.
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--dsys_temp_dir=\\tmp\\} --skip-wordpress eval 'echo WP_CLI\Utils\get_temp_dir();'`
