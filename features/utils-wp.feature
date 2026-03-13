@@ -979,3 +979,43 @@ Feature: Utilities that depend on WordPress code
       """
       WP-Stash (Stash\Driver\FileSystem)
       """
+
+  Scenario: WP_DEBUG_LOG with custom path
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      define('WP_DEBUG', true);
+      define('WP_DEBUG_DISPLAY', false);
+      define('WP_DEBUG_LOG', '/tmp/custom_debug.log');
+
+      require_once(ABSPATH . 'wp-settings.php');
+      """
+    And a test-debug-log.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-debug-log', function() {
+        error_log('Test error message');
+        echo 'Error logged';
+      } );
+      """
+
+    When I run `rm -f /tmp/custom_debug.log`
+    And I run `wp --require=test-debug-log.php test-debug-log`
+    Then STDOUT should contain:
+      """
+      Error logged
+      """
+    And the /tmp/custom_debug.log file should exist
+    And the /tmp/custom_debug.log file should contain:
+      """
+      Test error message
+      """

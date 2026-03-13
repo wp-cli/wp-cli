@@ -19,6 +19,14 @@ return [
 		'desc'    => 'Perform operation against a remote server over SSH (or a container using scheme of "docker", "docker-compose", "docker-compose-run", "vagrant").',
 	],
 
+	'ssh-args'          => [
+		'runtime'  => '=<args>',
+		'file'     => '<args>',
+		'desc'     => 'Pass additional arguments to SSH (or other tools specified by --ssh scheme).',
+		'multiple' => true,
+		'default'  => [],
+	],
+
 	'http'              => [
 		'runtime' => '=<http>',
 		'file'    => '<http>',
@@ -128,6 +136,14 @@ return [
 		'file'    => false, # Explicit. Just in case the default changes.
 		'runtime' => '',
 		'hidden'  => true,
+	],
+
+	'alias'             => [
+		'runtime'  => '=<name>',
+		'file'     => '<name>',
+		'desc'     => 'Name of the alias to use. Aliases can reference local WordPress installations or remote SSH connections. Aliases are defined in the wp-cli.yml file.',
+		'multiple' => false,
+		'default'  => '',
 	],
 
 ];

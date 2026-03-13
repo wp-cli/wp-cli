@@ -3,6 +3,7 @@
 use cli\Shell;
 use WP_CLI\Dispatcher;
 use WP_CLI\Utils;
+use WP_CLI\Process;
 
 class Help_Command extends WP_CLI_Command {
 
@@ -25,7 +26,7 @@ class Help_Command extends WP_CLI_Command {
 	 * @param string[] $args
 	 */
 	public function __invoke( $args ) {
-		$r = WP_CLI::get_runner()->find_command_to_run( $args, getenv( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
+		$r = WP_CLI::get_runner()->find_command_to_run( $args, Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
 
 		if ( is_array( $r ) ) {
 			list( $command ) = $r;
@@ -115,6 +116,68 @@ class Help_Command extends WP_CLI_Command {
 		return implode( "\n", $lines );
 	}
 
+	/**
+	 * Locate an executable binary or command by name using a platform-appropriate detector.
+	 *
+	 * On Windows, this uses `where`, and on POSIX systems it uses `command -v`.
+	 * This may not work accurately in PowerShell.
+	 *
+	 * @param string $binary Name of the binary or command to be found.
+	 * @return bool True if this command has determined that the binary or other command exists, false otherwise.
+	 */
+	public static function binary_exists( $binary ) {
+		if ( Utils\is_windows() ) {
+			// This may not work in PowerShell; see https://stackoverflow.com/a/304447
+			// If this needs to be adjusted to use 'where.exe' for PowerShell,
+			// then we will need to add a way of detecting whether wp-cli is running in PowerShell.
+			$detector = 'where';
+		} else {
+			// POSIX method to detect whether a command exists
+			// This sometimes detects aliases.
+			$detector = 'command -v';
+		}
+
+		$result = Process::create( $detector . ' ' . escapeshellarg( $binary ), null, null )->run();
+
+		if ( 0 !== $result->return_code ) {
+			// We could not reliably determine that the binary exists
+			return false;
+		} else {
+			// POSIX binaries: command -v will return the path and exit 0
+			// aliases: command -v may return the alias command and exit 0
+			return true;
+		}
+	}
+
+	/**
+	 * Determine whether to use `less` or `more` as a pager
+	 *
+	 * This caches the determined pager.
+	 *
+	 * @return string The command to use for the pager. Defaults to `more`.
+	 */
+	public static function locate_pager() {
+		static $pager = null;
+
+		if ( empty( $pager ) ) {
+			if ( self::binary_exists( 'less' ) ) {
+				// less is not available in all systems
+				$pager = 'less -R';
+			} else {
+				// more is part of the POSIX definition, and is also available on Windows.
+				$pager = 'more';
+			}
+		}
+
+		return $pager;
+	}
+
+	/**
+	 * Pass a given set of output through the system's terminal pager.
+	 *
+	 * @param string $out The output to be run through the pager.
+	 * @return mixed Termination status of the pager as reported by https://www.php.net/manual/en/function.proc-close.php
+	 */
 	private static function pass_through_pager( $out ) {
 
 		if ( ! Utils\check_proc_available( null /*context*/, true /*return*/ ) ) {
@@ -124,14 +187,28 @@ class Help_Command extends WP_CLI_Command {
 		}
 
 		$pager = getenv( 'PAGER' );
+		// if '' we should assume that the user has explicitly disabled the pager by setting `PAGER=`
+		if ( '' === $pager ) {
+			WP_CLI::line( $out );
+			return 0;
+		}
 		if ( false === $pager ) {
-			$pager = Utils\is_windows() ? 'more' : 'less -R';
+			$pager = self::locate_pager();
+		}
+
+		// If pager doesn't support ANSI colors, strip them from output.
+		// Common pagers that don't support colors: more, pg, cat, and less without -R.
+		// Pagers with color support typically use -R flag (less -R, most -R).
+		if ( ! preg_match( '/(-R|--RAW-CONTROL-CHARS|--raw-control-chars)/i', $pager )
+			&& preg_match( '/(^|[\s\/\\\\])(less|more|pg|cat)(\s|$)/i', $pager ) ) {
+			$out = \cli\Colors::decolorize( $out );
+			WP_CLI::debug( 'Stripping ANSI color codes for pager without color support: ' . $pager, 'help' );
 		}
 
 		// For Windows 7 need to set code page to something other than Unicode (65001) to get around "Not enough memory." error with `more.com` on PHP 7.1+.
 		if ( 'more' === $pager && defined( 'PHP_WINDOWS_VERSION_MAJOR' ) && PHP_WINDOWS_VERSION_MAJOR < 10 ) {
 			// Note will also apply to Windows 8 (see https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832.aspx) but probably harmless anyway.
-			$cp = (int) getenv( 'WP_CLI_WINDOWS_CODE_PAGE' ) ?: 1252; // Code page 1252 is the most used so probably the most compat.
+			$cp = (int) Utils\get_env_or_config( 'WP_CLI_WINDOWS_CODE_PAGE' ) ?: 1252; // Code page 1252 is the most used so probably the most compat.
 			sapi_windows_cp_set( $cp );
 		}
 
