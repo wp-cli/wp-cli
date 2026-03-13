@@ -85,11 +85,17 @@ final class Admin implements Context {
 			$super_admins = get_super_admins();
 
 			if ( ! empty( $super_admins ) ) {
-				foreach ( $super_admins as $super_admin_login ) {
-					$user = get_user_by( 'login', $super_admin_login );
-					if ( $user ) {
-						return $user->ID;
-					}
+				$users = get_users(
+					[
+						'login__in' => $super_admins,
+						'number'    => 1,
+						'orderby'   => 'ID',
+						'order'     => 'ASC',
+					]
+				);
+
+				if ( ! empty( $users ) ) {
+					return $users[0]->ID;
 				}
 			}
 

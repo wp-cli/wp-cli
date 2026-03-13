@@ -281,8 +281,7 @@ Feature: Context handling via --context global flag
     When I run `wp core install --url=example.com --title=Test --admin_user=wpcli --admin_email=admin@example.com`
     And I run `wp core multisite-convert`
     And I run `wp user create anotheradmin anotheradmin@example.com --role=administrator`
-    And I run `wp super-admin add anotheradmin`
-    And I run `wp super-admin remove wpcli`
+    And I run `wp eval 'update_site_option( "site_admins", array( "anotheradmin" ) );'`
 
     When I run `wp --context=admin eval 'echo "Current user: " . wp_get_current_user()->user_login;'`
     Then the return code should be 0
@@ -304,13 +303,24 @@ Feature: Context handling via --context global flag
     Given a WP install
     When I run `wp core install --url=example.com --title=Test --admin_user=wpcli --admin_email=admin@example.com`
     And I run `wp core multisite-convert`
-    And I run `wp super-admin remove wpcli`
+    And I run `wp eval 'update_site_option( "site_admins", array() );'`
 
     When I try `wp --context=admin eval ''`
     Then the return code should be 1
     And STDERR should contain:
       """
       Error: No super admin user found. Specify one with --user=<login>.
+      """
+
+  Scenario: Admin context emits error when no administrator is found on single site
+    Given a WP install
+    When I run `wp user update 1 --role=subscriber`
+
+    When I try `wp --context=admin eval ''`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Error: No administrator user found. Specify one with --user=<login>.
       """
 
   Scenario: Admin context throws an error for a non-existent user
