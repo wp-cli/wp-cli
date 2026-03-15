@@ -9,12 +9,20 @@ Feature: Get help about WP-CLI commands
         Run 'wp help <command>' to get more information on a specific command.
 
       """
+    And STDOUT should contain:
+      """
+        https://make.wordpress.org/cli/handbook/
+      """
     And STDERR should be empty
 
     When I run `wp help core`
     Then STDOUT should contain:
       """
         wp core
+      """
+    And STDOUT should not contain:
+      """
+      https://make.wordpress.org/cli/handbook/
       """
     And STDERR should be empty
 
