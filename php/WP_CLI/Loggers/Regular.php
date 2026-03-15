@@ -20,9 +20,10 @@ class Regular extends Base {
 	 * Write an informational message to STDOUT.
 	 *
 	 * @param string $message Message to write.
+	 * @param bool   $newline Optional. Whether to append a newline to the end of the message. Default true.
 	 */
-	public function info( $message ) {
-		$this->write( STDOUT, $message . "\n" );
+	public function info( $message, $newline = true ) {
+		$this->write( STDOUT, $message . ( $newline ? "\n" : '' ) );
 	}
 
 	/**

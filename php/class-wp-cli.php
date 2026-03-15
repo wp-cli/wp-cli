@@ -850,10 +850,11 @@ class WP_CLI {
 	 * @category Output
 	 *
 	 * @param string $message Message to display to the end user.
+	 * @param bool   $newline Optional. Whether to append a newline to the end of the message. Default true.
 	 * @return void
 	 */
-	public static function line( $message = '' ) {
-		echo $message . "\n";
+	public static function line( $message = '', $newline = true ) {
+		echo $message . ( $newline ? "\n" : '' );
 	}
 
 	/**
@@ -870,13 +871,14 @@ class WP_CLI {
 	 * @category Output
 	 *
 	 * @param string $message Message to write to STDOUT.
+	 * @param bool   $newline Optional. Whether to append a newline to the end of the message. Default true.
 	 */
-	public static function log( $message ) {
+	public static function log( $message, $newline = true ) {
 		if ( null === self::$logger ) {
 			return;
 		}
 
-		self::$logger->info( $message );
+		self::$logger->info( $message, $newline );
 	}
 
 	/**
