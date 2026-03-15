@@ -272,7 +272,6 @@ Feature: Run a WP-CLI command
 
   Scenario: Persists alias when launching a new process via runcommand
     Given a WP installation in 'foo'
-    And an empty 'bar' directory
     And a wp-cli.yml file:
       """
       @foo:
@@ -282,7 +281,7 @@ Feature: Run a WP-CLI command
         - command.php
       """
 
-    When I run `wp @foo --launch --return run 'option get home'` from 'bar'
+    When I run `wp @foo --launch --return run 'option get home'`
     Then STDOUT should be:
       """
       returned: 'https://example.com'
