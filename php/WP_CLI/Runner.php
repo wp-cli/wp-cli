@@ -710,11 +710,11 @@ class Runner {
 			if ( ! empty( $runtime_alias ) ) {
 				$encoded_alias = json_encode(
 					[
-						$this->alias => $runtime_alias,
+						'@' . $this->alias => $runtime_alias,
 					]
 				);
 				if ( false !== $encoded_alias ) {
-					$wp_binary = "env WP_CLI_RUNTIME_ALIAS='" . str_replace( "'", "'\\''", $encoded_alias ) . "' {$wp_binary} {$this->alias}";
+					$wp_binary = "env WP_CLI_RUNTIME_ALIAS='" . str_replace( "'", "'\\''", $encoded_alias ) . "' {$wp_binary} @{$this->alias}";
 				}
 			}
 		}
