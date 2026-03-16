@@ -1166,7 +1166,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @local core version`
     Then STDERR should contain:
       """
-      Error: Alias '@local' is misconfigured. When 'ssh' is specified, 'path' should be included in the SSH connection string (e.g., 'user@host:/path/to/wordpress'), not as a separate key.
+      Error: Alias 'local' is misconfigured. When 'ssh' is specified, 'path' should be included in the SSH connection string (e.g., 'user@host:/path/to/wordpress'), not as a separate key.
       """
     And the return code should be 1
 
@@ -1183,6 +1183,6 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @remote core version`
     Then STDERR should contain:
       """
-      Error: Alias '@remote' is misconfigured. When 'ssh' is specified, 'path' should be included in the SSH connection string (e.g., 'user@host:/path/to/wordpress'), not as a separate key.
+      Error: Alias 'remote' is misconfigured. When 'ssh' is specified, 'path' should be included in the SSH connection string (e.g., 'user@host:/path/to/wordpress'), not as a separate key.
       """
     And the return code should be 1
