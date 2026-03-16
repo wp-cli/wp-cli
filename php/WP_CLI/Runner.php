@@ -1435,11 +1435,6 @@ class Runner {
 			WP_CLI::error( "Alias '{$alias}' is misconfigured. Alias configuration must be an associative array of settings." );
 		}
 
-		// Validate SSH alias configuration.
-		if ( isset( $alias_config['ssh'] ) && isset( $alias_config['path'] ) ) {
-			WP_CLI::error( "Alias '{$alias}' is misconfigured. When 'ssh' is specified, 'path' should be included in the SSH connection string (e.g., 'user@host:/path/to/wordpress'), not as a separate key." );
-		}
-
 		$this->config = array_merge( $orig_config, $alias_config );
 		foreach ( $alias_config as $key => $_ ) {
 			if ( isset( $orig_config[ (string) $key ] ) && ! is_null( $orig_config[ (string) $key ] ) ) {
