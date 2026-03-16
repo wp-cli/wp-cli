@@ -215,7 +215,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo --debug --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -T -vvv '' 'wp --debug --version'
+      Running SSH command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -T -vvv '' 'WP_CLI_SSH_RUN=1 wp --debug --version'
       """
 
   Scenario: SSH alias expands tilde in path
@@ -287,7 +287,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo plugin list --debug`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; wp plugin list --debug'
+      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; WP_CLI_SSH_RUN=1 wp plugin list --debug'
       """
 
   Scenario: SSH commands correctly escape arguments with spaces
@@ -301,7 +301,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo post create --post_title=My Title --debug`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; wp post create --post_title=My Title
+      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; WP_CLI_SSH_RUN=1 wp post create --post_title=My Title
       """
 
   Scenario: Uses env command for runtime alias with separate path line
@@ -316,7 +316,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo --debug --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv 'user@host' 'env WP_CLI_RUNTIME_ALIAS=
+      Running SSH command: ssh -T -vvv 'user@host' 'WP_CLI_SSH_RUN=1 env WP_CLI_RUNTIME_ALIAS=
       """
     And STDERR should contain:
       """
@@ -367,7 +367,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo --debug --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv 'user@host' 'env WP_CLI_RUNTIME_ALIAS=
+      Running SSH command: ssh -T -vvv 'user@host' 'WP_CLI_SSH_RUN=1 env WP_CLI_RUNTIME_ALIAS=
       """
     And STDERR should contain:
       """
