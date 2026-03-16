@@ -851,6 +851,7 @@ class Runner {
 		}
 
 		// Vagrant ssh-config.
+		$is_vagrant_ssh = false;
 		if ( 'vagrant' === $bits['scheme'] ) {
 			$cache     = WP_CLI::get_cache();
 			$cache_key = 'vagrant:' . $this->project_config_path;
@@ -875,6 +876,7 @@ class Runner {
 				$bits['port']   = isset( $values['Port'] ) ? $values['Port'] : '';
 				$bits['user']   = isset( $values['User'] ) ? $values['User'] : '';
 				$bits['key']    = isset( $values['IdentityFile'] ) ? $values['IdentityFile'] : '';
+				$is_vagrant_ssh = true;
 			}
 
 			// If we could not resolve the bits still, fallback to just `vagrant ssh`
@@ -912,6 +914,8 @@ class Runner {
 				$bits['port'] ? sprintf( '-p %d', (int) $bits['port'] ) : '',
 				// @phpstan-ignore cast.string
 				$bits['key'] ? sprintf( '-i %s', escapeshellarg( (string) $bits['key'] ) ) : '',
+				$is_vagrant_ssh ? '-o StrictHostKeyChecking=no' : '',
+				$is_vagrant_ssh ? '-o UserKnownHostsFile=/dev/null' : '',
 				$is_stdout_tty ? '-t' : '-T',
 				WP_CLI::get_config( 'debug' ) ? '-vvv' : '-q',
 			];
