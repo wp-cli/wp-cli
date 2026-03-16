@@ -204,6 +204,20 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -i 'identityfile.key' -T -vvv
       """
 
+  Scenario: Vagrant SSH disables strict host key checking
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: vagrant
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -T -vvv '' 'wp --debug --version'
+      """
+
   Scenario: SSH alias expands tilde in path
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
