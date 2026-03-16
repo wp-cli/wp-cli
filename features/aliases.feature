@@ -215,7 +215,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo --debug --version`
     Then STDERR should contain:
       """
-      -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+      Running SSH command: ssh -T -vvv -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
       """
 
   Scenario: SSH alias expands tilde in path
