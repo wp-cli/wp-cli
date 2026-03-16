@@ -3,7 +3,6 @@
 namespace WP_CLI;
 
 use WP_CLI;
-use WP_CLI\Utils;
 
 /**
  * Handles fatal errors to detect plugin/theme issues and suggest workarounds.
