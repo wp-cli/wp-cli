@@ -304,6 +304,42 @@ Feature: Create shortcuts to specific WordPress installs
       """
       Running SSH command: ssh -T -vvv 'user@host' 'env WP_CLI_RUNTIME_ALIAS=
       """
+    And STDERR should contain:
+      """
+      wp @foo
+      """
+
+  Scenario: Two aliases with same SSH host but different paths generate different remote commands
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: user@host
+        path: /path/to/production
+      @staging:
+        ssh: user@host
+        path: /path/to/staging
+      """
+
+    When I try `wp @prod --debug --version`
+    Then STDERR should contain:
+      """
+      \/path\/to\/production
+      """
+    And STDERR should not contain:
+      """
+      \/path\/to\/staging
+      """
+
+    When I try `wp @staging --debug --version`
+    Then STDERR should contain:
+      """
+      \/path\/to\/staging
+      """
+    And STDERR should not contain:
+      """
+      \/path\/to\/production
+      """
 
   Scenario: Properly escapes single quotes in runtime alias path
     Given a WP installation in 'foo'
