@@ -2,8 +2,6 @@
 
 namespace WP_CLI\Loggers;
 
-use WP_CLI;
-
 /**
  * Quiet logger only logs errors.
  */
