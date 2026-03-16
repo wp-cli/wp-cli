@@ -5,7 +5,6 @@ namespace WP_CLI\Context;
 use WP_CLI;
 use WP_CLI\Context;
 use WP_CLI\Fetchers\User;
-use WP_Session_Tokens;
 
 /**
  * Context which simulates the administrator backend.
