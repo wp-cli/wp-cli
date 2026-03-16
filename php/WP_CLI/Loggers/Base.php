@@ -17,9 +17,8 @@ abstract class Base {
 	 * Informational message.
 	 *
 	 * @param string $message Message to write.
-	 * @param bool   $newline Optional. Whether to append a newline to the end of the message. Default true.
 	 */
-	abstract public function info( $message, $newline = true );
+	abstract public function info( $message );
 
 	/**
 	 * Success message.
