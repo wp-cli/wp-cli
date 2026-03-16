@@ -3,13 +3,8 @@
 namespace WP_CLI;
 
 use WP_CLI;
-use WP_CLI\Dispatcher;
 use WP_CLI\Dispatcher\CompositeCommand;
 use WP_CLI\Dispatcher\Subcommand;
-use WP_CLI\Fetchers;
-use WP_CLI\Iterators\Exception;
-use WP_CLI\Loggers;
-use WP_CLI\Utils;
 use WP_Error;
 
 /**
@@ -23,6 +18,7 @@ use WP_Error;
  * @property-read ContextManager $context_manager
  * @property-read string         $alias
  * @property-read array          $aliases
+ * @property-read array          $raw_aliases
  * @property-read array          $arguments
  * @property-read array          $assoc_args
  * @property-read array          $runtime_config
@@ -67,11 +63,13 @@ class Runner {
 	/** @var array<string, array<string|int, array<string, string>>|string> */
 	private $aliases = [];
 
+	private $raw_aliases;
+
 	/** @var array<string> */
 	private $arguments = [];
 	/** @var array<string, array<int, string>|int|string|true> */
 	private $assoc_args = [];
-	/** @var array<string, array<int, string>|int|string|true> */
+	/** @var array<string, mixed> */
 	private $runtime_config;
 
 	private $colorize = false;
@@ -290,7 +288,7 @@ class Runner {
 	 * @return string
 	 */
 	public function get_packages_dir_path() {
-		$packages_dir = (string) getenv( 'WP_CLI_PACKAGES_DIR' );
+		$packages_dir = (string) Utils\get_env_or_config( 'WP_CLI_PACKAGES_DIR' );
 		if ( $packages_dir ) {
 			$packages_dir = Utils\trailingslashit( $packages_dir );
 		} else {
@@ -424,6 +422,10 @@ class Runner {
 
 			if ( true === $url ) {
 				WP_CLI::warning( 'The --url parameter expects a value.' );
+				return false;
+			} elseif ( is_string( $url ) && ! Utils\parse_url( $url, PHP_URL_HOST ) ) {
+				WP_CLI::warning( "The --url parameter value '{$url}' is not valid. Check for typos in the protocol, e.g. 'http://' not 'http:/'." );
+				return false;
 			}
 
 			return $url;
@@ -600,7 +602,7 @@ class Runner {
 		if ( ! empty( $options['back_compat_conversions'] ) ) {
 			list( $args, $assoc_args ) = self::back_compat_conversions( $args, $assoc_args );
 		}
-		$r = $this->find_command_to_run( $args, getenv( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
+		$r = $this->find_command_to_run( $args, Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
 		if ( is_string( $r ) ) {
 			WP_CLI::error( $r );
 		}
@@ -618,8 +620,14 @@ class Runner {
 		WP_CLI::debug( 'Running command: ' . $name, 'bootstrap' );
 		try {
 			$command->invoke( $final_args, $assoc_args, (array) $extra_args );
-		} catch ( Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
+		} catch ( ExitException $e ) {
+			// Re-throw control-flow exceptions so callers can handle exit codes/output.
+			throw $e;
+		} catch ( \Exception $e ) {
+			// Catch exceptions but not Error types, as Error types represent
+			// fatal errors that should be handled by ShutdownHandler for
+			// helpful plugin/theme skip suggestions.
+			WP_CLI::error( $e );
 		}
 	}
 
@@ -667,7 +675,7 @@ class Runner {
 
 		$bits = Utils\parse_ssh_url( $connection_string );
 
-		$pre_cmd = getenv( 'WP_CLI_SSH_PRE_CMD' );
+		$pre_cmd = Utils\get_env_or_config( 'WP_CLI_SSH_PRE_CMD' );
 		if ( $pre_cmd ) {
 			WP_CLI::warning( "WP_CLI_SSH_PRE_CMD found, executing the following command(s) on the remote machine:\n $pre_cmd" );
 
@@ -680,16 +688,17 @@ class Runner {
 		}
 		$env_vars .= 'WP_CLI_SSH_RUN=1 ';
 
-		$wp_binary = getenv( 'WP_CLI_SSH_BINARY' ) ?: 'wp';
+		$wp_binary = Utils\get_env_or_config( 'WP_CLI_SSH_BINARY' ) ?: 'wp';
 		$wp_args   = array_slice( (array) $GLOBALS['argv'], 1 );
 
-		if ( $this->alias && ! empty( $wp_args[0] ) && $this->alias === $wp_args[0] ) {
+		if ( $this->alias && ! empty( $wp_args[0] ) && ( '@' . $this->alias === $wp_args[0] || "--alias={$this->alias}" === $wp_args[0] ) ) {
 			array_shift( $wp_args );
 			$runtime_alias = [];
 			$alias_config  = $this->aliases[ $this->alias ];
 			if ( is_array( $alias_config ) ) {
 				foreach ( $alias_config as $key => $value ) {
-					if ( 'ssh' === $key ) {
+					// Skip connection-specific keys as they are not relevant to the remote WP-CLI instance.
+					if ( in_array( $key, [ 'ssh', 'http', 'proxyjump', 'key' ], true ) ) {
 						continue;
 					}
 					$runtime_alias[ $key ] = $value;
@@ -698,33 +707,46 @@ class Runner {
 			if ( ! empty( $runtime_alias ) ) {
 				$encoded_alias = json_encode(
 					[
-						$this->alias => $runtime_alias,
+						'@' . $this->alias => $runtime_alias,
 					]
 				);
 				if ( false !== $encoded_alias ) {
-					$wp_binary = "env WP_CLI_RUNTIME_ALIAS='" . str_replace( "'", "'\\''", $encoded_alias ) . "' {$wp_binary} {$this->alias}";
+					$wp_binary = "env WP_CLI_RUNTIME_ALIAS='" . str_replace( "'", "'\\''", $encoded_alias ) . "' {$wp_binary} @{$this->alias}";
 				}
 			}
 		}
 
+		$alias_regex = '#' . Configurator::ALIAS_REGEX . '#';
 		foreach ( $wp_args as $k => $v ) {
-			if ( preg_match( '#--ssh=#', (string) $v ) ) {
+			if ( preg_match( '#^--ssh(?:-args)?(?:=|$)|--alias=#', (string) $v ) || preg_match( $alias_regex, (string) $v ) ) {
 				unset( $wp_args[ $k ] );
 			}
 		}
 
-		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode(
-			' ',
-			array_map(
-				static function ( $arg ): string {
-					return escapeshellarg( (string) $arg ); },
-				$wp_args
-			)
-		);
-
-		if ( isset( $bits['scheme'] ) && 'docker-compose-run' === $bits['scheme'] ) {
-			$wp_command = implode( ' ', $wp_args );
+		// Build command with minimal quoting to improve readability in debug output.
+		// Arguments are only quoted if they contain characters outside the safe set.
+		// This avoids double-escaping appearance while maintaining security:
+		// 1. Here: Quote args with special chars for the remote shell
+		// 2. generate_ssh_command(): Wrap entire command for local shell
+		//
+		// Safe characters: alphanumeric, hyphen, underscore, equals, dot, forward slash, colon
+		// - Hyphens (including at start like --debug) are safe because they're part of the
+		//   wp-cli command string that's passed to the remote shell, not SSH options
+		// - Forward slash and colon are included because they're common in paths and URLs
+		//   (e.g., --url=https://example.com/path) and are not shell metacharacters
+		// - All other characters (spaces, quotes, $, &, |, etc.) trigger quoting via escapeshellarg()
+		$escaped_args = [];
+		foreach ( $wp_args as $arg ) {
+			$arg_str = (string) $arg;
+			// Quote empty strings and arguments with any characters outside the safe set.
+			// The empty string check is explicit for clarity, though regex would also catch it.
+			if ( '' !== $arg_str && preg_match( '/^[a-zA-Z0-9_=.\/:-]+$/', $arg_str ) ) {
+				$escaped_args[] = $arg_str;
+			} else {
+				$escaped_args[] = escapeshellarg( $arg_str );
+			}
 		}
+		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', $escaped_args );
 
 		$escaped_command = $this->generate_ssh_command( $bits, $wp_command );
 
@@ -745,6 +767,12 @@ class Runner {
 	 */
 	private function generate_ssh_command( $bits, $wp_command ) {
 		$escaped_command = '';
+
+		// Get additional SSH arguments if provided.
+		$ssh_args_config = WP_CLI::get_config( 'ssh-args' );
+		$ssh_args        = is_array( $ssh_args_config ) && ! empty( $ssh_args_config )
+			? implode( ' ', array_map( 'escapeshellarg', $ssh_args_config ) )
+			: '';
 
 		// Set default values.
 		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump' ] as $bit ) {
@@ -773,28 +801,30 @@ class Runner {
 				: 'docker-compose';
 
 		if ( 'docker' === $bits['scheme'] ) {
-			$command = 'docker exec %s%s%s%s%s sh -c %s';
+			$command = 'docker exec %s%s%s%s%s%s sh -c %s';
 
 			$escaped_command = sprintf(
 				$command,
+				$ssh_args ? $ssh_args . ' ' : '',
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
 				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
-				$is_stdout_tty && ! getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '-t  ' : '',
-				$is_stdin_tty || getenv( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '' : '-i ',
+				$is_stdout_tty && ! Utils\get_env_or_config( 'WP_CLI_DOCKER_NO_TTY' ) ? '-t  ' : '',
+				$is_stdin_tty || Utils\get_env_or_config( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '' : '-i ',
 				escapeshellarg( $bits['host'] ),
 				escapeshellarg( $wp_command )
 			);
 		}
 
 		if ( 'docker-compose' === $bits['scheme'] ) {
-			$command = '%s exec %s%s%s%s sh -c %s';
+			$command = '%s exec %s%s%s%s%s sh -c %s';
 
 			$escaped_command = sprintf(
 				$command,
 				$docker_compose_cmd,
+				$ssh_args ? $ssh_args . ' ' : '',
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
 				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
-				$is_stdout_tty || getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
+				$is_stdout_tty || Utils\get_env_or_config( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
 				escapeshellarg( $bits['host'] ),
 				escapeshellarg( $wp_command )
 			);
@@ -811,10 +841,11 @@ class Runner {
 			$escaped_command = sprintf(
 				$command,
 				$docker_compose_cmd,
+				$ssh_args ? $ssh_args . ' ' : '',
 				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
 				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
-				$is_stdout_tty || getenv( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
-				$is_stdin_tty || getenv( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '' : '-i ',
+				$is_stdout_tty || Utils\get_env_or_config( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
+				$is_stdin_tty || Utils\get_env_or_config( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '' : '-i ',
 				$env_flags,
 				escapeshellarg( $bits['host'] ),
 				$wp_command
@@ -822,11 +853,12 @@ class Runner {
 		}
 
 		// For "vagrant" & "ssh" schemes which don't provide a working-directory option, use `cd`
-		if ( $bits['path'] ) {
-			$wp_command = 'cd ' . escapeshellarg( $bits['path'] ) . '; ' . $wp_command;
+		if ( $bits['path'] && in_array( $bits['scheme'], [ 'vagrant', 'ssh', null ], true ) ) {
+			$wp_command = 'cd ' . Utils\escapeshellarg_preserve_tilde( $bits['path'] ) . '; ' . $wp_command;
 		}
 
 		// Vagrant ssh-config.
+		$is_vagrant_ssh = false;
 		if ( 'vagrant' === $bits['scheme'] ) {
 			$cache     = WP_CLI::get_cache();
 			$cache_key = 'vagrant:' . $this->project_config_path;
@@ -851,11 +883,12 @@ class Runner {
 				$bits['port']   = isset( $values['Port'] ) ? $values['Port'] : '';
 				$bits['user']   = isset( $values['User'] ) ? $values['User'] : '';
 				$bits['key']    = isset( $values['IdentityFile'] ) ? $values['IdentityFile'] : '';
+				$is_vagrant_ssh = true;
 			}
 
 			// If we could not resolve the bits still, fallback to just `vagrant ssh`
 			if ( 'vagrant' === $bits['scheme'] ) {
-				$command = 'vagrant ssh -c %s %s';
+				$command = 'vagrant ssh' . ( $ssh_args ? ' ' . $ssh_args : '' ) . ' -c %s %s';
 
 				$escaped_command = sprintf(
 					$command,
@@ -867,7 +900,7 @@ class Runner {
 
 		// Default scheme is SSH.
 		if ( 'ssh' === $bits['scheme'] || null === $bits['scheme'] ) {
-			$command = 'ssh %s %s %s';
+			$command = 'ssh %s%s %s %s';
 
 			if ( $bits['user'] ) {
 				$bits['host'] = $bits['user'] . '@' . $bits['host'];
@@ -888,12 +921,15 @@ class Runner {
 				$bits['port'] ? sprintf( '-p %d', (int) $bits['port'] ) : '',
 				// @phpstan-ignore cast.string
 				$bits['key'] ? sprintf( '-i %s', escapeshellarg( (string) $bits['key'] ) ) : '',
+				$is_vagrant_ssh ? '-o StrictHostKeyChecking=no' : '',
+				$is_vagrant_ssh ? '-o UserKnownHostsFile=/dev/null' : '',
 				$is_stdout_tty ? '-t' : '-T',
 				WP_CLI::get_config( 'debug' ) ? '-vvv' : '-q',
 			];
 
 			$escaped_command = sprintf(
 				$command,
+				$ssh_args ? $ssh_args . ' ' : '',
 				implode( ' ', array_filter( $command_args ) ),
 				escapeshellarg( $bits['host'] ),
 				escapeshellarg( $wp_command )
@@ -1242,9 +1278,10 @@ class Runner {
 		 */
 		$argv = array_slice( (array) $GLOBALS['argv'], 1 );
 
+		// Check if we use an alias with @foo syntax (must be done before parsing args)
 		$this->alias = null;
 		if ( ! empty( $argv[0] ) && preg_match( '#' . Configurator::ALIAS_REGEX . '#', $argv[0], $matches ) ) {
-			$this->alias = array_shift( $argv );
+			$this->alias = substr( array_shift( $argv ), 1 ); // Remove the @ prefix and shift from argv
 		}
 
 		// File config
@@ -1277,14 +1314,34 @@ class Runner {
 			$configurator->merge_array( (array) $this->runtime_config );
 		}
 
+		// Check if --alias flag was used (takes precedence over @foo if both provided)
+		if ( ! empty( $this->runtime_config['alias'] ) ) {
+			/**
+			 * @var string $runtime_alias
+			 */
+			$runtime_alias = $this->runtime_config['alias'];
+			$this->alias   = $runtime_alias;
+		}
+
 		list( $this->config, $this->extra_config ) = $configurator->to_array();
 		$this->aliases                             = $configurator->get_aliases();
-		if ( count( $this->aliases ) && ! isset( $this->aliases['@all'] ) ) {
-			$this->aliases         = array_reverse( $this->aliases );
-			$this->aliases['@all'] = 'Run command against every registered alias.';
-			$this->aliases         = array_reverse( $this->aliases );
-		}
+		$this->raw_aliases                         = $configurator->get_raw_aliases();
+		$this->add_at_all_alias( $this->aliases );
+		$this->add_at_all_alias( $this->raw_aliases );
 		$this->required_files['runtime'] = $this->config['require'];
+	}
+
+	/**
+	 * Add the @all alias to an aliases array if it doesn't already exist.
+	 *
+	 * @param array $aliases Aliases array passed by reference.
+	 */
+	private function add_at_all_alias( &$aliases ) {
+		if ( count( $aliases ) && ! isset( $aliases['all'] ) ) {
+			$aliases        = array_reverse( $aliases );
+			$aliases['all'] = 'Run command against every registered alias.';
+			$aliases        = array_reverse( $aliases );
+		}
 	}
 
 	private function run_alias_group( $aliases ): void {
@@ -1313,31 +1370,42 @@ class Runner {
 		unset( $subprocess_runtime_config['quiet'] );
 
 		// Precompute command components that are the same for all aliases.
-		$args           = implode(
+		$alias_regex = '#' . Configurator::ALIAS_REGEX . '#';
+		$args        = implode(
 			' ',
 			array_map(
-				static function ( string $arg ): string {
-						return escapeshellarg( $arg );
-				},
-				(array) $this->arguments
+				'escapeshellarg',
+				array_filter(
+					(array) $this->arguments,
+					function ( $value ) use ( $alias_regex ) {
+						return ! preg_match( $alias_regex, $value );
+					}
+				)
 			)
 		);
-		$assoc_args     = Utils\assoc_args_to_str( (array) $this->assoc_args );
-		$runtime_config = Utils\assoc_args_to_str( (array) $subprocess_runtime_config );
+
+		// Filter out --ssh and --alias args from the subcommands.
+		$filtered_assoc_args = (array) $this->assoc_args;
+		unset( $filtered_assoc_args['ssh'], $filtered_assoc_args['alias'] );
+
+		$assoc_args = Utils\assoc_args_to_str( $filtered_assoc_args );
+
+		$filtered_runtime_config = (array) $subprocess_runtime_config;
+		unset( $filtered_runtime_config['alias'] );
+		$runtime_config = Utils\assoc_args_to_str( $filtered_runtime_config );
 
 		// Check if parallel execution is enabled via environment variable.
-		$parallel = (bool) getenv( 'WP_CLI_ALIAS_GROUPS_PARALLEL' );
+		$parallel = (bool) Utils\get_env_or_config( 'WP_CLI_ALIAS_GROUPS_PARALLEL' );
 
 		if ( $parallel ) {
 			// Run aliases in parallel.
 			// Note: Output from multiple processes will be interleaved and non-deterministic.
 			$procs = [];
 			foreach ( $aliases as $alias ) {
-				WP_CLI::log( $alias );
-				$escaped_alias = escapeshellarg( $alias );
-				$full_command  = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$escaped_alias} {$args}{$assoc_args}{$runtime_config}";
-				$pipes         = [];
-				$proc          = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
+				WP_CLI::log( '@' . $alias );
+				$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
+				$pipes        = [];
+				$proc         = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
 
 				if ( $proc ) {
 					$procs[] = $proc;
@@ -1351,11 +1419,10 @@ class Runner {
 		} else {
 			// Run aliases sequentially (original behavior).
 			foreach ( $aliases as $alias ) {
-				WP_CLI::log( $alias );
-				$escaped_alias = escapeshellarg( $alias );
-				$full_command  = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$escaped_alias} {$args}{$assoc_args}{$runtime_config}";
-				$pipes         = [];
-				$proc          = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
+				WP_CLI::log( '@' . $alias );
+				$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
+				$pipes        = [];
+				$proc         = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
 
 				if ( $proc ) {
 					proc_close( $proc );
@@ -1390,13 +1457,13 @@ class Runner {
 		WP_CLI::debug( 'argv: ' . implode( ' ', (array) $GLOBALS['argv'] ), 'bootstrap' );
 
 		if ( $this->alias ) {
-			if ( '@all' === $this->alias && ! isset( $this->aliases['@all'] ) ) {
-				WP_CLI::error( "Cannot use '@all' when no aliases are registered." );
+			if ( 'all' === $this->alias && ! isset( $this->aliases['all'] ) ) {
+				WP_CLI::error( "Cannot use 'all' when no aliases are registered." );
 			}
 
-			if ( '@all' === $this->alias && is_string( $this->aliases['@all'] ) ) {
+			if ( 'all' === $this->alias && is_string( $this->aliases['all'] ) ) {
 				$aliases = array_keys( $this->aliases );
-				$k       = array_search( '@all', $aliases, true );
+				$k       = array_search( 'all', $aliases, true );
 				unset( $aliases[ $k ] );
 				$this->run_alias_group( $aliases );
 				exit;
@@ -1417,7 +1484,17 @@ class Runner {
 				$all_aliases   = array_keys( $this->aliases );
 				$diff          = array_diff( $group_aliases, $all_aliases );
 				if ( ! empty( $diff ) ) {
-					WP_CLI::error( "Group '{$this->alias}' contains one or more invalid aliases: " . implode( ', ', $diff ) );
+					WP_CLI::error(
+						"Group '@{$this->alias}' contains one or more invalid aliases: " . implode(
+							', ',
+							array_map(
+								function ( $alias ) {
+									return '@' . $alias;
+								},
+								$diff
+							)
+						)
+					);
 				}
 				$this->run_alias_group( $group_aliases );
 				exit;
@@ -1661,14 +1738,28 @@ class Runner {
 			);
 		}
 
-		require ABSPATH . 'wp-settings.php';
+		// Save the current autoloaders so they can be restored after WordPress
+		// loads. This ensures that WP-CLI and package autoloaders take
+		// precedence over autoloaders registered by plugins.
+		$wp_cli_autoloaders = spl_autoload_functions() ?: [];
 
-		// Fix memory limit. See https://core.trac.wordpress.org/ticket/14889
-		// phpcs:ignore WordPress.PHP.IniSet.memory_limit_Disallowed -- This is perfectly fine for CLI usage.
-		ini_set( 'memory_limit', -1 );
+		require ABSPATH . 'wp-settings.php';
 
 		// Load all the admin APIs, for convenience
 		require ABSPATH . 'wp-admin/includes/admin.php';
+
+		// Restore WP-CLI autoloaders to the front of the stack so they take
+		// precedence over plugin autoloaders that may have been registered
+		// during wp-settings.php loading.
+		$current_autoloaders = spl_autoload_functions();
+		foreach ( array_reverse( $wp_cli_autoloaders ) as $autoloader ) {
+			// Can be false prior to PHP 8.0.
+			// @phpstan-ignore function.alreadyNarrowedType
+			if ( is_array( $current_autoloaders ) && in_array( $autoloader, $current_autoloaders, true ) ) {
+				spl_autoload_unregister( $autoloader );
+			}
+			spl_autoload_register( $autoloader, true, true );
+		}
 
 		WP_CLI::add_wp_hook(
 			'filesystem_method',
@@ -2240,12 +2331,12 @@ class Runner {
 		}
 
 		// Allow hosts and other providers to disable automatic check update.
-		if ( getenv( 'WP_CLI_DISABLE_AUTO_CHECK_UPDATE' ) ) {
+		if ( Utils\get_env_or_config( 'WP_CLI_DISABLE_AUTO_CHECK_UPDATE' ) ) {
 			return;
 		}
 
 		// Permit configuration of number of days between checks.
-		$days_between_checks = getenv( 'WP_CLI_AUTO_CHECK_UPDATE_DAYS' );
+		$days_between_checks = Utils\get_env_or_config( 'WP_CLI_AUTO_CHECK_UPDATE_DAYS' );
 		if ( false === $days_between_checks ) {
 			$days_between_checks = 1;
 		}
@@ -2281,9 +2372,76 @@ class Runner {
 		}
 
 		// Looks like an update is available, so let's prompt to update.
-		WP_CLI::run_command( [ 'cli', 'update' ] );
-		// If the Phar was replaced, we can't proceed with the original process.
-		exit;
+		$update_args = [];
+		// Allow skipping the confirmation prompt via environment variable.
+		if ( Utils\get_env_or_config( 'WP_CLI_AUTO_UPDATE_PROMPT' ) === 'no' ) {
+			$update_args['yes'] = true;
+		}
+
+		// Get the current Phar's modification time before the update.
+		$phar_mtime_before = filemtime( $existing_phar );
+
+		WP_CLI::run_command( [ 'cli', 'update' ], $update_args );
+
+		// Check if the Phar was actually updated by comparing modification times.
+		clearstatcache( true, $existing_phar );
+		$phar_mtime_after = filemtime( $existing_phar );
+		if ( $phar_mtime_after > $phar_mtime_before ) {
+			// After update, re-execute the original command with the new Phar.
+			$this->rerun_command_after_update();
+		}
+	}
+
+	/**
+	 * Re-execute the original command with the updated Phar.
+	 *
+	 * This method is called after a successful auto-update to transparently
+	 * continue with the user's original command using the new Phar version.
+	 */
+	private function rerun_command_after_update(): void {
+		/**
+		 * @var string[] $original_args
+		 */
+		$original_args = array_slice( (array) $GLOBALS['argv'], 1 );
+
+		// Skip re-execution if the original command was a CLI command
+		// to avoid infinite loops or redundant execution.
+		// Use $this->arguments instead of $original_args to properly handle aliases.
+		if ( ! empty( $this->arguments ) && 'cli' === $this->arguments[0] ) {
+			exit( 0 );
+		}
+
+		// Skip re-execution if there are no arguments (just running `wp` with no command).
+		if ( empty( $original_args ) ) {
+			exit( 0 );
+		}
+
+		/**
+		 * @var string[] $argv
+		 */
+		$argv = $_SERVER['argv'];
+
+		// Get the path to the current (now updated) Phar.
+		$phar_path = realpath( $argv[0] );
+		if ( false === $phar_path ) {
+			WP_CLI::error( 'Failed to determine the path to the WP-CLI Phar.' );
+		}
+
+		// Build the command to re-execute.
+		$php_binary   = Utils\get_php_binary();
+		$escaped_args = array_map( 'escapeshellarg', $original_args );
+		$command      = sprintf(
+			'%s %s %s',
+			escapeshellarg( $php_binary ),
+			escapeshellarg( $phar_path ),
+			implode( ' ', $escaped_args )
+		);
+
+		WP_CLI::debug( 'Re-executing command after update.', 'bootstrap' );
+
+		// Execute the command and pass through the exit code.
+		passthru( $command, $exit_code );
+		exit( $exit_code );
 	}
 
 	/**

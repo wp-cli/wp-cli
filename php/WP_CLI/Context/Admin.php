@@ -5,7 +5,7 @@ namespace WP_CLI\Context;
 use WP_CLI;
 use WP_CLI\Context;
 use WP_CLI\Fetchers\User;
-use WP_Session_Tokens;
+use WP_User;
 
 /**
  * Context which simulates the administrator backend.
@@ -36,8 +36,9 @@ final class Admin implements Context {
 
 		// Set a fake entry point to ensure wp-includes/vars.php does not throw
 		// notices/errors. This will be reflected in the global `$pagenow`
-		// variable being set to 'wp-cli-fake-admin-file.php'.
-		$_SERVER['PHP_SELF'] = '/wp-admin/wp-cli-fake-admin-file.php';
+		// variable. We try to use a realistic admin page based on the current
+		// command so that plugins which check `$pagenow` behave correctly.
+		$_SERVER['PHP_SELF'] = '/wp-admin/' . $this->get_fake_admin_page();
 
 		// Bootstrap the WordPress administration area.
 		WP_CLI::add_wp_hook(
@@ -48,13 +49,14 @@ final class Admin implements Context {
 					$user          = $fetcher->get_check( $config['user'] );
 					$admin_user_id = $user->ID;
 				} else {
-					// TODO: Add logic to find an administrator user.
-					$admin_user_id = 1;
+					$admin_user_id = $this->find_admin_user_id();
 				}
 
 				/**
 				 * @var int<1, max> $admin_user_id
 				 */
+
+				WP_CLI::debug( sprintf( 'Continuing as admin user %d', $admin_user_id ), Context::DEBUG_GROUP );
 
 				$this->log_in_as_admin_user( $admin_user_id );
 			},
@@ -70,6 +72,66 @@ final class Admin implements Context {
 			defined( 'PHP_INT_MAX' ) ? PHP_INT_MAX : 2147483648, // phpcs:ignore PHPCompatibility.Constants.NewConstants.php_int_maxFound
 			0
 		);
+	}
+
+	/**
+	 * Find a suitable admin user ID for the current environment.
+	 *
+	 * On multisite, resolves a super admin via get_super_admins().
+	 * On single site, finds a user with the administrator role.
+	 *
+	 * @return int<1, max> Admin user ID.
+	 */
+	private function find_admin_user_id() {
+		if ( is_multisite() ) {
+			$super_admins = get_super_admins();
+
+			foreach ( $super_admins as $super_admin_login ) {
+				$user = get_user_by( 'login', $super_admin_login );
+				if ( $user instanceof WP_User ) {
+					/** @var int<1, max> */
+					return $user->ID;
+				}
+			}
+
+			WP_CLI::error( 'No super admin user found. Specify one with --user=<login>.' );
+		}
+
+		$admins = get_users(
+			[
+				'role'    => 'administrator',
+				'number'  => 1,
+				'orderby' => 'ID',
+				'order'   => 'ASC',
+			]
+		);
+
+		if ( ! empty( $admins ) ) {
+			return $admins[0]->ID;
+		}
+
+		WP_CLI::error( 'No administrator user found. Specify one with --user=<login>.' );
+	}
+
+	/**
+	 * Get a fake admin page filename that reflects the current command.
+	 *
+	 * Returns 'plugins.php' for `wp plugin` commands, 'themes.php' for
+	 * `wp theme` commands, and 'wp-cli-fake-admin-file.php' otherwise.
+	 *
+	 * @return string Admin page filename.
+	 */
+	private function get_fake_admin_page(): string {
+		$command = WP_CLI::get_runner()->arguments;
+
+		$command_map = [
+			'plugin' => 'plugins.php',
+			'theme'  => 'themes.php',
+		];
+
+		$command_name = $command[0] ?? '';
+
+		return $command_map[ $command_name ] ?? 'wp-cli-fake-admin-file.php';
 	}
 
 	/**
@@ -114,9 +176,14 @@ final class Admin implements Context {
 	 * @global string $pagenow
 	 * @global int    $wp_db_version
 	 * @global array  $_wp_submenu_nopriv
+	 * @global array  $menu_order
+	 * @global array  $default_menu_order
+	 * @global array  $menu
+	 * @global array  $submenu
+	 * @global array  $compat
 	 */
 	private function load_admin_environment(): void {
-		global $hook_suffix, $pagenow, $wp_db_version, $_wp_submenu_nopriv;
+		global $compat, $default_menu_order, $hook_suffix, $menu, $menu_order, $pagenow, $submenu, $wp_db_version, $_wp_submenu_nopriv;
 
 		if ( ! isset( $hook_suffix ) ) {
 			$hook_suffix = 'index'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited

@@ -17,7 +17,6 @@ function get_bootstrap_steps() {
 	return [
 		Bootstrap\DeclareFallbackFunctions::class,
 		Bootstrap\LoadUtilityFunctions::class,
-		Bootstrap\LoadDispatcher::class,
 		Bootstrap\DeclareMainClass::class,
 		Bootstrap\DeclareAbstractBaseCommand::class,
 		Bootstrap\IncludeFrameworkAutoloader::class,
@@ -30,8 +29,8 @@ function get_bootstrap_steps() {
 		Bootstrap\DefineProtectedCommands::class,
 		Bootstrap\LoadExecCommand::class,
 		Bootstrap\LoadRequiredCommand::class,
-		Bootstrap\IncludePackageAutoloader::class,
 		Bootstrap\IncludeFallbackAutoloader::class,
+		Bootstrap\IncludePackageAutoloader::class,
 		Bootstrap\RegisterFrameworkCommands::class,
 		Bootstrap\RegisterDeferredCommands::class,
 		Bootstrap\InitializeContexts::class,
