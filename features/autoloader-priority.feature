@@ -35,8 +35,8 @@ Feature: Framework autoloader takes priority over package autoloaders
             WP_CLI::error( "WP_CLI\\Autoloader not found in registered autoloaders" );
           }
 
-          // Verify the WP_CLI autoloader is in an early position (0, 1, or 2)
-          // Position 0 might be WP-CLI's own Composer autoloader, which is acceptable
+          // Verify the WP_CLI autoloader is in an early position (0, 1, or 2).
+          // It's expected to be at or near the start of the autoloader queue to ensure it has priority.
           if ( $first_wpcli_position <= 2 ) {
             WP_CLI::success( "WP_CLI\\Autoloader is at position {$first_wpcli_position} (early in the queue)" );
           } else {
