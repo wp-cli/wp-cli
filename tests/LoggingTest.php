@@ -46,6 +46,25 @@ class LoggingTest extends TestCase {
 		$quiet_logger->debug( $message );
 	}
 
+	public function testLogInfo(): void {
+		$message = 'This is a test message.';
+
+		$logger = new MockRegularLogger( false );
+
+		$this->expectOutputString( "$message\n$message\n" );
+		$logger->info( $message );
+		$logger->info( $message, true );
+	}
+
+	public function testLogInfoWithoutNewline(): void {
+		$message = 'This is a test message.';
+
+		$logger = new MockRegularLogger( false );
+
+		$this->expectOutputString( $message );
+		$logger->info( $message, false );
+	}
+
 	public function testLogEscaping(): void {
 		$logger = new MockRegularLogger( false );
 
@@ -60,6 +79,7 @@ class LoggingTest extends TestCase {
 		$runner        = WP_CLI::get_runner();
 		$runner_config = new \ReflectionProperty( $runner, 'config' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$runner_config->setAccessible( true );
 		}
 

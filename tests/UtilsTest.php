@@ -281,12 +281,12 @@ class UtilsTest extends TestCase {
 			[ [ 'option', 'get', 'home' ], 'option get home' ],
 			[ [ 'core', 'download', '--path=/var/www/' ], 'core download --path=/var/www/' ],
 			[ [ 'eval', 'echo wp_get_current_user()->user_login;' ], 'eval "echo wp_get_current_user()->user_login;"' ],
-			[ [ 'post', 'create', '--post_title="Hello world!"' ], 'post create --post_title="Hello world!"' ],
-			[ [ 'post', 'create', '--post_title=\'Mixed "quotes are working" hopefully\'' ], 'post create --post_title=\'Mixed "quotes are working" hopefully\'' ],
-			[ [ 'post', 'create', '--post_title="Escaped \"double \"quotes!"' ], 'post create --post_title="Escaped \"double \"quotes!"' ],
-			[ [ 'post', 'create', "--post_title='Escaped \'single \'quotes!'" ], "post create --post_title='Escaped \'single \'quotes!'" ],
+			[ [ 'post', 'create', '--post_title=Hello world!' ], 'post create --post_title="Hello world!"' ],
+			[ [ 'post', 'create', '--post_title=Mixed "quotes are working" hopefully' ], 'post create --post_title=\'Mixed "quotes are working" hopefully\'' ],
+			[ [ 'post', 'create', '--post_title=Escaped "double "quotes!' ], 'post create --post_title="Escaped \"double \"quotes!"' ],
+			[ [ 'post', 'create', "--post_title=Escaped 'single 'quotes!" ], "post create --post_title='Escaped \'single \'quotes!'" ],
 			[ [ 'search-replace', '//old-domain.com', '//new-domain.com', 'specifictable', '--all-tables' ], 'search-replace "//old-domain.com" "//new-domain.com" "specifictable" --all-tables' ],
-			[ [ 'i18n', 'make-pot', '/home/wporgdev/co/wordpress/trunk', '/home/wporgdev/co/wp-pot/trunk/wordpress-continents-cities.pot', '--include="wp-admin/includes/continents-cities.php"', "--package-name='WordPress'", '--headers=\'{"Report-Msgid-Bugs-To":"https://core.trac.wordpress.org/"}\'', "--file-comment='Copyright (C) 2019 by the contributors\nThis file is distributed under the same license as the WordPress package.'", '--skip-js', '--skip-audit', '--ignore-domain' ], "i18n make-pot '/home/wporgdev/co/wordpress/trunk' '/home/wporgdev/co/wp-pot/trunk/wordpress-continents-cities.pot' --include=\"wp-admin/includes/continents-cities.php\" --package-name='WordPress' --headers='{\"Report-Msgid-Bugs-To\":\"https://core.trac.wordpress.org/\"}' --file-comment='Copyright (C) 2019 by the contributors\nThis file is distributed under the same license as the WordPress package.' --skip-js --skip-audit --ignore-domain" ],
+			[ [ 'i18n', 'make-pot', '/home/wporgdev/co/wordpress/trunk', '/home/wporgdev/co/wp-pot/trunk/wordpress-continents-cities.pot', '--include=wp-admin/includes/continents-cities.php', '--package-name=WordPress', '--headers={"Report-Msgid-Bugs-To":"https://core.trac.wordpress.org/"}', "--file-comment=Copyright (C) 2019 by the contributors\nThis file is distributed under the same license as the WordPress package.", '--skip-js', '--skip-audit', '--ignore-domain' ], "i18n make-pot '/home/wporgdev/co/wordpress/trunk' '/home/wporgdev/co/wp-pot/trunk/wordpress-continents-cities.pot' --include=\"wp-admin/includes/continents-cities.php\" --package-name='WordPress' --headers='{\"Report-Msgid-Bugs-To\":\"https://core.trac.wordpress.org/\"}' --file-comment='Copyright (C) 2019 by the contributors\nThis file is distributed under the same license as the WordPress package.' --skip-js --skip-audit --ignore-domain" ],
 		];
 	}
 
@@ -296,6 +296,36 @@ class UtilsTest extends TestCase {
 	#[DataProvider( 'parseStrToArgvData' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testParseStrToArgv( $expected, $parseable_string ): void {
 		$this->assertEquals( $expected, Utils\parse_str_to_argv( $parseable_string ) );
+	}
+
+	/**
+	 * Data provider for testParseStrToArgvStripsQuotesFromAssocValues.
+	 *
+	 * @return array
+	 */
+	public static function parseStrToArgvStripsQuotesFromAssocValuesData() {
+		return [
+			'double quotes with spaces' => [ 'cli foo --bar="baz quax"', [ 'cli', 'foo', '--bar=baz quax' ] ],
+			'single quotes with spaces' => [ "cli foo --bar='baz quax'", [ 'cli', 'foo', '--bar=baz quax' ] ],
+			'no quotes'                 => [ 'cli foo --bar=baz', [ 'cli', 'foo', '--bar=baz' ] ],
+			'empty double quotes'       => [ 'cli foo --bar=""', [ 'cli', 'foo', '--bar=' ] ],
+			'empty single quotes'       => [ "cli foo --bar=''", [ 'cli', 'foo', '--bar=' ] ],
+			'escaped double quotes'     => [ 'cli foo --bar="baz \"quax\""', [ 'cli', 'foo', '--bar=baz "quax"' ] ],
+			'escaped single quotes'     => [ "cli foo --bar='baz \\'quax\\''", [ 'cli', 'foo', "--bar=baz 'quax'" ] ],
+		];
+	}
+
+	/**
+	 * Test that associative arguments with quoted values are properly parsed
+	 * when passed to WP_CLI::runcommand().
+	 *
+	 * @dataProvider parseStrToArgvStripsQuotesFromAssocValuesData
+	 * @see https://github.com/wp-cli/wp-cli/issues/5541
+	 */
+	#[DataProvider( 'parseStrToArgvStripsQuotesFromAssocValuesData' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testParseStrToArgvStripsQuotesFromAssocValues( $input, $expected ): void {
+		$result = Utils\parse_str_to_argv( $input );
+		$this->assertEquals( $expected, $result );
 	}
 
 	public function testAssocArgsToString(): void {
@@ -480,7 +510,33 @@ class UtilsTest extends TestCase {
 			[ '/www/path/////', '/www/path/' ],
 			[ '/www/path', '/www/path' ],
 			[ '/www/path', '/www/path' ],
+			// PHP stream wrapper paths.
+			[ 'phar:///path/to/file.phar/www/path', 'phar:///path/to/file.phar/www/path' ],
+			[ 'php://stdin', 'php://stdin' ],
+			[ 'phar:///path/to/file.phar/some//dir', 'phar:///path/to/file.phar/some/dir' ],
+			[ 'phar:///path/to/file.phar/some\\dir/file', 'phar:///path/to/file.phar/some/dir/file' ],
+			[ 'PHAR:///path/to/file.phar/some//dir', 'PHAR:///path/to/file.phar/some/dir' ],
+			[ 'PhAr:///path/to/file.phar/some\\dir/file', 'PhAr:///path/to/file.phar/some/dir/file' ],
+			// Paths with single-dot segments.
+			[ '/www/./path/', '/www/path/' ],
+			[ '/www/html/./public/wp/', '/www/html/public/wp/' ],
+			[ '/www/./path', '/www/path' ],
+			[ '/www/path/.', '/www/path/' ],
+			[ '/www/path/./', '/www/path/' ],
+			[ '/www/././path/', '/www/path/' ],
+			[ './public/wp', 'public/wp' ],
 		];
+	}
+
+	public function testIsStream(): void {
+		$this->assertTrue( Utils\is_stream( 'phar:///path/to/file.phar' ) );
+		$this->assertTrue( Utils\is_stream( 'php://stdin' ) );
+		$this->assertTrue( Utils\is_stream( 'PHAR:///path/to/file.phar' ) );
+		$this->assertTrue( Utils\is_stream( 'PhAr:///path/to/file.phar' ) );
+		$this->assertFalse( Utils\is_stream( '/www/path' ) );
+		$this->assertFalse( Utils\is_stream( 'C:/www/path' ) );
+		$this->assertFalse( Utils\is_stream( '' ) );
+		$this->assertFalse( Utils\is_stream( 'nonexistent_wrapper://path' ) );
 	}
 
 	public function testNormalizeEols(): void {
@@ -495,6 +551,7 @@ class UtilsTest extends TestCase {
 		// Save WP_CLI state.
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$class_wp_cli_capture_exit->setAccessible( true );
 		}
 		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
@@ -529,12 +586,12 @@ class UtilsTest extends TestCase {
 			'default request'  => [
 				[],
 				RuntimeException::class,
-				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate',
+				'Failed to get url \'https://example.com\': cURL error 77',
 			],
 			'secure request'   => [
 				[ 'insecure' => false ],
 				RuntimeException::class,
-				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate',
+				'Failed to get url \'https://example.com\': cURL error 77',
 			],
 			'insecure request' => [
 				[ 'insecure' => true ],
@@ -545,7 +602,7 @@ class UtilsTest extends TestCase {
 	}
 
 	/**
-	 * @dataProvider dataHttpRequestBadCAcert()
+	 * @dataProvider dataHttpRequestBadCAcert
 	 *
 	 * @param array                    $additional_options Associative array of additional options to pass to http_request().
 	 * @param class-string<\Throwable> $exception          Class of the exception to expect.
@@ -724,6 +781,7 @@ class UtilsTest extends TestCase {
 		// Save WP_CLI state.
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$class_wp_cli_capture_exit->setAccessible( true );
 		}
 		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
@@ -1168,5 +1226,60 @@ class UtilsTest extends TestCase {
 
 		// Test that tilde in the middle is not expanded
 		$this->assertEquals( '/path/to/~something', Utils\expand_tilde_path( '/path/to/~something' ) );
+	}
+
+	public function testEscapeshellargPreserveTilde() {
+		// Test that ~/ prefix is preserved and remainder is escaped
+		$this->assertEquals( "~/'sites/wordpress'", Utils\escapeshellarg_preserve_tilde( '~/sites/wordpress' ) );
+		$this->assertEquals( "~/'my documents/site'", Utils\escapeshellarg_preserve_tilde( '~/my documents/site' ) );
+		$this->assertEquals( "~/'path with spaces'", Utils\escapeshellarg_preserve_tilde( '~/path with spaces' ) );
+
+		// Test edge case: exactly ~/
+		$this->assertEquals( "~/''", Utils\escapeshellarg_preserve_tilde( '~/' ) );
+
+		// Test that paths without ~/ are fully escaped
+		$this->assertEquals( escapeshellarg( '/absolute/path' ), Utils\escapeshellarg_preserve_tilde( '/absolute/path' ) );
+		$this->assertEquals( escapeshellarg( 'relative/path' ), Utils\escapeshellarg_preserve_tilde( 'relative/path' ) );
+		$this->assertEquals( escapeshellarg( '/path with spaces' ), Utils\escapeshellarg_preserve_tilde( '/path with spaces' ) );
+
+		// Test that lone ~ or ~username patterns are fully escaped (only ~/ is expanded)
+		$this->assertEquals( escapeshellarg( '~' ), Utils\escapeshellarg_preserve_tilde( '~' ) );
+		$this->assertEquals( escapeshellarg( '~user' ), Utils\escapeshellarg_preserve_tilde( '~user' ) );
+		$this->assertEquals( escapeshellarg( '~user/path' ), Utils\escapeshellarg_preserve_tilde( '~user/path' ) );
+	}
+
+	public function testHasStdinReturnsFalseForDevNull(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Stdin redirection from /dev/null not supported on Windows.' );
+		}
+
+		// Simulate non-interactive environments (cron, atd, puppet exec) where
+		// STDIN is connected to /dev/null. has_stdin() must return false.
+		$process = \WP_CLI\Process::create( $this->buildHasStdinCommand() . ' < /dev/null' )->run();
+
+		$this->assertSame( 'false', $process->stdout );
+	}
+
+	public function testHasStdinReturnsTrueForPipedData(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Piped stdin not supported on Windows.' );
+		}
+
+		// Simulate a real pipe with data: has_stdin() must return true.
+		$process = \WP_CLI\Process::create( 'echo somedata | ' . $this->buildHasStdinCommand() )->run();
+
+		$this->assertSame( 'true', $process->stdout );
+	}
+
+	private function buildHasStdinCommand(): string {
+		$php  = Utils\get_php_binary();
+		$root = WP_CLI_ROOT;
+		$code = sprintf(
+			'require %s; require %s; echo WP_CLI\Utils\has_stdin() ? "true" : "false";',
+			var_export( $root . '/vendor/autoload.php', true ),
+			var_export( $root . '/php/utils.php', true )
+		);
+
+		return escapeshellarg( $php ) . ' -r ' . escapeshellarg( $code );
 	}
 }

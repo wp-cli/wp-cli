@@ -13,7 +13,22 @@ use WP_CLI\Utils;
  *
  * Aliases are shorthand references to WordPress installs. For instance,
  * `@dev` could refer to a development install and `@prod` could refer to a production install.
- * This command gives you and option to add, update and delete, the registered aliases you have available.
+ * This command gives you an option to add, update and delete, the registered aliases you have available.
+ *
+ * Environment variables can be used in alias definitions using the syntax `${env.VARIABLE_NAME}`.
+ * This allows you to centralize configuration in environment variables or .env files.
+ *
+ * ## SECURITY CONSIDERATIONS
+ *
+ * When environment variables are used in aliases, their interpolated values will appear in command
+ * output (e.g., `wp cli alias list` or `wp cli alias get`). If you have sensitive data in environment
+ * variables (such as passwords or API keys), be aware that these values may be exposed in:
+ *
+ * - Terminal output when listing or viewing aliases
+ * - Log files if command output is redirected
+ * - Shell history if used in command arguments
+ *
+ * To view aliases without interpolating environment variables, use the `--raw` flag.
  *
  * Learn more about [running commands remotely](https://make.wordpress.org/cli/handbook/guides/running-commands-remotely/).
  *
@@ -44,6 +59,20 @@ use WP_CLI\Utils;
  *     $ wp cli alias delete @prod
  *     Success: Deleted '@prod' alias.
  *
+ *     # Use environment variables in alias definitions.
+ *     # In wp-cli.yml:
+ *     # @prod:
+ *     #   ssh: ${env.PROD_USER}@${env.PROD_HOST}:${env.PROD_PATH}
+ *     #   user: ${env.PROD_WP_USER}
+ *     $ export PROD_USER=myuser PROD_HOST=example.com PROD_PATH=/var/www PROD_WP_USER=admin
+ *     $ wp @prod option get home
+ *
+ *     # View aliases without environment variable interpolation.
+ *     $ wp cli alias list --raw
+ *
+ *     # Run a command against a group of aliases in parallel.
+ *     $ WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @all plugin status
+ *
  * @package wp-cli
  * @when    before_wp_load
  */
@@ -64,6 +93,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *   - var_export
 	 * ---
 	 *
+	 * [--raw]
+	 * : Display aliases without interpolating environment variables.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # List all available aliases.
@@ -78,13 +110,43 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *       - @prod
 	 *       - @dev
 	 *
+	 *     # List aliases without environment variable interpolation.
+	 *     $ wp cli alias list --raw
+	 *
 	 * @subcommand list
 	 *
 	 * @param array                 $args      Positional arguments. Unused.
-	 * @param array{format: string} $assoc_args Associative arguments.
+	 * @param array{format: string, raw?: bool} $assoc_args Associative arguments.
 	 */
 	public function list_( $args, $assoc_args ) {
-		WP_CLI::print_value( WP_CLI::get_runner()->aliases, $assoc_args );
+		$raw     = Utils\get_flag_value( $assoc_args, 'raw', false );
+		$aliases = $raw ? WP_CLI::get_runner()->raw_aliases : WP_CLI::get_runner()->aliases;
+
+		// Add @ prefix to aliases for display (backward compatibility)
+		$display_aliases = [];
+		foreach ( $aliases as $alias => $value ) {
+			$display_alias = '@' . $alias;
+			if ( is_array( $value ) ) {
+				// Check if it's a group (numeric indexed array)
+				if ( isset( $value[0] ) && is_string( $value[0] ) ) {
+					// It's a group, add @ prefix to each member
+					$display_aliases[ $display_alias ] = array_map(
+						function ( $member ) {
+							return '@' . $member;
+						},
+						$value
+					);
+				} else {
+					// It's a regular alias config
+					$display_aliases[ $display_alias ] = $value;
+				}
+			} else {
+				// It's a string (like the 'all' description)
+				$display_aliases[ $display_alias ] = $value;
+			}
+		}
+
+		WP_CLI::print_value( $display_aliases, $assoc_args );
 	}
 
 	/**
@@ -95,21 +157,33 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * <key>
 	 * : Key for the alias.
 	 *
+	 * [--raw]
+	 * : Display alias without interpolating environment variables.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Get alias.
 	 *     $ wp cli alias get @prod
 	 *     ssh: dev@somedeve.env:12345/home/dev/
 	 *
+	 *     # Get alias without environment variable interpolation.
+	 *     $ wp cli alias get @prod --raw
+	 *     ssh: ${env.PROD_USER}@${env.PROD_HOST}:${env.PROD_PATH}
+	 *
 	 * @param array{string} $args Positional arguments.
+	 * @param array{raw?: bool} $assoc_args Associative arguments.
 	 */
-	public function get( $args ) {
+	public function get( $args, $assoc_args = [] ) {
 		list( $alias ) = $args;
 
-		$aliases = WP_CLI::get_runner()->aliases;
+		// Normalize alias (remove @ prefix if present)
+		$alias = ltrim( $alias, '@' );
+
+		$raw     = Utils\get_flag_value( $assoc_args, 'raw', false );
+		$aliases = $raw ? WP_CLI::get_runner()->raw_aliases : WP_CLI::get_runner()->aliases;
 
 		if ( empty( $aliases[ $alias ] ) ) {
-			WP_CLI::error( "No alias found with key '{$alias}'." );
+			WP_CLI::error( "No alias found with key '@{$alias}'." );
 		}
 
 		foreach ( $aliases[ $alias ] as $key => $value ) {
@@ -179,21 +253,22 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$alias = $args[0];
 
-		/**
-		 * @var string|null $grouping
-		 */
 		$grouping = Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		$this->validate_input( $assoc_args, $grouping );
 
-		if ( isset( $aliases[ $alias ] ) ) {
-			WP_CLI::error( "Key '{$alias}' exists already." );
+		$existing_key = $this->find_alias_key( $aliases, $alias );
+		if ( null !== $existing_key ) {
+			WP_CLI::error( "Key '@" . $this->normalize_alias( $alias ) . "' exists already." );
 		}
 
+		// When adding new aliases, normalize the key (no @ prefix)
+		$normalized_alias = $this->normalize_alias( $alias );
+
 		if ( null === $grouping ) {
-			$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, false );
+			$aliases = $this->build_aliases( $aliases, $normalized_alias, $assoc_args, false );
 		} else {
-			$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, true, $grouping );
+			$aliases = $this->build_aliases( $aliases, $normalized_alias, $assoc_args, true, $grouping );
 		}
 
 		$this->process_aliases( $aliases, $alias, $config_path, 'Added' );
@@ -238,11 +313,12 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$this->validate_config_file( $config_path );
 
-		if ( empty( $aliases[ $alias ] ) ) {
-			WP_CLI::error( "No alias found with key '{$alias}'." );
+		$alias_key = $this->find_alias_key( $aliases, $alias );
+		if ( null === $alias_key ) {
+			WP_CLI::error( "No alias found with key '@" . $this->normalize_alias( $alias ) . "'." );
 		}
 
-		unset( $aliases[ $alias ] );
+		unset( $aliases[ $alias_key ] );
 		$this->process_aliases( $aliases, $alias, $config_path, 'Deleted' );
 	}
 
@@ -298,9 +374,6 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		$config = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
 		$alias  = $args[0];
 
-		/**
-		 * @var string|null $grouping
-		 */
 		$grouping = Utils\get_flag_value( $assoc_args, 'grouping' );
 
 		list( $config_path, $aliases ) = $this->get_aliases_data( $config, $alias, true );
@@ -309,14 +382,18 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$this->validate_input( $assoc_args, $grouping );
 
-		if ( empty( $aliases[ $alias ] ) ) {
-			WP_CLI::error( "No alias found with key '{$alias}'." );
+		$alias_key = $this->find_alias_key( $aliases, $alias );
+		if ( null === $alias_key ) {
+			WP_CLI::error( "No alias found with key '@" . $this->normalize_alias( $alias ) . "'." );
 		}
 
+		// For updates, we need to work with the actual YAML key
+		// Pass the alias_key to build_aliases which will be normalized internally
+		// But we need to remove the old key and add with the new one if structure changed
 		if ( null === $grouping ) {
-			$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, false, '', true );
+			$aliases = $this->build_aliases( $aliases, $alias_key, $assoc_args, false, '', true );
 		} else {
-			$aliases = $this->build_aliases( $aliases, $alias, $assoc_args, true, $grouping, true );
+			$aliases = $this->build_aliases( $aliases, $alias_key, $assoc_args, true, $grouping, true );
 		}
 
 		$this->process_aliases( $aliases, $alias, $config_path, 'Updated' );
@@ -340,23 +417,22 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @subcommand is-group
 	 */
 	public function is_group( $args, $assoc_args = array() ) {
-		$alias = $args[0];
+		$alias = ltrim( $args[0], '@' );
 
 		$aliases = WP_CLI::get_runner()->aliases;
 
 		if ( empty( $aliases[ $alias ] ) ) {
-			WP_CLI::error( "No alias found with key '{$alias}'." );
+			WP_CLI::error( "No alias found with key '@{$alias}'." );
 		}
 
 		// how do we know the alias is a group?
 		// + array keys are numeric
-		// + array values begin with '@'
+		// + array values are strings (group members)
 
-		$first_item       = $aliases[ $alias ];
-		$first_item_key   = key( $first_item );
-		$first_item_value = $first_item[ $first_item_key ];
+		$first_item     = $aliases[ $alias ];
+		$first_item_key = key( $first_item );
 
-		if ( is_numeric( $first_item_key ) && substr( $first_item_value, 0, 1 ) === '@' ) {
+		if ( is_numeric( $first_item_key ) ) {
 			WP_CLI::halt( 0 );
 		}
 		WP_CLI::halt( 1 );
@@ -389,11 +465,11 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			$aliases     = $project_aliases;
 		} else {
 
-			$is_global_alias  = array_key_exists( $alias, $global_aliases );
-			$is_project_alias = array_key_exists( $alias, $project_aliases );
+			$is_global_alias  = null !== $this->find_alias_key( $global_aliases, $alias );
+			$is_project_alias = null !== $this->find_alias_key( $project_aliases, $alias );
 
 			if ( $is_global_alias && $is_project_alias ) {
-				WP_CLI::error( "Key '{$alias}' found in more than one path. Please pass --config param." );
+				WP_CLI::error( "Key '@" . $this->normalize_alias( $alias ) . "' found in more than one path. Please pass --config param." );
 			} elseif ( $is_global_alias ) {
 				$config_path = $global_config_path;
 				$aliases     = $global_aliases;
@@ -430,7 +506,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @return array<string, array<string, mixed>>
 	 */
 	private function build_aliases( $aliases, $alias, $assoc_args, $is_grouping, $grouping = '', $is_update = false ) {
-		$alias = $this->normalize_alias( $alias );
+		// For updates, we might receive @foo or foo depending on YAML format
+		// Normalize it for consistency
+		$normalized_alias = $this->normalize_alias( $alias );
 
 		if ( $is_grouping ) {
 			$valid_assoc_args = [ 'config', 'grouping' ];
@@ -443,30 +521,65 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			}
 		}
 
+		// Validate BEFORE modifying the aliases array
 		if ( $is_update ) {
 			$this->validate_alias_type( $aliases, $alias, $assoc_args, $grouping );
 		}
 
+		// If updating, we need to preserve existing data and only update specified fields
+		$existing_data = [];
+		if ( $is_update ) {
+			// Find the existing alias data to preserve it
+			$alias_key = $this->find_alias_key( $aliases, $alias );
+			if ( null !== $alias_key ) {
+				// Get existing data based on format
+				if ( isset( $aliases['aliases'][ $normalized_alias ] ) ) {
+					$existing_data = $aliases['aliases'][ $normalized_alias ];
+				} elseif ( isset( $aliases[ $alias_key ] ) ) {
+					$existing_data = $aliases[ $alias_key ];
+				}
+			}
+
+			// Remove the old key structure
+			if ( isset( $aliases[ $alias ] ) ) {
+				unset( $aliases[ $alias ] );
+			}
+			// Also check if it's in the @format
+			$at_key = '@' . $normalized_alias;
+			if ( isset( $aliases[ $at_key ] ) ) {
+				unset( $aliases[ $at_key ] );
+			}
+			// Check if it's under aliases:
+			if ( isset( $aliases['aliases'][ $normalized_alias ] ) ) {
+				unset( $aliases['aliases'][ $normalized_alias ] );
+			}
+		}
+
 		if ( ! $is_grouping ) {
+			// Start with existing data for updates, or empty array for new aliases
+			if ( ! isset( $aliases[ $normalized_alias ] ) ) {
+				$aliases[ $normalized_alias ] = $existing_data;
+			}
+
 			foreach ( $assoc_args as $key => $value ) {
 				if ( strpos( $key, 'set-' ) !== false ) {
 					$alias_key_info = explode( '-', $key );
 					$alias_key      = empty( $alias_key_info[1] ) ? '' : $alias_key_info[1];
 					if ( ! empty( $alias_key ) && ! empty( $value ) ) {
-						$aliases[ $alias ][ $alias_key ] = $value;
+						$aliases[ $normalized_alias ][ $alias_key ] = $value;
 					}
 				}
 			}
 		} elseif ( ! empty( $grouping ) ) {
-
-				$group_alias_list  = explode( ',', $grouping );
-				$group_alias       = array_map(
-					function ( $current_alias ) {
-						return '@' . ltrim( $current_alias, '@' );
-					},
-					$group_alias_list
-				);
-				$aliases[ $alias ] = $group_alias;
+			$group_alias_list             = explode( ',', $grouping );
+			$group_alias                  = array_map(
+				function ( $current_alias ) {
+					// Remove @ prefix if present
+					return ltrim( $current_alias, '@' );
+				},
+				$group_alias_list
+			);
+			$aliases[ $normalized_alias ] = $group_alias;
 		}
 
 		return $aliases;
@@ -501,7 +614,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * Validate alias type before update.
 	 *
 	 * @param array  $aliases    Existing aliases data.
-	 * @param string $alias      Alias Name.
+	 * @param string $alias      Alias Name (can be normalized or with @).
 	 * @param array  $assoc_args Arguments array.
 	 * @param string $grouping   Grouping argument value.
 	 *
@@ -509,14 +622,37 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 */
 	private function validate_alias_type( $aliases, $alias, $assoc_args, $grouping ) {
 
-		$alias_data = $aliases[ $alias ];
+		// Find the actual key in YAML
+		$alias_key = $this->find_alias_key( $aliases, $alias );
+		if ( null === $alias_key ) {
+			$alias_data = null;
+		} elseif ( isset( $aliases['aliases'] ) && isset( $aliases['aliases'][ $alias_key ] ) ) {
+			$alias_data = $aliases['aliases'][ $alias_key ];
+		} else {
+			$alias_data = $aliases[ $alias_key ];
+		}
 
-		$group_aliases_match = preg_grep( '/^@(\w+)/i', $alias_data );
-		$arg_match           = preg_grep( '/^set-(\w+)/i', array_keys( $assoc_args ) );
+		// Handle null or non-array data
+		if ( ! is_array( $alias_data ) ) {
+			$alias_data = [];
+		}
 
-		if ( ! empty( $group_aliases_match ) && ! empty( $arg_match ) ) {
+		// Check if this is a group alias by looking for numeric keys with string values
+		// Group aliases are stored as arrays like ['foo', 'bar'] without @ prefix
+		$is_group_alias = false;
+		if ( ! empty( $alias_data ) ) {
+			$numeric_keys = array_filter( array_keys( $alias_data ), 'is_numeric' );
+			if ( count( $numeric_keys ) === count( $alias_data ) ) {
+				// All keys are numeric, so this is a group alias
+				$is_group_alias = true;
+			}
+		}
+
+		$arg_match = preg_grep( '/^set-(\w+)/i', array_keys( $assoc_args ) );
+
+		if ( $is_group_alias && ! empty( $arg_match ) ) {
 			WP_CLI::error( 'Trying to update group alias with invalid arguments.' );
-		} elseif ( empty( $group_aliases_match ) && ! empty( $grouping ) ) {
+		} elseif ( ! $is_group_alias && ! empty( $grouping ) ) {
 			WP_CLI::error( 'Trying to update simple alias with invalid --grouping argument.' );
 		}
 	}
@@ -532,11 +668,43 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	private function process_aliases( $aliases, $alias, $config_path, $operation = '' ) {
 		$alias = $this->normalize_alias( $alias );
 
+		// Convert aliases to use the new 'aliases:' format for better cross-platform compatibility
+		// Move any @-prefixed keys into the aliases: section
+		$yaml_data       = [];
+		$aliases_section = [];
+
+		foreach ( $aliases as $key => $value ) {
+			// Skip special config keys that aren't aliases
+			if ( in_array( $key, [ 'require', 'exec', 'disabled_commands', 'apache_modules', 'path', '_', 'url', 'user', 'ssh', 'http', 'color', 'debug', 'prompt', 'quiet', 'allow-root', 'skip-plugins', 'skip-themes', 'skip-packages', 'context', 'alias' ], true ) ) {
+				$yaml_data[ $key ] = $value;
+			} elseif ( 0 === strpos( $key, '@' ) ) {
+				// Convert @foo to aliases: { foo: } format
+				$normalized_key                     = substr( $key, 1 );
+				$aliases_section[ $normalized_key ] = $value;
+			} elseif ( 'aliases' === $key ) {
+				// Already in aliases format, merge it
+				if ( is_array( $value ) ) {
+					$aliases_section = array_merge( $aliases_section, $value );
+				}
+			} elseif ( is_array( $value ) ) {
+				// This is an alias (either config or group), add to aliases section
+				$aliases_section[ $key ] = $value;
+			} else {
+				// Non-alias config value
+				$yaml_data[ $key ] = $value;
+			}
+		}
+
+		// Add the aliases section if we have any
+		if ( ! empty( $aliases_section ) ) {
+			$yaml_data['aliases'] = $aliases_section;
+		}
+
 		// Convert data to YAML string.
-		$yaml_data = Spyc::YAMLDump( $aliases );
+		$yaml_output = Spyc::YAMLDump( $yaml_data );
 
 		// Add data in config file.
-		if ( file_put_contents( $config_path, $yaml_data ) ) {
+		if ( file_put_contents( $config_path, $yaml_output ) ) {
 			WP_CLI::success( "$operation '{$alias}' alias." );
 		}
 	}
@@ -544,17 +712,41 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	/**
 	 * Normalize the alias to an expected format.
 	 *
-	 * - Add @ if not present.
+	 * - Remove @ if present.
 	 *
 	 * @param string $alias Name of alias.
 	 */
 	private function normalize_alias( $alias ) {
-		// Check if the alias starts with the @.
+		// Remove the @ prefix if present for storage
 		// See: https://github.com/wp-cli/wp-cli/issues/5391
-		if ( strpos( $alias, '@' ) !== 0 ) {
-			$alias = '@' . ltrim( $alias, '@' );
+		return ltrim( $alias, '@' );
+	}
+
+	/**
+	 * Find the actual key used for an alias in YAML data.
+	 *
+	 * Handles both @foo format and aliases: { foo: } format.
+	 *
+	 * @param array  $yaml_data The raw YAML data.
+	 * @param string $alias     The alias name (with or without @).
+	 * @return string|null      The actual key in YAML, or null if not found.
+	 */
+	private function find_alias_key( $yaml_data, $alias ) {
+		$normalized = $this->normalize_alias( $alias );
+
+		// Check for @foo format
+		$at_key = '@' . $normalized;
+		if ( array_key_exists( $at_key, $yaml_data ) ) {
+			return $at_key;
 		}
 
-		return $alias;
+		// Check for aliases: { foo: } format
+		if ( isset( $yaml_data['aliases'] ) && is_array( $yaml_data['aliases'] ) ) {
+			if ( array_key_exists( $normalized, $yaml_data['aliases'] ) ) {
+				return $normalized;
+			}
+		}
+
+		return null;
 	}
 }
