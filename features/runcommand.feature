@@ -270,6 +270,25 @@ Feature: Run a WP-CLI command
       | --no-launch |
       | --launch    |
 
+  Scenario: Persists alias when launching a new process via runcommand
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      user: admin
+      require:
+        - command.php
+      """
+
+    When I run `wp @foo --launch --return run 'option get home'`
+    Then STDOUT should be:
+      """
+      returned: 'https://example.com'
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
   Scenario Outline: Apply backwards compat conversions
     Given a WP installation
 
