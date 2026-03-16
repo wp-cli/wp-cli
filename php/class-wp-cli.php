@@ -1589,7 +1589,13 @@ class WP_CLI {
 			}
 			$runtime_config = Utils\assoc_args_to_str( $runtime_config );
 
-			$runcommand = "{$php_bin} {$script_path} {$runtime_config} {$command}";
+			$alias        = self::get_runner()->alias;
+			$alias_prefix = '';
+			if ( $alias && '@' !== substr( ltrim( $command ), 0, 1 ) ) {
+				$alias_prefix = '@' . $alias . ' ';
+			}
+
+			$runcommand = "{$php_bin} {$script_path} {$alias_prefix}{$runtime_config} {$command}";
 
 			/**
 			 * @phpstan-var array<int, resource> $pipes
