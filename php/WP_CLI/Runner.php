@@ -831,7 +831,7 @@ class Runner {
 		}
 
 		if ( 'docker-compose-run' === $bits['scheme'] ) {
-			$command = '%s run %s%s%s%s%s%s %s';
+			$command = '%s run %s%s%s%s%s%s%s %s';
 
 			$env_flags = '-e WP_CLI_SSH_RUN=1 ';
 			if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
