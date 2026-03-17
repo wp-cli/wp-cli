@@ -1391,6 +1391,18 @@ class Runner {
 		// Check if parallel execution is enabled via environment variable.
 		$parallel = (bool) Utils\get_env_or_config( 'WP_CLI_ALIAS_GROUPS_PARALLEL' );
 
+		// Read STDIN once upfront so every subprocess in the group receives the
+		// same input.  When STDIN is a pipe (e.g. `cat file.php | wp @group eval-file -`)
+		// only the first subprocess would otherwise consume the stream; subsequent
+		// ones would see an immediate EOF.
+		$stdin_data = null;
+		if ( Utils\has_stdin() ) {
+			$contents = stream_get_contents( STDIN );
+			if ( false !== $contents ) {
+				$stdin_data = $contents;
+			}
+		}
+
 		if ( $parallel ) {
 			// Run aliases in parallel.
 			// Note: Output from multiple processes will be interleaved and non-deterministic.
@@ -1399,9 +1411,14 @@ class Runner {
 				WP_CLI::log( '@' . $alias );
 				$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
 				$pipes        = [];
-				$proc         = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
+				$stdin_spec   = null !== $stdin_data ? [ 'pipe', 'r' ] : STDIN;
+				$proc         = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes );
 
 				if ( $proc ) {
+					if ( null !== $stdin_data ) {
+						fwrite( $pipes[0], $stdin_data );
+						fclose( $pipes[0] );
+					}
 					$procs[] = $proc;
 				}
 			}
@@ -1416,9 +1433,14 @@ class Runner {
 				WP_CLI::log( '@' . $alias );
 				$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
 				$pipes        = [];
-				$proc         = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes );
+				$stdin_spec   = null !== $stdin_data ? [ 'pipe', 'r' ] : STDIN;
+				$proc         = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes );
 
 				if ( $proc ) {
+					if ( null !== $stdin_data ) {
+						fwrite( $pipes[0], $stdin_data );
+						fclose( $pipes[0] );
+					}
 					proc_close( $proc );
 				}
 			}
