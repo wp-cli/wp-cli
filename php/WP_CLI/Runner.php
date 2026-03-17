@@ -716,8 +716,9 @@ class Runner {
 		}
 
 		$alias_regex = '#' . Configurator::ALIAS_REGEX . '#';
+		/** @var string $v */
 		foreach ( $wp_args as $k => $v ) {
-			if ( preg_match( '#^--ssh(?:-args)?(?:=|$)|--alias=#', (string) $v ) || preg_match( $alias_regex, (string) $v ) ) {
+			if ( preg_match( '#^--ssh(?:-args)?(?:=|$)|--alias=#', $v ) || preg_match( $alias_regex, $v ) ) {
 				unset( $wp_args[ $k ] );
 			}
 		}
@@ -735,14 +736,14 @@ class Runner {
 		//   (e.g., --url=https://example.com/path) and are not shell metacharacters
 		// - All other characters (spaces, quotes, $, &, |, etc.) trigger quoting via escapeshellarg()
 		$escaped_args = [];
+		/** @var string $arg */
 		foreach ( $wp_args as $arg ) {
-			$arg_str = (string) $arg;
 			// Quote empty strings and arguments with any characters outside the safe set.
 			// The empty string check is explicit for clarity, though regex would also catch it.
-			if ( '' !== $arg_str && preg_match( '/^[a-zA-Z0-9_=.\/:-]+$/', $arg_str ) ) {
-				$escaped_args[] = $arg_str;
+			if ( '' !== $arg && preg_match( '/^[a-zA-Z0-9_=.\/:-]+$/', $arg ) ) {
+				$escaped_args[] = $arg;
 			} else {
-				$escaped_args[] = escapeshellarg( $arg_str );
+				$escaped_args[] = escapeshellarg( $arg );
 			}
 		}
 		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', $escaped_args );
@@ -1447,6 +1448,7 @@ class Runner {
 		WP_CLI::debug( $this->system_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( $this->global_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( $this->project_config_path_debug, 'bootstrap' );
+		// @phpstan-ignore argument.type
 		WP_CLI::debug( 'argv: ' . implode( ' ', (array) $GLOBALS['argv'] ), 'bootstrap' );
 
 		if ( $this->alias ) {
@@ -1857,7 +1859,27 @@ class Runner {
 		}
 
 		// Prevent code from performing a redirect
-		WP_CLI::add_wp_hook( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
+		WP_CLI::add_wp_hook(
+			'wp_redirect',
+			function () {
+				ob_start();
+				debug_print_backtrace();
+				$backtrace = (string) ob_get_clean();
+
+				$message = sprintf(
+					'Some code is trying to do a URL redirect. Backtrace: %s',
+					$backtrace
+				);
+
+				if ( Context::ADMIN === $this->context_manager->get_context() ) {
+					WP_CLI::debug( $message, 'bootstrap' );
+				} else {
+					WP_CLI::warning( $message );
+				}
+
+				return false;
+			}
+		);
 
 		WP_CLI::add_wp_hook(
 			'nocache_headers',

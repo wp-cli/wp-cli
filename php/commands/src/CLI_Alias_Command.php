@@ -129,6 +129,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			if ( is_array( $value ) ) {
 				// Check if it's a group (numeric indexed array)
 				if ( isset( $value[0] ) && is_string( $value[0] ) ) {
+					/** @var string[] $value */
 					// It's a group, add @ prefix to each member
 					$display_aliases[ $display_alias ] = array_map(
 						function ( $member ) {
