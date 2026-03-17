@@ -1859,7 +1859,27 @@ class Runner {
 		}
 
 		// Prevent code from performing a redirect
-		WP_CLI::add_wp_hook( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
+		WP_CLI::add_wp_hook(
+			'wp_redirect',
+			function () {
+				ob_start();
+				debug_print_backtrace();
+				$backtrace = (string) ob_get_clean();
+
+				$message = sprintf(
+					'Some code is trying to do a URL redirect. Backtrace: %s',
+					$backtrace
+				);
+
+				if ( Context::ADMIN === $this->context_manager->get_context() ) {
+					WP_CLI::debug( $message, 'bootstrap' );
+				} else {
+					WP_CLI::warning( $message );
+				}
+
+				return false;
+			}
+		);
 
 		WP_CLI::add_wp_hook(
 			'nocache_headers',
