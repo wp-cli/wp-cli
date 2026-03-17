@@ -2064,6 +2064,8 @@ function describe_callable( $callable ) {
 		}
 
 		if ( is_array( $callable ) ) {
+			/** @var array{0: object|string, 1: string} $callable */
+
 			if ( is_object( $callable[0] ) ) {
 				return sprintf(
 					'%s->%s()',
@@ -2072,7 +2074,6 @@ function describe_callable( $callable ) {
 				);
 			}
 
-			// @phpstan-ignore cast.string
 			return sprintf( '%s::%s()', (string) $callable[0], (string) $callable[1] );
 		}
 

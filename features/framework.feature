@@ -239,6 +239,22 @@ Feature: Load WP-CLI
       Warning: Some code is trying to do a URL redirect.
       """
 
+  Scenario: A plugin calling wp_redirect() shouldn't redirect in admin context
+    Given a WP installation
+    And a wp-content/mu-plugins/redirect.php file:
+      """
+      <?php
+      add_action( 'init', function(){
+          wp_redirect( 'http://apple.com' );
+      });
+      """
+
+    When I try `wp plugin list --debug=bootstrap`
+    Then STDERR should contain:
+      """
+      Debug: Some code is trying to do a URL redirect.
+      """
+
   Scenario: It should be possible to work on a site in maintenance mode
     Given a WP installation
     And a .maintenance file:

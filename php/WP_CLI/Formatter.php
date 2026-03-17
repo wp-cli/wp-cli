@@ -190,6 +190,7 @@ class Formatter {
 				if ( ! is_array( $items ) ) {
 					$items = iterator_to_array( $items );
 				}
+				/** @var array<string> $items */
 				echo implode( ' ', $items );
 				break;
 

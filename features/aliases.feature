@@ -1153,3 +1153,63 @@ Feature: Create shortcuts to specific WordPress installs
       output-from-alias
       output-from-alias
       """
+
+  Scenario: STDIN piped to alias group is passed to each alias in the group
+    Given a WP installation in 'foo'
+    And a WP installation in 'bar'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      @bar:
+        path: bar
+      @both:
+       - @foo
+       - @bar
+      """
+    And a stdin.php file:
+      """
+      <?php echo get_option( 'home' ) . "\n";
+      """
+
+    When I run `wp @foo option update home 'http://foo.example.com'`
+    And I run `wp @bar option update home 'http://bar.example.com'`
+    And I run `cat stdin.php | wp @both eval-file -`
+    Then STDOUT should contain:
+      """
+      http://foo.example.com
+      """
+    And STDOUT should contain:
+      """
+      http://bar.example.com
+      """
+
+  Scenario: STDIN piped to alias group in parallel mode is passed to each alias
+    Given a WP installation in 'foo'
+    And a WP installation in 'bar'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      @bar:
+        path: bar
+      @both:
+       - @foo
+       - @bar
+      """
+    And a stdin.php file:
+      """
+      <?php echo get_option( 'home' ) . "\n";
+      """
+
+    When I run `wp @foo option update home 'http://foo.example.com'`
+    And I run `wp @bar option update home 'http://bar.example.com'`
+    And I run `cat stdin.php | WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both eval-file -`
+    Then STDOUT should contain:
+      """
+      http://foo.example.com
+      """
+    And STDOUT should contain:
+      """
+      http://bar.example.com
+      """

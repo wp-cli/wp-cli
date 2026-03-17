@@ -92,7 +92,6 @@ class ShutdownHandler {
 			'wp_die_handler',
 			function () use ( $skip ) {
 				return static function ( $wp_error ) use ( $skip ) {
-					// @phpstan-ignore staticMethod.alreadyNarrowedType
 					WP_CLI::error( $wp_error->get_error_message(), false );
 
 					self::prompt_and_rerun( $skip );
