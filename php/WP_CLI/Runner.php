@@ -1861,7 +1861,7 @@ class Runner {
 		// Prevent code from performing a redirect
 		WP_CLI::add_wp_hook(
 			'wp_redirect',
-			function ( $url ) {
+			function () {
 				ob_start();
 				debug_print_backtrace();
 				$backtrace = (string) ob_get_clean();
