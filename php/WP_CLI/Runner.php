@@ -1867,7 +1867,7 @@ class Runner {
 				$backtrace = (string) ob_get_clean();
 
 				$message = sprintf(
-					'Some code is trying to do a URL redirect. Backtrace:',
+					'Some code is trying to do a URL redirect. Backtrace: %s',
 					$backtrace
 				);
 
