@@ -152,20 +152,6 @@ function wp_clean_error_message( $message ) {
 }
 
 /**
- * @param string $url
- * @return string
- */
-function wp_redirect_handler( $url ) {
-	WP_CLI::warning( 'Some code is trying to do a URL redirect. Backtrace:' );
-
-	ob_start();
-	debug_print_backtrace();
-	fwrite( STDERR, (string) ob_get_clean() );
-
-	return $url;
-}
-
-/**
  * @param string $since Version number.
  * @param string $path File to include.
  * @return void
