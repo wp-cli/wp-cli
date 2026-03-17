@@ -430,14 +430,14 @@ Feature: Global flags
     When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh '-o ConnectTimeout=5' -T -vvv 'wordpress' 'wp
+      Running SSH command: ssh '-o ConnectTimeout=5' -T -vvv 'wordpress' 'WP_CLI_SSH_RUN=1 wp
       """
 
   Scenario: Multiple SSH args should be passed to SSH command
     When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --ssh-args="-o ServerAliveInterval=10" --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh '-o ConnectTimeout=5' '-o ServerAliveInterval=10' -T -vvv 'wordpress' 'wp
+      Running SSH command: ssh '-o ConnectTimeout=5' '-o ServerAliveInterval=10' -T -vvv 'wordpress' 'WP_CLI_SSH_RUN=1 wp
       """
 
   Scenario: SSH args should be passed to Docker command
