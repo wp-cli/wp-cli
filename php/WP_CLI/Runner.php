@@ -1395,11 +1395,21 @@ class Runner {
 		// same input.  When STDIN is a pipe (e.g. `cat file.php | wp @group eval-file -`)
 		// only the first subprocess would otherwise consume the stream; subsequent
 		// ones would see an immediate EOF.
-		$stdin_data = null;
+		$stdin_stream = null;
 		if ( Utils\has_stdin() ) {
-			$contents = stream_get_contents( STDIN );
-			if ( false !== $contents ) {
-				$stdin_data = $contents;
+			// Spool STDIN into a temporary, rewindable stream so it can be
+			// replayed to each subprocess without holding it all in memory.
+			$stdin_stream = fopen( 'php://temp/maxmemory:5242880', 'w+' ); // 5MB in-memory, then disk.
+			if ( false === $stdin_stream ) {
+				$stdin_stream = null;
+			} else {
+				$result = stream_copy_to_stream( STDIN, $stdin_stream );
+				if ( false === $result ) {
+					fclose( $stdin_stream );
+					$stdin_stream = null;
+				} else {
+					rewind( $stdin_stream );
+				}
 			}
 		}
 
@@ -1411,12 +1421,13 @@ class Runner {
 				WP_CLI::log( '@' . $alias );
 				$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
 				$pipes        = [];
-				$stdin_spec   = null !== $stdin_data ? [ 'pipe', 'r' ] : STDIN;
+				$stdin_spec   = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
 				$proc         = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes );
 
 				if ( $proc ) {
-					if ( null !== $stdin_data ) {
-						fwrite( $pipes[0], $stdin_data );
+					if ( null !== $stdin_stream ) {
+						rewind( $stdin_stream );
+						stream_copy_to_stream( $stdin_stream, $pipes[0] );
 						fclose( $pipes[0] );
 					}
 					$procs[] = $proc;
