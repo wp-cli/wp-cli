@@ -1526,7 +1526,6 @@ class Runner {
 			} else {
 				// @phpstan-ignore cast.string
 				$this->run_ssh_command( (string) $this->config['ssh'] );
-				return;
 			}
 		}
 
