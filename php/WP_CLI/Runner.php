@@ -1449,7 +1449,8 @@ class Runner {
 
 				if ( $proc ) {
 					if ( null !== $stdin_stream ) {
-						fwrite( $pipes[0], $stdin_stream );
+						rewind( $stdin_stream );
+						stream_copy_to_stream( $stdin_stream, $pipes[0] );
 						fclose( $pipes[0] );
 					}
 					proc_close( $proc );
