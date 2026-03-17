@@ -28,7 +28,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @test option get home`
     Then STDERR should be:
       """
-      Error: Alias '@test' not found.
+      Error: Alias 'test' not found.
       """
 
   Scenario: Provide suggestion when invalid alias is provided
@@ -42,8 +42,8 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @test option get home`
     Then STDERR should be:
       """
-      Error: Alias '@test' not found.
-      Did you mean '@test2'?
+      Error: Alias 'test' not found.
+      Did you mean 'test2'?
       """
 
   Scenario: Treat global params as local when included in alias
@@ -204,6 +204,106 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -i 'identityfile.key' -T -vvv
       """
 
+  Scenario: Vagrant SSH disables strict host key checking
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: vagrant
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -T -vvv '' 'wp --debug --version'
+      """
+
+  Scenario: SSH alias expands tilde in path
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:~/sites/example.com/www
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      'cd ~/
+      """
+    And STDERR should contain:
+      """
+      sites/example.com/www
+      """
+
+  Scenario: Connection-specific properties are not passed to remote WP-CLI
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        proxyjump: proxyhost
+        key: identityfile.key
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -J 'proxyhost' -i 'identityfile.key' -T -vvv
+      """
+    And STDERR should not contain:
+      """
+      WP_CLI_RUNTIME_ALIAS
+      """
+
+  Scenario: WordPress-specific properties are passed to remote WP-CLI
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        user: admin
+        path: /var/www/html
+      """
+
+    When I try `wp @foo --debug core version`
+    Then STDERR should contain:
+      """
+      WP_CLI_RUNTIME_ALIAS
+      """
+    And STDERR should contain:
+      """
+      @foo
+      """
+
+  Scenario: SSH commands should not be double-escaped
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+      """
+
+    When I try `wp @foo plugin list --debug`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; wp plugin list --debug'
+      """
+
+  Scenario: SSH commands correctly escape arguments with spaces
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+      """
+
+    When I try `wp @foo post create --post_title=My Title --debug`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; wp post create --post_title=My Title
+      """
+
   Scenario: Uses env command for runtime alias with separate path line
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -217,6 +317,42 @@ Feature: Create shortcuts to specific WordPress installs
     Then STDERR should contain:
       """
       Running SSH command: ssh -T -vvv 'user@host' 'env WP_CLI_RUNTIME_ALIAS=
+      """
+    And STDERR should contain:
+      """
+      wp @foo
+      """
+
+  Scenario: Two aliases with same SSH host but different paths generate different remote commands
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: user@host
+        path: /path/to/production
+      @staging:
+        ssh: user@host
+        path: /path/to/staging
+      """
+
+    When I try `wp @prod --debug --version`
+    Then STDERR should contain:
+      """
+      \/path\/to\/production
+      """
+    And STDERR should not contain:
+      """
+      \/path\/to\/staging
+      """
+
+    When I try `wp @staging --debug --version`
+    Then STDERR should contain:
+      """
+      \/path\/to\/staging
+      """
+    And STDERR should not contain:
+      """
+      \/path\/to\/production
       """
 
   Scenario: Properly escapes single quotes in runtime alias path
@@ -249,7 +385,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp cli alias add @dev --set-user=wpcli --set-path=/path/to/wordpress --config=project`
     Then STDOUT should be:
       """
-      Success: Added '@dev' alias.
+      Success: Added 'dev' alias.
       """
     When I run `wp cli alias list`
     Then STDOUT should be YAML containing:
@@ -293,7 +429,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp cli alias delete @dev --config=project`
     Then STDOUT should be:
       """
-      Success: Deleted '@dev' alias.
+      Success: Deleted 'dev' alias.
       """
     When I run `wp cli alias list`
     Then STDOUT should be YAML containing:
@@ -330,7 +466,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp cli alias update @foo --set-user=newuser --config=project`
     Then STDOUT should be:
       """
-      Success: Updated '@foo' alias.
+      Success: Updated 'foo' alias.
       """
     When I run `wp cli alias list`
     Then STDOUT should be YAML containing:
@@ -371,7 +507,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp cli alias update @foo --set-path=/new/path`
     Then STDOUT should be:
       """
-      Success: Updated '@foo' alias.
+      Success: Updated 'foo' alias.
       """
 
     When I run `wp cli alias list`
@@ -530,7 +666,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @all option get home`
     Then STDERR should be:
       """
-      Error: Cannot use '@all' when no aliases are registered.
+      Error: Cannot use 'all' when no aliases are registered.
       """
 
   Scenario: Alias for a subsite of a multisite install
@@ -612,11 +748,11 @@ Feature: Create shortcuts to specific WordPress installs
       """
     And STDERR should contain:
       """
-      @foo core is-installed --allow-root --debug
+      --alias=foo core is-installed --allow-root --debug
       """
     And STDERR should contain:
       """
-      @bar core is-installed --allow-root --debug
+      --alias=bar core is-installed --allow-root --debug
       """
 
   Scenario Outline: Check that proc_open() and proc_close() aren't disabled for grouped aliases
@@ -683,7 +819,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp cli alias add hello --set-path=/path/to/wordpress`
     Then STDOUT should be:
       """
-      Success: Added '@hello' alias.
+      Success: Added 'hello' alias.
       """
 
     When I run `wp eval --skip-wordpress 'echo realpath( getenv( "RUN_DIR" ) );'`
@@ -697,6 +833,254 @@ Feature: Create shortcuts to specific WordPress installs
         path: /path/to/wordpress
       @foo:
         path: {TEST_DIR}/foo
+      """
+
+  Scenario: Use environment variables in alias definitions
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @dev:
+        user: ${env.TEST_WP_USER}
+        path: ${env.TEST_WP_PATH}
+      """
+
+    When I run `TEST_WP_USER=admin TEST_WP_PATH=foo wp @dev eval 'echo get_current_user_id();'`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `TEST_WP_USER=admin TEST_WP_PATH=foo wp @dev option get home`
+  Scenario: Use alternative aliases syntax without @ prefix
+    Given a WP installation in 'foo'
+    And I run `mkdir bar`
+    And a wp-cli.yml file:
+      """
+      aliases:
+        foo:
+          path: foo
+      """
+
+    When I try `wp core is-installed`
+    Then STDERR should contain:
+      """
+      Error: This does not seem to be a WordPress installation.
+      """
+    And the return code should be 1
+
+    When I run `wp --alias=foo core is-installed`
+    Then the return code should be 0
+
+    When I run `cd bar; wp --alias=foo core is-installed`
+    Then the return code should be 0
+
+  Scenario: Mix traditional and new alias syntax
+    Given a WP installation in 'foo'
+    And a WP installation in 'bar'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      aliases:
+        bar:
+          path: bar
+      """
+
+    When I run `wp @foo option get home`
+    Then STDOUT should be:
+      """
+      https://example.com
+      """
+
+    When I run `wp --alias=bar option get home`
+    Then STDOUT should be:
+      """
+      https://example.com
+      """
+
+  Scenario: Use environment variables in SSH alias definitions
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: ${env.SSH_USER}@${env.SSH_HOST}:${env.SSH_PATH}
+      """
+
+    When I run `SSH_USER=admin SSH_HOST=example.com SSH_PATH=/var/www wp cli alias get @prod`
+    Then STDOUT should be:
+      """
+      ssh: admin@example.com:/var/www
+      """
+
+  Scenario: Handle missing environment variables gracefully
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @test:
+        path: ${env.NONEXISTENT_VAR}/wordpress
+      """
+
+    When I run `wp cli alias get @test`
+    Then STDOUT should contain:
+      """
+      ${env.NONEXISTENT_VAR}
+      """
+
+  Scenario: View aliases without environment variable interpolation using --raw flag
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @dev:
+        user: ${env.TEST_WP_USER}
+        path: ${env.TEST_WP_PATH}
+      @prod:
+        ssh: ${env.SSH_USER}@${env.SSH_HOST}:${env.SSH_PATH}
+      """
+
+    When I run `TEST_WP_USER=admin TEST_WP_PATH=foo wp cli alias get @dev --raw`
+    Then STDOUT should be:
+      """
+      user: ${env.TEST_WP_USER}
+      path: ${env.TEST_WP_PATH}
+      """
+
+    When I run `SSH_USER=admin SSH_HOST=example.com SSH_PATH=/var/www wp cli alias get @prod --raw`
+    Then STDOUT should be:
+      """
+      ssh: ${env.SSH_USER}@${env.SSH_HOST}:${env.SSH_PATH}
+      """
+
+    When I run `wp cli alias list --raw --format=json`
+    Then STDOUT should contain:
+      """
+      ${env.TEST_WP_USER}
+      """
+    And STDOUT should contain:
+      """
+      ${env.SSH_USER}
+      """
+
+  Scenario: Use --alias flag with groups
+    Given a WP installation in 'foo'
+    And a WP installation in 'bar'
+    And a wp-cli.yml file:
+      """
+      aliases:
+        foo:
+          path: foo
+        bar:
+          path: bar
+        both:
+          - foo
+          - bar
+      """
+
+    When I run `wp --alias=foo option update home 'http://apple.com'`
+    And I run `wp --alias=foo option get home`
+    Then STDOUT should contain:
+      """
+      http://apple.com
+      """
+
+    When I run `wp --alias=bar option update home 'http://google.com'`
+    And I run `wp --alias=bar option get home`
+    Then STDOUT should contain:
+      """
+      http://google.com
+      """
+
+    When I run `wp --alias=both option get home`
+    Then STDOUT should be:
+      """
+      @foo
+      http://apple.com
+      @bar
+      http://google.com
+      """
+
+  Scenario: List aliases defined with new syntax
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      aliases:
+        foo:
+          path: foo
+      """
+
+    When I run `wp eval --skip-wordpress 'echo realpath( getenv( "RUN_DIR" ) );'`
+    Then save STDOUT as {TEST_DIR}
+
+    When I run `wp cli alias list`
+    Then STDOUT should be YAML containing:
+      """
+      @all: Run command against every registered alias.
+      @foo:
+        path: {TEST_DIR}/foo
+      """
+
+  Scenario: Error when invalid alias provided with --alias flag
+    Given an empty directory
+
+    When I try `wp --alias=test option get home`
+    Then STDERR should be:
+      """
+      Error: Alias 'test' not found.
+      """
+
+  Scenario: Backwards compatibility with @all for new syntax
+    Given a WP installation in 'foo'
+    And a WP installation in 'bar'
+    And a wp-cli.yml file:
+      """
+      aliases:
+        foo:
+          path: foo
+        bar:
+          path: bar
+      """
+
+    When I run `wp --alias=foo option update home 'http://apple.com'`
+    And I run `wp --alias=foo option get home`
+    Then STDOUT should contain:
+      """
+      http://apple.com
+      """
+
+    When I run `wp --alias=bar option update home 'http://google.com'`
+    And I run `wp --alias=bar option get home`
+    Then STDOUT should contain:
+      """
+      http://google.com
+      """
+
+    When I run `wp --alias=all option get home`
+    Then STDOUT should be:
+      """
+      @foo
+      http://apple.com
+      @bar
+      http://google.com
+      """
+
+  Scenario: Mix @prefix and --alias flag with same config
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      aliases:
+        foo:
+          path: foo
+      """
+
+    When I run `wp @foo option get home`
+    Then STDOUT should be:
+      """
+      https://example.com
+      """
+
+    When I run `wp --alias=foo option get home`
+    Then STDOUT should be:
+      """
+      https://example.com
       """
 
   Scenario: Run alias groups in parallel with WP_CLI_ALIAS_GROUPS_PARALLEL environment variable

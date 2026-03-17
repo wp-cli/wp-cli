@@ -48,7 +48,6 @@ Feature: Global flags
       example.com/foo
       """
 
-  @require-wp-3.9
   Scenario: Invalid URL
     Given a WP multisite installation
 
@@ -56,6 +55,46 @@ Feature: Global flags
     Then STDERR should be:
       """
       Error: Site 'invalid.example.com' not found. Verify `--url=<url>` matches an existing site.
+      """
+
+  Scenario: Empty URL
+    Given a WP installation
+
+    When I try `wp post list --url`
+    Then STDERR should be:
+      """
+      Warning: The --url parameter expects a value.
+      """
+
+  Scenario: Empty URL on multisite
+    Given a WP multisite installation
+
+    When I try `wp post list --url`
+    Then STDERR should contain:
+      """
+      Warning: The --url parameter expects a value.
+      """
+
+  Scenario: Malformed URL with missing slash in protocol
+    Given a WP installation
+
+    When I try `wp eval 'echo "done";' --url=http:/example.com`
+    Then STDERR should be:
+      """
+      Warning: The --url parameter value 'http:/example.com' is not valid. Check for typos in the protocol, e.g. 'http://' not 'http:/'.
+      """
+    And STDOUT should contain:
+      """
+      done
+      """
+
+  Scenario: Malformed URL with missing slash in protocol on multisite
+    Given a WP multisite installation
+
+    When I try `wp eval 'echo "done";' --url=http:/example.com`
+    Then STDERR should contain:
+      """
+      Warning: The --url parameter value 'http:/example.com' is not valid. Check for typos in the protocol, e.g. 'http://' not 'http:/'.
       """
 
   Scenario: Quiet run
@@ -371,6 +410,27 @@ Feature: Global flags
       Running SSH command: docker exec --user 'user' 'wordpress' sh -c
       """
 
+  Scenario: SSH args should be passed to SSH command
+    When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh '-o ConnectTimeout=5' -T -vvv 'wordpress' 'wp
+      """
+
+  Scenario: Multiple SSH args should be passed to SSH command
+    When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --ssh-args="-o ServerAliveInterval=10" --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh '-o ConnectTimeout=5' '-o ServerAliveInterval=10' -T -vvv 'wordpress' 'wp
+      """
+
+  Scenario: SSH args should be passed to Docker command
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp --debug --ssh=docker:wordpress --ssh-args="--env MY_VAR=value" --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: docker exec '--env MY_VAR=value' 'wordpress' sh -c
+      """
+
   Scenario: Customize config-spec with WP_CLI_CONFIG_SPEC_FILTER_CALLBACK
     Given a WP installation
     And a wp-cli-early-require.php file:
@@ -394,6 +454,73 @@ Feature: Global flags
       """
       --user=<id|login|email>
       """
+
+  Scenario: Double dash delimiter separates options from operands
+    Given an empty directory
+    And a test-cmd.php file:
+      """
+      <?php
+      /**
+       * Test command to echo positional arguments.
+       *
+       * @when before_wp_load
+       */
+      $test_cmd = function( $args, $assoc_args ) {
+          WP_CLI::log( 'Positional args: ' . implode( ', ', $args ) );
+          WP_CLI::log( 'Assoc args: ' . json_encode( $assoc_args ) );
+      };
+      WP_CLI::add_command( 'test-args', $test_cmd );
+      """
+
+    # Arguments after -- should be treated as positional
+    When I run `wp --require=test-cmd.php test-args foo -- --bar --baz=value`
+    Then STDOUT should be:
+      """
+      Positional args: foo, --bar, --baz=value
+      Assoc args: []
+      """
+
+    # -- should work between command and operands
+    When I run `wp --require=test-cmd.php test-args -- --option=value --no-color`
+    Then STDOUT should be:
+      """
+      Positional args: --option=value, --no-color
+      Assoc args: []
+      """
+
+    # Global args before -- should still work
+    When I run `wp --require=test-cmd.php test-args foo -- --path=/some/path`
+    Then STDOUT should be:
+      """
+      Positional args: foo, --path=/some/path
+      Assoc args: []
+      """
+
+  Scenario: Double dash delimiter prevents global option parsing after delimiter
+    Given an empty directory
+    And a test-cmd.php file:
+      """
+      <?php
+      /**
+       * Test command to verify global options are not parsed after --.
+       *
+       * @when before_wp_load
+       */
+      $test_cmd = function( $args, $assoc_args ) {
+          // If --require was parsed as a global option, this file would fail to load
+          // because /nonexistent doesn't exist. If we get here, -- worked correctly.
+          WP_CLI::log( 'Args: ' . implode( ', ', $args ) );
+      };
+      WP_CLI::add_command( 'test-global', $test_cmd );
+      """
+
+    # Without --, --require would be parsed as a global option and fail
+    When I run `wp --require=test-cmd.php test-global foo -- --require=/nonexistent`
+    Then STDOUT should be:
+      """
+      Args: foo, --require=/nonexistent
+      """
+    And the return code should be 0
 
   Scenario: Tilde expansion in --path parameter
     Given a WP installation in 'subdir'

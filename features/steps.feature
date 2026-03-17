@@ -1,4 +1,4 @@
-Feature: Make sure "Given", "When", "Then" steps work as expected
+Feature: Make sure Behat steps work as expected
 
   Scenario: Variable names can only contain uppercase letters, digits and underscores and cannot begin with a digit.
 

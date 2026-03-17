@@ -335,7 +335,6 @@ Feature: Bootstrap WP-CLI
       1
       """
 
-  @require-php-7.0
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (command line)
     Given a WP installation with Composer
     And a dependency on current wp-cli
@@ -348,14 +347,13 @@ Feature: Bootstrap WP-CLI
       WP CLI Site with both WordPress and wp-cli as Composer dependencies
       """
 
-  @broken @require-php-7.0
+  @broken
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (web)
     Given a WP installation with Composer
     And a dependency on current wp-cli
     And a PHP built-in web server to serve 'WordPress'
     Then the HTTP status code should be 200
 
-  @require-php-7.0
   Scenario: Composer stack with both WordPress and wp-cli as dependencies and a custom vendor directory
     Given a WP installation with Composer and a custom vendor directory 'vendor-custom'
     And a dependency on current wp-cli
@@ -405,7 +403,6 @@ Feature: Bootstrap WP-CLI
       foo
       """
 
-  @require-wp-3.9
   Scenario: Run cache flush on ms_site_not_found
     Given a WP multisite installation
     And a wp-cli.yml file:
@@ -430,7 +427,7 @@ Feature: Bootstrap WP-CLI
 
   # `wp search-replace` does not yet support SQLite
   # See https://github.com/wp-cli/search-replace-command/issues/190
-  @require-wp-4.0 @require-mysql
+  @require-mysql
   Scenario: Run search-replace on ms_site_not_found
     Given a WP multisite installation
     And a wp-cli.yml file:
@@ -538,3 +535,12 @@ Feature: Bootstrap WP-CLI
     """
     YIKES!
     """
+
+  Scenario: Package autoloader has priority over fallback autoloader
+    Given an empty directory
+
+    # Verify both autoloaders are loaded in debug output, and that the fallback
+    # autoloader is initialized before the package autoloader so that locally
+    # installed packages override phar-bundled versions.
+    When I try `wp cli version --debug`
+    Then STDERR should match /WP_CLI\\Bootstrap\\IncludeFallbackAutoloader[\s\S]*WP_CLI\\Bootstrap\\IncludePackageAutoloader/
