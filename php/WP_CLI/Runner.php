@@ -1871,7 +1871,7 @@ class Runner {
 					$backtrace
 				);
 
-				if ( Context::ADMIN === $this->context_manager->get_context ) {
+				if ( Context::ADMIN === $this->context_manager->get_context() ) {
 					WP_CLI::debug( $message, 'bootstrap' );
 				} else {
 					WP_CLI::warning( $message );
