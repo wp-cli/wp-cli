@@ -1444,12 +1444,12 @@ class Runner {
 				WP_CLI::log( '@' . $alias );
 				$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
 				$pipes        = [];
-				$stdin_spec   = null !== $stdin_data ? [ 'pipe', 'r' ] : STDIN;
+				$stdin_spec   = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
 				$proc         = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes );
 
 				if ( $proc ) {
-					if ( null !== $stdin_data ) {
-						fwrite( $pipes[0], $stdin_data );
+					if ( null !== $stdin_stream ) {
+						fwrite( $pipes[0], $stdin_stream );
 						fclose( $pipes[0] );
 					}
 					proc_close( $proc );
