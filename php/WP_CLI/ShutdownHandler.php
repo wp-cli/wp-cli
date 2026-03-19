@@ -47,7 +47,7 @@ class ShutdownHandler {
 			return wp_strip_all_tags( $message );
 		}
 
-		$message = "\nThere has been a critical error on this website.";
+		$message = 'There has been a critical error on this website.';
 
 		/**
 		 * @var string $file
@@ -92,7 +92,6 @@ class ShutdownHandler {
 			'wp_die_handler',
 			function () use ( $skip ) {
 				return static function ( $wp_error ) use ( $skip ) {
-					// @phpstan-ignore staticMethod.alreadyNarrowedType
 					WP_CLI::error( $wp_error->get_error_message(), false );
 
 					self::prompt_and_rerun( $skip );
@@ -221,7 +220,7 @@ class ShutdownHandler {
 	private static function should_prompt_rerun() {
 		// Check environment variable WP_CLI_SKIP_PROMPT
 		// If set to 'yes', automatically rerun; if 'no', don't prompt
-		$skip_prompt = getenv( 'WP_CLI_SKIP_PROMPT' );
+		$skip_prompt = Utils\get_env_or_config( 'WP_CLI_SKIP_PROMPT' );
 
 		if ( false !== $skip_prompt ) {
 			return 'yes' !== $skip_prompt && 'no' !== $skip_prompt;
@@ -238,7 +237,7 @@ class ShutdownHandler {
 	 */
 	private static function prompt_and_rerun( $skip ) {
 		// Get environment variable to check default behavior
-		$skip_prompt = getenv( 'WP_CLI_SKIP_PROMPT' );
+		$skip_prompt = Utils\get_env_or_config( 'WP_CLI_SKIP_PROMPT' );
 
 		// If set to 'yes', automatically rerun without prompting
 		if ( 'yes' === $skip_prompt ) {

@@ -79,6 +79,7 @@ class Table extends Query {
 			foreach ( $where as $key => $value ) {
 				if ( is_array( $value ) ) {
 					/**
+					 * @var array<string> $value
 					 * @var string $values
 					 */
 					$values       = esc_sql( implode( ',', $value ) );
@@ -89,6 +90,7 @@ class Table extends Query {
 					$conditions[] = $key . $wpdb->prepare( ' = %s', $value );
 				}
 			}
+			/** @var array<string> $conditions */
 			$where = implode( ' AND ', $conditions );
 		}
 		return $where;
