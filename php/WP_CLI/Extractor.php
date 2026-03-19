@@ -58,7 +58,7 @@ class Extractor {
 		$res = $zip->open( $zipfile );
 
 		if ( true === $res ) {
-			$name    = Utils\basename( $zipfile );
+			$name    = Path::basename( $zipfile );
 			$tempdir = Utils\get_temp_dir()
 						. uniqid( 'wp-cli-extract-zipfile-', true )
 						. "-{$name}";
@@ -98,7 +98,7 @@ class Extractor {
 		if ( class_exists( 'PharData' ) ) {
 			try {
 				$phar    = new PharData( $tarball );
-				$name    = Utils\basename( $tarball );
+				$name    = Path::basename( $tarball );
 				$tempdir = Utils\get_temp_dir()
 							. uniqid( 'wp-cli-extract-tarball-', true )
 							. "-{$name}";
