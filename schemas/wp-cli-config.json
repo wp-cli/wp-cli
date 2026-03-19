@@ -135,6 +135,21 @@
       "description": "List of Apache Modules that are to be reported as loaded.",
       "default": []
     },
+    "env": {
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ]
+      },
+      "description": "Set environment variable values. These will be used as fallbacks when the corresponding environment variable is not set in the shell. All values are converted to strings.",
+      "default": {}
+    },
     "_": {
       "type": "object",
       "properties": {

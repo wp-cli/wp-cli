@@ -9,12 +9,20 @@ Feature: Get help about WP-CLI commands
         Run 'wp help <command>' to get more information on a specific command.
 
       """
+    And STDOUT should contain:
+      """
+        https://make.wordpress.org/cli/handbook/
+      """
     And STDERR should be empty
 
     When I run `wp help core`
     Then STDOUT should contain:
       """
         wp core
+      """
+    And STDOUT should not contain:
+      """
+      https://make.wordpress.org/cli/handbook/
       """
     And STDERR should be empty
 
@@ -124,8 +132,6 @@ Feature: Get help about WP-CLI commands
       Path to the WordPress files.
       """
 
-  # Prior to WP 4.3 widgets & others used PHP 4 style constructors and prior to WP 3.9 wpdb used the mysql extension which can all lead (depending on PHP version) to PHP Deprecated notices.
-  @require-wp-4.3
   Scenario: Help for internal commands with WP
     Given a WP installation
 
@@ -165,7 +171,6 @@ Feature: Get help about WP-CLI commands
       GLOBAL PARAMETERS
       """
 
-  @require-php-7.0
   Scenario: Help when WordPress is downloaded but not installed
     Given an empty directory
 
@@ -1396,3 +1401,26 @@ Feature: Get help about WP-CLI commands
 
         <zone_id>
       """
+
+  Scenario: Pager without color support should not show ANSI escape codes
+    Given an empty directory
+
+    When I run `PAGER=cat wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
+
+    When I run `PAGER=more wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
+
+    When I run `PAGER=/usr/bin/more wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
+
+    When I run `PAGER=/bin/cat wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
+
+    When I run `PAGER=less wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
