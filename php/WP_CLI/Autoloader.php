@@ -34,9 +34,11 @@ class Autoloader {
 
 	/**
 	 * Registers the autoload callback with the SPL autoload system.
+	 *
+	 * @param bool $prepend Whether to prepend the autoloader on the stack instead of appending it.
 	 */
-	public function register() {
-		spl_autoload_register( [ $this, 'autoload' ] );
+	public function register( $prepend = false ) {
+		spl_autoload_register( [ $this, 'autoload' ], true, $prepend );
 	}
 
 	/**

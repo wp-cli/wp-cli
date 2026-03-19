@@ -130,6 +130,12 @@ class ExtractorTest extends TestCase {
 			}
 			return $v;
 		};
+		$output    = array_filter(
+			$output,
+			function ( $v ) {
+				return 0 !== strpos( basename( $v ), '._' );
+			}
+		);
 		$output    = array_map( $normalize, $output );
 		sort( $output );
 
@@ -290,6 +296,10 @@ class ExtractorTest extends TestCase {
 		$ret = [];
 
 		foreach ( array_diff( $dirs, [ '.', '..' ] ) as $file ) {
+			if ( 0 === strpos( $file, '._' ) ) {
+				continue;
+			}
+
 			if ( is_dir( $dir . '/' . $file ) ) {
 				$ret[] = ( $prefix_dir ? ( $prefix_dir . '/' . $file ) : $file ) . '/';
 				$ret   = array_merge( $ret, self::recursive_scandir( $dir . '/' . $file, $prefix_dir ? ( $prefix_dir . '/' . $file ) : $file ) );

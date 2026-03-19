@@ -5,7 +5,7 @@ namespace WP_CLI\Context;
 use WP_CLI;
 use WP_CLI\Context;
 use WP_CLI\Fetchers\User;
-use WP_Session_Tokens;
+use WP_User;
 
 /**
  * Context which simulates the administrator backend.
@@ -49,13 +49,14 @@ final class Admin implements Context {
 					$user          = $fetcher->get_check( $config['user'] );
 					$admin_user_id = $user->ID;
 				} else {
-					// TODO: Add logic to find an administrator user.
-					$admin_user_id = 1;
+					$admin_user_id = $this->find_admin_user_id();
 				}
 
 				/**
 				 * @var int<1, max> $admin_user_id
 				 */
+
+				WP_CLI::debug( sprintf( 'Continuing as admin user %d', $admin_user_id ), Context::DEBUG_GROUP );
 
 				$this->log_in_as_admin_user( $admin_user_id );
 			},
@@ -71,6 +72,45 @@ final class Admin implements Context {
 			defined( 'PHP_INT_MAX' ) ? PHP_INT_MAX : 2147483648, // phpcs:ignore PHPCompatibility.Constants.NewConstants.php_int_maxFound
 			0
 		);
+	}
+
+	/**
+	 * Find a suitable admin user ID for the current environment.
+	 *
+	 * On multisite, resolves a super admin via get_super_admins().
+	 * On single site, finds a user with the administrator role.
+	 *
+	 * @return int<1, max> Admin user ID.
+	 */
+	private function find_admin_user_id() {
+		if ( is_multisite() ) {
+			$super_admins = get_super_admins();
+
+			foreach ( $super_admins as $super_admin_login ) {
+				$user = get_user_by( 'login', $super_admin_login );
+				if ( $user instanceof WP_User ) {
+					/** @var int<1, max> */
+					return $user->ID;
+				}
+			}
+
+			WP_CLI::error( 'No super admin user found. Specify one with --user=<login>.' );
+		}
+
+		$admins = get_users(
+			[
+				'role'    => 'administrator',
+				'number'  => 1,
+				'orderby' => 'ID',
+				'order'   => 'ASC',
+			]
+		);
+
+		if ( ! empty( $admins ) ) {
+			return $admins[0]->ID;
+		}
+
+		WP_CLI::error( 'No administrator user found. Specify one with --user=<login>.' );
 	}
 
 	/**
