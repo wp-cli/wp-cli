@@ -50,7 +50,7 @@ class Path {
 			$path = WP_CLI_ROOT;
 		}
 
-		return 0 === strpos( $path, self::PHAR_STREAM_PREFIX );
+		return 0 === stripos( $path, self::PHAR_STREAM_PREFIX );
 	}
 
 	/**
