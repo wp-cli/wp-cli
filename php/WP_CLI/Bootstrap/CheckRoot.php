@@ -70,7 +70,17 @@ class CheckRoot implements BootstrapStep {
 			"\n" .
 			"    sudo -u USER -i -- wp <command>\n" .
 			"\n" .
-			"(without -i in the case of system user)\n"
+			"(without -i in the case of system user)\n" .
+			"\n" .
+			"Note: When using 'sudo -i', the command is passed via the login " .
+			"shell's '-c' flag, which strips one layer of quotes. To correctly " .
+			'pass empty arguments or arguments with spaces, wrap them in an ' .
+			"extra set of quotes (e.g. single quotes inside double quotes):\n" .
+			"\n" .
+			"    sudo -u USER -i -- wp search-replace \"'old'\" \"''\" --path=/var/www/html\n" .
+			"\n" .
+			'The outer double quotes are consumed by the login shell, leaving the ' .
+			"inner single-quoted arguments intact for WP-CLI.\n"
 		);
 	}
 }
