@@ -1119,7 +1119,7 @@ Feature: Utilities that depend on WordPress code
       } );
       """
 
-    When I run `wp --require=test-notice.php test-notice`
+    When I try `wp --require=test-notice.php test-notice`
     Then STDOUT should contain:
       """
       Done
