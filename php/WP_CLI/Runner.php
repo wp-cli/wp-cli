@@ -1793,11 +1793,15 @@ class Runner {
 
 		// Re-enable PHP error reporting to stderr if testing, but only when display_errors
 		// should be active (respecting WP_DEBUG and WP_DEBUG_DISPLAY the same way wp_debug_mode() does).
+		// We must explicitly enforce this after WP finishes loading, since wp-admin/includes/admin.php
+		// and other late-loading files may reset display_errors.
 		if ( getenv( 'BEHAT_RUN' ) ) {
 			$show_errors = WP_CLI::get_config( 'debug' )
 				|| ( defined( 'WP_DEBUG' ) && WP_DEBUG && ( ! defined( 'WP_DEBUG_DISPLAY' ) || WP_DEBUG_DISPLAY ) );
 			if ( $show_errors ) {
 				$this->enable_error_reporting();
+			} else {
+				ini_set( 'display_errors', 0 ); // phpcs:ignore WordPress.PHP.IniSet.display_errors_Disallowed
 			}
 		}
 
