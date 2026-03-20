@@ -70,7 +70,7 @@ class CheckRoot implements BootstrapStep {
 			"\n" .
 			"    sudo -u USER -i -- wp <command>\n" .
 			"\n" .
-			"(without -i in the case of system user)\n" .
+			"(omit -i when using a system user account)\n" .
 			"\n" .
 			"Note: When using 'sudo -i', the command is passed via the login " .
 			"shell's '-c' flag, which strips one layer of quotes. To correctly " .
