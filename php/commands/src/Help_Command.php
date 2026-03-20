@@ -269,6 +269,8 @@ class Help_Command extends WP_CLI_Command {
 			$binding['has-subcommands']['subcommands'] = self::render_subcommands( $command );
 		}
 
+		$binding['root_command'] = $command instanceof WP_CLI\Dispatcher\RootCommand;
+
 		return Utils\mustache_render( 'man.mustache', $binding );
 	}
 

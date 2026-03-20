@@ -13,6 +13,7 @@ use WP_CLI\DocParser;
 use WP_CLI\ExitException;
 use WP_CLI\FileCache;
 use WP_CLI\Loggers\Execution;
+use WP_CLI\Path;
 use WP_CLI\Process;
 use WP_CLI\ProcessRun;
 use WP_CLI\Runner;
@@ -151,6 +152,8 @@ class WP_CLI {
 		if ( isset( $url_parts['host'] ) ) {
 			if ( isset( $url_parts['scheme'] ) && 'https' === strtolower( $url_parts['scheme'] ) ) {
 				$_SERVER['HTTPS'] = 'on';
+			} else {
+				unset( $_SERVER['HTTPS'] );
 			}
 
 			$_SERVER['HTTP_HOST'] = $url_parts['host'];
@@ -1416,7 +1419,7 @@ class WP_CLI {
 		if ( $wp_cli_config_path ) {
 			$config_path = $wp_cli_config_path;
 		} else {
-			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
+			$config_path = Path::get_home_dir() . '/.wp-cli/config.yml';
 		}
 		$config_path = escapeshellarg( $config_path );
 

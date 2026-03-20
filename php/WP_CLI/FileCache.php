@@ -54,7 +54,7 @@ class FileCache {
 	 * @param string $whitelist  List of characters that are allowed in path names (used in a regex character class)
 	 */
 	public function __construct( $cache_dir, $ttl, $max_size, $whitelist = 'a-z0-9._-' ) {
-		$this->root      = Utils\trailingslashit( $cache_dir );
+		$this->root      = Path::trailingslashit( $cache_dir );
 		$this->ttl       = (int) $ttl;
 		$this->max_size  = (int) $max_size;
 		$this->whitelist = $whitelist;

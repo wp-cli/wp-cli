@@ -3,6 +3,7 @@
 use Composer\Semver\Comparator;
 use WP_CLI\Completions;
 use WP_CLI\Formatter;
+use WP_CLI\Path;
 use WP_CLI\Process;
 use WP_CLI\Utils;
 
@@ -417,7 +418,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * @param array{patch?: bool, minor?: bool, major?: bool, stable?: bool, nightly?: bool, yes?: bool, insecure?: bool} $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
-		if ( ! Utils\inside_phar() ) {
+		if ( ! Path::inside_phar() ) {
 			WP_CLI::error( 'You can only self-update Phar files.' );
 		}
 

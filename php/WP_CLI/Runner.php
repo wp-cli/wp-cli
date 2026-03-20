@@ -171,7 +171,7 @@ class Runner {
 			$config_path                    = $wp_cli_config_path;
 			$this->global_config_path_debug = 'Using global config from WP_CLI_CONFIG_PATH env var: ' . $config_path;
 		} else {
-			$config_path                    = Utils\get_home_dir() . '/.wp-cli/config.yml';
+			$config_path                    = Path::get_home_dir() . '/.wp-cli/config.yml';
 			$this->global_config_path_debug = 'Using default global config: ' . $config_path;
 		}
 
@@ -290,9 +290,9 @@ class Runner {
 	public function get_packages_dir_path() {
 		$packages_dir = (string) Utils\get_env_or_config( 'WP_CLI_PACKAGES_DIR' );
 		if ( $packages_dir ) {
-			$packages_dir = Utils\trailingslashit( $packages_dir );
+			$packages_dir = Path::trailingslashit( $packages_dir );
 		} else {
-			$packages_dir = Utils\get_home_dir() . '/.wp-cli/packages/';
+			$packages_dir = Path::get_home_dir() . '/.wp-cli/packages/';
 		}
 		return $packages_dir;
 	}
@@ -311,11 +311,11 @@ class Runner {
 		}
 
 		$wp_path_src = $matches[1] . $matches[2];
-		$wp_path_src = Utils\replace_path_consts( $wp_path_src, $index_path );
+		$wp_path_src = Path::replace_path_consts( $wp_path_src, $index_path );
 
 		$wp_path = eval( "return $wp_path_src;" ); // phpcs:ignore Squiz.PHP.Eval.Discouraged
 
-		if ( ! Utils\is_path_absolute( $wp_path ) ) {
+		if ( ! Path::is_absolute( $wp_path ) ) {
 			$wp_path = dirname( $index_path ) . "/$wp_path";
 		}
 
@@ -342,8 +342,8 @@ class Runner {
 			$path = $this->config['path'];
 
 			// Expand tilde to home directory if present
-			$path = Utils\expand_tilde_path( $path );
-			if ( ! Utils\is_path_absolute( $path ) ) {
+			$path = Path::expand_tilde( $path );
+			if ( ! Path::is_absolute( $path ) ) {
 				$path = getcwd() . '/' . $path;
 			}
 
@@ -385,7 +385,7 @@ class Runner {
 	 */
 	private static function set_wp_root( $path ) {
 		if ( ! defined( 'ABSPATH' ) ) {
-			$normalized = Utils\normalize_path( Utils\trailingslashit( $path ) );
+			$normalized = Path::normalize( Path::trailingslashit( $path ) );
 			// Adjust Windows-style paths starting with drive letter + forward slash (C:/) so that
 			// WordPress core's path_is_absolute() recognizes them as absolute on Windows.
 			if ( preg_match( '#^[A-Z]:/#i', $normalized ) ) {
@@ -995,7 +995,7 @@ class Runner {
 			WP_CLI::error( 'Strange wp-config.php file: wp-settings.php is not loaded directly.' );
 		}
 
-		$source = Utils\replace_path_consts( $wp_config_code, $wp_config_path );
+		$source = Path::replace_path_consts( $wp_config_code, $wp_config_path );
 		return (string) preg_replace( '|^\s*\<\?php\s*|', '', $source );
 	}
 
@@ -1362,7 +1362,7 @@ class Runner {
 		if ( $wp_cli_config_path ) {
 			$config_path = $wp_cli_config_path;
 		} else {
-			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
+			$config_path = Path::get_home_dir() . '/.wp-cli/config.yml';
 		}
 		$config_path = escapeshellarg( $config_path );
 
@@ -1592,6 +1592,21 @@ class Runner {
 		$url = self::guess_url( $this->config );
 		if ( $url ) {
 			WP_CLI::set_url( $url );
+		}
+
+		// Handle --assume-https parameter
+		if ( ! empty( $this->config['assume-https'] ) ) {
+			/**
+			 * @var array{HTTPS: string|int} $_SERVER
+			 */
+			if ( ! isset( $_SERVER['HTTPS'] ) ) {
+				$_SERVER['HTTPS'] = 'on';
+			} else {
+				$https_value = strtolower( (string) $_SERVER['HTTPS'] );
+				if ( 'on' !== $https_value && '1' !== $https_value ) {
+					$_SERVER['HTTPS'] = 'on';
+				}
+			}
 		}
 
 		$this->do_early_invoke( 'before_wp_load' );
@@ -2140,64 +2155,6 @@ class Runner {
 			}
 		);
 
-		// Don't apply set_url_scheme in get_home_url() or get_site_url().
-		WP_CLI::add_wp_hook(
-			'home_url',
-			static function ( $url, $path, $scheme, $blog_id ) {
-				if ( empty( $blog_id ) || ! is_multisite() ) {
-					/**
-					 * @var string|false $url
-					 */
-					$url = get_option( 'home' );
-				} else {
-					switch_to_blog( $blog_id );
-					/**
-					 * @var string|false $url
-					 */
-					$url = get_option( 'home' );
-					restore_current_blog();
-				}
-
-				$url = (string) $url;
-
-				if ( $path && is_string( $path ) ) {
-					$url .= '/' . ltrim( $path, '/' );
-				}
-
-				return $url;
-			},
-			0,
-			4
-		);
-		WP_CLI::add_wp_hook(
-			'site_url',
-			static function ( $url, $path, $scheme, $blog_id ) {
-				if ( empty( $blog_id ) || ! is_multisite() ) {
-					/**
-					 * @var string|false $url
-					 */
-					$url = get_option( 'siteurl' );
-				} else {
-					switch_to_blog( $blog_id );
-					/**
-					 * @var string|false $url
-					 */
-					$url = get_option( 'siteurl' );
-					restore_current_blog();
-				}
-
-				$url = (string) $url;
-
-				if ( $path && is_string( $path ) ) {
-					$url .= '/' . ltrim( $path, '/' );
-				}
-
-				return $url;
-			},
-			0,
-			4
-		);
-
 		// Set up hook for plugins and themes to conditionally add WP-CLI commands.
 		WP_CLI::add_wp_hook(
 			'init',
@@ -2365,7 +2322,7 @@ class Runner {
 	private function auto_check_update(): void {
 
 		// `wp cli update` only works with Phars at this time.
-		if ( ! Utils\inside_phar() ) {
+		if ( ! Path::inside_phar() ) {
 			return;
 		}
 
