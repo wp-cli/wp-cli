@@ -79,8 +79,10 @@ class CheckRoot implements BootstrapStep {
 			"\n" .
 			"    sudo -u USER -i -- wp search-replace \"'old'\" \"''\" --path=/var/www/html\n" .
 			"\n" .
-			'The outer double quotes are consumed by the login shell, leaving the ' .
-			"inner single-quoted arguments intact for WP-CLI.\n"
+			'The outer double quotes are consumed by the login shell, and the inner ' .
+			"single quotes are used only for grouping, so WP-CLI receives the intended\n" .
+			"arguments (including empty and space-containing ones) without the quote\n" .
+			"characters themselves.\n"
 		);
 	}
 }
