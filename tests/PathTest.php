@@ -164,7 +164,7 @@ final class PathTest extends TestCase {
 	public function testReplacePathConsts(): void {
 		$expected = "define( 'ABSPATH', dirname( 'C:\\\\Users\\\\test\\'s\\\\site' ) . '/' );";
 		$source   = "define( 'ABSPATH', dirname( __FILE__ ) . '/' );";
-		$actual   = Path::replace_path_consts( $source, "C:\Users\\test's\site" );
+		$actual   = Path::replace_path_consts( $source, 'C:\\Users\\\\test\'s\\site' );
 		$this->assertSame( $expected, $actual );
 	}
 
