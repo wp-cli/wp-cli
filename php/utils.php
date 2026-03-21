@@ -459,16 +459,6 @@ function wp_version_compare( $since, $operator ) {
 }
 
 /**
- * Whether the output format uses PHP var_export() syntax (`plaintext` is an alias for `var_export`).
- *
- * @param mixed $format Format flag value from command arguments.
- * @return bool
- */
-function is_var_export_format( $format ) {
-	return in_array( $format, [ 'var_export', 'plaintext' ], true );
-}
-
-/**
  * Render a collection of items as an ASCII table, JSON, CSV, YAML, list of ids, or count.
  *
  * Given a collection of items with a consistent data structure:

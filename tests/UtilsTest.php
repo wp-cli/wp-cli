@@ -1282,11 +1282,4 @@ class UtilsTest extends TestCase {
 
 		return escapeshellarg( $php ) . ' -r ' . escapeshellarg( $code );
 	}
-
-	public function test_is_var_export_format(): void {
-		$this->assertTrue( Utils\is_var_export_format( 'var_export' ) );
-		$this->assertTrue( Utils\is_var_export_format( 'plaintext' ) );
-		$this->assertFalse( Utils\is_var_export_format( 'json' ) );
-		$this->assertFalse( Utils\is_var_export_format( null ) );
-	}
 }

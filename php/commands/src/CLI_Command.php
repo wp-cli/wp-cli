@@ -822,7 +822,7 @@ class CLI_Command extends WP_CLI_Command {
 			}
 		}
 
-		if ( Utils\is_var_export_format( Utils\get_flag_value( $assoc_args, 'format' ) ) ) {
+		if ( in_array( Utils\get_flag_value( $assoc_args, 'format' ), [ 'var_export', 'plaintext' ], true ) ) {
 			var_export( $spec );
 		} else {
 			echo json_encode( $spec );
