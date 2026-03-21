@@ -152,7 +152,7 @@ class WP_CLI {
 		if ( isset( $url_parts['host'] ) ) {
 			if ( isset( $url_parts['scheme'] ) && 'https' === strtolower( $url_parts['scheme'] ) ) {
 				$_SERVER['HTTPS'] = 'on';
-			} elseif ( ! ( self::has_config( 'assume-https' ) && self::get_config( 'assume-https' ) ) ) {
+			} elseif ( ! self::get_config( 'assume-https' ) ) {
 				unset( $_SERVER['HTTPS'] );
 			}
 
