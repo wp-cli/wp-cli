@@ -77,6 +77,63 @@ Feature: Format output
       slug: foo
       """
 
+  Scenario: Format output as var_export or plaintext
+    Given an empty directory
+    And a output-export.php file:
+      """
+      <?php
+      /**
+       * Output data as var_export or plaintext
+       *
+       * <type>
+       * : Type of output.
+       *
+       * [--format=<format>]
+       * : Output format.
+       * ---
+       * default: var_export
+       * options:
+       *   - var_export
+       *   - plaintext
+       * ---
+       *
+       * @when before_wp_load
+       */
+      $output_export = function( $args, $assoc_args ) {
+          $items = array(
+              array(
+                  'label'    => 'Foo',
+                  'slug'     => 'foo',
+              ),
+              array(
+                  'label'    => 'Bar',
+                  'slug'     => 'bar',
+              ),
+          );
+          $format_args = array(
+              'format' => \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'var_export' ),
+              'fields' => array( 'label', 'slug' ),
+          );
+          $formatter = new \WP_CLI\Formatter( $format_args );
+          $formatter->display_items( $items );
+      };
+      WP_CLI::add_command( 'exportfmt', $output_export );
+      """
+
+    When I run `wp --require=output-export.php exportfmt all --format=var_export`
+    Then STDOUT should match /^array \s*\(/
+    And STDOUT should contain:
+      """
+      'label' => 'Foo',
+      """
+
+    When I run `wp --require=output-export.php exportfmt all --format=plaintext`
+    Then STDOUT should match /^array \s*\(/
+    And STDOUT should contain:
+      """
+      'slug' => 'bar',
+      """
+
   Scenario: Format data in RTL language
     Given an empty directory
     And a file.php file:
