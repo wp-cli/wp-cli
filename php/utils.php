@@ -22,6 +22,7 @@ use WP_CLI\Formatter;
 use WP_CLI\Inflector;
 use WP_CLI\Iterators\Transform;
 use WP_CLI\NoOp;
+use WP_CLI\Path;
 use WP_CLI\Process;
 use WP_CLI\RequestsLibrary;
 use WpOrg\Requests\Response;
@@ -52,19 +53,13 @@ const FILE_DIR_PATTERN = '%(?>#.*?$)|(?>//.*?$)|(?>/\*.*?\*/)|(?>\'(?:(?=(\\\\?)
  * If no path is provided, the function checks whether the current WP_CLI instance is
  * running from within a Phar archive.
  *
+ * @deprecated 2.13.0 Use Path::inside_phar() instead.
+ *
  * @param string|null $path Optional. Path to check. Defaults to null, which checks WP_CLI_ROOT.
  * @return bool Whether path is within a Phar archive.
  */
 function inside_phar( $path = null ) {
-	if ( null === $path ) {
-		if ( ! defined( 'WP_CLI_ROOT' ) ) {
-			return false;
-		}
-
-		$path = WP_CLI_ROOT;
-	}
-
-	return 0 === strpos( $path, PHAR_STREAM_PREFIX );
+	return Path::inside_phar( $path );
 }
 
 /**
@@ -77,11 +72,11 @@ function inside_phar( $path = null ) {
  * @return string Path to the extracted file.
  */
 function extract_from_phar( $path ) {
-	if ( ! inside_phar( $path ) ) {
+	if ( ! Path::inside_phar( $path ) ) {
 		return $path;
 	}
 
-	$fname = basename( $path );
+	$fname = Path::basename( $path );
 
 	$tmp_path = get_temp_dir() . uniqid( 'wp-cli-extract-from-phar-', true ) . "-$fname";
 
@@ -104,7 +99,7 @@ function extract_from_phar( $path ) {
  * @return void|never
  */
 function load_dependencies() {
-	if ( inside_phar() ) {
+	if ( Path::inside_phar() ) {
 		if ( file_exists( WP_CLI_ROOT . '/vendor/autoload.php' ) ) {
 			require WP_CLI_ROOT . '/vendor/autoload.php';
 		} elseif ( file_exists( dirname( dirname( WP_CLI_ROOT ) ) . '/autoload.php' ) ) {
@@ -233,9 +228,7 @@ function is_path_within_open_basedir( $path ) {
 	}
 
 	// Normalize the path to check and remove trailing slashes.
-	if ( function_exists( __NAMESPACE__ . '\\normalize_path' ) ) {
-		$path = normalize_path( $path );
-	}
+	$path = Path::normalize( $path );
 	$path = rtrim( $path, '/\\' );
 
 	$allowed_paths = explode( PATH_SEPARATOR, $open_basedir );
@@ -249,9 +242,7 @@ function is_path_within_open_basedir( $path ) {
 		if ( false !== $real_allowed ) {
 			$allowed = $real_allowed;
 		}
-		if ( function_exists( __NAMESPACE__ . '\\normalize_path' ) ) {
-			$allowed = normalize_path( $allowed );
-		}
+		$allowed = Path::normalize( $allowed );
 		$allowed = rtrim( $allowed, '/\\' );
 		// Check if path starts with allowed directory.
 		// On Windows, use case-insensitive comparison as filesystem paths are case-insensitive.
@@ -282,8 +273,8 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	}
 	// Normalize the directory path using string operations to avoid filesystem access
 	// that could trigger open_basedir warnings
-	if ( false !== $dir && function_exists( __NAMESPACE__ . '\\normalize_path' ) ) {
-		$dir = normalize_path( $dir );
+	if ( false !== $dir ) {
+		$dir = Path::normalize( $dir );
 	}
 	while ( $dir && is_path_within_open_basedir( $dir ) && is_readable( $dir ) ) {
 		// Stop walking up when the supplied callable returns true being passed the $dir
@@ -309,26 +300,14 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 
 /**
  * Determine whether a path is absolute.
+ *
+ * @deprecated 2.13.0 Use Path::is_absolute() instead.
+ *
  * @param string $path
  * @return bool
  */
 function is_path_absolute( $path ) {
-	// Empty path is not absolute.
-	if ( '' === $path ) {
-		return false;
-	}
-	// Windows drive letter + colon + slash or backslash.
-	if ( preg_match( '#^[A-Z]:[\\\\/]#i', $path ) ) {
-		return true;
-	}
-
-	// UNC path (\\Server\Share).
-	if ( preg_match( '#^\\\\\\\\[^\\\\/]+[\\\\/][^\\\\/]+#', $path ) ) {
-		return true;
-	}
-
-	// Unix root.
-	return isset( $path[0] ) && '/' === $path[0];
+	return Path::is_absolute( $path );
 }
 
 /**
@@ -337,22 +316,13 @@ function is_path_absolute( $path ) {
  * Expands paths that start with ~ to the current user's home directory.
  * Only handles the current user's home directory (not ~username patterns).
  *
+ * @deprecated 2.13.0 Use Path::expand_tilde() instead.
+ *
  * @param string $path Path that may contain a tilde.
  * @return string Path with tilde expanded to home directory, or unchanged if tilde not at start or followed by username.
  */
 function expand_tilde_path( $path ) {
-	// Check if path starts with tilde
-	if ( isset( $path[0] ) && '~' === $path[0] ) {
-		$home = get_home_dir();
-		// Only expand if we can determine the home directory
-		// Handle both "~" and "~/..." patterns (but not "~username")
-		if ( ! empty( $home ) && ( 1 === strlen( $path ) || '/' === $path[1] ) ) {
-			$path = $home . substr( $path, 1 );
-		}
-		// If followed by anything other than '/', or home is empty, leave it unchanged
-	}
-
-	return $path;
+	return Path::expand_tilde( $path );
 }
 
 /**
@@ -626,7 +596,7 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 	$tmpdir = get_temp_dir();
 
 	do {
-		$tmpfile  = basename( $title );
+		$tmpfile  = Path::basename( $title );
 		$tmpfile  = preg_replace( '|\.[^.]*$|', '', $tmpfile );
 		$tmpfile .= '-' . substr( md5( (string) mt_rand() ), 0, 6 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand -- no crypto and WP not loaded.
 		$tmpfile  = $tmpdir . $tmpfile . '.' . $ext;
@@ -915,36 +885,14 @@ function is_windows() {
  * Replaces the __FILE__ and __DIR__ magic constants with the values they are
  * supposed to represent at runtime.
  *
+ * @deprecated 2.13.0 Use Path::replace_path_consts() instead.
+ *
  * @param string $source The PHP code to manipulate.
  * @param string $path The path to use instead of the magic constants.
  * @return string Adapted PHP code.
  */
 function replace_path_consts( $source, $path ) {
-	// Solve issue with Windows allowing single quotes in account names.
-	$file = addslashes( $path );
-
-	if ( file_exists( $file ) ) {
-		$file = (string) realpath( $file );
-	}
-
-	$dir = dirname( $file );
-
-	// Replace __FILE__ and __DIR__ constants with value of $file or $dir.
-	return (string) preg_replace_callback(
-		FILE_DIR_PATTERN,
-		static function ( $matches ) use ( $file, $dir ) {
-			if ( ! empty( $matches['file'] ) ) {
-				return "'{$file}'";
-			}
-
-			if ( ! empty( $matches['dir'] ) ) {
-				return "'{$dir}'";
-			}
-
-			return $matches[0];
-		},
-		$source
-	);
+	return Path::replace_path_consts( $source, $path );
 }
 
 /**
@@ -1138,7 +1086,7 @@ function get_default_cacert( $halt_on_error = false ) {
 	$cert_path = RequestsLibrary::get_bundled_certificate_path();
 	$error_msg = 'Cannot find SSL certificate.';
 
-	if ( inside_phar( $cert_path ) ) {
+	if ( Path::inside_phar( $cert_path ) ) {
 		// cURL can't read Phar archives.
 		return extract_from_phar( $cert_path );
 	}
@@ -1274,23 +1222,21 @@ function get_flag_value( $assoc_args, $flag, $default = null ) {
 /**
  * Get the home directory.
  *
+ * @deprecated 2.13.0 Use Path::get_home_dir() instead.
+ *
  * @access public
  * @category System
  *
  * @return string
  */
 function get_home_dir() {
-	$home = getenv( 'HOME' );
-	if ( ! $home ) {
-		// In Windows $HOME may not be defined.
-		$home = getenv( 'HOMEDRIVE' ) . getenv( 'HOMEPATH' );
-	}
-
-	return rtrim( $home, '/\\' );
+	return Path::get_home_dir();
 }
 
 /**
  * Appends a trailing slash.
+ *
+ * @deprecated 2.13.0 Use Path::trailingslashit() instead.
  *
  * @access public
  * @category System
@@ -1299,15 +1245,13 @@ function get_home_dir() {
  * @return string String with trailing slash added.
  */
 function trailingslashit( $string ) {
-	if ( ! is_string( $string ) ) {
-		return '/';
-	}
-
-	return rtrim( $string, '/\\' ) . '/';
+	return Path::trailingslashit( $string );
 }
 
 /**
  * Check if a path is a PHP stream URL.
+ *
+ * @deprecated 2.13.0 Use Path::is_stream() instead.
  *
  * @access public
  * @category System
@@ -1316,15 +1260,7 @@ function trailingslashit( $string ) {
  * @return bool True if the path is a PHP stream URL, false otherwise.
  */
 function is_stream( $path ) {
-	$scheme_separator = strpos( $path, '://' );
-
-	if ( false === $scheme_separator ) {
-		return false;
-	}
-
-	$stream = strtolower( substr( $path, 0, $scheme_separator ) );
-
-	return in_array( $stream, stream_get_wrappers(), true );
+	return Path::is_stream( $path );
 }
 
 /**
@@ -1337,6 +1273,8 @@ function is_stream( $path ) {
  * Ensures upper-case drive letters on Windows systems.
  * Allows for PHP file wrappers.
  *
+ * @deprecated 2.13.0 Use Path::normalize() instead.
+ *
  * @access public
  * @category System
  *
@@ -1344,26 +1282,7 @@ function is_stream( $path ) {
  * @return string Normalized path.
  */
 function normalize_path( $path ) {
-	$wrapper = '';
-	if ( is_stream( $path ) ) {
-		list( $wrapper, $path ) = explode( '://', $path, 2 );
-		$wrapper               .= '://';
-	}
-	$path = str_replace( '\\', '/', $path );
-	$path = (string) preg_replace( '|(?<=.)/+|', '/', $path );
-	if ( ':' === substr( $path, 1, 1 ) ) {
-		$path = ucfirst( $path );
-	}
-	// Resolve single-dot path segments (e.g., /foo/./bar becomes /foo/bar).
-	$path = (string) preg_replace( '#/(?:\./)+#', '/', $path );
-	if ( '/.' === substr( $path, -2 ) ) {
-		$path = substr( $path, 0, -1 );
-	}
-	// Resolve leading ./ (e.g., ./foo/bar becomes foo/bar).
-	$path = (string) preg_replace( '#^(?:\./)+#', '', $path );
-	// Collapse any duplicate slashes introduced by dot-segment resolution.
-	$path = (string) preg_replace( '|(?<=.)/+|', '/', $path );
-	return $wrapper . $path;
+	return Path::normalize( $path );
 }
 
 
@@ -1393,7 +1312,7 @@ function get_temp_dir() {
 	}
 
 	// `sys_get_temp_dir()` introduced PHP 5.2.1. Will always return something.
-	$temp = trailingslashit( sys_get_temp_dir() );
+	$temp = Path::trailingslashit( sys_get_temp_dir() );
 
 	if ( ! is_writable( $temp ) ) {
 		WP_CLI::warning( "Temp directory isn't writable: {$temp}" );
@@ -1543,6 +1462,8 @@ function parse_str_to_argv( $arguments ) {
 /**
  * Locale-independent version of basename()
  *
+ * @deprecated 2.13.0 Use Path::basename() instead.
+ *
  * @access public
  *
  * @param string $path
@@ -1550,8 +1471,7 @@ function parse_str_to_argv( $arguments ) {
  * @return string
  */
 function basename( $path, $suffix = '' ) {
-	// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.urlencode_urlencode -- Format required by wordpress.org API.
-	return urldecode( \basename( str_replace( [ '%2F', '%5C' ], '/', urlencode( $path ) ), $suffix ) );
+	return Path::basename( $path, $suffix );
 }
 
 /**
@@ -1803,20 +1723,13 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
  *
  * Use the __FILE__ or __DIR__ constants as a starting point.
  *
+ * @deprecated 2.13.0 Use Path::phar_safe() instead.
+ *
  * @param string $path An absolute path that might be within a Phar.
  * @return string A Phar-safe version of the path.
  */
 function phar_safe_path( $path ) {
-
-	if ( ! inside_phar() ) {
-		return $path;
-	}
-
-	return str_replace(
-		PHAR_STREAM_PREFIX . rtrim( WP_CLI_PHAR_PATH, '/' ) . '/',
-		PHAR_STREAM_PREFIX,
-		$path
-	);
+	return Path::phar_safe( $path );
 }
 
 /**
@@ -1898,7 +1811,7 @@ function past_tense_verb( $verb ) {
  */
 function get_php_binary() {
 	// Phar installs always use PHP_BINARY.
-	if ( inside_phar() ) {
+	if ( Path::inside_phar() ) {
 		return PHP_BINARY;
 	}
 
@@ -2329,7 +2242,7 @@ function get_env_or_config( $name ) {
  * @return string
  */
 function get_cache_dir() {
-	$home      = get_home_dir();
+	$home      = Path::get_home_dir();
 	$cache_dir = get_env_or_config( 'WP_CLI_CACHE_DIR' );
 	return $cache_dir ? : "$home/.wp-cli/cache";
 }

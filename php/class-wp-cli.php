@@ -13,6 +13,7 @@ use WP_CLI\DocParser;
 use WP_CLI\ExitException;
 use WP_CLI\FileCache;
 use WP_CLI\Loggers\Execution;
+use WP_CLI\Path;
 use WP_CLI\Process;
 use WP_CLI\ProcessRun;
 use WP_CLI\Runner;
@@ -23,7 +24,7 @@ use WP_CLI\WpHttpCacheManager;
 /**
  * Various utilities for WP-CLI commands.
  *
- * @phpstan-type GlobalConfig array{path: string|null, ssh: string|null, 'ssh-args': string[], http: string|null, url: string|null, user: string|null, 'skip-plugins': true|string[], 'skip-themes': true|string[], 'skip-packages': bool, require: string[], exec: string[], context: string, debug: string|true, prompt: false|string, quiet: bool, apache_modules: string[]}
+ * @phpstan-type GlobalConfig array{path: string|null, ssh: string|null, 'ssh-args': string[], http: string|null, url: string|null, user: string|null, 'skip-plugins': true|string[], 'skip-themes': true|string[], 'skip-packages': bool, require: string[], exec: string[], context: string, debug: string|true, prompt: false|string, quiet: bool, apache_modules: string[], 'assume-https': bool}
  *
  * @phpstan-type FlagParameter array{type: 'flag', name: string, description?: string, optional?: bool, repeating?: bool, aliases?: string[]}
  * @phpstan-type AssocParameter array{type: 'assoc', name: string, description?: string, options?: string[], default?: string, optional?: bool, value: array{optional: bool, name?: string}, repeating?: bool, aliases?: string[]}
@@ -151,6 +152,8 @@ class WP_CLI {
 		if ( isset( $url_parts['host'] ) ) {
 			if ( isset( $url_parts['scheme'] ) && 'https' === strtolower( $url_parts['scheme'] ) ) {
 				$_SERVER['HTTPS'] = 'on';
+			} elseif ( ! self::get_config( 'assume-https' ) ) {
+				unset( $_SERVER['HTTPS'] );
 			}
 
 			$_SERVER['HTTP_HOST'] = $url_parts['host'];
@@ -1418,7 +1421,7 @@ class WP_CLI {
 		if ( $wp_cli_config_path ) {
 			$config_path = $wp_cli_config_path;
 		} else {
-			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
+			$config_path = Path::get_home_dir() . '/.wp-cli/config.yml';
 		}
 		$config_path = escapeshellarg( $config_path );
 
