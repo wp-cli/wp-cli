@@ -15,6 +15,9 @@ class Help_Command extends WP_CLI_Command {
 	 * [<command>...]
 	 * : Get help on a specific command.
 	 *
+	 * [--full]
+	 * : Show the full help, including help for all subcommands.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # get help for `core` command
@@ -23,83 +26,30 @@ class Help_Command extends WP_CLI_Command {
 	 *     # get help for `core download` subcommand
 	 *     wp help core download
 	 *
+	 *     # get full help for `core`, including all subcommands
+	 *     wp help core --full
+	 *
 	 * @param string[] $args
+	 * @param array    $assoc_args
 	 */
-	public function __invoke( $args ) {
+	public function __invoke( $args, $assoc_args ) {
 		$r = WP_CLI::get_runner()->find_command_to_run( $args, Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
 
 		if ( is_array( $r ) ) {
 			list( $command ) = $r;
 
-			self::show_help( $command );
+			if ( ! empty( $assoc_args['full'] ) ) {
+				$out = self::get_help_full( $command );
+				self::pass_through_pager( $out );
+			} else {
+				self::show_help( $command );
+			}
 			exit;
 		}
 	}
 
 	private static function show_help( $command ) {
-		// Parse reference links once for the entire longdesc
-		$longdesc_with_links = self::parse_reference_links( $command->get_longdesc() );
-
-		$out = self::get_initial_markdown( $command, $longdesc_with_links );
-
-		// Remove subcommands if in columns - will wordwrap separately.
-		$subcommands       = '';
-		$column_subpattern = '[ \t]+[^\t]+\t+';
-		if ( preg_match( '/(^## SUBCOMMANDS[^\n]*\n+' . $column_subpattern . '.+?)(?:^##|\z)/ms', $out, $matches, PREG_OFFSET_CAPTURE ) ) {
-			$subcommands        = $matches[1][0];
-			$subcommands_header = "## SUBCOMMANDS\n";
-			$out                = substr_replace( $out, $subcommands_header, $matches[1][1], strlen( $subcommands ) );
-		}
-
-		// Extract only the sections part (OPTIONS, EXAMPLES, etc.)
-		$longdesc_sections = self::get_longdesc_sections( $longdesc_with_links );
-		$out              .= $longdesc_sections;
-
-		// Definition lists.
-		$out = (string) preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', [ __CLASS__, 'rewrap_param_desc' ], $out );
-
-		// Ensure lines with no leading whitespace that aren't section headers are indented.
-		$out = (string) preg_replace( '/^((?! |\t|##).)/m', "\t$1", $out );
-
-		$tab = str_repeat( ' ', 2 );
-
-		// Need to de-tab for wordwrapping to work properly.
-		$out = str_replace( "\t", $tab, $out );
-
-		$wordwrap_width = Shell::columns();
-
-		// Wordwrap with indent.
-		$out = (string) preg_replace_callback(
-			'/^( *)([^\n]+)\n/m',
-			static function ( $matches ) use ( $wordwrap_width ) {
-				return $matches[1] . str_replace( "\n", "\n{$matches[1]}", wordwrap( $matches[2], $wordwrap_width - strlen( $matches[1] ) ) ) . "\n";
-			},
-			$out
-		);
-
-		if ( $subcommands ) {
-			// Wordwrap with column indent.
-			$subcommands = (string) preg_replace_callback(
-				'/^(' . $column_subpattern . ')([^\n]+)\n/m',
-				static function ( $matches ) use ( $wordwrap_width, $tab ) {
-					// Need to de-tab for wordwrapping to work properly.
-					$matches[1]  = str_replace( "\t", $tab, $matches[1] );
-					$matches[2]  = str_replace( "\t", $tab, $matches[2] );
-					$padding_len = strlen( $matches[1] );
-					$padding     = str_repeat( ' ', $padding_len );
-					return $matches[1] . str_replace( "\n", "\n$padding", wordwrap( $matches[2], $wordwrap_width - $padding_len ) ) . "\n";
-				},
-				$subcommands
-			);
-
-			// Put subcommands back.
-			$out = str_replace( $subcommands_header, $subcommands, $out );
-		}
-
-		// Section headers.
-		$out = (string) preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
-
-		self::pass_through_pager( $out );
+		self::pass_through_pager( self::get_help_as_string( $command ) );
 	}
 
 	private static function rewrap_param_desc( $matches ) {
@@ -276,23 +226,93 @@ class Help_Command extends WP_CLI_Command {
 
 	private static function render_subcommands( $command ) {
 		$subcommands = [];
+		$disabled    = [];
 		foreach ( $command->get_subcommands() as $subcommand ) {
-
 			if ( WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
-				continue;
+				$disabled[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
+			} else {
+				$subcommands[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
 			}
-
-			$subcommands[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
 		}
 
-		$max_len = self::get_max_len( array_keys( $subcommands ) );
+		$max_len = self::get_max_len( array_merge( array_keys( $subcommands ), array_keys( $disabled ) ) );
 
 		$lines = [];
 		foreach ( $subcommands as $name => $desc ) {
 			$lines[] = str_pad( $name, $max_len ) . "\t\t\t" . $desc;
 		}
+		foreach ( $disabled as $name => $desc ) {
+			$lines[] = str_pad( $name, $max_len ) . "\t\t\t" . $desc . ' (disabled)';
+		}
 
 		return $lines;
+	}
+
+	private static function get_help_full( $command ) {
+		$out = self::get_help_as_string( $command );
+
+		if ( $command->can_have_subcommands() ) {
+			foreach ( $command->get_subcommands() as $subcommand ) {
+				if ( WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
+					continue;
+				}
+				$out .= "\n---\n\n" . self::get_help_full( $subcommand );
+			}
+		}
+
+		return $out;
+	}
+
+	private static function get_help_as_string( $command ) {
+		$longdesc_with_links = self::parse_reference_links( $command->get_longdesc() );
+		$out                 = self::get_initial_markdown( $command, $longdesc_with_links );
+
+		$subcommands       = '';
+		$column_subpattern = '[ \t]+[^\t]+\t+';
+		if ( preg_match( '/(^## SUBCOMMANDS[^\n]*\n+' . $column_subpattern . '.+?)(?:^##|\z)/ms', $out, $matches, PREG_OFFSET_CAPTURE ) ) {
+			$subcommands        = $matches[1][0];
+			$subcommands_header = "## SUBCOMMANDS\n";
+			$out                = substr_replace( $out, $subcommands_header, $matches[1][1], strlen( $subcommands ) );
+		}
+
+		$longdesc_sections = self::get_longdesc_sections( $longdesc_with_links );
+		$out              .= $longdesc_sections;
+
+		$out = (string) preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', [ __CLASS__, 'rewrap_param_desc' ], $out );
+		$out = (string) preg_replace( '/^((?! |\t|##).)/m', "\t$1", $out );
+
+		$tab = str_repeat( ' ', 2 );
+		$out = str_replace( "\t", $tab, $out );
+
+		$wordwrap_width = Shell::columns();
+
+		$out = (string) preg_replace_callback(
+			'/^( *)([^\n]+)\n/m',
+			static function ( $matches ) use ( $wordwrap_width ) {
+				return $matches[1] . str_replace( "\n", "\n{$matches[1]}", wordwrap( $matches[2], $wordwrap_width - strlen( $matches[1] ) ) ) . "\n";
+			},
+			$out
+		);
+
+		if ( $subcommands ) {
+			$subcommands = (string) preg_replace_callback(
+				'/^(' . $column_subpattern . ')([^\n]+)\n/m',
+				static function ( $matches ) use ( $wordwrap_width, $tab ) {
+					$matches[1]  = str_replace( "\t", $tab, $matches[1] );
+					$matches[2]  = str_replace( "\t", $tab, $matches[2] );
+					$padding_len = strlen( $matches[1] );
+					$padding     = str_repeat( ' ', $padding_len );
+					return $matches[1] . str_replace( "\n", "\n$padding", wordwrap( $matches[2], $wordwrap_width - $padding_len ) ) . "\n";
+				},
+				$subcommands
+			);
+
+			$out = str_replace( $subcommands_header, $subcommands, $out );
+		}
+
+		$out = (string) preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
+
+		return $out;
 	}
 
 	private static function get_max_len( $strings ) {

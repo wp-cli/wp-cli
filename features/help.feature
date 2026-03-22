@@ -1424,3 +1424,39 @@ Feature: Get help about WP-CLI commands
     When I run `PAGER=less wp help | head -1`
     Then STDOUT should not match /\x1b\[/
     And STDOUT should not match /\033\[/
+
+  Scenario: Disabled commands are shown in help listings
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      disabled_commands:
+        - core
+      """
+
+    When I run `wp help`
+    Then STDOUT should contain:
+      """
+      core
+      """
+    And STDOUT should contain:
+      """
+      (disabled)
+      """
+
+  Scenario: Full help shows all subcommands recursively
+    Given an empty directory
+
+    When I run `wp help core --full`
+    Then STDOUT should contain:
+      """
+      wp core
+      """
+    And STDOUT should contain:
+      """
+      wp core check-update
+      """
+    And STDOUT should contain:
+      """
+      wp core download
+      """
+    And STDERR should be empty

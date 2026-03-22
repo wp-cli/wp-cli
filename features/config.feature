@@ -108,9 +108,13 @@ Feature: Have a config file
 
     # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
     When I try `WP_CLI_CONFIG_PATH=config.yml wp`
-    Then STDOUT should not contain:
+    Then STDOUT should contain:
       """
       eval-file
+      """
+    And STDOUT should contain:
+      """
+      (disabled)
       """
 
     When I try `WP_CLI_CONFIG_PATH=config.yml wp help eval-file`
@@ -121,16 +125,24 @@ Feature: Have a config file
 
     # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
     When I try `WP_CLI_CONFIG_PATH=config.yml wp core`
-    Then STDOUT should not contain:
+    Then STDOUT should contain:
       """
       or: wp core multisite-convert
+      """
+    And STDOUT should contain:
+      """
+      (disabled)
       """
 
     # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
     When I try `WP_CLI_CONFIG_PATH=config.yml wp help core`
-    Then STDOUT should not contain:
+    Then STDOUT should contain:
       """
       multisite-convert
+      """
+    And STDOUT should contain:
+      """
+      (disabled)
       """
 
     When I try `WP_CLI_CONFIG_PATH=config.yml wp core multisite-convert`
