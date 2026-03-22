@@ -212,8 +212,10 @@ class CompositeCommand {
 			$prefix = ( 0 === $i ) ? 'usage: ' : '   or: ';
 			++$i;
 
-			if ( WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
-				WP_CLI::line( $subcommand->get_usage( $prefix ) . ' (disabled)' );
+			$disabled_reason = WP_CLI::get_runner()->get_command_disabled_reason( $subcommand );
+			if ( false !== $disabled_reason ) {
+				$suffix = $disabled_reason ? " (disabled: $disabled_reason)" : ' (disabled)';
+				WP_CLI::line( $subcommand->get_usage( $prefix ) . $suffix );
 				continue;
 			}
 

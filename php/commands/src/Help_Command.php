@@ -228,8 +228,12 @@ class Help_Command extends WP_CLI_Command {
 		$subcommands = [];
 		$disabled    = [];
 		foreach ( $command->get_subcommands() as $subcommand ) {
-			if ( WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
-				$disabled[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
+			$disabled_reason = WP_CLI::get_runner()->get_command_disabled_reason( $subcommand );
+			if ( false !== $disabled_reason ) {
+				$disabled[ $subcommand->get_name() ] = [
+					'desc'   => $subcommand->get_shortdesc(),
+					'reason' => $disabled_reason,
+				];
 			} else {
 				$subcommands[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
 			}
@@ -241,8 +245,9 @@ class Help_Command extends WP_CLI_Command {
 		foreach ( $subcommands as $name => $desc ) {
 			$lines[] = str_pad( $name, $max_len ) . "\t\t\t" . $desc;
 		}
-		foreach ( $disabled as $name => $desc ) {
-			$lines[] = str_pad( $name, $max_len ) . "\t\t\t" . $desc . ' (disabled)';
+		foreach ( $disabled as $name => $data ) {
+			$suffix  = $data['reason'] ? " (disabled: {$data['reason']})" : ' (disabled)';
+			$lines[] = str_pad( $name, $max_len ) . "\t\t\t" . $data['desc'] . $suffix;
 		}
 
 		return $lines;
