@@ -3,12 +3,12 @@ Feature: CLI Cache
   Scenario: Remove all files from cache directory
     Given an empty cache
 
-    When I run `wp core download --path={CACHE_DIR} --version=4.9 --force`
-    And I run `wp core download --path={CACHE_DIR} --version=4.9 --force --locale=de_DE`
+    When I run `wp core download --path={CACHE_DIR} --version=6.9 --force`
+    And I run `wp core download --path={CACHE_DIR} --version=6.9 --force --locale=de_DE`
     Then the {SUITE_CACHE_DIR}/core directory should contain:
       """
-      wordpress-4.9-de_DE.tar.gz
-      wordpress-4.9-en_US.tar.gz
+      wordpress-6.9-de_DE.tar.gz
+      wordpress-6.9-en_US.tar.gz
       """
 
     When I run `wp cli cache clear`
@@ -19,11 +19,11 @@ Feature: CLI Cache
     And STDERR should be empty
     And the {SUITE_CACHE_DIR}/core directory should not contain:
       """
-      wordpress-4.9-de_DE.tar.gz
+      wordpress-6.9-de_DE.tar.gz
       """
     And the {SUITE_CACHE_DIR}/core directory should not contain:
       """
-      wordpress-4.9-en_US.tar.gz
+      wordpress-6.9-en_US.tar.gz
       """
 
   Scenario: Using a null device disables the cache without throwing an error
@@ -34,7 +34,7 @@ Feature: CLI Cache
       putenv( 'WP_CLI_CACHE_DIR=/dev/null' );
       """
 
-    When I run `wp --require=env-var.php core download --path=/tmp/wp-core --version=4.9 --force`
+    When I run `wp --require=env-var.php core download --path=/tmp/wp-core --version=6.9 --force`
     Then STDERR should be empty
 
   Scenario: Remove all but newest files from cache directory
