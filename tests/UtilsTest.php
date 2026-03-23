@@ -1264,12 +1264,12 @@ class UtilsTest extends TestCase {
 
 	public function testEscapeshellargPreserveTilde() {
 		// Test that ~/ prefix is preserved and remainder is escaped
-		$this->assertEquals( "~/'sites/wordpress'", Utils\escapeshellarg_preserve_tilde( '~/sites/wordpress' ) );
-		$this->assertEquals( "~/'my documents/site'", Utils\escapeshellarg_preserve_tilde( '~/my documents/site' ) );
-		$this->assertEquals( "~/'path with spaces'", Utils\escapeshellarg_preserve_tilde( '~/path with spaces' ) );
+		$this->assertEquals( '~/' . escapeshellarg( 'sites/wordpress' ), Utils\escapeshellarg_preserve_tilde( '~/sites/wordpress' ) );
+		$this->assertEquals( '~/' . escapeshellarg( 'my documents/site' ), Utils\escapeshellarg_preserve_tilde( '~/my documents/site' ) );
+		$this->assertEquals( '~/' . escapeshellarg( 'path with spaces' ), Utils\escapeshellarg_preserve_tilde( '~/path with spaces' ) );
 
 		// Test edge case: exactly ~/
-		$this->assertEquals( "~/''", Utils\escapeshellarg_preserve_tilde( '~/' ) );
+		$this->assertEquals( '~/' . escapeshellarg( '' ), Utils\escapeshellarg_preserve_tilde( '~/' ) );
 
 		// Test that paths without ~/ are fully escaped
 		$this->assertEquals( escapeshellarg( '/absolute/path' ), Utils\escapeshellarg_preserve_tilde( '/absolute/path' ) );
