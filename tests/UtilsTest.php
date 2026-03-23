@@ -1211,9 +1211,20 @@ class UtilsTest extends TestCase {
 		];
 	}
 
-	public function testGetSizeStringFromBytes() {
-		$test_cases = [
+	/**
+	 * @dataProvider dataFormatBytesString
+	 */
+	#[DataProvider( 'dataFormatBytesString' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testFormatBytesString( $bytes, $decimals, $unit, $expected ) {
+		$actual = Utils\format_bytes_string( $bytes, $decimals, $unit );
+		$this->assertSame( $expected, $actual, "Failed asserting that format_bytes_string($bytes, $decimals, '$unit') equals '$expected'." );
+	}
+
+	public static function dataFormatBytesString(): array {
+		return [
 			[ 0, 2, '', '0 B' ],
+			[ '0', 2, '', '0 B' ],
+			[ -0, 2, '', '0 B' ],
 			[ 500, 2, '', '500 B' ],
 			[ 1000, 2, '', '1 KB' ],
 			[ 1500, 2, '', '1.5 KB' ],
@@ -1227,13 +1238,11 @@ class UtilsTest extends TestCase {
 			[ 1000000, 0, 'MB', '1 MB' ],
 			[ 1000000000, 0, 'GB', '1 GB' ],
 			[ 1000000000000, 0, 'TB', '1 TB' ],
+			[ -1000000, 0, 'MB', '-1 MB' ],
+			[ -1536, 1, '', '-1.5 KB' ],
+			[ 5000, 0, 'FOO', '5 KB' ],
+			[ 1.5e26, 0, '', '150 YB' ],
 		];
-
-		foreach ( $test_cases as $case ) {
-			list( $bytes, $decimals, $unit, $expected ) = $case;
-			$actual                                     = Utils\get_size_string_from_bytes( $bytes, $decimals, $unit );
-			$this->assertSame( $expected, $actual, "Failed asserting that size_format($bytes, $decimals, '$unit') equals '$expected'." );
-		}
 	}
 
 	public function testExpandTildePath(): void {

@@ -2332,29 +2332,37 @@ function escape_csv_value( $value ) {
 /**
  * Convert a size in bytes to a human-readable format.
  *
- * @param int    $bytes    Size in bytes.
- * @param int    $decimals Optional. Number of decimal places to round to. Default 0.
- * @param string $unit     Optional. Specific unit to use. Default is auto-detect.
+ * @param int|float $bytes    Size in bytes.
+ * @param int       $decimals Optional. Number of decimal places to round to. Default 0.
+ * @param string    $unit     Optional. Specific unit to use. Default is auto-detect.
  * @return string Human-readable size.
  */
-function get_size_string_from_bytes( $bytes, $decimals = 0, $unit = '' ) {
-	if ( 0 === $bytes ) {
+function format_bytes_string( $bytes, $decimals = 0, $unit = '' ) {
+	if ( 0 === (int) $bytes ) {
 		return '0 B';
 	}
 
-	$sizes    = [ 'B', 'KB', 'MB', 'GB', 'TB' ];
-	$size_key = 0;
+	$sizes = [ 'B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB' ];
 
-	if ( empty( $unit ) ) {
-		$size_key = (int) floor( log( $bytes ) / log( 1000 ) );
-		$unit     = isset( $sizes[ $size_key ] ) ? $sizes[ $size_key ] : $sizes[0];
-	} else {
+	// Use absolute value for calculating log exponent metrics cleanly.
+	$abs_bytes = abs( (float) $bytes );
+
+	// Resolve the specific target unit manually.
+	$size_key = false;
+	if ( ! empty( $unit ) ) {
 		$unit     = strtoupper( $unit );
-		$size_key = (int) array_search( $unit, $sizes, true );
+		$size_key = array_search( $unit, $sizes, true );
 	}
 
-	$divisor             = pow( 1000, $size_key );
-	$size_format_display = $unit;
+	// Calculate and bound the auto-detect unit size string if no valid unit was requested.
+	if ( false === $size_key ) {
+		$size_key = (int) floor( log( $abs_bytes ) / log( 1000 ) );
+		$size_key = min( $size_key, count( $sizes ) - 1 ); // Prevent out of bounds
 
-	return round( $bytes / $divisor, $decimals ) . ' ' . $size_format_display;
+		$unit = $sizes[ $size_key ];
+	}
+
+	$divisor = pow( 1000, $size_key );
+
+	return round( $bytes / $divisor, $decimals ) . ' ' . $unit;
 }
