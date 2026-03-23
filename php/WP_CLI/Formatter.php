@@ -549,8 +549,16 @@ class Formatter {
 				$rows   = $this->assoc_array_to_rows( $ordered_data );
 				$fields = [ 'Field', 'Value' ];
 				call_user_func( self::$custom_formatters[ $format ], $rows, $fields, $this, $ascii_pre_colorized );
+			} elseif ( in_array( $format, [ 'json', 'yaml' ], true ) ) {
+				// For json/yaml in single-item mode, use WP_CLI::print_value for proper formatting
+				WP_CLI::print_value(
+					$ordered_data,
+					[
+						'format' => $format,
+					]
+				);
 			} else {
-				// For all other formats, call with a single-item array
+				// Call the custom formatter with a single-item array
 				call_user_func( self::$custom_formatters[ $format ], [ $ordered_data ], array_keys( $ordered_data ) );
 			}
 			return;
