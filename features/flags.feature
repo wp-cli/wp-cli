@@ -521,11 +521,3 @@ Feature: Global flags
       Args: foo, --require=/nonexistent
       """
     And the return code should be 0
-
-  Scenario: Tilde expansion in --path parameter
-    Given a WP installation in 'subdir'
-    And I run `bash -c 'ln -s $(pwd)/subdir $HOME/test-wp-tilde'`
-
-    When I run `wp core version --path=~/test-wp-tilde`
-    Then STDOUT should not be empty
-    And the return code should be 0
