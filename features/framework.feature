@@ -239,6 +239,22 @@ Feature: Load WP-CLI
       Warning: Some code is trying to do a URL redirect.
       """
 
+  Scenario: A plugin calling wp_redirect() shouldn't redirect in admin context
+    Given a WP installation
+    And a wp-content/mu-plugins/redirect.php file:
+      """
+      <?php
+      add_action( 'init', function(){
+          wp_redirect( 'http://apple.com' );
+      });
+      """
+
+    When I try `wp plugin list --debug=bootstrap`
+    Then STDERR should contain:
+      """
+      Debug: Some code is trying to do a URL redirect.
+      """
+
   Scenario: It should be possible to work on a site in maintenance mode
     Given a WP installation
     And a .maintenance file:
@@ -324,9 +340,11 @@ Feature: Load WP-CLI
       2
       """
 
-  Scenario: Don't apply set_url_scheme because it will always be incorrect
+  Scenario: Use --assume-https to preserve HTTPS scheme in URL functions
     Given a WP multisite installation
     And I run `wp option update siteurl https://example.com`
+    And I run `wp site option update siteurl https://example.com`
+    And I run `wp site option update home https://example.com`
 
     When I run `wp option get siteurl`
     Then STDOUT should be:
@@ -334,7 +352,31 @@ Feature: Load WP-CLI
       https://example.com
       """
 
-    When I run `wp site list --field=url`
+    When I run `wp --assume-https site list --field=url`
+    Then STDOUT should be:
+      """
+      https://example.com/
+      """
+
+    When I run `wp --assume-https eval "echo site_url();"`
+    Then STDOUT should be:
+      """
+      https://example.com
+      """
+
+    When I run `wp --assume-https eval "echo home_url();"`
+    Then STDOUT should be:
+      """
+      https://example.com
+      """
+
+    When I run `wp --assume-https eval "echo network_site_url();"`
+    Then STDOUT should be:
+      """
+      https://example.com/
+      """
+
+    When I run `wp --assume-https eval "echo network_home_url();"`
     Then STDOUT should be:
       """
       https://example.com/
@@ -506,4 +548,27 @@ Feature: Load WP-CLI
     Then STDOUT should not contain:
       """
       wp_sitecategories
+      """
+
+  Scenario: WP-CLI autoloaders take precedence over plugin autoloaders after WordPress loads
+    Given a WP installation
+    And a wp-content/mu-plugins/prepend-autoloader.php file:
+      """
+      <?php
+      // Simulate a plugin that prepends its own autoloader.
+      function wpcli_test_mu_autoload( $class ) {
+          // This intentionally does nothing but exists to be prepended.
+      }
+
+      spl_autoload_register(
+          'wpcli_test_mu_autoload',
+          true,
+          true
+      );
+      """
+
+    When I run `wp eval '$autoloaders = spl_autoload_functions(); $first = $autoloaders[0]; $plugin_index = array_search( "wpcli_test_mu_autoload", $autoloaders, true ); echo ( $plugin_index !== false && 0 !== $plugin_index ) ? "WP-CLI autoloader is first" : "Plugin autoloader is first";'`
+    Then STDOUT should contain:
+      """
+      WP-CLI autoloader is first
       """
