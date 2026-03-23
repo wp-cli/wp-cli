@@ -7,6 +7,7 @@ namespace WP_CLI\Utils;
 use ReflectionClass;
 use ReflectionParameter;
 use WP_CLI;
+use WP_CLI\Path;
 use WP_CLI\UpgraderSkin;
 
 /**
@@ -152,20 +153,6 @@ function wp_clean_error_message( $message ) {
 }
 
 /**
- * @param string $url
- * @return string
- */
-function wp_redirect_handler( $url ) {
-	WP_CLI::warning( 'Some code is trying to do a URL redirect. Backtrace:' );
-
-	ob_start();
-	debug_print_backtrace();
-	fwrite( STDERR, (string) ob_get_clean() );
-
-	return $url;
-}
-
-/**
  * @param string $since Version number.
  * @param string $path File to include.
  * @return void
@@ -241,7 +228,7 @@ function get_upgrader( $class_name, $insecure = false, $skin = null ) {
  */
 function get_plugin_name( $basename ) {
 	if ( false === strpos( $basename, '/' ) ) {
-		$name = basename( $basename, '.php' );
+		$name = Path::basename( $basename, '.php' );
 	} else {
 		$name = dirname( $basename );
 	}
@@ -277,7 +264,7 @@ function is_plugin_skipped( $file ) {
  * @return string
  */
 function get_theme_name( $path ) {
-	return basename( $path );
+	return Path::basename( $path );
 }
 
 /**
