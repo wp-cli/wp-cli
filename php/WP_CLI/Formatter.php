@@ -144,12 +144,23 @@ class Formatter {
 		// Register 'json' format
 		self::add_format(
 			'json',
-			static function ( $items, $fields ) {
-				if ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
-					// phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
-					echo json_encode( $items, JSON_PARTIAL_OUTPUT_ON_ERROR );
+			static function ( $items, $fields, $context = [] ) {
+				// For single-item display, output the item directly without array wrapper
+				if ( isset( $context['single_item'] ) && $context['single_item'] && count( $items ) === 1 ) {
+					$item = reset( $items );
+					if ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
+						// phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
+						echo json_encode( $item, JSON_PARTIAL_OUTPUT_ON_ERROR );
+					} else {
+						echo json_encode( $item );
+					}
 				} else {
-					echo json_encode( $items );
+					if ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
+						// phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
+						echo json_encode( $items, JSON_PARTIAL_OUTPUT_ON_ERROR );
+					} else {
+						echo json_encode( $items );
+					}
 				}
 			}
 		);
@@ -157,8 +168,14 @@ class Formatter {
 		// Register 'yaml' format
 		self::add_format(
 			'yaml',
-			static function ( $items, $fields ) {
-				echo Spyc::YAMLDump( $items, 2, 0 );
+			static function ( $items, $fields, $context = [] ) {
+				// For single-item display, output the item directly without array wrapper
+				if ( isset( $context['single_item'] ) && $context['single_item'] && count( $items ) === 1 ) {
+					$item = reset( $items );
+					echo Spyc::YAMLDump( $item, 2, 0 );
+				} else {
+					echo Spyc::YAMLDump( $items, 2, 0 );
+				}
 			}
 		);
 
@@ -550,13 +567,8 @@ class Formatter {
 				$fields = [ 'Field', 'Value' ];
 				call_user_func( self::$custom_formatters[ $format ], $rows, $fields, $this, $ascii_pre_colorized );
 			} elseif ( in_array( $format, [ 'json', 'yaml' ], true ) ) {
-				// For json/yaml in single-item mode, use WP_CLI::print_value for proper formatting
-				WP_CLI::print_value(
-					$ordered_data,
-					[
-						'format' => $format,
-					]
-				);
+				// For json/yaml in single-item mode, pass context flag to format handlers
+				call_user_func( self::$custom_formatters[ $format ], [ $ordered_data ], array_keys( $ordered_data ), [ 'single_item' => true ] );
 			} else {
 				// Call the custom formatter with a single-item array
 				call_user_func( self::$custom_formatters[ $format ], [ $ordered_data ], array_keys( $ordered_data ) );
