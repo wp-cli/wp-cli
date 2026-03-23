@@ -5,6 +5,11 @@ use PHPUnit\Framework\TestCase;
 
 class FormatterTest extends TestCase {
 
+	public static function setUpBeforeClass(): void {
+		// Ensure built-in formats are registered for tests
+		Formatter::register_builtin_formats();
+	}
+
 	public function test_add_format() {
 		$called          = false;
 		$received_items  = null;

@@ -30,25 +30,11 @@ class Formatter {
 	const MAX_CELL_WIDTH = 2048;
 
 	/**
-	 * Built-in format names.
-	 *
-	 * @var string[]
-	 */
-	const BUILTIN_FORMATS = [ 'table', 'json', 'csv', 'yaml', 'count', 'ids' ];
-
-	/**
 	 * Custom format handlers registered by extensions.
 	 *
 	 * @var array<string, callable>
 	 */
 	private static $custom_formatters = [];
-
-	/**
-	 * Flag to track if built-in formats have been registered.
-	 *
-	 * @var bool
-	 */
-	private static $builtin_formats_registered = false;
 
 	/**
 	 * How the items should be output.
@@ -137,14 +123,8 @@ class Formatter {
 	 *
 	 * This method registers the default format handlers (table, json, csv, yaml, count, ids)
 	 * using the add_format() API, allowing them to be overridden like custom formats.
-	 *
-	 * @param Formatter $formatter_instance The formatter instance for accessing helper methods.
 	 */
-	private static function register_builtin_formats( $formatter_instance ) {
-		if ( self::$builtin_formats_registered ) {
-			return;
-		}
-
+	public static function register_builtin_formats() {
 		// Register 'count' format
 		self::add_format(
 			'count',
@@ -209,8 +189,6 @@ class Formatter {
 				}
 			}
 		);
-
-		self::$builtin_formats_registered = true;
 	}
 
 	/**
@@ -234,18 +212,15 @@ class Formatter {
 	 * @return string[] Array of format names.
 	 */
 	public static function get_available_formats() {
-		$builtin_formats = self::BUILTIN_FORMATS;
-		$custom_formats  = array_keys( self::$custom_formatters );
-		$all_formats     = array_unique( array_merge( $builtin_formats, $custom_formats ) );
+		$all_formats = array_keys( self::$custom_formatters );
 
 		/**
 		 * Filter the list of available output formats.
 		 *
 		 * @param string[] $formats Array of format names.
 		 */
-		$filtered = WP_CLI::do_hook( 'formatter_available_formats', $all_formats );
-		// @phpstan-ignore-next-line - WP_CLI::do_hook can return mixed but we ensure it's array<string>
-		return is_array( $filtered ) ? $filtered : $all_formats;
+		// @phpstan-ignore-next-line - We trust the hook to return the correct type
+		return WP_CLI::do_hook( 'formatter_available_formats', $all_formats );
 	}
 
 	/**
@@ -355,9 +330,6 @@ class Formatter {
 	 */
 	private function format( $items, $ascii_pre_colorized = false ): void {
 		$fields = $this->args['fields'];
-
-		// Register built-in formats if not already done
-		self::register_builtin_formats( $this );
 
 		// Convert iterator to array if needed
 		if ( ! is_array( $items ) ) {
@@ -570,26 +542,15 @@ class Formatter {
 			$ordered_data[ $field ] = ( ( (array) $data )[ $field ] );
 		}
 
-		// Register built-in formats if not already done
-		self::register_builtin_formats( $this );
-
 		// Check if a formatter is registered for this format
 		if ( isset( self::$custom_formatters[ $format ] ) ) {
-			// Special handling for table and csv - convert to rows format
+			// For table and csv formats in single-item display, convert to rows format
 			if ( in_array( $format, [ 'table', 'csv' ], true ) ) {
 				$rows   = $this->assoc_array_to_rows( $ordered_data );
 				$fields = [ 'Field', 'Value' ];
 				call_user_func( self::$custom_formatters[ $format ], $rows, $fields, $this, $ascii_pre_colorized );
-			} elseif ( in_array( $format, [ 'json', 'yaml' ], true ) ) {
-				// For json/yaml in single-item mode, use WP_CLI::print_value for consistency
-				WP_CLI::print_value(
-					$ordered_data,
-					[
-						'format' => $format,
-					]
-				);
 			} else {
-				// Call the custom formatter with a single-item array
+				// For all other formats, call with a single-item array
 				call_user_func( self::$custom_formatters[ $format ], [ $ordered_data ], array_keys( $ordered_data ) );
 			}
 			return;
