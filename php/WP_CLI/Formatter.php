@@ -44,6 +44,13 @@ class Formatter {
 	private static $custom_formatters = [];
 
 	/**
+	 * Flag to track if built-in formats have been registered.
+	 *
+	 * @var bool
+	 */
+	private static $builtin_formats_registered = false;
+
+	/**
 	 * How the items should be output.
 	 *
 	 * @var array{format: string, fields: string[], field: string|null, alignments: array<string, int>}
@@ -123,6 +130,87 @@ class Formatter {
 			WP_CLI::error( 'Format handler must be callable.' );
 		}
 		self::$custom_formatters[ $format_name ] = $handler;
+	}
+
+	/**
+	 * Register built-in format handlers.
+	 *
+	 * This method registers the default format handlers (table, json, csv, yaml, count, ids)
+	 * using the add_format() API, allowing them to be overridden like custom formats.
+	 *
+	 * @param Formatter $formatter_instance The formatter instance for accessing helper methods.
+	 */
+	private static function register_builtin_formats( $formatter_instance ) {
+		if ( self::$builtin_formats_registered ) {
+			return;
+		}
+
+		// Register 'count' format
+		self::add_format(
+			'count',
+			static function ( $items, $fields ) {
+				echo count( $items );
+			}
+		);
+
+		// Register 'ids' format
+		self::add_format(
+			'ids',
+			static function ( $items, $fields ) {
+				echo implode( ' ', $items );
+			}
+		);
+
+		// Register 'json' format
+		self::add_format(
+			'json',
+			static function ( $items, $fields ) {
+				if ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
+					// phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
+					echo json_encode( $items, JSON_PARTIAL_OUTPUT_ON_ERROR );
+				} else {
+					echo json_encode( $items );
+				}
+			}
+		);
+
+		// Register 'yaml' format
+		self::add_format(
+			'yaml',
+			static function ( $items, $fields ) {
+				echo Spyc::YAMLDump( $items, 2, 0 );
+			}
+		);
+
+		// Register 'csv' format
+		self::add_format(
+			'csv',
+			static function ( $items, $fields ) {
+				Utils\write_csv( STDOUT, $items, $fields );
+			}
+		);
+
+		// Register 'table' format
+		self::add_format(
+			'table',
+			static function ( $items, $fields, $formatter = null, $ascii_pre_colorized = false ) {
+				if ( $formatter instanceof Formatter ) {
+					$formatter->show_table( $items, $fields, $ascii_pre_colorized );
+				} else {
+					// Fallback if no formatter instance provided
+					$table = new Table();
+					$table->setHeaders( $fields );
+					foreach ( $items as $item ) {
+						$table->addRow( array_values( Utils\pick_fields( $item, $fields ) ) );
+					}
+					foreach ( $table->getDisplayLines() as $line ) {
+						WP_CLI::line( $line );
+					}
+				}
+			}
+		);
+
+		self::$builtin_formats_registered = true;
 	}
 
 	/**
@@ -268,83 +356,52 @@ class Formatter {
 	private function format( $items, $ascii_pre_colorized = false ): void {
 		$fields = $this->args['fields'];
 
-		// Check if a custom formatter is registered for this format (including overrides of built-in formats)
+		// Register built-in formats if not already done
+		self::register_builtin_formats( $this );
+
+		// Convert iterator to array if needed
+		if ( ! is_array( $items ) ) {
+			$items = iterator_to_array( $items );
+		}
+
+		// Check if a formatter is registered for this format
 		if ( isset( self::$custom_formatters[ $this->args['format'] ] ) ) {
-			// Convert iterator to array for custom formatters
-			if ( ! is_array( $items ) ) {
-				$items = iterator_to_array( $items );
+			// Special handling for 'ids' and 'count' formats - they work with raw items
+			if ( in_array( $this->args['format'], [ 'ids', 'count' ], true ) ) {
+				call_user_func( self::$custom_formatters[ $this->args['format'] ], $items, $fields );
+				return;
 			}
-			// Extract fields from items for custom formatter
+
+			// Special preprocessing for table and csv formats
+			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
+				$items = $this->truncate_items( $items, $fields );
+			}
+
+			// Extract fields from items for formatter
 			$formatted_items = [];
 			foreach ( $items as $item ) {
 				if ( is_array( $item ) || is_object( $item ) ) {
 					// @phpstan-ignore-next-line - $item is guaranteed to be array|object here
 					$formatted_items[] = Utils\pick_fields( $item, $fields );
 				} else {
-					WP_CLI::debug( 'Skipping item that is neither array nor object in custom format handler.', 'formatter' );
+					WP_CLI::debug( 'Skipping item that is neither array nor object in format handler.', 'formatter' );
 				}
 			}
-			// Call the custom formatter
-			call_user_func( self::$custom_formatters[ $this->args['format'] ], $formatted_items, $fields );
+
+			// Call the formatter - pass $this as third parameter for built-in formats that need it
+			$handler = self::$custom_formatters[ $this->args['format'] ];
+			if ( in_array( $this->args['format'], [ 'table' ], true ) ) {
+				// Table format needs the formatter instance and ascii_pre_colorized
+				call_user_func( $handler, $formatted_items, $fields, $this, $ascii_pre_colorized );
+			} else {
+				// Other formats just need items and fields
+				call_user_func( $handler, $formatted_items, $fields );
+			}
 			return;
 		}
 
-		switch ( $this->args['format'] ) {
-			case 'count':
-				if ( ! is_array( $items ) ) {
-					$items = iterator_to_array( $items );
-				}
-				echo count( $items );
-				break;
-
-			case 'ids':
-				if ( ! is_array( $items ) ) {
-					$items = iterator_to_array( $items );
-				}
-				/** @var array<string> $items */
-				echo implode( ' ', $items );
-				break;
-
-			case 'table':
-				// Truncate large values before table formatting for performance
-				if ( ! is_array( $items ) ) {
-					$items = iterator_to_array( $items );
-				}
-				$items = $this->truncate_items( $items, $fields );
-				$this->show_table( $items, $fields, $ascii_pre_colorized );
-				break;
-
-			case 'csv':
-				// Truncate large values before CSV output for performance
-				if ( ! is_array( $items ) ) {
-					$items = iterator_to_array( $items );
-				}
-				$items = $this->truncate_items( $items, $fields );
-				Utils\write_csv( STDOUT, $items, $fields );
-				break;
-
-			case 'json':
-			case 'yaml':
-				$out = [];
-				foreach ( $items as $item ) {
-					$out[] = Utils\pick_fields( $item, $fields );
-				}
-
-				if ( 'json' === $this->args['format'] ) {
-					if ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
-						// phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
-						echo json_encode( $out, JSON_PARTIAL_OUTPUT_ON_ERROR );
-					} else {
-						echo json_encode( $out );
-					}
-				} elseif ( 'yaml' === $this->args['format'] ) {
-					echo Spyc::YAMLDump( $out, 2, 0 );
-				}
-				break;
-
-			default:
-				WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
-		}
+		// If no formatter is registered, show error
+		WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
 	}
 
 	/**
@@ -513,38 +570,33 @@ class Formatter {
 			$ordered_data[ $field ] = ( ( (array) $data )[ $field ] );
 		}
 
-		switch ( $format ) {
+		// Register built-in formats if not already done
+		self::register_builtin_formats( $this );
 
-			case 'table':
-			case 'csv':
+		// Check if a formatter is registered for this format
+		if ( isset( self::$custom_formatters[ $format ] ) ) {
+			// Special handling for table and csv - convert to rows format
+			if ( in_array( $format, [ 'table', 'csv' ], true ) ) {
 				$rows   = $this->assoc_array_to_rows( $ordered_data );
 				$fields = [ 'Field', 'Value' ];
-				if ( 'table' === $format ) {
-					self::show_table( $rows, $fields, $ascii_pre_colorized );
-				} elseif ( 'csv' === $format ) {
-					Utils\write_csv( STDOUT, $rows, $fields );
-				}
-				break;
-
-			case 'yaml':
-			case 'json':
+				call_user_func( self::$custom_formatters[ $format ], $rows, $fields, $this, $ascii_pre_colorized );
+			} elseif ( in_array( $format, [ 'json', 'yaml' ], true ) ) {
+				// For json/yaml in single-item mode, use WP_CLI::print_value for consistency
 				WP_CLI::print_value(
 					$ordered_data,
 					[
 						'format' => $format,
 					]
 				);
-				break;
-
-			default:
-				// Check if a custom formatter is registered for this format
-				if ( isset( self::$custom_formatters[ $format ] ) ) {
-					// Call the custom formatter with a single-item array
-					call_user_func( self::$custom_formatters[ $format ], [ $ordered_data ], array_keys( $ordered_data ) );
-				} else {
-					WP_CLI::error( 'Invalid format: ' . $format );
-				}
+			} else {
+				// Call the custom formatter with a single-item array
+				call_user_func( self::$custom_formatters[ $format ], [ $ordered_data ], array_keys( $ordered_data ) );
+			}
+			return;
 		}
+
+		// If no formatter is registered, show error
+		WP_CLI::error( 'Invalid format: ' . $format );
 	}
 
 	/**
