@@ -3,8 +3,8 @@
 namespace WP_CLI\Bootstrap;
 
 use WP_CLI\Autoloader;
+use WP_CLI\Path;
 use WP_CLI\RequestsLibrary;
-use WP_CLI\Utils;
 
 /**
  * Class IncludeRequestsAutoloader.
@@ -58,7 +58,7 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 			if ( is_bool( $alias_path ) || empty( $alias_path ) ) {
 				return $state;
 			}
-			if ( ! Utils\is_path_absolute( $alias_path ) ) {
+			if ( ! Path::is_absolute( $alias_path ) ) {
 				$alias_path = getcwd() . '/' . $alias_path;
 			}
 			$wp_root = rtrim( $alias_path, '/' );

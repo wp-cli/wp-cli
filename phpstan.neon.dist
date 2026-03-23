@@ -41,3 +41,5 @@ parameters:
     - identifier: missingType.property
     - identifier: missingType.parameter
     - identifier: missingType.return
+    - identifier: function.deprecated
+      path: tests

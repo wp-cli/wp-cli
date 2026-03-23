@@ -38,7 +38,6 @@ Feature: Global flags
       example.com/foo
       """
 
-  @require-wp-3.9
   Scenario: Invalid URL
     Given a WP multisite installation
 
@@ -46,6 +45,46 @@ Feature: Global flags
     Then STDERR should be:
       """
       Error: Site 'invalid.example.com' not found. Verify `--url=<url>` matches an existing site.
+      """
+
+  Scenario: Empty URL
+    Given a WP installation
+
+    When I try `wp post list --url`
+    Then STDERR should be:
+      """
+      Warning: The --url parameter expects a value.
+      """
+
+  Scenario: Empty URL on multisite
+    Given a WP multisite installation
+
+    When I try `wp post list --url`
+    Then STDERR should contain:
+      """
+      Warning: The --url parameter expects a value.
+      """
+
+  Scenario: Malformed URL with missing slash in protocol
+    Given a WP installation
+
+    When I try `wp eval 'echo "done";' --url=http:/example.com`
+    Then STDERR should be:
+      """
+      Warning: The --url parameter value 'http:/example.com' is not valid. Check for typos in the protocol, e.g. 'http://' not 'http:/'.
+      """
+    And STDOUT should contain:
+      """
+      done
+      """
+
+  Scenario: Malformed URL with missing slash in protocol on multisite
+    Given a WP multisite installation
+
+    When I try `wp eval 'echo "done";' --url=http:/example.com`
+    Then STDERR should contain:
+      """
+      Warning: The --url parameter value 'http:/example.com' is not valid. Check for typos in the protocol, e.g. 'http://' not 'http:/'.
       """
 
   Scenario: Quiet run
@@ -359,6 +398,27 @@ Feature: Global flags
     Then STDERR should contain:
       """
       Running SSH command: docker exec --user 'user' 'wordpress' sh -c
+      """
+
+  Scenario: SSH args should be passed to SSH command
+    When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh '-o ConnectTimeout=5' -T -vvv 'wordpress' 'wp
+      """
+
+  Scenario: Multiple SSH args should be passed to SSH command
+    When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --ssh-args="-o ServerAliveInterval=10" --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh '-o ConnectTimeout=5' '-o ServerAliveInterval=10' -T -vvv 'wordpress' 'wp
+      """
+
+  Scenario: SSH args should be passed to Docker command
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp --debug --ssh=docker:wordpress --ssh-args="--env MY_VAR=value" --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: docker exec '--env MY_VAR=value' 'wordpress' sh -c
       """
 
   Scenario: Customize config-spec with WP_CLI_CONFIG_SPEC_FILTER_CALLBACK

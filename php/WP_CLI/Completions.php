@@ -28,6 +28,32 @@ class Completions {
 			array_pop( $this->words );
 		}
 
+		// Last word is an incomplete `--url` parameter.
+		if ( 0 === strpos( $this->cur_word, '--url=' ) ) {
+			$parameter      = explode( '=', $this->cur_word, 2 );
+			$this->cur_word = isset( $parameter[1] ) ? $parameter[1] : '';
+			$urls           = $this->get_network_urls();
+
+			// So we can remove the network URL from the subdirectory.
+			$home_url           = $this->get_network_home_url();
+			$home_url_no_scheme = (string) preg_replace( '#^https?://#', '', $home_url );
+
+			foreach ( $urls as $url ) {
+				$this->add( $url );
+				$url_no_scheme = (string) preg_replace( '#^https?://#', '', $url );
+				if ( $url_no_scheme !== $url ) {
+					$this->add( rtrim( $url_no_scheme, '/\\' ) );
+				}
+
+				$url_no_home = str_replace( Path::trailingslashit( $home_url_no_scheme ), '', $url_no_scheme );
+				if ( $url_no_home !== $url ) {
+					$this->add( rtrim( $url_no_home, '/\\' ) );
+				}
+			}
+
+			return;
+		}
+
 		$is_alias = false;
 		$is_help  = false;
 		if ( ! empty( $this->words[0] ) && preg_match( '/^@/', $this->words[0] ) ) {
@@ -70,7 +96,7 @@ class Completions {
 			if ( 'wp' === $command->get_name() && false === $is_alias && false === $is_help ) {
 				$aliases = WP_CLI::get_configurator()->get_aliases();
 				foreach ( $aliases as $name => $_ ) {
-					$this->add( "$name " );
+					$this->add( "@$name " );
 				}
 			}
 			foreach ( $command->get_subcommands() as $name => $_ ) {
@@ -184,6 +210,68 @@ class Completions {
 		}
 
 		return $params;
+	}
+
+	/**
+	 * Get the current network's home URL.
+	 *
+	 * @return string Home URL.
+	 */
+	private function get_network_home_url() {
+		$cache = WP_CLI::get_cache();
+
+		// Use the WP root to key the cache, so we don't mix results from different projects.
+		$wp_root   = WP_CLI::get_runner()->find_wp_root();
+		$cache_key = sprintf( 'network-home:%s', md5( $wp_root ) );
+
+		$result = $cache->read( $cache_key, 300 ); // 5 minutes TTL
+
+		if ( false === $result ) {
+			$result = WP_CLI::runcommand(
+				'option get home',
+				[
+					'return' => 'stdout',
+				]
+			);
+
+			$cache->write( $cache_key, $result );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Get URLs in the Multisite network matching the input.
+	 *
+	 * @return string[] All of the URLs.
+	 */
+	private function get_network_urls() {
+		$cache = WP_CLI::get_cache();
+
+		// Use the WP root to key the cache, so we don't mix results from different projects.
+		$wp_root   = WP_CLI::get_runner()->find_wp_root();
+		$cache_key = sprintf( 'network-urls:%s', md5( $wp_root ) );
+
+		$result = $cache->read( $cache_key, 300 ); // 5 minutes TTL
+
+		if ( false === $result ) {
+			$result = WP_CLI::runcommand(
+				'site list',
+				[
+					'return'       => 'stdout',
+					'command_args' => [ '--field=url', '--number=-1', '--format=json' ],
+				]
+			);
+
+			$cache->write( $cache_key, $result );
+		}
+
+		/**
+		 * @var string[]|null $urls
+		 */
+		$urls = json_decode( (string) $result, true );
+
+		return is_array( $urls ) ? $urls : [];
 	}
 
 	/**
