@@ -33,7 +33,7 @@ Feature: Skipping plugins
       """
 
     # Can specify multiple plugins to skip
-    When I try `wp eval --skip-plugins=sample-plugin,akismet "echo sample_plugin();"`
+    When I try `WP_CLI_ERROR_RERUN=no wp eval --skip-plugins=sample-plugin,akismet "echo sample_plugin();"`
     Then STDERR should contain:
       """
       Call to undefined function sample_plugin()
@@ -57,7 +57,7 @@ Feature: Skipping plugins
       """
 
     When I run `wp plugin activate sample-plugin`
-    And I try `wp eval "echo sample_plugin();"`
+    And I try `WP_CLI_ERROR_RERUN=no wp eval "echo sample_plugin();"`
     Then STDERR should contain:
       """
       Call to undefined function sample_plugin()
@@ -72,7 +72,7 @@ Feature: Skipping plugins
       """
 
     When I run `wp plugin activate sample-plugin`
-    And I try `wp eval "echo sample_plugin();"`
+    And I try `WP_CLI_ERROR_RERUN=no wp eval "echo sample_plugin();"`
     Then STDERR should contain:
       """
       Call to undefined function sample_plugin()

@@ -38,7 +38,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       call_to_undefined_function();
       """
 
-    When I try `wp plugin list < session_yes`
+    When I try `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
     Then STDERR should contain:
       """
       critical error
@@ -74,7 +74,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       trigger_error('Fatal error', E_USER_ERROR);
       """
 
-    When I try `wp plugin list < session_yes`
+    When I try `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
     Then STDERR should contain:
       """
       critical error
@@ -92,7 +92,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       call_to_undefined_mu_function();
       """
 
-    When I try `wp plugin list < session_yes`
+    When I try `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
     Then STDERR should contain:
       """
       critical error
@@ -134,7 +134,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       call_to_undefined_theme_function();
       """
 
-    When I try `wp theme list < session_yes`
+    When I try `WP_CLI_ERROR_RERUN=prompt wp theme list < session_yes`
     Then STDERR should contain:
       """
       critical error
@@ -145,7 +145,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
 
   Scenario: No suggestion for errors outside plugins/themes
-    When I try `wp eval "call_to_undefined_function();" < session_yes`
+    When I try `WP_CLI_ERROR_RERUN=prompt wp eval "call_to_undefined_function();" < session_yes`
     Then STDERR should contain:
       """
       This error may have been caused by a theme or plugin
@@ -177,7 +177,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       $var = "test"
       """
 
-    When I try `wp plugin list < session_yes`
+    When I try `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
     Then STDERR should contain:
       """
       critical error
@@ -195,7 +195,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       $var = "test"
       """
 
-    When I try `wp plugin list < session_yes`
+    When I try `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
     Then STDERR should contain:
       """
       critical error
@@ -205,7 +205,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       --skip-plugins=syntax-error-mu-plugin
       """
 
-  Scenario: Automatic rerun with WP_CLI_SKIP_PROMPT=no disables prompting
+  Scenario: Automatic rerun with WP_CLI_ERROR_RERUN=no disables prompting
     Given a wp-content/plugins/broken-plugin/broken-plugin.php file:
       """
       <?php
@@ -230,7 +230,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       call_to_undefined();
       """
 
-    When I try `WP_CLI_SKIP_PROMPT=no wp plugin list`
+    When I try `WP_CLI_ERROR_RERUN=no wp plugin list`
     Then STDERR should contain:
       """
       --skip-plugins=broken-plugin
@@ -240,3 +240,38 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       Would you like to run the command again
       """
 
+
+  Scenario: Automatic rerun with WP_CLI_ERROR_RERUN=yes automatically reruns without prompting
+    Given a wp-content/plugins/broken-plugin-yes/broken-plugin-yes.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Broken Plugin Yes
+       */
+      // Working initially
+      """
+
+    When I run `wp plugin activate broken-plugin-yes`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    Given a wp-content/plugins/broken-plugin-yes/broken-plugin-yes.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Broken Plugin Yes
+       */
+      call_to_undefined_yes();
+      """
+
+    When I try `WP_CLI_ERROR_RERUN=yes wp plugin list`
+    Then STDOUT should contain:
+      """
+      Rerunning command with --skip-plugins=broken-plugin-yes...
+      """
+    And STDERR should not contain:
+      """
+      Would you like to run the command again
+      """
