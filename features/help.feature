@@ -1327,7 +1327,7 @@ Feature: Get help about WP-CLI commands
       """
     And I run `wp plugin activate test-cli`
 
-    When I run `wp help test-multiline clear-cloudflare-cache`
+    When I run `COLUMNS=80 wp help test-multiline clear-cloudflare-cache`
     Then STDOUT should contain:
       """
       DESCRIPTION
@@ -1379,7 +1379,7 @@ Feature: Get help about WP-CLI commands
       """
     And I run `wp plugin activate test-cli`
 
-    When I run `wp help test-multiline noalias`
+    When I run `COLUMNS=80 wp help test-multiline noalias`
     Then STDOUT should contain:
       """
       DESCRIPTION

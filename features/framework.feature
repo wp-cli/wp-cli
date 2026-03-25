@@ -397,6 +397,7 @@ Feature: Load WP-CLI
       """
     And STDOUT should be empty
 
+  @skip-object-cache
   Scenario: Show potential table prefixes when site isn't found, single site.
     Given a WP installation
     And "$table_prefix = 'wp_';" replaced with "$table_prefix = 'cli_';" in the wp-config.php file
