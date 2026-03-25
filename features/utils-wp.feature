@@ -831,6 +831,7 @@ Feature: Utilities that depend on WordPress code
       wp_users
       """
 
+  @skip-object-cache
   Scenario: Get cache type - Default
     Given a WP installation
     And a cache_type_test.php file:
@@ -845,6 +846,23 @@ Feature: Utilities that depend on WordPress code
     Then STDOUT should be:
       """
       Default
+      """
+
+  @require-object-cache
+  Scenario: Get cache type - Default
+    Given a WP installation
+    And a cache_type_test.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'cache-type-test', function() {
+        echo WP_CLI\Utils\wp_get_cache_type();
+      } );
+      """
+
+    When I run `wp --require=cache_type_test.php cache-type-test`
+    Then STDOUT should be:
+      """
+      Unknown: WP_Object_Cache
       """
 
   Scenario: Get cache type - Unknown custom cache
