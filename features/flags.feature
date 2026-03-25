@@ -390,10 +390,10 @@ Feature: Global flags
       """
 
   Scenario: Strict args mode should be passed on to ssh
-    When I try `WP_CLI_STRICT_ARGS_MODE=1 wp --debug --ssh=/ --version`
+    When I try `WP_CLI_STRICT_ARGS_MODE=1 wp --debug --ssh=/ --ssh-args="-o BatchMode=yes" --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv '' 'WP_CLI_STRICT_ARGS_MODE=1 wp
+      Running SSH command: ssh '-o BatchMode=yes' -T -vvv '' 'WP_CLI_STRICT_ARGS_MODE=1 wp
       """
 
   Scenario: SSH flag should support changing directories
