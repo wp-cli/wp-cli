@@ -39,6 +39,3 @@ jobs:
         uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4
         env:
           COMPOSER_ROOT_VERSION: dev-${{ github.event.repository.default_branch }}
-        with:
-          # Bust the cache at least once a month - output format: YYYY-MM.
-          custom-cache-suffix: $(date -u "+%Y-%m")
