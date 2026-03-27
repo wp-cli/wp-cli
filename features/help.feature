@@ -1278,6 +1278,7 @@ Feature: Get help about WP-CLI commands
         [2] http://wp-cli.org/
       """
 
+  @skip-windows
   Scenario Outline: Check that proc_open() and proc_close() aren't disabled for help pager
     Given an empty directory
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} help --debug`

@@ -306,6 +306,7 @@ Feature: Run a WP-CLI command
       | --no-launch |
       | --launch    |
 
+  @skip-windows
   Scenario Outline: Check that proc_open() and proc_close() aren't disabled for launch
     Given a WP installation
 

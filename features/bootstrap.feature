@@ -499,6 +499,7 @@ Feature: Bootstrap WP-CLI
       """
     And the return code should be 0
 
+  @skip-windows
   Scenario: Allow disabling ini_set()
     Given an empty directory
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=ini_set} cli info`

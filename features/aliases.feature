@@ -766,6 +766,7 @@ Feature: Create shortcuts to specific WordPress installs
       --alias=bar core is-installed --allow-root --debug
       """
 
+  @skip-windows
   Scenario Outline: Check that proc_open() and proc_close() aren't disabled for grouped aliases
     Given a WP installation in 'foo'
     And a WP installation in 'bar'
