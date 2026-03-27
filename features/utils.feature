@@ -1,6 +1,6 @@
 Feature: Utilities that do NOT depend on WordPress code
 
-  @require-mysql
+  @require-mysql @skip-windows
   Scenario Outline: Check that `proc_open()` and `proc_close()` aren't disabled for `Utils\run_mysql_command()`
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} --skip-wordpress eval "WP_CLI\Utils\run_mysql_command( null, array() );"`
     Then STDERR should contain:
@@ -15,6 +15,7 @@ Feature: Utilities that do NOT depend on WordPress code
       | proc_open  |
       | proc_close |
 
+  @skip-windows
   Scenario Outline: Check that `proc_open()` and `proc_close()` aren't disabled for `Utils\launch_editor_for_input()`
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} --skip-wordpress eval "WP_CLI\Utils\launch_editor_for_input( null, null );"`
     Then STDERR should contain:
