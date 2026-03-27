@@ -204,6 +204,7 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -i 'identityfile.key' -T -vvv
       """
 
+  @skip-windows @skip-macos
   Scenario: Vagrant SSH disables strict host key checking
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
