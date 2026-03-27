@@ -174,6 +174,7 @@ Feature: Create shortcuts to specific WordPress installs
       Error: No alias found with key '@someotherfoo'.
       """
 
+  @skip-windows @skip-macos
   Scenario: Adds proxyjump to ssh command
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -189,6 +190,7 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -J 'proxyhost' -T -vvv
       """
 
+  @skip-windows @skip-macos
   Scenario: Adds key to ssh command
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -219,6 +221,7 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -T -vvv '' 'wp --debug --version'
       """
 
+  @skip-windows @skip-macos
   Scenario: SSH alias expands tilde in path
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -237,6 +240,7 @@ Feature: Create shortcuts to specific WordPress installs
       sites/example.com/www
       """
 
+  @skip-windows @skip-macos
   Scenario: Connection-specific properties are not passed to remote WP-CLI
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -257,6 +261,7 @@ Feature: Create shortcuts to specific WordPress installs
       WP_CLI_RUNTIME_ALIAS
       """
 
+  @skip-windows @skip-macos
   Scenario: WordPress-specific properties are passed to remote WP-CLI
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -277,6 +282,7 @@ Feature: Create shortcuts to specific WordPress installs
       @foo
       """
 
+  @skip-windows @skip-macos
   Scenario: SSH commands should not be double-escaped
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -291,6 +297,7 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; wp plugin list --debug'
       """
 
+  @skip-windows @skip-macos
   Scenario: SSH commands correctly escape arguments with spaces
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -305,6 +312,7 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; wp post create --post_title=My Title
       """
 
+  @skip-windows @skip-macos
   Scenario: Uses env command for runtime alias with separate path line
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -324,6 +332,7 @@ Feature: Create shortcuts to specific WordPress installs
       wp @foo
       """
 
+  @skip-windows @skip-macos
   Scenario: Two aliases with same SSH host but different paths generate different remote commands
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -356,6 +365,7 @@ Feature: Create shortcuts to specific WordPress installs
       \/path\/to\/production
       """
 
+  @skip-windows @skip-macos
   Scenario: Properly escapes single quotes in runtime alias path
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
