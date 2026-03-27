@@ -389,6 +389,7 @@ Feature: Global flags
       Error: RESTful WP-CLI needs to be installed. Try 'wp package install wp-cli/restful'.
       """
 
+  @skip-windows @skip-macos
   Scenario: Strict args mode should be passed on to ssh
     When I try `WP_CLI_STRICT_ARGS_MODE=1 wp --debug --ssh=/ --ssh-args="-o BatchMode=yes" --version`
     Then STDERR should contain:
@@ -396,6 +397,7 @@ Feature: Global flags
       Running SSH command: ssh '-o BatchMode=yes' -T -vvv '' 'WP_CLI_STRICT_ARGS_MODE=1 wp
       """
 
+  @skip-windows @skip-macos
   Scenario: SSH flag should support changing directories
     When I try `wp --debug --ssh=wordpress:/my/path --version`
     Then STDERR should contain:
@@ -403,6 +405,7 @@ Feature: Global flags
       Running SSH command: ssh -T -vvv 'wordpress' 'cd '\''/my/path'\''; wp
       """
 
+  @skip-windows @skip-macos
   Scenario: SSH flag should support Docker
     When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp --debug --ssh=docker:user@wordpress --version`
     Then STDERR should contain:
@@ -410,6 +413,7 @@ Feature: Global flags
       Running SSH command: docker exec --user 'user' 'wordpress' sh -c
       """
 
+  @skip-windows @skip-macos
   Scenario: SSH args should be passed to SSH command
     When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --version`
     Then STDERR should contain:
@@ -417,6 +421,7 @@ Feature: Global flags
       Running SSH command: ssh '-o ConnectTimeout=5' -T -vvv 'wordpress' 'wp
       """
 
+  @skip-windows @skip-macos
   Scenario: Multiple SSH args should be passed to SSH command
     When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --ssh-args="-o ServerAliveInterval=10" --version`
     Then STDERR should contain:
@@ -424,6 +429,7 @@ Feature: Global flags
       Running SSH command: ssh '-o ConnectTimeout=5' '-o ServerAliveInterval=10' -T -vvv 'wordpress' 'wp
       """
 
+  @skip-windows @skip-macos
   Scenario: SSH args should be passed to Docker command
     When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp --debug --ssh=docker:wordpress --ssh-args="--env MY_VAR=value" --version`
     Then STDERR should contain:
