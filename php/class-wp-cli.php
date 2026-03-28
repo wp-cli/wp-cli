@@ -1181,30 +1181,51 @@ class WP_CLI {
 	 * @param array $assoc_args Arguments passed to the command, determining format.
 	 */
 	public static function print_value( $value, $assoc_args = [] ) {
-		$_value = '';
-		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
-			$_value = json_encode( $value );
-		} elseif ( Utils\get_flag_value( $assoc_args, 'format' ) === 'yaml' ) {
+		$format = Utils\get_flag_value( $assoc_args, 'format' );
+		if ( 'json' === $format ) {
+			$encoded = json_encode( $value );
+			$output  = false === $encoded ? '' : $encoded;
+		} elseif ( 'yaml' === $format ) {
 			/**
 			 * @var array $value
 			 */
-			$_value = Spyc::YAMLDump( $value, 2, 0 );
-		} elseif ( in_array( Utils\get_flag_value( $assoc_args, 'format' ), [ 'var_export', 'plaintext' ], true ) ) {
+			$output = Spyc::YAMLDump( $value, 2, 0 );
+		} elseif ( in_array( $format, [ 'var_export', 'plaintext' ], true ) ) {
 			if ( is_array( $value ) || is_object( $value ) ) {
-				$_value = var_export( $value, true );
+				$output = var_export( $value, true );
 			} else {
-				$_value = $value;
+				$output = self::scalar_to_print_string( $value );
 			}
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
-			$_value = var_export( $value, true );
+			$output = var_export( $value, true );
 		} else {
-			/**
-			 * @var string|int $_value
-			 */
-			$_value = $value;
+			$output = self::scalar_to_print_string( $value );
 		}
 
-		echo $_value . "\n";
+		echo $output . "\n";
+	}
+
+	/**
+	 * String for print_value when the value is not JSON/YAML/var_export(array|object).
+	 *
+	 * @param mixed $value Value to stringify.
+	 * @return string
+	 */
+	private static function scalar_to_print_string( $value ): string {
+		if ( is_string( $value ) ) {
+			return $value;
+		}
+		if ( is_int( $value ) || is_float( $value ) ) {
+			return (string) $value;
+		}
+		if ( is_bool( $value ) ) {
+			return $value ? '1' : '';
+		}
+		if ( null === $value ) {
+			return '';
+		}
+
+		return var_export( $value, true );
 	}
 
 	/**
