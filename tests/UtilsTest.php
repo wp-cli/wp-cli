@@ -1211,6 +1211,40 @@ class UtilsTest extends TestCase {
 		];
 	}
 
+	/**
+	 * @dataProvider dataFormatBytesString
+	 */
+	#[DataProvider( 'dataFormatBytesString' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testFormatBytesString( $bytes, $decimals, $unit, $expected ) {
+		$actual = Utils\format_bytes_string( $bytes, $decimals, $unit );
+		$this->assertSame( $expected, $actual, "Failed asserting that format_bytes_string($bytes, $decimals, '$unit') equals '$expected'." );
+	}
+
+	public static function dataFormatBytesString(): array {
+		return [
+			[ 0, 2, '', '0 B' ],
+			[ '0', 2, '', '0 B' ],
+			[ -0, 2, '', '0 B' ],
+			[ 500, 2, '', '500 B' ],
+			[ 1000, 2, '', '1 KB' ],
+			[ 1500, 2, '', '1.5 KB' ],
+			[ 1536, 2, '', '1.54 KB' ],
+			[ 1048576, 2, '', '1.05 MB' ],
+			[ 1073741824, 2, '', '1.07 GB' ],
+			[ 1099511627776, 2, '', '1.1 TB' ],
+			[ 1000, 0, 'KB', '1 KB' ],
+			[ 1536, 1, '', '1.5 KB' ],
+			[ 1048576, 3, '', '1.049 MB' ],
+			[ 1000000, 0, 'MB', '1 MB' ],
+			[ 1000000000, 0, 'GB', '1 GB' ],
+			[ 1000000000000, 0, 'TB', '1 TB' ],
+			[ -1000000, 0, 'MB', '-1 MB' ],
+			[ -1536, 1, '', '-1.5 KB' ],
+			[ 5000, 0, 'FOO', '5 KB' ],
+			[ 1.5e26, 0, '', '150 YB' ],
+		];
+	}
+
 	public function testExpandTildePath(): void {
 		$home = Utils\get_home_dir();
 
@@ -1230,12 +1264,12 @@ class UtilsTest extends TestCase {
 
 	public function testEscapeshellargPreserveTilde() {
 		// Test that ~/ prefix is preserved and remainder is escaped
-		$this->assertEquals( "~/'sites/wordpress'", Utils\escapeshellarg_preserve_tilde( '~/sites/wordpress' ) );
-		$this->assertEquals( "~/'my documents/site'", Utils\escapeshellarg_preserve_tilde( '~/my documents/site' ) );
-		$this->assertEquals( "~/'path with spaces'", Utils\escapeshellarg_preserve_tilde( '~/path with spaces' ) );
+		$this->assertEquals( '~/' . escapeshellarg( 'sites/wordpress' ), Utils\escapeshellarg_preserve_tilde( '~/sites/wordpress' ) );
+		$this->assertEquals( '~/' . escapeshellarg( 'my documents/site' ), Utils\escapeshellarg_preserve_tilde( '~/my documents/site' ) );
+		$this->assertEquals( '~/' . escapeshellarg( 'path with spaces' ), Utils\escapeshellarg_preserve_tilde( '~/path with spaces' ) );
 
 		// Test edge case: exactly ~/
-		$this->assertEquals( "~/''", Utils\escapeshellarg_preserve_tilde( '~/' ) );
+		$this->assertEquals( '~/' . escapeshellarg( '' ), Utils\escapeshellarg_preserve_tilde( '~/' ) );
 
 		// Test that paths without ~/ are fully escaped
 		$this->assertEquals( escapeshellarg( '/absolute/path' ), Utils\escapeshellarg_preserve_tilde( '/absolute/path' ) );

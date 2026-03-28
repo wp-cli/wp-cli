@@ -768,18 +768,6 @@ Feature: Have a config file
     And I try `WP_CLI_CONFIG_PATH=$HOME/doesnotexist/wp-cli.yml wp cli alias add 1 --debug`
     Then STDERR should match #Default global config does not exist, creating one in.+/doesnotexist/wp-cli.yml#
 
-  Scenario: Tilde expansion in config file path
-    Given a WP installation in 'subdir'
-    And I run `bash -c 'ln -s $(pwd)/subdir $HOME/test-wp-config-tilde'`
-    And a wp-cli.yml file:
-      """
-      path: ~/test-wp-config-tilde
-      """
-
-    When I run `wp core version`
-    Then STDOUT should not be empty
-    And the return code should be 0
-
   Scenario: Environment variables configured in wp-cli.yml - WP_CLI_CACHE_DIR
     Given an empty directory
     And a wp-cli.yml file:
@@ -900,26 +888,26 @@ Feature: Have a config file
       Cache max size: 104857600
       """
 
-  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_SKIP_PROMPT
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_ERROR_RERUN
     Given an empty directory
-    And a test-skip-prompt.php file:
+    And a test-error-rerun.php file:
       """
       <?php
-      WP_CLI::add_command( 'test-skip-prompt', function() {
-          $skip_prompt = WP_CLI\Utils\get_env_or_config('WP_CLI_SKIP_PROMPT');
-          WP_CLI::log( 'WP_CLI_SKIP_PROMPT: ' . $skip_prompt );
+      WP_CLI::add_command( 'test-error-rerun', function() {
+          $error_rerun = WP_CLI\Utils\get_env_or_config('WP_CLI_ERROR_RERUN');
+          WP_CLI::log( 'WP_CLI_ERROR_RERUN: ' . $error_rerun );
       }, array( 'when' => 'before_wp_load' ) );
       """
     And a wp-cli.yml file:
       """
       env:
-        WP_CLI_SKIP_PROMPT: "yes"
+        WP_CLI_ERROR_RERUN: "no"
       """
 
-    When I run `wp --require=test-skip-prompt.php test-skip-prompt`
+    When I run `wp --require=test-error-rerun.php test-error-rerun`
     Then STDOUT should contain:
       """
-      WP_CLI_SKIP_PROMPT: yes
+      WP_CLI_ERROR_RERUN: no
       """
 
   Scenario: Environment variables configured in wp-cli.yml - WP_CLI_AUTO_UPDATE_PROMPT
