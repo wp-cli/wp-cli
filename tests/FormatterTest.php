@@ -20,6 +20,7 @@ class FormatterTest extends TestCase {
 		ob_start();
 		$formatter->display_items( $items );
 		$out = ob_get_clean();
+		$this->assertIsString( $out );
 		$this->assertStringStartsWith( 'array (', $out );
 		$this->assertStringContainsString( "'label' => 'Foo'", $out );
 		$this->assertStringContainsString( "'slug' => 'foo'", $out );
@@ -40,6 +41,7 @@ class FormatterTest extends TestCase {
 		ob_start();
 		$formatter->display_items( $items );
 		$out = ob_get_clean();
+		$this->assertIsString( $out );
 		$this->assertStringStartsWith( 'array (', $out );
 		$this->assertStringContainsString( "'label' => 'Bar'", $out );
 	}
@@ -57,7 +59,9 @@ class FormatterTest extends TestCase {
 		$formatter = new Formatter( $assoc_args );
 		ob_start();
 		$formatter->display_item( $item );
-		$this->assertSame( "one\n", ob_get_clean() );
+		$out = ob_get_clean();
+		$this->assertIsString( $out );
+		$this->assertSame( "one\n", $out );
 	}
 
 	public function testDisplayItemAllFieldsVarExport(): void {
@@ -73,6 +77,7 @@ class FormatterTest extends TestCase {
 		ob_start();
 		$formatter->display_item( $item );
 		$out = ob_get_clean();
+		$this->assertIsString( $out );
 		$this->assertStringContainsString( "'label' => 'Z'", $out );
 		$this->assertStringContainsString( "'slug' => 'z'", $out );
 	}
