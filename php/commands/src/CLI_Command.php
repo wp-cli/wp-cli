@@ -784,6 +784,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * default: json
 	 * options:
 	 *   - var_export
+	 *   - plaintext
 	 *   - json
 	 * ---
 	 *

@@ -1189,11 +1189,13 @@ class WP_CLI {
 			 * @var array $value
 			 */
 			$_value = Spyc::YAMLDump( $value, 2, 0 );
-		} elseif (
-			in_array( Utils\get_flag_value( $assoc_args, 'format' ), [ 'var_export', 'plaintext' ], true )
-			|| is_array( $value )
-			|| is_object( $value )
-		) {
+		} elseif ( in_array( Utils\get_flag_value( $assoc_args, 'format' ), [ 'var_export', 'plaintext' ], true ) ) {
+			if ( is_array( $value ) || is_object( $value ) ) {
+				$_value = var_export( $value, true );
+			} else {
+				$_value = $value;
+			}
+		} elseif ( is_array( $value ) || is_object( $value ) ) {
 			$_value = var_export( $value, true );
 		} else {
 			/**
