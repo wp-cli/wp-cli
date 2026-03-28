@@ -9,7 +9,7 @@ class FormatterTest extends TestCase {
 		$items = [
 			[
 				'label' => 'Foo',
-				'slug'  => 'foo',
+				'slug' => 'foo',
 			],
 		];
 		$assoc_args = [
@@ -30,7 +30,7 @@ class FormatterTest extends TestCase {
 		$items = [
 			[
 				'label' => 'Bar',
-				'slug'  => 'bar',
+				'slug' => 'bar',
 			],
 		];
 		$assoc_args = [
@@ -49,12 +49,12 @@ class FormatterTest extends TestCase {
 	public function testDisplayItemSingleVarExportFormat(): void {
 		$item = [
 			'label' => 'One',
-			'slug'  => 'one',
+			'slug' => 'one',
 		];
 		$assoc_args = [
 			'format' => 'var_export',
 			'fields' => 'label,slug',
-			'field'  => 'slug',
+			'field' => 'slug',
 		];
 		$formatter = new Formatter( $assoc_args );
 		ob_start();
@@ -67,7 +67,7 @@ class FormatterTest extends TestCase {
 	public function testDisplayItemAllFieldsVarExport(): void {
 		$item = [
 			'label' => 'Z',
-			'slug'  => 'z',
+			'slug' => 'z',
 		];
 		$assoc_args = [
 			'format' => 'var_export',
