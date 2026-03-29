@@ -294,8 +294,7 @@ class Runner {
 		} else {
 			$packages_dir = Path::get_home_dir() . DIRECTORY_SEPARATOR . '.wp-cli' . DIRECTORY_SEPARATOR . 'packages' . DIRECTORY_SEPARATOR;
 		}
-		$real_path = realpath( $packages_dir );
-		return $real_path ?: $packages_dir;
+		return $packages_dir;
 	}
 
 	/**
