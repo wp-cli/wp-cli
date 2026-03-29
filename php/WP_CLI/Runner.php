@@ -292,9 +292,10 @@ class Runner {
 		if ( $packages_dir ) {
 			$packages_dir = Path::trailingslashit( $packages_dir );
 		} else {
-			$packages_dir = Path::get_home_dir() . '/.wp-cli/packages/';
+			$packages_dir = Path::get_home_dir() . DIRECTORY_SEPARATOR . '.wp-cli' . DIRECTORY_SEPARATOR . 'packages' . DIRECTORY_SEPARATOR;
 		}
-		return $packages_dir;
+		$real_path = realpath( $packages_dir );
+		return $real_path ?: $packages_dir;
 	}
 
 	/**
