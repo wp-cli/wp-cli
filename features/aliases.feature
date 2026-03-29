@@ -577,14 +577,14 @@ Feature: Create shortcuts to specific WordPress installs
         path: bar
       """
 
-    When I run `wp @foo option update home 'http://apple.com'`
+    When I run `wp @foo option update home "http://apple.com"`
     And I run `wp @foo option get home`
     Then STDOUT should contain:
       """
       http://apple.com
       """
 
-    When I run `wp @bar option update home 'http://google.com'`
+    When I run `wp @bar option update home "http://google.com"`
     And I run `wp @bar option get home`
     Then STDOUT should contain:
       """
@@ -624,14 +624,14 @@ Feature: Create shortcuts to specific WordPress installs
         path: bar
       """
 
-    When I run `wp @foo option update home 'http://apple.com'`
+    When I run `wp @foo option update home "http://apple.com"`
     And I run `wp @foo option get home`
     Then STDOUT should contain:
       """
       http://apple.com
       """
 
-    When I run `wp @bar option update home 'http://google.com'`
+    When I run `wp @bar option update home "http://google.com"`
     And I run `wp @bar option get home`
     Then STDOUT should contain:
       """
@@ -987,14 +987,14 @@ Feature: Create shortcuts to specific WordPress installs
           - bar
       """
 
-    When I run `wp --alias=foo option update home 'http://apple.com'`
+    When I run `wp --alias=foo option update home "http://apple.com"`
     And I run `wp --alias=foo option get home`
     Then STDOUT should contain:
       """
       http://apple.com
       """
 
-    When I run `wp --alias=bar option update home 'http://google.com'`
+    When I run `wp --alias=bar option update home "http://google.com"`
     And I run `wp --alias=bar option get home`
     Then STDOUT should contain:
       """
@@ -1051,14 +1051,14 @@ Feature: Create shortcuts to specific WordPress installs
           path: bar
       """
 
-    When I run `wp --alias=foo option update home 'http://apple.com'`
+    When I run `wp --alias=foo option update home "http://apple.com"`
     And I run `wp --alias=foo option get home`
     Then STDOUT should contain:
       """
       http://apple.com
       """
 
-    When I run `wp --alias=bar option update home 'http://google.com'`
+    When I run `wp --alias=bar option update home "http://google.com"`
     And I run `wp --alias=bar option get home`
     Then STDOUT should contain:
       """
@@ -1109,8 +1109,8 @@ Feature: Create shortcuts to specific WordPress installs
         path: bar
       """
 
-    When I run `wp @foo option update home 'http://parallel-foo.com'`
-    And I run `wp @bar option update home 'http://parallel-bar.com'`
+    When I run `wp @foo option update home "http://parallel-foo.com"`
+    And I run `wp @bar option update home "http://parallel-bar.com"`
     And I run `WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both option get home`
     Then STDOUT should contain:
       """
@@ -1184,8 +1184,8 @@ Feature: Create shortcuts to specific WordPress installs
       <?php echo get_option( 'home' ) . "\n";
       """
 
-    When I run `wp @foo option update home 'http://foo.example.com'`
-    And I run `wp @bar option update home 'http://bar.example.com'`
+    When I run `wp @foo option update home "http://foo.example.com"`
+    And I run `wp @bar option update home "http://bar.example.com"`
     And I run `cat stdin.php | wp @both eval-file -`
     Then STDOUT should contain:
       """
@@ -1214,8 +1214,8 @@ Feature: Create shortcuts to specific WordPress installs
       <?php echo get_option( 'home' ) . "\n";
       """
 
-    When I run `wp @foo option update home 'http://foo.example.com'`
-    And I run `wp @bar option update home 'http://bar.example.com'`
+    When I run `wp @foo option update home "http://foo.example.com"`
+    And I run `wp @bar option update home "http://bar.example.com"`
     And I run `cat stdin.php | WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both eval-file -`
     Then STDOUT should contain:
       """

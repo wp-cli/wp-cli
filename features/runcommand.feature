@@ -47,7 +47,7 @@ Feature: Run a WP-CLI command
   Scenario Outline: Run a WP-CLI command and render output
     Given a WP installation
 
-    When I run `wp <flag> run 'option get home'`
+    When I run `wp <flag> run "option get home"`
     Then STDOUT should be:
       """
       https://example.com
@@ -65,7 +65,7 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `WP_CLI_CONFIG_PATH=config.yml wp <flag> run 'user get'`
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp <flag> run "user get"`
     Then STDOUT should be:
       """
       admin@example.com
@@ -126,7 +126,7 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `WP_CLI_CONFIG_PATH=config.yml wp --return <flag> run 'user get'`
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp --return <flag> run "user get"`
     Then STDOUT should be:
       """
       returned: 'admin@example.com'
@@ -187,7 +187,7 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp <flag> --no-exit_error run 'option pluck foo$bar barfoo'`
+    When I run `wp <flag> --no-exit_error run "option pluck foo$bar barfoo"`
     Then STDOUT should be:
       """
       returned: NULL
@@ -241,7 +241,7 @@ Feature: Run a WP-CLI command
 
     # Allow for composer/ca-bundle using `openssl_x509_parse()` which throws PHP warnings on old versions of PHP.
     When I try `wp package install wp-cli/scaffold-package-command`
-    And I run `wp <flag> run 'help scaffold package'`
+    And I run `wp <flag> run "help scaffold package"`
     Then STDOUT should contain:
       """
       wp scaffold package <name>
@@ -256,7 +256,7 @@ Feature: Run a WP-CLI command
   Scenario Outline: Persists global parameters when supplied interactively
     Given a WP installation in 'foo'
 
-    When I run `wp <flag> --path=foo run 'config set test 42 --type=constant'`
+    When I run `wp <flag> --path=foo run "config set test 42 --type=constant"`
     Then STDOUT should be:
       """
       Success: Added the constant 'test' to the 'wp-config.php' file with the value '42'.
@@ -281,7 +281,7 @@ Feature: Run a WP-CLI command
         - command.php
       """
 
-    When I run `wp @foo --launch --return run 'option get home'`
+    When I run `wp @foo --launch --return run "option get home"`
     Then STDOUT should be:
       """
       returned: 'https://example.com'
@@ -292,7 +292,7 @@ Feature: Run a WP-CLI command
   Scenario Outline: Apply backwards compat conversions
     Given a WP installation
 
-    When I run `wp <flag> run 'term url category 1'`
+    When I run `wp <flag> run "term url category 1"`
     Then STDOUT should be:
       """
       https://example.com/?cat=1
@@ -310,7 +310,7 @@ Feature: Run a WP-CLI command
   Scenario Outline: Check that proc_open() and proc_close() aren't disabled for launch
     Given a WP installation
 
-    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} --launch run 'option get home'`
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} --launch run "option get home"`
     Then STDERR should contain:
       """
       Error: Cannot do 'launch option': The PHP functions `proc_open()` and/or `proc_close()` are disabled
@@ -400,7 +400,7 @@ Feature: Run a WP-CLI command
       test
       """
 
-    When I run `WP_CLI_REQUIRE='env.php,env-2.php' wp --require=custom-cmd.php custom-command echo_test`
+    When I run `WP_CLI_REQUIRE="env.php,env-2.php" wp --require=custom-cmd.php custom-command echo_test`
     Then STDOUT should be:
       """
       ENVIRONMENT REQUIRE
