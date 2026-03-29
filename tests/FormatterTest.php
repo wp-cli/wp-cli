@@ -13,8 +13,8 @@ class FormatterTest extends TestCase {
 			],
 		];
 		$assoc_args = [
-			'format' => 'var_export',
 			'fields' => 'label,slug',
+			'format' => 'var_export',
 		];
 		$formatter = new Formatter( $assoc_args );
 		ob_start();
@@ -34,8 +34,8 @@ class FormatterTest extends TestCase {
 			],
 		];
 		$assoc_args = [
-			'format' => 'plaintext',
 			'fields' => 'label,slug',
+			'format' => 'plaintext',
 		];
 		$formatter = new Formatter( $assoc_args );
 		ob_start();
@@ -52,9 +52,9 @@ class FormatterTest extends TestCase {
 			'slug' => 'one',
 		];
 		$assoc_args = [
-			'format' => 'var_export',
-			'fields' => 'label,slug',
 			'field' => 'slug',
+			'fields' => 'label,slug',
+			'format' => 'var_export',
 		];
 		$formatter = new Formatter( $assoc_args );
 		ob_start();
@@ -70,8 +70,8 @@ class FormatterTest extends TestCase {
 			'slug' => 'z',
 		];
 		$assoc_args = [
-			'format' => 'var_export',
 			'fields' => 'label,slug',
+			'format' => 'var_export',
 		];
 		$formatter = new Formatter( $assoc_args );
 		ob_start();
