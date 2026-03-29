@@ -23,8 +23,7 @@ class WPCLITest extends TestCase {
 				'format' => 'json',
 			]
 		);
-		$out = ob_get_clean();
-		$this->assertIsString( $out );
+		$out = $this->capture_stdout();
 		$this->assertSame( '"hello"' . "\n", $out );
 	}
 
@@ -36,8 +35,7 @@ class WPCLITest extends TestCase {
 				'format' => 'var_export',
 			]
 		);
-		$out = ob_get_clean();
-		$this->assertIsString( $out );
+		$out = $this->capture_stdout();
 		$this->assertSame( 'https://example.com' . "\n", $out );
 	}
 
@@ -49,8 +47,7 @@ class WPCLITest extends TestCase {
 				'format' => 'plaintext',
 			]
 		);
-		$out = ob_get_clean();
-		$this->assertIsString( $out );
+		$out = $this->capture_stdout();
 		$this->assertSame( 'https://example.com' . "\n", $out );
 	}
 
@@ -64,8 +61,7 @@ class WPCLITest extends TestCase {
 				'format' => 'var_export',
 			]
 		);
-		$out = ob_get_clean();
-		$this->assertIsString( $out );
+		$out = $this->capture_stdout();
 		$this->assertStringContainsString( "'a' => 1", $out );
 		$this->assertStringStartsWith( 'array (', $out );
 	}
@@ -80,8 +76,7 @@ class WPCLITest extends TestCase {
 				'format' => 'yaml',
 			]
 		);
-		$out = ob_get_clean();
-		$this->assertIsString( $out );
+		$out = $this->capture_stdout();
 		$this->assertStringContainsString( 'k:', $out );
 		$this->assertStringContainsString( 'v', $out );
 	}
@@ -94,48 +89,54 @@ class WPCLITest extends TestCase {
 			],
 			[]
 		);
-		$out = ob_get_clean();
-		$this->assertIsString( $out );
+		$out = $this->capture_stdout();
 		$this->assertStringContainsString( "'x' => 'y'", $out );
 	}
 
 	public function testPrintValueIntegerScalar(): void {
 		ob_start();
 		WP_CLI::print_value( 42, [] );
-		$out = ob_get_clean();
-		$this->assertIsString( $out );
+		$out = $this->capture_stdout();
 		$this->assertSame( "42\n", $out );
 	}
 
 	public function testPrintValueFloatScalar(): void {
 		ob_start();
 		WP_CLI::print_value( 1.5, [] );
-		$out = ob_get_clean();
-		$this->assertIsString( $out );
+		$out = $this->capture_stdout();
 		$this->assertSame( "1.5\n", $out );
 	}
 
 	public function testPrintValueBooleanTrue(): void {
 		ob_start();
 		WP_CLI::print_value( true, [] );
-		$out = ob_get_clean();
-		$this->assertIsString( $out );
+		$out = $this->capture_stdout();
 		$this->assertSame( "1\n", $out );
 	}
 
 	public function testPrintValueBooleanFalse(): void {
 		ob_start();
 		WP_CLI::print_value( false, [] );
-		$out = ob_get_clean();
-		$this->assertIsString( $out );
+		$out = $this->capture_stdout();
 		$this->assertSame( "\n", $out );
 	}
 
 	public function testPrintValueNull(): void {
 		ob_start();
 		WP_CLI::print_value( null, [] );
+		$out = $this->capture_stdout();
+		$this->assertSame( "\n", $out );
+	}
+
+	/**
+	 * Normalize captured stdout for Windows (CRLF → LF).
+	 *
+	 * @return string
+	 */
+	private function capture_stdout(): string {
 		$out = ob_get_clean();
 		$this->assertIsString( $out );
-		$this->assertSame( "\n", $out );
+
+		return str_replace( [ "\r\n", "\r" ], "\n", $out );
 	}
 }
