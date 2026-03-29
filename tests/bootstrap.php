@@ -11,11 +11,7 @@ if ( file_exists( WP_CLI_ROOT . '/vendor/autoload.php' ) ) {
 }
 
 require_once WP_CLI_VENDOR_DIR . '/autoload.php';
-
-$wp_cli_tests_test_case = WP_CLI_VENDOR_DIR . '/wp-cli/wp-cli-tests/tests/includes/TestCase.php';
-if ( is_readable( $wp_cli_tests_test_case ) ) {
-	require_once $wp_cli_tests_test_case;
-}
+require_once WP_CLI_VENDOR_DIR . '/wp-cli/wp-cli-tests/tests/includes/TestCase.php';
 
 require_once WP_CLI_ROOT . '/php/utils.php';
 require_once WP_CLI_ROOT . '/php/dispatcher.php';

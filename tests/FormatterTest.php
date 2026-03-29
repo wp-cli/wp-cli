@@ -79,7 +79,7 @@ class FormatterTest extends TestCase {
 	}
 
 	/**
-	 * Normalize captured stdout for Windows (CRLF → LF).
+	 * Normalize captured stdout for Windows (CRLF to LF).
 	 *
 	 * @return string
 	 */
