@@ -6,17 +6,17 @@ use WP_CLI\Tests\TestCase;
 class FormatterTest extends TestCase {
 
 	public function testDisplayItemsVarExportFormat(): void {
-		$items = [
+		$items      = [
 			[
 				'label' => 'Foo',
-				'slug' => 'foo',
+				'slug'  => 'foo',
 			],
 		];
 		$assoc_args = [
 			'fields' => 'label,slug',
 			'format' => 'var_export',
 		];
-		$formatter = new Formatter( $assoc_args );
+		$formatter  = new Formatter( $assoc_args );
 		ob_start();
 		$formatter->display_items( $items );
 		$out = ob_get_clean();
@@ -27,17 +27,17 @@ class FormatterTest extends TestCase {
 	}
 
 	public function testDisplayItemsPlaintextFormat(): void {
-		$items = [
+		$items      = [
 			[
 				'label' => 'Bar',
-				'slug' => 'bar',
+				'slug'  => 'bar',
 			],
 		];
 		$assoc_args = [
 			'fields' => 'label,slug',
 			'format' => 'plaintext',
 		];
-		$formatter = new Formatter( $assoc_args );
+		$formatter  = new Formatter( $assoc_args );
 		ob_start();
 		$formatter->display_items( $items );
 		$out = ob_get_clean();
@@ -47,16 +47,16 @@ class FormatterTest extends TestCase {
 	}
 
 	public function testDisplayItemSingleVarExportFormat(): void {
-		$item = [
+		$item       = [
 			'label' => 'One',
-			'slug' => 'one',
+			'slug'  => 'one',
 		];
 		$assoc_args = [
-			'field' => 'slug',
+			'field'  => 'slug',
 			'fields' => 'label,slug',
 			'format' => 'var_export',
 		];
-		$formatter = new Formatter( $assoc_args );
+		$formatter  = new Formatter( $assoc_args );
 		ob_start();
 		$formatter->display_item( $item );
 		$out = ob_get_clean();
@@ -65,15 +65,15 @@ class FormatterTest extends TestCase {
 	}
 
 	public function testDisplayItemAllFieldsVarExport(): void {
-		$item = [
+		$item       = [
 			'label' => 'Z',
-			'slug' => 'z',
+			'slug'  => 'z',
 		];
 		$assoc_args = [
 			'fields' => 'label,slug',
 			'format' => 'var_export',
 		];
-		$formatter = new Formatter( $assoc_args );
+		$formatter  = new Formatter( $assoc_args );
 		ob_start();
 		$formatter->display_item( $item );
 		$out = ob_get_clean();
