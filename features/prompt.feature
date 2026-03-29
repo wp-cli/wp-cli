@@ -412,10 +412,7 @@ Feature: Prompt user for input
       """
 
     When I run `wp test-positional-default --prompt < empty-response`
-    Then STDOUT should contain:
-      """
-      wp test-positional-default 'World'
-      """
+    Then STDOUT should match /wp test-positional-default ["\']World["\']/
     And STDOUT should contain:
       """
       Hello World

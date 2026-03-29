@@ -273,7 +273,7 @@ Feature: Global flags
       require: custom-cmd.php
       """
 
-    When I run `wp --require=custom-cmd.php test req 'This is a custom command.'`
+    When I run `wp --require=custom-cmd.php test req "This is a custom command."`
     Then STDOUT should be:
       """
       foo.php
@@ -281,7 +281,7 @@ Feature: Global flags
       This is a custom command.
       """
 
-    When I run `WP_CLI_CONFIG_PATH=wp-cli2.yml wp test req 'This is a custom command.'`
+    When I run `WP_CLI_CONFIG_PATH=wp-cli2.yml wp test req "This is a custom command."`
     Then STDOUT should contain:
       """
       This is a custom command.

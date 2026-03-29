@@ -344,7 +344,7 @@ class Runner {
 			// Expand tilde to home directory if present
 			$path = Path::expand_tilde( $path );
 			if ( ! Path::is_absolute( $path ) ) {
-				$path = getcwd() . '/' . $path;
+				$path = Path::normalize( getcwd() . '/' . $path );
 			}
 
 			return $path;

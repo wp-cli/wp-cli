@@ -584,7 +584,15 @@ Feature: Load WP-CLI
       );
       """
 
-    When I run `wp eval '$autoloaders = spl_autoload_functions(); $first = $autoloaders[0]; $plugin_index = array_search( "wpcli_test_mu_autoload", $autoloaders, true ); echo ( $plugin_index !== false && 0 !== $plugin_index ) ? "WP-CLI autoloader is first" : "Plugin autoloader is first";'`
+    And a check-autoloaders.php file:
+      """
+      <?php
+      $autoloaders = spl_autoload_functions();
+      $first = $autoloaders[0];
+      $plugin_index = array_search( 'wpcli_test_mu_autoload', $autoloaders, true );
+      echo ( $plugin_index !== false && 0 !== $plugin_index ) ? 'WP-CLI autoloader is first' : 'Plugin autoloader is first';
+      """
+    When I run `wp eval-file check-autoloaders.php`
     Then STDOUT should contain:
       """
       WP-CLI autoloader is first

@@ -56,7 +56,7 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp <flag> run "eval \"echo wp_get_current_user()->user_login . PHP_EOL;\""`
+    When I run `wp <flag> run "eval \"WP_CLI::log( wp_get_current_user()->user_login );\""`
     Then STDOUT should be:
       """
       admin

@@ -19,7 +19,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp @foo core is-installed`
     Then the return code should be 0
 
-    When I run `cd bar; wp @foo core is-installed`
+    When I run `wp @foo core is-installed` from 'bar'
     Then the return code should be 0
 
   Scenario: Error when invalid alias provided
@@ -123,7 +123,7 @@ Feature: Create shortcuts to specific WordPress installs
         path: foo
       """
 
-    When I run `wp eval --skip-wordpress "echo realpath( getenv( 'RUN_DIR' ) );"`
+    When I run `wp eval --skip-wordpress "echo \WP_CLI\Path::normalize( realpath( getenv( 'RUN_DIR' ) ) );"`
     Then save STDOUT as {TEST_DIR}
 
     When I run `wp cli alias list`

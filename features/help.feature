@@ -1224,6 +1224,8 @@ Feature: Get help about WP-CLI commands
         [2] http://wp-cli.org/
       """
 
+  # No vt100 on Windows.
+  @skip-windows
   Scenario: Very long description for top-level command which has reference link display well
     Given a WP installation
     And a command.php file:
