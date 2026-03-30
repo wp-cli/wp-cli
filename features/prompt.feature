@@ -77,7 +77,7 @@ Feature: Prompt user for input
         - command-foobar.php
       """
 
-    When I run `echo 'bar' | wp foobar foo --prompt=flag1`
+    When I run `echo bar | wp foobar foo --prompt=flag1`
     Then the return code should be 0
     And STDERR should be empty
     And STDOUT should contain:
@@ -177,10 +177,10 @@ Feature: Prompt user for input
       post_title,post_name,post_status
       csv
       """
-    When I run `wp post create --post_title='Publish post' --post_content='Publish post content' --post_status='publish'`
+    When I run `wp post create --post_title="Publish post" --post_content="Publish post content" --post_status="publish"`
     Then STDOUT should not be empty
 
-    When I run `wp post create --post_title='Publish post 2' --post_content='Publish post content' --post_status='publish'`
+    When I run `wp post create --post_title="Publish post 2" --post_content="Publish post content" --post_status="publish"`
     Then STDOUT should not be empty
 
     When I run `wp post list --prompt < value-file`
