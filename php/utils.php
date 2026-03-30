@@ -1838,6 +1838,16 @@ function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = n
 	if ( is_windows() ) {
 		// @phpstan-ignore no.private.function
 		$cmd = _proc_open_compat_win_env( $cmd, $env );
+
+		// Normalize forward slashes in the executable name for Windows cmd.exe
+		if ( false !== strpos( $cmd, '/' ) ) {
+			if ( preg_match( '/^("[^"]*"|[^ ]+)/', $cmd, $matches ) ) {
+				$executable = $matches[0];
+				$rest       = substr( $cmd, strlen( $executable ) );
+				$executable = str_replace( '/', '\\', $executable );
+				$cmd        = $executable . $rest;
+			}
+		}
 	}
 	return proc_open( $cmd, $descriptorspec, $pipes, $cwd, $env, $other_options );
 }
