@@ -80,7 +80,10 @@ Feature: Have a config file
     Then STDOUT should be empty
 
     Given an empty other/subdir directory
-    And I run `echo '<?php // Silence is golden' > other/subdir/index.php`
+    And a other/subdir/index.php file:
+      """
+      <?php // Silence is golden
+      """
     And I run `wp core is-installed` from 'other/subdir'
     Then STDOUT should be empty
 

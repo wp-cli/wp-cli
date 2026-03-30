@@ -395,7 +395,8 @@ Feature: Run a WP-CLI command
       The used path is: /bad/path/
       """
 
-  Scenario: Check that required files are used from command arguments and ENV VAR
+  @skip-windows
+  Scenario: Check that required files are used from command arguments and ENV VAR (Unix)
     Given a WP installation
     And a custom-cmd.php file:
       """
@@ -423,40 +424,70 @@ Feature: Run a WP-CLI command
       echo 'ENVIRONMENT REQUIRE 2' . PHP_EOL;
       """
 
-    And a wp-cli.yml file:
-      """
-      env:
-        WP_CLI_REQUIRE: env.php
-      """
-
-    When I run `wp eval "return null;" --skip-wordpress`
+    When I run `WP_CLI_REQUIRE=env.php wp eval "return null;" --skip-wordpress`
     Then STDOUT should be:
       """
       ENVIRONMENT REQUIRE
       """
 
-    # Overwrite config to ensure same env var
-    And a wp-cli.yml file:
-      """
-      env:
-        WP_CLI_REQUIRE: env.php
-      """
-
-    When I run `wp --require=custom-cmd.php custom-command echo_test`
+    When I run `WP_CLI_REQUIRE=env.php wp --require=custom-cmd.php custom-command echo_test`
     Then STDOUT should be:
       """
       ENVIRONMENT REQUIRE
       test
       """
 
-    # Overwrite config for multiple files
-    And a wp-cli.yml file:
+    When I run `WP_CLI_REQUIRE="env.php,env-2.php" wp --require=custom-cmd.php custom-command echo_test`
+    Then STDOUT should be:
       """
-      env:
-        WP_CLI_REQUIRE: env.php,env-2.php
+      ENVIRONMENT REQUIRE
+      ENVIRONMENT REQUIRE 2
+      test
       """
 
-    When I run `wp --require=custom-cmd.php custom-command echo_test`
+  @require-windows
+  Scenario: Check that required files are used from command arguments and ENV VAR (Windows)
+    Given a WP installation
+    And a custom-cmd.php file:
+      """
+      <?php
+      class Custom_Command extends WP_CLI_Command {
+        /**
+         * Custom command to test passing command_args via runcommand options
+         *
+         * @when after_wp_load
+         */
+         public function echo_test( $args ) {
+         echo "test" . PHP_EOL;
+        }
+      }
+      WP_CLI::add_command( 'custom-command', 'Custom_Command' );
+      """
+    And a env.php file:
+      """
+      <?php
+      echo 'ENVIRONMENT REQUIRE' . PHP_EOL;
+      """
+    And a env-2.php file:
+      """
+      <?php
+      echo 'ENVIRONMENT REQUIRE 2' . PHP_EOL;
+      """
+
+    When I run `set WP_CLI_REQUIRE=env.php&& wp eval "return null;" --skip-wordpress`
+    Then STDOUT should be:
+      """
+      ENVIRONMENT REQUIRE
+      """
+
+    When I run `set WP_CLI_REQUIRE=env.php&& wp --require=custom-cmd.php custom-command echo_test`
+    Then STDOUT should be:
+      """
+      ENVIRONMENT REQUIRE
+      test
+      """
+
+    When I run `set WP_CLI_REQUIRE=env.php,env-2.php&& wp --require=custom-cmd.php custom-command echo_test`
     Then STDOUT should be:
       """
       ENVIRONMENT REQUIRE

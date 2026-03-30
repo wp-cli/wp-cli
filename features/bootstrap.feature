@@ -505,6 +505,8 @@ Feature: Bootstrap WP-CLI
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=ini_set} cli info`
     Then the return code should be 0
 
+  # TODO: Make test work for Windows.
+  @skip-windows
   Scenario: Test early root detection
 
     Given an empty directory

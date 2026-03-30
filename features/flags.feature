@@ -287,6 +287,8 @@ Feature: Global flags
       This is a custom command.
       """
 
+  # TODO: Fix test for Windows.
+  @skip-windows
   Scenario: Using --require with globs
     Given an empty directory
     And a foober/foo.php file:
