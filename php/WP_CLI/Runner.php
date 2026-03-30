@@ -1425,6 +1425,8 @@ class Runner {
 				$stdin_spec                = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
 				$env                       = getenv();
 				$env['WP_CLI_CONFIG_PATH'] = $config_path;
+				fflush( STDOUT );
+				fflush( STDERR );
 				$proc                      = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes, null, $env );
 
 				if ( $proc ) {
@@ -1450,6 +1452,8 @@ class Runner {
 				$stdin_spec                = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
 				$env                       = getenv();
 				$env['WP_CLI_CONFIG_PATH'] = $config_path;
+				fflush( STDOUT );
+				fflush( STDERR );
 				$proc                      = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes, null, $env );
 
 				if ( $proc ) {
