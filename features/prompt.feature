@@ -184,10 +184,7 @@ Feature: Prompt user for input
     Then STDOUT should not be empty
 
     When I run `wp post list --prompt < value-file`
-    Then STDOUT should contain:
-      """
-      wp post list --post_type='post' --fields='post_title,post_name,post_status' --format='csv'
-      """
+    Then STDOUT should match #wp post list --post_type='post' --fields='post_title,post_name,post_status' --format='csv'|wp post list --post_type="post" --fields="post_title,post_name,post_status" --format="csv"#
     And STDOUT should contain:
       """
       post_title,post_name,post_status
@@ -218,10 +215,7 @@ Feature: Prompt user for input
       """
 
     When I run `wp term create --prompt < value-file`
-    Then STDOUT should contain:
-      """
-      wp term create 'category' 'General' --slug='general'
-      """
+    Then STDOUT should match #wp term create 'category' 'General' --slug='general'|wp term create "category" "General" --slug="general"#
     And STDOUT should contain:
       """
       Created category
@@ -369,10 +363,7 @@ Feature: Prompt user for input
       """
 
     When I run `wp test-assoc-default --prompt < empty-response`
-    Then STDOUT should contain:
-      """
-      wp test-assoc-default --format='table'
-      """
+    Then STDOUT should match #wp test-assoc-default --format='table'|wp test-assoc-default --format="table"#
     And STDOUT should contain:
       """
       format: table
