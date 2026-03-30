@@ -123,7 +123,7 @@ Feature: Create shortcuts to specific WordPress installs
         path: foo
       """
 
-    When I run `wp eval --skip-wordpress "echo \WP_CLI\Path::normalize( realpath( getenv( 'RUN_DIR' ) ) );"`
+    When I run `wp eval --skip-wordpress "echo \WP_CLI\Path::normalize( getenv( 'RUN_DIR' ) );"`
     Then save STDOUT as {TEST_DIR}
 
     When I run `wp cli alias list`
@@ -834,7 +834,7 @@ Feature: Create shortcuts to specific WordPress installs
       Success: Added 'hello' alias.
       """
 
-    When I run `wp eval --skip-wordpress "echo realpath( getenv( 'RUN_DIR' ) );"`
+    When I run `wp eval --skip-wordpress "echo \WP_CLI\Path::normalize( getenv( 'RUN_DIR' ) );"`
     Then save STDOUT as {TEST_DIR}
 
     When I run `wp cli alias list`
@@ -1019,7 +1019,7 @@ Feature: Create shortcuts to specific WordPress installs
           path: foo
       """
 
-    When I run `wp eval --skip-wordpress "echo realpath( getenv( 'RUN_DIR' ) );"`
+    When I run `wp eval --skip-wordpress "echo \WP_CLI\Path::normalize( getenv( 'RUN_DIR' ) );"`
     Then save STDOUT as {TEST_DIR}
 
     When I run `wp cli alias list`
