@@ -89,7 +89,7 @@ Feature: Bootstrap WP-CLI
       """
     And I run `composer install --no-interaction 2>&1`
 
-    When I run `php vendor/bin/wp eval "\WP_CLI::Success( 'WP-Standard-Eval' );"`
+    When I run `vendor/bin/wp eval "\WP_CLI::Success( 'WP-Standard-Eval' );"`
     Then STDOUT should contain:
       """
       Success: WP-Override-Eval
@@ -341,7 +341,7 @@ Feature: Bootstrap WP-CLI
     # Redirect STDERR to STDOUT as Composer produces non-error output on STDERR
     And I run `composer require wp-cli/entity-command --with-all-dependencies --no-interaction 2>&1`
 
-    When I run `php vendor/bin/wp option get blogname`
+    When I run `vendor/bin/wp option get blogname`
     Then STDOUT should contain:
       """
       WP CLI Site with both WordPress and wp-cli as Composer dependencies

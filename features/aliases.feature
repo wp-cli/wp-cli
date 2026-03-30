@@ -123,7 +123,7 @@ Feature: Create shortcuts to specific WordPress installs
         path: foo
       """
 
-    When I run `wp eval --skip-wordpress "echo \WP_CLI\Path::normalize( getenv( 'RUN_DIR' ) );"`
+    When I run `wp eval --skip-wordpress "echo \WP_CLI\Path::normalize( DIRECTORY_SEPARATOR === '/' ? realpath( getcwd() ) : getcwd() );"`
     Then save STDOUT as {TEST_DIR}
 
     When I run `wp cli alias list`
@@ -744,7 +744,7 @@ Feature: Create shortcuts to specific WordPress installs
       @foo core is-installed --allow-root --debug
       """
 
-    When I try `wp @bar core is-installed --allow-root --debug` in 'bar'
+    When I try `wp @bar core is-installed --allow-root --debug` from 'bar'
     Then the return code should be 0
     And STDERR should contain:
       """
@@ -834,7 +834,7 @@ Feature: Create shortcuts to specific WordPress installs
       Success: Added 'hello' alias.
       """
 
-    When I run `wp eval --skip-wordpress "echo \WP_CLI\Path::normalize( getenv( 'RUN_DIR' ) );"`
+    When I run `wp eval --skip-wordpress "echo \WP_CLI\Path::normalize( DIRECTORY_SEPARATOR === '/' ? realpath( getcwd() ) : getcwd() );"`
     Then save STDOUT as {TEST_DIR}
 
     When I run `wp cli alias list`
@@ -883,7 +883,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp --alias=foo core is-installed`
     Then the return code should be 0
 
-    When I run `wp --alias=foo core is-installed` in 'bar'
+    When I run `wp --alias=foo core is-installed` from 'bar'
     Then the return code should be 0
 
   Scenario: Mix traditional and new alias syntax
@@ -1019,7 +1019,7 @@ Feature: Create shortcuts to specific WordPress installs
           path: foo
       """
 
-    When I run `wp eval --skip-wordpress "echo \WP_CLI\Path::normalize( getenv( 'RUN_DIR' ) );"`
+    When I run `wp eval --skip-wordpress "echo \WP_CLI\Path::normalize( DIRECTORY_SEPARATOR === '/' ? realpath( getcwd() ) : getcwd() );"`
     Then save STDOUT as {TEST_DIR}
 
     When I run `wp cli alias list`
