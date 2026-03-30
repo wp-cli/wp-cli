@@ -280,7 +280,7 @@ Feature: Context handling via --context global flag
     Given a WP multisite install
     And I run `wp user create anotheradmin anotheradmin@example.com --role=administrator`
     And I run `wp eval "update_site_option( 'site_admins', array( 'anotheradmin' ) );"`
-    And I run `wp --context=admin eval 'echo "Current user: " . wp_get_current_user()->user_login;'`
+    And I run `wp --context=admin eval "echo 'Current user: ' . wp_get_current_user()->user_login;"`
     Then STDOUT should contain:
       """
       Current user: anotheradmin
@@ -288,7 +288,7 @@ Feature: Context handling via --context global flag
 
   Scenario: Admin context resolves an administrator on single site when no user is specified
     Given a WP install
-    When I run `wp --context=admin eval 'echo "User ID: " . get_current_user_id();'`
+    When I run `wp --context=admin eval "echo 'User ID: ' . get_current_user_id();"`
     Then STDOUT should be:
       """
       User ID: 1
