@@ -112,7 +112,7 @@ class ShutdownHandler {
 	 */
 	private static function identify_plugin( $file ) {
 		// Normalize path separators for consistent matching
-		$file = str_replace( '\\', '/', $file );
+		$file = Path::normalize( $file );
 
 		// Use WordPress constants if available for more accurate path detection
 		if ( defined( 'WP_PLUGIN_DIR' ) ) {
@@ -150,7 +150,7 @@ class ShutdownHandler {
 	 */
 	private static function identify_theme( $file ) {
 		// Normalize path separators for consistent matching
-		$file = str_replace( '\\', '/', $file );
+		$file = Path::normalize( $file );
 
 		// Use get_theme_root() if available for more accurate path detection
 		if ( function_exists( 'get_theme_root' ) ) {
@@ -182,7 +182,12 @@ class ShutdownHandler {
 	 * @return string|null Component slug, or null if not found.
 	 */
 	private static function extract_component_slug( $file, $base_dir ) {
-		$base_dir = str_replace( '\\', '/', $base_dir );
+		$real_file = realpath( $file );
+		$real_base = realpath( $base_dir );
+
+		$file     = Path::normalize( $real_file ?: $file );
+		$base_dir = Path::normalize( $real_base ?: $base_dir );
+
 		if ( 0 === strpos( $file, $base_dir . '/' ) ) {
 			$relative = substr( $file, strlen( $base_dir ) + 1 );
 			$parts    = explode( '/', $relative );
@@ -203,7 +208,12 @@ class ShutdownHandler {
 	 * @return string|null Theme slug, or null if not found.
 	 */
 	private static function extract_theme_slug( $file, $theme_dir ) {
-		$theme_dir = str_replace( '\\', '/', $theme_dir );
+		$real_file  = realpath( $file );
+		$real_theme = realpath( $theme_dir );
+
+		$file      = Path::normalize( $real_file ?: $file );
+		$theme_dir = Path::normalize( $real_theme ?: $theme_dir );
+
 		if ( 0 === strpos( $file, $theme_dir . '/' ) ) {
 			$relative = substr( $file, strlen( $theme_dir ) + 1 );
 			$parts    = explode( '/', $relative );
