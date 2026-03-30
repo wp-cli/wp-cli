@@ -34,7 +34,7 @@ Feature: CLI Cache
       putenv( 'WP_CLI_CACHE_DIR=/dev/null' );
       """
 
-    When I run `wp --require=env-var.php core download --path=/tmp/wp-core --version=6.9 --force`
+    When I run `wp --require=env-var.php core download --path={RUN_DIR}/wp-core --version=6.9 --force`
     Then STDERR should be empty
 
   Scenario: Remove all but newest files from cache directory

@@ -58,7 +58,7 @@ Feature: Have a config file
     When I run `wp core is-installed` from 'foo/wp-content'
     Then STDOUT should be empty
 
-    When I run `mkdir -p other/subdir`
+    Given an empty other/subdir directory
     And I run `wp core is-installed` from 'other/subdir'
     Then STDOUT should be empty
 
@@ -79,7 +79,7 @@ Feature: Have a config file
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
-    When I run `mkdir -p other/subdir`
+    Given an empty other/subdir directory
     And I run `echo '<?php // Silence is golden' > other/subdir/index.php`
     And I run `wp core is-installed` from 'other/subdir'
     Then STDOUT should be empty
