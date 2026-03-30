@@ -1420,12 +1420,12 @@ class Runner {
 			$procs = [];
 			foreach ( $aliases as $alias ) {
 				WP_CLI::log( '@' . $alias );
-				$full_command = "{$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
-				$pipes        = [];
-				$stdin_spec   = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
-				$env          = $_ENV;
+				$full_command              = "{$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
+				$pipes                     = [];
+				$stdin_spec                = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
+				$env                       = $_ENV;
 				$env['WP_CLI_CONFIG_PATH'] = $config_path;
-				$proc         = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes, null, $env );
+				$proc                      = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes, null, $env );
 
 				if ( $proc ) {
 					if ( null !== $stdin_stream ) {
@@ -1445,12 +1445,12 @@ class Runner {
 			// Run aliases sequentially (original behavior).
 			foreach ( $aliases as $alias ) {
 				WP_CLI::log( '@' . $alias );
-				$full_command = "{$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
-				$pipes        = [];
-				$stdin_spec   = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
-				$env          = $_ENV;
+				$full_command              = "{$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
+				$pipes                     = [];
+				$stdin_spec                = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
+				$env                       = $_ENV;
 				$env['WP_CLI_CONFIG_PATH'] = $config_path;
-				$proc         = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes, null, $env );
+				$proc                      = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes, null, $env );
 
 				if ( $proc ) {
 					if ( null !== $stdin_stream ) {
