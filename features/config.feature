@@ -794,7 +794,7 @@ Feature: Have a config file
     When I run `wp cli info --format=json`
     Then STDOUT should contain:
       """
-      \/custom-packages
+      custom-packages\/
       """
 
   Scenario: Actual environment variables take precedence over config
