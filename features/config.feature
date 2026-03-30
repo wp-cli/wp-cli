@@ -980,7 +980,7 @@ Feature: Have a config file
       system-config.yml
       """
 
-    When I try `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml wp eval 'echo "test";'`
+    When I try `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml wp eval "echo 'test';"`
     Then STDERR should contain:
       """
       Error: The 'eval' command has been disabled from the config file.

@@ -279,7 +279,7 @@ Feature: Context handling via --context global flag
   Scenario: Admin context resolves a super admin on multisite when no user is specified
     Given a WP multisite install
     And I run `wp user create anotheradmin anotheradmin@example.com --role=administrator`
-    And I run `wp eval 'update_site_option( "site_admins", array( "anotheradmin" ) );'`
+    And I run `wp eval "update_site_option( 'site_admins', array( 'anotheradmin' ) );"`
     And I run `wp --context=admin eval 'echo "Current user: " . wp_get_current_user()->user_login;'`
     Then STDOUT should contain:
       """
@@ -296,7 +296,7 @@ Feature: Context handling via --context global flag
 
   Scenario: Admin context emits error when no suitable admin user is found on multisite
     Given a WP multisite install
-    And I run `wp eval 'update_site_option( "site_admins", array() );'`
+    And I run `wp eval "update_site_option( 'site_admins', array() );"`
     And I try `wp --context=admin eval ''`
     Then the return code should be 1
     And STDERR should contain:
