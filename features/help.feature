@@ -844,6 +844,8 @@ Feature: Get help about WP-CLI commands
       ALIAS
       """
 
+  # No vt100 on Windows.
+  @skip-windows
   Scenario: Help for commands should wordwrap well
     Given a WP installation
     And a wp-content/plugins/test-cli/command.php file:
@@ -1067,6 +1069,8 @@ Feature: Get help about WP-CLI commands
 
       """
 
+  # No vt100 on Windows.
+  @skip-windows
   Scenario: Help for commands with subcommands should wordwrap well
     Given a WP installation
     And a wp-content/plugins/test-cli/command.php file:
@@ -1180,6 +1184,8 @@ Feature: Get help about WP-CLI commands
       80
       """
 
+  # No vt100 on Windows.
+  @skip-windows
   Scenario: Long description for top-level command which has reference link display well
     Given a WP installation
     And a command.php file:
