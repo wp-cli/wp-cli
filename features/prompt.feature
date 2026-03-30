@@ -281,10 +281,9 @@ Feature: Prompt user for input
       """
       api-key: myapikey456
       """
-    And STDOUT should contain:
-      """
-      wp test-sensitive --username='admin' --password='[REDACTED]' --api-key='[REDACTED]'
-      """
+    # On Windows/PowerShell (or in GitHub Actions runners), quote usage differs and
+    # the password might be masked as `--***`.
+    And STDOUT should match #wp test-sensitive --username='admin' --password='\[REDACTED\]' --api-key='\[REDACTED\]'|wp test-sensitive --username="admin" --\*\*\* --api-key="\[REDACTED\]"#
 
   Scenario: Flag prompt should accept Y for yes
     Given an empty directory
