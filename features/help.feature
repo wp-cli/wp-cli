@@ -1411,6 +1411,7 @@ Feature: Get help about WP-CLI commands
         <zone_id>
       """
 
+  @skip-windows
   Scenario: Pager without color support should not show ANSI escape codes
     Given an empty directory
 
