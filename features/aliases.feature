@@ -744,7 +744,7 @@ Feature: Create shortcuts to specific WordPress installs
       @foo core is-installed --allow-root --debug
       """
 
-    When I try `cd bar; wp @bar core is-installed --allow-root --debug`
+    When I try `wp @bar core is-installed --allow-root --debug` in 'bar'
     Then the return code should be 0
     And STDERR should contain:
       """
@@ -883,7 +883,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp --alias=foo core is-installed`
     Then the return code should be 0
 
-    When I run `cd bar; wp --alias=foo core is-installed`
+    When I run `wp --alias=foo core is-installed` in 'bar'
     Then the return code should be 0
 
   Scenario: Mix traditional and new alias syntax
