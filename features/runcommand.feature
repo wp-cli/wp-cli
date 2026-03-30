@@ -46,6 +46,11 @@ Feature: Run a WP-CLI command
 
   Scenario Outline: Run a WP-CLI command and render output
     Given a WP installation
+    And a test.php file:
+      """
+      <?php
+      WP_CLI::log( wp_get_current_user()->user_login );
+      """
 
     When I run `wp <flag> run "option get home"`
     Then STDOUT should be:
@@ -56,7 +61,7 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp <flag> run "eval \"WP_CLI::log( wp_get_current_user()->user_login );\""`
+    When I run `wp <flag> run "eval-file test.php"`
     Then STDOUT should be:
       """
       admin
@@ -81,6 +86,11 @@ Feature: Run a WP-CLI command
 
   Scenario Outline: Run a WP-CLI command and capture output
     Given a WP installation
+    And a user-login.php file:
+      """
+      <?php
+      echo wp_get_current_user()->user_login . PHP_EOL;
+      """
 
     When I run `wp run <flag> --return "option get home"`
     Then STDOUT should be:
@@ -90,7 +100,7 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp <flag> --return run "eval \"echo wp_get_current_user()->user_login . PHP_EOL;\""`
+    When I run `wp <flag> --return run "eval-file user-login.php"`
     Then STDOUT should be:
       """
       returned: 'admin'
@@ -98,7 +108,7 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp <flag> --return=stderr run "eval \"echo wp_get_current_user()->user_login . PHP_EOL;\""`
+    When I run `wp <flag> --return=stderr run "eval-file user-login.php"`
     Then STDOUT should be:
       """
       returned: ''
@@ -106,7 +116,7 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp <flag> --return=return_code run "eval \"echo wp_get_current_user()->user_login . PHP_EOL;\""`
+    When I run `wp <flag> --return=return_code run "eval-file user-login.php"`
     Then STDOUT should be:
       """
       returned: 0
@@ -114,7 +124,7 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp <flag> --return=all run "eval \"echo wp_get_current_user()->user_login . PHP_EOL;\""`
+    When I run `wp <flag> --return=all run "eval-file user-login.php"`
     Then STDOUT should be:
       """
       returned: array (
@@ -158,8 +168,13 @@ Feature: Run a WP-CLI command
 
   Scenario Outline: Exit on error by default
     Given a WP installation
+    And a test-error.php file:
+      """
+      <?php
+      WP_CLI::error( var_export( get_current_user_id(), true ) );
+      """
 
-    When I try `wp run <flag> "eval \"WP_CLI::error( var_export( get_current_user_id(), true ) );\""`
+    When I try `wp run <flag> "eval-file test-error.php"`
     Then STDOUT should be empty
     And STDERR should be:
       """
@@ -174,8 +189,13 @@ Feature: Run a WP-CLI command
 
   Scenario Outline: Override erroring on exit
     Given a WP installation
+    And a test-error.php file:
+      """
+      <?php
+      WP_CLI::error( var_export( get_current_user_id(), true ) );
+      """
 
-    When I try `wp run <flag> --no-exit_error --return=all "eval \"WP_CLI::error( var_export( get_current_user_id(), true ) );\""`
+    When I try `wp run <flag> --no-exit_error --return=all "eval-file test-error.php"`
     Then STDOUT should be:
       """
       returned: array (
@@ -202,9 +222,25 @@ Feature: Run a WP-CLI command
 
   Scenario Outline: Output using echo and log, success, warning and error
     Given a WP installation
+    And a test-output-error.php file:
+      """
+      <?php
+      WP_CLI::log( 'log' );
+      echo 'echo';
+      WP_CLI::success( 'success' );
+      WP_CLI::error( 'error' );
+      """
+    And a test-output-success.php file:
+      """
+      <?php
+      echo 'echo';
+      WP_CLI::log( 'log' );
+      WP_CLI::warning( 'warning');
+      WP_CLI::success( 'success' );
+      """
 
     # Note WP_CLI::error() terminates eval processing so needs to be last.
-    When I run `wp run <flag> --no-exit_error --return=all "eval \"WP_CLI::log( 'log' ); echo 'echo'; WP_CLI::success( 'success' ); WP_CLI::error( 'error' );\""`
+    When I run `wp run <flag> --no-exit_error --return=all "eval-file test-output-error.php"`
     Then STDOUT should be:
       """
       returned: array (
@@ -217,7 +253,7 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp run <flag> --no-exit_error --return=all "eval \"echo 'echo'; WP_CLI::log( 'log' ); WP_CLI::warning( 'warning'); WP_CLI::success( 'success' );\""`
+    When I run `wp run <flag> --no-exit_error --return=all "eval-file test-output-success.php"`
     Then STDOUT should be:
       """
       returned: array (
@@ -387,20 +423,40 @@ Feature: Run a WP-CLI command
       echo 'ENVIRONMENT REQUIRE 2' . PHP_EOL;
       """
 
-    When I run `WP_CLI_REQUIRE=env.php wp eval "return null;" --skip-wordpress`
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_REQUIRE: env.php
+      """
+
+    When I run `wp eval "return null;" --skip-wordpress`
     Then STDOUT should be:
       """
       ENVIRONMENT REQUIRE
       """
 
-    When I run `WP_CLI_REQUIRE=env.php wp --require=custom-cmd.php custom-command echo_test`
+    # Overwrite config to ensure same env var
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_REQUIRE: env.php
+      """
+
+    When I run `wp --require=custom-cmd.php custom-command echo_test`
     Then STDOUT should be:
       """
       ENVIRONMENT REQUIRE
       test
       """
 
-    When I run `WP_CLI_REQUIRE="env.php,env-2.php" wp --require=custom-cmd.php custom-command echo_test`
+    # Overwrite config for multiple files
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_REQUIRE: env.php,env-2.php
+      """
+
+    When I run `wp --require=custom-cmd.php custom-command echo_test`
     Then STDOUT should be:
       """
       ENVIRONMENT REQUIRE
