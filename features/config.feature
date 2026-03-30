@@ -237,7 +237,7 @@ Feature: Have a config file
       """
 
     # Arbitrary values should be passed, without warnings
-    When I run `wp eval "echo json_encode( \$assoc_args );"`
+    When I run `wp eval "echo json_encode( WP_CLI::get_runner()->assoc_args );"`
     Then STDOUT should be JSON containing:
       """
       {"foo": "bar"}
