@@ -1448,7 +1448,7 @@ class Runner {
 				$full_command              = "{$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
 				$pipes                     = [];
 				$stdin_spec                = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
-				$env                       = $_ENV;
+				$env                       = getenv();
 				$env['WP_CLI_CONFIG_PATH'] = $config_path;
 				$proc                      = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes, null, $env );
 
