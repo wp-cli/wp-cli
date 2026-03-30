@@ -226,24 +226,46 @@ Feature: Have a config file
       administrator
       """
 
+  @skip-windows
   Scenario: Command-specific configs
     Given a WP installation
     And a wp-cli.yml file:
       """
       eval:
         foo: bar
-      post list:
-        format: count
       """
 
     # Arbitrary values should be passed, without warnings
-    When I run `wp eval "echo json_encode( WP_CLI::get_runner()->assoc_args );"`
+    When I run `wp eval "echo json_encode( \$assoc_args );"`
     Then STDOUT should be JSON containing:
       """
       {"foo": "bar"}
       """
 
-    # CLI args should trump config values
+  @require-windows
+  Scenario: Command-specific configs (Windows)
+    Given a WP installation
+    And a wp-cli.yml file:
+      """
+      eval:
+        foo: bar
+      """
+
+    # Arbitrary values should be passed, without warnings
+    When I run `wp eval "echo json_encode( $assoc_args );"`
+    Then STDOUT should be JSON containing:
+      """
+      {"foo": "bar"}
+      """
+
+  Scenario: CLI args should trump config values
+    Given a WP installation
+    And a wp-cli.yml file:
+      """
+      post list:
+        format: count
+      """
+
     When I run `wp post list`
     Then STDOUT should be a number
     When I run `wp post list --format=json`
