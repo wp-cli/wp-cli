@@ -1107,11 +1107,13 @@ Feature: Create shortcuts to specific WordPress installs
         path: foo
       @bar:
         path: bar
+      env:
+        WP_CLI_ALIAS_GROUPS_PARALLEL: 1
       """
 
     When I run `wp @foo option update home "http://parallel-foo.com"`
     And I run `wp @bar option update home "http://parallel-bar.com"`
-    And I run `WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both option get home`
+    And I run `wp @both option get home`
     Then STDOUT should contain:
       """
       @foo
@@ -1129,7 +1131,7 @@ Feature: Create shortcuts to specific WordPress installs
       http://parallel-bar.com
       """
 
-    When I run `WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both option get home --quiet`
+    When I run `wp @both option get home --quiet`
     Then STDOUT should contain:
       """
       http://parallel-foo.com
@@ -1208,6 +1210,8 @@ Feature: Create shortcuts to specific WordPress installs
       @both:
        - @foo
        - @bar
+      env:
+        WP_CLI_ALIAS_GROUPS_PARALLEL: 1
       """
     And a stdin.php file:
       """
@@ -1216,7 +1220,7 @@ Feature: Create shortcuts to specific WordPress installs
 
     When I run `wp @foo option update home "http://foo.example.com"`
     And I run `wp @bar option update home "http://bar.example.com"`
-    And I run `cat stdin.php | WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both eval-file -`
+    And I run `wp @both eval-file - < stdin.php`
     Then STDOUT should contain:
       """
       http://foo.example.com
