@@ -56,7 +56,7 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp <flag> run "eval 'WP_CLI::log( wp_get_current_user()->user_login );'"`
+    When I run `wp <flag> run "eval \"WP_CLI::log( wp_get_current_user()->user_login );\""`
     Then STDOUT should be:
       """
       admin
@@ -82,7 +82,7 @@ Feature: Run a WP-CLI command
   Scenario Outline: Run a WP-CLI command and capture output
     Given a WP installation
 
-    When I run `wp run <flag> --return 'option get home'`
+    When I run `wp run <flag> --return "option get home"`
     Then STDOUT should be:
       """
       returned: 'https://example.com'
@@ -142,7 +142,7 @@ Feature: Run a WP-CLI command
   Scenario Outline: Use 'parse=json' to parse JSON output
     Given a WP installation
 
-    When I run `wp run --return --parse=json <flag> 'user get admin --fields=user_login,user_email --format=json'`
+    When I run `wp run --return --parse=json <flag> "user get admin --fields=user_login,user_email --format=json"`
     Then STDOUT should be:
       """
       returned: array (
