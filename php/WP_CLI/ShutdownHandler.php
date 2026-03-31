@@ -171,6 +171,11 @@ class ShutdownHandler {
 			return $matches[1];
 		}
 
+		// Check for themes/functions.php directly in the themes directory
+		if ( preg_match( '#/wp-content/themes/(functions\\.php)$#', $file, $matches ) ) {
+			return $matches[1];
+		}
+
 		return null;
 	}
 
