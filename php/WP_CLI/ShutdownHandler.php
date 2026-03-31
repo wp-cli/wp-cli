@@ -182,9 +182,6 @@ class ShutdownHandler {
 	 * @return string|null Component slug, or null if not found.
 	 */
 	private static function extract_component_slug( $file, $base_dir ) {
-		$real_file = realpath( $file );
-		$real_base = realpath( $base_dir );
-
 		$file     = Path::normalize( $real_file ?: $file );
 		$base_dir = Path::normalize( $real_base ?: $base_dir );
 
@@ -208,9 +205,6 @@ class ShutdownHandler {
 	 * @return string|null Theme slug, or null if not found.
 	 */
 	private static function extract_theme_slug( $file, $theme_dir ) {
-		$real_file  = realpath( $file );
-		$real_theme = realpath( $theme_dir );
-
 		$file      = Path::normalize( $real_file ?: $file );
 		$theme_dir = Path::normalize( $real_theme ?: $theme_dir );
 
