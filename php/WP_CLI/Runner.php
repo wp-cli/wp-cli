@@ -342,9 +342,14 @@ class Runner {
 			 */
 			$path = $this->config['path'];
 
-			// Expand tilde to home directory if present
+			// Expand tilde to home directory if present.
 			$path = Path::expand_tilde( $path );
-			if ( ! Path::is_absolute( $path ) ) {
+
+			if ( Path::is_absolute( $path ) ) {
+				// Normalize absolute path to ensure consistent separators.
+				$path = Path::normalize( $path );
+			} else {
+				// Convert relative path to absolute and normalize.
 				$path = Path::normalize( getcwd() . '/' . $path );
 			}
 
