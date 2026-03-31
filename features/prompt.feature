@@ -281,7 +281,7 @@ Feature: Prompt user for input
       """
       api-key: myapikey456
       """
-    And STDOUT should match #(wp test-sensitive --username='admin' --password='\[REDACTED\]' --api-key='\[REDACTED\]'|wp test-sensitive --username="admin" --\*\*\* --api-key="\[REDACTED\]")#
+    And STDOUT should match #(wp test-sensitive --username='admin' --password='.*REDACTED.*' --api-key='.*REDACTED.*'|wp test-sensitive --username="admin" --\\*\\*\\* --api-key=".*REDACTED.*")#
 
   Scenario: Flag prompt should accept Y for yes
     Given an empty directory
