@@ -182,8 +182,8 @@ class ShutdownHandler {
 	 * @return string|null Component slug, or null if not found.
 	 */
 	private static function extract_component_slug( $file, $base_dir ) {
-		$file     = Path::normalize( $real_file ?: $file );
-		$base_dir = Path::normalize( $real_base ?: $base_dir );
+		$file     = Path::normalize( $file );
+		$base_dir = Path::normalize( $base_dir );
 
 		if ( 0 === strpos( $file, $base_dir . '/' ) ) {
 			$relative = substr( $file, strlen( $base_dir ) + 1 );
@@ -205,8 +205,8 @@ class ShutdownHandler {
 	 * @return string|null Theme slug, or null if not found.
 	 */
 	private static function extract_theme_slug( $file, $theme_dir ) {
-		$file      = Path::normalize( $real_file ?: $file );
-		$theme_dir = Path::normalize( $real_theme ?: $theme_dir );
+		$file      = Path::normalize( $file );
+		$theme_dir = Path::normalize( $theme_dir );
 
 		if ( 0 === strpos( $file, $theme_dir . '/' ) ) {
 			$relative = substr( $file, strlen( $theme_dir ) + 1 );
