@@ -221,6 +221,9 @@ Feature: Prompt user for input
       Created category
       """
 
+  # Skip on Windows due to output differences. PowerShell masks the `--password` argument name.
+  # TODO: Investigate.
+  @skip-windows
   Scenario: Prompt should mask sensitive argument values
     Given an empty directory
     And a cmd.php file:
@@ -281,7 +284,10 @@ Feature: Prompt user for input
       """
       api-key: myapikey456
       """
-    And STDOUT should match #(wp test-sensitive --username='admin' --password='.*REDACTED.*' --api-key='.*REDACTED.*'|wp test-sensitive --username="admin" --\\*\\*\\* --api-key=".*REDACTED.*")#
+    And STDOUT should contain:
+      """
+      wp test-sensitive --username='admin' --password='[REDACTED]' --api-key='[REDACTED]'
+      """
 
   Scenario: Flag prompt should accept Y for yes
     Given an empty directory
