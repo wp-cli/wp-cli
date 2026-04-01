@@ -174,6 +174,18 @@ Feature: Create shortcuts to specific WordPress installs
       Error: No alias found with key '@someotherfoo'.
       """
 
+    When I run `wp cli alias get @foo --field=ssh`
+    Then STDOUT should be:
+      """
+      user@host:/path/to/wordpress
+      """
+
+    When I try `wp cli alias get @foo --field=user`
+    Then STDERR should be:
+      """
+      Error: The 'user' property does not exist for '@foo'.
+      """
+
   @skip-windows @skip-macos
   Scenario: Adds proxyjump to ssh command
     Given a WP installation in 'foo'
