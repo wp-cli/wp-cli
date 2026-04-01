@@ -87,10 +87,10 @@ Feature: `wp cli completions` tasks
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp cli completions --line='wp bogus-comand ' --point=100`
+    When I run `wp cli completions --line="wp bogus-comand " --point=100`
     Then STDOUT should be empty
 
-    When I run `wp cli completions --line='wp eva' --point=100`
+    When I run `wp cli completions --line="wp eva" --point=100`
     Then STDOUT should contain:
       """
       eval
@@ -100,19 +100,19 @@ Feature: `wp cli completions` tasks
       eval-file
       """
 
-    When I run `wp cli completions --line='wp config create --dbname=' --point=100`
+    When I run `wp cli completions --line="wp config create --dbname=" --point=100`
     Then STDOUT should not contain:
       """
       --dbname=
       """
 
-    When I run `wp cli completions --line='wp config create --dbname' --point=100`
+    When I run `wp cli completions --line="wp config create --dbname" --point=100`
     Then STDOUT should contain:
       """
       --dbname=
       """
 
-    When I run `wp cli completions --line='wp config create --dbname=foo ' --point=100`
+    When I run `wp cli completions --line="wp config create --dbname=foo " --point=100`
     Then STDOUT should not contain:
       """
       --dbname=
@@ -122,7 +122,7 @@ Feature: `wp cli completions` tasks
       --extra-php
       """
 
-    When I run `wp cli completions --line='wp eval-file ' --point=100`
+    When I run `wp cli completions --line="wp eval-file " --point=100`
     Then STDOUT should contain:
       """
       <file>

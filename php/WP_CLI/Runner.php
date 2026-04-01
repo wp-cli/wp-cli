@@ -294,7 +294,8 @@ class Runner {
 		} else {
 			$packages_dir = Path::get_home_dir() . '/.wp-cli/packages/';
 		}
-		return $packages_dir;
+
+		return Path::normalize( $packages_dir );
 	}
 
 	/**
@@ -341,13 +342,13 @@ class Runner {
 			 */
 			$path = $this->config['path'];
 
-			// Expand tilde to home directory if present
 			$path = Path::expand_tilde( $path );
+
 			if ( ! Path::is_absolute( $path ) ) {
 				$path = getcwd() . '/' . $path;
 			}
 
-			return $path;
+			return Path::normalize( $path );
 		}
 
 		if ( $this->cmd_starts_with( [ 'core', 'download' ] ) ) {
@@ -1358,7 +1359,6 @@ class Runner {
 		} else {
 			$config_path = Path::get_home_dir() . '/.wp-cli/config.yml';
 		}
-		$config_path = escapeshellarg( $config_path );
 
 		// Exclude 'quiet' from runtime config for subprocesses to allow command output.
 		$subprocess_runtime_config = $this->runtime_config;
@@ -1420,10 +1420,16 @@ class Runner {
 			$procs = [];
 			foreach ( $aliases as $alias ) {
 				WP_CLI::log( '@' . $alias );
-				$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
-				$pipes        = [];
-				$stdin_spec   = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
-				$proc         = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes );
+				$full_command              = "{$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
+				$pipes                     = [];
+				$stdin_spec                = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
+				$env                       = getenv();
+				$env['WP_CLI_CONFIG_PATH'] = $config_path;
+
+				fflush( STDOUT );
+				fflush( STDERR );
+
+				$proc = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes, null, $env );
 
 				if ( $proc ) {
 					if ( null !== $stdin_stream ) {
@@ -1443,10 +1449,16 @@ class Runner {
 			// Run aliases sequentially (original behavior).
 			foreach ( $aliases as $alias ) {
 				WP_CLI::log( '@' . $alias );
-				$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
-				$pipes        = [];
-				$stdin_spec   = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
-				$proc         = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes );
+				$full_command              = "{$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
+				$pipes                     = [];
+				$stdin_spec                = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
+				$env                       = getenv();
+				$env['WP_CLI_CONFIG_PATH'] = $config_path;
+
+				fflush( STDOUT );
+				fflush( STDERR );
+
+				$proc = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes, null, $env );
 
 				if ( $proc ) {
 					if ( null !== $stdin_stream ) {

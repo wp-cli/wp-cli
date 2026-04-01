@@ -15,6 +15,12 @@ Feature: Environment variables are forwarded to spawned processes
       // so we can verify what was forwarded into the child process.
       echo getenv( 'WPCLI_ENV_FWD' );
       """
+    And a run-env-check.php file:
+      """
+      <?php
+      $result = WP_CLI::launch( "php env-dump.php", true, true );
+      echo $result->stdout;
+      """
 
   # Case 1: Normal PHP configuration where `variables_order` includes "E".
   # In this case, the parent shell sets WPCLI_ENV_FWD=ok before launching
@@ -24,7 +30,7 @@ Feature: Environment variables are forwarded to spawned processes
   # We use the detailed ProcessRun result and explicitly echo $result->stdout
   # so that Behat can assert on the output from the spawned process.
   Scenario: Forwards environment variables when $_ENV is populated
-    When I run `WPCLI_ENV_FWD=ok wp --allow-root --skip-wordpress eval '$result = WP_CLI::launch( "php env-dump.php", true, true ); echo $result->stdout;'`
+    When I run `WPCLI_ENV_FWD=ok wp --allow-root --skip-wordpress eval-file run-env-check.php`
     Then STDOUT should contain:
       """
       ok
@@ -39,7 +45,7 @@ Feature: Environment variables are forwarded to spawned processes
   # Again, we echo $result->stdout from inside the eval so Behat can assert
   # that the spawned process received the forwarded environment variable.
   Scenario: Still forwards env vars when $_ENV is empty
-    When I run `WPCLI_ENV_FWD=ok WP_CLI_PHP_ARGS='-d variables_order=GPCS' wp --allow-root --skip-wordpress eval '$result = WP_CLI::launch( "php env-dump.php", true, true ); echo $result->stdout;'`
+    When I run `WPCLI_ENV_FWD=ok WP_CLI_PHP_ARGS="-d variables_order=GPCS" wp --allow-root --skip-wordpress eval-file run-env-check.php`
     Then STDOUT should contain:
       """
       ok

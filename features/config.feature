@@ -58,7 +58,7 @@ Feature: Have a config file
     When I run `wp core is-installed` from 'foo/wp-content'
     Then STDOUT should be empty
 
-    When I run `mkdir -p other/subdir`
+    Given an empty other/subdir directory
     And I run `wp core is-installed` from 'other/subdir'
     Then STDOUT should be empty
 
@@ -79,8 +79,11 @@ Feature: Have a config file
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
-    When I run `mkdir -p other/subdir`
-    And I run `echo '<?php // Silence is golden' > other/subdir/index.php`
+    Given an empty other/subdir directory
+    And a other/subdir/index.php file:
+      """
+      <?php // Silence is golden
+      """
     And I run `wp core is-installed` from 'other/subdir'
     Then STDOUT should be empty
 
@@ -226,24 +229,46 @@ Feature: Have a config file
       administrator
       """
 
+  @skip-windows
   Scenario: Command-specific configs
     Given a WP installation
     And a wp-cli.yml file:
       """
       eval:
         foo: bar
-      post list:
-        format: count
       """
 
     # Arbitrary values should be passed, without warnings
-    When I run `wp eval 'echo json_encode( $assoc_args );'`
+    When I run `wp eval "echo json_encode( \$assoc_args );"`
     Then STDOUT should be JSON containing:
       """
       {"foo": "bar"}
       """
 
-    # CLI args should trump config values
+  @require-windows
+  Scenario: Command-specific configs (Windows)
+    Given a WP installation
+    And a wp-cli.yml file:
+      """
+      eval:
+        foo: bar
+      """
+
+    # Arbitrary values should be passed, without warnings
+    When I run `wp eval "echo json_encode( $assoc_args );"`
+    Then STDOUT should be JSON containing:
+      """
+      {"foo": "bar"}
+      """
+
+  Scenario: CLI args should trump config values
+    Given a WP installation
+    And a wp-cli.yml file:
+      """
+      post list:
+        format: count
+      """
+
     When I run `wp post list`
     Then STDOUT should be a number
     When I run `wp post list --format=json`
@@ -750,13 +775,13 @@ Feature: Have a config file
       Error: Strange wp-config.php file: wp-settings.php is not loaded directly.
       """
 
-    When I run `wp eval 'var_export( defined("MY_CONSTANT") );'`
+    When I run `wp eval "var_export( defined('MY_CONSTANT') );"`
     Then STDOUT should be:
       """
       true
       """
 
-    When I run `wp eval 'var_export( defined("MY_OTHER_CONSTANT") );'`
+    When I run `wp eval "var_export( defined('MY_OTHER_CONSTANT') );"`
     Then STDOUT should be:
       """
       true
@@ -794,7 +819,7 @@ Feature: Have a config file
     When I run `wp cli info --format=json`
     Then STDOUT should contain:
       """
-      \/custom-packages
+      custom-packages\/
       """
 
   Scenario: Actual environment variables take precedence over config
@@ -980,7 +1005,7 @@ Feature: Have a config file
       system-config.yml
       """
 
-    When I try `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml wp eval 'echo "test";'`
+    When I try `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml wp eval "echo 'test';"`
     Then STDERR should contain:
       """
       Error: The 'eval' command has been disabled from the config file.
