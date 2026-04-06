@@ -294,7 +294,8 @@ class Runner {
 		} else {
 			$packages_dir = Path::get_home_dir() . '/.wp-cli/packages/';
 		}
-		return $packages_dir;
+
+		return Path::normalize( $packages_dir );
 	}
 
 	/**
@@ -341,13 +342,13 @@ class Runner {
 			 */
 			$path = $this->config['path'];
 
-			// Expand tilde to home directory if present
 			$path = Path::expand_tilde( $path );
+
 			if ( ! Path::is_absolute( $path ) ) {
 				$path = getcwd() . '/' . $path;
 			}
 
-			return $path;
+			return Path::normalize( $path );
 		}
 
 		if ( $this->cmd_starts_with( [ 'core', 'download' ] ) ) {
@@ -917,6 +918,7 @@ class Runner {
 				$bits['key'] ? sprintf( '-i %s', escapeshellarg( (string) $bits['key'] ) ) : '',
 				$is_vagrant_ssh ? '-o StrictHostKeyChecking=no' : '',
 				$is_vagrant_ssh ? '-o UserKnownHostsFile=/dev/null' : '',
+				$is_vagrant_ssh ? '-o BatchMode=yes' : '',
 				$is_stdout_tty ? '-t' : '-T',
 				WP_CLI::get_config( 'debug' ) ? '-vvv' : '-q',
 			];
@@ -1357,7 +1359,6 @@ class Runner {
 		} else {
 			$config_path = Path::get_home_dir() . '/.wp-cli/config.yml';
 		}
-		$config_path = escapeshellarg( $config_path );
 
 		// Exclude 'quiet' from runtime config for subprocesses to allow command output.
 		$subprocess_runtime_config = $this->runtime_config;
@@ -1419,10 +1420,16 @@ class Runner {
 			$procs = [];
 			foreach ( $aliases as $alias ) {
 				WP_CLI::log( '@' . $alias );
-				$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
-				$pipes        = [];
-				$stdin_spec   = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
-				$proc         = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes );
+				$full_command              = "{$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
+				$pipes                     = [];
+				$stdin_spec                = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
+				$env                       = getenv();
+				$env['WP_CLI_CONFIG_PATH'] = $config_path;
+
+				fflush( STDOUT );
+				fflush( STDERR );
+
+				$proc = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes, null, $env );
 
 				if ( $proc ) {
 					if ( null !== $stdin_stream ) {
@@ -1442,10 +1449,16 @@ class Runner {
 			// Run aliases sequentially (original behavior).
 			foreach ( $aliases as $alias ) {
 				WP_CLI::log( '@' . $alias );
-				$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
-				$pipes        = [];
-				$stdin_spec   = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
-				$proc         = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes );
+				$full_command              = "{$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
+				$pipes                     = [];
+				$stdin_spec                = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
+				$env                       = getenv();
+				$env['WP_CLI_CONFIG_PATH'] = $config_path;
+
+				fflush( STDOUT );
+				fflush( STDERR );
+
+				$proc = Utils\proc_open_compat( $full_command, [ $stdin_spec, STDOUT, STDERR ], $pipes, null, $env );
 
 				if ( $proc ) {
 					if ( null !== $stdin_stream ) {
@@ -1579,6 +1592,21 @@ class Runner {
 		$url = self::guess_url( $this->config );
 		if ( $url ) {
 			WP_CLI::set_url( $url );
+		}
+
+		// Handle --assume-https parameter
+		if ( ! empty( $this->config['assume-https'] ) ) {
+			/**
+			 * @var array{HTTPS: string|int} $_SERVER
+			 */
+			if ( ! isset( $_SERVER['HTTPS'] ) ) {
+				$_SERVER['HTTPS'] = 'on';
+			} else {
+				$https_value = strtolower( (string) $_SERVER['HTTPS'] );
+				if ( 'on' !== $https_value && '1' !== $https_value ) {
+					$_SERVER['HTTPS'] = 'on';
+				}
+			}
 		}
 
 		$this->do_early_invoke( 'before_wp_load' );
@@ -2134,64 +2162,6 @@ class Runner {
 				}
 				return $from_email;
 			}
-		);
-
-		// Don't apply set_url_scheme in get_home_url() or get_site_url().
-		WP_CLI::add_wp_hook(
-			'home_url',
-			static function ( $url, $path, $scheme, $blog_id ) {
-				if ( empty( $blog_id ) || ! is_multisite() ) {
-					/**
-					 * @var string|false $url
-					 */
-					$url = get_option( 'home' );
-				} else {
-					switch_to_blog( $blog_id );
-					/**
-					 * @var string|false $url
-					 */
-					$url = get_option( 'home' );
-					restore_current_blog();
-				}
-
-				$url = (string) $url;
-
-				if ( $path && is_string( $path ) ) {
-					$url .= '/' . ltrim( $path, '/' );
-				}
-
-				return $url;
-			},
-			0,
-			4
-		);
-		WP_CLI::add_wp_hook(
-			'site_url',
-			static function ( $url, $path, $scheme, $blog_id ) {
-				if ( empty( $blog_id ) || ! is_multisite() ) {
-					/**
-					 * @var string|false $url
-					 */
-					$url = get_option( 'siteurl' );
-				} else {
-					switch_to_blog( $blog_id );
-					/**
-					 * @var string|false $url
-					 */
-					$url = get_option( 'siteurl' );
-					restore_current_blog();
-				}
-
-				$url = (string) $url;
-
-				if ( $path && is_string( $path ) ) {
-					$url .= '/' . ltrim( $path, '/' );
-				}
-
-				return $url;
-			},
-			0,
-			4
 		);
 
 		// Set up hook for plugins and themes to conditionally add WP-CLI commands.

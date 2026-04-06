@@ -105,7 +105,13 @@ Feature: Load WP-CLI
     And I run `wp core install --url='localhost:8001' --title='Test' --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
     Then STDOUT should not be empty
 
-    When I run `wp eval 'echo $GLOBALS["redis_server"];'`
+    And a eval-redis-server.php file:
+      """
+      <?php
+      echo $GLOBALS['redis_server'];
+      """
+
+    When I run `wp eval-file eval-redis-server.php`
     Then STDOUT should be:
       """
       foo
@@ -315,34 +321,46 @@ Feature: Load WP-CLI
   Scenario: WP-CLI sets $table_prefix appropriately on multisite
     Given a WP multisite installation
     And I run `wp site create --slug=first`
+    And a eval-table-prefix.php file:
+      """
+      <?php
+      global $table_prefix; echo $table_prefix;
+      """
+    And a eval-blog-id.php file:
+      """
+      <?php
+      global $blog_id; echo $blog_id;
+      """
 
-    When I run `wp eval 'global $table_prefix; echo $table_prefix;'`
+    When I run `wp eval-file eval-table-prefix.php`
     Then STDOUT should be:
       """
       wp_
       """
 
-    When I run `wp eval 'global $blog_id; echo $blog_id;'`
+    When I run `wp eval-file eval-blog-id.php`
     Then STDOUT should be:
       """
       1
       """
 
-    When I run `wp --url=example.com/first eval 'global $table_prefix; echo $table_prefix;'`
+    When I run `wp --url=example.com/first eval-file eval-table-prefix.php`
     Then STDOUT should be:
       """
       wp_2_
       """
 
-    When I run `wp --url=example.com/first eval 'global $blog_id; echo $blog_id;'`
+    When I run `wp --url=example.com/first eval-file eval-blog-id.php`
     Then STDOUT should be:
       """
       2
       """
 
-  Scenario: Don't apply set_url_scheme because it will always be incorrect
+  Scenario: Use --assume-https to preserve HTTPS scheme in URL functions
     Given a WP multisite installation
     And I run `wp option update siteurl https://example.com`
+    And I run `wp site option update siteurl https://example.com`
+    And I run `wp site option update home https://example.com`
 
     When I run `wp option get siteurl`
     Then STDOUT should be:
@@ -350,7 +368,31 @@ Feature: Load WP-CLI
       https://example.com
       """
 
-    When I run `wp site list --field=url`
+    When I run `wp --assume-https site list --field=url`
+    Then STDOUT should be:
+      """
+      https://example.com/
+      """
+
+    When I run `wp --assume-https eval "echo site_url();"`
+    Then STDOUT should be:
+      """
+      https://example.com
+      """
+
+    When I run `wp --assume-https eval "echo home_url();"`
+    Then STDOUT should be:
+      """
+      https://example.com
+      """
+
+    When I run `wp --assume-https eval "echo network_site_url();"`
+    Then STDOUT should be:
+      """
+      https://example.com/
+      """
+
+    When I run `wp --assume-https eval "echo network_home_url();"`
     Then STDOUT should be:
       """
       https://example.com/
@@ -371,6 +413,7 @@ Feature: Load WP-CLI
       """
     And STDOUT should be empty
 
+  @skip-object-cache
   Scenario: Show potential table prefixes when site isn't found, single site.
     Given a WP installation
     And "$table_prefix = 'wp_';" replaced with "$table_prefix = 'cli_';" in the wp-config.php file
@@ -541,7 +584,15 @@ Feature: Load WP-CLI
       );
       """
 
-    When I run `wp eval '$autoloaders = spl_autoload_functions(); $first = $autoloaders[0]; $plugin_index = array_search( "wpcli_test_mu_autoload", $autoloaders, true ); echo ( $plugin_index !== false && 0 !== $plugin_index ) ? "WP-CLI autoloader is first" : "Plugin autoloader is first";'`
+    And a check-autoloaders.php file:
+      """
+      <?php
+      $autoloaders = spl_autoload_functions();
+      $first = $autoloaders[0];
+      $plugin_index = array_search( 'wpcli_test_mu_autoload', $autoloaders, true );
+      echo ( $plugin_index !== false && 0 !== $plugin_index ) ? 'WP-CLI autoloader is first' : 'Plugin autoloader is first';
+      """
+    When I run `wp eval-file check-autoloaders.php`
     Then STDOUT should contain:
       """
       WP-CLI autoloader is first

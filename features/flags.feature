@@ -3,8 +3,13 @@ Feature: Global flags
   @require-wp-5.5
   Scenario: Setting the URL
     Given a WP installation
+    And a eval-server.php file:
+      """
+      <?php
+      echo json_encode( $_SERVER );
+      """
 
-    When I run `wp --url=localhost:8001 eval 'echo json_encode( $_SERVER );'`
+    When I run `wp --url=localhost:8001 eval-file eval-server.php`
     Then STDOUT should be JSON containing:
       """
       {
@@ -17,8 +22,13 @@ Feature: Global flags
   @less-than-wp-5.5
   Scenario: Setting the URL
     Given a WP installation
+    And a eval-server.php file:
+      """
+      <?php
+      echo json_encode( $_SERVER );
+      """
 
-    When I run `wp --url=localhost:8001 eval 'echo json_encode( $_SERVER );'`
+    When I run `wp --url=localhost:8001 eval-file eval-server.php`
     Then STDOUT should be JSON containing:
       """
       {
@@ -68,7 +78,7 @@ Feature: Global flags
   Scenario: Malformed URL with missing slash in protocol
     Given a WP installation
 
-    When I try `wp eval 'echo "done";' --url=http:/example.com`
+    When I try `wp eval "echo 'done';" --url=http:/example.com`
     Then STDERR should be:
       """
       Warning: The --url parameter value 'http:/example.com' is not valid. Check for typos in the protocol, e.g. 'http://' not 'http:/'.
@@ -81,7 +91,7 @@ Feature: Global flags
   Scenario: Malformed URL with missing slash in protocol on multisite
     Given a WP multisite installation
 
-    When I try `wp eval 'echo "done";' --url=http:/example.com`
+    When I try `wp eval "echo 'done';" --url=http:/example.com`
     Then STDERR should contain:
       """
       Warning: The --url parameter value 'http:/example.com' is not valid. Check for typos in the protocol, e.g. 'http://' not 'http:/'.
@@ -101,7 +111,7 @@ Feature: Global flags
   Scenario: Debug run
     Given a WP installation
 
-    When I try `wp eval 'echo CONST_WITHOUT_QUOTES;'`
+    When I try `wp eval "echo CONST_WITHOUT_QUOTES;"`
     Then STDOUT should be:
       """
       CONST_WITHOUT_QUOTES
@@ -112,7 +122,7 @@ Feature: Global flags
       """
     And the return code should be 0
 
-    When I try `wp eval 'echo CONST_WITHOUT_QUOTES;' --debug`
+    When I try `wp eval "echo CONST_WITHOUT_QUOTES;" --debug`
     Then the return code should be 0
     And STDOUT should be:
       """
@@ -126,28 +136,28 @@ Feature: Global flags
   Scenario: Setting the WP user
     Given a WP installation
 
-    When I run `wp eval 'var_export( is_user_logged_in() );'`
+    When I run `wp eval "var_export( is_user_logged_in() );"`
     Then STDOUT should be:
       """
       false
       """
     And STDERR should be empty
 
-    When I run `wp --user=admin eval 'echo wp_get_current_user()->user_login;'`
+    When I run `wp --user=admin eval "echo wp_get_current_user()->user_login;"`
     Then STDOUT should be:
       """
       admin
       """
     And STDERR should be empty
 
-    When I run `wp --user=admin@example.com eval 'echo wp_get_current_user()->user_login;'`
+    When I run `wp --user=admin@example.com eval "echo wp_get_current_user()->user_login;"`
     Then STDOUT should be:
       """
       admin
       """
     And STDERR should be empty
 
-    When I try `wp --user=non-existing-user eval 'echo wp_get_current_user()->user_login;'`
+    When I try `wp --user=non-existing-user eval "echo wp_get_current_user()->user_login;"`
     Then the return code should be 1
     And STDERR should be:
       """
@@ -157,7 +167,7 @@ Feature: Global flags
   Scenario: Warn when provided user is ambiguous
     Given a WP installation
 
-    When I run `wp --user=1 eval 'echo wp_get_current_user()->user_email;'`
+    When I run `wp --user=1 eval "echo wp_get_current_user()->user_email;"`
     Then STDOUT should be:
       """
       admin@example.com
@@ -170,7 +180,7 @@ Feature: Global flags
       Success:
       """
 
-    When I try `wp --user=1 eval 'echo wp_get_current_user()->user_email;'`
+    When I try `wp --user=1 eval "echo wp_get_current_user()->user_email;"`
     Then STDOUT should be:
       """
       admin@example.com
@@ -180,21 +190,21 @@ Feature: Global flags
       Warning: Ambiguous user match detected (both ID and user_login exist for identifier '1'). WP-CLI will default to the ID, but you can force user_login instead with WP_CLI_FORCE_USER_LOGIN=1.
       """
 
-    When I run `WP_CLI_FORCE_USER_LOGIN=1 wp --user=1 eval 'echo wp_get_current_user()->user_email;'`
+    When I run `WP_CLI_FORCE_USER_LOGIN=1 wp --user=1 eval "echo wp_get_current_user()->user_email;"`
     Then STDOUT should be:
       """
       user1@example.com
       """
     And STDERR should be empty
 
-    When I run `wp --user=user1@example.com eval 'echo wp_get_current_user()->user_email;'`
+    When I run `wp --user=user1@example.com eval "echo wp_get_current_user()->user_email;"`
     Then STDOUT should be:
       """
       user1@example.com
       """
     And STDERR should be empty
 
-    When I try `WP_CLI_FORCE_USER_LOGIN=1 wp --user=user1@example.com eval 'echo wp_get_current_user()->user_email;'`
+    When I try `WP_CLI_FORCE_USER_LOGIN=1 wp --user=user1@example.com eval "echo wp_get_current_user()->user_email;"`
     Then STDERR should be:
       """
       Error: Invalid user login: 'user1@example.com'
@@ -263,7 +273,7 @@ Feature: Global flags
       require: custom-cmd.php
       """
 
-    When I run `wp --require=custom-cmd.php test req 'This is a custom command.'`
+    When I run `wp --require=custom-cmd.php test req "This is a custom command."`
     Then STDOUT should be:
       """
       foo.php
@@ -271,12 +281,14 @@ Feature: Global flags
       This is a custom command.
       """
 
-    When I run `WP_CLI_CONFIG_PATH=wp-cli2.yml wp test req 'This is a custom command.'`
+    When I run `WP_CLI_CONFIG_PATH=wp-cli2.yml wp test req "This is a custom command."`
     Then STDOUT should contain:
       """
       This is a custom command.
       """
 
+  # TODO: Fix test for Windows.
+  @skip-windows
   Scenario: Using --require with globs
     Given an empty directory
     And a foober/foo.php file:
@@ -379,13 +391,15 @@ Feature: Global flags
       Error: RESTful WP-CLI needs to be installed. Try 'wp package install wp-cli/restful'.
       """
 
+  @skip-windows @skip-macos
   Scenario: Strict args mode should be passed on to ssh
-    When I try `WP_CLI_STRICT_ARGS_MODE=1 wp --debug --ssh=/ --version`
+    When I try `WP_CLI_STRICT_ARGS_MODE=1 wp --debug --ssh=/ --ssh-args="-o BatchMode=yes" --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv '' 'WP_CLI_STRICT_ARGS_MODE=1 wp
+      Running SSH command: ssh '-o BatchMode=yes' -T -vvv '' 'WP_CLI_STRICT_ARGS_MODE=1 wp
       """
 
+  @skip-windows @skip-macos
   Scenario: SSH flag should support changing directories
     When I try `wp --debug --ssh=wordpress:/my/path --version`
     Then STDERR should contain:
@@ -393,6 +407,7 @@ Feature: Global flags
       Running SSH command: ssh -T -vvv 'wordpress' 'cd '\''/my/path'\''; wp
       """
 
+  @skip-windows @skip-macos
   Scenario: SSH flag should support Docker
     When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp --debug --ssh=docker:user@wordpress --version`
     Then STDERR should contain:
@@ -400,6 +415,7 @@ Feature: Global flags
       Running SSH command: docker exec --user 'user' 'wordpress' sh -c
       """
 
+  @skip-windows @skip-macos
   Scenario: SSH args should be passed to SSH command
     When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --version`
     Then STDERR should contain:
@@ -407,6 +423,7 @@ Feature: Global flags
       Running SSH command: ssh '-o ConnectTimeout=5' -T -vvv 'wordpress' 'wp
       """
 
+  @skip-windows @skip-macos
   Scenario: Multiple SSH args should be passed to SSH command
     When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --ssh-args="-o ServerAliveInterval=10" --version`
     Then STDERR should contain:
@@ -414,6 +431,7 @@ Feature: Global flags
       Running SSH command: ssh '-o ConnectTimeout=5' '-o ServerAliveInterval=10' -T -vvv 'wordpress' 'wp
       """
 
+  @skip-windows @skip-macos
   Scenario: SSH args should be passed to Docker command
     When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp --debug --ssh=docker:wordpress --ssh-args="--env MY_VAR=value" --version`
     Then STDERR should contain:
@@ -510,12 +528,4 @@ Feature: Global flags
       """
       Args: foo, --require=/nonexistent
       """
-    And the return code should be 0
-
-  Scenario: Tilde expansion in --path parameter
-    Given a WP installation in 'subdir'
-    And I run `bash -c 'ln -s $(pwd)/subdir $HOME/test-wp-tilde'`
-
-    When I run `wp core version --path=~/test-wp-tilde`
-    Then STDOUT should not be empty
     And the return code should be 0

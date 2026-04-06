@@ -39,7 +39,7 @@ class ShutdownHandler {
 	 * Filter the PHP error message to add plugin/theme skip suggestions.
 	 *
 	 * @param string $message Error message.
-	 * @param array  $error   Error information from error_get_last().
+	 * @param array{type: int, message: string, file: string, line: int} $error Error information from error_get_last().
 	 * @return string Filtered error message.
 	 */
 	public static function filter_error_message( $message, $error ) {
@@ -48,6 +48,8 @@ class ShutdownHandler {
 		}
 
 		$message = 'There has been a critical error on this website.';
+
+		$message .= "\n\n" . wp_strip_all_tags( $error['message'] );
 
 		/**
 		 * @var string $file
@@ -84,7 +86,7 @@ class ShutdownHandler {
 			];
 		}
 
-		if ( ! self::should_prompt_rerun() ) {
+		if ( ! self::should_handle_error_rerun() ) {
 			return $message;
 		}
 
@@ -110,7 +112,7 @@ class ShutdownHandler {
 	 */
 	private static function identify_plugin( $file ) {
 		// Normalize path separators for consistent matching
-		$file = str_replace( '\\', '/', $file );
+		$file = Path::normalize( $file );
 
 		// Use WordPress constants if available for more accurate path detection
 		if ( defined( 'WP_PLUGIN_DIR' ) ) {
@@ -148,7 +150,7 @@ class ShutdownHandler {
 	 */
 	private static function identify_theme( $file ) {
 		// Normalize path separators for consistent matching
-		$file = str_replace( '\\', '/', $file );
+		$file = Path::normalize( $file );
 
 		// Use get_theme_root() if available for more accurate path detection
 		if ( function_exists( 'get_theme_root' ) ) {
@@ -169,6 +171,11 @@ class ShutdownHandler {
 			return $matches[1];
 		}
 
+		// Check for themes/functions.php directly in the themes directory
+		if ( preg_match( '#/wp-content/themes/(functions\\.php)$#', $file, $matches ) ) {
+			return $matches[1];
+		}
+
 		return null;
 	}
 
@@ -180,7 +187,9 @@ class ShutdownHandler {
 	 * @return string|null Component slug, or null if not found.
 	 */
 	private static function extract_component_slug( $file, $base_dir ) {
-		$base_dir = str_replace( '\\', '/', $base_dir );
+		$file     = Path::normalize( $file );
+		$base_dir = Path::normalize( $base_dir );
+
 		if ( 0 === strpos( $file, $base_dir . '/' ) ) {
 			$relative = substr( $file, strlen( $base_dir ) + 1 );
 			$parts    = explode( '/', $relative );
@@ -201,7 +210,9 @@ class ShutdownHandler {
 	 * @return string|null Theme slug, or null if not found.
 	 */
 	private static function extract_theme_slug( $file, $theme_dir ) {
-		$theme_dir = str_replace( '\\', '/', $theme_dir );
+		$file      = Path::normalize( $file );
+		$theme_dir = Path::normalize( $theme_dir );
+
 		if ( 0 === strpos( $file, $theme_dir . '/' ) ) {
 			$relative = substr( $file, strlen( $theme_dir ) + 1 );
 			$parts    = explode( '/', $relative );
@@ -213,20 +224,19 @@ class ShutdownHandler {
 	}
 
 	/**
-	 * Check if we should prompt the user to rerun the command.
+	 * Check if we should setup the error rerun handler.
 	 *
 	 * @return bool
 	 */
-	private static function should_prompt_rerun() {
-		// Check environment variable WP_CLI_SKIP_PROMPT
-		// If set to 'yes', automatically rerun; if 'no', don't prompt
-		$skip_prompt = Utils\get_env_or_config( 'WP_CLI_SKIP_PROMPT' );
+	private static function should_handle_error_rerun() {
+		// Check environment variable WP_CLI_ERROR_RERUN
+		$error_rerun = Utils\get_env_or_config( 'WP_CLI_ERROR_RERUN' );
 
-		if ( false !== $skip_prompt ) {
-			return 'yes' !== $skip_prompt && 'no' !== $skip_prompt;
+		if ( false !== $error_rerun ) {
+			return 'no' !== $error_rerun;
 		}
 
-		// Default: prompt the user
+		// Default: handle the error rerun (prompt)
 		return true;
 	}
 
@@ -237,19 +247,20 @@ class ShutdownHandler {
 	 */
 	private static function prompt_and_rerun( $skip ) {
 		// Get environment variable to check default behavior
-		$skip_prompt = Utils\get_env_or_config( 'WP_CLI_SKIP_PROMPT' );
+		$error_rerun = Utils\get_env_or_config( 'WP_CLI_ERROR_RERUN' );
 
 		// If set to 'yes', automatically rerun without prompting
-		if ( 'yes' === $skip_prompt ) {
+		if ( 'yes' === $error_rerun ) {
 			self::rerun_with_skip( $skip );
 			return;
 		}
 
-		// If set to 'no', don't prompt at all
-		if ( 'no' === $skip_prompt ) {
+		// If set to 'no', don't prompt or rerun at all
+		if ( 'no' === $error_rerun ) {
 			return;
 		}
 
+		// 'prompt' or default behavior
 		$skip_string = self::get_skip_string( $skip );
 
 		try {
