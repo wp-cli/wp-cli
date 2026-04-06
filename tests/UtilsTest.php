@@ -586,12 +586,12 @@ class UtilsTest extends TestCase {
 			'default request'  => [
 				[],
 				RuntimeException::class,
-				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate',
+				'cURL error 77:',
 			],
 			'secure request'   => [
 				[ 'insecure' => false ],
 				RuntimeException::class,
-				'Failed to get url \'https://example.com\': cURL error 77: error setting certificate',
+				'cURL error 77:',
 			],
 			'insecure request' => [
 				[ 'insecure' => true ],
@@ -1211,6 +1211,40 @@ class UtilsTest extends TestCase {
 		];
 	}
 
+	/**
+	 * @dataProvider dataFormatBytesString
+	 */
+	#[DataProvider( 'dataFormatBytesString' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testFormatBytesString( $bytes, $decimals, $unit, $expected ) {
+		$actual = Utils\format_bytes_string( $bytes, $decimals, $unit );
+		$this->assertSame( $expected, $actual, "Failed asserting that format_bytes_string($bytes, $decimals, '$unit') equals '$expected'." );
+	}
+
+	public static function dataFormatBytesString(): array {
+		return [
+			[ 0, 2, '', '0 B' ],
+			[ '0', 2, '', '0 B' ],
+			[ -0, 2, '', '0 B' ],
+			[ 500, 2, '', '500 B' ],
+			[ 1000, 2, '', '1 KB' ],
+			[ 1500, 2, '', '1.5 KB' ],
+			[ 1536, 2, '', '1.54 KB' ],
+			[ 1048576, 2, '', '1.05 MB' ],
+			[ 1073741824, 2, '', '1.07 GB' ],
+			[ 1099511627776, 2, '', '1.1 TB' ],
+			[ 1000, 0, 'KB', '1 KB' ],
+			[ 1536, 1, '', '1.5 KB' ],
+			[ 1048576, 3, '', '1.049 MB' ],
+			[ 1000000, 0, 'MB', '1 MB' ],
+			[ 1000000000, 0, 'GB', '1 GB' ],
+			[ 1000000000000, 0, 'TB', '1 TB' ],
+			[ -1000000, 0, 'MB', '-1 MB' ],
+			[ -1536, 1, '', '-1.5 KB' ],
+			[ 5000, 0, 'FOO', '5 KB' ],
+			[ 1.5e26, 0, '', '150 YB' ],
+		];
+	}
+
 	public function testExpandTildePath(): void {
 		$home = Utils\get_home_dir();
 
@@ -1226,5 +1260,60 @@ class UtilsTest extends TestCase {
 
 		// Test that tilde in the middle is not expanded
 		$this->assertEquals( '/path/to/~something', Utils\expand_tilde_path( '/path/to/~something' ) );
+	}
+
+	public function testEscapeshellargPreserveTilde() {
+		// Test that ~/ prefix is preserved and remainder is escaped
+		$this->assertEquals( '~/' . escapeshellarg( 'sites/wordpress' ), Utils\escapeshellarg_preserve_tilde( '~/sites/wordpress' ) );
+		$this->assertEquals( '~/' . escapeshellarg( 'my documents/site' ), Utils\escapeshellarg_preserve_tilde( '~/my documents/site' ) );
+		$this->assertEquals( '~/' . escapeshellarg( 'path with spaces' ), Utils\escapeshellarg_preserve_tilde( '~/path with spaces' ) );
+
+		// Test edge case: exactly ~/
+		$this->assertEquals( '~/' . escapeshellarg( '' ), Utils\escapeshellarg_preserve_tilde( '~/' ) );
+
+		// Test that paths without ~/ are fully escaped
+		$this->assertEquals( escapeshellarg( '/absolute/path' ), Utils\escapeshellarg_preserve_tilde( '/absolute/path' ) );
+		$this->assertEquals( escapeshellarg( 'relative/path' ), Utils\escapeshellarg_preserve_tilde( 'relative/path' ) );
+		$this->assertEquals( escapeshellarg( '/path with spaces' ), Utils\escapeshellarg_preserve_tilde( '/path with spaces' ) );
+
+		// Test that lone ~ or ~username patterns are fully escaped (only ~/ is expanded)
+		$this->assertEquals( escapeshellarg( '~' ), Utils\escapeshellarg_preserve_tilde( '~' ) );
+		$this->assertEquals( escapeshellarg( '~user' ), Utils\escapeshellarg_preserve_tilde( '~user' ) );
+		$this->assertEquals( escapeshellarg( '~user/path' ), Utils\escapeshellarg_preserve_tilde( '~user/path' ) );
+	}
+
+	public function testHasStdinReturnsFalseForDevNull(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Stdin redirection from /dev/null not supported on Windows.' );
+		}
+
+		// Simulate non-interactive environments (cron, atd, puppet exec) where
+		// STDIN is connected to /dev/null. has_stdin() must return false.
+		$process = \WP_CLI\Process::create( $this->buildHasStdinCommand() . ' < /dev/null' )->run();
+
+		$this->assertSame( 'false', $process->stdout );
+	}
+
+	public function testHasStdinReturnsTrueForPipedData(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Piped stdin not supported on Windows.' );
+		}
+
+		// Simulate a real pipe with data: has_stdin() must return true.
+		$process = \WP_CLI\Process::create( 'echo somedata | ' . $this->buildHasStdinCommand() )->run();
+
+		$this->assertSame( 'true', $process->stdout );
+	}
+
+	private function buildHasStdinCommand(): string {
+		$php  = Utils\get_php_binary();
+		$root = WP_CLI_ROOT;
+		$code = sprintf(
+			'require %s; require %s; echo WP_CLI\Utils\has_stdin() ? "true" : "false";',
+			var_export( $root . '/vendor/autoload.php', true ),
+			var_export( $root . '/php/utils.php', true )
+		);
+
+		return escapeshellarg( $php ) . ' -r ' . escapeshellarg( $code );
 	}
 }

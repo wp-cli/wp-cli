@@ -58,7 +58,7 @@ Feature: Have a config file
     When I run `wp core is-installed` from 'foo/wp-content'
     Then STDOUT should be empty
 
-    When I run `mkdir -p other/subdir`
+    Given an empty other/subdir directory
     And I run `wp core is-installed` from 'other/subdir'
     Then STDOUT should be empty
 
@@ -79,8 +79,11 @@ Feature: Have a config file
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
-    When I run `mkdir -p other/subdir`
-    And I run `echo '<?php // Silence is golden' > other/subdir/index.php`
+    Given an empty other/subdir directory
+    And a other/subdir/index.php file:
+      """
+      <?php // Silence is golden
+      """
     And I run `wp core is-installed` from 'other/subdir'
     Then STDOUT should be empty
 
@@ -226,24 +229,46 @@ Feature: Have a config file
       administrator
       """
 
+  @skip-windows
   Scenario: Command-specific configs
     Given a WP installation
     And a wp-cli.yml file:
       """
       eval:
         foo: bar
-      post list:
-        format: count
       """
 
     # Arbitrary values should be passed, without warnings
-    When I run `wp eval 'echo json_encode( $assoc_args );'`
+    When I run `wp eval "echo json_encode( \$assoc_args );"`
     Then STDOUT should be JSON containing:
       """
       {"foo": "bar"}
       """
 
-    # CLI args should trump config values
+  @require-windows
+  Scenario: Command-specific configs (Windows)
+    Given a WP installation
+    And a wp-cli.yml file:
+      """
+      eval:
+        foo: bar
+      """
+
+    # Arbitrary values should be passed, without warnings
+    When I run `wp eval "echo json_encode( $assoc_args );"`
+    Then STDOUT should be JSON containing:
+      """
+      {"foo": "bar"}
+      """
+
+  Scenario: CLI args should trump config values
+    Given a WP installation
+    And a wp-cli.yml file:
+      """
+      post list:
+        format: count
+      """
+
     When I run `wp post list`
     Then STDOUT should be a number
     When I run `wp post list --format=json`
@@ -750,13 +775,13 @@ Feature: Have a config file
       Error: Strange wp-config.php file: wp-settings.php is not loaded directly.
       """
 
-    When I run `wp eval 'var_export( defined("MY_CONSTANT") );'`
+    When I run `wp eval "var_export( defined('MY_CONSTANT') );"`
     Then STDOUT should be:
       """
       true
       """
 
-    When I run `wp eval 'var_export( defined("MY_OTHER_CONSTANT") );'`
+    When I run `wp eval "var_export( defined('MY_OTHER_CONSTANT') );"`
     Then STDOUT should be:
       """
       true
@@ -768,17 +793,191 @@ Feature: Have a config file
     And I try `WP_CLI_CONFIG_PATH=$HOME/doesnotexist/wp-cli.yml wp cli alias add 1 --debug`
     Then STDERR should match #Default global config does not exist, creating one in.+/doesnotexist/wp-cli.yml#
 
-  Scenario: Tilde expansion in config file path
-    Given a WP installation in 'subdir'
-    And I run `bash -c 'ln -s $(pwd)/subdir $HOME/test-wp-config-tilde'`
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_CACHE_DIR
+    Given an empty directory
     And a wp-cli.yml file:
       """
-      path: ~/test-wp-config-tilde
+      env:
+        WP_CLI_CACHE_DIR: /tmp/custom-cache
       """
 
-    When I run `wp core version`
-    Then STDOUT should not be empty
-    And the return code should be 0
+    When I run `wp cli info --format=json`
+    Then STDOUT should contain:
+      """
+      \/tmp\/custom-cache
+      """
+
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_PACKAGES_DIR
+    Given an empty directory
+    And an empty custom-packages directory
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_PACKAGES_DIR: ./custom-packages
+      """
+
+    When I run `wp cli info --format=json`
+    Then STDOUT should contain:
+      """
+      custom-packages\/
+      """
+
+  Scenario: Actual environment variables take precedence over config
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_CACHE_DIR: /tmp/from-config
+      """
+
+    When I run `WP_CLI_CACHE_DIR=/tmp/from-env wp cli info --format=json`
+    Then STDOUT should contain:
+      """
+      \/tmp\/from-env
+      """
+    And STDOUT should not contain:
+      """
+      from-config
+      """
+
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_CACHE_EXPIRY
+    Given an empty directory
+    And a test-cache-config.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-cache-config', function() {
+          $expiry = WP_CLI\Utils\get_env_or_config('WP_CLI_CACHE_EXPIRY');
+          WP_CLI::log( 'Cache expiry: ' . $expiry );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_CACHE_EXPIRY: 7200
+      """
+
+    When I run `wp --require=test-cache-config.php test-cache-config`
+    Then STDOUT should contain:
+      """
+      Cache expiry: 7200
+      """
+
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_CACHE_MAX_SIZE
+    Given an empty directory
+    And a test-cache-config.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-cache-config', function() {
+          $max_size = WP_CLI\Utils\get_env_or_config('WP_CLI_CACHE_MAX_SIZE');
+          WP_CLI::log( 'Cache max size: ' . $max_size );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_CACHE_MAX_SIZE: 209715200
+      """
+
+    When I run `wp --require=test-cache-config.php test-cache-config`
+    Then STDOUT should contain:
+      """
+      Cache max size: 209715200
+      """
+
+  Scenario: WP_CLI_CACHE_EXPIRY and WP_CLI_CACHE_MAX_SIZE with environment variable precedence
+    Given an empty directory
+    And a test-cache-config.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-cache-config', function() {
+          $expiry = WP_CLI\Utils\get_env_or_config('WP_CLI_CACHE_EXPIRY');
+          $max_size = WP_CLI\Utils\get_env_or_config('WP_CLI_CACHE_MAX_SIZE');
+          WP_CLI::log( 'Cache expiry: ' . $expiry );
+          WP_CLI::log( 'Cache max size: ' . $max_size );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_CACHE_EXPIRY: 3600
+        WP_CLI_CACHE_MAX_SIZE: 104857600
+      """
+
+    When I run `WP_CLI_CACHE_EXPIRY=7200 wp --require=test-cache-config.php test-cache-config`
+    Then STDOUT should contain:
+      """
+      Cache expiry: 7200
+      """
+    And STDOUT should contain:
+      """
+      Cache max size: 104857600
+      """
+
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_ERROR_RERUN
+    Given an empty directory
+    And a test-error-rerun.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-error-rerun', function() {
+          $error_rerun = WP_CLI\Utils\get_env_or_config('WP_CLI_ERROR_RERUN');
+          WP_CLI::log( 'WP_CLI_ERROR_RERUN: ' . $error_rerun );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_ERROR_RERUN: "no"
+      """
+
+    When I run `wp --require=test-error-rerun.php test-error-rerun`
+    Then STDOUT should contain:
+      """
+      WP_CLI_ERROR_RERUN: no
+      """
+
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_AUTO_UPDATE_PROMPT
+    Given an empty directory
+    And a test-auto-update.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-auto-update', function() {
+          $auto_update = WP_CLI\Utils\get_env_or_config('WP_CLI_AUTO_UPDATE_PROMPT');
+          WP_CLI::log( 'WP_CLI_AUTO_UPDATE_PROMPT: ' . $auto_update );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_AUTO_UPDATE_PROMPT: "no"
+      """
+
+    When I run `wp --require=test-auto-update.php test-auto-update`
+    Then STDOUT should contain:
+      """
+      WP_CLI_AUTO_UPDATE_PROMPT: no
+      """
+
+  Scenario: Environment variables configured in wp-cli.yml - WP_CLI_AUTOCORRECT
+    Given an empty directory
+    And a test-autocorrect.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-autocorrect', function() {
+          $autocorrect = WP_CLI\Utils\get_env_or_config('WP_CLI_AUTOCORRECT');
+          WP_CLI::log( 'WP_CLI_AUTOCORRECT: ' . $autocorrect );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_AUTOCORRECT: "1"
+      """
+
+    When I run `wp --require=test-autocorrect.php test-autocorrect`
+    Then STDOUT should contain:
+      """
+      WP_CLI_AUTOCORRECT: 1
+      """
 
   Scenario: Custom system config path via WP_CLI_SYSTEM_SETTINGS_PATH
     Given an empty directory
@@ -806,7 +1005,7 @@ Feature: Have a config file
       system-config.yml
       """
 
-    When I try `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml wp eval 'echo "test";'`
+    When I try `WP_CLI_SYSTEM_SETTINGS_PATH=system-config.yml wp eval "echo 'test';"`
     Then STDERR should contain:
       """
       Error: The 'eval' command has been disabled from the config file.

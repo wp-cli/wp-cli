@@ -9,12 +9,20 @@ Feature: Get help about WP-CLI commands
         Run 'wp help <command>' to get more information on a specific command.
 
       """
+    And STDOUT should contain:
+      """
+        https://make.wordpress.org/cli/handbook/
+      """
     And STDERR should be empty
 
     When I run `wp help core`
     Then STDOUT should contain:
       """
         wp core
+      """
+    And STDOUT should not contain:
+      """
+      https://make.wordpress.org/cli/handbook/
       """
     And STDERR should be empty
 
@@ -836,6 +844,8 @@ Feature: Get help about WP-CLI commands
       ALIAS
       """
 
+  # No vt100 on Windows.
+  @skip-windows
   Scenario: Help for commands should wordwrap well
     Given a WP installation
     And a wp-content/plugins/test-cli/command.php file:
@@ -1059,6 +1069,8 @@ Feature: Get help about WP-CLI commands
 
       """
 
+  # No vt100 on Windows.
+  @skip-windows
   Scenario: Help for commands with subcommands should wordwrap well
     Given a WP installation
     And a wp-content/plugins/test-cli/command.php file:
@@ -1172,6 +1184,8 @@ Feature: Get help about WP-CLI commands
       80
       """
 
+  # No vt100 on Windows.
+  @skip-windows
   Scenario: Long description for top-level command which has reference link display well
     Given a WP installation
     And a command.php file:
@@ -1216,6 +1230,8 @@ Feature: Get help about WP-CLI commands
         [2] http://wp-cli.org/
       """
 
+  # No vt100 on Windows.
+  @skip-windows
   Scenario: Very long description for top-level command which has reference link display well
     Given a WP installation
     And a command.php file:
@@ -1270,6 +1286,7 @@ Feature: Get help about WP-CLI commands
         [2] http://wp-cli.org/
       """
 
+  @skip-windows
   Scenario Outline: Check that proc_open() and proc_close() aren't disabled for help pager
     Given an empty directory
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} help --debug`
@@ -1319,7 +1336,7 @@ Feature: Get help about WP-CLI commands
       """
     And I run `wp plugin activate test-cli`
 
-    When I run `wp help test-multiline clear-cloudflare-cache`
+    When I run `COLUMNS=80 wp help test-multiline clear-cloudflare-cache`
     Then STDOUT should contain:
       """
       DESCRIPTION
@@ -1371,7 +1388,7 @@ Feature: Get help about WP-CLI commands
       """
     And I run `wp plugin activate test-cli`
 
-    When I run `wp help test-multiline noalias`
+    When I run `COLUMNS=80 wp help test-multiline noalias`
     Then STDOUT should contain:
       """
       DESCRIPTION
@@ -1393,3 +1410,27 @@ Feature: Get help about WP-CLI commands
 
         <zone_id>
       """
+
+  @skip-windows
+  Scenario: Pager without color support should not show ANSI escape codes
+    Given an empty directory
+
+    When I run `PAGER=cat wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
+
+    When I run `PAGER=more wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
+
+    When I run `PAGER=/usr/bin/more wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
+
+    When I run `PAGER=/bin/cat wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/
+
+    When I run `PAGER=less wp help | head -1`
+    Then STDOUT should not match /\x1b\[/
+    And STDOUT should not match /\033\[/

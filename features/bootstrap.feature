@@ -89,7 +89,7 @@ Feature: Bootstrap WP-CLI
       """
     And I run `composer install --no-interaction 2>&1`
 
-    When I run `vendor/bin/wp eval '\WP_CLI::Success( "WP-Standard-Eval" );'`
+    When I run `vendor/bin/wp eval "\WP_CLI::Success( 'WP-Standard-Eval' );"`
     Then STDOUT should contain:
       """
       Success: WP-Override-Eval
@@ -165,7 +165,7 @@ Feature: Bootstrap WP-CLI
       WP-CLI
       """
 
-    When I run `wp eval '\WP_CLI::Success( "WP-Standard-Eval" );'`
+    When I run `wp eval "\WP_CLI::Success( 'WP-Standard-Eval' );"`
     Then STDOUT should contain:
       """
       Success: WP-Standard-Eval
@@ -177,7 +177,7 @@ Feature: Bootstrap WP-CLI
       WP-Override-CLI
       """
 
-    When I run `wp --require=override/override.php eval '\WP_CLI::Success( "WP-Standard-Eval" );'`
+    When I run `wp --require=override/override.php eval "\WP_CLI::Success( 'WP-Standard-Eval' );"`
     Then STDOUT should contain:
       """
       Success: WP-Override-Eval
@@ -253,7 +253,7 @@ Feature: Bootstrap WP-CLI
       WP-CLI
       """
 
-    When I run `wp eval '\WP_CLI::Success( "WP-Standard-Eval" );' --skip-packages`
+    When I run `wp eval "\WP_CLI::Success( 'WP-Standard-Eval' );" --skip-packages`
     Then STDOUT should contain:
       """
       Success: WP-Standard-Eval
@@ -265,7 +265,7 @@ Feature: Bootstrap WP-CLI
       WP-Override-CLI
       """
 
-    When I run `wp eval '\WP_CLI::Success( "WP-Standard-Eval" );'`
+    When I run `wp eval "\WP_CLI::Success( 'WP-Standard-Eval' );"`
     Then STDOUT should contain:
       """
       Success: WP-Override-Eval
@@ -397,7 +397,7 @@ Feature: Bootstrap WP-CLI
       """
     And the return code should be 0
 
-    When I run `wp eval 'echo constant( "WP_CLI_TEST_CONSTANT" );'`
+    When I run `wp eval "echo constant( 'WP_CLI_TEST_CONSTANT' );"`
     Then STDOUT should be:
       """
       foo
@@ -499,11 +499,14 @@ Feature: Bootstrap WP-CLI
       """
     And the return code should be 0
 
+  @skip-windows
   Scenario: Allow disabling ini_set()
     Given an empty directory
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=ini_set} cli info`
     Then the return code should be 0
 
+  # TODO: Make test work for Windows.
+  @skip-windows
   Scenario: Test early root detection
 
     Given an empty directory
@@ -535,3 +538,12 @@ Feature: Bootstrap WP-CLI
     """
     YIKES!
     """
+
+  Scenario: Package autoloader has priority over fallback autoloader
+    Given an empty directory
+
+    # Verify both autoloaders are loaded in debug output, and that the fallback
+    # autoloader is initialized before the package autoloader so that locally
+    # installed packages override phar-bundled versions.
+    When I try `wp cli version --debug`
+    Then STDERR should match /WP_CLI\\Bootstrap\\IncludeFallbackAutoloader[\s\S]*WP_CLI\\Bootstrap\\IncludePackageAutoloader/

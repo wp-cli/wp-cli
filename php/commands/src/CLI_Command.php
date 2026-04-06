@@ -3,6 +3,7 @@
 use Composer\Semver\Comparator;
 use WP_CLI\Completions;
 use WP_CLI\Formatter;
+use WP_CLI\Path;
 use WP_CLI\Process;
 use WP_CLI\Utils;
 
@@ -168,10 +169,10 @@ class CLI_Command extends WP_CLI_Command {
 				'wp_cli_dir_path'          => WP_CLI_ROOT,
 				'wp_cli_vendor_path'       => WP_CLI_VENDOR_DIR,
 				'wp_cli_phar_path'         => defined( 'WP_CLI_PHAR_PATH' ) ? WP_CLI_PHAR_PATH : '',
-				'wp_cli_packages_dir_path' => $packages_dir,
-				'wp_cli_cache_dir_path'    => Utils\get_cache_dir(),
-				'global_config_path'       => (string) $runner->global_config_path,
-				'project_config_path'      => (string) $runner->project_config_path,
+				'wp_cli_packages_dir_path' => $packages_dir ? Path::normalize( $packages_dir ) : null,
+				'wp_cli_cache_dir_path'    => Path::normalize( Utils\get_cache_dir() ),
+				'global_config_path'       => Path::normalize( (string) $runner->global_config_path ),
+				'project_config_path'      => Path::normalize( (string) $runner->project_config_path ),
 				'wp_cli_version'           => WP_CLI_VERSION,
 			];
 
@@ -417,7 +418,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * @param array{patch?: bool, minor?: bool, major?: bool, stable?: bool, nightly?: bool, yes?: bool, insecure?: bool} $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
-		if ( ! Utils\inside_phar() ) {
+		if ( ! Path::inside_phar() ) {
 			WP_CLI::error( 'You can only self-update Phar files.' );
 		}
 

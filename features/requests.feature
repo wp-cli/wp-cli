@@ -36,7 +36,7 @@ Feature: Requests integration with both v1 and v2
       5.8
       """
 
-    When I run `vendor/bin/wp eval 'var_dump( \WP_CLI\Utils\http_request( "GET", "https://example.com/" ) );'`
+    When I run `vendor/bin/wp eval "var_dump( \WP_CLI\Utils\http_request( 'GET', 'https://example.com/' ) );"`
     Then STDOUT should contain:
       """
       object(Requests_Response)
@@ -60,7 +60,7 @@ Feature: Requests integration with both v1 and v2
       5.8
       """
 
-    When I run `wp eval 'var_dump( \WP_CLI\Utils\http_request( "GET", "https://example.com/" ) );'`
+    When I run `wp eval "var_dump( \WP_CLI\Utils\http_request( 'GET', 'https://example.com/' ) );"`
     Then STDOUT should contain:
       """
       object(Requests_Response)
@@ -77,6 +77,9 @@ Feature: Requests integration with both v1 and v2
       Success: Installed 1 of 1 plugins.
       """
 
+  # Skip on Windows due to cURL error 60: SSL certificate problem: unable to get local issuer certificate
+  # TODO: Investigate.
+  @skip-windows
   Scenario: Current version with WordPress-bundled Requests v2
     Given a WP installation
     # Switch themes because twentytwentyfive requires a version newer than 6.2
@@ -91,7 +94,7 @@ Feature: Requests integration with both v1 and v2
       6.2
       """
 
-    When I run `wp eval 'var_dump( \WP_CLI\Utils\http_request( "GET", "https://example.com/" ) );'`
+    When I run `wp eval "var_dump( \WP_CLI\Utils\http_request( 'GET', 'https://example.com/' ) );"`
     Then STDOUT should contain:
       """
       object(WpOrg\Requests\Response)

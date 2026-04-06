@@ -87,10 +87,10 @@ Feature: `wp cli completions` tasks
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp cli completions --line='wp bogus-comand ' --point=100`
+    When I run `wp cli completions --line="wp bogus-comand " --point=100`
     Then STDOUT should be empty
 
-    When I run `wp cli completions --line='wp eva' --point=100`
+    When I run `wp cli completions --line="wp eva" --point=100`
     Then STDOUT should contain:
       """
       eval
@@ -100,19 +100,19 @@ Feature: `wp cli completions` tasks
       eval-file
       """
 
-    When I run `wp cli completions --line='wp config create --dbname=' --point=100`
+    When I run `wp cli completions --line="wp config create --dbname=" --point=100`
     Then STDOUT should not contain:
       """
       --dbname=
       """
 
-    When I run `wp cli completions --line='wp config create --dbname' --point=100`
+    When I run `wp cli completions --line="wp config create --dbname" --point=100`
     Then STDOUT should contain:
       """
       --dbname=
       """
 
-    When I run `wp cli completions --line='wp config create --dbname=foo ' --point=100`
+    When I run `wp cli completions --line="wp config create --dbname=foo " --point=100`
     Then STDOUT should not contain:
       """
       --dbname=
@@ -122,7 +122,7 @@ Feature: `wp cli completions` tasks
       --extra-php
       """
 
-    When I run `wp cli completions --line='wp eval-file ' --point=100`
+    When I run `wp cli completions --line="wp eval-file " --point=100`
     Then STDOUT should contain:
       """
       <file>
@@ -337,6 +337,66 @@ Feature: `wp cli completions` tasks
 
     When I run `wp cli completions --line="wp core download --no-color --no-color" --point=100`
     Then STDOUT should be empty
+
+  Scenario: Bash Completion for global --url parameter in subdirectory installation
+    Given a WP multisite subdirectory installation
+    And I run `wp site create --slug=foo`
+    And I run `wp site create --slug=foot`
+    And I run `wp site create --slug=football`
+    And I run `wp site create --slug=bar`
+    And I run `wp site create --slug=baz`
+    And I run `wp site create --slug=waldo`
+
+    # show all matches
+    When I run `wp cli completions --line="wp plugin list --url=fo" --point=100`
+    Then STDOUT should contain:
+      """
+      foo
+      """
+    And STDOUT should contain:
+      """
+      foot
+      """
+    And STDOUT should contain:
+      """
+      football
+      """
+
+    When I run `wp cli completions --line="wp plugin list --url=https://example.com/bar" --point=100`
+    Then STDOUT should contain:
+      """
+      https://example.com/bar/
+      """
+
+  Scenario: Bash Completion for global --url parameter in subdomain installation
+    Given a WP multisite subdomain installation
+    And I run `wp site create --slug=foo`
+    And I run `wp site create --slug=foot`
+    And I run `wp site create --slug=football`
+    And I run `wp site create --slug=bar`
+    And I run `wp site create --slug=baz`
+    And I run `wp site create --slug=waldo`
+
+    # show all matches
+    When I run `wp cli completions --line="wp plugin list --url=fo" --point=100`
+    Then STDOUT should contain:
+      """
+      foo.example.com
+      """
+    And STDOUT should contain:
+      """
+      foot.example.com
+      """
+    And STDOUT should contain:
+      """
+      football.example.com
+      """
+
+    When I run `wp cli completions --line="wp plugin list --url=http://bar" --point=100`
+    Then STDOUT should contain:
+      """
+      http://bar.example.com
+      """
 
   Scenario: Bash Completion for flag values with enum options
     Given an empty directory
