@@ -1751,10 +1751,10 @@ Feature: WP-CLI Commands
       """
     And the return code should be 0
 
+  @skip-windows
   Scenario: Space-separated numeric arguments should be split on Windows
-    # This test simulates Windows PowerShell behavior using WP_CLI_TEST_IS_WINDOWS=1
-    # which activates the argument splitting logic on Unix-like test environments.
-    # The actual behavior on Windows systems will be identical.
+    # Tests Windows PowerShell argument splitting behavior on Unix/Linux.
+    # Simulates Windows behavior using WP_CLI_TEST_IS_WINDOWS environment variable.
     Given an empty directory
     And a custom-cmd.php file:
       """
@@ -1776,7 +1776,7 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'test-ids', 'test_ids_command' );
       """
 
-    # Test on Windows with space-separated IDs as a single argument
+    # Test simulated Windows with space-separated IDs as a single argument
     When I run `WP_CLI_TEST_IS_WINDOWS=1 wp --require=custom-cmd.php test-ids "123 456 789"`
     Then STDOUT should contain:
       """
@@ -1795,7 +1795,7 @@ Feature: WP-CLI Commands
       ID: 789
       """
 
-    # Test on Windows with single ID (should not be split)
+    # Test simulated Windows with single ID (should not be split)
     When I run `WP_CLI_TEST_IS_WINDOWS=1 wp --require=custom-cmd.php test-ids 123`
     Then STDOUT should contain:
       """
@@ -1806,7 +1806,7 @@ Feature: WP-CLI Commands
       ID: 123
       """
 
-    # Test on non-Windows (should pass through as-is)
+    # Test on actual Unix/Linux (should pass through as-is)
     When I run `WP_CLI_TEST_IS_WINDOWS=0 wp --require=custom-cmd.php test-ids "123 456"`
     Then STDOUT should contain:
       """
@@ -1817,8 +1817,85 @@ Feature: WP-CLI Commands
       ID: 123 456
       """
 
-    # Test on Windows with mixed arguments (non-numeric strings should not be split)
+    # Test simulated Windows with mixed arguments (non-numeric strings should not be split)
     When I run `WP_CLI_TEST_IS_WINDOWS=1 wp --require=custom-cmd.php test-ids "hello world"`
+    Then STDOUT should contain:
+      """
+      Number of arguments: 1
+      """
+    And STDOUT should contain:
+      """
+      ID: hello world
+      """
+
+  @require-windows
+  Scenario: Space-separated numeric arguments should be split on Windows (Windows)
+    # Tests Windows PowerShell argument splitting behavior on actual Windows.
+    # Uses Windows-style environment variable syntax (set VAR=value&&).
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * Test command for space-separated arguments
+       *
+       * <ids>...
+       * : One or more IDs
+       *
+       * @when before_wp_load
+       */
+      function test_ids_command( $args ) {
+        WP_CLI::log( 'Number of arguments: ' . count( $args ) );
+        foreach ( $args as $id ) {
+          WP_CLI::log( 'ID: ' . $id );
+        }
+      }
+      WP_CLI::add_command( 'test-ids', 'test_ids_command' );
+      """
+
+    # Test actual Windows with space-separated IDs as a single argument
+    When I run `wp --require=custom-cmd.php test-ids "123 456 789"`
+    Then STDOUT should contain:
+      """
+      Number of arguments: 3
+      """
+    And STDOUT should contain:
+      """
+      ID: 123
+      """
+    And STDOUT should contain:
+      """
+      ID: 456
+      """
+    And STDOUT should contain:
+      """
+      ID: 789
+      """
+
+    # Test actual Windows with single ID (should not be split)
+    When I run `wp --require=custom-cmd.php test-ids 123`
+    Then STDOUT should contain:
+      """
+      Number of arguments: 1
+      """
+    And STDOUT should contain:
+      """
+      ID: 123
+      """
+
+    # Test simulated non-Windows behavior (should pass through as-is)
+    When I run `set WP_CLI_TEST_IS_WINDOWS=0&& wp --require=custom-cmd.php test-ids "123 456"`
+    Then STDOUT should contain:
+      """
+      Number of arguments: 1
+      """
+    And STDOUT should contain:
+      """
+      ID: 123 456
+      """
+
+    # Test actual Windows with mixed arguments (non-numeric strings should not be split)
+    When I run `wp --require=custom-cmd.php test-ids "hello world"`
     Then STDOUT should contain:
       """
       Number of arguments: 1
