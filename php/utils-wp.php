@@ -95,6 +95,11 @@ function wp_debug_mode() {
 		ini_set( 'display_errors', function_exists( 'xdebug_debug_zval' ) ? false : 'stderr' );
 	} else {
 		ini_set( 'display_errors', 0 );
+		// In PHP CLI mode, log_errors=1 with an empty error_log routes errors to STDERR even
+		// when display_errors is off. Suppress that when display is explicitly suppressed.
+		if ( '' === ini_get( 'error_log' ) ) {
+			ini_set( 'log_errors', 0 );
+		}
 	}
 }
 // phpcs:enable
