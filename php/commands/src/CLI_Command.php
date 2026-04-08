@@ -771,7 +771,7 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Dumps the list of global parameters, as JSON or in var_export format.
+	 * Dumps the list of global parameters, as JSON or in plaintext format.
 	 *
 	 * ## OPTIONS
 	 *
@@ -783,14 +783,14 @@ class CLI_Command extends WP_CLI_Command {
 	 * ---
 	 * default: json
 	 * options:
-	 *   - var_export
+	 *   - plaintext
 	 *   - json
 	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Dump the list of global parameters.
-	 *     $ wp cli param-dump --format=var_export
+	 *     $ wp cli param-dump --format=plaintext
 	 *     array (
 	 *       'path' =>
 	 *       array (
@@ -821,7 +821,13 @@ class CLI_Command extends WP_CLI_Command {
 			}
 		}
 
-		if ( 'var_export' === Utils\get_flag_value( $assoc_args, 'format' ) ) {
+		$format = Utils\get_flag_value( $assoc_args, 'format' );
+
+		// Support both 'plaintext' and deprecated 'var_export' format names.
+		if ( 'plaintext' === $format || 'var_export' === $format ) {
+			if ( 'var_export' === $format ) {
+				WP_CLI::warning( "The 'var_export' format is deprecated. Please use 'plaintext' instead." );
+			}
 			var_export( $spec );
 		} else {
 			echo json_encode( $spec );
