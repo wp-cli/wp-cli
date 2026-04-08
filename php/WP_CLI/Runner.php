@@ -1597,7 +1597,7 @@ class Runner {
 				$this->auto_check_update();
 				$this->run_command( $this->arguments, $this->assoc_args );
 			}
-			// Help didn't exit so failed to find the command at this stage.
+			// Help wasn't run or didn't exit, so the command wasn't resolved at this stage.
 		}
 
 		// Handle --url parameter
