@@ -507,10 +507,27 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( 'Cannot chmod %s.', $temp ) );
 		}
 
+		$temp = (string) realpath( $temp );
+
 		class_exists( '\cli\Colors' ); // This autoloads \cli\Colors - after we move the file we no longer have access to this class.
 
-		if ( false === rename( $temp, $old_phar ) ) {
-			WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $old_phar ) );
+		if ( Utils\is_windows() ) {
+			$bak_file = $old_phar . '.bak';
+			if ( file_exists( $bak_file ) ) {
+				@unlink( $bak_file );
+			}
+			if ( false === rename( $old_phar, $bak_file ) ) {
+				WP_CLI::error( sprintf( 'Cannot rename %s to %s', $old_phar, $bak_file ) );
+			}
+			if ( false === rename( $temp, $old_phar ) ) {
+				@rename( $bak_file, $old_phar ); // Revert
+				WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $old_phar ) );
+			}
+			@unlink( $bak_file ); // Try to clean up
+		} else {
+			if ( false === rename( $temp, $old_phar ) ) {
+				WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $old_phar ) );
+			}
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'nightly', false ) ) {
