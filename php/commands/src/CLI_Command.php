@@ -524,10 +524,8 @@ class CLI_Command extends WP_CLI_Command {
 				WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $old_phar ) );
 			}
 			@unlink( $bak_file ); // Try to clean up
-		} else {
-			if ( false === rename( $temp, $old_phar ) ) {
+		} elseif ( false === rename( $temp, $old_phar ) ) {
 				WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $old_phar ) );
-			}
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'nightly', false ) ) {
