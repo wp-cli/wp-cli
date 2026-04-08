@@ -290,6 +290,12 @@ class Runner {
 	public function get_packages_dir_path() {
 		$packages_dir = (string) Utils\get_env_or_config( 'WP_CLI_PACKAGES_DIR' );
 		if ( $packages_dir ) {
+			if ( ! Path::is_absolute( $packages_dir ) ) {
+				$cwd = getcwd();
+				if ( $cwd ) {
+					$packages_dir = $cwd . '/' . $packages_dir;
+				}
+			}
 			$packages_dir = Path::trailingslashit( $packages_dir );
 		} else {
 			$packages_dir = Path::get_home_dir() . '/.wp-cli/packages/';
