@@ -1752,9 +1752,7 @@ Feature: WP-CLI Commands
     And the return code should be 0
 
   @require-windows
-  Scenario: Space-separated numeric arguments should be split on Windows (Windows)
-    # Tests Windows PowerShell argument splitting behavior on actual Windows.
-    # Uses Windows-style environment variable syntax (set VAR=value&&).
+  Scenario: Space-separated numeric arguments should be split on Windows
     Given an empty directory
     And a custom-cmd.php file:
       """
