@@ -121,6 +121,8 @@ class Runner {
 	 * Perform the early invocation of a command.
 	 *
 	 * @param string $when Named execution hook
+	 *
+	 * @phpstan-impure
 	 */
 	private function do_early_invoke( $when ): void {
 		WP_CLI::debug( "Executing hook: {$when}", 'hooks' );
@@ -1634,6 +1636,8 @@ class Runner {
 			$r           = $this->find_command_to_run( $cmd_args, $autocorrect );
 
 			if ( is_array( $r ) ) {
+				// `::find_command_to_run()` modifies `$this->arguments`.
+				// @phpstan-ignore booleanNot.alwaysFalse
 				if ( ! $this->cmd_starts_with( [ 'help' ] ) ) {
 					$this->arguments = array_merge( [ 'help' ], $this->arguments );
 				}
