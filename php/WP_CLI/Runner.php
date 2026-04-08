@@ -1634,7 +1634,9 @@ class Runner {
 			$r           = $this->find_command_to_run( $cmd_args, $autocorrect );
 
 			if ( is_array( $r ) ) {
-				$this->arguments = array_merge( [ 'help' ], $this->arguments );
+				if ( ! $this->cmd_starts_with( [ 'help' ] ) ) {
+					$this->arguments = array_merge( [ 'help' ], $this->arguments );
+				}
 				$this->auto_check_update();
 				$this->run_command( $this->arguments, $this->assoc_args );
 			}
