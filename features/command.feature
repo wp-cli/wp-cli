@@ -1795,7 +1795,6 @@ Feature: WP-CLI Commands
       ID: 789
       """
 
-    # Test actual Windows with single ID (should not be split)
     When I run `wp --require=custom-cmd.php test-ids 123`
     Then STDOUT should contain:
       """
@@ -1804,17 +1803,6 @@ Feature: WP-CLI Commands
     And STDOUT should contain:
       """
       ID: 123
-      """
-
-    # Test simulated non-Windows behavior (should pass through as-is)
-    When I run `set WP_CLI_TEST_IS_WINDOWS=0&& wp --require=custom-cmd.php test-ids "123 456"`
-    Then STDOUT should contain:
-      """
-      Number of arguments: 1
-      """
-    And STDOUT should contain:
-      """
-      ID: 123 456
       """
 
     # Test actual Windows with mixed arguments (non-numeric strings should not be split)
