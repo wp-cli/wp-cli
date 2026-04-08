@@ -125,68 +125,6 @@ class Formatter {
 	 * using the add_format() API, allowing them to be overridden like custom formats.
 	 */
 	public static function register_builtin_formats() {
-		// Register 'count' format
-		self::add_format(
-			'count',
-			static function ( $items, $fields ) {
-				echo count( $items );
-			}
-		);
-
-		// Register 'ids' format
-		self::add_format(
-			'ids',
-			static function ( $items, $fields ) {
-				echo implode( ' ', $items );
-			}
-		);
-
-		// Register 'json' format
-		self::add_format(
-			'json',
-			static function ( $items, $fields, $context = [] ) {
-				// For single-item display, output the item directly without array wrapper
-				if ( isset( $context['single_item'] ) && $context['single_item'] && count( $items ) === 1 ) {
-					$item = reset( $items );
-					if ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
-						// phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
-						echo json_encode( $item, JSON_PARTIAL_OUTPUT_ON_ERROR );
-					} else {
-						echo json_encode( $item );
-					}
-				} else {
-					if ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
-						// phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
-						echo json_encode( $items, JSON_PARTIAL_OUTPUT_ON_ERROR );
-					} else {
-						echo json_encode( $items );
-					}
-				}
-			}
-		);
-
-		// Register 'yaml' format
-		self::add_format(
-			'yaml',
-			static function ( $items, $fields, $context = [] ) {
-				// For single-item display, output the item directly without array wrapper
-				if ( isset( $context['single_item'] ) && $context['single_item'] && count( $items ) === 1 ) {
-					$item = reset( $items );
-					echo Spyc::YAMLDump( $item, 2, 0 );
-				} else {
-					echo Spyc::YAMLDump( $items, 2, 0 );
-				}
-			}
-		);
-
-		// Register 'csv' format
-		self::add_format(
-			'csv',
-			static function ( $items, $fields ) {
-				Utils\write_csv( STDOUT, $items, $fields );
-			}
-		);
-
 		// Register 'table' format
 		self::add_format(
 			'table',
@@ -204,6 +142,68 @@ class Formatter {
 						WP_CLI::line( $line );
 					}
 				}
+			}
+		);
+
+		// Register 'json' format
+		self::add_format(
+			'json',
+			static function ( $items, $fields, $context = [] ) {
+				// For single-item display, output the item directly without array wrapper
+				if ( isset( $context['single_item'] ) && $context['single_item'] && count( $items ) === 1 ) {
+					$item = reset( $items );
+					if ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
+						// phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
+						echo json_encode( $item, JSON_PARTIAL_OUTPUT_ON_ERROR );
+					} else {
+						echo json_encode( $item );
+					}
+				} elseif ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
+						// phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
+						echo json_encode( $items, JSON_PARTIAL_OUTPUT_ON_ERROR );
+				} else {
+					echo json_encode( $items );
+				}
+			}
+		);
+
+		// Register 'csv' format
+		self::add_format(
+			'csv',
+			static function ( $items, $fields ) {
+				Utils\write_csv( STDOUT, $items, $fields );
+			}
+		);
+
+		// Register 'yaml' format
+		self::add_format(
+			'yaml',
+			static function ( $items, $fields, $context = [] ) {
+				// For single-item display, output the item directly without array wrapper
+				if ( isset( $context['single_item'] ) && $context['single_item'] && count( $items ) === 1 ) {
+					$item = reset( $items );
+					echo Spyc::YAMLDump( $item, 2, 0 );
+				} else {
+					echo Spyc::YAMLDump( $items, 2, 0 );
+				}
+			}
+		);
+
+		// Register 'count' format
+		self::add_format(
+			'count',
+			// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- $fields required for API consistency
+			static function ( $items, $fields ) {
+				echo count( $items );
+			}
+		);
+
+		// Register 'ids' format
+		self::add_format(
+			'ids',
+			// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- $fields required for API consistency
+			static function ( $items, $fields ) {
+				echo implode( ' ', $items );
 			}
 		);
 	}
@@ -266,8 +266,10 @@ class Formatter {
 			}
 
 			// Check if this is a custom formatter or a built-in format that needs field validation
+			// Skip validation for count/ids formats as they don't use fields
+			$skip_field_validation  = in_array( $this->args['format'], [ 'count', 'ids' ], true );
 			$is_custom_format       = isset( self::$custom_formatters[ $this->args['format'] ] );
-			$needs_field_validation = in_array( $this->args['format'], [ 'csv', 'json', 'table', 'yaml' ], true ) || $is_custom_format;
+			$needs_field_validation = ! $skip_field_validation && ( in_array( $this->args['format'], [ 'csv', 'json', 'table', 'yaml' ], true ) || $is_custom_format );
 
 			if ( $needs_field_validation ) {
 				// Validate fields exist in at least one item and resolve field names with prefix support
