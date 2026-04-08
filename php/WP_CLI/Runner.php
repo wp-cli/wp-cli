@@ -1589,8 +1589,13 @@ class Runner {
 				|| ! Utils\locate_wp_config()
 				|| count( $this->arguments ) > 2
 			) ) {
-			$this->auto_check_update();
-			$this->run_command( $this->arguments, $this->assoc_args );
+			$cmd_args = array_slice( $this->arguments, 1 );
+			$r        = $this->find_command_to_run( $cmd_args, 'none' );
+
+			if ( is_array( $r ) ) {
+				$this->auto_check_update();
+				$this->run_command( $this->arguments, $this->assoc_args );
+			}
 			// Help didn't exit so failed to find the command at this stage.
 		}
 
@@ -1623,8 +1628,13 @@ class Runner {
 				|| ! Utils\locate_wp_config()
 				|| count( $this->arguments ) > 2
 			) ) {
-			$this->auto_check_update();
-			$this->run_command( $this->arguments, $this->assoc_args );
+			$cmd_args = array_slice( $this->arguments, 1 );
+			$r        = $this->find_command_to_run( $cmd_args, 'none' );
+
+			if ( is_array( $r ) ) {
+				$this->auto_check_update();
+				$this->run_command( $this->arguments, $this->assoc_args );
+			}
 		}
 
 		$this->check_wp_version();
