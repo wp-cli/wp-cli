@@ -780,7 +780,7 @@ Feature: WP-CLI Commands
       """
     And STDERR should be empty
 
-    When I run `wp --require=test-cmd.php foo ''`
+    When I run `wp --require=test-cmd.php foo ""`
     Then STDOUT should be YAML containing:
       """
       bar:
@@ -805,7 +805,7 @@ Feature: WP-CLI Commands
        Invalid value specified for 'burrito' (This is the burrito argument.)
       """
 
-    When I try `wp --require=test-cmd.php foo apple --burrito=''`
+    When I try `wp --require=test-cmd.php foo apple --burrito=""`
     Then STDERR should contain:
       """
       Error: Parameter errors:
@@ -818,13 +818,13 @@ Feature: WP-CLI Commands
       Error: Invalid value specified for positional arg.
       """
 
-    When I try `wp --require=test-cmd.php foo apple 'cha cha cha' taco_del_mar`
+    When I try `wp --require=test-cmd.php foo apple "cha cha cha" taco_del_mar`
     Then STDERR should contain:
       """
       Error: Invalid value specified for positional arg.
       """
 
-    When I run `wp --require=test-cmd.php foo apple 'cha cha cha'`
+    When I run `wp --require=test-cmd.php foo apple "cha cha cha"`
     Then STDOUT should be YAML containing:
       """
       bar: apple

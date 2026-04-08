@@ -5,14 +5,14 @@ Feature: Skipping plugins
     And I run `wp plugin install https://github.com/wp-cli/sample-plugin/archive/refs/heads/master.zip`
     And I run `wp plugin activate akismet sample-plugin`
 
-    When I run `wp eval 'var_export( defined("AKISMET_VERSION") );var_export( function_exists( "sample_plugin" ) );'`
+    When I run `wp eval "var_export( defined( \"AKISMET_VERSION\" ) ); var_export( function_exists( \"sample_plugin\" ) );"`
     Then STDOUT should be:
       """
       truetrue
       """
 
     # The specified plugin should be skipped
-    When I run `wp --skip-plugins=akismet eval 'var_export( defined("AKISMET_VERSION") );'`
+    When I run `wp --skip-plugins=akismet eval "var_export( defined( \"AKISMET_VERSION\" ) );"`
     Then STDOUT should be:
       """
       false
@@ -26,21 +26,21 @@ Feature: Skipping plugins
       """
 
     # The un-specified plugin should continue to be loaded
-    When I run `wp --skip-plugins=akismet eval 'var_export( defined("AKISMET_VERSION") );var_export( function_exists( "sample_plugin" ) );'`
+    When I run `wp --skip-plugins=akismet eval "var_export( defined( \"AKISMET_VERSION\" ) ); var_export( function_exists( \"sample_plugin\" ) );"`
     Then STDOUT should be:
       """
       falsetrue
       """
 
     # Can specify multiple plugins to skip
-    When I try `wp eval --skip-plugins=sample-plugin,akismet 'echo sample_plugin();'`
+    When I try `WP_CLI_ERROR_RERUN=no wp eval --skip-plugins=sample-plugin,akismet "echo sample_plugin();"`
     Then STDERR should contain:
       """
       Call to undefined function sample_plugin()
       """
 
     # No plugins should be loaded when --skip-plugins doesn't have a value
-    When I run `wp --skip-plugins eval 'var_export( defined("AKISMET_VERSION") );var_export( function_exists( "sample_plugin" ) );'`
+    When I run `wp --skip-plugins eval "var_export( defined( \"AKISMET_VERSION\" ) );var_export( function_exists( \"sample_plugin\" ) );"`
     Then STDOUT should be:
       """
       falsefalse
@@ -57,7 +57,7 @@ Feature: Skipping plugins
       """
 
     When I run `wp plugin activate sample-plugin`
-    And I try `wp eval 'echo sample_plugin();'`
+    And I try `WP_CLI_ERROR_RERUN=no wp eval "echo sample_plugin();"`
     Then STDERR should contain:
       """
       Call to undefined function sample_plugin()
@@ -72,7 +72,7 @@ Feature: Skipping plugins
       """
 
     When I run `wp plugin activate sample-plugin`
-    And I try `wp eval 'echo sample_plugin();'`
+    And I try `WP_CLI_ERROR_RERUN=no wp eval "echo sample_plugin();"`
     Then STDERR should contain:
       """
       Call to undefined function sample_plugin()
@@ -95,25 +95,25 @@ Feature: Skipping plugins
     And the return code should be 0
 
     When I run `wp plugin activate --network akismet sample-plugin`
-    And I run `wp eval 'var_export( defined("AKISMET_VERSION") );var_export( function_exists( "sample_plugin" ) );'`
+    And I run `wp eval "var_export( defined('AKISMET_VERSION') );var_export( function_exists( 'sample_plugin' ) );"`
     Then STDOUT should be:
       """
       truetrue
       """
 
-    When I run `wp --skip-plugins eval 'var_export( defined("AKISMET_VERSION") );var_export( function_exists( "sample_plugin" ) );'`
+    When I run `wp --skip-plugins eval "var_export( defined('AKISMET_VERSION') );var_export( function_exists( 'sample_plugin' ) );"`
     Then STDOUT should be:
       """
       falsefalse
       """
 
-    When I run `wp --skip-plugins=akismet eval 'var_export( defined("AKISMET_VERSION") );var_export( function_exists( "sample_plugin" ) );'`
+    When I run `wp --skip-plugins=akismet eval "var_export( defined('AKISMET_VERSION') );var_export( function_exists( 'sample_plugin' ) );"`
     Then STDOUT should be:
       """
       falsetrue
       """
 
-    When I run `wp --skip-plugins=sample-plugin eval 'var_export( defined("AKISMET_VERSION") );var_export( function_exists( "sample_plugin" ) );'`
+    When I run `wp --skip-plugins=sample-plugin eval "var_export( defined('AKISMET_VERSION') );var_export( function_exists( 'sample_plugin' ) );"`
     Then STDOUT should be:
       """
       truefalse
