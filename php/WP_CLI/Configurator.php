@@ -144,6 +144,7 @@ class Configurator {
 				$value[ $i ] = self::interpolate_env_vars( $value[ $i ] );
 				if ( 'path' === $i && ! isset( $value['ssh'] ) ) {
 					self::absolutize( $value[ $i ], $yml_file_dir );
+					$value[ $i ] = Path::normalize( $value[ $i ] );
 				}
 				$this->aliases[ $key ][ $i ] = $value[ $i ];
 				$is_alias                    = true;
