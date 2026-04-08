@@ -1776,7 +1776,6 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'test-ids', 'test_ids_command' );
       """
 
-    # Test actual Windows with space-separated IDs as a single argument
     When I run `wp --require=custom-cmd.php test-ids "123 456 789"`
     Then STDOUT should contain:
       """
@@ -1805,7 +1804,6 @@ Feature: WP-CLI Commands
       ID: 123
       """
 
-    # Test actual Windows with mixed arguments (non-numeric strings should not be split)
     When I run `wp --require=custom-cmd.php test-ids "hello world"`
     Then STDOUT should contain:
       """
