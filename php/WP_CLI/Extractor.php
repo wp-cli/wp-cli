@@ -58,7 +58,7 @@ class Extractor {
 		$res = $zip->open( $zipfile );
 
 		if ( true === $res ) {
-			$name    = Utils\basename( $zipfile );
+			$name    = Path::basename( $zipfile );
 			$tempdir = Utils\get_temp_dir()
 						. uniqid( 'wp-cli-extract-zipfile-', true )
 						. "-{$name}";
@@ -98,7 +98,7 @@ class Extractor {
 		if ( class_exists( 'PharData' ) ) {
 			try {
 				$phar    = new PharData( $tarball );
-				$name    = Utils\basename( $tarball );
+				$name    = Path::basename( $tarball );
 				$tempdir = Utils\get_temp_dir()
 							. uniqid( 'wp-cli-extract-tarball-', true )
 							. "-{$name}";
@@ -121,16 +121,15 @@ class Extractor {
 			}
 		}
 
-		// Ensure relative paths cannot be misinterpreted as hostnames.
-		// Prepending `./` will force tar to interpret it as a filesystem path.
-		if ( self::path_is_relative( $tarball ) ) {
-			$tarball = "./{$tarball}";
+		$tarball_absolute = realpath( $tarball );
+		if ( ! $tarball_absolute ) {
+			throw new Exception( "Invalid tarball '{$tarball}'." );
 		}
+		$tarball = $tarball_absolute;
 
-		if ( ! file_exists( $tarball )
-			|| ! is_readable( $tarball )
+		if ( ! is_readable( $tarball )
 			|| filesize( $tarball ) <= 0 ) {
-			throw new Exception( "Invalid zip file '{$tarball}'." );
+			throw new Exception( "Invalid tarball '{$tarball}'." );
 		}
 
 		// Note: directory must exist for tar --directory to work.
@@ -220,17 +219,27 @@ class Extractor {
 			RecursiveIteratorIterator::CHILD_FIRST
 		);
 
+		$base_dir = realpath( $dir );
+		if ( false === $base_dir ) {
+			return;
+		}
+		$base_dir = rtrim( $base_dir, DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR;
+
 		/**
 		 * @var \SplFileInfo $fileinfo
 		 */
 		foreach ( $files as $fileinfo ) {
-			$todo = $fileinfo->isDir() ? 'rmdir' : 'unlink';
-			$path = $fileinfo->getRealPath();
-			if ( 0 !== strpos( $path, $fileinfo->getRealPath() ) ) {
+			$todo      = $fileinfo->isDir() ? 'rmdir' : 'unlink';
+			$path      = $fileinfo->getPathname();
+			$real_path = $fileinfo->getRealPath();
+
+			if ( ! $real_path || 0 !== strpos( $real_path, $base_dir ) ) {
 				WP_CLI::warning(
 					"Temporary file or folder to be removed was found outside of temporary folder, aborting removal: '{$path}'"
 				);
+				continue;
 			}
+
 			$todo( $path );
 		}
 		rmdir( $dir );
@@ -339,45 +348,6 @@ class Extractor {
 						$error ? $error['message'] : 'Unknown error'
 					)
 				);
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Check whether a path is relative-
-	 *
-	 * @param string $path Path to check.
-	 * @return bool Whether the path is relative.
-	 */
-	private static function path_is_relative( $path ) {
-		if ( '' === $path ) {
-			return true;
-		}
-
-		// Strip scheme.
-		$scheme_position = strpos( $path, '://' );
-		if ( false !== $scheme_position ) {
-			$path = substr( $path, $scheme_position + 3 );
-		}
-
-		// UNIX root "/" or "\" (Windows style).
-		if ( '/' === $path[0] || '\\' === $path[0] ) {
-			return false;
-		}
-
-		// Windows root.
-		if ( strlen( $path ) > 1 && ctype_alpha( $path[0] ) && ':' === $path[1] ) {
-
-			// Special case: only drive letter, like "C:".
-			if ( 2 === strlen( $path ) ) {
-				return false;
-			}
-
-			// Regular Windows path starting with drive letter, like "C:/ or "C:\".
-			if ( '/' === $path[2] || '\\' === $path[2] ) {
 				return false;
 			}
 		}

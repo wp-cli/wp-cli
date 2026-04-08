@@ -45,7 +45,7 @@ class Completions {
 					$this->add( rtrim( $url_no_scheme, '/\\' ) );
 				}
 
-				$url_no_home = str_replace( Utils\trailingslashit( $home_url_no_scheme ), '', $url_no_scheme );
+				$url_no_home = str_replace( Path::trailingslashit( $home_url_no_scheme ), '', $url_no_scheme );
 				if ( $url_no_home !== $url ) {
 					$this->add( rtrim( $url_no_home, '/\\' ) );
 				}

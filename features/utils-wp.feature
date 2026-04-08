@@ -14,7 +14,7 @@ Feature: Utilities that depend on WordPress code
       """
 
     When I run `wp post create --post_title="Foo Bar" --porcelain`
-    And I run `wp --require=test.php eval ''`
+    And I run `wp --require=test.php eval ""`
     Then STDOUT should be:
       """
       ,,,
@@ -831,6 +831,7 @@ Feature: Utilities that depend on WordPress code
       wp_users
       """
 
+  @skip-object-cache
   Scenario: Get cache type - Default
     Given a WP installation
     And a cache_type_test.php file:
@@ -845,6 +846,23 @@ Feature: Utilities that depend on WordPress code
     Then STDOUT should be:
       """
       Default
+      """
+
+  @require-object-cache
+  Scenario: Get cache type - Default
+    Given a WP installation
+    And a cache_type_test.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'cache-type-test', function() {
+        echo WP_CLI\Utils\wp_get_cache_type();
+      } );
+      """
+
+    When I run `wp --require=cache_type_test.php cache-type-test`
+    Then STDOUT should be:
+      """
+      Unknown: WP_Object_Cache
       """
 
   Scenario: Get cache type - Unknown custom cache
@@ -995,7 +1013,7 @@ Feature: Utilities that depend on WordPress code
 
       define('WP_DEBUG', true);
       define('WP_DEBUG_DISPLAY', false);
-      define('WP_DEBUG_LOG', '/tmp/custom_debug.log');
+      define('WP_DEBUG_LOG', __DIR__ . '/custom_debug.log');
 
       require_once(ABSPATH . 'wp-settings.php');
       """
@@ -1008,14 +1026,14 @@ Feature: Utilities that depend on WordPress code
       } );
       """
 
-    When I run `rm -f /tmp/custom_debug.log`
+    When I run `rm -f custom_debug.log`
     And I run `wp --require=test-debug-log.php test-debug-log`
     Then STDOUT should contain:
       """
       Error logged
       """
-    And the /tmp/custom_debug.log file should exist
-    And the /tmp/custom_debug.log file should contain:
+    And the custom_debug.log file should exist
+    And the custom_debug.log file should contain:
       """
       Test error message
       """
