@@ -507,7 +507,7 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( 'Cannot chmod %s.', $temp ) );
 		}
 
-		$temp = (string) realpath( $temp );
+		$temp = realpath( $temp ) ?: $temp;
 
 		class_exists( '\cli\Colors' ); // This autoloads \cli\Colors - after we move the file we no longer have access to this class.
 
