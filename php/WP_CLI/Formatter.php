@@ -192,7 +192,7 @@ class Formatter {
 		// Register 'count' format
 		self::add_format(
 			'count',
-			// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- $fields required for API consistency
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $fields required for API consistency
 			static function ( $items, $fields ) {
 				echo count( $items );
 			}
@@ -201,7 +201,7 @@ class Formatter {
 		// Register 'ids' format
 		self::add_format(
 			'ids',
-			// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- $fields required for API consistency
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $fields required for API consistency
 			static function ( $items, $fields ) {
 				echo implode( ' ', $items );
 			}
