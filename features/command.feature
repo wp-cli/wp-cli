@@ -780,7 +780,7 @@ Feature: WP-CLI Commands
       """
     And STDERR should be empty
 
-    When I run `wp --require=test-cmd.php foo ''`
+    When I run `wp --require=test-cmd.php foo ""`
     Then STDOUT should be YAML containing:
       """
       bar:
@@ -805,7 +805,7 @@ Feature: WP-CLI Commands
        Invalid value specified for 'burrito' (This is the burrito argument.)
       """
 
-    When I try `wp --require=test-cmd.php foo apple --burrito=''`
+    When I try `wp --require=test-cmd.php foo apple --burrito=""`
     Then STDERR should contain:
       """
       Error: Parameter errors:
@@ -818,13 +818,13 @@ Feature: WP-CLI Commands
       Error: Invalid value specified for positional arg.
       """
 
-    When I try `wp --require=test-cmd.php foo apple 'cha cha cha' taco_del_mar`
+    When I try `wp --require=test-cmd.php foo apple "cha cha cha" taco_del_mar`
     Then STDERR should contain:
       """
       Error: Invalid value specified for positional arg.
       """
 
-    When I run `wp --require=test-cmd.php foo apple 'cha cha cha'`
+    When I run `wp --require=test-cmd.php foo apple "cha cha cha"`
     Then STDOUT should be YAML containing:
       """
       bar: apple
@@ -1750,6 +1750,67 @@ Feature: WP-CLI Commands
       Success: afterload command executed
       """
     And the return code should be 0
+
+  @require-windows
+  Scenario: Space-separated numeric arguments should be split on Windows
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * Test command for space-separated arguments
+       *
+       * <ids>...
+       * : One or more IDs
+       *
+       * @when before_wp_load
+       */
+      function test_ids_command( $args ) {
+        WP_CLI::log( 'Number of arguments: ' . count( $args ) );
+        foreach ( $args as $id ) {
+          WP_CLI::log( 'ID: ' . $id );
+        }
+      }
+      WP_CLI::add_command( 'test-ids', 'test_ids_command' );
+      """
+
+    When I run `wp --require=custom-cmd.php test-ids "123 456 789"`
+    Then STDOUT should contain:
+      """
+      Number of arguments: 3
+      """
+    And STDOUT should contain:
+      """
+      ID: 123
+      """
+    And STDOUT should contain:
+      """
+      ID: 456
+      """
+    And STDOUT should contain:
+      """
+      ID: 789
+      """
+
+    When I run `wp --require=custom-cmd.php test-ids 123`
+    Then STDOUT should contain:
+      """
+      Number of arguments: 1
+      """
+    And STDOUT should contain:
+      """
+      ID: 123
+      """
+
+    When I run `wp --require=custom-cmd.php test-ids "hello world"`
+    Then STDOUT should contain:
+      """
+      Number of arguments: 1
+      """
+    And STDOUT should contain:
+      """
+      ID: hello world
+      """
 
   Scenario: Warn when command overrides global argument
     Given an empty directory

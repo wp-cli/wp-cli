@@ -1416,7 +1416,7 @@ function report_batch_operation_results( $noun, $verb, $total, $successes, $fail
  * @return array<string>
  */
 function parse_str_to_argv( $arguments ) {
-	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches, PREG_SET_ORDER );
+	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|[^\\\\](?:\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|[^\\\\](?:\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches, PREG_SET_ORDER );
 	$argv = [];
 	foreach ( $matches as $match ) {
 		// Check if this is a quoted associative argument (--key="value" or --key='value').
@@ -1838,6 +1838,16 @@ function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = n
 	if ( is_windows() ) {
 		// @phpstan-ignore no.private.function
 		$cmd = _proc_open_compat_win_env( $cmd, $env );
+
+		// Normalize forward slashes in the executable name for Windows cmd.exe
+		if ( false !== strpos( $cmd, '/' ) ) {
+			if ( preg_match( '/^("[^"]*"|[^ ]+)/', $cmd, $matches ) ) {
+				$executable = $matches[0];
+				$rest       = substr( $cmd, strlen( $executable ) );
+				$executable = str_replace( '/', '\\', $executable );
+				$cmd        = $executable . $rest;
+			}
+		}
 	}
 	return proc_open( $cmd, $descriptorspec, $pipes, $cwd, $env, $other_options );
 }
@@ -2327,4 +2337,42 @@ function escape_csv_value( $value ) {
 	}
 
 	return $value;
+}
+
+/**
+ * Convert a size in bytes to a human-readable format.
+ *
+ * @param int|float $bytes    Size in bytes.
+ * @param int       $decimals Optional. Number of decimal places to round to. Default 0.
+ * @param string    $unit     Optional. Specific unit to use. Default is auto-detect.
+ * @return string Human-readable size.
+ */
+function format_bytes_string( $bytes, $decimals = 0, $unit = '' ) {
+	if ( 0 === (int) $bytes ) {
+		return '0 B';
+	}
+
+	$sizes = [ 'B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB' ];
+
+	// Use absolute value for calculating log exponent metrics cleanly.
+	$abs_bytes = abs( (float) $bytes );
+
+	// Resolve the specific target unit manually.
+	$size_key = false;
+	if ( ! empty( $unit ) ) {
+		$unit     = strtoupper( $unit );
+		$size_key = array_search( $unit, $sizes, true );
+	}
+
+	// Calculate and bound the auto-detect unit size string if no valid unit was requested.
+	if ( false === $size_key ) {
+		$size_key = (int) floor( log( $abs_bytes ) / log( 1000 ) );
+		$size_key = min( $size_key, count( $sizes ) - 1 ); // Prevent out of bounds
+
+		$unit = $sizes[ $size_key ];
+	}
+
+	$divisor = pow( 1000, $size_key );
+
+	return round( $bytes / $divisor, $decimals ) . ' ' . $unit;
 }

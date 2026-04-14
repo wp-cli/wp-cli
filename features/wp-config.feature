@@ -21,7 +21,7 @@ Feature: wp-config
       require_once(ABSPATH . 'wp-settings.php');
       """
 
-    When I try `wp eval "echo 'TEST_CONFIG_OVERRIDE => ' . TEST_CONFIG_OVERRIDE;"`
+    When I try `WP_CLI_ERROR_RERUN=no wp eval "echo 'TEST_CONFIG_OVERRIDE => ' . TEST_CONFIG_OVERRIDE;"`
     Then STDERR should contain:
       """
       TEST_CONFIG_OVERRIDE

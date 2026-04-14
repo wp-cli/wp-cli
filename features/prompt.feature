@@ -77,7 +77,7 @@ Feature: Prompt user for input
         - command-foobar.php
       """
 
-    When I run `echo 'bar' | wp foobar foo --prompt=flag1`
+    When I run `echo bar | wp foobar foo --prompt=flag1`
     Then the return code should be 0
     And STDERR should be empty
     And STDOUT should contain:
@@ -177,17 +177,14 @@ Feature: Prompt user for input
       post_title,post_name,post_status
       csv
       """
-    When I run `wp post create --post_title='Publish post' --post_content='Publish post content' --post_status='publish'`
+    When I run `wp post create --post_title="Publish post" --post_content="Publish post content" --post_status="publish"`
     Then STDOUT should not be empty
 
-    When I run `wp post create --post_title='Publish post 2' --post_content='Publish post content' --post_status='publish'`
+    When I run `wp post create --post_title="Publish post 2" --post_content="Publish post content" --post_status="publish"`
     Then STDOUT should not be empty
 
     When I run `wp post list --prompt < value-file`
-    Then STDOUT should contain:
-      """
-      wp post list --post_type='post' --fields='post_title,post_name,post_status' --format='csv'
-      """
+    Then STDOUT should match #wp post list --post_type='post' --fields='post_title,post_name,post_status' --format='csv'|wp post list --post_type="post" --fields="post_title,post_name,post_status" --format="csv"#
     And STDOUT should contain:
       """
       post_title,post_name,post_status
@@ -218,15 +215,15 @@ Feature: Prompt user for input
       """
 
     When I run `wp term create --prompt < value-file`
-    Then STDOUT should contain:
-      """
-      wp term create 'category' 'General' --slug='general'
-      """
+    Then STDOUT should match #wp term create 'category' 'General' --slug='general'|wp term create "category" "General" --slug="general"#
     And STDOUT should contain:
       """
       Created category
       """
 
+  # Skip on Windows due to output differences. PowerShell masks the `--password` argument name.
+  # TODO: Investigate.
+  @skip-windows
   Scenario: Prompt should mask sensitive argument values
     Given an empty directory
     And a cmd.php file:
@@ -369,10 +366,7 @@ Feature: Prompt user for input
       """
 
     When I run `wp test-assoc-default --prompt < empty-response`
-    Then STDOUT should contain:
-      """
-      wp test-assoc-default --format='table'
-      """
+    Then STDOUT should match #wp test-assoc-default --format='table'|wp test-assoc-default --format="table"#
     And STDOUT should contain:
       """
       format: table
@@ -412,10 +406,7 @@ Feature: Prompt user for input
       """
 
     When I run `wp test-positional-default --prompt < empty-response`
-    Then STDOUT should contain:
-      """
-      wp test-positional-default 'World'
-      """
+    Then STDOUT should match /wp test-positional-default ["\']World["\']/
     And STDOUT should contain:
       """
       Hello World

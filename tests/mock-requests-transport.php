@@ -7,12 +7,17 @@ class Mock_Requests_Transport implements Transport {
 	public $requests = [];
 
 	public function request( $url, $headers = [], $data = [], $options = [] ) {
-		// Simulate retrying.
+		// Simulate retrying without SSL verification when a custom (bad) cert file is used.
+		// Use realpath() to normalize paths so that 8.3 short paths on Windows
+		// (e.g., RUNNER~1) compare correctly against long paths from tempnam().
+		$normalized_verify  = isset( $options['verify'] ) && is_string( $options['verify'] ) ? realpath( $options['verify'] ) : false;
+		$normalized_tmp_dir = realpath( sys_get_temp_dir() );
 		if (
 			isset( $options['insecure'] )
 			&& $options['insecure']
-			&& isset( $options['verify'] )
-			&& false !== strpos( $options['verify'], sys_get_temp_dir() )
+			&& false !== $normalized_verify
+			&& false !== $normalized_tmp_dir
+			&& 0 === strpos( $normalized_verify, $normalized_tmp_dir . DIRECTORY_SEPARATOR )
 		) {
 			$options['verify'] = false;
 		}

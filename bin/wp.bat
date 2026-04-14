@@ -1,2 +1,2 @@
 @ECHO OFF
-php "%~dp0../php/boot-fs.php" %*
+php %WP_CLI_PHP_ARGS% "%~dp0../php/boot-fs.php" %*
