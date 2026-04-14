@@ -17,7 +17,7 @@ Feature: Argument validation
     Given an empty directory
     And WP files
 
-    When I try `wp core config --dbprefix=invalid!`
+    When I try `wp core config --dbprefix=invalid- --dbname=foo --dbpass=bar --skip-check`
     Then the return code should be 1
     And STDERR should contain:
       """
