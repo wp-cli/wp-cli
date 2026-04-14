@@ -121,6 +121,8 @@ class Runner {
 	 * Perform the early invocation of a command.
 	 *
 	 * @param string $when Named execution hook
+	 *
+	 * @phpstan-impure
 	 */
 	private function do_early_invoke( $when ): void {
 		WP_CLI::debug( "Executing hook: {$when}", 'hooks' );
@@ -290,6 +292,13 @@ class Runner {
 	public function get_packages_dir_path() {
 		$packages_dir = (string) Utils\get_env_or_config( 'WP_CLI_PACKAGES_DIR' );
 		if ( $packages_dir ) {
+			$packages_dir = Path::expand_tilde( $packages_dir );
+			if ( ! Path::is_absolute( $packages_dir ) ) {
+				$cwd = getcwd();
+				if ( $cwd ) {
+					$packages_dir = $cwd . '/' . $packages_dir;
+				}
+			}
 			$packages_dir = Path::trailingslashit( $packages_dir );
 		} else {
 			$packages_dir = Path::get_home_dir() . '/.wp-cli/packages/';
@@ -1002,6 +1011,27 @@ class Runner {
 	 * @return array
 	 */
 	private static function back_compat_conversions( $args, $assoc_args ) {
+		// On Windows (PowerShell), command substitution like $(wp post list --format=ids)
+		// returns space-separated values as a single string argument instead of separate arguments.
+		// Split such arguments to maintain compatibility with Unix-like behavior.
+		if ( Utils\is_windows() ) {
+			$split_args = [];
+			foreach ( $args as $arg ) {
+				// Check if the argument contains space-separated numeric IDs
+				// We only split if the entire argument matches the pattern of space-separated numbers
+				if ( is_string( $arg ) && preg_match( '/^\d+(\s+\d+)+$/', $arg ) ) {
+					// Split on whitespace and add each ID as a separate argument
+					$ids = preg_split( '/\s+/', $arg, -1, PREG_SPLIT_NO_EMPTY );
+					if ( false !== $ids ) {
+						array_push( $split_args, ...$ids );
+					}
+				} else {
+					$split_args[] = $arg;
+				}
+			}
+			$args = $split_args;
+		}
+
 		$top_level_aliases = [
 			'sql'  => 'db',
 			'blog' => 'site',
@@ -1230,9 +1260,9 @@ class Runner {
 		$wp_is_readable = $this->wp_is_readable();
 		if ( ! $wp_exists || ! $wp_is_readable ) {
 			$this->show_synopsis_if_composite_command();
-			// If the command doesn't exist use as error.
-			$args                   = $this->cmd_starts_with( [ 'help' ] ) ? array_slice( $this->arguments, 1 ) : $this->arguments;
-			$suggestion_or_disabled = $this->find_command_to_run( $args );
+			$is_help                = $this->cmd_starts_with( [ 'help' ] );
+			$args                   = $is_help ? array_slice( $this->arguments, 1 ) : $this->arguments;
+			$suggestion_or_disabled = $this->find_command_to_run( $args, Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
 			if ( is_string( $suggestion_or_disabled ) ) {
 				if ( ! preg_match( '/disabled from the config file.$/', $suggestion_or_disabled ) ) {
 					WP_CLI::warning( "No WordPress installation found. If the command '" . implode( ' ', $args ) . "' is in a plugin or theme, pass --path=`path/to/wordpress`." );
@@ -1583,9 +1613,14 @@ class Runner {
 				|| ! Utils\locate_wp_config()
 				|| count( $this->arguments ) > 2
 			) ) {
-			$this->auto_check_update();
-			$this->run_command( $this->arguments, $this->assoc_args );
-			// Help didn't exit so failed to find the command at this stage.
+			$cmd_args = array_slice( $this->arguments, 1 );
+			$r        = $this->find_command_to_run( $cmd_args, 'none' );
+
+			if ( is_array( $r ) ) {
+				$this->auto_check_update();
+				$this->run_command( $this->arguments, $this->assoc_args );
+			}
+			// Help wasn't run or didn't exit, so the command wasn't resolved at this stage.
 		}
 
 		// Handle --url parameter
@@ -1617,8 +1652,19 @@ class Runner {
 				|| ! Utils\locate_wp_config()
 				|| count( $this->arguments ) > 2
 			) ) {
-			$this->auto_check_update();
-			$this->run_command( $this->arguments, $this->assoc_args );
+			$cmd_args    = array_slice( $this->arguments, 1 );
+			$autocorrect = ( ! $this->wp_exists() || ! Utils\locate_wp_config() ) ? ( Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' ) : 'none';
+			$r           = $this->find_command_to_run( $cmd_args, $autocorrect );
+
+			if ( is_array( $r ) ) {
+				// `::find_command_to_run()` modifies `$this->arguments`.
+				// @phpstan-ignore booleanNot.alwaysFalse
+				if ( ! $this->cmd_starts_with( [ 'help' ] ) ) {
+					$this->arguments = array_merge( [ 'help' ], $this->arguments );
+				}
+				$this->auto_check_update();
+				$this->run_command( $this->arguments, $this->assoc_args );
+			}
 		}
 
 		$this->check_wp_version();
