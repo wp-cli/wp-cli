@@ -632,6 +632,39 @@ Feature: Get help about WP-CLI commands
       """
     And STDOUT should be empty
 
+  Scenario: Disabled commands show up in help with reason
+    Given an empty directory
+    And a disable-command.php file:
+      """
+      <?php
+      WP_CLI::add_hook( 'before_add_command:test-disabled', function( $addition ) {
+          $addition->abort( 'This command is for testing only.' );
+      } );
+      /**
+       * A test command.
+       */
+      WP_CLI::add_command( 'test-disabled', function() {} );
+      """
+
+    When I try `wp help --require=disable-command.php`
+    Then STDOUT should contain:
+      """
+      test-disabled
+      """
+    And STDOUT should contain:
+      """
+      A test command.
+      """
+    And STDOUT should contain:
+      """
+      This command is for testing only.
+      """
+    And STDERR should contain:
+      """
+      Warning: Aborting the addition of the command 'test-disabled' with reason: This command is for testing only..
+      """
+
+
   Scenario: Help for third-party commands
     Given a WP installation
     And a wp-content/plugins/test-cli/command.php file:

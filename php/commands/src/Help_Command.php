@@ -226,28 +226,39 @@ class Help_Command extends WP_CLI_Command {
 
 	private static function render_subcommands( $command ) {
 		$subcommands = [];
-		$disabled    = [];
 		foreach ( $command->get_subcommands() as $subcommand ) {
-			$disabled_reason = WP_CLI::get_runner()->get_command_disabled_reason( $subcommand );
-			if ( false !== $disabled_reason ) {
-				$disabled[ $subcommand->get_name() ] = [
-					'desc'   => $subcommand->get_shortdesc(),
-					'reason' => $disabled_reason,
-				];
+			$disabled_reason = false;
+			if ( $subcommand instanceof Dispatcher\DisabledCommand ) {
+				$disabled_reason = $subcommand->get_disabled_reason();
 			} else {
-				$subcommands[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
+				$disabled_reason = WP_CLI::get_runner()->get_command_disabled_reason( $subcommand );
 			}
+
+			$subcommands[ $subcommand->get_name() ] = [
+				'desc'            => $subcommand->get_shortdesc(),
+				'disabled_reason' => $disabled_reason,
+			];
 		}
 
-		$max_len = self::get_max_len( array_merge( array_keys( $subcommands ), array_keys( $disabled ) ) );
+		$max_len = self::get_max_len( array_keys( $subcommands ) );
 
 		$lines = [];
-		foreach ( $subcommands as $name => $desc ) {
-			$lines[] = str_pad( $name, $max_len ) . "\t\t\t" . $desc;
-		}
-		foreach ( $disabled as $name => $data ) {
-			$suffix  = $data['reason'] ? " (disabled: {$data['reason']})" : ' (disabled)';
-			$lines[] = str_pad( $name, $max_len ) . "\t\t\t" . $data['desc'] . $suffix;
+		foreach ( $subcommands as $name => $data ) {
+			$desc = $data['desc'];
+			if ( false !== $data['disabled_reason'] ) {
+				$padded_name  = str_pad( $name, $max_len );
+				$colored_name = WP_CLI::colorize( '%r' . $name . '%n' ) . substr( $padded_name, strlen( $name ) );
+			} else {
+				$colored_name = str_pad( $name, $max_len );
+			}
+
+			$lines[] = $colored_name . "\t\t\t" . $desc;
+
+			if ( false !== $data['disabled_reason'] ) {
+				$indent  = str_repeat( ' ', $max_len ) . "\t\t\t";
+				$reason  = $data['disabled_reason'] ?: 'disabled';
+				$lines[] = $indent . WP_CLI::colorize( '%w' . $reason . '%n' );
+			}
 		}
 
 		return $lines;

@@ -967,7 +967,7 @@ class Runner {
 		 */
 		$disabled_commands = $this->config['disabled_commands'];
 		if ( in_array( $path, $disabled_commands, true ) ) {
-			return 'from the config file';
+			return 'Disabled via configuration file';
 		}
 		return false;
 	}
