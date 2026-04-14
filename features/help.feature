@@ -1483,7 +1483,7 @@ Feature: Get help about WP-CLI commands
       """
     And STDOUT should contain:
       """
-      (disabled: from the config file)
+      Disabled via configuration file
       """
 
   Scenario: Full help shows all subcommands recursively

@@ -117,7 +117,7 @@ Feature: Have a config file
       """
     And STDOUT should contain:
       """
-      (disabled: from the config file)
+      Disabled via configuration file
       """
 
     When I try `WP_CLI_CONFIG_PATH=config.yml wp help eval-file`
@@ -134,7 +134,7 @@ Feature: Have a config file
       """
     And STDOUT should contain:
       """
-      (disabled: from the config file)
+      Disabled via configuration file
       """
 
     # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
@@ -145,7 +145,7 @@ Feature: Have a config file
       """
     And STDOUT should contain:
       """
-      (disabled: from the config file)
+      Disabled via configuration file
       """
 
     When I try `WP_CLI_CONFIG_PATH=config.yml wp core multisite-convert`

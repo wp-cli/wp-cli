@@ -1147,9 +1147,13 @@ Feature: WP-CLI Commands
       """
       test-command-1
       """
-    And STDOUT should not contain:
+    And STDOUT should contain:
       """
       test-command-2
+      """
+    And STDOUT should contain:
+      """
+      Testing hooks.
       """
     And STDERR should be:
       """
