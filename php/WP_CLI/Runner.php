@@ -952,12 +952,28 @@ class Runner {
 	 * @return bool
 	 */
 	public function is_command_disabled( $command ) {
+		return false !== $this->get_command_disabled_reason( $command );
+	}
+
+	/**
+	 * Get the reason why a command is disabled, or false if it isn't.
+	 *
+	 * @return string|false Reason string, or false if the command is not disabled.
+	 */
+	public function get_command_disabled_reason( $command ) {
+		if ( $command instanceof Dispatcher\DisabledCommand ) {
+			return $command->get_disabled_reason();
+		}
+
 		$path = implode( ' ', array_slice( Dispatcher\get_path( $command ), 1 ) );
 		/**
 		 * @var string[] $disabled_commands
 		 */
 		$disabled_commands = $this->config['disabled_commands'];
-		return in_array( $path, $disabled_commands, true );
+		if ( in_array( $path, $disabled_commands, true ) ) {
+			return 'Disabled via configuration file';
+		}
+		return false;
 	}
 
 	/**
