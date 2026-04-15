@@ -227,12 +227,7 @@ class Help_Command extends WP_CLI_Command {
 	private static function render_subcommands( $command ) {
 		$subcommands = [];
 		foreach ( $command->get_subcommands() as $subcommand ) {
-			$disabled_reason = false;
-			if ( $subcommand instanceof Dispatcher\DisabledCommand ) {
-				$disabled_reason = $subcommand->get_disabled_reason();
-			} else {
-				$disabled_reason = WP_CLI::get_runner()->get_command_disabled_reason( $subcommand );
-			}
+			$disabled_reason = WP_CLI::get_runner()->get_command_disabled_reason( $subcommand );
 
 			$subcommands[ $subcommand->get_name() ] = [
 				'desc'            => $subcommand->get_shortdesc(),

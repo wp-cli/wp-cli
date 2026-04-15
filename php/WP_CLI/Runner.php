@@ -961,6 +961,10 @@ class Runner {
 	 * @return string|false Reason string, or false if the command is not disabled.
 	 */
 	public function get_command_disabled_reason( $command ) {
+		if ( $command instanceof Dispatcher\DisabledCommand ) {
+			return $command->get_disabled_reason();
+		}
+
 		$path = implode( ' ', array_slice( Dispatcher\get_path( $command ), 1 ) );
 		/**
 		 * @var string[] $disabled_commands
