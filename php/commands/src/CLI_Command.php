@@ -520,8 +520,20 @@ class CLI_Command extends WP_CLI_Command {
 				WP_CLI::error( sprintf( 'Cannot rename %s to %s', $old_phar, $bak_file ) );
 			}
 			if ( false === rename( $temp, $old_phar ) ) {
-				@rename( $bak_file, $old_phar ); // Revert
-				WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $old_phar ) );
+				$restore_succeeded = @rename( $bak_file, $old_phar ); // Revert
+				$restore_error     = error_get_last();
+				$message           = sprintf( 'Cannot move %s to %s. Backup was written to %s.', $temp, $old_phar, $bak_file );
+
+				if ( $restore_succeeded ) {
+					$message .= sprintf( ' The original Phar was restored to %s.', $old_phar );
+				} else {
+					$message .= sprintf( ' Failed to restore the original Phar from %s to %s.', $bak_file, $old_phar );
+					if ( isset( $restore_error['message'] ) ) {
+						$message .= sprintf( ' Restore error: %s', $restore_error['message'] );
+					}
+				}
+
+				WP_CLI::error( $message );
 			}
 			@unlink( $bak_file ); // Try to clean up
 		} elseif ( false === rename( $temp, $old_phar ) ) {
