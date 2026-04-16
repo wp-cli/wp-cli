@@ -511,6 +511,25 @@ class CLI_Command extends WP_CLI_Command {
 
 		class_exists( '\cli\Colors' ); // This autoloads \cli\Colors - after we move the file we no longer have access to this class.
 
+		$this->replace_current_phar( $temp, $old_phar );
+
+		if ( Utils\get_flag_value( $assoc_args, 'nightly', false ) ) {
+			$updated_version = 'the latest nightly release';
+		} elseif ( Utils\get_flag_value( $assoc_args, 'stable', false ) ) {
+			$updated_version = 'the latest stable release';
+		} else {
+			$updated_version = isset( $newest['version'] ) ? $newest['version'] : '<not provided>';
+		}
+		WP_CLI::success( sprintf( 'Updated WP-CLI to %s.', $updated_version ) );
+	}
+
+	/**
+	 * Replaces the current Phar with the newly downloaded one.
+	 *
+	 * @param string $temp     Path to the newly downloaded Phar.
+	 * @param string $old_phar Path to the current Phar.
+	 */
+	private function replace_current_phar( $temp, $old_phar ) {
 		if ( Utils\is_windows() ) {
 			$bak_file = $old_phar . '.bak';
 			if ( file_exists( $bak_file ) ) {
@@ -569,15 +588,6 @@ class CLI_Command extends WP_CLI_Command {
 		} elseif ( false === rename( $temp, $old_phar ) ) {
 			WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $old_phar ) );
 		}
-
-		if ( Utils\get_flag_value( $assoc_args, 'nightly', false ) ) {
-			$updated_version = 'the latest nightly release';
-		} elseif ( Utils\get_flag_value( $assoc_args, 'stable', false ) ) {
-			$updated_version = 'the latest stable release';
-		} else {
-			$updated_version = isset( $newest['version'] ) ? $newest['version'] : '<not provided>';
-		}
-		WP_CLI::success( sprintf( 'Updated WP-CLI to %s.', $updated_version ) );
 	}
 
 	/**
