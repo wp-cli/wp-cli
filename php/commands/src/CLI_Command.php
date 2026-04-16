@@ -562,11 +562,11 @@ class CLI_Command extends WP_CLI_Command {
 				if ( ! $restore_succeeded ) {
 					$restore_error = error_get_last();
 				}
-				$message = sprintf( 'Cannot move %s to %s. Backup was written to %s.', $temp, $current_phar, $bak_file );
 
 				if ( $restore_succeeded ) {
-					$message .= sprintf( ' The original Phar was restored to %s.', $current_phar );
+					$message = sprintf( 'Cannot move %s to %s. The original Phar was restored to %s.', $temp, $current_phar, $current_phar );
 				} else {
+					$message = sprintf( 'Cannot move %s to %s. Backup was written to %s.', $temp, $current_phar, $bak_file );
 					$message .= sprintf( ' Failed to restore the original Phar from %s to %s.', $bak_file, $current_phar );
 					if ( isset( $restore_error['message'] ) ) {
 						$message .= sprintf( ' Restore error: %s', $restore_error['message'] );
