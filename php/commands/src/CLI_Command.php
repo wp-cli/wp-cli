@@ -526,7 +526,15 @@ class CLI_Command extends WP_CLI_Command {
 				}
 			}
 			if ( false === rename( $old_phar, $bak_file ) ) {
-				WP_CLI::error( sprintf( 'Cannot rename %s to %s', $old_phar, $bak_file ) );
+				$rename_error = error_get_last();
+				WP_CLI::error(
+					sprintf(
+						'Cannot rename %s to %s%s',
+						$old_phar,
+						$bak_file,
+						isset( $rename_error['message'] ) ? ': ' . $rename_error['message'] : '.'
+					)
+				);
 			}
 			if ( false === rename( $temp, $old_phar ) ) {
 				$restore_succeeded = @rename( $bak_file, $old_phar ); // Revert
