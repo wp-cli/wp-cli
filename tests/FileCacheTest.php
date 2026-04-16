@@ -235,6 +235,11 @@ class FileCacheTest extends TestCase {
 		$result = $method->invoke( $cache, $key );
 		$this->assertSame( 'plugin/-/-/etc/passwd', $result );
 
+		// Test traversal with URL
+		$key    = 'http://example.com/../../etc/passwd';
+		$result = $method->invoke( $cache, $key );
+		$this->assertSame( 'misc/http-example.com/-/-/etc/passwd', $result );
+
 		// Test traversal with '.'
 		$key    = 'plugin/./etc/passwd';
 		$result = $method->invoke( $cache, $key );

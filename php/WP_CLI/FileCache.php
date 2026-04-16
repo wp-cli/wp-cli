@@ -452,6 +452,7 @@ class FileCache {
 
 		$parts = preg_replace( "#[^{$this->whitelist}]#i", '-', $parts );
 
+		$parts = explode( '/', implode( '/', $parts ) );
 		foreach ( $parts as &$part ) {
 			if ( '..' === $part || '.' === $part ) {
 				$part = '-';
