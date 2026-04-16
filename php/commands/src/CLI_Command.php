@@ -537,9 +537,13 @@ class CLI_Command extends WP_CLI_Command {
 				);
 			}
 			if ( false === rename( $temp, $old_phar ) ) {
+				error_clear_last();
 				$restore_succeeded = @rename( $bak_file, $old_phar ); // Revert
-				$restore_error     = error_get_last();
-				$message           = sprintf( 'Cannot move %s to %s. Backup was written to %s.', $temp, $old_phar, $bak_file );
+				$restore_error     = null;
+				if ( ! $restore_succeeded ) {
+					$restore_error = error_get_last();
+				}
+				$message = sprintf( 'Cannot move %s to %s. Backup was written to %s.', $temp, $old_phar, $bak_file );
 
 				if ( $restore_succeeded ) {
 					$message .= sprintf( ' The original Phar was restored to %s.', $old_phar );
