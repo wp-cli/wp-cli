@@ -526,12 +526,12 @@ class CLI_Command extends WP_CLI_Command {
 	/**
 	 * Replaces the current Phar with the newly downloaded one.
 	 *
-	 * @param string $temp     Path to the newly downloaded Phar.
-	 * @param string $old_phar Path to the current Phar.
+	 * @param string $temp         Path to the newly downloaded Phar.
+	 * @param string $current_phar Path to the current Phar.
 	 */
-	private function replace_current_phar( $temp, $old_phar ) {
+	private function replace_current_phar( $temp, $current_phar ) {
 		if ( Utils\is_windows() ) {
-			$bak_file = $old_phar . '.bak';
+			$bak_file = $current_phar . '.bak';
 			if ( file_exists( $bak_file ) ) {
 				if ( false === unlink( $bak_file ) ) {
 					$unlink_error = error_get_last();
@@ -544,35 +544,36 @@ class CLI_Command extends WP_CLI_Command {
 					);
 				}
 			}
-			if ( false === rename( $old_phar, $bak_file ) ) {
+			if ( false === rename( $current_phar, $bak_file ) ) {
 				$rename_error = error_get_last();
 				WP_CLI::error(
 					sprintf(
 						'Cannot rename %s to %s%s',
-						$old_phar,
+						$current_phar,
 						$bak_file,
 						isset( $rename_error['message'] ) ? ': ' . $rename_error['message'] : '.'
 					)
 				);
 			}
-			if ( false === rename( $temp, $old_phar ) ) {
+			if ( false === rename( $temp, $current_phar ) ) {
 				error_clear_last();
-				$restore_succeeded = @rename( $bak_file, $old_phar ); // Revert
+				$restore_succeeded = @rename( $bak_file, $current_phar ); // Revert
 				$restore_error     = null;
 				if ( ! $restore_succeeded ) {
 					$restore_error = error_get_last();
 				}
-				$message = sprintf( 'Cannot move %s to %s. Backup was written to %s.', $temp, $old_phar, $bak_file );
+				$message = sprintf( 'Cannot move %s to %s. Backup was written to %s.', $temp, $current_phar, $bak_file );
 
 				if ( $restore_succeeded ) {
-					$message .= sprintf( ' The original Phar was restored to %s.', $old_phar );
+					$message .= sprintf( ' The original Phar was restored to %s.', $current_phar );
 				} else {
-					$message .= sprintf( ' Failed to restore the original Phar from %s to %s.', $bak_file, $old_phar );
+					$message .= sprintf( ' Failed to restore the original Phar from %s to %s.', $bak_file, $current_phar );
 					if ( isset( $restore_error['message'] ) ) {
 						$message .= sprintf( ' Restore error: %s', $restore_error['message'] );
 					}
 				}
 
+				@unlink( $temp ); // Cleanup
 				WP_CLI::error( $message );
 			}
 			if ( file_exists( $bak_file ) && false === unlink( $bak_file ) ) {
@@ -585,8 +586,9 @@ class CLI_Command extends WP_CLI_Command {
 					)
 				);
 			}
-		} elseif ( false === rename( $temp, $old_phar ) ) {
-			WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $old_phar ) );
+		} elseif ( false === rename( $temp, $current_phar ) ) {
+			@unlink( $temp ); // Cleanup
+			WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $current_phar ) );
 		}
 	}
 
