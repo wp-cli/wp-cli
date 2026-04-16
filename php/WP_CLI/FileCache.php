@@ -460,6 +460,7 @@ class FileCache {
 				$part = '-';
 			}
 		}
+		unset( $part );
 
 		return rtrim( implode( '/', $parts ), '.' );
 	}
