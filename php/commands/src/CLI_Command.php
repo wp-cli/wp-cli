@@ -514,7 +514,16 @@ class CLI_Command extends WP_CLI_Command {
 		if ( Utils\is_windows() ) {
 			$bak_file = $old_phar . '.bak';
 			if ( file_exists( $bak_file ) ) {
-				@unlink( $bak_file );
+				if ( false === unlink( $bak_file ) ) {
+					$unlink_error = error_get_last();
+					WP_CLI::error(
+						sprintf(
+							'Cannot remove existing backup %s%s',
+							$bak_file,
+							isset( $unlink_error['message'] ) ? ': ' . $unlink_error['message'] : '.'
+						)
+					);
+				}
 			}
 			if ( false === rename( $old_phar, $bak_file ) ) {
 				WP_CLI::error( sprintf( 'Cannot rename %s to %s', $old_phar, $bak_file ) );
@@ -535,7 +544,16 @@ class CLI_Command extends WP_CLI_Command {
 
 				WP_CLI::error( $message );
 			}
-			@unlink( $bak_file ); // Try to clean up
+			if ( file_exists( $bak_file ) && false === unlink( $bak_file ) ) {
+				$unlink_error = error_get_last();
+				WP_CLI::warning(
+					sprintf(
+						'Could not remove backup file %s%s',
+						$bak_file,
+						isset( $unlink_error['message'] ) ? ': ' . $unlink_error['message'] : '.'
+					)
+				);
+			}
 		} elseif ( false === rename( $temp, $old_phar ) ) {
 				WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $old_phar ) );
 		}
