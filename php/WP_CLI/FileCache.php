@@ -439,12 +439,15 @@ class FileCache {
 	protected function validate_key( $key ) {
 		$url_parts = Utils\parse_url( $key, -1, false );
 		if ( $url_parts && array_key_exists( 'path', $url_parts ) && ! empty( $url_parts['scheme'] ) ) { // is url
-			$parts   = [ 'misc' ];
-			$parts[] = $url_parts['scheme'] .
+			$parts      = [ 'misc' ];
+			$parts[]    = $url_parts['scheme'] .
 				( empty( $url_parts['host'] ) ? '' : '-' . $url_parts['host'] ) .
 				( empty( $url_parts['port'] ) ? '' : '-' . $url_parts['port'] );
-			$parts[] = substr( $url_parts['path'], 1 ) .
-				( empty( $url_parts['query'] ) ? '' : '-' . $url_parts['query'] );
+			$path_parts = explode( '/', substr( $url_parts['path'], 1 ) );
+			if ( ! empty( $url_parts['query'] ) ) {
+				$path_parts[ count( $path_parts ) - 1 ] .= '-' . $url_parts['query'];
+			}
+			$parts = array_merge( $parts, $path_parts );
 		} else {
 			$key   = str_replace( '\\', '/', $key );
 			$parts = explode( '/', ltrim( $key ) );
@@ -452,7 +455,6 @@ class FileCache {
 
 		$parts = preg_replace( "#[^{$this->whitelist}]#i", '-', $parts );
 
-		$parts = explode( '/', implode( '/', $parts ) );
 		foreach ( $parts as &$part ) {
 			if ( '..' === $part || '.' === $part ) {
 				$part = '-';
