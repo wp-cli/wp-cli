@@ -677,7 +677,7 @@ class CLI_Command extends WP_CLI_Command {
 				$updates_unavailable[] = [
 					'version'             => $release_version,
 					'update_type'         => $update_type,
-					'package_url'         => $release->assets[0]->browser_download_url,
+					'package_url'         => $package_url,
 					'status'              => 'unavailable',
 					'requires_php'        => $manifest_data->requires_php,
 					'release_notes_url'   => $release_notes_url,
@@ -686,7 +686,7 @@ class CLI_Command extends WP_CLI_Command {
 				$updates[ $update_type ] = [
 					'version'             => $release_version,
 					'update_type'         => $update_type,
-					'package_url'         => $release->assets[0]->browser_download_url,
+					'package_url'         => $package_url,
 					'status'              => 'available',
 					'requires_php'        => isset( $manifest_data->requires_php ) ? $manifest_data->requires_php : '',
 					'release_notes_url'   => $release_notes_url,
