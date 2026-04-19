@@ -22,6 +22,7 @@ use WP_CLI\Utils;
  *
  *     # Update WP-CLI to the latest stable release.
  *     $ wp cli update
+ *     Release notes: https://github.com/wp-cli/wp-cli/releases/tag/v0.24.1
  *     You have version 0.24.0. Would you like to update to 0.24.1? [y/n] y
  *     Downloading from https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar...
  *     New version works. Proceeding to replace.
@@ -33,9 +34,9 @@ use WP_CLI\Utils;
  *
  * @when before_wp_load
  *
- * @phpstan-type GitHubRelease object{tag_name: string, assets: array<object{browser_download_url: string}>}
+ * @phpstan-type GitHubRelease object{tag_name: string, html_url?: string, assets: array<object{browser_download_url: string}>}
  *
- * @phpstan-type UpdateOffer array{version: string, update_type: string, package_url: string, status: string, requires_php: string}
+ * @phpstan-type UpdateOffer array{version: string, update_type: string, package_url: string, status: string, requires_php: string, release_notes_url: string}
  */
 class CLI_Command extends WP_CLI_Command {
 
@@ -301,7 +302,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * : Prints the value of a single field for each update.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to version,update_type,package_url,status,requires_php.
+	 * : Limit the output to specific object fields. Defaults to version,update_type,package_url,status,requires_php,release_notes_url.
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
@@ -323,11 +324,11 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 *     # Check for update and new version is available.
 	 *     $ wp cli check-update
-	 *     +---------+-------------+-------------------------------------------------------------------------------+
-	 *     | version | update_type | package_url                                                                   |
-	 *     +---------+-------------+-------------------------------------------------------------------------------+
-	 *     | 0.24.1  | patch       | https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar |
-	 *     +---------+-------------+-------------------------------------------------------------------------------+
+	 *     +---------+-------------+-------------------------------------------------------------------------------+------------------------------------------------------------------+
+	 *     | version | update_type | package_url                                                                   | release_notes_url                                                |
+	 *     +---------+-------------+-------------------------------------------------------------------------------+------------------------------------------------------------------+
+	 *     | 0.24.1  | patch       | https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar | https://github.com/wp-cli/wp-cli/releases/tag/v0.24.1            |
+	 *     +---------+-------------+-------------------------------------------------------------------------------+------------------------------------------------------------------+
 	 *
 	 *     # Check for update using a GitHub token to increase rate limit.
 	 *     $ GITHUB_TOKEN=ghp_... wp cli check-update
@@ -344,7 +345,7 @@ class CLI_Command extends WP_CLI_Command {
 		if ( $updates ) {
 			$formatter = new Formatter(
 				$assoc_args,
-				[ 'version', 'update_type', 'package_url', 'status', 'requires_php' ]
+				[ 'version', 'update_type', 'package_url', 'status', 'requires_php', 'release_notes_url' ]
 			);
 			$formatter->display_items( $updates );
 		} elseif ( empty( $assoc_args['format'] ) || 'table' === $assoc_args['format'] ) {
@@ -402,6 +403,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 *     # Update CLI.
 	 *     $ wp cli update
+	 *     Release notes: https://github.com/wp-cli/wp-cli/releases/tag/v0.24.1
 	 *     You are currently using WP-CLI version 0.24.0. Would you like to update to 0.24.1? [y/n] y
 	 *     Downloading from https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar...
 	 *     New version works. Proceeding to replace.
@@ -409,6 +411,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 *     # Update CLI using a GitHub token to increase rate limit.
 	 *     $ GITHUB_TOKEN=ghp_... wp cli update
+	 *     Release notes: https://github.com/wp-cli/wp-cli/releases/tag/v0.24.1
 	 *     You are currently using WP-CLI version 0.24.0. Would you like to update to 0.24.1? [y/n] y
 	 *     Downloading from https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar...
 	 *     New version works. Proceeding to replace.
@@ -463,6 +466,10 @@ class CLI_Command extends WP_CLI_Command {
 				$update_type = $this->get_update_type_str( $assoc_args );
 				WP_CLI::success( "WP-CLI is at the latest{$update_type}version." );
 				return;
+			}
+
+			if ( ! empty( $newest['release_notes_url'] ) ) {
+				WP_CLI::log( sprintf( 'Release notes: %s', $newest['release_notes_url'] ) );
 			}
 
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to %s?', WP_CLI_VERSION, $newest['version'] ), $assoc_args );
@@ -660,25 +667,29 @@ class CLI_Command extends WP_CLI_Command {
 				continue;
 			}
 
+			$release_notes_url = isset( $release->html_url ) ? (string) $release->html_url : '';
+
 			// Release requires a newer version of PHP.
 			if (
 				isset( $manifest_data->requires_php ) &&
 				! Comparator::greaterThanOrEqualTo( PHP_VERSION, $manifest_data->requires_php )
 			) {
 				$updates_unavailable[] = [
-					'version'      => $release_version,
-					'update_type'  => $update_type,
-					'package_url'  => $release->assets[0]->browser_download_url,
-					'status'       => 'unavailable',
-					'requires_php' => $manifest_data->requires_php,
+					'version'             => $release_version,
+					'update_type'         => $update_type,
+					'package_url'         => $release->assets[0]->browser_download_url,
+					'status'              => 'unavailable',
+					'requires_php'        => $manifest_data->requires_php,
+					'release_notes_url'   => $release_notes_url,
 				];
 			} else {
 				$updates[ $update_type ] = [
-					'version'      => $release_version,
-					'update_type'  => $update_type,
-					'package_url'  => $release->assets[0]->browser_download_url,
-					'status'       => 'available',
-					'requires_php' => isset( $manifest_data->requires_php ) ? $manifest_data->requires_php : '',
+					'version'             => $release_version,
+					'update_type'         => $update_type,
+					'package_url'         => $release->assets[0]->browser_download_url,
+					'status'              => 'available',
+					'requires_php'        => isset( $manifest_data->requires_php ) ? $manifest_data->requires_php : '',
+					'release_notes_url'   => $release_notes_url,
 				];
 			}
 		}
@@ -724,19 +735,21 @@ class CLI_Command extends WP_CLI_Command {
 					! Comparator::greaterThanOrEqualTo( PHP_VERSION, $manifest_data->requires_php )
 				) {
 					$updates_unavailable[] = [
-						'version'      => $nightly_version,
-						'update_type'  => 'nightly',
-						'package_url'  => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
-						'status'       => 'unavailable',
-						'requires_php' => $manifest_data->requires_php,
+						'version'             => $nightly_version,
+						'update_type'         => 'nightly',
+						'package_url'         => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
+						'status'              => 'unavailable',
+						'requires_php'        => $manifest_data->requires_php,
+						'release_notes_url'   => '',
 					];
 				} else {
 					$updates['nightly'] = [
-						'version'      => $nightly_version,
-						'update_type'  => 'nightly',
-						'package_url'  => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
-						'status'       => 'available',
-						'requires_php' => isset( $manifest_data->requires_php ) ? $manifest_data->requires_php : '',
+						'version'             => $nightly_version,
+						'update_type'         => 'nightly',
+						'package_url'         => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
+						'status'              => 'available',
+						'requires_php'        => isset( $manifest_data->requires_php ) ? $manifest_data->requires_php : '',
+						'release_notes_url'   => '',
 					];
 				}
 			}
