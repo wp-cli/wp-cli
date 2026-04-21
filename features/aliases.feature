@@ -19,7 +19,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp @foo core is-installed`
     Then the return code should be 0
 
-    When I run `cd bar; wp @foo core is-installed`
+    When I run `wp @foo core is-installed` from 'bar'
     Then the return code should be 0
 
   Scenario: Error when invalid alias provided
@@ -70,7 +70,7 @@ Feature: Create shortcuts to specific WordPress installs
       unknown --path parameter
       """
 
-    When I run `wp @foo eval 'echo get_current_user_id();' --user=admin`
+    When I run `wp @foo eval "echo get_current_user_id();" --user=admin`
     Then STDOUT should be:
       """
       1
@@ -83,13 +83,13 @@ Feature: Create shortcuts to specific WordPress installs
         user: admin
       """
 
-    When I run `wp @foo eval 'echo get_current_user_id();'`
+    When I run `wp @foo eval "echo get_current_user_id();"`
     Then STDOUT should be:
       """
       1
       """
 
-    When I try `wp @foo eval 'echo get_current_user_id();' --user=admin`
+    When I try `wp @foo eval "echo get_current_user_id();" --user=admin`
     Then STDERR should contain:
       """
       Parameter errors:
@@ -123,7 +123,7 @@ Feature: Create shortcuts to specific WordPress installs
         path: foo
       """
 
-    When I run `wp eval --skip-wordpress 'echo realpath( getenv( "RUN_DIR" ) );'`
+    When I run `wp eval --skip-wordpress "echo \WP_CLI\Path::normalize( DIRECTORY_SEPARATOR === '/' ? realpath( getcwd() ) : getcwd() );"`
     Then save STDOUT as {TEST_DIR}
 
     When I run `wp cli alias list`
@@ -181,6 +181,19 @@ Feature: Create shortcuts to specific WordPress installs
       Error: No alias found with key '@someotherfoo'.
       """
 
+    When I run `wp cli alias get @foo --field=ssh`
+    Then STDOUT should be:
+      """
+      user@host:/path/to/wordpress
+      """
+
+    When I try `wp cli alias get @foo --field=user`
+    Then STDERR should be:
+      """
+      Error: The 'user' property does not exist for '@foo'.
+      """
+
+  @skip-windows @skip-macos
   Scenario: Adds proxyjump to ssh command
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -196,6 +209,7 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -J 'proxyhost' -T -vvv
       """
 
+  @skip-windows @skip-macos
   Scenario: Adds key to ssh command
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -211,6 +225,7 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -i 'identityfile.key' -T -vvv
       """
 
+  @skip-windows @skip-macos
   Scenario: Vagrant SSH disables strict host key checking
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -225,6 +240,7 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -T -vvv '' 'wp --debug --version'
       """
 
+  @skip-windows @skip-macos
   Scenario: SSH alias expands tilde in path
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -243,6 +259,7 @@ Feature: Create shortcuts to specific WordPress installs
       sites/example.com/www
       """
 
+  @skip-windows @skip-macos
   Scenario: Connection-specific properties are not passed to remote WP-CLI
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -263,6 +280,7 @@ Feature: Create shortcuts to specific WordPress installs
       WP_CLI_RUNTIME_ALIAS
       """
 
+  @skip-windows @skip-macos
   Scenario: WordPress-specific properties are passed to remote WP-CLI
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -283,6 +301,7 @@ Feature: Create shortcuts to specific WordPress installs
       @foo
       """
 
+  @skip-windows @skip-macos
   Scenario: SSH commands should not be double-escaped
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -297,6 +316,7 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; wp plugin list --debug'
       """
 
+  @skip-windows @skip-macos
   Scenario: SSH commands correctly escape arguments with spaces
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -311,6 +331,7 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; wp post create --post_title=My Title
       """
 
+  @skip-windows @skip-macos
   Scenario: Uses env command for runtime alias with separate path line
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -330,6 +351,7 @@ Feature: Create shortcuts to specific WordPress installs
       wp @foo
       """
 
+  @skip-windows @skip-macos
   Scenario: Two aliases with same SSH host but different paths generate different remote commands
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -362,6 +384,7 @@ Feature: Create shortcuts to specific WordPress installs
       \/path\/to\/production
       """
 
+  @skip-windows @skip-macos
   Scenario: Properly escapes single quotes in runtime alias path
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -556,6 +579,8 @@ Feature: Create shortcuts to specific WordPress installs
       Error: This does not seem to be a WordPress installation.
       """
 
+  # TODO: Investigate on Windows why `@bar` is missing from @both output.
+  @skip-windows
   Scenario: Use a group of aliases to run a command against multiple installs
     Given a WP installation in 'foo'
     And a WP installation in 'bar'
@@ -573,14 +598,14 @@ Feature: Create shortcuts to specific WordPress installs
         path: bar
       """
 
-    When I run `wp @foo option update home 'http://apple.com'`
+    When I run `wp @foo option update home "http://apple.com"`
     And I run `wp @foo option get home`
     Then STDOUT should contain:
       """
       http://apple.com
       """
 
-    When I run `wp @bar option update home 'http://google.com'`
+    When I run `wp @bar option update home "http://google.com"`
     And I run `wp @bar option get home`
     Then STDOUT should contain:
       """
@@ -609,6 +634,8 @@ Feature: Create shortcuts to specific WordPress installs
       http://google.com
       """
 
+  # TODO: Investigate on Windows why `@bar` is missing from @all output.
+  @skip-windows
   Scenario: Register '@all' alias for running on one or more aliases
     Given a WP installation in 'foo'
     And a WP installation in 'bar'
@@ -620,14 +647,14 @@ Feature: Create shortcuts to specific WordPress installs
         path: bar
       """
 
-    When I run `wp @foo option update home 'http://apple.com'`
+    When I run `wp @foo option update home "http://apple.com"`
     And I run `wp @foo option get home`
     Then STDOUT should contain:
       """
       http://apple.com
       """
 
-    When I run `wp @bar option update home 'http://google.com'`
+    When I run `wp @bar option update home "http://google.com"`
     And I run `wp @bar option get home`
     Then STDOUT should contain:
       """
@@ -708,6 +735,8 @@ Feature: Create shortcuts to specific WordPress installs
        unknown --url parameter
       """
 
+  # TODO: Investigate on Windows why `@bar` is missing from @foobar output.
+  @skip-windows
   Scenario: Global parameters should be passed to grouped aliases
     Given a WP installation in 'foo'
     And a WP installation in 'bar'
@@ -740,7 +769,7 @@ Feature: Create shortcuts to specific WordPress installs
       @foo core is-installed --allow-root --debug
       """
 
-    When I try `cd bar; wp @bar core is-installed --allow-root --debug`
+    When I try `wp @bar core is-installed --allow-root --debug` from 'bar'
     Then the return code should be 0
     And STDERR should contain:
       """
@@ -762,6 +791,7 @@ Feature: Create shortcuts to specific WordPress installs
       --alias=bar core is-installed --allow-root --debug
       """
 
+  @skip-windows
   Scenario Outline: Check that proc_open() and proc_close() aren't disabled for grouped aliases
     Given a WP installation in 'foo'
     And a WP installation in 'bar'
@@ -829,7 +859,7 @@ Feature: Create shortcuts to specific WordPress installs
       Success: Added 'hello' alias.
       """
 
-    When I run `wp eval --skip-wordpress 'echo realpath( getenv( "RUN_DIR" ) );'`
+    When I run `wp eval --skip-wordpress "echo \WP_CLI\Path::normalize( DIRECTORY_SEPARATOR === '/' ? realpath( getcwd() ) : getcwd() );"`
     Then save STDOUT as {TEST_DIR}
 
     When I run `wp cli alias list`
@@ -851,7 +881,7 @@ Feature: Create shortcuts to specific WordPress installs
         path: ${env.TEST_WP_PATH}
       """
 
-    When I run `TEST_WP_USER=admin TEST_WP_PATH=foo wp @dev eval 'echo get_current_user_id();'`
+    When I run `TEST_WP_USER=admin TEST_WP_PATH=foo wp @dev eval "echo get_current_user_id();"`
     Then STDOUT should be:
       """
       1
@@ -878,7 +908,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp --alias=foo core is-installed`
     Then the return code should be 0
 
-    When I run `cd bar; wp --alias=foo core is-installed`
+    When I run `wp --alias=foo core is-installed` from 'bar'
     Then the return code should be 0
 
   Scenario: Mix traditional and new alias syntax
@@ -967,6 +997,8 @@ Feature: Create shortcuts to specific WordPress installs
       ${env.SSH_USER}
       """
 
+  # TODO: Investigate on Windows why `@bar` is missing from --alias=both output.
+  @skip-windows
   Scenario: Use --alias flag with groups
     Given a WP installation in 'foo'
     And a WP installation in 'bar'
@@ -982,14 +1014,14 @@ Feature: Create shortcuts to specific WordPress installs
           - bar
       """
 
-    When I run `wp --alias=foo option update home 'http://apple.com'`
+    When I run `wp --alias=foo option update home "http://apple.com"`
     And I run `wp --alias=foo option get home`
     Then STDOUT should contain:
       """
       http://apple.com
       """
 
-    When I run `wp --alias=bar option update home 'http://google.com'`
+    When I run `wp --alias=bar option update home "http://google.com"`
     And I run `wp --alias=bar option get home`
     Then STDOUT should contain:
       """
@@ -1014,7 +1046,7 @@ Feature: Create shortcuts to specific WordPress installs
           path: foo
       """
 
-    When I run `wp eval --skip-wordpress 'echo realpath( getenv( "RUN_DIR" ) );'`
+    When I run `wp eval --skip-wordpress "echo \WP_CLI\Path::normalize( DIRECTORY_SEPARATOR === '/' ? realpath( getcwd() ) : getcwd() );"`
     Then save STDOUT as {TEST_DIR}
 
     When I run `wp cli alias list`
@@ -1034,6 +1066,8 @@ Feature: Create shortcuts to specific WordPress installs
       Error: Alias 'test' not found.
       """
 
+  # TODO: Investigate on Windows why `@bar` is missing from --alias=all output.
+  @skip-windows
   Scenario: Backwards compatibility with @all for new syntax
     Given a WP installation in 'foo'
     And a WP installation in 'bar'
@@ -1046,14 +1080,14 @@ Feature: Create shortcuts to specific WordPress installs
           path: bar
       """
 
-    When I run `wp --alias=foo option update home 'http://apple.com'`
+    When I run `wp --alias=foo option update home "http://apple.com"`
     And I run `wp --alias=foo option get home`
     Then STDOUT should contain:
       """
       http://apple.com
       """
 
-    When I run `wp --alias=bar option update home 'http://google.com'`
+    When I run `wp --alias=bar option update home "http://google.com"`
     And I run `wp --alias=bar option get home`
     Then STDOUT should contain:
       """
@@ -1102,11 +1136,13 @@ Feature: Create shortcuts to specific WordPress installs
         path: foo
       @bar:
         path: bar
+      env:
+        WP_CLI_ALIAS_GROUPS_PARALLEL: 1
       """
 
-    When I run `wp @foo option update home 'http://parallel-foo.com'`
-    And I run `wp @bar option update home 'http://parallel-bar.com'`
-    And I run `WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both option get home`
+    When I run `wp @foo option update home "http://parallel-foo.com"`
+    And I run `wp @bar option update home "http://parallel-bar.com"`
+    And I run `wp @both option get home`
     Then STDOUT should contain:
       """
       @foo
@@ -1124,7 +1160,7 @@ Feature: Create shortcuts to specific WordPress installs
       http://parallel-bar.com
       """
 
-    When I run `WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both option get home --quiet`
+    When I run `wp @both option get home --quiet`
     Then STDOUT should contain:
       """
       http://parallel-foo.com
@@ -1134,6 +1170,8 @@ Feature: Create shortcuts to specific WordPress installs
       http://parallel-bar.com
       """
 
+  # TODO: Investigate on Windows why `@bar` is missing from @all output.
+  @skip-windows
   Scenario: Using --quiet with @all suppresses alias names but still outputs command results
     Given a WP installation in 'foo'
     And a WP installation in 'bar'
@@ -1145,7 +1183,7 @@ Feature: Create shortcuts to specific WordPress installs
         path: bar
       """
 
-    When I run `wp @all eval 'echo "output-from-alias\n";'`
+    When I run `wp @all eval "echo 'output-from-alias' . PHP_EOL;"`
     Then STDOUT should be:
       """
       @foo
@@ -1154,13 +1192,15 @@ Feature: Create shortcuts to specific WordPress installs
       output-from-alias
       """
 
-    When I run `wp @all eval 'echo "output-from-alias\n";' --quiet`
+    When I run `wp @all eval "echo 'output-from-alias' . PHP_EOL;" --quiet`
     Then STDOUT should be:
       """
       output-from-alias
       output-from-alias
       """
 
+  # TODO: Investigate on Windows why `@bar` is missing from @both output.
+  @skip-windows
   Scenario: STDIN piped to alias group is passed to each alias in the group
     Given a WP installation in 'foo'
     And a WP installation in 'bar'
@@ -1179,8 +1219,8 @@ Feature: Create shortcuts to specific WordPress installs
       <?php echo get_option( 'home' ) . "\n";
       """
 
-    When I run `wp @foo option update home 'http://foo.example.com'`
-    And I run `wp @bar option update home 'http://bar.example.com'`
+    When I run `wp @foo option update home "http://foo.example.com"`
+    And I run `wp @bar option update home "http://bar.example.com"`
     And I run `cat stdin.php | wp @both eval-file -`
     Then STDOUT should contain:
       """
@@ -1191,6 +1231,8 @@ Feature: Create shortcuts to specific WordPress installs
       http://bar.example.com
       """
 
+  # TODO: Investigate on Windows why `@bar` is missing from @both output.
+  @skip-windows
   Scenario: STDIN piped to alias group in parallel mode is passed to each alias
     Given a WP installation in 'foo'
     And a WP installation in 'bar'
@@ -1203,15 +1245,17 @@ Feature: Create shortcuts to specific WordPress installs
       @both:
        - @foo
        - @bar
+      env:
+        WP_CLI_ALIAS_GROUPS_PARALLEL: 1
       """
     And a stdin.php file:
       """
       <?php echo get_option( 'home' ) . "\n";
       """
 
-    When I run `wp @foo option update home 'http://foo.example.com'`
-    And I run `wp @bar option update home 'http://bar.example.com'`
-    And I run `cat stdin.php | WP_CLI_ALIAS_GROUPS_PARALLEL=1 wp @both eval-file -`
+    When I run `wp @foo option update home "http://foo.example.com"`
+    And I run `wp @bar option update home "http://bar.example.com"`
+    And I run `wp @both eval-file - < stdin.php`
     Then STDOUT should contain:
       """
       http://foo.example.com

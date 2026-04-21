@@ -14,7 +14,7 @@ Feature: Utilities that depend on WordPress code
       """
 
     When I run `wp post create --post_title="Foo Bar" --porcelain`
-    And I run `wp --require=test.php eval ''`
+    And I run `wp --require=test.php eval ""`
     Then STDOUT should be:
       """
       ,,,
@@ -1013,7 +1013,7 @@ Feature: Utilities that depend on WordPress code
 
       define('WP_DEBUG', true);
       define('WP_DEBUG_DISPLAY', false);
-      define('WP_DEBUG_LOG', '/tmp/custom_debug.log');
+      define('WP_DEBUG_LOG', __DIR__ . '/custom_debug.log');
 
       require_once(ABSPATH . 'wp-settings.php');
       """
@@ -1026,14 +1026,14 @@ Feature: Utilities that depend on WordPress code
       } );
       """
 
-    When I run `rm -f /tmp/custom_debug.log`
+    When I run `rm -f custom_debug.log`
     And I run `wp --require=test-debug-log.php test-debug-log`
     Then STDOUT should contain:
       """
       Error logged
       """
-    And the /tmp/custom_debug.log file should exist
-    And the /tmp/custom_debug.log file should contain:
+    And the custom_debug.log file should exist
+    And the custom_debug.log file should contain:
       """
       Test error message
       """

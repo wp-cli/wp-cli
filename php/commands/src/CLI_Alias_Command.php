@@ -159,6 +159,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * <key>
 	 * : Key for the alias.
 	 *
+	 * [--field=<field>]
+	 * : Get the value of a specific field.
+	 *
 	 * [--raw]
 	 * : Display alias without interpolating environment variables.
 	 *
@@ -168,12 +171,16 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     $ wp cli alias get @prod
 	 *     ssh: dev@somedeve.env:12345/home/dev/
 	 *
+	 *     # Get a specific field of an alias.
+	 *     $ wp cli alias get @prod --field=ssh
+	 *     dev@somedeve.env:12345/home/dev/
+	 *
 	 *     # Get alias without environment variable interpolation.
 	 *     $ wp cli alias get @prod --raw
 	 *     ssh: ${env.PROD_USER}@${env.PROD_HOST}:${env.PROD_PATH}
 	 *
 	 * @param array{string} $args Positional arguments.
-	 * @param array{raw?: bool} $assoc_args Associative arguments.
+	 * @param array{field?: string, raw?: bool} $assoc_args Associative arguments.
 	 */
 	public function get( $args, $assoc_args = [] ) {
 		list( $alias ) = $args;
@@ -186,6 +193,16 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		if ( empty( $aliases[ $alias ] ) ) {
 			WP_CLI::error( "No alias found with key '@{$alias}'." );
+		}
+
+		$field = Utils\get_flag_value( $assoc_args, 'field', null );
+
+		if ( null !== $field ) {
+			if ( ! array_key_exists( $field, $aliases[ $alias ] ) ) {
+				WP_CLI::error( "The '{$field}' property does not exist for '@{$alias}'." );
+			}
+			WP_CLI::log( $aliases[ $alias ][ $field ] );
+			return;
 		}
 
 		foreach ( $aliases[ $alias ] as $key => $value ) {

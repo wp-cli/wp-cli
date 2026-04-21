@@ -1416,7 +1416,7 @@ function report_batch_operation_results( $noun, $verb, $total, $successes, $fail
  * @return array<string>
  */
 function parse_str_to_argv( $arguments ) {
-	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches, PREG_SET_ORDER );
+	preg_match_all( '/(?:--[^\s=]+=(["\'])((\\{2})*|[^\\\\](?:\\{2})*|(?:[^\1]+?[^\\\\](\\{2})*))\1|--[^\s=]+=[^\s]+|--[^\s=]+|(["\'])((\\{2})*|[^\\\\](?:\\{2})*|(?:[^\5]+?[^\\\\](\\{2})*))\5|[^\s]+)/', $arguments, $matches, PREG_SET_ORDER );
 	$argv = [];
 	foreach ( $matches as $match ) {
 		// Check if this is a quoted associative argument (--key="value" or --key='value').
@@ -1838,6 +1838,16 @@ function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = n
 	if ( is_windows() ) {
 		// @phpstan-ignore no.private.function
 		$cmd = _proc_open_compat_win_env( $cmd, $env );
+
+		// Normalize forward slashes in the executable name for Windows cmd.exe
+		if ( false !== strpos( $cmd, '/' ) ) {
+			if ( preg_match( '/^("[^"]*"|[^ ]+)/', $cmd, $matches ) ) {
+				$executable = $matches[0];
+				$rest       = substr( $cmd, strlen( $executable ) );
+				$executable = str_replace( '/', '\\', $executable );
+				$cmd        = $executable . $rest;
+			}
+		}
 	}
 	return proc_open( $cmd, $descriptorspec, $pipes, $cwd, $env, $other_options );
 }
