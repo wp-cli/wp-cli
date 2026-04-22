@@ -56,43 +56,51 @@ function wp_debug_mode() {
 		}
 
 		error_reporting( E_ALL & ~E_DEPRECATED );
+	} elseif ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+		error_reporting( E_ALL );
+
+		if ( defined( 'WP_DEBUG_LOG' ) ) {
+			// @phpstan-ignore cast.useless
+			if ( in_array( strtolower( (string) WP_DEBUG_LOG ), [ 'true', '1' ], true ) ) {
+				$log_path = WP_CONTENT_DIR . '/debug.log';
+				// @phpstan-ignore function.alreadyNarrowedType
+			} elseif ( is_string( WP_DEBUG_LOG ) ) {
+				$log_path = WP_DEBUG_LOG;
+			} else {
+				$log_path = false;
+			}
+
+			if ( false !== $log_path ) {
+				ini_set( 'log_errors', 1 );
+				ini_set( 'error_log', $log_path );
+			}
+		}
 	} else {
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_reporting( E_ALL );
+		error_reporting( E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_ERROR | E_WARNING | E_PARSE | E_USER_ERROR | E_USER_WARNING | E_RECOVERABLE_ERROR );
+	}
 
-			if ( defined( 'WP_DEBUG_DISPLAY' ) ) {
-				ini_set( 'display_errors', WP_DEBUG_DISPLAY ? 1 : 0 );
-			}
+	// Respect WP_DEBUG and WP_DEBUG_DISPLAY: display errors when --debug is passed or
+	// WP_DEBUG is true (and WP_DEBUG_DISPLAY is not explicitly false).
+	$display_errors = WP_CLI::get_config( 'debug' )
+		|| ( defined( 'WP_DEBUG' ) && WP_DEBUG && ( ! defined( 'WP_DEBUG_DISPLAY' ) || WP_DEBUG_DISPLAY ) );
 
-			if ( defined( 'WP_DEBUG_LOG' ) ) {
-				// @phpstan-ignore cast.useless
-				if ( in_array( strtolower( (string) WP_DEBUG_LOG ), [ 'true', '1' ], true ) ) {
-					$log_path = WP_CONTENT_DIR . '/debug.log';
-					// @phpstan-ignore function.alreadyNarrowedType
-				} elseif ( is_string( WP_DEBUG_LOG ) ) {
-					$log_path = WP_DEBUG_LOG;
-				} else {
-					$log_path = false;
-				}
-
-				if ( false !== $log_path ) {
-					ini_set( 'log_errors', 1 );
-					ini_set( 'error_log', $log_path );
-				}
-			}
-		} else {
-			error_reporting( E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_ERROR | E_WARNING | E_PARSE | E_USER_ERROR | E_USER_WARNING | E_RECOVERABLE_ERROR );
-		}
-
-		// wp_doing_ajax() might not be available.
-		// @phpstan-ignore phpstanWP.wpConstant.fetch
-		if ( defined( 'XMLRPC_REQUEST' ) || defined( 'REST_REQUEST' ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
-			ini_set( 'display_errors', 0 );
-		}
+	// wp_doing_ajax() might not be available.
+	// @phpstan-ignore phpstanWP.wpConstant.fetch
+	if ( defined( 'XMLRPC_REQUEST' ) || defined( 'REST_REQUEST' ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+		$display_errors = false;
 	}
 
 	// XDebug already sends errors to STDERR.
-	ini_set( 'display_errors', function_exists( 'xdebug_debug_zval' ) ? false : 'stderr' );
+	if ( $display_errors ) {
+		ini_set( 'display_errors', function_exists( 'xdebug_debug_zval' ) ? false : 'stderr' );
+	} else {
+		ini_set( 'display_errors', 0 );
+		// In PHP CLI mode, log_errors=1 with an empty error_log routes errors to STDERR even
+		// when display_errors is off. Suppress that when display is explicitly suppressed.
+		if ( '' === ini_get( 'error_log' ) ) {
+			ini_set( 'log_errors', 0 );
+		}
+	}
 }
 // phpcs:enable
 
