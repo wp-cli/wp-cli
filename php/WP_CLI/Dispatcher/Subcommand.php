@@ -15,10 +15,24 @@ use WP_CLI\Utils;
  */
 class Subcommand extends CompositeCommand {
 
+	/**
+	 * @var string
+	 */
 	private $alias;
 
+	/**
+	 * @var callable
+	 */
 	private $when_invoked;
 
+	/**
+	 * Subcommand constructor.
+	 *
+	 * @param RootCommand|CompositeCommand $parent
+	 * @param string $name
+	 * @param DocParser $docparser
+	 * @param callable $when_invoked
+	 */
 	public function __construct( $parent, $name, $docparser, $when_invoked ) {
 		$this->alias = $docparser->get_tag( 'alias' );
 
