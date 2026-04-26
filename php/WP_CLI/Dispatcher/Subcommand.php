@@ -15,10 +15,28 @@ use WP_CLI\Utils;
  */
 class Subcommand extends CompositeCommand {
 
+	/**
+	 * Optional alias for the subcommand.
+	 *
+	 * @var string|null
+	 */
 	private $alias;
 
+	/**
+	 * Callable executed when the subcommand is invoked.
+	 *
+	 * @var callable
+	 */
 	private $when_invoked;
 
+	/**
+	 * Create a new subcommand instance.
+	 *
+	 * @param CompositeCommand $parent       Parent command.
+	 * @param string           $name         Subcommand name.
+	 * @param DocParser        $docparser    Parsed command PHPDoc data.
+	 * @param callable         $when_invoked Callback to execute on invoke.
+	 */
 	public function __construct( $parent, $name, $docparser, $when_invoked ) {
 		$this->alias = $docparser->get_tag( 'alias' );
 
