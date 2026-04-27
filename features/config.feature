@@ -81,7 +81,7 @@ Feature: Have a config file
 
     Given an index.php file:
       """
-      <?php require __DIR__ . '/foo/wp-blog-header.php';
+      require __DIR__ . '/foo/wp-blog-header.php';
       """
     When I run `wp core is-installed`
     Then STDOUT should be empty
