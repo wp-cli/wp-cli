@@ -6,8 +6,25 @@ use WP_CLI;
 
 class Completions {
 
+	/**
+	 * The current word being completed.
+	 *
+	 * @var string
+	 */
 	private $cur_word;
+
+	/**
+	 * The words in the input line.
+	 *
+	 * @var array
+	 */
 	private $words;
+
+	/**
+	 * The stored completion options.
+	 *
+	 * @var array
+	 */
 	private $opts = [];
 
 	/**
