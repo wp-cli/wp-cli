@@ -375,13 +375,219 @@ class Runner {
 		$wp_path_src = $matches[1] . $matches[2];
 		$wp_path_src = Path::replace_path_consts( $wp_path_src, $index_path );
 
-		$wp_path = eval( "return $wp_path_src;" ); // phpcs:ignore Squiz.PHP.Eval.Discouraged
+		$wp_path = self::safe_parse_path( $wp_path_src );
+		if ( false === $wp_path ) {
+			return false;
+		}
 
 		if ( ! Path::is_absolute( $wp_path ) ) {
 			$wp_path = dirname( $index_path ) . "/$wp_path";
 		}
 
 		return $wp_path;
+	}
+
+	/**
+	 * Safely evaluate a simple PHP path expression without using eval().
+	 *
+	 * Supports single/double-quoted string literals, dirname() calls
+	 * (including nested), and string concatenation with '.'. Returns false
+	 * for any expression that does not match these safe patterns.
+	 *
+	 * @param string $expression PHP path expression to parse.
+	 * @return string|false Resolved path string, or false on failure.
+	 */
+	private static function safe_parse_path( $expression ) {
+		$expression = trim( $expression );
+		$pos        = 0;
+		$result     = self::parse_concat_expr( $expression, $pos );
+
+		if ( false === $result ) {
+			return false;
+		}
+
+		// Skip any trailing whitespace and ensure nothing remains unparsed.
+		$len = strlen( $expression );
+		while ( $pos < $len && ctype_space( $expression[ $pos ] ) ) {
+			++$pos;
+		}
+
+		if ( $len !== $pos ) {
+			return false;
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Parse a concatenation expression: term ( '.' term )*
+	 *
+	 * @param string $expr The full expression string.
+	 * @param int    &$pos Current offset, advanced as tokens are consumed.
+	 * @return string|false
+	 */
+	private static function parse_concat_expr( $expr, &$pos ) {
+		$result = self::parse_path_term( $expr, $pos );
+		if ( false === $result ) {
+			return false;
+		}
+
+		$len = strlen( $expr );
+		while ( $pos < $len ) {
+			// Skip whitespace.
+			while ( $pos < $len && ctype_space( $expr[ $pos ] ) ) {
+				++$pos;
+			}
+			if ( $pos >= $len || '.' !== $expr[ $pos ] ) {
+				break;
+			}
+			++$pos; // Consume '.'.
+
+			// Skip whitespace.
+			while ( $pos < $len && ctype_space( $expr[ $pos ] ) ) {
+				++$pos;
+			}
+
+			$next = self::parse_path_term( $expr, $pos );
+			if ( false === $next ) {
+				return false;
+			}
+			$result .= $next;
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Parse a single path term: dirname( expr ) or a quoted string literal.
+	 *
+	 * @param string $expr The full expression string.
+	 * @param int    &$pos Current offset, advanced as tokens are consumed.
+	 * @return string|false
+	 */
+	private static function parse_path_term( $expr, &$pos ) {
+		$len = strlen( $expr );
+
+		// Skip leading whitespace.
+		while ( $pos < $len && ctype_space( $expr[ $pos ] ) ) {
+			++$pos;
+		}
+
+		if ( $pos >= $len ) {
+			return false;
+		}
+
+		// Match dirname(...) — case-insensitive to mirror PHP semantics.
+		if ( 0 === strncasecmp( substr( $expr, $pos ), 'dirname', 7 ) ) {
+			$save_pos = $pos;
+			$pos     += 7;
+
+			while ( $pos < $len && ctype_space( $expr[ $pos ] ) ) {
+				++$pos;
+			}
+			if ( $pos >= $len || '(' !== $expr[ $pos ] ) {
+				$pos = $save_pos;
+				return false;
+			}
+			++$pos; // Consume '('.
+
+			$inner = self::parse_concat_expr( $expr, $pos );
+			if ( false === $inner ) {
+				$pos = $save_pos;
+				return false;
+			}
+
+			while ( $pos < $len && ctype_space( $expr[ $pos ] ) ) {
+				++$pos;
+			}
+			if ( $pos >= $len || ')' !== $expr[ $pos ] ) {
+				$pos = $save_pos;
+				return false;
+			}
+			++$pos; // Consume ')'.
+
+			return dirname( $inner );
+		}
+
+		// Match a quoted string literal.
+		return self::parse_path_string( $expr, $pos );
+	}
+
+	/**
+	 * Parse a single- or double-quoted PHP string literal.
+	 *
+	 * Handles the escape sequences recognised by PHP for each quote style.
+	 *
+	 * @param string $expr The full expression string.
+	 * @param int    &$pos Current offset, advanced past the closing quote.
+	 * @return string|false String value, or false if not a valid literal.
+	 */
+	private static function parse_path_string( $expr, &$pos ) {
+		$len = strlen( $expr );
+		if ( $pos >= $len ) {
+			return false;
+		}
+
+		$quote = $expr[ $pos ];
+		if ( "'" !== $quote && '"' !== $quote ) {
+			return false;
+		}
+
+		$save_pos = $pos;
+		++$pos; // Consume opening quote.
+		$result = '';
+
+		while ( $pos < $len ) {
+			$ch = $expr[ $pos ];
+
+			if ( $ch === $quote ) {
+				++$pos; // Consume closing quote.
+				return $result;
+			}
+
+			if ( '\\' === $ch && ( $pos + 1 ) < $len ) {
+				$next = $expr[ $pos + 1 ];
+				$pos += 2;
+
+				if ( "'" === $quote ) {
+					// Single-quoted strings: only \\ and \' are escape sequences.
+					if ( '\\' === $next || "'" === $next ) {
+						$result .= $next;
+					} else {
+						$result .= '\\' . $next;
+					}
+				} else {
+					// Double-quoted strings: handle the common escape sequences.
+					switch ( $next ) {
+						case 'n':
+							$result .= "\n";
+							break;
+						case 'r':
+							$result .= "\r";
+							break;
+						case 't':
+							$result .= "\t";
+							break;
+						case '"':
+						case '\\':
+						case '$':
+							$result .= $next;
+							break;
+						default:
+							$result .= '\\' . $next;
+							break;
+					}
+				}
+				continue;
+			}
+
+			$result .= $ch;
+			++$pos;
+		}
+
+		// Unterminated string literal.
+		$pos = $save_pos;
+		return false;
 	}
 
 	/**
