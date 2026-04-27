@@ -90,7 +90,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * options:
 	 *   - yaml
 	 *   - json
-	 *   - var_export
+	 *   - plaintext
+	 *   - var_export (deprecated, use plaintext)
 	 * ---
 	 *
 	 * [--raw]

@@ -1186,14 +1186,22 @@ class WP_CLI {
 	 */
 	public static function print_value( $value, $assoc_args = [] ) {
 		$_value = '';
-		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
+		$format = Utils\get_flag_value( $assoc_args, 'format' );
+
+		// Support deprecated 'var_export' format name
+		if ( 'var_export' === $format ) {
+			WP_CLI::warning( "The 'var_export' format is deprecated. Please use 'plaintext' instead." );
+			$format = 'plaintext';
+		}
+
+		if ( 'json' === $format ) {
 			$_value = json_encode( $value );
-		} elseif ( Utils\get_flag_value( $assoc_args, 'format' ) === 'yaml' ) {
+		} elseif ( 'yaml' === $format ) {
 			/**
 			 * @var array $value
 			 */
 			$_value = Spyc::YAMLDump( $value, 2, 0 );
-		} elseif ( is_array( $value ) || is_object( $value ) ) {
+		} elseif ( 'plaintext' === $format || ( is_array( $value ) || is_object( $value ) ) ) {
 			$_value = var_export( $value, true );
 		} else {
 			/**
