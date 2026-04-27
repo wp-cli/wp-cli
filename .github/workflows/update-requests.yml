@@ -78,16 +78,34 @@ jobs:
           fi
 
           echo "All modified files are within the allowed paths."
-      - name: Create pull request
+      - name: Commit and Create Pull Request
         if: steps.latest_release.outputs.tag != steps.current_version.outputs.tag
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
-        with:
-          commit-message: "Update bundled Requests library to ${{ steps.latest_release.outputs.tag }}"
-          branch: "update/requests-${{ steps.latest_release.outputs.tag }}"
-          delete-branch: true
-          title: "Update bundled Requests library to ${{ steps.latest_release.outputs.tag }}"
-          body: |
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_NAME: "update/requests-${{ steps.latest_release.outputs.tag }}"
+          PR_BODY: |
             This automated PR updates the bundled [Requests](https://github.com/WordPress/Requests) library from `${{ steps.current_version.outputs.tag }}` to `${{ steps.latest_release.outputs.tag }}`.
 
             Please review the [Requests changelog](https://github.com/WordPress/Requests/releases/tag/${{ steps.latest_release.outputs.tag }}) before merging.
-          labels: "Requests"
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git checkout -b "$BRANCH_NAME"
+            git add .
+            git commit -m "Update bundled Requests library to ${{ steps.latest_release.outputs.tag }}"
+            git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+            git push -f origin "$BRANCH_NAME"
+            
+            PR_NUMBER=$(gh pr list --head "$BRANCH_NAME" --json number --jq '.[0].number')
+            if [ -z "$PR_NUMBER" ]; then
+              gh pr create \
+                --title "Update bundled Requests library to ${{ steps.latest_release.outputs.tag }}" \
+                --body "$PR_BODY" \
+                --label "Requests" \
+                --base "${{ github.event.repository.default_branch }}" \
+                --head "$BRANCH_NAME"
+            fi
+          fi
+
+
