@@ -412,7 +412,7 @@ class Runner {
 			++$pos;
 		}
 
-		if ( $len !== $pos ) {
+		if ( $pos < $len ) {
 			return false;
 		}
 
@@ -478,7 +478,7 @@ class Runner {
 		}
 
 		// Match dirname(...) — case-insensitive to mirror PHP semantics.
-		if ( 0 === strncasecmp( substr( $expr, $pos ), 'dirname', 7 ) ) {
+		if ( 0 === strncasecmp( substr( $expr, $pos, 7 ), 'dirname', 7 ) ) {
 			$save_pos = $pos;
 			$pos     += 7;
 
