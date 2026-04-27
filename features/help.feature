@@ -1234,7 +1234,7 @@ Feature: Get help about WP-CLI commands
           * A command that has a link in its long description.
           *
           * This is a [reference link](https://wordpress.org/).
-          * Also, there is a [second link](http://wp-cli.org/).
+          * Also, there is a [second link](http://example.com/).
           * They should be displayed nicely!
           *
           * @synopsis <constant-name>
@@ -1260,7 +1260,7 @@ Feature: Get help about WP-CLI commands
 
         ---
         [1] https://wordpress.org/
-        [2] http://wp-cli.org/
+        [2] http://example.com/
       """
 
   # No vt100 on Windows.
@@ -1279,7 +1279,7 @@ Feature: Get help about WP-CLI commands
           /**
           * A command that has a link in its long description.
           *
-          * This is a [reference link](https://wordpress.org/). Also, there is a [second link](http://wp-cli.org/). They should be displayed nicely! Wow! This is a very, very long description.
+          * This is a [reference link](https://wordpress.org/). Also, there is a [second link](http://example.com/). They should be displayed nicely! Wow! This is a very, very long description.
           *
           * @synopsis <constant-name>
           */
@@ -1303,7 +1303,7 @@ Feature: Get help about WP-CLI commands
 
         ---
         [1] https://wordpress.org/
-        [2] http://wp-cli.org/
+        [2] http://example.com/
       """
 
     # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
@@ -1316,7 +1316,7 @@ Feature: Get help about WP-CLI commands
 
         ---
         [1] https://wordpress.org/
-        [2] http://wp-cli.org/
+        [2] http://example.com/
       """
 
   @skip-windows
