@@ -11,36 +11,77 @@ use WP_CLI;
 /**
  * Allows incrementally reading and parsing lines from a CSV file.
  *
- * @implements \Iterator<int, string>
+ * @implements \Iterator<int, string[]|false>
  */
 class CSV implements Countable, Iterator {
 
 	const ROW_SIZE = 4096;
 
+	/**
+	 * The name of the CSV file.
+	 *
+	 * @var string
+	 */
 	private $filename;
+
+	/**
+	 * The file pointer resource.
+	 *
+	 * @var resource
+	 */
 	private $file_pointer;
 
+	/**
+	 * The CSV delimiter.
+	 *
+	 * @var string
+	 */
 	private $delimiter;
+
+	/**
+	 * The column names.
+	 *
+	 * @var array
+	 */
 	private $columns;
 
+	/**
+	 * The current index in the iterator.
+	 *
+	 * @var int
+	 */
 	private $current_index;
+
+	/**
+	 * The current element (row) or false.
+	 *
+	 * @var string[]|false
+	 */
 	private $current_element;
 
+	/**
+	 * Instantiate a new CSV iterator.
+	 *
+	 * @param string $filename  The name of the CSV file.
+	 * @param string $delimiter The CSV delimiter.
+	 */
 	public function __construct( $filename, $delimiter = ',' ) {
-		$this->filename     = $filename;
-		$this->file_pointer = fopen( $filename, 'rb' );
-		if ( ! $this->file_pointer ) {
+		$this->filename = $filename;
+		$file_pointer   = fopen( $filename, 'rb' );
+
+		if ( ! $file_pointer ) {
 			WP_CLI::error( sprintf( 'Could not open file: %s', $filename ) );
 		}
 
-		$this->delimiter = $delimiter;
+		$this->file_pointer = $file_pointer;
+		$this->delimiter    = $delimiter;
 	}
 
 	#[ReturnTypeWillChange]
 	public function rewind() {
 		rewind( $this->file_pointer );
 
-		$this->columns = fgetcsv( $this->file_pointer, self::ROW_SIZE, $this->delimiter, '"', '\\' );
+		$this->columns = fgetcsv( $this->file_pointer, self::ROW_SIZE, $this->delimiter, '"', '\\' ) ?: [];
 
 		$this->current_index = -1;
 		$this->next();

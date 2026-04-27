@@ -13,17 +13,75 @@ use Iterator;
  */
 class Query implements Iterator {
 
+	/**
+	 * How many rows to retrieve at once.
+	 *
+	 * @var int
+	 */
 	private $chunk_size;
-	private $query       = '';
+
+	/**
+	 * The query as a string.
+	 *
+	 * @var string
+	 */
+	private $query = '';
+
+	/**
+	 * The count query as a string.
+	 *
+	 * @var string
+	 */
 	private $count_query = '';
 
-	private $global_index     = 0;
+	/**
+	 * The global index in the iterator.
+	 *
+	 * @var int
+	 */
+	private $global_index = 0;
+
+	/**
+	 * The index in the current chunk of results.
+	 *
+	 * @var int
+	 */
 	private $index_in_results = 0;
-	private $results          = [];
-	private $row_count        = 0;
-	private $offset           = 0;
-	private $db               = null;
-	private $depleted         = false;
+
+	/**
+	 * The current chunk of results.
+	 *
+	 * @var array
+	 */
+	private $results = [];
+
+	/**
+	 * The total row count.
+	 *
+	 * @var int
+	 */
+	private $row_count = 0;
+
+	/**
+	 * The current offset for queries.
+	 *
+	 * @var int
+	 */
+	private $offset = 0;
+
+	/**
+	 * The database connection object.
+	 *
+	 * @var \wpdb
+	 */
+	private $db = null;
+
+	/**
+	 * Whether the iterator is depleted.
+	 *
+	 * @var bool
+	 */
+	private $depleted = false;
 
 	/**
 	 * Creates a new query iterator
@@ -39,16 +97,20 @@ class Query implements Iterator {
 	 * @param int $chunk_size How many rows to retrieve at once; default value is 500 (optional)
 	 */
 	public function __construct( $query, $chunk_size = 500 ) {
+		/**
+		 * @var \wpdb $wpdb
+		 */
+		global $wpdb;
 		$this->query = $query;
 
-		$this->count_query = preg_replace( '/^.*? FROM /', 'SELECT COUNT(*) FROM ', $query, 1, $replacements );
+		$this->count_query = (string) preg_replace( '/^.*? FROM /', 'SELECT COUNT(*) FROM ', $query, 1, $replacements );
 		if ( 1 !== $replacements ) {
 			$this->count_query = '';
 		}
 
 		$this->chunk_size = $chunk_size;
 
-		$this->db = $GLOBALS['wpdb'];
+		$this->db = $wpdb;
 	}
 
 	/**
@@ -63,7 +125,7 @@ class Query implements Iterator {
 			return;
 		}
 
-		$row_count = $this->db->get_var( $this->count_query );
+		$row_count = (int) $this->db->get_var( $this->count_query );
 
 		if ( $row_count < $this->row_count ) {
 			$this->offset -= $this->row_count - $row_count;
@@ -75,16 +137,18 @@ class Query implements Iterator {
 	private function load_items_from_db() {
 		$this->adjust_offset_for_shrinking_result_set();
 
-		$query         = $this->query . sprintf( ' LIMIT %d OFFSET %d', $this->chunk_size, $this->offset );
-		$this->results = $this->db->get_results( $query );
+		$query   = $this->query . sprintf( ' LIMIT %d OFFSET %d', $this->chunk_size, $this->offset );
+		$results = $this->db->get_results( $query );
 
-		if ( ! $this->results ) {
+		if ( ! $results ) {
 			if ( $this->db->last_error ) {
 				throw new Exception( 'Database error: ' . $this->db->last_error );
 			}
 
 			return false;
 		}
+
+		$this->results = $results;
 
 		$this->offset += $this->chunk_size;
 		return true;

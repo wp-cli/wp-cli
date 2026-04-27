@@ -75,7 +75,7 @@ class CommandFactory {
 	/**
 	 * Create a new Subcommand instance.
 	 *
-	 * @param mixed                                               $parent     The new command's parent Composite command.
+	 * @param RootCommand|CompositeCommand                        $parent     The new command's parent Composite command.
 	 * @param string|false                                        $name       Represents how the command should be invoked.
 	 *                                                                        If false, will be determined from the documented subject, represented by `$reflection`.
 	 * @param mixed                                               $callable   A callable function or closure, or class name and method
