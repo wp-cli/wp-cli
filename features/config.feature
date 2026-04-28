@@ -991,6 +991,18 @@ Feature: Have a config file
       WP_CLI_AUTOCORRECT: 1
       """
 
+  Scenario: Set locale via config file
+    Given a WP installation
+    And a wp-cli.yml file:
+      """
+      locale: de_DE
+      """
+
+    When I run `wp eval 'echo get_locale();'`
+    Then STDOUT should be:
+      """
+      de_DE
+
   Scenario: Custom system config path via WP_CLI_SYSTEM_SETTINGS_PATH
     Given an empty directory
     And a system-config.yml file:
