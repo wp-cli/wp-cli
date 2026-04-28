@@ -81,7 +81,7 @@ jobs:
       - name: Commit and Create Pull Request
         if: steps.latest_release.outputs.tag != steps.current_version.outputs.tag
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           BRANCH_NAME: "update/requests-${{ steps.latest_release.outputs.tag }}"
           PR_BODY: |
             This automated PR updates the bundled [Requests](https://github.com/WordPress/Requests) library from `${{ steps.current_version.outputs.tag }}` to `${{ steps.latest_release.outputs.tag }}`.
@@ -94,10 +94,9 @@ jobs:
             git checkout -b "$BRANCH_NAME"
             git add .
             git commit -m "Update bundled Requests library to ${{ steps.latest_release.outputs.tag }}"
-            git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
             git push -f origin "$BRANCH_NAME"
             
-            PR_NUMBER=$(gh pr list --head "$BRANCH_NAME" --json number --jq '.[0].number')
+            PR_NUMBER=$(gh pr list --head "$BRANCH_NAME" --json number --jq '.[0].number // empty')
             if [ -z "$PR_NUMBER" ]; then
               gh pr create \
                 --title "Update bundled Requests library to ${{ steps.latest_release.outputs.tag }}" \
