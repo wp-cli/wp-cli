@@ -99,7 +99,7 @@ class Formatter {
 				$items = iterator_to_array( $items );
 			}
 
-			if ( in_array( $this->args['format'], [ 'csv', 'json', 'table', 'yaml' ], true ) ) {
+			if ( in_array( $this->args['format'], [ 'csv', 'json', 'table', 'yaml', 'var_export', 'plaintext' ], true ) ) {
 				// Validate fields exist in at least one item
 				if ( ! empty( $this->args['fields'] ) ) {
 					$this->validate_fields( $items );
@@ -229,6 +229,15 @@ class Formatter {
 				} elseif ( 'yaml' === $this->args['format'] ) {
 					echo Spyc::YAMLDump( $out, 2, 0 );
 				}
+				break;
+
+			case 'var_export':
+			case 'plaintext':
+				$out = [];
+				foreach ( $items as $item ) {
+					$out[] = Utils\pick_fields( $item, $fields );
+				}
+				echo var_export( $out, true );
 				break;
 
 			default:
@@ -417,6 +426,8 @@ class Formatter {
 
 			case 'yaml':
 			case 'json':
+			case 'var_export':
+			case 'plaintext':
 				WP_CLI::print_value(
 					$ordered_data,
 					[

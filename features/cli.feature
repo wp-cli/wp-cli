@@ -30,6 +30,14 @@ Feature: `wp cli` tasks
     When I run `wp cli has-command test-command`
     Then the return code should be 0
 
+  Scenario: param-dump accepts plaintext as an alias for var_export
+    Given a WP installation
+
+    When I run `wp cli param-dump --format=plaintext`
+    Then STDOUT should match /^array \s*\(/
+    And STDERR should be empty
+    And the return code should be 0
+
   Scenario: Dump the list of global parameters with values
     Given a WP installation
 
