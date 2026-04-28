@@ -92,7 +92,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git checkout -b "$BRANCH_NAME"
-            git add .
+            git add utils/install-requests.sh bundle/rmccue/requests/
             git commit -m "Update bundled Requests library to ${{ steps.latest_release.outputs.tag }}"
             git push -f origin "$BRANCH_NAME"
             
