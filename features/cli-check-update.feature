@@ -198,6 +198,6 @@ Feature: Check for updates
 
     When I run `wp cli check-update`
     Then STDOUT should be a table containing rows:
-      | version | update_type | package_url | status | requires_php |
-      | 999.9.9 | major | https://github.com/wp-cli/wp-cli/releases/download/v999.9.9/wp-cli-999.9.9.phar | unavailable | 123.4.5 |
-      | 777.7.7 | major | https://github.com/wp-cli/wp-cli/releases/download/v777.7.7/wp-cli-777.7.7.phar | available | 5.6.0 |
+      | version | update_type | package_url | status | requires_php | release_notes_url |
+      | 999.9.9 | major | https://github.com/wp-cli/wp-cli/releases/download/v999.9.9/wp-cli-999.9.9.phar | unavailable | 123.4.5 | https://github.com/wp-cli/wp-cli/releases/tag/v999.9.9 |
+      | 777.7.7 | major | https://github.com/wp-cli/wp-cli/releases/download/v777.7.7/wp-cli-777.7.7.phar | available | 5.6.0 | https://github.com/wp-cli/wp-cli/releases/tag/v777.7.7 |
