@@ -104,6 +104,12 @@ jobs:
                 --label "Requests" \
                 --base "${{ github.event.repository.default_branch }}" \
                 --head "$BRANCH_NAME"
+            else
+              gh pr edit "$PR_NUMBER" \
+                --title "Update bundled Requests library to ${{ steps.latest_release.outputs.tag }}" \
+                --body "$PR_BODY" \
+                --add-label "Requests" \
+                --base "${{ github.event.repository.default_branch }}"
             fi
           fi
 
