@@ -38,7 +38,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       call_to_undefined_function();
       """
 
-    When I try `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
+    When I run `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
     Then STDERR should contain:
       """
       critical error
@@ -47,7 +47,10 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       --skip-plugins=error-plugin
       """
-    And the return code should be 255
+    And STDOUT should contain:
+      """
+      Rerunning command with --skip-plugins=error-plugin...
+      """
 
   Scenario: Fatal error in plugin suggests correct plugin name
     Given a wp-content/plugins/my-problematic-plugin/plugin.php file:
@@ -74,7 +77,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       trigger_error('Fatal error', E_USER_ERROR);
       """
 
-    When I try `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
+    When I run `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
     Then STDERR should contain:
       """
       critical error
@@ -92,7 +95,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       call_to_undefined_mu_function();
       """
 
-    When I try `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
+    When I run `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
     Then STDERR should contain:
       """
       critical error
@@ -101,7 +104,6 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       --skip-plugins=error-mu-plugin
       """
-    And the return code should be 255
 
   Scenario: Fatal error in theme triggers shutdown handler with suggestion
     Given a wp-content/themes/error-theme/style.css file:
@@ -134,7 +136,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       call_to_undefined_theme_function();
       """
 
-    When I try `WP_CLI_ERROR_RERUN=prompt wp theme list < session_yes`
+    When I run `WP_CLI_ERROR_RERUN=prompt wp theme list < session_yes`
     Then STDERR should contain:
       """
       critical error
@@ -177,7 +179,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       $var = "test"
       """
 
-    When I try `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
+    When I run `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
     Then STDERR should contain:
       """
       critical error
@@ -195,7 +197,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       $var = "test"
       """
 
-    When I try `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
+    When I run `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
     Then STDERR should contain:
       """
       critical error
@@ -266,7 +268,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       call_to_undefined_yes();
       """
 
-    When I try `WP_CLI_ERROR_RERUN=yes wp plugin list`
+    When I run `WP_CLI_ERROR_RERUN=yes wp plugin list`
     Then STDOUT should contain:
       """
       Rerunning command with --skip-plugins=broken-plugin-yes...
