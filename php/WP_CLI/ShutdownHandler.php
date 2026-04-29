@@ -339,8 +339,31 @@ class ShutdownHandler {
 		// parameters by the subprocess and validated correctly.
 		$runtime_config = (array) $runner->runtime_config;
 		foreach ( $skip as $skip_flag => $slug ) {
-			if ( isset( $runtime_config[ $skip_flag ] ) && ! is_bool( $slug ) && ! is_bool( $runtime_config[ $skip_flag ] ) ) {
-				$runtime_config[ $skip_flag ] .= ',' . $slug;
+			// $slug === true means "skip everything": set unconditionally.
+			if ( true === $slug ) {
+				$runtime_config[ $skip_flag ] = true;
+				continue;
+			}
+
+			// If the existing config already skips everything, keep it as-is.
+			if ( isset( $runtime_config[ $skip_flag ] ) && true === $runtime_config[ $skip_flag ] ) {
+				continue;
+			}
+
+			if ( isset( $runtime_config[ $skip_flag ] ) ) {
+				// Normalize arrays (e.g. from YAML list config) to a comma-separated string.
+				if ( is_array( $runtime_config[ $skip_flag ] ) ) {
+					$parts = [];
+					foreach ( $runtime_config[ $skip_flag ] as $item ) {
+						// @phpstan-ignore cast.string (array items from YAML config are mixed but safely castable to string)
+						$parts[] = (string) $item;
+					}
+					$existing = implode( ',', $parts );
+				} else {
+					$existing = (string) $runtime_config[ $skip_flag ];
+				}
+
+				$runtime_config[ $skip_flag ] = '' !== $existing ? $existing . ',' . $slug : $slug;
 			} else {
 				$runtime_config[ $skip_flag ] = $slug;
 			}
