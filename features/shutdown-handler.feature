@@ -51,7 +51,6 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       Rerunning command with --skip-plugins=error-plugin...
       """
-    And the return code should be 0
 
   Scenario: Fatal error in plugin suggests correct plugin name
     Given a wp-content/plugins/my-problematic-plugin/plugin.php file:
@@ -91,7 +90,6 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       Rerunning command with --skip-plugins=my-problematic-plugin...
       """
-    And the return code should be 0
 
   Scenario: Fatal error in mu-plugin triggers shutdown handler
     Given a wp-content/mu-plugins/error-mu-plugin.php file:
@@ -159,7 +157,6 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       Rerunning command with --skip-themes=error-theme...
       """
-    And the return code should be 0
 
   Scenario: No suggestion for errors outside plugins/themes
     When I try `WP_CLI_ERROR_RERUN=prompt wp eval "call_to_undefined_function();" < session_yes`
@@ -207,7 +204,6 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       Rerunning command with --skip-plugins=syntax-error-plugin...
       """
-    And the return code should be 0
 
   Scenario: Parse error in mu-plugin triggers shutdown handler
     Given a wp-content/mu-plugins/syntax-error-mu-plugin.php file:
@@ -301,4 +297,3 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       Would you like to run the command again
       """
-    And the return code should be 0

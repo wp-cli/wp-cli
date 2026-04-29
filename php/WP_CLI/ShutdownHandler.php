@@ -310,7 +310,15 @@ class ShutdownHandler {
 
 		$skip_string = self::get_skip_string( $skip );
 
-		WP_CLI::line( "\nRerunning command with {$skip_string}...\n" );
+		// Use fwrite(STDOUT,...) rather than WP_CLI::line() / echo here: after
+		// WordPress's fatal-error handler clears all output buffers with
+		// ob_end_clean(), subsequent `echo` calls may be silently swallowed on
+		// some platforms (notably Windows) before proc_open starts the
+		// subprocess.  Writing directly to the PHP STDOUT stream resource
+		// bypasses any C-library buffering and ensures the message reaches the
+		// pipe before the subprocess output does.
+		fwrite( STDOUT, "\nRerunning command with {$skip_string}...\n" );
+		fflush( STDOUT );
 
 		$php_bin = escapeshellarg( Utils\get_php_binary() );
 
