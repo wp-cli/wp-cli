@@ -349,7 +349,7 @@ class ShutdownHandler {
 
 		$full_command = "{$php_bin} {$script_path} {$args}{$assoc_args_str}{$runtime_config_str}";
 
-		$env                       = getenv();
+		$env                       = getenv() ?: [];
 		$env['WP_CLI_ERROR_RERUN'] = 'no'; // Prevent rerun recursion in the subprocess.
 
 		$pipes = [];
