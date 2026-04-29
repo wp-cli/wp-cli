@@ -356,5 +356,7 @@ class ShutdownHandler {
 			$exit_code = proc_close( $proc );
 			exit( $exit_code );
 		}
+
+		WP_CLI::error( 'Failed to launch subprocess for command rerun.' );
 	}
 }
