@@ -294,6 +294,11 @@ class ShutdownHandler {
 	/**
 	 * Rerun the current command with the skip flag.
 	 *
+	 * Launches a subprocess so that WordPress is reloaded without the failing
+	 * plugin or theme. Passing skip flags via $assoc_args to run_command()
+	 * would cause a validation error because they are global parameters that
+	 * are not part of any individual subcommand's synopsis.
+	 *
 	 * @param array<string, bool|string> $skip Skip flag(s) to append.
 	 */
 	private static function rerun_with_skip( $skip ) {
@@ -303,27 +308,50 @@ class ShutdownHandler {
 			return;
 		}
 
-		$args       = $runner->arguments;
-		$assoc_args = $runner->assoc_args;
-
-		foreach ( $skip as $skip_flag => $slug ) {
-			if ( isset( $assoc_args[ $skip_flag ] ) && ! is_bool( $slug ) ) {
-				// Add slug to existing skip list.
-				$existing                  = $assoc_args[ $skip_flag ];
-				$assoc_args[ $skip_flag ] .= ',' . $slug;
-			} else {
-				$assoc_args[ $skip_flag ] = $slug;
-			}
-		}
-
 		$skip_string = self::get_skip_string( $skip );
 
 		WP_CLI::line( "\nRerunning command with {$skip_string}...\n" );
 
-		try {
-			WP_CLI::run_command( $args, $assoc_args );
-		} catch ( \Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
+		$php_bin = escapeshellarg( Utils\get_php_binary() );
+
+		/**
+		 * @var string[] $argv
+		 */
+		$argv        = $GLOBALS['argv'];
+		$script_path = escapeshellarg( $argv[0] );
+
+		$args = implode(
+			' ',
+			array_map( 'escapeshellarg', (array) $runner->arguments )
+		);
+
+		$assoc_args_str = Utils\assoc_args_to_str( (array) $runner->assoc_args );
+
+		// Merge skip flags into the runtime config so they are treated as global
+		// parameters by the subprocess and validated correctly.
+		$runtime_config = (array) $runner->runtime_config;
+		foreach ( $skip as $skip_flag => $slug ) {
+			if ( isset( $runtime_config[ $skip_flag ] ) && ! is_bool( $slug ) && ! is_bool( $runtime_config[ $skip_flag ] ) ) {
+				$runtime_config[ $skip_flag ] .= ',' . $slug;
+			} else {
+				$runtime_config[ $skip_flag ] = $slug;
+			}
 		}
+		$runtime_config_str = Utils\assoc_args_to_str( $runtime_config );
+
+		$full_command = "{$php_bin} {$script_path} {$args}{$assoc_args_str}{$runtime_config_str}";
+
+		$env                       = getenv();
+		$env['WP_CLI_ERROR_RERUN'] = 'no'; // Prevent rerun recursion in the subprocess.
+
+		$pipes = [];
+		$proc  = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes, getcwd() ?: null, $env );
+
+		if ( is_resource( $proc ) ) {
+			$exit_code = proc_close( $proc );
+			exit( $exit_code );
+		}
+
+		WP_CLI::error( 'Failed to launch subprocess for command rerun.' );
 	}
 }
