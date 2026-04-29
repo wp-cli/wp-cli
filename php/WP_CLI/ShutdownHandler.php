@@ -344,11 +344,6 @@ class ShutdownHandler {
 		$env                       = getenv();
 		$env['WP_CLI_ERROR_RERUN'] = 'no'; // Prevent rerun recursion in the subprocess.
 
-		$wp_cli_config_path = (string) getenv( 'WP_CLI_CONFIG_PATH' );
-		if ( $wp_cli_config_path ) {
-			$env['WP_CLI_CONFIG_PATH'] = $wp_cli_config_path;
-		}
-
 		$pipes = [];
 		$proc  = Utils\proc_open_compat( $full_command, [ STDIN, STDOUT, STDERR ], $pipes, getcwd() ?: null, $env );
 
