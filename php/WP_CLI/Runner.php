@@ -1506,10 +1506,11 @@ class Runner {
 		/** @var array<string, mixed> $alias_config */
 		// @phpstan-ignore varTag.type
 		$alias_config = (array) $this->aliases[ $alias ];
-		// Merge alias config into the current config, then re-apply CLI runtime args so they
-		// always take precedence over values defined in the alias.
+		// Merge alias config into the current config, then re-apply CLI runtime args only for
+		// keys overridden by the alias so runtime values still take precedence without
+		// clobbering merged config values for unrelated multi-value options such as `require`.
 		$this->config = array_merge( $this->config, $alias_config );
-		foreach ( $this->runtime_config as $key => $value ) {
+		foreach ( array_intersect_key( $this->runtime_config, $alias_config ) as $key => $value ) {
 			$this->config[ $key ] = $value;
 		}
 	}
