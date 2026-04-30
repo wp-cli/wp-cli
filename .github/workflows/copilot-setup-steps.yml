@@ -9,8 +9,12 @@ on:
     paths:
       - .github/workflows/copilot-setup-steps.yml
 
+permissions:
+  contents: read
+
 jobs:
   copilot-setup-steps:
+    name: Setup environment
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -18,6 +22,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
 
       - name: Check existence of composer.json file
         id: check_composer_file
@@ -36,6 +42,6 @@ jobs:
 
       - name: Install Composer dependencies & cache dependencies
         if: steps.check_composer_file.outputs.files_exists == 'true'
-        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4
+        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
         env:
           COMPOSER_ROOT_VERSION: dev-${{ github.event.repository.default_branch }}

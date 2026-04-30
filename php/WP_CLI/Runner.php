@@ -44,8 +44,25 @@ class Runner {
 		'UTF-16 (LE)' => "\xFF\xFE",
 	];
 
+	/**
+	 * Path to the system-wide configuration file.
+	 *
+	 * @var string|false
+	 */
 	private $system_config_path;
+
+	/**
+	 * Path to the global configuration file.
+	 *
+	 * @var string|false
+	 */
 	private $global_config_path;
+
+	/**
+	 * Path to the project-specific configuration file.
+	 *
+	 * @var string|false
+	 */
 	private $project_config_path;
 
 	/** @var array<string, mixed> */
@@ -55,6 +72,11 @@ class Runner {
 	/** @var array<string, mixed> */
 	private $extra_config;
 
+	/**
+	 * Context manager instance.
+	 *
+	 * @var ContextManager
+	 */
 	private $context_manager;
 
 	/** @var string|null */
@@ -63,6 +85,11 @@ class Runner {
 	/** @var array<string, array<string|int, array<string, string>>|string> */
 	private $aliases = [];
 
+	/**
+	 * Raw aliases configuration.
+	 *
+	 * @var array
+	 */
 	private $raw_aliases;
 
 	/** @var array<string> */
@@ -72,17 +99,42 @@ class Runner {
 	/** @var array<string, mixed> */
 	private $runtime_config;
 
+	/**
+	 * Whether or not to colorize output.
+	 *
+	 * @var bool
+	 */
 	private $colorize = false;
 
 	/** @var array<string, array<int, array<string>>> */
 	private $early_invoke = [];
 
+	/**
+	 * Debug message for system configuration path.
+	 *
+	 * @var string
+	 */
 	private $system_config_path_debug;
 
+	/**
+	 * Debug message for global configuration path.
+	 *
+	 * @var string
+	 */
 	private $global_config_path_debug;
 
+	/**
+	 * Debug message for project configuration path.
+	 *
+	 * @var string
+	 */
 	private $project_config_path_debug;
 
+	/**
+	 * List of required files.
+	 *
+	 * @var array
+	 */
 	private $required_files;
 
 	public function __get( $key ) {
@@ -952,12 +1004,28 @@ class Runner {
 	 * @return bool
 	 */
 	public function is_command_disabled( $command ) {
+		return false !== $this->get_command_disabled_reason( $command );
+	}
+
+	/**
+	 * Get the reason why a command is disabled, or false if it isn't.
+	 *
+	 * @return string|false Reason string, or false if the command is not disabled.
+	 */
+	public function get_command_disabled_reason( $command ) {
+		if ( $command instanceof Dispatcher\DisabledCommand ) {
+			return $command->get_disabled_reason();
+		}
+
 		$path = implode( ' ', array_slice( Dispatcher\get_path( $command ), 1 ) );
 		/**
 		 * @var string[] $disabled_commands
 		 */
 		$disabled_commands = $this->config['disabled_commands'];
-		return in_array( $path, $disabled_commands, true );
+		if ( in_array( $path, $disabled_commands, true ) ) {
+			return 'Disabled via configuration file';
+		}
+		return false;
 	}
 
 	/**
@@ -1223,6 +1291,7 @@ class Runner {
 		if ( 'auto' === $this->config['color'] ) {
 			$this->colorize = ( ! Utils\isPiped() && ! Utils\is_windows() );
 		} else {
+			// @phpstan-ignore assign.propertyType
 			$this->colorize = $this->config['color'];
 		}
 	}

@@ -47,7 +47,10 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       --skip-plugins=error-plugin
       """
-    And the return code should be 255
+    And STDOUT should contain:
+      """
+      Rerunning command with --skip-plugins=error-plugin...
+      """
 
   Scenario: Fatal error in plugin suggests correct plugin name
     Given a wp-content/plugins/my-problematic-plugin/plugin.php file:
@@ -83,6 +86,10 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       --skip-plugins=my-problematic-plugin
       """
+    And STDOUT should contain:
+      """
+      Rerunning command with --skip-plugins=my-problematic-plugin...
+      """
 
   Scenario: Fatal error in mu-plugin triggers shutdown handler
     Given a wp-content/mu-plugins/error-mu-plugin.php file:
@@ -101,7 +108,10 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       --skip-plugins=error-mu-plugin
       """
-    And the return code should be 255
+    And STDOUT should contain:
+      """
+      Rerunning command with --skip-plugins=error-mu-plugin...
+      """
 
   Scenario: Fatal error in theme triggers shutdown handler with suggestion
     Given a wp-content/themes/error-theme/style.css file:
@@ -142,6 +152,10 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     And STDERR should contain:
       """
       --skip-themes=error-theme
+      """
+    And STDOUT should contain:
+      """
+      Rerunning command with --skip-themes=error-theme...
       """
 
   Scenario: No suggestion for errors outside plugins/themes
@@ -186,6 +200,10 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       --skip-plugins=syntax-error-plugin
       """
+    And STDOUT should contain:
+      """
+      Rerunning command with --skip-plugins=syntax-error-plugin...
+      """
 
   Scenario: Parse error in mu-plugin triggers shutdown handler
     Given a wp-content/mu-plugins/syntax-error-mu-plugin.php file:
@@ -203,6 +221,10 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     And STDERR should contain:
       """
       --skip-plugins=syntax-error-mu-plugin
+      """
+    And STDOUT should contain:
+      """
+      Rerunning command with --skip-plugins=syntax-error-mu-plugin...
       """
 
   Scenario: Automatic rerun with WP_CLI_ERROR_RERUN=no disables prompting
