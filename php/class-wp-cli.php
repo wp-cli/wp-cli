@@ -1688,8 +1688,7 @@ class WP_CLI {
 				self::$capture_exit = false;
 			}
 		}
-		if ( ( true === $return || 'stdout' === $return )
-			&& 'json' === $parse && is_string( $retval ) ) {
+		if ( ( true === $return || 'stdout' === $return ) && 'json' === $parse ) {
 			$retval = json_decode( $retval, true );
 		}
 		return $retval;
