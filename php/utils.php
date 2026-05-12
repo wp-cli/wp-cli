@@ -2177,7 +2177,7 @@ function get_sql_dump_command() {
 	if ( 'mariadb' === get_db_type() ) {
 		$result = Process::create( '/usr/bin/env which mariadb-dump', null, null )->run();
 
-		if ( 0 === $result->return_code ) {
+		if ( 0 === $result->return_code && '' !== trim( $result->stdout ) ) {
 			$command = 'mariadb-dump';
 		}
 	}
@@ -2205,7 +2205,7 @@ function get_sql_check_command() {
 	if ( 'mariadb' === get_db_type() ) {
 		$result = Process::create( '/usr/bin/env which mariadb-check', null, null )->run();
 
-		if ( 0 === $result->return_code ) {
+		if ( 0 === $result->return_code && '' !== trim( $result->stdout ) ) {
 			$command = 'mariadb-check';
 		}
 	}
