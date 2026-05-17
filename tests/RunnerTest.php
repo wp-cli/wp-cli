@@ -20,6 +20,7 @@ final class RunnerTest extends TestCase {
 		$runner = new ReflectionClass( Runner::class );
 		$method = $runner->getMethod( 'safe_parse_path' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$method->setAccessible( true );
 		}
 
