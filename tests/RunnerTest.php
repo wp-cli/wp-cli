@@ -19,6 +19,9 @@ final class RunnerTest extends TestCase {
 	public function testSafeParsePath( $expression, $expected ): void {
 		$runner = new ReflectionClass( Runner::class );
 		$method = $runner->getMethod( 'safe_parse_path' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
 
 		$this->assertSame( $expected, $method->invoke( null, $expression ) );
 	}
