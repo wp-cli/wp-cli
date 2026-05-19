@@ -507,11 +507,11 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( 'Cannot chmod %s.', $temp ) );
 		}
 
+		$temp = realpath( $temp ) ?: $temp;
+
 		class_exists( '\cli\Colors' ); // This autoloads \cli\Colors - after we move the file we no longer have access to this class.
 
-		if ( false === rename( $temp, $old_phar ) ) {
-			WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $old_phar ) );
-		}
+		$this->replace_current_phar( $temp, $old_phar );
 
 		if ( Utils\get_flag_value( $assoc_args, 'nightly', false ) ) {
 			$updated_version = 'the latest nightly release';
@@ -521,6 +521,82 @@ class CLI_Command extends WP_CLI_Command {
 			$updated_version = isset( $newest['version'] ) ? $newest['version'] : '<not provided>';
 		}
 		WP_CLI::success( sprintf( 'Updated WP-CLI to %s.', $updated_version ) );
+	}
+
+	/**
+	 * Replaces the current Phar with the newly downloaded one.
+	 *
+	 * @param string $temp         Path to the newly downloaded Phar.
+	 * @param string $current_phar Path to the current Phar.
+	 */
+	private function replace_current_phar( $temp, $current_phar ) {
+		if ( Utils\is_windows() ) {
+			$bak_file = $current_phar . '.bak';
+			if ( file_exists( $bak_file ) ) {
+				if ( false === unlink( $bak_file ) ) {
+					$unlink_error = error_get_last();
+					WP_CLI::error(
+						sprintf(
+							'Cannot remove existing backup %s%s',
+							$bak_file,
+							isset( $unlink_error['message'] ) ? ': ' . $unlink_error['message'] : '.'
+						)
+					);
+				}
+			}
+			if ( false === rename( $current_phar, $bak_file ) ) {
+				$rename_error = error_get_last();
+				WP_CLI::error(
+					sprintf(
+						'Cannot rename %s to %s%s',
+						$current_phar,
+						$bak_file,
+						isset( $rename_error['message'] ) ? ': ' . $rename_error['message'] : '.'
+					)
+				);
+			}
+			if ( false === rename( $temp, $current_phar ) ) {
+				$move_error = error_get_last();
+				error_clear_last();
+				$restore_succeeded = @rename( $bak_file, $current_phar ); // Revert
+				$restore_error     = null;
+				if ( ! $restore_succeeded ) {
+					$restore_error = error_get_last();
+				}
+				$message  = sprintf(
+					'Cannot move %s to %s%s',
+					$temp,
+					$current_phar,
+					isset( $move_error['message'] ) ? ': ' . $move_error['message'] : '.'
+				);
+				$message .= sprintf( ' Backup was written to %s.', $bak_file );
+
+				if ( $restore_succeeded ) {
+					$message .= sprintf( ' The original Phar was restored to %s.', $current_phar );
+				} else {
+					$message .= sprintf( ' Failed to restore the original Phar from %s to %s.', $bak_file, $current_phar );
+					if ( isset( $restore_error['message'] ) ) {
+						$message .= sprintf( ' Restore error: %s', $restore_error['message'] );
+					}
+				}
+
+				@unlink( $temp ); // Cleanup
+				WP_CLI::error( $message );
+			}
+			if ( file_exists( $bak_file ) && false === unlink( $bak_file ) ) {
+				$unlink_error = error_get_last();
+				WP_CLI::warning(
+					sprintf(
+						'Could not remove backup file %s%s',
+						$bak_file,
+						isset( $unlink_error['message'] ) ? ': ' . $unlink_error['message'] : '.'
+					)
+				);
+			}
+		} elseif ( false === rename( $temp, $current_phar ) ) {
+			@unlink( $temp ); // Cleanup
+			WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $current_phar ) );
+		}
 	}
 
 	/**
