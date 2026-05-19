@@ -720,7 +720,7 @@ Feature: Format output
       WP_CLI::line( 'Available formats: ' . implode( ', ', $formats ) );
       """
 
-    When I run `wp --require=filter-formats.php eval 'exit(0);'`
+    When I run `wp --require=filter-formats.php eval "exit(0);"`
     Then STDOUT should contain:
       """
       Available formats: table, json, csv, yaml, count, ids, custom1, custom2
