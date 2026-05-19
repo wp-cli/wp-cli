@@ -581,6 +581,14 @@ class Runner {
 				continue;
 			}
 
+			if ( '"' === $quote && '$' === $ch ) {
+				// Unescaped $ in double-quoted strings may start variable interpolation,
+				// which this parser does not support. Reject the expression rather than
+				// treating it as a literal path fragment.
+				$pos = $save_pos;
+				return false;
+			}
+
 			$result .= $ch;
 			++$pos;
 		}
