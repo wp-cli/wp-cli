@@ -1037,3 +1037,148 @@ Feature: Utilities that depend on WordPress code
       """
       Test error message
       """
+
+  Scenario: WP_DEBUG=true displays errors on STDERR without --debug
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      define('WP_DEBUG', true);
+
+      require_once(ABSPATH . 'wp-settings.php');
+      """
+    And a test-notice.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-notice', function() {
+        trigger_error( 'Test notice message', E_USER_NOTICE );
+        echo 'Done';
+      } );
+      """
+
+    When I try `wp --require=test-notice.php test-notice`
+    Then STDOUT should contain:
+      """
+      Done
+      """
+    And STDERR should contain:
+      """
+      Test notice message
+      """
+
+  Scenario: WP_DEBUG=false does not display errors on STDERR without --debug
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      define('WP_DEBUG', false);
+
+      require_once(ABSPATH . 'wp-settings.php');
+      """
+    And a test-notice.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-notice', function() {
+        trigger_error( 'Test notice message', E_USER_NOTICE );
+        echo 'Done';
+      } );
+      """
+
+    When I run `wp --require=test-notice.php test-notice`
+    Then STDOUT should contain:
+      """
+      Done
+      """
+    And STDERR should not contain:
+      """
+      Test notice message
+      """
+
+  Scenario: WP_DEBUG=true with WP_DEBUG_DISPLAY=false does not display errors on STDERR
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      define('WP_DEBUG', true);
+      define('WP_DEBUG_DISPLAY', false);
+
+      require_once(ABSPATH . 'wp-settings.php');
+      """
+    And a test-notice.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-notice', function() {
+        trigger_error( 'Test notice message', E_USER_NOTICE );
+        echo 'Done';
+      } );
+      """
+
+    When I try `wp --require=test-notice.php test-notice`
+    Then STDOUT should contain:
+      """
+      Done
+      """
+    And STDERR should not contain:
+      """
+      Test notice message
+      """
+
+  Scenario: --debug flag always displays errors on STDERR regardless of WP_DEBUG
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      define('WP_DEBUG', false);
+
+      require_once(ABSPATH . 'wp-settings.php');
+      """
+    And a test-notice.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-notice', function() {
+        trigger_error( 'Test notice message', E_USER_NOTICE );
+        echo 'Done';
+      } );
+      """
+
+    When I try `wp --debug --require=test-notice.php test-notice`
+    Then STDOUT should contain:
+      """
+      Done
+      """
+    And STDERR should contain:
+      """
+      Test notice message
+      """
