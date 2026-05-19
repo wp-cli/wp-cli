@@ -429,7 +429,6 @@ class WP_CLI {
 			}
 
 			$obj_idx = get_class( $function[0] ) . $function[1];
-			// @phpstan-ignore property.notFound
 			if ( ! isset( $function[0]->wp_filter_id ) ) {
 				if ( false === $priority ) {
 					return false;

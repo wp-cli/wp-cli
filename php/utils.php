@@ -1987,8 +1987,6 @@ function describe_callable( $callable ) {
 		}
 
 		if ( is_array( $callable ) ) {
-			/** @var array{0: object|string, 1: string} $callable */
-
 			if ( is_object( $callable[0] ) ) {
 				return sprintf(
 					'%s->%s()',
