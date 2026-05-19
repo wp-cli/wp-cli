@@ -435,7 +435,7 @@ class Configurator {
 				self::arrayify( $value );
 				$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
 			} else {
-				if ( $current_alias && in_array( $key, self::$alias_spec, true ) ) {
+				if ( $current_alias && in_array( $key, self::$alias_spec, true ) && ! in_array( $key, array( 'ssh', 'ssh-args', 'proxyjump', 'key' ), true ) ) {
 					continue;
 				}
 				$this->config[ $key ] = $value;
