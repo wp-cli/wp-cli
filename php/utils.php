@@ -498,7 +498,7 @@ function wp_version_compare( $since, $operator ) {
  * @access public
  * @category Output
  *
- * @param string       $format Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count'.
+ * @param string       $format Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count', 'var_export', 'plaintext'.
  * @param array<mixed> $items  An array of items to output.
  * @param array<string>|string $fields Named fields for each item of data. Can be array or comma-separated list.
  */

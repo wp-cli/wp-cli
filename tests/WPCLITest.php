@@ -14,4 +14,129 @@ class WPCLITest extends TestCase {
 		// @phpstan-ignore argument.type
 		WP_CLI::error_to_string( true );
 	}
+
+	public function testPrintValueJsonFormat(): void {
+		ob_start();
+		WP_CLI::print_value(
+			'hello',
+			[
+				'format' => 'json',
+			]
+		);
+		$out = $this->capture_stdout();
+		$this->assertSame( '"hello"' . "\n", $out );
+	}
+
+	public function testPrintValueVarExportFormatScalarUnquoted(): void {
+		ob_start();
+		WP_CLI::print_value(
+			'https://example.com',
+			[
+				'format' => 'var_export',
+			]
+		);
+		$out = $this->capture_stdout();
+		$this->assertSame( 'https://example.com' . "\n", $out );
+	}
+
+	public function testPrintValuePlaintextFormatScalarUnquoted(): void {
+		ob_start();
+		WP_CLI::print_value(
+			'https://example.com',
+			[
+				'format' => 'plaintext',
+			]
+		);
+		$out = $this->capture_stdout();
+		$this->assertSame( 'https://example.com' . "\n", $out );
+	}
+
+	public function testPrintValueVarExportFormatArray(): void {
+		ob_start();
+		WP_CLI::print_value(
+			[
+				'a' => 1,
+			],
+			[
+				'format' => 'var_export',
+			]
+		);
+		$out = $this->capture_stdout();
+		$this->assertStringContainsString( "'a' => 1", $out );
+		$this->assertStringStartsWith( 'array (', $out );
+	}
+
+	public function testPrintValueYamlFormat(): void {
+		ob_start();
+		WP_CLI::print_value(
+			[
+				'k' => 'v',
+			],
+			[
+				'format' => 'yaml',
+			]
+		);
+		$out = $this->capture_stdout();
+		$this->assertStringContainsString( 'k:', $out );
+		$this->assertStringContainsString( 'v', $out );
+	}
+
+	public function testPrintValueDefaultArrayUsesVarExport(): void {
+		ob_start();
+		WP_CLI::print_value(
+			[
+				'x' => 'y',
+			],
+			[]
+		);
+		$out = $this->capture_stdout();
+		$this->assertStringContainsString( "'x' => 'y'", $out );
+	}
+
+	public function testPrintValueIntegerScalar(): void {
+		ob_start();
+		WP_CLI::print_value( 42, [] );
+		$out = $this->capture_stdout();
+		$this->assertSame( "42\n", $out );
+	}
+
+	public function testPrintValueFloatScalar(): void {
+		ob_start();
+		WP_CLI::print_value( 1.5, [] );
+		$out = $this->capture_stdout();
+		$this->assertSame( "1.5\n", $out );
+	}
+
+	public function testPrintValueBooleanTrue(): void {
+		ob_start();
+		WP_CLI::print_value( true, [] );
+		$out = $this->capture_stdout();
+		$this->assertSame( "1\n", $out );
+	}
+
+	public function testPrintValueBooleanFalse(): void {
+		ob_start();
+		WP_CLI::print_value( false, [] );
+		$out = $this->capture_stdout();
+		$this->assertSame( "\n", $out );
+	}
+
+	public function testPrintValueNull(): void {
+		ob_start();
+		WP_CLI::print_value( null, [] );
+		$out = $this->capture_stdout();
+		$this->assertSame( "\n", $out );
+	}
+
+	/**
+	 * Normalize captured stdout for Windows (CRLF to LF).
+	 *
+	 * @return string
+	 */
+	private function capture_stdout(): string {
+		$out = ob_get_clean();
+		$this->assertIsString( $out );
+
+		return str_replace( [ "\r\n", "\r" ], "\n", $out );
+	}
 }
