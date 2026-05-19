@@ -437,20 +437,16 @@ function wp_clear_object_cache() {
 	}
 
 	// The following are Memcached (Redux) plugin specific (see https://core.trac.wordpress.org/ticket/31463).
-	// @phpstan-ignore property.notFound
 	if ( isset( $wp_object_cache->group_ops ) ) {
 		$wp_object_cache->group_ops = [];
 	}
-	// @phpstan-ignore property.notFound
 	if ( isset( $wp_object_cache->stats ) ) {
 		$wp_object_cache->stats = [];
 	}
-	// @phpstan-ignore property.notFound
 	if ( isset( $wp_object_cache->memcache_debug ) ) {
 		$wp_object_cache->memcache_debug = [];
 	}
 	// Used by `WP_Object_Cache` also.
-	// @phpstan-ignore property.notFound
 	if ( isset( $wp_object_cache->cache ) ) {
 		$wp_object_cache->cache = [];
 	}
