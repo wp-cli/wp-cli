@@ -171,6 +171,7 @@ Feature: Get help about WP-CLI commands
       GLOBAL PARAMETERS
       """
 
+  @require-php-7.4
   Scenario: Help when WordPress is downloaded but not installed
     Given an empty directory
 
