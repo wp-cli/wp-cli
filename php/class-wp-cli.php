@@ -1316,8 +1316,8 @@ class WP_CLI {
 	 *
 	 * ```
 	 * # `wp core download` prefers the `tar` binary over PharData when extracting tarballs
-	 * $cmd = "tar xz --strip-components=1 --directory=%s -f $tarball";
-	 * WP_CLI::launch( Utils\esc_cmd( $cmd, $dest ) );
+	 * $cmd = "tar xz --strip-components=1 --directory=%s -f %s";
+	 * WP_CLI::launch( Utils\esc_cmd( $cmd, $dest, $tarball ) );
 	 * ```
 	 *
 	 * @access public
