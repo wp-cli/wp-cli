@@ -133,10 +133,11 @@ class Extractor {
 		}
 
 		// Note: directory must exist for tar --directory to work.
-		$cmd = Utils\esc_cmd(
-			'tar xz --strip-components=1 --directory=%s -f %s',
-			$dest,
-			$tarball
+		$force_local = Utils\is_windows() ? ' --force-local' : '';
+		$cmd         = Utils\esc_cmd(
+			"tar xz{$force_local} --strip-components=1 --directory=%s -f %s",
+			Path::normalize( $dest ),
+			Path::normalize( $tarball )
 		);
 
 		$process_run = WP_CLI::launch(
