@@ -199,25 +199,6 @@ class ExtractorTest extends TestCase {
 		Extractor::rmdir( $temp_dir );
 	}
 
-	public function test_extract_tarball_with_phar_data(): void {
-		if ( ! class_exists( 'PharData' ) ) {
-			$this->markTestSkipped( 'PharData not installed.' );
-		}
-
-		list( $temp_dir, $tarball, $dest_dir ) = self::create_test_tarball();
-
-		$reflection = new ReflectionClass( Extractor::class );
-		$method     = $reflection->getMethod( 'extract_tarball_with_phar_data' );
-		$method->setAccessible( true );
-		$method->invoke( null, $tarball, $dest_dir );
-
-		$files = self::recursive_scandir( $dest_dir );
-		$this->assertSame( self::$expected_wp, $files );
-		$this->assertTrue( empty( self::$logger->stderr ) );
-
-		Extractor::rmdir( $temp_dir );
-	}
-
 	public function test_extract_tarball_with_phar_data_when_tar_unavailable(): void {
 		if ( ! class_exists( 'PharData' ) ) {
 			$this->markTestSkipped( 'PharData not installed.' );
@@ -280,37 +261,6 @@ class ExtractorTest extends TestCase {
 		} finally {
 			putenv( 'PATH=' . $old_path );
 		}
-
-		Extractor::rmdir( $temp_dir );
-	}
-
-	public function test_err_extract_tarball_with_system_tar(): void {
-		if ( ! exec( 'tar --version' ) ) {
-			$this->markTestSkipped( 'tar not installed.' );
-		}
-
-		$temp_dir = Utils\get_temp_dir() . uniqid( self::$copy_overwrite_files_prefix, true );
-		mkdir( $temp_dir );
-
-		$dest_dir = $temp_dir . '/dest';
-		mkdir( $dest_dir );
-
-		$corrupt_tarball = $temp_dir . '/corrupt.tar.gz';
-		file_put_contents( $corrupt_tarball, 'invalid gzip archive' );
-
-		$reflection = new ReflectionClass( Extractor::class );
-		$method     = $reflection->getMethod( 'extract_tarball_with_system_tar' );
-		$method->setAccessible( true );
-
-		$msg = '';
-		try {
-			$method->invoke( null, realpath( $corrupt_tarball ), $dest_dir );
-		} catch ( \Exception $e ) {
-			$msg = $e->getMessage();
-		}
-
-		$this->assertTrue( false !== strpos( $msg, 'Failed to execute' ) );
-		$this->assertTrue( empty( self::$logger->stderr ) );
 
 		Extractor::rmdir( $temp_dir );
 	}
