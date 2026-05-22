@@ -95,48 +95,71 @@ class Extractor {
 			throw new Exception( "Could not create folder '{$dest}'." );
 		}
 
-		if ( class_exists( 'PharData' ) ) {
-			try {
-				$phar    = new PharData( $tarball );
-				$name    = Path::basename( $tarball );
-				$tempdir = Utils\get_temp_dir()
-							. uniqid( 'wp-cli-extract-tarball-', true )
-							. "-{$name}";
-
-				$phar->extractTo( $tempdir );
-
-				self::copy_overwrite_files(
-					self::get_first_subfolder( $tempdir ),
-					$dest
-				);
-
-				self::rmdir( $tempdir );
-				return;
-			} catch ( Exception $e ) {
-				WP_CLI::warning(
-					"PharData failed, falling back to 'tar xz' ("
-					. $e->getMessage() . ')'
-				);
-				// Fall through to trying `tar xz` below.
-			}
-		}
-
 		$tarball_absolute = realpath( $tarball );
 		if ( ! $tarball_absolute ) {
 			throw new Exception( "Invalid tarball '{$tarball}'." );
 		}
-		$tarball = $tarball_absolute;
 
-		if ( ! is_readable( $tarball )
-			|| filesize( $tarball ) <= 0 ) {
+		if ( ! is_readable( $tarball_absolute )
+			|| filesize( $tarball_absolute ) <= 0 ) {
 			throw new Exception( "Invalid tarball '{$tarball}'." );
 		}
 
+		// Prefer the system `tar` binary because PharData silently truncates paths longer than 100 characters.
+		// See https://github.com/php/php-src/issues/19311 and https://github.com/wp-cli/wp-cli/issues/6320.
+		if ( self::system_tar_available() ) {
+			try {
+				self::extract_tarball_with_system_tar( $tarball_absolute, $dest );
+				return;
+			} catch ( Exception $e ) {
+				if ( ! class_exists( 'PharData' ) ) {
+					throw $e;
+				}
+
+				WP_CLI::warning(
+					"Failed to extract with 'tar xz', falling back to PharData ("
+					. $e->getMessage() . ')'
+				);
+			}
+		}
+
+		if ( class_exists( 'PharData' ) ) {
+			self::extract_tarball_with_phar_data( $tarball, $dest );
+			return;
+		}
+
+		throw new Exception( 'Extracting a tarball requires the tar binary or PharData.' );
+	}
+
+	/**
+	 * Check whether the system `tar` binary is available.
+	 *
+	 * @return bool
+	 */
+	private static function system_tar_available() {
+		if ( ! Utils\check_proc_available( null, true ) ) {
+			return false;
+		}
+
+		$return_var = -1;
+		exec( 'tar --version 2>&1', $output, $return_var );
+
+		return 0 === $return_var;
+	}
+
+	/**
+	 * Extract a tarball using the system `tar` binary.
+	 *
+	 * @param string $tarball Absolute path to the tarball.
+	 * @param string $dest    Destination directory.
+	 */
+	private static function extract_tarball_with_system_tar( $tarball, $dest ) {
 		// Note: directory must exist for tar --directory to work.
-		$cmd = Utils\esc_cmd(
-			'tar xz --strip-components=1 --directory=%s -f %s',
-			$dest,
-			$tarball
+		$force_local = Utils\is_windows() ? ' --force-local' : '';
+		$cmd         = Utils\esc_cmd(
+			"tar xz{$force_local} --strip-components=1 --directory=%s -f %s",
+			Path::normalize( $dest ),
+			Path::normalize( $tarball )
 		);
 
 		$process_run = WP_CLI::launch(
@@ -154,6 +177,29 @@ class Extractor {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Extract a tarball using PharData.
+	 *
+	 * @param string $tarball Path to the tarball.
+	 * @param string $dest    Destination directory.
+	 */
+	private static function extract_tarball_with_phar_data( $tarball, $dest ) {
+		$phar    = new PharData( $tarball );
+		$name    = Path::basename( $tarball );
+		$tempdir = Utils\get_temp_dir()
+					. uniqid( 'wp-cli-extract-tarball-', true )
+					. "-{$name}";
+
+		$phar->extractTo( $tempdir );
+
+		self::copy_overwrite_files(
+			self::get_first_subfolder( $tempdir ),
+			$dest
+		);
+
+		self::rmdir( $tempdir );
 	}
 
 	/**
