@@ -188,31 +188,128 @@ class ExtractorTest extends TestCase {
 			$this->markTestSkipped( 'tar not installed.' );
 		}
 
-		$temp_dir = Utils\get_temp_dir() . uniqid( self::$copy_overwrite_files_prefix, true );
-		mkdir( $temp_dir );
-
-		$src_dir = $temp_dir . '/src';
-		mkdir( $src_dir );
-
-		$wp_dir = $src_dir . '/wordpress';
-		mkdir( $wp_dir );
-
-		$long_path = 'wp-includes/php-ai-client/third-party/Http/Discovery/Exception/PuliUnavailableException.php';
-		mkdir( $wp_dir . '/' . dirname( $long_path ), 0777, true );
-		touch( $wp_dir . '/' . $long_path );
-
-		$tarball  = $temp_dir . '/test-long-path.tar.gz';
-		$dest_dir = $temp_dir . '/dest';
-
-		$output     = [];
-		$return_var = -1;
-		$cmd        = 'tar czvf %1$s' . ( Utils\is_windows() ? ' --force-local' : '' ) . ' --directory=%2$s/src wordpress 2>&1';
-		exec( Utils\esc_cmd( $cmd, $tarball, $temp_dir ), $output, $return_var );
-		$this->assertSame( 0, $return_var );
+		$long_path                             = 'wp-includes/php-ai-client/third-party/Http/Discovery/Exception/PuliUnavailableException.php';
+		list( $temp_dir, $tarball, $dest_dir ) = self::create_test_tarball( [ $long_path ] );
 
 		Extractor::extract( $tarball, $dest_dir );
 
 		$this->assertFileExists( $dest_dir . '/' . $long_path );
+		$this->assertTrue( empty( self::$logger->stderr ) );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
+	public function test_extract_tarball_with_phar_data(): void {
+		if ( ! class_exists( 'PharData' ) ) {
+			$this->markTestSkipped( 'PharData not installed.' );
+		}
+
+		list( $temp_dir, $tarball, $dest_dir ) = self::create_test_tarball();
+
+		$reflection = new ReflectionClass( Extractor::class );
+		$method     = $reflection->getMethod( 'extract_tarball_with_phar_data' );
+		$method->setAccessible( true );
+		$method->invoke( null, $tarball, $dest_dir );
+
+		$files = self::recursive_scandir( $dest_dir );
+		$this->assertSame( self::$expected_wp, $files );
+		$this->assertTrue( empty( self::$logger->stderr ) );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
+	public function test_extract_tarball_with_phar_data_when_tar_unavailable(): void {
+		if ( ! class_exists( 'PharData' ) ) {
+			$this->markTestSkipped( 'PharData not installed.' );
+		}
+
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'PATH manipulation is not reliable on Windows.' );
+		}
+
+		list( $temp_dir, $tarball, $dest_dir ) = self::create_test_tarball();
+
+		$old_path = getenv( 'PATH' );
+		putenv( 'PATH=' );
+
+		try {
+			Extractor::extract( $tarball, $dest_dir );
+
+			$files = self::recursive_scandir( $dest_dir );
+			$this->assertSame( self::$expected_wp, $files );
+			$this->assertTrue( empty( self::$logger->stderr ) );
+		} finally {
+			putenv( 'PATH=' . $old_path );
+		}
+
+		Extractor::rmdir( $temp_dir );
+	}
+
+	public function test_extract_tarball_falls_back_to_phar_data_when_tar_fails(): void {
+		if ( ! class_exists( 'PharData' ) ) {
+			$this->markTestSkipped( 'PharData not installed.' );
+		}
+
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Fake tar binary test is not supported on Windows.' );
+		}
+
+		if ( ! exec( 'tar --version' ) ) {
+			$this->markTestSkipped( 'tar not installed.' );
+		}
+
+		list( $temp_dir, $tarball, $dest_dir ) = self::create_test_tarball();
+
+		$fake_bin = $temp_dir . '/fakebin';
+		mkdir( $fake_bin );
+		file_put_contents(
+			"{$fake_bin}/tar",
+			"#!/bin/sh\nif [ \"\$1\" = \"--version\" ]; then exit 0; fi\nexit 1\n"
+		);
+		chmod( "{$fake_bin}/tar", 0755 );
+
+		$old_path = getenv( 'PATH' );
+		putenv( 'PATH=' . $fake_bin . PATH_SEPARATOR . $old_path );
+
+		try {
+			Extractor::extract( $tarball, $dest_dir );
+
+			$files = self::recursive_scandir( $dest_dir );
+			$this->assertSame( self::$expected_wp, $files );
+			$this->assertTrue( 0 === strpos( self::$logger->stderr, 'Warning: Failed to extract with \'tar xz\'' ) );
+		} finally {
+			putenv( 'PATH=' . $old_path );
+		}
+
+		Extractor::rmdir( $temp_dir );
+	}
+
+	public function test_err_extract_tarball_with_system_tar(): void {
+		if ( ! exec( 'tar --version' ) ) {
+			$this->markTestSkipped( 'tar not installed.' );
+		}
+
+		$temp_dir = Utils\get_temp_dir() . uniqid( self::$copy_overwrite_files_prefix, true );
+		mkdir( $temp_dir );
+
+		$dest_dir = $temp_dir . '/dest';
+		mkdir( $dest_dir );
+
+		$corrupt_tarball = $temp_dir . '/corrupt.tar.gz';
+		file_put_contents( $corrupt_tarball, 'invalid gzip archive' );
+
+		$reflection = new ReflectionClass( Extractor::class );
+		$method     = $reflection->getMethod( 'extract_tarball_with_system_tar' );
+		$method->setAccessible( true );
+
+		$msg = '';
+		try {
+			$method->invoke( null, realpath( $corrupt_tarball ), $dest_dir );
+		} catch ( \Exception $e ) {
+			$msg = $e->getMessage();
+		}
+
+		$this->assertTrue( false !== strpos( $msg, 'Failed to execute' ) );
 		$this->assertTrue( empty( self::$logger->stderr ) );
 
 		Extractor::rmdir( $temp_dir );
@@ -297,6 +394,48 @@ class ExtractorTest extends TestCase {
 		}
 		$this->assertSame( "Extraction only supported for '.zip' and '.tar.gz' file types.", $msg );
 		$this->assertTrue( empty( self::$logger->stderr ) );
+	}
+
+	private static function create_test_tarball( $extra_files = [] ) {
+		$temp_dir = Utils\get_temp_dir() . uniqid( self::$copy_overwrite_files_prefix, true );
+		mkdir( $temp_dir );
+
+		$src_dir = $temp_dir . '/src';
+		mkdir( $src_dir );
+
+		$wp_dir = $src_dir . '/wordpress';
+		mkdir( $wp_dir );
+
+		foreach ( self::$expected_wp as $file ) {
+			if ( 0 === substr_compare( $file, '/', -1 ) ) {
+				mkdir( $wp_dir . '/' . $file );
+			} else {
+				touch( $wp_dir . '/' . $file );
+			}
+		}
+
+		foreach ( $extra_files as $relative_path ) {
+			$full_path = $wp_dir . '/' . $relative_path;
+			$dir       = dirname( $full_path );
+			if ( ! is_dir( $dir ) ) {
+				mkdir( $dir, 0777, true );
+			}
+			touch( $full_path );
+		}
+
+		$tarball  = $temp_dir . '/test.tar.gz';
+		$dest_dir = $temp_dir . '/dest';
+
+		$output     = [];
+		$return_var = -1;
+		$cmd        = 'tar czvf %1$s' . ( Utils\is_windows() ? ' --force-local' : '' ) . ' --directory=%2$s/src wordpress 2>&1';
+		exec( Utils\esc_cmd( $cmd, $tarball, $temp_dir ), $output, $return_var );
+
+		if ( 0 !== $return_var ) {
+			throw new \RuntimeException( 'Failed to create test tarball.' );
+		}
+
+		return [ $temp_dir, $tarball, $dest_dir ];
 	}
 
 	private static function create_test_directory_structure() {
