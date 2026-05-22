@@ -162,8 +162,7 @@ class ExtractorTest extends TestCase {
 		}
 
 		$this->assertTrue( false !== strpos( $msg, 'no-such-tar' ) );
-		$this->assertTrue( 0 === strpos( self::$logger->stderr, 'Warning: PharData failed' ) );
-		$this->assertTrue( false !== strpos( self::$logger->stderr, 'no-such-tar' ) );
+		$this->assertTrue( empty( self::$logger->stderr ) );
 
 		// Reset logger.
 		self::$logger->stderr = '';
@@ -181,8 +180,42 @@ class ExtractorTest extends TestCase {
 		unlink( $zero_tar );
 
 		$this->assertTrue( false !== strpos( $msg, 'zero-tar' ) );
-		$this->assertTrue( 0 === strpos( self::$logger->stderr, 'Warning: PharData failed' ) );
-		$this->assertTrue( false !== strpos( self::$logger->stderr, 'zero-tar' ) );
+		$this->assertTrue( empty( self::$logger->stderr ) );
+	}
+
+	public function test_extract_tarball_long_path(): void {
+		if ( ! exec( 'tar --version' ) ) {
+			$this->markTestSkipped( 'tar not installed.' );
+		}
+
+		$temp_dir = Utils\get_temp_dir() . uniqid( self::$copy_overwrite_files_prefix, true );
+		mkdir( $temp_dir );
+
+		$src_dir = $temp_dir . '/src';
+		mkdir( $src_dir );
+
+		$wp_dir = $src_dir . '/wordpress';
+		mkdir( $wp_dir );
+
+		$long_path = 'wp-includes/php-ai-client/third-party/Http/Discovery/Exception/PuliUnavailableException.php';
+		mkdir( $wp_dir . '/' . dirname( $long_path ), 0777, true );
+		touch( $wp_dir . '/' . $long_path );
+
+		$tarball  = $temp_dir . '/test-long-path.tar.gz';
+		$dest_dir = $temp_dir . '/dest';
+
+		$output     = [];
+		$return_var = -1;
+		$cmd        = 'tar czvf %1$s' . ( Utils\is_windows() ? ' --force-local' : '' ) . ' --directory=%2$s/src wordpress 2>&1';
+		exec( Utils\esc_cmd( $cmd, $tarball, $temp_dir ), $output, $return_var );
+		$this->assertSame( 0, $return_var );
+
+		Extractor::extract( $tarball, $dest_dir );
+
+		$this->assertFileExists( $dest_dir . '/' . $long_path );
+		$this->assertTrue( empty( self::$logger->stderr ) );
+
+		Extractor::rmdir( $temp_dir );
 	}
 
 	public function test_extract_zip(): void {
