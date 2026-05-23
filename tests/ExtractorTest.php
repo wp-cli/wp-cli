@@ -153,6 +153,10 @@ class ExtractorTest extends TestCase {
 	}
 
 	public function test_extract_tarball_fallback_to_phardata(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Hiding system tar via PATH is not supported on Windows.' );
+		}
+
 		if ( ! class_exists( 'PharData' ) ) {
 			$this->markTestSkipped( 'PharData not available.' );
 		}
