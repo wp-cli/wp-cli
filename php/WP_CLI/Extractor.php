@@ -95,32 +95,6 @@ class Extractor {
 			throw new Exception( "Could not create folder '{$dest}'." );
 		}
 
-		if ( class_exists( 'PharData' ) ) {
-			try {
-				$phar    = new PharData( $tarball );
-				$name    = Path::basename( $tarball );
-				$tempdir = Utils\get_temp_dir()
-							. uniqid( 'wp-cli-extract-tarball-', true )
-							. "-{$name}";
-
-				$phar->extractTo( $tempdir );
-
-				self::copy_overwrite_files(
-					self::get_first_subfolder( $tempdir ),
-					$dest
-				);
-
-				self::rmdir( $tempdir );
-				return;
-			} catch ( Exception $e ) {
-				WP_CLI::warning(
-					"PharData failed, falling back to 'tar xz' ("
-					. $e->getMessage() . ')'
-				);
-				// Fall through to trying `tar xz` below.
-			}
-		}
-
 		$tarball_absolute = realpath( $tarball );
 		if ( ! $tarball_absolute ) {
 			throw new Exception( "Invalid tarball '{$tarball}'." );
@@ -132,29 +106,52 @@ class Extractor {
 			throw new Exception( "Invalid tarball '{$tarball}'." );
 		}
 
-		// Note: directory must exist for tar --directory to work.
-		$force_local = Utils\is_windows() ? ' --force-local' : '';
-		$cmd         = Utils\esc_cmd(
-			"tar xz{$force_local} --strip-components=1 --directory=%s -f %s",
-			Path::normalize( $dest ),
-			Path::normalize( $tarball )
-		);
+		try {
+			// Note: directory must exist for tar --directory to work.
+			$force_local = Utils\is_windows() ? ' --force-local' : '';
+			$cmd         = Utils\esc_cmd(
+				"tar xz{$force_local} --strip-components=1 --directory=%s -f %s",
+				Path::normalize( $dest ),
+				Path::normalize( $tarball )
+			);
 
-		$process_run = WP_CLI::launch(
-			$cmd,
-			false, /*exit_on_error*/
-			true /*return_detailed*/
-		);
+			$process_run = WP_CLI::launch(
+				$cmd,
+				false, /*exit_on_error*/
+				true /*return_detailed*/
+			);
 
-		if ( 0 !== $process_run->return_code ) {
-			throw new Exception(
-				sprintf(
-					'Failed to execute `%s`: %s.',
-					$cmd,
-					self::tar_error_msg( $process_run )
-				)
+			if ( 0 === $process_run->return_code ) {
+				return;
+			}
+
+			throw new Exception( (string) self::tar_error_msg( $process_run ) );
+		} catch ( Exception $e ) {
+			WP_CLI::warning(
+				'tar xz failed, falling back to PharData ('
+				. $e->getMessage() . ')'
 			);
 		}
+
+		if ( class_exists( 'PharData' ) ) {
+			$phar    = new PharData( $tarball );
+			$name    = Path::basename( $tarball );
+			$tempdir = Utils\get_temp_dir()
+						. uniqid( 'wp-cli-extract-tarball-', true )
+						. "-{$name}";
+
+			$phar->extractTo( $tempdir );
+
+			self::copy_overwrite_files(
+				self::get_first_subfolder( $tempdir ),
+				$dest
+			);
+
+			self::rmdir( $tempdir );
+			return;
+		}
+
+		throw new Exception( 'Both tar xz and PharData failed to extract the tarball.' );
 	}
 
 	/**

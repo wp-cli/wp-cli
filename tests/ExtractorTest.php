@@ -162,8 +162,7 @@ class ExtractorTest extends TestCase {
 		}
 
 		$this->assertTrue( false !== strpos( $msg, 'no-such-tar' ) );
-		$this->assertTrue( 0 === strpos( self::$logger->stderr, 'Warning: PharData failed' ) );
-		$this->assertTrue( false !== strpos( self::$logger->stderr, 'no-such-tar' ) );
+		$this->assertTrue( empty( self::$logger->stderr ) );
 
 		// Reset logger.
 		self::$logger->stderr = '';
@@ -181,8 +180,7 @@ class ExtractorTest extends TestCase {
 		unlink( $zero_tar );
 
 		$this->assertTrue( false !== strpos( $msg, 'zero-tar' ) );
-		$this->assertTrue( 0 === strpos( self::$logger->stderr, 'Warning: PharData failed' ) );
-		$this->assertTrue( false !== strpos( self::$logger->stderr, 'zero-tar' ) );
+		$this->assertTrue( empty( self::$logger->stderr ) );
 	}
 
 	public function test_extract_zip(): void {
