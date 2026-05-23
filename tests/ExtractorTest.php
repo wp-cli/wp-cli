@@ -152,6 +152,52 @@ class ExtractorTest extends TestCase {
 		Extractor::rmdir( $temp_dir );
 	}
 
+	public function test_extract_tarball_fallback_to_phardata(): void {
+		if ( ! class_exists( 'PharData' ) ) {
+			$this->markTestSkipped( 'PharData not available.' );
+		}
+
+		$msg = '';
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		$tarball  = $temp_dir . '/test.tar.gz';
+		$dest_dir = $temp_dir . '/dest';
+
+		// Create test tarball using PharData.
+		$phar = new \PharData( $tarball );
+		$phar->buildFromDirectory( $src_dir );
+
+		// Temporarily hide system 'tar' by overriding PATH.
+		$prev_path     = getenv( 'PATH' );
+		$prev_env_path = isset( $_ENV['PATH'] ) ? $_ENV['PATH'] : null;
+
+		putenv( 'PATH=/does/not/exist' );
+		$_ENV['PATH'] = '/does/not/exist';
+
+		try {
+			// Test.
+			Extractor::extract( $tarball, $dest_dir );
+		} catch ( \Exception $e ) {
+			$msg = $e->getMessage();
+		}
+
+		// Restore environment.
+		putenv( false === $prev_path ? 'PATH' : "PATH=$prev_path" );
+		if ( null === $prev_env_path ) {
+			unset( $_ENV['PATH'] );
+		} else {
+			$_ENV['PATH'] = $prev_env_path;
+		}
+
+		$files = self::recursive_scandir( $dest_dir );
+		// Clean up.
+		Extractor::rmdir( $temp_dir );
+		$this->assertSame( self::$expected_wp, $files );
+		$this->assertTrue( 0 === strpos( self::$logger->stderr, 'Warning: tar xz failed, falling back to PharData' ) );
+		$this->assertEmpty( $msg );
+	}
+
 	public function test_err_extract_tarball(): void {
 		// Non-existent.
 		$msg = '';
