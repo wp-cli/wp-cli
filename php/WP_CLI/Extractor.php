@@ -106,6 +106,8 @@ class Extractor {
 			throw new Exception( "Invalid tarball '{$tarball}'." );
 		}
 
+		$tar_error = null;
+
 		try {
 			// Note: directory must exist for tar --directory to work.
 			$force_local = Utils\is_windows() ? ' --force-local' : '';
@@ -127,31 +129,59 @@ class Extractor {
 
 			throw new Exception( (string) self::tar_error_msg( $process_run ) );
 		} catch ( Exception $e ) {
-			WP_CLI::warning(
-				'tar xz failed, falling back to PharData ('
-				. $e->getMessage() . ')'
-			);
+			$tar_error = $e->getMessage();
+			if ( class_exists( 'PharData' ) ) {
+				WP_CLI::warning(
+					'tar xz failed, falling back to PharData ('
+					. $tar_error . ')'
+				);
+			}
 		}
 
+		$phar_error = null;
+
 		if ( class_exists( 'PharData' ) ) {
-			$phar    = new PharData( $tarball );
 			$name    = Path::basename( $tarball );
 			$tempdir = Utils\get_temp_dir()
 						. uniqid( 'wp-cli-extract-tarball-', true )
 						. "-{$name}";
 
-			$phar->extractTo( $tempdir );
+			try {
+				$phar = new PharData( $tarball );
+				$phar->extractTo( $tempdir );
 
-			self::copy_overwrite_files(
-				self::get_first_subfolder( $tempdir ),
-				$dest
-			);
-
-			self::rmdir( $tempdir );
-			return;
+				self::copy_overwrite_files(
+					self::get_first_subfolder( $tempdir ),
+					$dest
+				);
+				return;
+			} catch ( Exception $e ) {
+				$phar_error = $e->getMessage();
+			} finally {
+				if ( is_dir( $tempdir ) ) {
+					try {
+						self::rmdir( $tempdir );
+					} catch ( Exception $e ) {
+						// Ignore cleanup errors to avoid masking primary exceptions.
+						unset( $e );
+					}
+				}
+			}
 		}
 
-		throw new Exception( 'Both tar xz and PharData failed to extract the tarball.' );
+		$errors = [];
+		if ( $tar_error ) {
+			$errors[] = "tar xz failed: {$tar_error}";
+		}
+		if ( $phar_error ) {
+			$errors[] = "PharData failed: {$phar_error}";
+		}
+
+		if ( empty( $errors ) ) {
+			throw new Exception( 'Failed to extract the tarball.' );
+		}
+
+		throw new Exception( 'Failed to extract the tarball. ' . implode( ' ', $errors ) );
 	}
 
 	/**

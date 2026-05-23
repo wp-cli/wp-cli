@@ -182,16 +182,16 @@ class ExtractorTest extends TestCase {
 		try {
 			// Test.
 			Extractor::extract( $tarball, $dest_dir );
-		} catch ( \Exception $e ) {
+		} catch ( \Throwable $e ) {
 			$msg = $e->getMessage();
-		}
-
-		// Restore environment.
-		putenv( false === $prev_path ? 'PATH' : "PATH=$prev_path" );
-		if ( null === $prev_env_path ) {
-			unset( $_ENV['PATH'] );
-		} else {
-			$_ENV['PATH'] = $prev_env_path;
+		} finally {
+			// Restore environment.
+			putenv( false === $prev_path ? 'PATH' : "PATH=$prev_path" );
+			if ( null === $prev_env_path ) {
+				unset( $_ENV['PATH'] );
+			} else {
+				$_ENV['PATH'] = $prev_env_path;
+			}
 		}
 
 		$files = self::recursive_scandir( $dest_dir );
@@ -231,6 +231,27 @@ class ExtractorTest extends TestCase {
 
 		$this->assertTrue( false !== strpos( $msg, 'zero-tar' ) );
 		$this->assertTrue( empty( self::$logger->stderr ) );
+	}
+
+	public function test_extract_tarball_both_failed(): void {
+		$invalid_tar = Utils\get_temp_dir() . 'invalid-tar.tar.gz';
+		file_put_contents( $invalid_tar, 'invalid tar content' );
+
+		$msg = '';
+		try {
+			Extractor::extract( $invalid_tar, 'dest-dir' );
+		} catch ( \Exception $e ) {
+			$msg = $e->getMessage();
+		}
+		unlink( $invalid_tar );
+
+		$this->assertTrue( false !== strpos( $msg, 'Failed to extract the tarball.' ) );
+		$this->assertTrue( false !== strpos( $msg, 'tar xz failed:' ) );
+		if ( class_exists( 'PharData' ) ) {
+			$this->assertTrue( false !== strpos( $msg, 'PharData failed:' ) );
+		} else {
+			$this->assertFalse( strpos( $msg, 'PharData failed:' ) );
+		}
 	}
 
 	public function test_extract_zip(): void {
