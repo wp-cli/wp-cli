@@ -115,6 +115,33 @@ class CLICommandTest extends TestCase {
 		@unlink( $current_phar );
 	}
 
+	public function testReplaceCurrentPharWindowsStaleBackupDeletionFailure(): void {
+		if ( ! WP_CLI\Utils\is_windows() ) {
+			$this->markTestSkipped( 'Windows only test' );
+		}
+
+		$temp         = tempnam( sys_get_temp_dir(), 'wp-cli-temp-' );
+		$current_phar = tempnam( sys_get_temp_dir(), 'wp-cli-current-' );
+		$bak_file     = $current_phar . '.bak';
+
+		file_put_contents( $temp, 'new content' );
+		file_put_contents( $current_phar, 'old content' );
+		mkdir( $bak_file ); // Make it a directory to cause unlink failure.
+
+		$this->expectException( ExitException::class );
+
+		try {
+			$this->call_replace_current_phar( $temp, $current_phar );
+		} finally {
+			$this->assertFileDoesNotExist( $temp ); // Verify cleanup.
+			$this->assertFileExists( $bak_file ); // Stale backup is still there because unlink failed.
+			$this->assertStringContainsString( 'Cannot remove existing backup', $this->logger->stderr );
+
+			rmdir( $bak_file );
+			@unlink( $current_phar );
+		}
+	}
+
 	public function testReplaceCurrentPharWindowsRenameToBackupFailure(): void {
 		if ( ! WP_CLI\Utils\is_windows() ) {
 			$this->markTestSkipped( 'Windows only test' );
@@ -140,7 +167,7 @@ class CLICommandTest extends TestCase {
 			$this->markTestSkipped( 'Windows only test' );
 		}
 
-		$temp         = sys_get_temp_dir() . '/wp-cli-nonexistent-temp-' . uniqid();
+		$temp         = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wp-cli-nonexistent-temp-' . uniqid();
 		$current_phar = tempnam( sys_get_temp_dir(), 'wp-cli-current-' );
 		$bak_file     = $current_phar . '.bak';
 
