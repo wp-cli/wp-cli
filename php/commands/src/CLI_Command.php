@@ -533,6 +533,10 @@ class CLI_Command extends WP_CLI_Command {
 		if ( Utils\is_windows() ) {
 			$bak_file = $current_phar . '.bak';
 			@unlink( $bak_file );
+			if ( file_exists( $bak_file ) ) {
+				@unlink( $temp );
+				WP_CLI::error( sprintf( 'Cannot remove existing backup %s.', $bak_file ) );
+			}
 
 			if ( ! @rename( $current_phar, $bak_file ) ) {
 				$rename_error = error_get_last();
@@ -563,8 +567,16 @@ class CLI_Command extends WP_CLI_Command {
 
 			@unlink( $bak_file ); // Silently try to remove, will fail if still locked by current process.
 		} elseif ( ! @rename( $temp, $current_phar ) ) {
+			$move_error = error_get_last();
 			@unlink( $temp ); // Cleanup.
-			WP_CLI::error( sprintf( 'Cannot move %s to %s.', $temp, $current_phar ) );
+			WP_CLI::error(
+				sprintf(
+					'Cannot move %s to %s%s',
+					$temp,
+					$current_phar,
+					isset( $move_error['message'] ) ? ': ' . $move_error['message'] : '.'
+				)
+			);
 		}
 	}
 
