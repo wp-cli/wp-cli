@@ -977,6 +977,7 @@ Feature: Have a config file
     Then STDOUT should be:
       """
       de_DE
+      """
 
   Scenario: Custom system config path via WP_CLI_SYSTEM_SETTINGS_PATH
     Given an empty directory
