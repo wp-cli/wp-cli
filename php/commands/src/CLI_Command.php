@@ -552,17 +552,29 @@ class CLI_Command extends WP_CLI_Command {
 			}
 
 			if ( ! @rename( $temp, $current_phar ) ) {
-				$move_error = error_get_last();
-				@rename( $bak_file, $current_phar ); // Revert backup.
+				$move_error       = error_get_last();
+				$revert_succeeded = @rename( $bak_file, $current_phar ); // Revert backup.
 				@unlink( $temp ); // Cleanup.
-				WP_CLI::error(
-					sprintf(
-						'Cannot move %s to %s%s',
-						$temp,
-						$current_phar,
-						isset( $move_error['message'] ) ? ': ' . $move_error['message'] : '.'
-					)
+
+				$message = sprintf(
+					'Cannot move %s to %s%s',
+					$temp,
+					$current_phar,
+					isset( $move_error['message'] ) ? ': ' . $move_error['message'] : '.'
 				);
+
+				if ( $revert_succeeded ) {
+					$message .= ' The original Phar was successfully restored.';
+				} else {
+					$revert_error = error_get_last();
+					$message     .= sprintf(
+						' Additionally, restoring the original Phar from backup failed%s. The backup file remains at %s for manual recovery.',
+						isset( $revert_error['message'] ) ? ': ' . $revert_error['message'] : '.',
+						$bak_file
+					);
+				}
+
+				WP_CLI::error( $message );
 			}
 
 			@unlink( $bak_file ); // Silently try to remove, will fail if still locked by current process.

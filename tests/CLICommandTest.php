@@ -185,6 +185,7 @@ class CLICommandTest extends TestCase {
 			$this->assertSame( 'old content', file_get_contents( $current_phar ) );
 			$this->assertFileDoesNotExist( $bak_file ); // Bak file is gone.
 			$this->assertStringContainsString( 'Cannot move', $this->logger->stderr );
+			$this->assertStringContainsString( 'The original Phar was successfully restored.', $this->logger->stderr );
 
 			@unlink( $current_phar );
 		}
