@@ -305,13 +305,17 @@ class UtilsTest extends TestCase {
 	 */
 	public static function parseStrToArgvStripsQuotesFromAssocValuesData() {
 		return [
-			'double quotes with spaces' => [ 'cli foo --bar="baz quax"', [ 'cli', 'foo', '--bar=baz quax' ] ],
-			'single quotes with spaces' => [ "cli foo --bar='baz quax'", [ 'cli', 'foo', '--bar=baz quax' ] ],
-			'no quotes'                 => [ 'cli foo --bar=baz', [ 'cli', 'foo', '--bar=baz' ] ],
-			'empty double quotes'       => [ 'cli foo --bar=""', [ 'cli', 'foo', '--bar=' ] ],
-			'empty single quotes'       => [ "cli foo --bar=''", [ 'cli', 'foo', '--bar=' ] ],
-			'escaped double quotes'     => [ 'cli foo --bar="baz \"quax\""', [ 'cli', 'foo', '--bar=baz "quax"' ] ],
-			'escaped single quotes'     => [ "cli foo --bar='baz \\'quax\\''", [ 'cli', 'foo', "--bar=baz 'quax'" ] ],
+			'double quotes with spaces'   => [ 'cli foo --bar="baz quax"', [ 'cli', 'foo', '--bar=baz quax' ] ],
+			'single quotes with spaces'   => [ "cli foo --bar='baz quax'", [ 'cli', 'foo', '--bar=baz quax' ] ],
+			'no quotes'                   => [ 'cli foo --bar=baz', [ 'cli', 'foo', '--bar=baz' ] ],
+			'empty double quotes'         => [ 'cli foo --bar=""', [ 'cli', 'foo', '--bar=' ] ],
+			'empty single quotes'         => [ "cli foo --bar=''", [ 'cli', 'foo', '--bar=' ] ],
+			'escaped double quotes'       => [ 'cli foo --bar="baz \"quax\""', [ 'cli', 'foo', '--bar=baz "quax"' ] ],
+			'escaped single quotes'       => [ "cli foo --bar='baz \\'quax\\''", [ 'cli', 'foo', "--bar=baz 'quax'" ] ],
+			'single char double quotes'   => [ 'media import "/path/img.jpg" --post_id="1" --featured_image --porcelain', [ 'media', 'import', '/path/img.jpg', '--post_id=1', '--featured_image', '--porcelain' ] ],
+			'single char single quotes'   => [ "media import '/path/img.jpg' --post_id='1' --featured_image --porcelain", [ 'media', 'import', '/path/img.jpg', '--post_id=1', '--featured_image', '--porcelain' ] ],
+			'single digit double quotes'  => [ '--post_id="1"', [ '--post_id=1' ] ],
+			'single letter double quotes' => [ '--key="a"', [ '--key=a' ] ],
 		];
 	}
 

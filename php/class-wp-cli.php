@@ -6,6 +6,7 @@ use WP_CLI\Configurator;
 use WP_CLI\Dispatcher;
 use WP_CLI\Dispatcher\CommandAddition;
 use WP_CLI\Dispatcher\CommandFactory;
+use WP_CLI\Dispatcher\DisabledCommand;
 use WP_CLI\Dispatcher\CommandNamespace;
 use WP_CLI\Dispatcher\CompositeCommand;
 use WP_CLI\Dispatcher\RootCommand;
@@ -428,7 +429,6 @@ class WP_CLI {
 			}
 
 			$obj_idx = get_class( $function[0] ) . $function[1];
-			// @phpstan-ignore property.notFound
 			if ( ! isset( $function[0]->wp_filter_id ) ) {
 				if ( false === $priority ) {
 					return false;
@@ -533,7 +533,6 @@ class WP_CLI {
 
 		if ( $addition->was_aborted() ) {
 			self::warning( "Aborting the addition of the command '{$name}' with reason: {$addition->get_reason()}." );
-			return false;
 		}
 
 		foreach ( [ 'before_invoke', 'after_invoke' ] as $when ) {
@@ -591,6 +590,10 @@ class WP_CLI {
 		}
 
 		$leaf_command = CommandFactory::create( $leaf_name, $callable, $command );
+
+		if ( $addition->was_aborted() ) {
+			$leaf_command = new DisabledCommand( $command, $leaf_name, $leaf_command->get_docparser(), $addition->get_reason() );
+		}
 
 		// Only add a command namespace if the command itself does not exist yet.
 		if ( $leaf_command instanceof CommandNamespace
@@ -1684,8 +1687,7 @@ class WP_CLI {
 				self::$capture_exit = false;
 			}
 		}
-		if ( ( true === $return || 'stdout' === $return )
-			&& 'json' === $parse && is_string( $retval ) ) {
+		if ( ( true === $return || 'stdout' === $return ) && 'json' === $parse ) {
 			$retval = json_decode( $retval, true );
 		}
 		return $retval;
