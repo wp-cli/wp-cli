@@ -536,10 +536,12 @@ class CLI_Command extends WP_CLI_Command {
 
 			if ( ! @rename( $current_phar, $bak_file ) ) {
 				$rename_error = error_get_last();
+				@unlink( $temp );
 				WP_CLI::error(
 					sprintf(
-						'Cannot rename %s to backup%s',
+						'Cannot rename %s to backup %s%s',
 						$current_phar,
+						$bak_file,
 						isset( $rename_error['message'] ) ? ': ' . $rename_error['message'] : '.'
 					)
 				);
