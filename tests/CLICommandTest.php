@@ -3,13 +3,15 @@
 use WP_CLI\Tests\TestCase;
 use WP_CLI\ExitException;
 
-require_once WP_CLI_ROOT . '/php/commands/cli.php';
-
 class CLICommandTest extends TestCase {
 
 	private $prev_capture_exit;
 	private $prev_logger;
 	private $logger;
+
+	public static function set_up_before_class() {
+		require_once WP_CLI_ROOT . '/php/commands/src/CLI_Command.php';
+	}
 
 	public function setUp(): void {
 		parent::setUp();
