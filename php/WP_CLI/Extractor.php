@@ -95,66 +95,93 @@ class Extractor {
 			throw new Exception( "Could not create folder '{$dest}'." );
 		}
 
-		if ( class_exists( 'PharData' ) ) {
-			try {
-				$phar    = new PharData( $tarball );
-				$name    = Path::basename( $tarball );
-				$tempdir = Utils\get_temp_dir()
-							. uniqid( 'wp-cli-extract-tarball-', true )
-							. "-{$name}";
+		$tarball_absolute = realpath( $tarball );
+		if ( ! $tarball_absolute ) {
+			throw new Exception( "Invalid tarball '{$tarball}'." );
+		}
+		$tarball = $tarball_absolute;
 
+		if ( ! is_readable( $tarball )
+			|| filesize( $tarball ) <= 0 ) {
+			throw new Exception( "Invalid tarball '{$tarball}'." );
+		}
+
+		$tar_error = null;
+
+		try {
+			// Note: directory must exist for tar --directory to work.
+			$force_local = Utils\is_windows() ? ' --force-local' : '';
+			$cmd         = Utils\esc_cmd(
+				"tar xz{$force_local} --strip-components=1 --directory=%s -f %s",
+				Path::normalize( $dest ),
+				Path::normalize( $tarball )
+			);
+
+			$process_run = WP_CLI::launch(
+				$cmd,
+				false, /*exit_on_error*/
+				true /*return_detailed*/
+			);
+
+			if ( 0 === $process_run->return_code ) {
+				return;
+			}
+
+			throw new Exception( (string) self::tar_error_msg( $process_run ) );
+		} catch ( Exception $e ) {
+			$tar_error = $e->getMessage();
+			if ( class_exists( 'PharData' ) ) {
+				WP_CLI::warning(
+					'tar xz failed, falling back to PharData ('
+					. $tar_error . ')'
+				);
+			}
+		}
+
+		$phar_error = null;
+
+		if ( class_exists( 'PharData' ) ) {
+			$name    = Path::basename( $tarball );
+			$tempdir = Utils\get_temp_dir()
+						. uniqid( 'wp-cli-extract-tarball-', true )
+						. "-{$name}";
+
+			try {
+				$phar = new PharData( $tarball );
 				$phar->extractTo( $tempdir );
 
 				self::copy_overwrite_files(
 					self::get_first_subfolder( $tempdir ),
 					$dest
 				);
-
-				self::rmdir( $tempdir );
 				return;
 			} catch ( Exception $e ) {
-				WP_CLI::warning(
-					"PharData failed, falling back to 'tar xz' ("
-					. $e->getMessage() . ')'
-				);
-				// Fall through to trying `tar xz` below.
+				$phar_error = $e->getMessage();
+			} finally {
+				if ( is_dir( $tempdir ) ) {
+					try {
+						self::rmdir( $tempdir );
+					} catch ( Exception $e ) {
+						// Ignore cleanup errors to avoid masking primary exceptions.
+						unset( $e );
+					}
+				}
 			}
 		}
 
-		// Ensure relative paths cannot be misinterpreted as hostnames.
-		// Prepending `./` will force tar to interpret it as a filesystem path.
-		if ( self::path_is_relative( $tarball ) ) {
-			$tarball = "./{$tarball}";
+		$errors = [];
+		if ( $tar_error ) {
+			$errors[] = "tar xz failed: {$tar_error}";
+		}
+		if ( $phar_error ) {
+			$errors[] = "PharData failed: {$phar_error}";
 		}
 
-		if ( ! file_exists( $tarball )
-			|| ! is_readable( $tarball )
-			|| filesize( $tarball ) <= 0 ) {
-			throw new Exception( "Invalid zip file '{$tarball}'." );
+		if ( empty( $errors ) ) {
+			throw new Exception( 'Failed to extract the tarball.' );
 		}
 
-		// Note: directory must exist for tar --directory to work.
-		$cmd = Utils\esc_cmd(
-			'tar xz --strip-components=1 --directory=%s -f %s',
-			$dest,
-			$tarball
-		);
-
-		$process_run = WP_CLI::launch(
-			$cmd,
-			false, /*exit_on_error*/
-			true /*return_detailed*/
-		);
-
-		if ( 0 !== $process_run->return_code ) {
-			throw new Exception(
-				sprintf(
-					'Failed to execute `%s`: %s.',
-					$cmd,
-					self::tar_error_msg( $process_run )
-				)
-			);
-		}
+		throw new Exception( 'Failed to extract the tarball. ' . implode( ' ', $errors ) );
 	}
 
 	/**
@@ -220,17 +247,27 @@ class Extractor {
 			RecursiveIteratorIterator::CHILD_FIRST
 		);
 
+		$base_dir = realpath( $dir );
+		if ( false === $base_dir ) {
+			return;
+		}
+		$base_dir = rtrim( $base_dir, DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR;
+
 		/**
 		 * @var \SplFileInfo $fileinfo
 		 */
 		foreach ( $files as $fileinfo ) {
-			$todo = $fileinfo->isDir() ? 'rmdir' : 'unlink';
-			$path = $fileinfo->getRealPath();
-			if ( 0 !== strpos( $path, $fileinfo->getRealPath() ) ) {
+			$todo      = $fileinfo->isDir() ? 'rmdir' : 'unlink';
+			$path      = $fileinfo->getPathname();
+			$real_path = $fileinfo->getRealPath();
+
+			if ( ! $real_path || 0 !== strpos( $real_path, $base_dir ) ) {
 				WP_CLI::warning(
 					"Temporary file or folder to be removed was found outside of temporary folder, aborting removal: '{$path}'"
 				);
+				continue;
 			}
+
 			$todo( $path );
 		}
 		rmdir( $dir );
@@ -339,45 +376,6 @@ class Extractor {
 						$error ? $error['message'] : 'Unknown error'
 					)
 				);
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Check whether a path is relative-
-	 *
-	 * @param string $path Path to check.
-	 * @return bool Whether the path is relative.
-	 */
-	private static function path_is_relative( $path ) {
-		if ( '' === $path ) {
-			return true;
-		}
-
-		// Strip scheme.
-		$scheme_position = strpos( $path, '://' );
-		if ( false !== $scheme_position ) {
-			$path = substr( $path, $scheme_position + 3 );
-		}
-
-		// UNIX root "/" or "\" (Windows style).
-		if ( '/' === $path[0] || '\\' === $path[0] ) {
-			return false;
-		}
-
-		// Windows root.
-		if ( strlen( $path ) > 1 && ctype_alpha( $path[0] ) && ':' === $path[1] ) {
-
-			// Special case: only drive letter, like "C:".
-			if ( 2 === strlen( $path ) ) {
-				return false;
-			}
-
-			// Regular Windows path starting with drive letter, like "C:/ or "C:\".
-			if ( '/' === $path[2] || '\\' === $path[2] ) {
 				return false;
 			}
 		}

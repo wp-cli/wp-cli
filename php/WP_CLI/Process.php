@@ -86,13 +86,20 @@ class Process {
 				2 => [ 'file', $stderr_file, 'a' ],
 			];
 			$proc        = Utils\proc_open_compat( $this->command, $descriptors, $pipes, $this->cwd, $this->env );
-			fclose( $pipes[0] );
+			if ( $proc && isset( $pipes[0] ) ) {
+				fclose( $pipes[0] );
+			}
 		} else {
-			$proc   = Utils\proc_open_compat( $this->command, self::$descriptors, $pipes, $this->cwd, $this->env );
-			$stdout = stream_get_contents( $pipes[1] );
-			fclose( $pipes[1] );
-			$stderr = stream_get_contents( $pipes[2] );
-			fclose( $pipes[2] );
+			$proc = Utils\proc_open_compat( $this->command, self::$descriptors, $pipes, $this->cwd, $this->env );
+			if ( $proc ) {
+				$stdout = stream_get_contents( $pipes[1] );
+				fclose( $pipes[1] );
+				$stderr = stream_get_contents( $pipes[2] );
+				fclose( $pipes[2] );
+			} else {
+				$stdout = '';
+				$stderr = '';
+			}
 		}
 
 		$return_code = $proc ? proc_close( $proc ) : -1;

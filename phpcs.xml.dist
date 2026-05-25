@@ -5,8 +5,8 @@
 	<!--
 	#############################################################################
 	COMMAND LINE ARGUMENTS
-	For help understanding this file: https://github.com/squizlabs/PHP_CodeSniffer/wiki/Annotated-ruleset.xml
-	For help using PHPCS: https://github.com/squizlabs/PHP_CodeSniffer/wiki/Usage
+	For help understanding this file: https://github.com/PHPCSStandards/PHP_CodeSniffer/wiki/Annotated-ruleset.xml
+	For help using PHPCS: https://github.com/PHPCSStandards/PHP_CodeSniffer/wiki/Usage
 	#############################################################################
 	-->
 
@@ -14,7 +14,7 @@
 	<file>.</file>
 
 	<!-- Ignoring select files/folders.
-		 https://github.com/squizlabs/PHP_CodeSniffer/wiki/Advanced-Usage#ignoring-files-and-folders -->
+		 https://github.com/PHPCSStandards/PHP_CodeSniffer/wiki/Advanced-Usage#ignoring-files-and-folders -->
 	<exclude-pattern>*/tests/data/*</exclude-pattern>
 	<exclude-pattern>*/bundle/*</exclude-pattern>
 
@@ -74,7 +74,7 @@
 	</rule>
 
 	<!-- Allow for back-compat conversion comments to be explained in logical shorthand.
-		 See: https://github.com/squizlabs/PHP_CodeSniffer/wiki/Customisable-Sniff-Properties#squizphpcommentedoutcode -->
+		 See: https://github.com/PHPCSStandards/PHP_CodeSniffer/wiki/Customisable-Sniff-Properties#squizphpcommentedoutcode -->
 	<rule ref="Squiz.PHP.CommentedOutCode">
 		<properties>
 			<property name="maxPercentage" value="45"/>

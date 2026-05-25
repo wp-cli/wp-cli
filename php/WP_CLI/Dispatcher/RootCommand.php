@@ -11,6 +11,9 @@ use WP_CLI\Utils;
  */
 class RootCommand extends CompositeCommand {
 
+	/**
+	 * Instantiate a new RootCommand.
+	 */
 	public function __construct() {
 		$this->parent = false;
 

@@ -17,15 +17,11 @@ Feature: Argument validation
     Given an empty directory
     And WP files
 
-    When I try `wp core config`
+    When I try `wp core config --dbprefix=invalid- --dbname=foo --dbpass=bar --dbuser=baz --skip-check`
     Then the return code should be 1
     And STDERR should contain:
       """
-      Parameter errors:
-      """
-    And STDERR should contain:
-      """
-      missing --dbname parameter
+      Error: --dbprefix can only contain numbers, letters, and underscores.
       """
 
     When I try `wp core config --invalid --other-invalid`

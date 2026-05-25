@@ -142,6 +142,11 @@ class FileCacheTest extends TestCase {
 	 * @see https://github.com/wp-cli/wp-cli/pull/5947
 	 */
 	public function test_import_do_not_use_cache_file_cannot_be_read(): void {
+		// `chmod()` doesn't work on Windows.
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'chmod() does not restrict file read access on Windows.' );
+		}
+
 		$max_size  = 32;
 		$ttl       = 60;
 		$cache_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache', true );
@@ -211,5 +216,38 @@ class FileCacheTest extends TestCase {
 		$this->assertIsString( $result );
 		$this->assertStringEndsNotWith( '.', $result );
 		$this->assertSame( 'plugin/advanced-sidebar-menu-pro-9.5.7', $result );
+	}
+	public function test_validate_key_traversal(): void {
+		$max_size  = 32;
+		$ttl       = 60;
+		$cache_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache', true );
+		$cache     = new FileCache( $cache_dir, $ttl, $max_size );
+
+		$reflection = new ReflectionClass( $cache );
+		$method     = $reflection->getMethod( 'validate_key' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$method->setAccessible( true );
+		}
+
+		// Test traversal with '..'
+		$key    = 'plugin/../../etc/passwd';
+		$result = $method->invoke( $cache, $key );
+		$this->assertSame( 'plugin/-/-/etc/passwd', $result );
+
+		// Test traversal with URL
+		$key    = 'http://example.com/../../etc/passwd';
+		$result = $method->invoke( $cache, $key );
+		$this->assertSame( 'misc/http-example.com/-/-/etc/passwd', $result );
+
+		// Test traversal with '.'
+		$key    = 'plugin/./etc/passwd';
+		$result = $method->invoke( $cache, $key );
+		$this->assertSame( 'plugin/-/etc/passwd', $result );
+
+		// Test multiple dots (should be allowed if not traversal)
+		$key    = 'plugin/.../etc/passwd';
+		$result = $method->invoke( $cache, $key );
+		$this->assertSame( 'plugin/.../etc/passwd', $result );
 	}
 }
