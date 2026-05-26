@@ -37,6 +37,13 @@ class Formatter {
 	private static $custom_formatters = [];
 
 	/**
+	 * Single-value format handlers for WP_CLI::print_value().
+	 *
+	 * @var array<string, callable>
+	 */
+	private static $single_value_formatters = [];
+
+	/**
 	 * How the items should be output.
 	 *
 	 * @var array{format: string, fields: string[], field: string|null, alignments: array<string, int>}
@@ -116,6 +123,67 @@ class Formatter {
 			WP_CLI::error( 'Format handler must be callable.' );
 		}
 		self::$custom_formatters[ $format_name ] = $handler;
+	}
+
+	/**
+	 * Register a custom single-value format handler for WP_CLI::print_value().
+	 *
+	 * Allows extensions to add custom output formats for single values. The handler
+	 * receives a single value and should return the formatted string (without trailing newline).
+	 *
+	 * Built-in single-value formats can be overridden by registering a handler with the same name.
+	 *
+	 * ## EXAMPLE
+	 *
+	 *     // Register a custom format for single values
+	 *     WP_CLI\Formatter::add_single_value_format( 'plaintext', function( $value ) {
+	 *         if ( is_array( $value ) || is_object( $value ) ) {
+	 *             return var_export( $value, true );
+	 *         }
+	 *         return (string) $value;
+	 *     });
+	 *
+	 * @param string   $format_name Name of the format (e.g. 'json', 'yaml', 'plaintext').
+	 * @param callable $handler     Callback to handle formatting. Receives ($value) and should return formatted string.
+	 */
+	public static function add_single_value_format( $format_name, $handler ) {
+		if ( ! is_callable( $handler ) ) {
+			WP_CLI::error( 'Single-value format handler must be callable.' );
+		}
+		self::$single_value_formatters[ $format_name ] = $handler;
+	}
+
+	/**
+	 * Format a single value using registered formatters.
+	 *
+	 * Used by WP_CLI::print_value() to format single values.
+	 *
+	 * @param mixed  $value  The value to format.
+	 * @param string $format The format to use (e.g. 'json', 'yaml', 'var_export').
+	 * @return string The formatted value (without trailing newline).
+	 */
+	public static function format_single_value( $value, $format ) {
+		if ( isset( self::$single_value_formatters[ $format ] ) ) {
+			return call_user_func( self::$single_value_formatters[ $format ], $value );
+		}
+
+		// Fallback to default behavior if format not registered
+		if ( is_array( $value ) || is_object( $value ) ) {
+			return var_export( $value, true );
+		}
+
+		// @phpstan-ignore cast.string
+		return (string) $value;
+	}
+
+	/**
+	 * Check if a single-value format is registered.
+	 *
+	 * @param string $format The format name to check.
+	 * @return bool True if the format is registered, false otherwise.
+	 */
+	public static function has_single_value_format( $format ) {
+		return isset( self::$single_value_formatters[ $format ] );
 	}
 
 	/**
@@ -204,6 +272,38 @@ class Formatter {
 			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $fields required for API consistency
 			static function ( $items, $fields ) {
 				echo implode( ' ', $items );
+			}
+		);
+
+		// Register single-value formats for WP_CLI::print_value()
+
+		// Register 'json' single-value format
+		self::add_single_value_format(
+			'json',
+			static function ( $value ) {
+				return json_encode( $value );
+			}
+		);
+
+		// Register 'yaml' single-value format
+		self::add_single_value_format(
+			'yaml',
+			static function ( $value ) {
+				/**
+				 * @var array $value
+				 */
+				return Spyc::YAMLDump( $value, 2, 0 );
+			}
+		);
+
+		// Register 'var_export' single-value format (default for arrays/objects)
+		self::add_single_value_format(
+			'var_export',
+			static function ( $value ) {
+				if ( is_array( $value ) || is_object( $value ) ) {
+					return var_export( $value, true );
+				}
+				return (string) $value;
 			}
 		);
 	}

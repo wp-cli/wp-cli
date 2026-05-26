@@ -192,4 +192,58 @@ class FormatterTest extends TestCase {
 		$this->assertTrue( $called, 'Custom handler should override built-in format' );
 		$this->assertSame( 'OVERRIDDEN', $output );
 	}
+
+	public function test_add_single_value_format() {
+		$called         = false;
+		$received_value = null;
+		$handler        = function ( $value ) use ( &$called, &$received_value ) {
+			$called         = true;
+			$received_value = $value;
+			return 'CUSTOM:' . $value;
+		};
+
+		Formatter::add_single_value_format( 'test_single_format', $handler );
+
+		$result = Formatter::format_single_value( 'test_value', 'test_single_format' );
+
+		$this->assertTrue( $called, 'Single-value format handler should be called' );
+		$this->assertSame( 'test_value', $received_value, 'Handler should receive the value' );
+		$this->assertSame( 'CUSTOM:test_value', $result, 'Handler should return formatted value' );
+	}
+
+	public function test_has_single_value_format() {
+		$this->assertTrue( Formatter::has_single_value_format( 'json' ), 'json format should be registered' );
+		$this->assertTrue( Formatter::has_single_value_format( 'yaml' ), 'yaml format should be registered' );
+		$this->assertTrue( Formatter::has_single_value_format( 'var_export' ), 'var_export format should be registered' );
+		$this->assertFalse( Formatter::has_single_value_format( 'nonexistent' ), 'nonexistent format should not be registered' );
+	}
+
+	public function test_format_single_value_json() {
+		$value  = [ 'key' => 'value' ];
+		$result = Formatter::format_single_value( $value, 'json' );
+		$this->assertSame( '{"key":"value"}', $result );
+	}
+
+	public function test_format_single_value_yaml() {
+		$value  = [ 'key' => 'value' ];
+		$result = Formatter::format_single_value( $value, 'yaml' );
+		$this->assertStringContainsString( 'key: value', $result );
+	}
+
+	public function test_format_single_value_var_export() {
+		$value  = [ 'key' => 'value' ];
+		$result = Formatter::format_single_value( $value, 'var_export' );
+		$this->assertStringContainsString( "'key' => 'value'", $result );
+	}
+
+	public function test_format_single_value_fallback() {
+		// Test fallback for unregistered format
+		$value  = [ 'key' => 'value' ];
+		$result = Formatter::format_single_value( $value, 'unknown_format' );
+		$this->assertStringContainsString( "'key' => 'value'", $result, 'Should fallback to var_export for arrays' );
+
+		// Test fallback for scalar values
+		$result = Formatter::format_single_value( 'simple_string', 'unknown_format' );
+		$this->assertSame( 'simple_string', $result, 'Should return string as-is for scalars' );
+	}
 }
