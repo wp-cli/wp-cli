@@ -228,7 +228,8 @@ class Formatter {
 		// Register 'csv' format
 		self::add_format(
 			'csv',
-			static function ( $items, $fields ) {
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $context required for API consistency
+			static function ( $items, $fields, $context = [] ) {
 				Utils\write_csv( STDOUT, $items, $fields );
 			}
 		);
@@ -475,8 +476,8 @@ class Formatter {
 				// Table format needs the formatter instance and ascii_pre_colorized
 				call_user_func( $handler, $formatted_items, $fields, $this, $ascii_pre_colorized );
 			} else {
-				// Other formats just need items and fields
-				call_user_func( $handler, $formatted_items, $fields );
+				// Pass an empty context array as third argument for API consistency
+				call_user_func( $handler, $formatted_items, $fields, [] );
 			}
 			return;
 		}
@@ -657,13 +658,15 @@ class Formatter {
 			if ( in_array( $format, [ 'table', 'csv' ], true ) ) {
 				$rows   = $this->assoc_array_to_rows( $ordered_data );
 				$fields = [ 'Field', 'Value' ];
-				call_user_func( self::$custom_formatters[ $format ], $rows, $fields, $this, $ascii_pre_colorized );
-			} elseif ( in_array( $format, [ 'json', 'yaml' ], true ) ) {
-				// For json/yaml in single-item mode, pass context flag to format handlers
-				call_user_func( self::$custom_formatters[ $format ], [ $ordered_data ], array_keys( $ordered_data ), [ 'single_item' => true ] );
+				if ( 'table' === $format ) {
+					call_user_func( self::$custom_formatters[ $format ], $rows, $fields, $this, $ascii_pre_colorized );
+				} else {
+					call_user_func( self::$custom_formatters[ $format ], $rows, $fields );
+				}
 			} else {
-				// Call the custom formatter with a single-item array
-				call_user_func( self::$custom_formatters[ $format ], [ $ordered_data ], array_keys( $ordered_data ) );
+				// For all other formats, pass context flag for single-item mode
+				$context = in_array( $format, [ 'json', 'yaml' ], true ) ? [ 'single_item' => true ] : [];
+				call_user_func( self::$custom_formatters[ $format ], [ $ordered_data ], array_keys( $ordered_data ), $context );
 			}
 			return;
 		}
