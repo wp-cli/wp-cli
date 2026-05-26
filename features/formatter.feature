@@ -753,3 +753,90 @@ Feature: Format output
       Invalid format: nonexistent
       """
     And the return code should be 1
+
+  Scenario: Single item display with unsupported built-in formats (count/ids)
+    Given an empty directory
+    And a test-single-item.php file:
+      """
+      <?php
+      /**
+       * Test command
+       *
+       * @when before_wp_load
+       */
+      $test_command = function( $args, $assoc_args ) {
+          $item = array( 'name' => 'Alice' );
+          $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'name' ) );
+          $formatter->display_item( $item );
+      };
+      WP_CLI::add_command( 'test-single-item', $test_command );
+      """
+
+    When I try `wp --require=test-single-item.php test-single-item --format=ids`
+    Then STDERR should contain:
+      """
+      Error: Invalid format: ids
+      """
+    And the return code should be 1
+
+    When I try `wp --require=test-single-item.php test-single-item --format=count`
+    Then STDERR should contain:
+      """
+      Error: Invalid format: count
+      """
+    And the return code should be 1
+
+  Scenario: Single item display with custom format opting out via options
+    Given an empty directory
+    And a test-custom-optout.php file:
+      """
+      <?php
+      // Register custom format that does not support single_item
+      WP_CLI\Formatter::add_format( 'no_single', function( $items, $fields ) {
+          echo "NO_SINGLE\n";
+      }, array( 'single_item' => false ) );
+
+      /**
+       * Test command
+       *
+       * @when before_wp_load
+       */
+      $test_command = function( $args, $assoc_args ) {
+          $item = array( 'name' => 'Bob' );
+          $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'name' ) );
+          $formatter->display_item( $item );
+      };
+      WP_CLI::add_command( 'test-optout', $test_command );
+      """
+
+    When I try `wp --require=test-custom-optout.php test-optout --format=no_single`
+    Then STDERR should contain:
+      """
+      Error: Invalid format: no_single
+      """
+    And the return code should be 1
+
+  Scenario: Single value printing with plaintext alias
+    Given an empty directory
+    And a test-plaintext.php file:
+      """
+      <?php
+      /**
+       * Test command
+       *
+       * @when before_wp_load
+       */
+      $test_command = function( $args, $assoc_args ) {
+          $value = array( 'nested' => 'value' );
+          WP_CLI::print_value( $value, $assoc_args );
+      };
+      WP_CLI::add_command( 'test-plaintext', $test_command );
+      """
+
+    When I run `wp --require=test-plaintext.php test-plaintext --format=plaintext`
+    Then STDOUT should contain:
+      """
+      'nested' => 'value'
+      """
+    And the return code should be 0
+

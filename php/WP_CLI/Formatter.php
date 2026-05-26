@@ -37,6 +37,13 @@ class Formatter {
 	private static $custom_formatters = [];
 
 	/**
+	 * Options for custom format handlers.
+	 *
+	 * @var array<string, array{single_item?: bool}>
+	 */
+	private static $format_options = [];
+
+	/**
 	 * Single-value format handlers for WP_CLI::print_value().
 	 *
 	 * @var array<string, callable>
@@ -116,15 +123,19 @@ class Formatter {
 	 *         echo "</items>\n";
 	 *     });
 	 *
-	 * @param string   $format_name Name of the format (e.g. 'xml', 'nagios').
-	 * @param callable $handler     Callback to handle formatting. Receives ($items, $fields, $formatter, $args) and should output directly.
+	 * @param string                    $format_name Name of the format (e.g. 'xml', 'nagios').
+	 * @param callable                  $handler     Callback to handle formatting. Receives ($items, $fields, $formatter, $args) and should output directly.
+	 * @param array{single_item?: bool} $options     Optional metadata/options.
 	 */
-	public static function add_format( $format_name, $handler ) {
+	public static function add_format( $format_name, $handler, $options = [] ) {
 		if ( ! is_callable( $handler ) ) {
 			WP_CLI::error( 'Format handler must be callable.' );
 		}
 		self::$custom_formatters[ $format_name ] = $handler;
+		self::$format_options[ $format_name ]    = $options;
 	}
+
+
 
 	/**
 	 * Register a custom single-value format handler for WP_CLI::print_value().
@@ -197,7 +208,7 @@ class Formatter {
 					$table = new Table();
 					$table->setHeaders( $fields );
 					foreach ( $items as $item ) {
-						$table->addRow( array_values( Utils\pick_fields( $item, $fields ) ) );
+						$table->addRow( array_values( (array) $item ) );
 					}
 					foreach ( $table->getDisplayLines() as $line ) {
 						WP_CLI::line( $line );
@@ -259,7 +270,8 @@ class Formatter {
 			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $fields, $formatter, $args required for API consistency
 			static function ( $items, $fields, $formatter = null, $args = [] ) {
 				echo count( $items );
-			}
+			},
+			[ 'single_item' => false ]
 		);
 
 		// Register 'ids' format
@@ -268,7 +280,8 @@ class Formatter {
 			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $fields, $formatter, $args required for API consistency
 			static function ( $items, $fields, $formatter = null, $args = [] ) {
 				echo implode( ' ', $items );
-			}
+			},
+			[ 'single_item' => false ]
 		);
 
 		// Register single-value formats for WP_CLI::print_value()
@@ -292,16 +305,18 @@ class Formatter {
 			}
 		);
 
-		// Register 'var_export' single-value format (default for arrays/objects)
-		self::add_single_value_format(
-			'var_export',
-			static function ( $value ) {
-				if ( is_array( $value ) || is_object( $value ) ) {
-					return var_export( $value, true );
-				}
-				return (string) $value;
+		$var_export_handler = static function ( $value ) {
+			if ( is_array( $value ) || is_object( $value ) ) {
+				return var_export( $value, true );
 			}
-		);
+			return (string) $value;
+		};
+
+		// Register 'var_export' single-value format (default for arrays/objects)
+		self::add_single_value_format( 'var_export', $var_export_handler );
+
+		// Register 'plaintext' single-value format
+		self::add_single_value_format( 'plaintext', $var_export_handler );
 	}
 
 	/**
@@ -416,28 +431,6 @@ class Formatter {
 	}
 
 	/**
-	 * Truncate cell values in items for table/CSV output.
-	 *
-	 * @param iterable $items  Items to process.
-	 * @param array    $fields Fields to truncate.
-	 * @return array Processed items with truncated values.
-	 */
-	private function truncate_items( $items, $fields ) {
-		$truncated = [];
-		foreach ( $items as $item ) {
-			$row = Utils\pick_fields( $item, $fields );
-			// Truncate each field value
-			foreach ( $row as $key => $value ) {
-				if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
-					$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
-				}
-			}
-			$truncated[] = $row;
-		}
-		return $truncated;
-	}
-
-	/**
 	 * Format items according to arguments.
 	 *
 	 * @param iterable   $items               Items.
@@ -459,12 +452,7 @@ class Formatter {
 				return;
 			}
 
-			// Special preprocessing for table and csv formats
-			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
-				$items = $this->truncate_items( $items, $fields );
-			}
-
-			// Extract fields from items for formatter
+			// Filter columns exactly once
 			$formatted_items = [];
 			foreach ( $items as $item ) {
 				if ( is_array( $item ) || is_object( $item ) ) {
@@ -473,6 +461,18 @@ class Formatter {
 				} else {
 					WP_CLI::debug( 'Skipping item that is neither array nor object in format handler.', 'formatter' );
 				}
+			}
+
+			// Truncate cell values exactly once for table/CSV output
+			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
+				foreach ( $formatted_items as &$row ) {
+					foreach ( $row as $key => $value ) {
+						if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
+							$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
+						}
+					}
+				}
+				unset( $row );
 			}
 
 			$args    = [ 'ascii_pre_colorized' => $ascii_pre_colorized ];
@@ -653,6 +653,12 @@ class Formatter {
 
 		// Check if a formatter is registered for this format
 		if ( isset( self::$custom_formatters[ $format ] ) ) {
+			// Verify the format supports single-item display
+			$options = self::$format_options[ $format ] ?? [];
+			if ( isset( $options['single_item'] ) && ! $options['single_item'] ) {
+				WP_CLI::error( 'Invalid format: ' . $format );
+			}
+
 			// For table and csv formats in single-item display, convert to rows format
 			if ( in_array( $format, [ 'table', 'csv' ], true ) ) {
 				$rows   = $this->assoc_array_to_rows( $ordered_data );
@@ -695,7 +701,7 @@ class Formatter {
 		);
 
 		foreach ( $items as $item ) {
-			$table->addRow( array_values( Utils\pick_fields( $item, $fields ) ) );
+			$table->addRow( array_values( (array) $item ) );
 		}
 
 		foreach ( $table->getDisplayLines() as $line ) {

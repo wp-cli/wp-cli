@@ -245,4 +245,76 @@ class FormatterTest extends TestCase {
 		$result = Formatter::format_single_value( 'simple_string', 'unknown_format' );
 		$this->assertSame( 'simple_string', $result, 'Should return string as-is for scalars' );
 	}
+
+	public function test_single_item_unsupported_formats() {
+		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$class_wp_cli_capture_exit->setAccessible( true );
+		}
+		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
+		$class_wp_cli_capture_exit->setValue( null, true );
+
+		$prev_logger = WP_CLI::get_logger();
+		$logger      = new WP_CLI\Loggers\Execution();
+		WP_CLI::set_logger( $logger );
+
+		$item = [ 'name' => 'Alice' ];
+
+		try {
+			$assoc_args = [ 'format' => 'ids' ];
+			$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+			$formatter->display_item( $item );
+			$this->fail( 'Should have thrown ExitException' );
+		} catch ( \WP_CLI\ExitException $e ) {
+			$this->assertStringContainsString( 'Error: Invalid format: ids', $logger->stderr );
+		} finally {
+			$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
+			WP_CLI::set_logger( $prev_logger );
+		}
+	}
+
+	public function test_custom_format_options() {
+		$called  = false;
+		$handler = function () use ( &$called ) {
+			$called = true;
+		};
+
+		Formatter::add_format( 'no_single', $handler, [ 'single_item' => false ] );
+
+		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$class_wp_cli_capture_exit->setAccessible( true );
+		}
+		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
+		$class_wp_cli_capture_exit->setValue( null, true );
+
+		$prev_logger = WP_CLI::get_logger();
+		$logger      = new WP_CLI\Loggers\Execution();
+		WP_CLI::set_logger( $logger );
+
+		$item = [ 'name' => 'Bob' ];
+
+		try {
+			$assoc_args = [ 'format' => 'no_single' ];
+			$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+			$formatter->display_item( $item );
+			$this->fail( 'Should have thrown ExitException' );
+		} catch ( \WP_CLI\ExitException $e ) {
+			$this->assertStringContainsString( 'Error: Invalid format: no_single', $logger->stderr );
+			$this->assertFalse( $called, 'Handler should not be called when single_item option is false' );
+		} finally {
+			$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
+			WP_CLI::set_logger( $prev_logger );
+		}
+	}
+
+	public function test_plaintext_alias_print_value() {
+		$value  = [ 'nested' => 'value' ];
+		$result = Formatter::format_single_value( $value, 'plaintext' );
+
+		// Should match var_export output
+		$this->assertStringContainsString( "'nested' => 'value'", $result );
+	}
 }
