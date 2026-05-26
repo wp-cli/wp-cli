@@ -1,11 +1,11 @@
 <?php
 
 use WP_CLI\Formatter;
-use PHPUnit\Framework\TestCase;
+use WP_CLI\Tests\TestCase;
 
 class FormatterTest extends TestCase {
 
-	public static function setUpBeforeClass(): void {
+	public static function set_up_before_class(): void {
 		// Ensure built-in formats are registered for tests
 		Formatter::register_builtin_formats();
 	}
