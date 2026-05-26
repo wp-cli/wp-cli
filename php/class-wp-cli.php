@@ -429,7 +429,6 @@ class WP_CLI {
 			}
 
 			$obj_idx = get_class( $function[0] ) . $function[1];
-			// @phpstan-ignore property.notFound
 			if ( ! isset( $function[0]->wp_filter_id ) ) {
 				if ( false === $priority ) {
 					return false;
@@ -1186,50 +1185,10 @@ class WP_CLI {
 	 */
 	public static function print_value( $value, $assoc_args = [] ) {
 		$format = Utils\get_flag_value( $assoc_args, 'format' );
-		if ( 'json' === $format ) {
-			$encoded = json_encode( $value );
-			$output  = false === $encoded ? '' : $encoded;
-		} elseif ( 'yaml' === $format ) {
-			/**
-			 * @var array $value
-			 */
-			$output = Spyc::YAMLDump( $value, 2, 0 );
-		} elseif ( in_array( $format, [ 'var_export', 'plaintext' ], true ) ) {
-			if ( is_array( $value ) || is_object( $value ) ) {
-				$output = var_export( $value, true );
-			} else {
-				$output = self::scalar_to_print_string( $value );
-			}
-		} elseif ( is_array( $value ) || is_object( $value ) ) {
-			$output = var_export( $value, true );
-		} else {
-			$output = self::scalar_to_print_string( $value );
-		}
 
-		echo $output . "\n";
-	}
+		$_value = \WP_CLI\Formatter::format_single_value( $value, $format );
 
-	/**
-	 * String for print_value when the value is not JSON/YAML/var_export(array|object).
-	 *
-	 * @param mixed $value Value to stringify.
-	 * @return string
-	 */
-	private static function scalar_to_print_string( $value ): string {
-		if ( is_string( $value ) ) {
-			return $value;
-		}
-		if ( is_int( $value ) || is_float( $value ) ) {
-			return (string) $value;
-		}
-		if ( is_bool( $value ) ) {
-			return $value ? '1' : '';
-		}
-		if ( null === $value ) {
-			return '';
-		}
-
-		return var_export( $value, true );
+		echo $_value . "\n";
 	}
 
 	/**

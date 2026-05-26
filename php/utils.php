@@ -1987,8 +1987,6 @@ function describe_callable( $callable ) {
 		}
 
 		if ( is_array( $callable ) ) {
-			/** @var array{0: object|string, 1: string} $callable */
-
 			if ( is_object( $callable[0] ) ) {
 				return sprintf(
 					'%s->%s()',
@@ -2160,19 +2158,57 @@ function get_mysql_version() {
 /**
  * Returns the correct `dump` command based on the detected database type.
  *
+ * For MariaDB, prefers `mariadb-dump` (available since MariaDB 10.5) but falls
+ * back to `mysqldump` if the command is not found on the system.
+ *
  * @return string The appropriate dump command.
  */
 function get_sql_dump_command() {
-	return 'mariadb' === get_db_type() ? 'mariadb-dump' : 'mysqldump';
+	static $command = null;
+
+	if ( null !== $command ) {
+		return $command;
+	}
+
+	$command = 'mysqldump';
+
+	if ( 'mariadb' === get_db_type() ) {
+		$result = Process::create( '/usr/bin/env which mariadb-dump', null, null )->run();
+
+		if ( 0 === $result->return_code && '' !== trim( $result->stdout ) ) {
+			$command = 'mariadb-dump';
+		}
+	}
+
+	return $command;
 }
 
 /**
  * Returns the correct `check` command based on the detected database type.
  *
+ * For MariaDB, prefers `mariadb-check` (available since MariaDB 10.5) but falls
+ * back to `mysqlcheck` if the command is not found on the system.
+ *
  * @return string The appropriate check command.
  */
 function get_sql_check_command() {
-	return 'mariadb' === get_db_type() ? 'mariadb-check' : 'mysqlcheck';
+	static $command = null;
+
+	if ( null !== $command ) {
+		return $command;
+	}
+
+	$command = 'mysqlcheck';
+
+	if ( 'mariadb' === get_db_type() ) {
+		$result = Process::create( '/usr/bin/env which mariadb-check', null, null )->run();
+
+		if ( 0 === $result->return_code && '' !== trim( $result->stdout ) ) {
+			$command = 'mariadb-check';
+		}
+	}
+
+	return $command;
 }
 
 /**
