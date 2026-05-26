@@ -177,16 +177,6 @@ class Formatter {
 	}
 
 	/**
-	 * Check if a single-value format is registered.
-	 *
-	 * @param string $format The format name to check.
-	 * @return bool True if the format is registered, false otherwise.
-	 */
-	public static function has_single_value_format( $format ) {
-		return isset( self::$single_value_formatters[ $format ] );
-	}
-
-	/**
 	 * Register built-in format handlers.
 	 *
 	 * This method registers the default format handlers (table, json, csv, yaml, count, ids)

@@ -211,13 +211,6 @@ class FormatterTest extends TestCase {
 		$this->assertSame( 'CUSTOM:test_value', $result, 'Handler should return formatted value' );
 	}
 
-	public function test_has_single_value_format() {
-		$this->assertTrue( Formatter::has_single_value_format( 'json' ), 'json format should be registered' );
-		$this->assertTrue( Formatter::has_single_value_format( 'yaml' ), 'yaml format should be registered' );
-		$this->assertTrue( Formatter::has_single_value_format( 'var_export' ), 'var_export format should be registered' );
-		$this->assertFalse( Formatter::has_single_value_format( 'nonexistent' ), 'nonexistent format should not be registered' );
-	}
-
 	public function test_format_single_value_json() {
 		$value  = [ 'key' => 'value' ];
 		$result = Formatter::format_single_value( $value, 'json' );

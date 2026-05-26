@@ -1186,27 +1186,7 @@ class WP_CLI {
 	public static function print_value( $value, $assoc_args = [] ) {
 		$format = Utils\get_flag_value( $assoc_args, 'format' );
 
-		// Use registered single-value formatter if available
-		if ( $format && \WP_CLI\Formatter::has_single_value_format( $format ) ) {
-			$_value = \WP_CLI\Formatter::format_single_value( $value, $format );
-		} elseif ( 'json' === $format ) {
-			// Fallback for json if not registered (shouldn't happen with bootstrap)
-			$_value = json_encode( $value );
-		} elseif ( 'yaml' === $format ) {
-			// Fallback for yaml if not registered (shouldn't happen with bootstrap)
-			/**
-			 * @var array $value
-			 */
-			$_value = Spyc::YAMLDump( $value, 2, 0 );
-		} elseif ( is_array( $value ) || is_object( $value ) ) {
-			// Default: use var_export for arrays/objects
-			$_value = \WP_CLI\Formatter::format_single_value( $value, 'var_export' );
-		} else {
-			/**
-			 * @var string|int $_value
-			 */
-			$_value = $value;
-		}
+		$_value = \WP_CLI\Formatter::format_single_value( $value, $format );
 
 		echo $_value . "\n";
 	}
