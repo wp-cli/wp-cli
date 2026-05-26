@@ -31,7 +31,7 @@ jobs:
 
       - name: Set up PHP environment
         if: steps.check_composer_file.outputs.files_exists == 'true'
-        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2
         with:
           php-version: 'latest'
           ini-values: zend.assertions=1, error_reporting=-1, display_errors=On
