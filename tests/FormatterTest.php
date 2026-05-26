@@ -11,13 +11,17 @@ class FormatterTest extends TestCase {
 	}
 
 	public function test_add_format() {
-		$called          = false;
-		$received_items  = null;
-		$received_fields = null;
-		$handler         = function ( $items, $fields ) use ( &$called, &$received_items, &$received_fields ) {
-			$called          = true;
-			$received_items  = $items;
-			$received_fields = $fields;
+		$called             = false;
+		$received_items     = null;
+		$received_fields    = null;
+		$received_formatter = null;
+		$received_args      = null;
+		$handler            = function ( $items, $fields, $formatter, $args ) use ( &$called, &$received_items, &$received_fields, &$received_formatter, &$received_args ) {
+			$called             = true;
+			$received_items     = $items;
+			$received_fields    = $fields;
+			$received_formatter = $formatter;
+			$received_args      = $args;
 			echo 'CUSTOM';
 		};
 
@@ -51,6 +55,8 @@ class FormatterTest extends TestCase {
 		$this->assertArrayHasKey( 'name', $received_items[0], 'Items should have name field' );
 		$this->assertArrayHasKey( 'age', $received_items[0], 'Items should have age field' );
 		$this->assertSame( [ 'name', 'age' ], $received_fields, 'Handler should receive fields array' );
+		$this->assertInstanceOf( Formatter::class, $received_formatter, 'Handler should receive formatter instance' );
+		$this->assertIsArray( $received_args, 'Handler should receive args array' );
 	}
 
 	public function test_get_available_formats() {

@@ -95,15 +95,16 @@ class Formatter {
 	 * Register a custom format handler.
 	 *
 	 * Allows extensions to add custom output formats. The handler receives an array
-	 * of items (each item is an array of field => value pairs) and an array of field
-	 * names, and should output the formatted data directly.
+	 * of items (each item is an array of field => value pairs), an array of field
+	 * names, the Formatter instance, and a key/value args array, and should output
+	 * the formatted data directly.
 	 *
 	 * Built-in formats can be overridden by registering a handler with the same name.
 	 *
 	 * ## EXAMPLE
 	 *
 	 *     // Register a custom XML format
-	 *     WP_CLI\Formatter::add_format( 'xml', function( $items, $fields ) {
+	 *     WP_CLI\Formatter::add_format( 'xml', function( $items, $fields, $formatter, $args ) {
 	 *         echo "<?xml version=\"1.0\"?>\n<items>\n";
 	 *         foreach ( $items as $item ) {
 	 *             echo "  <item>\n";
@@ -116,7 +117,7 @@ class Formatter {
 	 *     });
 	 *
 	 * @param string   $format_name Name of the format (e.g. 'xml', 'nagios').
-	 * @param callable $handler     Callback to handle formatting. Receives ($items, $fields) and should output directly.
+	 * @param callable $handler     Callback to handle formatting. Receives ($items, $fields, $formatter, $args) and should output directly.
 	 */
 	public static function add_format( $format_name, $handler ) {
 		if ( ! is_callable( $handler ) ) {
@@ -186,7 +187,9 @@ class Formatter {
 		// Register 'table' format
 		self::add_format(
 			'table',
-			static function ( $items, $fields, $formatter = null, $ascii_pre_colorized = false ) {
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $args required for API consistency
+			static function ( $items, $fields, $formatter = null, $args = [] ) {
+				$ascii_pre_colorized = $args['ascii_pre_colorized'] ?? false;
 				if ( $formatter instanceof Formatter ) {
 					$formatter->show_table( $items, $fields, $ascii_pre_colorized );
 				} else {
@@ -206,9 +209,10 @@ class Formatter {
 		// Register 'json' format
 		self::add_format(
 			'json',
-			static function ( $items, $fields, $context = [] ) {
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $formatter required for API consistency
+			static function ( $items, $fields, $formatter = null, $args = [] ) {
 				// For single-item display, output the item directly without array wrapper
-				if ( isset( $context['single_item'] ) && $context['single_item'] && count( $items ) === 1 ) {
+				if ( ! empty( $args['single_item'] ) && count( $items ) === 1 ) {
 					$item = reset( $items );
 					if ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
 						// phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
@@ -228,8 +232,8 @@ class Formatter {
 		// Register 'csv' format
 		self::add_format(
 			'csv',
-			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $context required for API consistency
-			static function ( $items, $fields, $context = [] ) {
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $formatter, $args required for API consistency
+			static function ( $items, $fields, $formatter = null, $args = [] ) {
 				Utils\write_csv( STDOUT, $items, $fields );
 			}
 		);
@@ -237,9 +241,10 @@ class Formatter {
 		// Register 'yaml' format
 		self::add_format(
 			'yaml',
-			static function ( $items, $fields, $context = [] ) {
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $formatter required for API consistency
+			static function ( $items, $fields, $formatter = null, $args = [] ) {
 				// For single-item display, output the item directly without array wrapper
-				if ( isset( $context['single_item'] ) && $context['single_item'] && count( $items ) === 1 ) {
+				if ( ! empty( $args['single_item'] ) && count( $items ) === 1 ) {
 					$item = reset( $items );
 					echo Spyc::YAMLDump( $item, 2, 0 );
 				} else {
@@ -251,8 +256,8 @@ class Formatter {
 		// Register 'count' format
 		self::add_format(
 			'count',
-			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $fields required for API consistency
-			static function ( $items, $fields ) {
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $fields, $formatter, $args required for API consistency
+			static function ( $items, $fields, $formatter = null, $args = [] ) {
 				echo count( $items );
 			}
 		);
@@ -260,8 +265,8 @@ class Formatter {
 		// Register 'ids' format
 		self::add_format(
 			'ids',
-			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $fields required for API consistency
-			static function ( $items, $fields ) {
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $fields, $formatter, $args required for API consistency
+			static function ( $items, $fields, $formatter = null, $args = [] ) {
 				echo implode( ' ', $items );
 			}
 		);
@@ -450,7 +455,7 @@ class Formatter {
 		if ( isset( self::$custom_formatters[ $this->args['format'] ] ) ) {
 			// Special handling for 'ids' and 'count' formats - they work with raw items
 			if ( in_array( $this->args['format'], [ 'ids', 'count' ], true ) ) {
-				call_user_func( self::$custom_formatters[ $this->args['format'] ], $items, $fields );
+				call_user_func( self::$custom_formatters[ $this->args['format'] ], $items, $fields, $this, [] );
 				return;
 			}
 
@@ -470,15 +475,9 @@ class Formatter {
 				}
 			}
 
-			// Call the formatter - pass $this as third parameter for built-in formats that need it
+			$args    = [ 'ascii_pre_colorized' => $ascii_pre_colorized ];
 			$handler = self::$custom_formatters[ $this->args['format'] ];
-			if ( in_array( $this->args['format'], [ 'table' ], true ) ) {
-				// Table format needs the formatter instance and ascii_pre_colorized
-				call_user_func( $handler, $formatted_items, $fields, $this, $ascii_pre_colorized );
-			} else {
-				// Pass an empty context array as third argument for API consistency
-				call_user_func( $handler, $formatted_items, $fields, [] );
-			}
+			call_user_func( $handler, $formatted_items, $fields, $this, $args );
 			return;
 		}
 
@@ -658,15 +657,14 @@ class Formatter {
 			if ( in_array( $format, [ 'table', 'csv' ], true ) ) {
 				$rows   = $this->assoc_array_to_rows( $ordered_data );
 				$fields = [ 'Field', 'Value' ];
-				if ( 'table' === $format ) {
-					call_user_func( self::$custom_formatters[ $format ], $rows, $fields, $this, $ascii_pre_colorized );
-				} else {
-					call_user_func( self::$custom_formatters[ $format ], $rows, $fields );
-				}
+				$args   = [
+					'single_item'         => true,
+					'ascii_pre_colorized' => $ascii_pre_colorized,
+				];
+				call_user_func( self::$custom_formatters[ $format ], $rows, $fields, $this, $args );
 			} else {
-				// For all other formats, pass context flag for single-item mode
-				$context = in_array( $format, [ 'json', 'yaml' ], true ) ? [ 'single_item' => true ] : [];
-				call_user_func( self::$custom_formatters[ $format ], [ $ordered_data ], array_keys( $ordered_data ), $context );
+				$args = [ 'single_item' => true ];
+				call_user_func( self::$custom_formatters[ $format ], [ $ordered_data ], array_keys( $ordered_data ), $this, $args );
 			}
 			return;
 		}
