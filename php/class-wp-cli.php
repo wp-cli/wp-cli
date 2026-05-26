@@ -1184,22 +1184,9 @@ class WP_CLI {
 	 * @param array $assoc_args Arguments passed to the command, determining format.
 	 */
 	public static function print_value( $value, $assoc_args = [] ) {
-		$_value = '';
-		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
-			$_value = json_encode( $value );
-		} elseif ( Utils\get_flag_value( $assoc_args, 'format' ) === 'yaml' ) {
-			/**
-			 * @var array $value
-			 */
-			$_value = Spyc::YAMLDump( $value, 2, 0 );
-		} elseif ( is_array( $value ) || is_object( $value ) ) {
-			$_value = var_export( $value, true );
-		} else {
-			/**
-			 * @var string|int $_value
-			 */
-			$_value = $value;
-		}
+		$format = Utils\get_flag_value( $assoc_args, 'format' );
+
+		$_value = \WP_CLI\Formatter::format_single_value( $value, $format );
 
 		echo $_value . "\n";
 	}
