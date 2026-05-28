@@ -15,10 +15,28 @@ use WP_CLI\Utils;
  */
 class Subcommand extends CompositeCommand {
 
+	/**
+	 * Alias for the subcommand.
+	 *
+	 * @var string
+	 */
 	private $alias;
 
+	/**
+	 * Callable to execute when the subcommand is invoked.
+	 *
+	 * @var callable
+	 */
 	private $when_invoked;
 
+	/**
+	 * Initiate a new Subcommand.
+	 *
+	 * @param RootCommand|CompositeCommand $parent       Parent command.
+	 * @param string                       $name         Command name.
+	 * @param DocParser                    $docparser    DocParser instance.
+	 * @param callable                     $when_invoked Invocation callback.
+	 */
 	public function __construct( $parent, $name, $docparser, $when_invoked ) {
 		$this->alias = $docparser->get_tag( 'alias' );
 
@@ -236,7 +254,16 @@ class Subcommand extends CompositeCommand {
 				if ( 'assoc' !== $spec_arg['type'] ) {
 					continue;
 				}
-				if ( ! in_array( $spec_arg['name'], $prompt_args, true ) ) {
+				$matched = in_array( $spec_arg['name'], $prompt_args, true );
+				if ( ! $matched && ! empty( $spec_arg['aliases'] ) ) {
+					foreach ( $spec_arg['aliases'] as $alias ) {
+						if ( in_array( $alias, $prompt_args, true ) ) {
+							$matched = true;
+							break;
+						}
+					}
+				}
+				if ( ! $matched ) {
 					continue;
 				}
 			}

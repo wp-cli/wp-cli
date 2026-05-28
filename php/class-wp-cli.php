@@ -6,6 +6,7 @@ use WP_CLI\Configurator;
 use WP_CLI\Dispatcher;
 use WP_CLI\Dispatcher\CommandAddition;
 use WP_CLI\Dispatcher\CommandFactory;
+use WP_CLI\Dispatcher\DisabledCommand;
 use WP_CLI\Dispatcher\CommandNamespace;
 use WP_CLI\Dispatcher\CompositeCommand;
 use WP_CLI\Dispatcher\RootCommand;
@@ -428,7 +429,6 @@ class WP_CLI {
 			}
 
 			$obj_idx = get_class( $function[0] ) . $function[1];
-			// @phpstan-ignore property.notFound
 			if ( ! isset( $function[0]->wp_filter_id ) ) {
 				if ( false === $priority ) {
 					return false;
@@ -533,7 +533,6 @@ class WP_CLI {
 
 		if ( $addition->was_aborted() ) {
 			self::warning( "Aborting the addition of the command '{$name}' with reason: {$addition->get_reason()}." );
-			return false;
 		}
 
 		foreach ( [ 'before_invoke', 'after_invoke' ] as $when ) {
@@ -591,6 +590,10 @@ class WP_CLI {
 		}
 
 		$leaf_command = CommandFactory::create( $leaf_name, $callable, $command );
+
+		if ( $addition->was_aborted() ) {
+			$leaf_command = new DisabledCommand( $command, $leaf_name, $leaf_command->get_docparser(), $addition->get_reason() );
+		}
 
 		// Only add a command namespace if the command itself does not exist yet.
 		if ( $leaf_command instanceof CommandNamespace
@@ -1181,22 +1184,9 @@ class WP_CLI {
 	 * @param array $assoc_args Arguments passed to the command, determining format.
 	 */
 	public static function print_value( $value, $assoc_args = [] ) {
-		$_value = '';
-		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
-			$_value = json_encode( $value );
-		} elseif ( Utils\get_flag_value( $assoc_args, 'format' ) === 'yaml' ) {
-			/**
-			 * @var array $value
-			 */
-			$_value = Spyc::YAMLDump( $value, 2, 0 );
-		} elseif ( is_array( $value ) || is_object( $value ) ) {
-			$_value = var_export( $value, true );
-		} else {
-			/**
-			 * @var string|int $_value
-			 */
-			$_value = $value;
-		}
+		$format = Utils\get_flag_value( $assoc_args, 'format' );
+
+		$_value = \WP_CLI\Formatter::format_single_value( $value, $format );
 
 		echo $_value . "\n";
 	}
@@ -1684,8 +1674,7 @@ class WP_CLI {
 				self::$capture_exit = false;
 			}
 		}
-		if ( ( true === $return || 'stdout' === $return )
-			&& 'json' === $parse && is_string( $retval ) ) {
+		if ( ( true === $return || 'stdout' === $return ) && 'json' === $parse ) {
 			$retval = json_decode( $retval, true );
 		}
 		return $retval;
