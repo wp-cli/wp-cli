@@ -480,6 +480,8 @@ class Help_Command extends WP_CLI_Command {
 	 * @return string
 	 */
 	private static function create_hyperlink( $url, $text ) {
+		$url  = (string) preg_replace( '/[\x00-\x1F\x7F]/', '', (string) $url );
+		$text = (string) preg_replace( '/[\x00-\x1F\x7F]/', '', (string) $text );
 		return "\033]8;;{$url}\033\\{$text}\033]8;;\033\\";
 	}
 

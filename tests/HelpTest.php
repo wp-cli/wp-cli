@@ -122,11 +122,7 @@ EOL;
 
 		$this->assertSame( $expected, $result );
 
-		if ( false === $original_force_hyperlink ) {
-			putenv( 'FORCE_HYPERLINK' );
-		} else {
-			putenv( 'FORCE_HYPERLINK=' . $original_force_hyperlink );
-		}
+		putenv( false === $original_force_hyperlink ? 'FORCE_HYPERLINK' : "FORCE_HYPERLINK=$original_force_hyperlink" );
 	}
 
 	public function test_parse_reference_links_with_forced_hyperlinks(): void {
@@ -148,10 +144,28 @@ EOL;
 
 		$this->assertSame( $expected, $result );
 
-		if ( false === $original_force_hyperlink ) {
-			putenv( 'FORCE_HYPERLINK' );
-		} else {
-			putenv( 'FORCE_HYPERLINK=' . $original_force_hyperlink );
-		}
+		$desc   = <<<'EOL'
+This is a [reference link](https://wordpress.org/) and [second link](http://wp-cli.org/).
+It should be displayed very nice!
+
+## Example
+
+It doesn't expect to be link here like [reference link](https://wordpress.org/).
+EOL;
+		$result = $method->invokeArgs( null, [ $desc ] );
+
+		$expected_link2 = "\033]8;;http://wp-cli.org/\033\\second link\033]8;;\033\\";
+		$expected       = <<<EOL
+This is a {$expected_link} and {$expected_link2}.
+It should be displayed very nice!
+
+## Example
+
+It doesn't expect to be link here like [reference link](https://wordpress.org/).
+EOL;
+
+		$this->assertSame( $expected, $result );
+
+		putenv( false === $original_force_hyperlink ? 'FORCE_HYPERLINK' : "FORCE_HYPERLINK=$original_force_hyperlink" );
 	}
 }
