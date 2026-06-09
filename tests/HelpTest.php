@@ -11,6 +11,9 @@ class HelpTest extends TestCase {
 	}
 
 	public function test_parse_reference_links(): void {
+		$original_force_hyperlink = getenv( 'FORCE_HYPERLINK' );
+		putenv( 'FORCE_HYPERLINK=0' );
+
 		$test_class = new ReflectionClass( 'Help_Command' );
 		$method     = $test_class->getMethod( 'parse_reference_links' );
 		if ( PHP_VERSION_ID < 80100 ) {
@@ -118,5 +121,37 @@ It doesn't expect to be link here like [reference link](https://wordpress.org/).
 EOL;
 
 		$this->assertSame( $expected, $result );
+
+		if ( false === $original_force_hyperlink ) {
+			putenv( 'FORCE_HYPERLINK' );
+		} else {
+			putenv( 'FORCE_HYPERLINK=' . $original_force_hyperlink );
+		}
+	}
+
+	public function test_parse_reference_links_with_forced_hyperlinks(): void {
+		$original_force_hyperlink = getenv( 'FORCE_HYPERLINK' );
+		putenv( 'FORCE_HYPERLINK=1' );
+
+		$test_class = new ReflectionClass( 'Help_Command' );
+		$method     = $test_class->getMethod( 'parse_reference_links' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$method->setAccessible( true );
+		}
+
+		$desc   = 'This is a [reference link](https://wordpress.org/). It should be displayed very nice!';
+		$result = $method->invokeArgs( null, [ $desc ] );
+
+		$expected_link = "\033]8;;https://wordpress.org/\033\\reference link\033]8;;\033\\";
+		$expected      = "This is a {$expected_link}. It should be displayed very nice!";
+
+		$this->assertSame( $expected, $result );
+
+		if ( false === $original_force_hyperlink ) {
+			putenv( 'FORCE_HYPERLINK' );
+		} else {
+			putenv( 'FORCE_HYPERLINK=' . $original_force_hyperlink );
+		}
 	}
 }

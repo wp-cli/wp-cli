@@ -349,32 +349,99 @@ class Help_Command extends WP_CLI_Command {
 
 		// Process if there is description text at the head of `$longdesc`.
 		if ( trim( $description ) ) {
-			$links   = []; // An array of URLs from the description.
-			$pattern = '/\[.+?\]\((https?:\/\/.+?)\)/';
-			$newdesc = (string) preg_replace_callback(
-				$pattern,
-				static function ( $matches ) use ( &$links ) {
-					static $count = 0;
-					$count++;
-					$links[] = $matches[1];
-					return str_replace( '(' . $matches[1] . ')', '[' . $count . ']', $matches[0] );
-				},
-				$description
-			);
+			$pattern = '/\[([^\]]+)\]\((https?:\/\/.+?)\)/';
+			if ( self::supports_hyperlinks() ) {
+				$newdesc = (string) preg_replace_callback(
+					$pattern,
+					static function ( $matches ) {
+						return self::create_hyperlink( $matches[2], $matches[1] );
+					},
+					$description
+				);
+			} else {
+				$links   = []; // An array of URLs from the description.
+				$newdesc = (string) preg_replace_callback(
+					$pattern,
+					static function ( $matches ) use ( &$links ) {
+						static $count = 0;
+						$count++;
+						$links[] = $matches[2];
+						return '[' . $matches[1] . '][' . $count . ']';
+					},
+					$description
+				);
 
-			$footnote = '';
-			foreach ( $links as $i => $link ) {
-				$n         = $i + 1;
-				$footnote .= '[' . $n . '] ' . $link . "\n";
+				$footnote = '';
+				foreach ( $links as $i => $link ) {
+					$n         = $i + 1;
+					$footnote .= '[' . $n . '] ' . $link . "\n";
+				}
+
+				if ( $footnote ) {
+					$newdesc = trim( $newdesc ) . "\n\n---\n" . $footnote;
+				}
 			}
 
-			if ( $footnote ) {
-				$newdesc  = trim( $newdesc ) . "\n\n---\n" . $footnote;
+			if ( trim( $description ) !== trim( $newdesc ) ) {
 				$longdesc = str_replace( trim( $description ), trim( $newdesc ), $longdesc );
 			}
 		}
 
 		return $longdesc;
+	}
+
+	/**
+	 * Determine whether the terminal supports OSC 8 hyperlinks.
+	 *
+	 * @return bool
+	 */
+	private static function supports_hyperlinks() {
+		$force_hyperlink = getenv( 'FORCE_HYPERLINK' );
+		if ( false !== $force_hyperlink ) {
+			if ( is_numeric( $force_hyperlink ) ) {
+				return (int) $force_hyperlink > 0;
+			}
+
+			return '' !== trim( $force_hyperlink );
+		}
+
+		$is_stdout_tty = false;
+		if ( function_exists( 'stream_isatty' ) ) {
+			$is_stdout_tty = stream_isatty( STDOUT );
+		} elseif ( function_exists( 'posix_isatty' ) ) {
+			$is_stdout_tty = posix_isatty( STDOUT );
+		}
+
+		if ( ! $is_stdout_tty || getenv( 'CI' ) ) {
+			return false;
+		}
+
+		if ( false !== getenv( 'WT_SESSION' )
+			|| false !== getenv( 'KONSOLE_VERSION' )
+			|| false !== getenv( 'DOMTERM' )
+			|| 'xterm-kitty' === getenv( 'TERM' ) ) {
+			return true;
+		}
+
+		$term_program = getenv( 'TERM_PROGRAM' );
+		if ( 'iTerm.app' === $term_program ) {
+			$term_program_version = getenv( 'TERM_PROGRAM_VERSION' );
+			return false !== $term_program_version && version_compare( $term_program_version, '3.1', '>=' );
+		}
+
+		$vte_version = getenv( 'VTE_VERSION' );
+		return false !== $vte_version && is_numeric( $vte_version ) && (int) $vte_version >= 5000;
+	}
+
+	/**
+	 * Create an OSC 8 hyperlink.
+	 *
+	 * @param string $url  URL for the hyperlink.
+	 * @param string $text Link text.
+	 * @return string
+	 */
+	private static function create_hyperlink( $url, $text ) {
+		return "\033]8;;{$url}\033\\{$text}\033]8;;\033\\";
 	}
 
 	/**
