@@ -423,14 +423,53 @@ class Help_Command extends WP_CLI_Command {
 			return true;
 		}
 
-		$term_program = getenv( 'TERM_PROGRAM' );
-		if ( 'iTerm.app' === $term_program ) {
-			$term_program_version = getenv( 'TERM_PROGRAM_VERSION' );
-			return false !== $term_program_version && version_compare( $term_program_version, '3.1', '>=' );
+		$term_program         = getenv( 'TERM_PROGRAM' );
+		$term_program_version = getenv( 'TERM_PROGRAM_VERSION' );
+		switch ( $term_program ) {
+			case 'iTerm.app':
+				return false !== $term_program_version && version_compare( $term_program_version, '3.1', '>=' );
+
+			case 'WezTerm':
+				if ( false !== $term_program_version && preg_match( '/^0-unstable-\d{4}-\d{2}-\d{2}$/', $term_program_version ) ) {
+					$date = substr( $term_program_version, strlen( '0-unstable-' ) );
+					return $date >= '2020-06-20';
+				}
+				if ( false !== $term_program_version && preg_match( '/^\d{8}/', $term_program_version ) ) {
+					$version = (int) substr( $term_program_version, 0, 8 );
+					return $version >= 20200620;
+				}
+				return false;
+
+			case 'vscode':
+				if ( false !== getenv( 'CURSOR_TRACE_ID' ) ) {
+					return true;
+				}
+				return false !== $term_program_version && version_compare( $term_program_version, '1.72', '>=' );
+
+			case 'ghostty':
+			case 'zed':
+				return true;
 		}
 
 		$vte_version = getenv( 'VTE_VERSION' );
-		return false !== $vte_version && is_numeric( $vte_version ) && (int) $vte_version >= 5000;
+		if ( '0.50.0' === $vte_version ) {
+			return false;
+		}
+		if ( false !== $vte_version ) {
+			if ( preg_match( '/^(\d{3,4})$/', $vte_version, $matches ) ) {
+				$version = $matches[1];
+				$minor   = (int) substr( $version, 0, -2 );
+				return $minor >= 50;
+			}
+
+			if ( preg_match( '/^(\d+)\.(\d+)/', $vte_version, $matches ) ) {
+				$major = (int) $matches[1];
+				$minor = (int) $matches[2];
+				return $major > 0 || $minor >= 50;
+			}
+		}
+
+		return in_array( getenv( 'TERM' ), [ 'alacritty', 'xterm-kitty' ], true );
 	}
 
 	/**
