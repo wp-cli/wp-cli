@@ -5,6 +5,8 @@ on:
     types: [released]
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   trigger-handbook:
     name: Trigger Handbook Regeneration
