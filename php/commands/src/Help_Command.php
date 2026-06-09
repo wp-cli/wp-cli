@@ -398,11 +398,12 @@ class Help_Command extends WP_CLI_Command {
 	private static function supports_hyperlinks() {
 		$force_hyperlink = getenv( 'FORCE_HYPERLINK' );
 		if ( false !== $force_hyperlink ) {
+			$force_hyperlink = trim( $force_hyperlink );
 			if ( is_numeric( $force_hyperlink ) ) {
 				return (int) $force_hyperlink > 0;
 			}
 
-			return '' !== trim( $force_hyperlink );
+			return '' !== $force_hyperlink;
 		}
 
 		$is_stdout_tty = false;
