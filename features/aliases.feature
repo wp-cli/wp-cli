@@ -219,6 +219,22 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
   @skip-windows @skip-macos
+  Scenario: Adds ssh_config to ssh command
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        ssh_config: /path/to/ssh/config
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -F '/path/to/ssh/config' -T -vvv
+      """
+
+  @skip-windows @skip-macos
   Scenario: Vagrant SSH disables strict host key checking
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
