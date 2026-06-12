@@ -148,6 +148,13 @@ Feature: Create shortcuts to specific WordPress installs
       {"@all":"Run command against every registered alias.","@foo":{"path":"{TEST_DIR}/foo"}}
       """
 
+    When I run `wp cli alias list --format=plaintext`
+    Then STDOUT should match /^array \s*\(/
+    And STDOUT should contain:
+      """
+      '@foo' =>
+      """
+
     When I run `wp cli aliases --format=json`
     Then STDOUT should be JSON containing:
       """
