@@ -46,7 +46,7 @@ Feature: Create shortcuts to specific WordPress installs
       Did you mean 'test2'?
       """
 
-  Scenario: Treat global params as local when included in alias
+  Scenario: Support global params alongside alias-defined params
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
       """
@@ -60,14 +60,10 @@ Feature: Create shortcuts to specific WordPress installs
       https://example.com
       """
 
-    When I try `wp @foo option get home --path=foo`
-    Then STDERR should contain:
+    When I run `wp @foo option get home --path=foo`
+    Then STDOUT should be:
       """
-      Parameter errors:
-      """
-    And STDERR should contain:
-      """
-      unknown --path parameter
+      https://example.com
       """
 
     When I run `wp @foo eval "echo get_current_user_id();" --user=admin`
@@ -89,14 +85,10 @@ Feature: Create shortcuts to specific WordPress installs
       1
       """
 
-    When I try `wp @foo eval "echo get_current_user_id();" --user=admin`
-    Then STDERR should contain:
+    When I run `wp @foo eval "echo get_current_user_id();" --user=admin`
+    Then STDOUT should be:
       """
-      Parameter errors:
-      """
-    And STDERR should contain:
-      """
-      unknown --user parameter
+      1
       """
 
   Scenario: Support global params specific to the WordPress install, not WP-CLI generally
@@ -721,11 +713,10 @@ Feature: Create shortcuts to specific WordPress installs
       http://subsite.example.com
       """
 
-    When I try `wp @subsite option get siteurl --url=subsite.example.com`
-    Then STDERR should be:
+    When I run `wp @subsite option get siteurl --url=http://subsite.example.com`
+    Then STDOUT should be:
       """
-      Error: Parameter errors:
-       unknown --url parameter
+      http://subsite.example.com
       """
 
   # TODO: Investigate on Windows why `@bar` is missing from @foobar output.
