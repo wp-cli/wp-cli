@@ -11,6 +11,9 @@ use WP_CLI;
 /**
  * Output one or more items in a given format (e.g. table, JSON).
  *
+ * Supports built-in formats (table, json, csv, yaml, count, ids) and allows
+ * extensions to register custom formats via Formatter::add_format().
+ *
  * @property-read string             $format
  * @property-read string[]           $fields
  * @property-read string|null        $field
@@ -25,6 +28,27 @@ class Formatter {
 	 * @var int
 	 */
 	const MAX_CELL_WIDTH = 2048;
+
+	/**
+	 * Custom format handlers registered by extensions.
+	 *
+	 * @var array<string, callable>
+	 */
+	private static $custom_formatters = [];
+
+	/**
+	 * Options for custom format handlers.
+	 *
+	 * @var array<string, array{single_item?: bool}>
+	 */
+	private static $format_options = [];
+
+	/**
+	 * Single-value format handlers for WP_CLI::print_value().
+	 *
+	 * @var array<string, callable>
+	 */
+	private static $single_value_formatters = [];
 
 	/**
 	 * How the items should be output.
@@ -75,6 +99,259 @@ class Formatter {
 	}
 
 	/**
+	 * Register a custom format handler.
+	 *
+	 * Allows extensions to add custom output formats. The handler receives an array
+	 * of items (each item is an array of field => value pairs), an array of field
+	 * names, the Formatter instance, and a key/value args array, and should output
+	 * the formatted data directly.
+	 *
+	 * Built-in formats can be overridden by registering a handler with the same name.
+	 *
+	 * ## EXAMPLE
+	 *
+	 *     // Register a custom XML format
+	 *     WP_CLI\Formatter::add_format( 'xml', function( $items, $fields, $formatter, $args ) {
+	 *         echo "<?xml version=\"1.0\"?>\n<items>\n";
+	 *         foreach ( $items as $item ) {
+	 *             echo "  <item>\n";
+	 *             foreach ( $item as $key => $value ) {
+	 *                 echo "    <{$key}>" . htmlspecialchars( $value ) . "</{$key}>\n";
+	 *             }
+	 *             echo "  </item>\n";
+	 *         }
+	 *         echo "</items>\n";
+	 *     });
+	 *
+	 * @param string                    $format_name Name of the format (e.g. 'xml', 'nagios').
+	 * @param callable                  $handler     Callback to handle formatting. Receives ($items, $fields, $formatter, $args) and should output directly.
+	 * @param array{single_item?: bool} $options     Optional metadata/options.
+	 */
+	public static function add_format( $format_name, $handler, $options = [] ) {
+		if ( ! is_callable( $handler ) ) {
+			WP_CLI::error( 'Format handler must be callable.' );
+		}
+		self::$custom_formatters[ $format_name ] = $handler;
+		self::$format_options[ $format_name ]    = $options;
+	}
+
+
+
+	/**
+	 * Register a custom single-value format handler for WP_CLI::print_value().
+	 *
+	 * Allows extensions to add custom output formats for single values. The handler
+	 * receives a single value and should return the formatted string (without trailing newline).
+	 *
+	 * Built-in single-value formats can be overridden by registering a handler with the same name.
+	 *
+	 * ## EXAMPLE
+	 *
+	 *     // Register a custom format for single values
+	 *     WP_CLI\Formatter::add_single_value_format( 'plaintext', function( $value ) {
+	 *         if ( is_array( $value ) || is_object( $value ) ) {
+	 *             return var_export( $value, true );
+	 *         }
+	 *         return (string) $value;
+	 *     });
+	 *
+	 * @param string   $format_name Name of the format (e.g. 'json', 'yaml', 'plaintext').
+	 * @param callable $handler     Callback to handle formatting. Receives ($value) and should return formatted string.
+	 */
+	public static function add_single_value_format( $format_name, $handler ) {
+		if ( ! is_callable( $handler ) ) {
+			WP_CLI::error( 'Single-value format handler must be callable.' );
+		}
+		self::$single_value_formatters[ $format_name ] = $handler;
+	}
+
+	/**
+	 * Format a single value using registered formatters.
+	 *
+	 * Used by WP_CLI::print_value() to format single values.
+	 *
+	 * @param mixed  $value  The value to format.
+	 * @param string $format The format to use (e.g. 'json', 'yaml', 'var_export').
+	 * @return string The formatted value (without trailing newline).
+	 */
+	public static function format_single_value( $value, $format ) {
+		if ( isset( self::$single_value_formatters[ $format ] ) ) {
+			return call_user_func( self::$single_value_formatters[ $format ], $value );
+		}
+
+		// Fallback to default behavior if format not registered
+		if ( is_array( $value ) || is_object( $value ) ) {
+			return var_export( $value, true );
+		}
+
+		// @phpstan-ignore cast.string
+		return (string) $value;
+	}
+
+	/**
+	 * Register built-in format handlers.
+	 *
+	 * This method registers the default format handlers (table, json, csv, yaml, count, ids)
+	 * using the add_format() API, allowing them to be overridden like custom formats.
+	 */
+	public static function register_builtin_formats() {
+		// Register 'table' format
+		self::add_format(
+			'table',
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $args required for API consistency
+			static function ( $items, $fields, $formatter = null, $args = [] ) {
+				$ascii_pre_colorized = $args['ascii_pre_colorized'] ?? false;
+				if ( $formatter instanceof Formatter ) {
+					$formatter->show_table( $items, $fields, $ascii_pre_colorized );
+				} else {
+					// Fallback if no formatter instance provided
+					$table = new Table();
+					$table->setHeaders( $fields );
+					foreach ( $items as $item ) {
+						$table->addRow( array_values( (array) $item ) );
+					}
+					foreach ( $table->getDisplayLines() as $line ) {
+						WP_CLI::line( $line );
+					}
+				}
+			}
+		);
+
+		// Register 'json' format
+		self::add_format(
+			'json',
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $formatter required for API consistency
+			static function ( $items, $fields, $formatter = null, $args = [] ) {
+				// For single-item display, output the item directly without array wrapper
+				if ( ! empty( $args['single_item'] ) && count( $items ) === 1 ) {
+					$item = reset( $items );
+					if ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
+						// phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
+						echo json_encode( $item, JSON_PARTIAL_OUTPUT_ON_ERROR );
+					} else {
+						echo json_encode( $item );
+					}
+				} elseif ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
+						// phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
+						echo json_encode( $items, JSON_PARTIAL_OUTPUT_ON_ERROR );
+				} else {
+					echo json_encode( $items );
+				}
+			}
+		);
+
+		// Register 'csv' format
+		self::add_format(
+			'csv',
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $formatter, $args required for API consistency
+			static function ( $items, $fields, $formatter = null, $args = [] ) {
+				Utils\write_csv( STDOUT, $items, $fields );
+			}
+		);
+
+		// Register 'yaml' format
+		self::add_format(
+			'yaml',
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $formatter required for API consistency
+			static function ( $items, $fields, $formatter = null, $args = [] ) {
+				// For single-item display, output the item directly without array wrapper
+				if ( ! empty( $args['single_item'] ) && count( $items ) === 1 ) {
+					$item = reset( $items );
+					echo Spyc::YAMLDump( $item, 2, 0 );
+				} else {
+					echo Spyc::YAMLDump( $items, 2, 0 );
+				}
+			}
+		);
+
+		// Register 'count' format
+		self::add_format(
+			'count',
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $fields, $formatter, $args required for API consistency
+			static function ( $items, $fields, $formatter = null, $args = [] ) {
+				echo count( $items );
+			},
+			[ 'single_item' => false ]
+		);
+
+		// Register 'ids' format
+		self::add_format(
+			'ids',
+			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $fields, $formatter, $args required for API consistency
+			static function ( $items, $fields, $formatter = null, $args = [] ) {
+				echo implode( ' ', $items );
+			},
+			[ 'single_item' => false ]
+		);
+
+		// Register single-value formats for WP_CLI::print_value()
+
+		// Register 'json' single-value format
+		self::add_single_value_format(
+			'json',
+			static function ( $value ) {
+				return json_encode( $value );
+			}
+		);
+
+		// Register 'yaml' single-value format
+		self::add_single_value_format(
+			'yaml',
+			static function ( $value ) {
+				/**
+				 * @var array $value
+				 */
+				return Spyc::YAMLDump( $value, 2, 0 );
+			}
+		);
+
+		$var_export_handler = static function ( $value ) {
+			if ( is_array( $value ) || is_object( $value ) ) {
+				return var_export( $value, true );
+			}
+			return (string) $value;
+		};
+
+		// Register 'var_export' single-value format (default for arrays/objects)
+		self::add_single_value_format( 'var_export', $var_export_handler );
+
+		// Register 'plaintext' single-value format
+		self::add_single_value_format( 'plaintext', $var_export_handler );
+	}
+
+	/**
+	 * Get list of all available format names.
+	 *
+	 * Returns built-in formats plus any custom formats that have been registered.
+	 * The list can be filtered via the 'formatter_available_formats' hook.
+	 *
+	 * ## EXAMPLE
+	 *
+	 *     // Get all available formats
+	 *     $formats = WP_CLI\Formatter::get_available_formats();
+	 *     // Returns: [ 'table', 'json', 'csv', 'yaml', 'count', 'ids', ... custom formats ]
+	 *
+	 *     // Filter to add a format to the list
+	 *     WP_CLI::add_hook( 'formatter_available_formats', function( $formats ) {
+	 *         $formats[] = 'my_custom_format';
+	 *         return $formats;
+	 *     });
+	 *
+	 * @return string[] Array of format names.
+	 */
+	public static function get_available_formats() {
+		$all_formats = array_keys( self::$custom_formatters );
+
+		/**
+		 * Filter the list of available output formats.
+		 *
+		 * @param string[] $formats Array of format names.
+		 */
+		// @phpstan-ignore-next-line - We trust the hook to return the correct type
+		return WP_CLI::do_hook( 'formatter_available_formats', $all_formats );
+	}
+
+	/**
 	 * Magic getter for arguments.
 	 *
 	 * @param string $key
@@ -99,8 +376,14 @@ class Formatter {
 				$items = iterator_to_array( $items );
 			}
 
-			if ( in_array( $this->args['format'], [ 'csv', 'json', 'table', 'yaml' ], true ) ) {
-				// Validate fields exist in at least one item
+			// Check if this is a custom formatter or a built-in format that needs field validation
+			// Skip validation for count/ids formats as they don't use fields
+			$skip_field_validation  = in_array( $this->args['format'], [ 'count', 'ids' ], true );
+			$is_custom_format       = isset( self::$custom_formatters[ $this->args['format'] ] );
+			$needs_field_validation = ! $skip_field_validation && ( in_array( $this->args['format'], [ 'csv', 'json', 'table', 'yaml' ], true ) || $is_custom_format );
+
+			if ( $needs_field_validation ) {
+				// Validate fields exist in at least one item and resolve field names with prefix support
 				if ( ! empty( $this->args['fields'] ) ) {
 					$this->validate_fields( $items );
 				}
@@ -148,28 +431,6 @@ class Formatter {
 	}
 
 	/**
-	 * Truncate cell values in items for table/CSV output.
-	 *
-	 * @param iterable $items  Items to process.
-	 * @param array    $fields Fields to truncate.
-	 * @return array Processed items with truncated values.
-	 */
-	private function truncate_items( $items, $fields ) {
-		$truncated = [];
-		foreach ( $items as $item ) {
-			$row = Utils\pick_fields( $item, $fields );
-			// Truncate each field value
-			foreach ( $row as $key => $value ) {
-				if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
-					$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
-				}
-			}
-			$truncated[] = $row;
-		}
-		return $truncated;
-	}
-
-	/**
 	 * Format items according to arguments.
 	 *
 	 * @param iterable   $items               Items.
@@ -178,62 +439,50 @@ class Formatter {
 	private function format( $items, $ascii_pre_colorized = false ): void {
 		$fields = $this->args['fields'];
 
-		switch ( $this->args['format'] ) {
-			case 'count':
-				if ( ! is_array( $items ) ) {
-					$items = iterator_to_array( $items );
-				}
-				echo count( $items );
-				break;
-
-			case 'ids':
-				if ( ! is_array( $items ) ) {
-					$items = iterator_to_array( $items );
-				}
-				/** @var array<string> $items */
-				echo implode( ' ', $items );
-				break;
-
-			case 'table':
-				// Truncate large values before table formatting for performance
-				if ( ! is_array( $items ) ) {
-					$items = iterator_to_array( $items );
-				}
-				$items = $this->truncate_items( $items, $fields );
-				$this->show_table( $items, $fields, $ascii_pre_colorized );
-				break;
-
-			case 'csv':
-				// Truncate large values before CSV output for performance
-				if ( ! is_array( $items ) ) {
-					$items = iterator_to_array( $items );
-				}
-				$items = $this->truncate_items( $items, $fields );
-				Utils\write_csv( STDOUT, $items, $fields );
-				break;
-
-			case 'json':
-			case 'yaml':
-				$out = [];
-				foreach ( $items as $item ) {
-					$out[] = Utils\pick_fields( $item, $fields );
-				}
-
-				if ( 'json' === $this->args['format'] ) {
-					if ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
-						// phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
-						echo json_encode( $out, JSON_PARTIAL_OUTPUT_ON_ERROR );
-					} else {
-						echo json_encode( $out );
-					}
-				} elseif ( 'yaml' === $this->args['format'] ) {
-					echo Spyc::YAMLDump( $out, 2, 0 );
-				}
-				break;
-
-			default:
-				WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
+		// Convert iterator to array if needed
+		if ( ! is_array( $items ) ) {
+			$items = iterator_to_array( $items );
 		}
+
+		// Check if a formatter is registered for this format
+		if ( isset( self::$custom_formatters[ $this->args['format'] ] ) ) {
+			// Special handling for 'ids' and 'count' formats - they work with raw items
+			if ( in_array( $this->args['format'], [ 'ids', 'count' ], true ) ) {
+				call_user_func( self::$custom_formatters[ $this->args['format'] ], $items, $fields, $this, [] );
+				return;
+			}
+
+			// Filter columns exactly once
+			$formatted_items = [];
+			foreach ( $items as $item ) {
+				if ( is_array( $item ) || is_object( $item ) ) {
+					// @phpstan-ignore-next-line - $item is guaranteed to be array|object here
+					$formatted_items[] = Utils\pick_fields( $item, $fields );
+				} else {
+					WP_CLI::debug( 'Skipping item that is neither array nor object in format handler.', 'formatter' );
+				}
+			}
+
+			// Truncate cell values exactly once for table/CSV output
+			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
+				foreach ( $formatted_items as &$row ) {
+					foreach ( $row as $key => $value ) {
+						if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
+							$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
+						}
+					}
+				}
+				unset( $row );
+			}
+
+			$args    = [ 'ascii_pre_colorized' => $ascii_pre_colorized ];
+			$handler = self::$custom_formatters[ $this->args['format'] ];
+			call_user_func( $handler, $formatted_items, $fields, $this, $args );
+			return;
+		}
+
+		// If no formatter is registered, show error
+		WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
 	}
 
 	/**
@@ -402,33 +651,32 @@ class Formatter {
 			$ordered_data[ $field ] = ( ( (array) $data )[ $field ] );
 		}
 
-		switch ( $format ) {
+		// Check if a formatter is registered for this format
+		if ( isset( self::$custom_formatters[ $format ] ) ) {
+			// Verify the format supports single-item display
+			$options = self::$format_options[ $format ] ?? [];
+			if ( isset( $options['single_item'] ) && ! $options['single_item'] ) {
+				WP_CLI::error( 'Invalid format: ' . $format );
+			}
 
-			case 'table':
-			case 'csv':
+			// For table and csv formats in single-item display, convert to rows format
+			if ( in_array( $format, [ 'table', 'csv' ], true ) ) {
 				$rows   = $this->assoc_array_to_rows( $ordered_data );
 				$fields = [ 'Field', 'Value' ];
-				if ( 'table' === $format ) {
-					self::show_table( $rows, $fields, $ascii_pre_colorized );
-				} elseif ( 'csv' === $format ) {
-					Utils\write_csv( STDOUT, $rows, $fields );
-				}
-				break;
-
-			case 'yaml':
-			case 'json':
-				WP_CLI::print_value(
-					$ordered_data,
-					[
-						'format' => $format,
-					]
-				);
-				break;
-
-			default:
-				WP_CLI::error( 'Invalid format: ' . $format );
-
+				$args   = [
+					'single_item'         => true,
+					'ascii_pre_colorized' => $ascii_pre_colorized,
+				];
+				call_user_func( self::$custom_formatters[ $format ], $rows, $fields, $this, $args );
+			} else {
+				$args = [ 'single_item' => true ];
+				call_user_func( self::$custom_formatters[ $format ], [ $ordered_data ], array_keys( $ordered_data ), $this, $args );
+			}
+			return;
 		}
+
+		// If no formatter is registered, show error
+		WP_CLI::error( 'Invalid format: ' . $format );
 	}
 
 	/**
@@ -453,7 +701,7 @@ class Formatter {
 		);
 
 		foreach ( $items as $item ) {
-			$table->addRow( array_values( Utils\pick_fields( $item, $fields ) ) );
+			$table->addRow( array_values( (array) $item ) );
 		}
 
 		foreach ( $table->getDisplayLines() as $line ) {

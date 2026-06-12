@@ -15,6 +15,9 @@ class Help_Command extends WP_CLI_Command {
 	 * [<command>...]
 	 * : Get help on a specific command.
 	 *
+	 * [--full]
+	 * : Show the full help, including help for all subcommands.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # get help for `core` command
@@ -23,83 +26,30 @@ class Help_Command extends WP_CLI_Command {
 	 *     # get help for `core download` subcommand
 	 *     wp help core download
 	 *
+	 *     # get full help for `core`, including all subcommands
+	 *     wp help core --full
+	 *
 	 * @param string[] $args
+	 * @param array    $assoc_args
 	 */
-	public function __invoke( $args ) {
+	public function __invoke( $args, $assoc_args ) {
 		$r = WP_CLI::get_runner()->find_command_to_run( $args, Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
 
 		if ( is_array( $r ) ) {
 			list( $command ) = $r;
 
-			self::show_help( $command );
+			if ( ! empty( $assoc_args['full'] ) ) {
+				$out = self::get_help_full( $command );
+				self::pass_through_pager( $out );
+			} else {
+				self::show_help( $command );
+			}
 			exit;
 		}
 	}
 
 	private static function show_help( $command ) {
-		// Parse reference links once for the entire longdesc
-		$longdesc_with_links = self::parse_reference_links( $command->get_longdesc() );
-
-		$out = self::get_initial_markdown( $command, $longdesc_with_links );
-
-		// Remove subcommands if in columns - will wordwrap separately.
-		$subcommands       = '';
-		$column_subpattern = '[ \t]+[^\t]+\t+';
-		if ( preg_match( '/(^## SUBCOMMANDS[^\n]*\n+' . $column_subpattern . '.+?)(?:^##|\z)/ms', $out, $matches, PREG_OFFSET_CAPTURE ) ) {
-			$subcommands        = $matches[1][0];
-			$subcommands_header = "## SUBCOMMANDS\n";
-			$out                = substr_replace( $out, $subcommands_header, $matches[1][1], strlen( $subcommands ) );
-		}
-
-		// Extract only the sections part (OPTIONS, EXAMPLES, etc.)
-		$longdesc_sections = self::get_longdesc_sections( $longdesc_with_links );
-		$out              .= $longdesc_sections;
-
-		// Definition lists.
-		$out = (string) preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', [ __CLASS__, 'rewrap_param_desc' ], $out );
-
-		// Ensure lines with no leading whitespace that aren't section headers are indented.
-		$out = (string) preg_replace( '/^((?! |\t|##).)/m', "\t$1", $out );
-
-		$tab = str_repeat( ' ', 2 );
-
-		// Need to de-tab for wordwrapping to work properly.
-		$out = str_replace( "\t", $tab, $out );
-
-		$wordwrap_width = Shell::columns();
-
-		// Wordwrap with indent.
-		$out = (string) preg_replace_callback(
-			'/^( *)([^\n]+)\n/m',
-			static function ( $matches ) use ( $wordwrap_width ) {
-				return $matches[1] . str_replace( "\n", "\n{$matches[1]}", wordwrap( $matches[2], $wordwrap_width - strlen( $matches[1] ) ) ) . "\n";
-			},
-			$out
-		);
-
-		if ( $subcommands ) {
-			// Wordwrap with column indent.
-			$subcommands = (string) preg_replace_callback(
-				'/^(' . $column_subpattern . ')([^\n]+)\n/m',
-				static function ( $matches ) use ( $wordwrap_width, $tab ) {
-					// Need to de-tab for wordwrapping to work properly.
-					$matches[1]  = str_replace( "\t", $tab, $matches[1] );
-					$matches[2]  = str_replace( "\t", $tab, $matches[2] );
-					$padding_len = strlen( $matches[1] );
-					$padding     = str_repeat( ' ', $padding_len );
-					return $matches[1] . str_replace( "\n", "\n$padding", wordwrap( $matches[2], $wordwrap_width - $padding_len ) ) . "\n";
-				},
-				$subcommands
-			);
-
-			// Put subcommands back.
-			$out = str_replace( $subcommands_header, $subcommands, $out );
-		}
-
-		// Section headers.
-		$out = (string) preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
-
-		self::pass_through_pager( $out );
+		self::pass_through_pager( self::get_help_as_string( $command ) );
 	}
 
 	private static function rewrap_param_desc( $matches ) {
@@ -277,22 +227,103 @@ class Help_Command extends WP_CLI_Command {
 	private static function render_subcommands( $command ) {
 		$subcommands = [];
 		foreach ( $command->get_subcommands() as $subcommand ) {
+			$disabled_reason = WP_CLI::get_runner()->get_command_disabled_reason( $subcommand );
 
-			if ( WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
-				continue;
-			}
-
-			$subcommands[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
+			$subcommands[ $subcommand->get_name() ] = [
+				'desc'            => $subcommand->get_shortdesc(),
+				'disabled_reason' => $disabled_reason,
+			];
 		}
 
 		$max_len = self::get_max_len( array_keys( $subcommands ) );
 
 		$lines = [];
-		foreach ( $subcommands as $name => $desc ) {
-			$lines[] = str_pad( $name, $max_len ) . "\t\t\t" . $desc;
+		foreach ( $subcommands as $name => $data ) {
+			$desc = $data['desc'];
+			if ( false !== $data['disabled_reason'] ) {
+				$padded_name  = str_pad( $name, $max_len );
+				$colored_name = WP_CLI::colorize( '%r' . $name . '%n' ) . substr( $padded_name, strlen( $name ) );
+			} else {
+				$colored_name = str_pad( $name, $max_len );
+			}
+
+			$lines[] = $colored_name . "\t\t\t" . $desc;
+
+			if ( false !== $data['disabled_reason'] ) {
+				$indent  = str_repeat( ' ', $max_len ) . "\t\t\t";
+				$reason  = $data['disabled_reason'] ?: 'disabled';
+				$lines[] = $indent . WP_CLI::colorize( '%w' . $reason . '%n' );
+			}
 		}
 
 		return $lines;
+	}
+
+	private static function get_help_full( $command ) {
+		$out = self::get_help_as_string( $command );
+
+		if ( $command->can_have_subcommands() ) {
+			foreach ( $command->get_subcommands() as $subcommand ) {
+				if ( WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
+					continue;
+				}
+				$out .= "\n---\n\n" . self::get_help_full( $subcommand );
+			}
+		}
+
+		return $out;
+	}
+
+	private static function get_help_as_string( $command ) {
+		$longdesc_with_links = self::parse_reference_links( $command->get_longdesc() );
+		$out                 = self::get_initial_markdown( $command, $longdesc_with_links );
+
+		$subcommands       = '';
+		$column_subpattern = '[ \t]+[^\t]+\t+';
+		if ( preg_match( '/(^## SUBCOMMANDS[^\n]*\n+' . $column_subpattern . '.+?)(?:^##|\z)/ms', $out, $matches, PREG_OFFSET_CAPTURE ) ) {
+			$subcommands        = $matches[1][0];
+			$subcommands_header = "## SUBCOMMANDS\n";
+			$out                = substr_replace( $out, $subcommands_header, $matches[1][1], strlen( $subcommands ) );
+		}
+
+		$longdesc_sections = self::get_longdesc_sections( $longdesc_with_links );
+		$out              .= $longdesc_sections;
+
+		$out = (string) preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', [ __CLASS__, 'rewrap_param_desc' ], $out );
+		$out = (string) preg_replace( '/^((?! |\t|##).)/m', "\t$1", $out );
+
+		$tab = str_repeat( ' ', 2 );
+		$out = str_replace( "\t", $tab, $out );
+
+		$wordwrap_width = Shell::columns();
+
+		$out = (string) preg_replace_callback(
+			'/^( *)([^\n]+)\n/m',
+			static function ( $matches ) use ( $wordwrap_width ) {
+				return $matches[1] . str_replace( "\n", "\n{$matches[1]}", wordwrap( $matches[2], $wordwrap_width - strlen( $matches[1] ) ) ) . "\n";
+			},
+			$out
+		);
+
+		if ( $subcommands ) {
+			$subcommands = (string) preg_replace_callback(
+				'/^(' . $column_subpattern . ')([^\n]+)\n/m',
+				static function ( $matches ) use ( $wordwrap_width, $tab ) {
+					$matches[1]  = str_replace( "\t", $tab, $matches[1] );
+					$matches[2]  = str_replace( "\t", $tab, $matches[2] );
+					$padding_len = strlen( $matches[1] );
+					$padding     = str_repeat( ' ', $padding_len );
+					return $matches[1] . str_replace( "\n", "\n$padding", wordwrap( $matches[2], $wordwrap_width - $padding_len ) ) . "\n";
+				},
+				$subcommands
+			);
+
+			$out = str_replace( $subcommands_header, $subcommands, $out );
+		}
+
+		$out = (string) preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
+
+		return $out;
 	}
 
 	private static function get_max_len( $strings ) {
@@ -318,32 +349,141 @@ class Help_Command extends WP_CLI_Command {
 
 		// Process if there is description text at the head of `$longdesc`.
 		if ( trim( $description ) ) {
-			$links   = []; // An array of URLs from the description.
-			$pattern = '/\[.+?\]\((https?:\/\/.+?)\)/';
-			$newdesc = (string) preg_replace_callback(
-				$pattern,
-				static function ( $matches ) use ( &$links ) {
-					static $count = 0;
-					$count++;
-					$links[] = $matches[1];
-					return str_replace( '(' . $matches[1] . ')', '[' . $count . ']', $matches[0] );
-				},
-				$description
-			);
+			$pattern = '/\[([^\]]+)\]\((https?:\/\/.+?)\)/';
+			if ( self::supports_hyperlinks() ) {
+				$newdesc = (string) preg_replace_callback(
+					$pattern,
+					static function ( $matches ) {
+						return self::create_hyperlink( $matches[2], $matches[1] );
+					},
+					$description
+				);
+			} else {
+				$links   = []; // An array of URLs from the description.
+				$newdesc = (string) preg_replace_callback(
+					$pattern,
+					static function ( $matches ) use ( &$links ) {
+						static $count = 0;
+						$count++;
+						$links[] = $matches[2];
+						return '[' . $matches[1] . '][' . $count . ']';
+					},
+					$description
+				);
 
-			$footnote = '';
-			foreach ( $links as $i => $link ) {
-				$n         = $i + 1;
-				$footnote .= '[' . $n . '] ' . $link . "\n";
+				$footnote = '';
+				foreach ( $links as $i => $link ) {
+					$n         = $i + 1;
+					$footnote .= '[' . $n . '] ' . $link . "\n";
+				}
+
+				if ( $footnote ) {
+					$newdesc = trim( $newdesc ) . "\n\n---\n" . $footnote;
+				}
 			}
 
-			if ( $footnote ) {
-				$newdesc  = trim( $newdesc ) . "\n\n---\n" . $footnote;
+			if ( trim( $description ) !== trim( $newdesc ) ) {
 				$longdesc = str_replace( trim( $description ), trim( $newdesc ), $longdesc );
 			}
 		}
 
 		return $longdesc;
+	}
+
+	/**
+	 * Determine whether the terminal supports OSC 8 hyperlinks.
+	 *
+	 * @return bool
+	 */
+	private static function supports_hyperlinks() {
+		$force_hyperlink = getenv( 'FORCE_HYPERLINK' );
+		if ( false !== $force_hyperlink ) {
+			$force_hyperlink = trim( $force_hyperlink );
+			if ( is_numeric( $force_hyperlink ) ) {
+				return (int) $force_hyperlink > 0;
+			}
+
+			return '' !== $force_hyperlink;
+		}
+
+		$is_stdout_tty = false;
+		if ( function_exists( 'stream_isatty' ) ) {
+			$is_stdout_tty = stream_isatty( STDOUT );
+		} elseif ( function_exists( 'posix_isatty' ) ) {
+			$is_stdout_tty = posix_isatty( STDOUT );
+		}
+
+		if ( ! $is_stdout_tty || getenv( 'CI' ) ) {
+			return false;
+		}
+
+		if ( false !== getenv( 'WT_SESSION' )
+			|| false !== getenv( 'KONSOLE_VERSION' )
+			|| false !== getenv( 'DOMTERM' )
+			|| 'xterm-kitty' === getenv( 'TERM' ) ) {
+			return true;
+		}
+
+		$term_program         = getenv( 'TERM_PROGRAM' );
+		$term_program_version = getenv( 'TERM_PROGRAM_VERSION' );
+		switch ( $term_program ) {
+			case 'iTerm.app':
+				return false !== $term_program_version && version_compare( $term_program_version, '3.1', '>=' );
+
+			case 'WezTerm':
+				if ( false !== $term_program_version && preg_match( '/^0-unstable-\d{4}-\d{2}-\d{2}$/', $term_program_version ) ) {
+					$date = substr( $term_program_version, strlen( '0-unstable-' ) );
+					return $date >= '2020-06-20';
+				}
+				if ( false !== $term_program_version && preg_match( '/^\d{8}/', $term_program_version ) ) {
+					$version = (int) substr( $term_program_version, 0, 8 );
+					return $version >= 20200620;
+				}
+				return false;
+
+			case 'vscode':
+				if ( false !== getenv( 'CURSOR_TRACE_ID' ) ) {
+					return true;
+				}
+				return false !== $term_program_version && version_compare( $term_program_version, '1.72', '>=' );
+
+			case 'ghostty':
+			case 'zed':
+				return true;
+		}
+
+		$vte_version = getenv( 'VTE_VERSION' );
+		if ( '0.50.0' === $vte_version ) {
+			return false;
+		}
+		if ( false !== $vte_version ) {
+			if ( preg_match( '/^(\d{3,4})$/', $vte_version, $matches ) ) {
+				$version = $matches[1];
+				$minor   = (int) substr( $version, 0, -2 );
+				return $minor >= 50;
+			}
+
+			if ( preg_match( '/^(\d+)\.(\d+)/', $vte_version, $matches ) ) {
+				$major = (int) $matches[1];
+				$minor = (int) $matches[2];
+				return $major > 0 || $minor >= 50;
+			}
+		}
+
+		return in_array( getenv( 'TERM' ), [ 'alacritty', 'xterm-kitty' ], true );
+	}
+
+	/**
+	 * Create an OSC 8 hyperlink.
+	 *
+	 * @param string $url  URL for the hyperlink.
+	 * @param string $text Link text.
+	 * @return string
+	 */
+	private static function create_hyperlink( $url, $text ) {
+		$url  = (string) preg_replace( '/[\x00-\x1F\x7F-\x9F]/', '', (string) $url );
+		$text = (string) preg_replace( '/[\x00-\x1F\x7F-\x9F]/', '', (string) $text );
+		return "\033]8;;{$url}\033\\{$text}\033]8;;\033\\";
 	}
 
 	/**

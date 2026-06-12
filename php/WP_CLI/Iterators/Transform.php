@@ -11,6 +11,11 @@ use IteratorIterator;
  */
 class Transform extends IteratorIterator {
 
+	/**
+	 * List of transformer callbacks.
+	 *
+	 * @var array
+	 */
 	private $transformers = [];
 
 	public function add_transform( $fn ) {
