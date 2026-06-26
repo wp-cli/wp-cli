@@ -172,3 +172,19 @@ Feature: Utilities that do NOT depend on WordPress code
       """
       {ONE_MB_OF_DATA}
       """
+
+  @require-mysql @skip-windows
+  Scenario: MySQL binary path is detected on Linux
+    Given an empty directory
+    When I run `wp --skip-wordpress eval "echo WP_CLI\Utils\get_mysql_binary_path();"`
+    Then STDOUT should not be empty
+    And STDERR should be empty
+    And the return code should be 0
+
+  @skip-windows
+  Scenario: MySQL binary detection falls back gracefully when simulating Windows
+    Given an empty directory
+    When I run `WP_CLI_TEST_IS_WINDOWS=1 wp --skip-wordpress eval "echo WP_CLI\Utils\get_mysql_binary_path();"`
+    Then STDOUT should be empty
+    And STDERR should be empty
+    And the return code should be 0

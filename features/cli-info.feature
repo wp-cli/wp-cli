@@ -77,6 +77,16 @@ Feature: Review CLI information
       """
     And STDERR should be empty
 
+  @skip-windows
+  Scenario: wp cli info succeeds when simulating Windows environment
+    Given an empty directory
+    When I run `WP_CLI_TEST_IS_WINDOWS=1 wp cli info`
+    Then STDOUT should contain:
+      """
+      MySQL binary:
+      """
+    And the return code should be 0
+
   Scenario: Packages directory path should be slashed correctly
     When I run `WP_CLI_PACKAGES_DIR=/foo wp package path`
     Then STDOUT should be:
