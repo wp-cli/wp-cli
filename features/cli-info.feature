@@ -85,6 +85,7 @@ Feature: Review CLI information
       """
       MySQL binary:
       """
+    And STDERR should be empty
     And the return code should be 0
 
   Scenario: Packages directory path should be slashed correctly
