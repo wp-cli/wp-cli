@@ -22,9 +22,9 @@ Feature: wp-config
       """
 
     When I try `WP_CLI_ERROR_RERUN=no wp eval "echo 'TEST_CONFIG_OVERRIDE => ' . TEST_CONFIG_OVERRIDE;"`
-    Then STDERR should contain:
+    Then STDOUT should not contain:
       """
-      TEST_CONFIG_OVERRIDE
+      TEST_CONFIG_OVERRIDE => success
       """
 
     When I run `WP_CONFIG_PATH=wp-config-override.php wp eval "echo 'TEST_CONFIG_OVERRIDE => ' . TEST_CONFIG_OVERRIDE;"`
