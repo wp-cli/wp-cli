@@ -853,6 +853,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * default: json
 	 * options:
 	 *   - var_export
+	 *   - plaintext
 	 *   - json
 	 * ---
 	 *
@@ -890,7 +891,11 @@ class CLI_Command extends WP_CLI_Command {
 			}
 		}
 
-		if ( 'var_export' === Utils\get_flag_value( $assoc_args, 'format' ) ) {
+		// `plaintext` and `var_export` are the same format under two names; accept both
+		// so the format name is consistent with other commands. See
+		// https://github.com/wp-cli/wp-cli/issues/4774
+		$format = Utils\get_flag_value( $assoc_args, 'format' );
+		if ( 'var_export' === $format || 'plaintext' === $format ) {
 			var_export( $spec );
 		} else {
 			echo json_encode( $spec );
