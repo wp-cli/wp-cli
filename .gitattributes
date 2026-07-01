@@ -19,3 +19,4 @@ bundle/**/* linguist-vendored
 /tests export-ignore
 /features export-ignore
 /.github export-ignore
+/utils/phpstan export-ignore

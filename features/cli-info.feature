@@ -77,6 +77,30 @@ Feature: Review CLI information
       """
     And STDERR should be empty
 
+  @require-windows
+  Scenario: wp cli info detects the MySQL binary on Windows
+    Given an empty directory
+    And a mysql.bat file:
+      """
+      @echo off
+      echo mysql  Ver 8.4.0 for Win64
+      """
+    When I run `set "PATH=%CD%;%PATH%"&& wp cli info`
+    Then STDOUT should contain:
+      """
+      MySQL binary:
+      """
+    And STDOUT should contain:
+      """
+      mysql.bat
+      """
+    And STDOUT should contain:
+      """
+      mysql  Ver 8.4.0 for Win64
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
   Scenario: Packages directory path should be slashed correctly
     When I run `WP_CLI_PACKAGES_DIR=/foo wp package path`
     Then STDOUT should be:
