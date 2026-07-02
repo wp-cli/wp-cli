@@ -79,6 +79,13 @@ Feature: Have a config file
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
+    Given an index.php file:
+      """
+      require __DIR__ . '/foo/wp-blog-header.php';
+      """
+    When I run `wp core is-installed`
+    Then STDOUT should be empty
+
     Given an empty other/subdir directory
     And a other/subdir/index.php file:
       """
