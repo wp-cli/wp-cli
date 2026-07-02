@@ -1012,6 +1012,12 @@ Feature: Have a config file
       locale: en_US
       """
 
+    When I run `wp eval "echo get_locale();"`
+    Then STDOUT should be:
+      """
+      en_US
+      """
+
     When I run `wp eval "echo __('Settings');"`
     Then STDOUT should contain:
       """
@@ -1023,6 +1029,12 @@ Feature: Have a config file
     Given a wp-cli.yml file:
       """
       locale: de_DE
+      """
+
+    When I run `wp eval "echo get_locale();"`
+    Then STDOUT should be:
+      """
+      de_DE
       """
 
     When I run `wp eval "echo __('Settings');"`

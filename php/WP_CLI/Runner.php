@@ -2015,7 +2015,9 @@ class Runner {
 				'locale',
 				static function () use ( $locale ) {
 					return $locale;
-				}
+				},
+				PHP_INT_MAX,
+				0
 			);
 		}
 

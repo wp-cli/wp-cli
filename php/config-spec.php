@@ -90,7 +90,7 @@ return [
 
 	'locale'            => [
 		'file'    => '<locale>',
-		'desc'    => 'Set the locale for WP-CLI and WordPress (e.g., en_US, de_DE).',
+		'desc'    => 'Set the locale for WordPress when WP-CLI loads it (e.g., en_US, de_DE).',
 		'default' => '',
 	],
 
