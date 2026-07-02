@@ -991,50 +991,44 @@ Feature: Have a config file
       WP_CLI_AUTOCORRECT: 1
       """
 
-  Scenario: Set locale via config file
-    Given a WP installation
-    And a wp-cli.yml file:
-      """
-      locale: de_DE
-      """
-
-    When I run `wp eval 'echo get_locale();'`
+  Scenario: Adheres to locale configuration
+    Given a WP install
+    When I run `wp language core install de_DE`
+    And I run `wp site switch-language de_DE`
+    And I run `wp language core list --field=language --status=active`
     Then STDOUT should be:
       """
       de_DE
       """
 
-  Scenario: Locale config translates core strings to configured language
-    Given WP files
-    And I run `wp core download --locale=de_DE --force`
-    And wp-config.php
-    And I run `wp core install --url=example.com --title=Example --admin_user=admin --admin_email=admin@example.com --skip-email`
-    And a wp-cli.yml file:
-      """
-      locale: de_DE
-      """
-
-    When I run `wp eval 'echo __("Settings");'`
+    When I run `wp eval "echo __('Settings');"`
     Then STDOUT should contain:
       """
       Einstellungen
       """
 
-  Scenario: Locale config overrides site locale setting
-    Given WP files
-    And I run `wp core download --locale=de_DE --force`
-    And wp-config.php
-    And I run `wp core install --url=example.com --title=Example --admin_user=admin --admin_email=admin@example.com --skip-email`
-    And I run `wp option update WPLANG de_DE`
-    And a wp-cli.yml file:
+    Given a wp-cli.yml file:
       """
       locale: en_US
       """
 
-    When I run `wp eval 'echo __("Settings");'`
-    Then STDOUT should be:
+    When I run `wp eval "echo __('Settings');"`
+    Then STDOUT should contain:
       """
       Settings
+      """
+
+    When I run `wp site switch-language en_US`
+
+    Given a wp-cli.yml file:
+      """
+      locale: de_DE
+      """
+
+    When I run `wp eval "echo __('Settings');"`
+    Then STDOUT should contain:
+      """
+      Einstellungen
       """
 
   Scenario: Custom system config path via WP_CLI_SYSTEM_SETTINGS_PATH
