@@ -7,8 +7,8 @@ Feature: CLI Cache
     And I run `wp core download --path={CACHE_DIR} --version=6.9 --force --locale=de_DE`
     Then the {SUITE_CACHE_DIR}/core directory should contain:
       """
-      wordpress-6.9-de_DE.tar.gz
-      wordpress-6.9-en_US.tar.gz
+      wordpress-6.9-de_DE.zip
+      wordpress-6.9-en_US.zip
       """
 
     When I run `wp cli cache clear`
@@ -19,11 +19,11 @@ Feature: CLI Cache
     And STDERR should be empty
     And the {SUITE_CACHE_DIR}/core directory should not contain:
       """
-      wordpress-6.9-de_DE.tar.gz
+      wordpress-6.9-de_DE.zip
       """
     And the {SUITE_CACHE_DIR}/core directory should not contain:
       """
-      wordpress-6.9-en_US.tar.gz
+      wordpress-6.9-en_US.zip
       """
 
   Scenario: Using a null device disables the cache without throwing an error

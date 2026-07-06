@@ -238,3 +238,116 @@ Feature: Argument aliases support
       """
       [--format=<format>|f]
       """
+
+  Scenario: Prompting for required parameter with alias (value spec on canonical)
+    Given a WP install
+    And a custom-command.php file:
+      """
+      <?php
+      /**
+       * Test command with required parameter and alias.
+       *
+       * ## OPTIONS
+       *
+       * --type=<type>|t
+       * : Required type parameter.
+       */
+      $test_command = function( $args, $assoc_args ) {
+        WP_CLI::success( 'type is ' . $assoc_args['type'] );
+      };
+      WP_CLI::add_command( 'test-alias', $test_command );
+      """
+    And a session file:
+      """
+      post
+      """
+
+    When I run `wp --require=custom-command.php test-alias --prompt=type < session`
+    Then STDOUT should contain:
+      """
+      Success: type is post
+      """
+
+  Scenario: Prompting for required parameter with alias (value spec on alias)
+    Given a WP install
+    And a custom-command.php file:
+      """
+      <?php
+      /**
+       * Test command with required parameter and alias (value spec on alias).
+       *
+       * ## OPTIONS
+       *
+       * --admin_password|admin_pass=<password>
+       * : Admin password.
+       */
+      $test_command = function( $args, $assoc_args ) {
+        WP_CLI::success( 'password is ' . $assoc_args['admin_password'] );
+      };
+      WP_CLI::add_command( 'test-alias', $test_command );
+      """
+    And a session file:
+      """
+      wpcli
+      """
+
+    When I run `wp --require=custom-command.php test-alias --prompt=admin_password < session`
+    Then STDOUT should contain:
+      """
+      Success: password is wpcli
+      """
+
+  Scenario: Prompting using alias name
+    Given a WP install
+    And a custom-command.php file:
+      """
+      <?php
+      /**
+       * Test command with required parameter and alias.
+       *
+       * ## OPTIONS
+       *
+       * --type=<type>|t
+       * : Required type parameter.
+       */
+      $test_command = function( $args, $assoc_args ) {
+        WP_CLI::success( 'type is ' . $assoc_args['type'] );
+      };
+      WP_CLI::add_command( 'test-alias', $test_command );
+      """
+    And a session file:
+      """
+      page
+      """
+
+    When I run `wp --require=custom-command.php test-alias --prompt=t < session`
+    Then STDOUT should contain:
+      """
+      Success: type is page
+      """
+
+  Scenario: Passing alias on command line bypasses prompt
+    Given a WP install
+    And a custom-command.php file:
+      """
+      <?php
+      /**
+       * Test command with required parameter and alias.
+       *
+       * ## OPTIONS
+       *
+       * --type=<type>|t
+       * : Required type parameter.
+       */
+      $test_command = function( $args, $assoc_args ) {
+        WP_CLI::success( 'type is ' . $assoc_args['type'] );
+      };
+      WP_CLI::add_command( 'test-alias', $test_command );
+      """
+
+    When I run `wp --require=custom-command.php test-alias -t=post --prompt=type`
+    Then STDOUT should contain:
+      """
+      Success: type is post
+      """
+

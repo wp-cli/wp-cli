@@ -973,7 +973,7 @@ class Runner {
 			if ( is_array( $alias_config ) ) {
 				foreach ( $alias_config as $key => $value ) {
 					// Skip connection-specific keys as they are not relevant to the remote WP-CLI instance.
-					if ( in_array( $key, [ 'ssh', 'http', 'proxyjump', 'key' ], true ) ) {
+					if ( in_array( $key, [ 'ssh', 'http', 'proxyjump', 'key', 'ssh_config' ], true ) ) {
 						continue;
 					}
 					$runtime_alias[ $key ] = $value;
@@ -1051,7 +1051,7 @@ class Runner {
 			: '';
 
 		// Set default values.
-		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump' ] as $bit ) {
+		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
 			if ( ! isset( $bits[ $bit ] ) ) {
 				$bits[ $bit ] = null;
 			}
@@ -1060,7 +1060,7 @@ class Runner {
 		}
 
 		/**
-		 * @var array{scheme: string|null, user: string|null, host: string, port: string|null, path: string|null, key: string|null, proxyjump: string|null} $bits
+		 * @var array{scheme: string|null, user: string|null, host: string, port: string|null, path: string|null, key: string|null, proxyjump: string|null, ssh_config: string|null} $bits
 		 */
 
 		/*
@@ -1180,12 +1180,15 @@ class Runner {
 				$alias_config = isset( $this->aliases[ $this->alias ] ) ? $this->aliases[ $this->alias ] : false;
 
 				if ( is_array( $alias_config ) ) {
-					$bits['proxyjump'] = isset( $alias_config['proxyjump'] ) ? $alias_config['proxyjump'] : '';
-					$bits['key']       = isset( $alias_config['key'] ) ? $alias_config['key'] : '';
+					$bits['proxyjump']  = isset( $alias_config['proxyjump'] ) ? $alias_config['proxyjump'] : '';
+					$bits['key']        = isset( $alias_config['key'] ) ? $alias_config['key'] : '';
+					$bits['ssh_config'] = isset( $alias_config['ssh_config'] ) ? $alias_config['ssh_config'] : '';
 				}
 			}
 
 			$command_args = [
+				// @phpstan-ignore cast.string
+				$bits['ssh_config'] ? sprintf( '-F %s', escapeshellarg( (string) $bits['ssh_config'] ) ) : '',
 				// @phpstan-ignore cast.string
 				$bits['proxyjump'] ? sprintf( '-J %s', escapeshellarg( (string) $bits['proxyjump'] ) ) : '',
 				$bits['port'] ? sprintf( '-p %d', (int) $bits['port'] ) : '',
@@ -2217,6 +2220,19 @@ class Runner {
 
 		if ( $this->config['skip-themes'] ) {
 			WP_CLI::add_wp_hook( 'setup_theme', [ $this, 'action_setup_theme_wp_cli_skip_themes' ], 999 );
+		}
+
+		// Set the locale if configured
+		if ( ! empty( $this->config['locale'] ) ) {
+			$locale = $this->config['locale'];
+			WP_CLI::add_wp_hook(
+				'locale',
+				static function () use ( $locale ) {
+					return $locale;
+				},
+				PHP_INT_MAX,
+				0
+			);
 		}
 
 		// Log WordPress HTTP API requests

@@ -254,7 +254,16 @@ class Subcommand extends CompositeCommand {
 				if ( 'assoc' !== $spec_arg['type'] ) {
 					continue;
 				}
-				if ( ! in_array( $spec_arg['name'], $prompt_args, true ) ) {
+				$matched = in_array( $spec_arg['name'], $prompt_args, true );
+				if ( ! $matched && ! empty( $spec_arg['aliases'] ) ) {
+					foreach ( $spec_arg['aliases'] as $alias ) {
+						if ( in_array( $alias, $prompt_args, true ) ) {
+							$matched = true;
+							break;
+						}
+					}
+				}
+				if ( ! $matched ) {
 					continue;
 				}
 			}

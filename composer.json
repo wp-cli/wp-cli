@@ -19,6 +19,7 @@
         "wp-cli/db-command": "^2",
         "wp-cli/entity-command": "^2",
         "wp-cli/extension-command": "^2",
+        "wp-cli/language-command": "^2",
         "wp-cli/package-command": "^2",
         "wp-cli/wp-cli-tests": "^5"
     },
