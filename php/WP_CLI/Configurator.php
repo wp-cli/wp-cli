@@ -68,6 +68,7 @@ class Configurator {
 		'http',
 		'proxyjump',
 		'key',
+		'ssh_config',
 	];
 
 	/**

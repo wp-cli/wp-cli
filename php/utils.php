@@ -2074,7 +2074,7 @@ function get_db_type() {
 	$binary = get_mysql_binary_path();
 
 	if ( '' !== $binary ) {
-		$result = Process::create( "$binary --version", null, null )->run();
+		$result = Process::create( escapeshellarg( $binary ) . ' --version', null, null )->run();
 
 		if ( 0 === $result->return_code ) {
 			$db_type = ( false !== strpos( $result->stdout, 'MariaDB' ) ) ? 'mariadb' : 'mysql';
@@ -2101,17 +2101,23 @@ function get_mysql_binary_path() {
 		return $path;
 	}
 
-	$path    = '';
-	$mysql   = Process::create( '/usr/bin/env which mysql', null, null )->run();
-	$mariadb = Process::create( '/usr/bin/env which mariadb', null, null )->run();
+	$path = '';
 
-	$mysql_binary   = trim( $mysql->stdout );
-	$mariadb_binary = trim( $mariadb->stdout );
+	if ( is_windows() ) {
+		$mysql   = Process::create( 'where mysql', null, null )->run();
+		$mariadb = Process::create( 'where mariadb', null, null )->run();
+	} else {
+		$mysql   = Process::create( '/usr/bin/env which mysql', null, null )->run();
+		$mariadb = Process::create( '/usr/bin/env which mariadb', null, null )->run();
+	}
+
+	$mysql_binary   = trim( explode( "\n", $mysql->stdout )[0] );
+	$mariadb_binary = trim( explode( "\n", $mariadb->stdout )[0] );
 
 	if ( 0 === $mysql->return_code ) {
 		if ( '' !== $mysql_binary ) {
 			$path   = $mysql_binary;
-			$result = Process::create( "$mysql_binary --version", null, null )->run();
+			$result = Process::create( escapeshellarg( $mysql_binary ) . ' --version', null, null )->run();
 
 			// It's actually MariaDB disguised as MySQL.
 			if ( 0 === $result->return_code && false !== strpos( $result->stdout, 'MariaDB' ) && 0 === $mariadb->return_code ) {
@@ -2145,7 +2151,7 @@ function get_mysql_version() {
 	$db_type = get_db_type();
 
 	if ( 'sqlite' !== $db_type ) {
-		$result = Process::create( "/usr/bin/env $db_type --version", null, null )->run();
+		$result = Process::create( force_env_on_nix_systems( "$db_type --version" ), null, null )->run();
 
 		if ( 0 === $result->return_code ) {
 			$version = trim( $result->stdout );
@@ -2173,7 +2179,8 @@ function get_sql_dump_command() {
 	$command = 'mysqldump';
 
 	if ( 'mariadb' === get_db_type() ) {
-		$result = Process::create( '/usr/bin/env which mariadb-dump', null, null )->run();
+		$find_cmd = is_windows() ? 'where mariadb-dump' : '/usr/bin/env which mariadb-dump';
+		$result   = Process::create( $find_cmd, null, null )->run();
 
 		if ( 0 === $result->return_code && '' !== trim( $result->stdout ) ) {
 			$command = 'mariadb-dump';
@@ -2201,7 +2208,8 @@ function get_sql_check_command() {
 	$command = 'mysqlcheck';
 
 	if ( 'mariadb' === get_db_type() ) {
-		$result = Process::create( '/usr/bin/env which mariadb-check', null, null )->run();
+		$find_cmd = is_windows() ? 'where mariadb-check' : '/usr/bin/env which mariadb-check';
+		$result   = Process::create( $find_cmd, null, null )->run();
 
 		if ( 0 === $result->return_code && '' !== trim( $result->stdout ) ) {
 			$command = 'mariadb-check';
@@ -2229,7 +2237,7 @@ function get_sql_modes() {
 	if ( '' === $binary ) {
 		$sql_modes = [];
 	} else {
-		$result = Process::create( "$binary --no-auto-rehash --batch --skip-column-names --execute=\"SELECT @@SESSION.sql_mode\"", null, null )->run();
+		$result = Process::create( escapeshellarg( $binary ) . ' --no-auto-rehash --batch --skip-column-names --execute="SELECT @@SESSION.sql_mode"', null, null )->run();
 
 		if ( 0 !== $result->return_code ) {
 			$sql_modes = [];

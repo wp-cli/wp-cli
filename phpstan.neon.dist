@@ -29,6 +29,7 @@ parameters:
     - WP_DEBUG
     - WP_DEBUG_LOG
     - WP_DEBUG_DISPLAY
+    - WP_CLI_VERSION
   strictRules:
     uselessCast: true
     closureUsesThis: true

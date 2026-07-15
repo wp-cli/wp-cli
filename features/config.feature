@@ -79,6 +79,13 @@ Feature: Have a config file
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
+    Given an index.php file:
+      """
+      require __DIR__ . '/foo/wp-blog-header.php';
+      """
+    When I run `wp core is-installed`
+    Then STDOUT should be empty
+
     Given an empty other/subdir directory
     And a other/subdir/index.php file:
       """
@@ -989,6 +996,58 @@ Feature: Have a config file
     Then STDOUT should contain:
       """
       WP_CLI_AUTOCORRECT: 1
+      """
+
+  Scenario: Adheres to locale configuration
+    Given a WP install
+    When I run `wp language core install de_DE`
+    And I run `wp site switch-language de_DE`
+    And I run `wp language core list --field=language --status=active`
+    Then STDOUT should be:
+      """
+      de_DE
+      """
+
+    When I run `wp eval "echo __('Settings');"`
+    Then STDOUT should contain:
+      """
+      Einstellungen
+      """
+
+    Given a wp-cli.yml file:
+      """
+      locale: en_US
+      """
+
+    When I run `wp eval "echo get_locale();"`
+    Then STDOUT should be:
+      """
+      en_US
+      """
+
+    When I run `wp eval "echo __('Settings');"`
+    Then STDOUT should contain:
+      """
+      Settings
+      """
+
+    When I run `wp site switch-language en_US`
+
+    Given a wp-cli.yml file:
+      """
+      locale: de_DE
+      """
+
+    When I run `wp eval "echo get_locale();"`
+    Then STDOUT should be:
+      """
+      de_DE
+      """
+
+    When I run `wp eval "echo __('Settings');"`
+    Then STDOUT should contain:
+      """
+      Einstellungen
       """
 
   Scenario: Custom system config path via WP_CLI_SYSTEM_SETTINGS_PATH
