@@ -353,7 +353,7 @@ class Help_Command extends WP_CLI_Command {
 			return '';
 		}
 
-		return 'This command is deprecated. ' . $deprecation_message;
+		return $deprecation_message;
 	}
 
 	/**
