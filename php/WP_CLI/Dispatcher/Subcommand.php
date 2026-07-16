@@ -757,15 +757,6 @@ class Subcommand extends CompositeCommand {
 		$assoc_args = $this->resolve_arg_aliases( $assoc_args, $aliases, $repeating_params );
 		$extra_args = $this->resolve_arg_aliases( $extra_args, $aliases, $repeating_params );
 
-		$provided_assoc_arg_names = [];
-		foreach ( [ $assoc_args, $extra_args ] as $assoc_arg_set ) {
-			foreach ( $assoc_arg_set as $arg_name => $value ) {
-				if ( ! is_numeric( $arg_name ) ) {
-					$provided_assoc_arg_names[ $arg_name ] = true;
-				}
-			}
-		}
-
 		if ( 'help' !== $this->name ) {
 			if ( \WP_CLI::get_config( 'prompt' ) && ! $prompted_once ) {
 				list( $_args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
