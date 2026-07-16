@@ -647,6 +647,42 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Get deprecated assoc arguments from the synopsis.
+	 *
+	 * @return array<string,string> Deprecated argument names and their deprecation messages.
+	 */
+	private function get_deprecated_assoc_args() {
+		$synopsis = $this->get_synopsis();
+		if ( ! $synopsis ) {
+			return [];
+		}
+
+		$docparser             = $this->create_mock_docparser();
+		$synopsis_spec         = SynopsisParser::parse( $synopsis );
+		$deprecated_assoc_args = [];
+
+		foreach ( $synopsis_spec as $spec ) {
+			if ( 'assoc' !== $spec['type'] ) {
+				continue;
+			}
+
+			$spec_args = $docparser->get_param_args( $spec['name'] );
+			if ( ! isset( $spec_args['deprecated'] ) ) {
+				continue;
+			}
+
+			$deprecation_message = trim( (string) $spec_args['deprecated'] );
+			if ( '' === $deprecation_message ) {
+				continue;
+			}
+
+			$deprecated_assoc_args[ $spec['name'] ] = $deprecation_message;
+		}
+
+		return $deprecated_assoc_args;
+	}
+
+	/**
 	 * Invoke the subcommand with the supplied arguments.
 	 * Given a --prompt argument, interactively request input
 	 * from the end user.
@@ -721,6 +757,15 @@ class Subcommand extends CompositeCommand {
 		$assoc_args = $this->resolve_arg_aliases( $assoc_args, $aliases, $repeating_params );
 		$extra_args = $this->resolve_arg_aliases( $extra_args, $aliases, $repeating_params );
 
+		$provided_assoc_arg_names = [];
+		foreach ( [ $assoc_args, $extra_args ] as $assoc_arg_set ) {
+			foreach ( $assoc_arg_set as $arg_name => $value ) {
+				if ( ! is_numeric( $arg_name ) ) {
+					$provided_assoc_arg_names[ $arg_name ] = true;
+				}
+			}
+		}
+
 		if ( 'help' !== $this->name ) {
 			if ( \WP_CLI::get_config( 'prompt' ) && ! $prompted_once ) {
 				list( $_args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
@@ -754,6 +799,35 @@ class Subcommand extends CompositeCommand {
 			$cmd = $parent . ' ' . $cmd;
 		}
 		WP_CLI::do_hook( "before_invoke:{$cmd}", $cmd );
+
+		$docparser = $this->get_docparser();
+		if ( $docparser ) {
+			$deprecation_message = $docparser->get_deprecation_message();
+			if ( '' !== $deprecation_message ) {
+				WP_CLI::warning(
+					sprintf(
+						'The `%s` command is deprecated. %s',
+						$cmd,
+						$deprecation_message
+					)
+				);
+			}
+		}
+
+		foreach ( $this->get_deprecated_assoc_args() as $arg_name => $deprecation_message ) {
+			if ( ! isset( $provided_assoc_arg_names[ $arg_name ] ) ) {
+				continue;
+			}
+
+			WP_CLI::warning(
+				sprintf(
+					'The `--%s` argument for `%s` is deprecated. %s',
+					$arg_name,
+					$cmd,
+					$deprecation_message
+				)
+			);
+		}
 
 		// Check if `--prompt` arg passed or not.
 		if ( $prompted_once ) {

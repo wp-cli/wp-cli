@@ -4,6 +4,7 @@ use cli\Shell;
 use WP_CLI\Dispatcher;
 use WP_CLI\Utils;
 use WP_CLI\Process;
+use WP_CLI\SynopsisParser;
 
 class Help_Command extends WP_CLI_Command {
 
@@ -191,6 +192,10 @@ class Help_Command extends WP_CLI_Command {
 		];
 
 		$binding['synopsis'] = "$name " . $command->get_synopsis();
+		$deprecation_message = self::get_command_deprecation_message( $command );
+		if ( '' !== $deprecation_message ) {
+			$binding['synopsis'] .= "\n\nDeprecated: " . $deprecation_message;
+		}
 
 		$alias = $command->get_alias();
 		if ( $alias ) {
@@ -276,6 +281,7 @@ class Help_Command extends WP_CLI_Command {
 
 	private static function get_help_as_string( $command ) {
 		$longdesc_with_links = self::parse_reference_links( $command->get_longdesc() );
+		$longdesc_with_links = self::inject_argument_deprecations( $command, $longdesc_with_links );
 		$out                 = self::get_initial_markdown( $command, $longdesc_with_links );
 
 		$subcommands       = '';
@@ -324,6 +330,70 @@ class Help_Command extends WP_CLI_Command {
 		$out = (string) preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
 
 		return $out;
+	}
+
+	/**
+	 * Get deprecation message for a command from its docblock.
+	 *
+	 * @param object $command Command instance.
+	 * @return string
+	 */
+	private static function get_command_deprecation_message( $command ) {
+		if ( ! method_exists( $command, 'get_docparser' ) ) {
+			return '';
+		}
+
+		$docparser = $command->get_docparser();
+		if ( ! $docparser ) {
+			return '';
+		}
+
+		$deprecation_message = $docparser->get_deprecation_message();
+		if ( '' === $deprecation_message ) {
+			return '';
+		}
+
+		return 'This command is deprecated. ' . $deprecation_message;
+	}
+
+	/**
+	 * Inject argument deprecation notices into help long description.
+	 *
+	 * @param object $command Command instance.
+	 * @param string $longdesc Help long description.
+	 * @return string
+	 */
+	private static function inject_argument_deprecations( $command, $longdesc ) {
+		if ( ! method_exists( $command, 'get_docparser' ) || ! method_exists( $command, 'get_synopsis' ) ) {
+			return $longdesc;
+		}
+
+		$docparser = $command->get_docparser();
+		if ( ! $docparser ) {
+			return $longdesc;
+		}
+
+		foreach ( SynopsisParser::parse( $command->get_synopsis() ) as $spec ) {
+			if ( 'assoc' !== $spec['type'] ) {
+				continue;
+			}
+
+			$spec_args = $docparser->get_param_args( $spec['name'] );
+			if ( ! isset( $spec_args['deprecated'] ) ) {
+				continue;
+			}
+
+			$deprecation_message = trim( (string) $spec_args['deprecated'] );
+			if ( '' === $deprecation_message ) {
+				continue;
+			}
+
+			$token    = preg_quote( $spec['token'], '/' );
+			$pattern  = '/(' . $token . "\n: [^\n]*)(\n)/";
+			$longdesc = (string) preg_replace( $pattern, '$1 Deprecated: ' . $deprecation_message . '$2', $longdesc, 1 );
+		}
+
+		return $longdesc;
 	}
 
 	private static function get_max_len( $strings ) {

@@ -210,4 +210,18 @@ EOB;
 		$this->assertEquals( $expected, $doc->get_arg_args( 'format' ) );
 		$this->assertNull( $doc->get_arg_args( 'hook' ) );
 	}
+
+	public function test_get_deprecation_message(): void {
+		$doc = new DocParser(
+			<<<'EOB'
+/**
+ * Old command.
+ *
+ * @deprecated Use `wp site switch-language` instead.
+ */
+EOB
+		);
+
+		$this->assertEquals( 'Use `wp site switch-language` instead.', $doc->get_deprecation_message() );
+	}
 }

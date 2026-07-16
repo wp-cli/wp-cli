@@ -105,6 +105,19 @@ class DocParser {
 	}
 
 	/**
+	 * Get the deprecation message for this command.
+	 *
+	 * @return string
+	 */
+	public function get_deprecation_message() {
+		if ( ! preg_match( '|^@deprecated(?:\s+(.+))?$|m', $this->doc_comment, $matches ) ) {
+			return '';
+		}
+
+		return isset( $matches[1] ) ? trim( $matches[1] ) : '';
+	}
+
+	/**
 	 * Get the command's synopsis.
 	 *
 	 * @return string

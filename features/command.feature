@@ -2015,3 +2015,51 @@ Feature: WP-CLI Commands
       Warning: The `showwarning` command is registering an argument '--quiet' that conflicts with a global argument of the same name.
       """
 
+  Scenario: Declarative deprecations for commands and arguments
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * Deprecated command.
+       *
+       * ## OPTIONS
+       *
+       * [--old=<old>]
+       * : Old parameter.
+       * ---
+       * deprecated: Use `--new` instead.
+       * ---
+       *
+       * @deprecated Use `wp replacement` instead.
+       * @when before_wp_load
+       */
+      $deprecated = function( $args, $assoc_args ) {
+        WP_CLI::success( 'Deprecated command executed' );
+      };
+      WP_CLI::add_command( 'deprecated-cmd', $deprecated );
+      """
+
+    When I run `wp --require=custom-cmd.php help deprecated-cmd`
+    Then STDOUT should contain:
+      """
+      Deprecated: This command is deprecated. Use `wp replacement` instead.
+      """
+    And STDOUT should contain:
+      """
+      Old parameter. Deprecated: Use `--new` instead.
+      """
+
+    When I run `wp --require=custom-cmd.php deprecated-cmd --old=value`
+    Then STDERR should contain:
+      """
+      Warning: The `deprecated-cmd` command is deprecated. Use `wp replacement` instead.
+      """
+    And STDERR should contain:
+      """
+      Warning: The `--old` argument for `deprecated-cmd` is deprecated. Use `--new` instead.
+      """
+    And STDOUT should contain:
+      """
+      Success: Deprecated command executed
+      """
