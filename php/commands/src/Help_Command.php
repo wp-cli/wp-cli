@@ -192,10 +192,6 @@ class Help_Command extends WP_CLI_Command {
 		];
 
 		$binding['synopsis'] = "$name " . $command->get_synopsis();
-		$deprecation_message = self::get_command_deprecation_message( $command );
-		if ( '' !== $deprecation_message ) {
-			$binding['synopsis'] .= "\n\nDeprecated: " . $deprecation_message;
-		}
 
 		$alias = $command->get_alias();
 		if ( $alias ) {
@@ -209,6 +205,10 @@ class Help_Command extends WP_CLI_Command {
 			} else {
 				$binding['shortdesc'] .= "\n\nThis command runs on the '$hook_name' hook, $hook_description";
 			}
+		}
+		$deprecation_message = self::get_command_deprecation_message( $command );
+		if ( '' !== $deprecation_message ) {
+			$binding['shortdesc'] .= "\n\nDeprecated: " . $deprecation_message;
 		}
 
 		// Add description paragraphs from longdesc to shortdesc for DESCRIPTION section
@@ -398,6 +398,9 @@ class Help_Command extends WP_CLI_Command {
 				$longdesc,
 				1
 			);
+
+			// Strip the now-redundant `deprecated:` YAML block for this argument.
+			$longdesc = (string) preg_replace( '/\n---\ndeprecated:[^\n]*\n---/', '', $longdesc, 1 );
 		}
 
 		return $longdesc;
