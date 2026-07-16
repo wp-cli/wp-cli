@@ -388,9 +388,16 @@ class Help_Command extends WP_CLI_Command {
 				continue;
 			}
 
-			$token    = preg_quote( $spec['token'], '/' );
-			$pattern  = '/(' . $token . "\n: [^\n]*)(\n)/";
-			$longdesc = (string) preg_replace( $pattern, '$1 Deprecated: ' . $deprecation_message . '$2', $longdesc, 1 );
+			$token   = preg_quote( $spec['token'], '/' );
+			$pattern = '/(' . $token . "\n: [^\n]*)(\n)/';
+			$longdesc = (string) preg_replace_callback(
+				$pattern,
+				static function ( $matches ) use ( $deprecation_message ) {
+					return $matches[1] . ' Deprecated: ' . $deprecation_message . $matches[2];
+				},
+				$longdesc,
+				1
+			);
 		}
 
 		return $longdesc;
