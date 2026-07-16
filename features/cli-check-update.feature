@@ -46,6 +46,23 @@ Feature: Check for updates
       Try using a GITHUB_TOKEN
       """
 
+  Scenario: Does not fail unrelated command when background update check is rate limited
+    Given an empty directory
+    And that HTTP requests to https://api.github.com/repos/wp-cli/wp-cli/releases?per_page=100 will respond with:
+      """
+      HTTP/1.1 403
+      Content-Type: application/json
+
+      {
+        "message": "API rate limit exceeded"
+      }
+      """
+
+    When I run `wp cli version`
+    Then the return code should be 0
+    When I run `WP_CLI_AUTO_CHECK_UPDATE_DAYS=0 wp cli version`
+    Then the return code should be 0
+
   Scenario: Ignores updates with a higher PHP version requirement
     Given that HTTP requests to https://api.github.com/repos/wp-cli/wp-cli/releases?per_page=100 will respond with:
       """
