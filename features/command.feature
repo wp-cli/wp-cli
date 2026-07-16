@@ -2050,7 +2050,7 @@ Feature: WP-CLI Commands
       Old parameter. Deprecated: Use `--new` instead.
       """
 
-    When I run `wp --require=custom-cmd.php deprecated-cmd --old=value`
+    When I try `wp --require=custom-cmd.php deprecated-cmd --old=value`
     Then STDERR should contain:
       """
       Warning: The `deprecated-cmd` command is deprecated. Use `wp replacement` instead.
