@@ -398,9 +398,6 @@ class Help_Command extends WP_CLI_Command {
 				$longdesc,
 				1
 			);
-
-			// Strip the now-redundant `deprecated:` YAML block for this argument.
-			$longdesc = (string) preg_replace( '/\n---\ndeprecated:[^\n]*\n---/', '', $longdesc, 1 );
 		}
 
 		return $longdesc;
