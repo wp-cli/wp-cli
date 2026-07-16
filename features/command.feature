@@ -2043,7 +2043,7 @@ Feature: WP-CLI Commands
     When I run `wp --require=custom-cmd.php help deprecated-cmd`
     Then STDOUT should contain:
       """
-      Deprecated: This command is deprecated. Use `wp replacement` instead.
+      Deprecated: Use `wp replacement` instead.
       """
     And STDOUT should contain:
       """
