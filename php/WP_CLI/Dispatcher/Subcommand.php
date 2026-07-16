@@ -814,6 +814,15 @@ class Subcommand extends CompositeCommand {
 			}
 		}
 
+		$provided_assoc_arg_names = [];
+		foreach ( [ $assoc_args, $extra_args ] as $assoc_arg_set ) {
+			foreach ( $assoc_arg_set as $arg_name => $value ) {
+				if ( ! is_numeric( $arg_name ) ) {
+					$provided_assoc_arg_names[ $arg_name ] = true;
+				}
+			}
+		}
+
 		foreach ( $this->get_deprecated_assoc_args() as $arg_name => $deprecation_message ) {
 			if ( ! isset( $provided_assoc_arg_names[ $arg_name ] ) ) {
 				continue;
