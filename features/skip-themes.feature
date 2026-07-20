@@ -149,7 +149,7 @@ Feature: Skipping themes
       """
     And STDERR should be empty
 
-  @require-wp-6.1
+  @require-wp-6.1 @require-php-7.4
   Scenario: Skip a theme using block patterns
     Given a WP installation
     And I run `wp theme install blockline --activate`
