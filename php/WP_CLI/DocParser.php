@@ -118,6 +118,42 @@ class DocParser {
 	}
 
 	/**
+	 * Get deprecated assoc arguments from a synopsis and docparser.
+	 *
+	 * @param string|array   $synopsis  Synopsis string or parsed specification.
+	 * @param DocParser|null $docparser DocParser instance.
+	 * @return array<string, string> Deprecated argument names and their deprecation messages.
+	 */
+	public static function get_deprecated_assoc_args( $synopsis, $docparser ) {
+		if ( ! $docparser || empty( $synopsis ) ) {
+			return [];
+		}
+
+		$synopsis_spec         = is_array( $synopsis ) ? $synopsis : SynopsisParser::parse( $synopsis );
+		$deprecated_assoc_args = [];
+
+		foreach ( $synopsis_spec as $spec ) {
+			if ( 'assoc' !== $spec['type'] ) {
+				continue;
+			}
+
+			$spec_args = $docparser->get_param_args( $spec['name'] );
+			if ( ! isset( $spec_args['deprecated'] ) ) {
+				continue;
+			}
+
+			$deprecation_message = trim( (string) $spec_args['deprecated'] );
+			if ( '' === $deprecation_message ) {
+				continue;
+			}
+
+			$deprecated_assoc_args[ $spec['name'] ] = $deprecation_message;
+		}
+
+		return $deprecated_assoc_args;
+	}
+
+	/**
 	 * Get the command's synopsis.
 	 *
 	 * @return string

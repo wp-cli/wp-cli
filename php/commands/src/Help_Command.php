@@ -2,9 +2,10 @@
 
 use cli\Shell;
 use WP_CLI\Dispatcher;
-use WP_CLI\Utils;
+use WP_CLI\DocParser;
 use WP_CLI\Process;
 use WP_CLI\SynopsisParser;
+use WP_CLI\Utils;
 
 class Help_Command extends WP_CLI_Command {
 
@@ -373,24 +374,21 @@ class Help_Command extends WP_CLI_Command {
 			return $longdesc;
 		}
 
-		foreach ( SynopsisParser::parse( $command->get_synopsis() ) as $spec ) {
-			if ( 'assoc' !== $spec['type'] ) {
+		$synopsis_spec         = SynopsisParser::parse( $command->get_synopsis() );
+		$deprecated_assoc_args = DocParser::get_deprecated_assoc_args( $synopsis_spec, $docparser );
+		if ( empty( $deprecated_assoc_args ) ) {
+			return $longdesc;
+		}
+
+		foreach ( $synopsis_spec as $spec ) {
+			if ( ! isset( $deprecated_assoc_args[ $spec['name'] ] ) ) {
 				continue;
 			}
 
-			$spec_args = $docparser->get_param_args( $spec['name'] );
-			if ( ! isset( $spec_args['deprecated'] ) ) {
-				continue;
-			}
-
-			$deprecation_message = trim( (string) $spec_args['deprecated'] );
-			if ( '' === $deprecation_message ) {
-				continue;
-			}
-
-			$token    = preg_quote( $spec['token'], '/' );
-			$pattern  = '/(' . $token . "\n: [^\n]*)(\n)/";
-			$longdesc = (string) preg_replace_callback(
+			$deprecation_message = $deprecated_assoc_args[ $spec['name'] ];
+			$token               = preg_quote( $spec['token'], '/' );
+			$pattern             = '/(' . $token . "\n: [^\n]*)(\n)/";
+			$longdesc            = (string) preg_replace_callback(
 				$pattern,
 				static function ( $matches ) use ( $deprecation_message ) {
 					return $matches[1] . ' Deprecated: ' . $deprecation_message . $matches[2];

@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\DocParser;
+use WP_CLI\SynopsisParser;
 use WP_CLI\Tests\TestCase;
 
 class DocParserTest extends TestCase {
@@ -223,5 +224,42 @@ EOB
 		);
 
 		$this->assertEquals( 'Use `wp site switch-language` instead.', $doc->get_deprecation_message() );
+	}
+
+	public function test_get_deprecated_assoc_args(): void {
+		$doc = new DocParser(
+			<<<'EOB'
+/**
+ * Command with deprecated arguments.
+ *
+ * ## OPTIONS
+ *
+ * [--old=<old>]
+ * : Old parameter.
+ * ---
+ * deprecated: Use `--new` instead.
+ * ---
+ *
+ * [--active=<active>]
+ * : Active parameter.
+ *
+ * [--empty-dep=<empty>]
+ * : Empty deprecation.
+ * ---
+ * deprecated: ''
+ * ---
+ */
+EOB
+		);
+
+		$synopsis = '[--old=<old>] [--active=<active>] [--empty-dep=<empty>]';
+		$expected = [
+			'old' => 'Use `--new` instead.',
+		];
+
+		$this->assertEquals( $expected, DocParser::get_deprecated_assoc_args( $synopsis, $doc ) );
+		$this->assertEquals( $expected, DocParser::get_deprecated_assoc_args( SynopsisParser::parse( $synopsis ), $doc ) );
+		$this->assertEquals( [], DocParser::get_deprecated_assoc_args( '', $doc ) );
+		$this->assertEquals( [], DocParser::get_deprecated_assoc_args( $synopsis, null ) );
 	}
 }

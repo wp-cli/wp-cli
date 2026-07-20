@@ -657,29 +657,7 @@ class Subcommand extends CompositeCommand {
 			return [];
 		}
 
-		$docparser             = $this->create_mock_docparser();
-		$synopsis_spec         = SynopsisParser::parse( $synopsis );
-		$deprecated_assoc_args = [];
-
-		foreach ( $synopsis_spec as $spec ) {
-			if ( 'assoc' !== $spec['type'] ) {
-				continue;
-			}
-
-			$spec_args = $docparser->get_param_args( $spec['name'] );
-			if ( ! isset( $spec_args['deprecated'] ) ) {
-				continue;
-			}
-
-			$deprecation_message = trim( (string) $spec_args['deprecated'] );
-			if ( '' === $deprecation_message ) {
-				continue;
-			}
-
-			$deprecated_assoc_args[ $spec['name'] ] = $deprecation_message;
-		}
-
-		return $deprecated_assoc_args;
+		return DocParser::get_deprecated_assoc_args( $synopsis, $this->create_mock_docparser() );
 	}
 
 	/**
@@ -776,6 +754,15 @@ class Subcommand extends CompositeCommand {
 		}
 		$args += $extra_positionals;
 
+		$provided_assoc_arg_names = [];
+		foreach ( [ $assoc_args, $extra_args ] as $assoc_arg_set ) {
+			foreach ( $assoc_arg_set as $arg_name => $value ) {
+				if ( ! is_numeric( $arg_name ) ) {
+					$provided_assoc_arg_names[ $arg_name ] = true;
+				}
+			}
+		}
+
 		list( $to_unset, $args, $assoc_args, $extra_args ) = $this->validate_args( $args, $assoc_args, $extra_args );
 
 		foreach ( $to_unset as $key ) {
@@ -802,15 +789,6 @@ class Subcommand extends CompositeCommand {
 						$deprecation_message
 					)
 				);
-			}
-		}
-
-		$provided_assoc_arg_names = [];
-		foreach ( [ $assoc_args, $extra_args ] as $assoc_arg_set ) {
-			foreach ( $assoc_arg_set as $arg_name => $value ) {
-				if ( ! is_numeric( $arg_name ) ) {
-					$provided_assoc_arg_names[ $arg_name ] = true;
-				}
 			}
 		}
 

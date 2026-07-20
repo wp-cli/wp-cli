@@ -2031,6 +2031,13 @@ Feature: WP-CLI Commands
        * deprecated: Use `--new` instead.
        * ---
        *
+       * [--old-with-default=<old-with-default>]
+       * : Old parameter with default.
+       * ---
+       * default: fallback
+       * deprecated: Use `--new-with-default` instead.
+       * ---
+       *
        * @deprecated Use `wp replacement` instead.
        * @when before_wp_load
        */
@@ -2049,6 +2056,10 @@ Feature: WP-CLI Commands
       """
       Old parameter. Deprecated: Use `--new` instead.
       """
+    And STDOUT should contain:
+      """
+      Old parameter with default. Deprecated: Use `--new-with-default` instead.
+      """
 
     When I try `wp --require=custom-cmd.php deprecated-cmd --old=value`
     Then STDERR should contain:
@@ -2058,6 +2069,28 @@ Feature: WP-CLI Commands
     And STDERR should contain:
       """
       Warning: The `--old` argument for `deprecated-cmd` is deprecated. Use `--new` instead.
+      """
+    And STDERR should not contain:
+      """
+      Warning: The `--old-with-default` argument for `deprecated-cmd` is deprecated.
+      """
+    And STDOUT should contain:
+      """
+      Success: Deprecated command executed
+      """
+
+    When I try `wp --require=custom-cmd.php deprecated-cmd --old-with-default=custom`
+    Then STDERR should contain:
+      """
+      Warning: The `deprecated-cmd` command is deprecated. Use `wp replacement` instead.
+      """
+    And STDERR should contain:
+      """
+      Warning: The `--old-with-default` argument for `deprecated-cmd` is deprecated. Use `--new-with-default` instead.
+      """
+    And STDERR should not contain:
+      """
+      Warning: The `--old` argument for `deprecated-cmd` is deprecated.
       """
     And STDOUT should contain:
       """
