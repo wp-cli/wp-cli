@@ -110,7 +110,7 @@ class DocParser {
 	 * @return string
 	 */
 	public function get_deprecation_message() {
-		if ( ! preg_match( '|^@deprecated(?:\s+(.+))?$|m', $this->doc_comment, $matches ) ) {
+		if ( ! preg_match( '|^@deprecated(?:[ \t]+(.+))?[ \t]*$|m', $this->doc_comment, $matches ) ) {
 			return '';
 		}
 
