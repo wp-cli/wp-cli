@@ -58,9 +58,9 @@ Feature: Check for updates
       }
       """
 
-    When I run `wp cli version`
+    When I run `wp help`
     Then the return code should be 0
-    When I run `WP_CLI_AUTO_CHECK_UPDATE_DAYS=0 wp cli version`
+    When I run `WP_CLI_AUTO_CHECK_UPDATE_DAYS=0 wp help`
     Then the return code should be 0
 
   Scenario: Ignores updates with a higher PHP version requirement
