@@ -138,14 +138,11 @@ class DocParser {
 			}
 
 			$spec_args = $docparser->get_param_args( $spec['name'] );
-			if ( ! isset( $spec_args['deprecated'] ) ) {
+			if ( ! isset( $spec_args['deprecated'] ) || false === $spec_args['deprecated'] ) {
 				continue;
 			}
 
-			$deprecation_message = trim( (string) $spec_args['deprecated'] );
-			if ( '' === $deprecation_message ) {
-				continue;
-			}
+			$deprecation_message = is_string( $spec_args['deprecated'] ) ? trim( $spec_args['deprecated'] ) : '';
 
 			$deprecated_assoc_args[ $spec['name'] ] = $deprecation_message;
 		}

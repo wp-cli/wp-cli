@@ -223,7 +223,22 @@ EOB;
 EOB
 		);
 
+		$this->assertTrue( $doc->has_tag( 'deprecated' ) );
 		$this->assertEquals( 'Use `wp site switch-language` instead.', $doc->get_deprecation_message() );
+
+		$doc_bare = new DocParser(
+			<<<'EOB'
+/**
+ * Bare deprecated command.
+ *
+ * @deprecated
+ * @when before_wp_load
+ */
+EOB
+		);
+
+		$this->assertTrue( $doc_bare->has_tag( 'deprecated' ) );
+		$this->assertEquals( '', $doc_bare->get_deprecation_message() );
 	}
 
 	public function test_get_deprecated_assoc_args(): void {
@@ -254,7 +269,8 @@ EOB
 
 		$synopsis = '[--old=<old>] [--active=<active>] [--empty-dep=<empty>]';
 		$expected = [
-			'old' => 'Use `--new` instead.',
+			'old'       => 'Use `--new` instead.',
+			'empty-dep' => '',
 		];
 
 		$this->assertEquals( $expected, DocParser::get_deprecated_assoc_args( $synopsis, $doc ) );
