@@ -208,8 +208,8 @@ class Help_Command extends WP_CLI_Command {
 			}
 		}
 		$deprecation_message = self::get_command_deprecation_message( $command );
-		if ( '' !== $deprecation_message ) {
-			$binding['shortdesc'] .= "\n\nDeprecated: " . $deprecation_message;
+		if ( null !== $deprecation_message ) {
+			$binding['shortdesc'] .= "\n\nDeprecated" . ( '' !== $deprecation_message ? ': ' . $deprecation_message : '.' );
 		}
 
 		// Add description paragraphs from longdesc to shortdesc for DESCRIPTION section
@@ -337,24 +337,19 @@ class Help_Command extends WP_CLI_Command {
 	 * Get deprecation message for a command from its docblock.
 	 *
 	 * @param object $command Command instance.
-	 * @return string
+	 * @return string|null Deprecation message string if deprecated, null otherwise.
 	 */
 	private static function get_command_deprecation_message( $command ) {
 		if ( ! method_exists( $command, 'get_docparser' ) ) {
-			return '';
+			return null;
 		}
 
 		$docparser = $command->get_docparser();
-		if ( ! $docparser ) {
-			return '';
+		if ( ! $docparser || ! $docparser->has_tag( 'deprecated' ) ) {
+			return null;
 		}
 
-		$deprecation_message = $docparser->get_deprecation_message();
-		if ( '' === $deprecation_message ) {
-			return '';
-		}
-
-		return $deprecation_message;
+		return $docparser->get_deprecation_message();
 	}
 
 	/**
@@ -386,12 +381,18 @@ class Help_Command extends WP_CLI_Command {
 			}
 
 			$deprecation_message = $deprecated_assoc_args[ $spec['name'] ];
+			$notice              = 'Deprecated' . ( '' !== $deprecation_message ? ': ' . $deprecation_message : '.' );
 			$token               = preg_quote( $spec['token'], '/' );
-			$pattern             = '/(' . $token . "\n: [^\n]*)(\n)/";
+			$pattern             = '/^(' . $token . ')(\n:[ \t]*[^\n]*)?(\n|$)/m';
 			$longdesc            = (string) preg_replace_callback(
 				$pattern,
-				static function ( $matches ) use ( $deprecation_message ) {
-					return $matches[1] . ' Deprecated: ' . $deprecation_message . $matches[2];
+				static function ( $matches ) use ( $notice ) {
+					$desc_line = isset( $matches[2] ) ? $matches[2] : '';
+					if ( '' !== $desc_line && ':' !== trim( substr( $desc_line, 1 ) ) ) {
+						return $matches[1] . $desc_line . ' ' . $notice . $matches[3];
+					}
+
+					return $matches[1] . "\n: " . $notice . $matches[3];
 				},
 				$longdesc,
 				1
