@@ -779,17 +779,13 @@ class Subcommand extends CompositeCommand {
 		WP_CLI::do_hook( "before_invoke:{$cmd}", $cmd );
 
 		$docparser = $this->get_docparser();
-		if ( $docparser ) {
+		if ( $docparser && $docparser->has_tag( 'deprecated' ) ) {
 			$deprecation_message = $docparser->get_deprecation_message();
+			$warning             = sprintf( 'The `%s` command is deprecated.', $cmd );
 			if ( '' !== $deprecation_message ) {
-				WP_CLI::warning(
-					sprintf(
-						'The `%s` command is deprecated. %s',
-						$cmd,
-						$deprecation_message
-					)
-				);
+				$warning .= ' ' . $deprecation_message;
 			}
+			WP_CLI::warning( $warning );
 		}
 
 		foreach ( $this->get_deprecated_assoc_args() as $arg_name => $deprecation_message ) {
@@ -797,14 +793,12 @@ class Subcommand extends CompositeCommand {
 				continue;
 			}
 
-			WP_CLI::warning(
-				sprintf(
-					'The `--%s` argument for `%s` is deprecated. %s',
-					$arg_name,
-					$cmd,
-					$deprecation_message
-				)
-			);
+			$warning = sprintf( 'The `--%s` argument for `%s` is deprecated.', $arg_name, $cmd );
+			if ( '' !== $deprecation_message ) {
+				$warning .= ' ' . $deprecation_message;
+			}
+
+			WP_CLI::warning( $warning );
 		}
 
 		// Check if `--prompt` arg passed or not.
