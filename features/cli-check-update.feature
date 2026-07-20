@@ -132,7 +132,7 @@ Feature: Check for updates
               "url": "https://api.github.com/repos/wp-cli/wp-cli/releases/assets/184590231",
               "id": 184590231,
               "node_id": "RA_kwDOACQFs84LAJ-X",
-              "name": "wp-cli-777.7.7.phar",
+              "name": "wp-cli-777.7.7.manifest.json",
               "label": null,
               "content_type": "application/octet-stream",
               "state": "uploaded",
@@ -140,7 +140,7 @@ Feature: Check for updates
               "download_count": 722639,
               "created_at": "2024-08-08T03:51:05Z",
               "updated_at": "2024-08-08T03:51:08Z",
-              "browser_download_url": "https://github.com/wp-cli/wp-cli/releases/download/v777.7.7/wp-cli-777.7.7.phar"
+              "browser_download_url": "https://github.com/wp-cli/wp-cli/releases/download/v777.7.7/wp-cli-777.7.7.manifest.json"
             },
             {
               "url": "https://api.github.com/repos/wp-cli/wp-cli/releases/assets/184590231",
@@ -154,7 +154,7 @@ Feature: Check for updates
               "download_count": 722639,
               "created_at": "2024-08-08T03:51:05Z",
               "updated_at": "2024-08-08T03:51:08Z",
-              "browser_download_url": "https://github.com/wp-cli/wp-cli/releases/download/v777.7.7/wp-cli-777.7.7.manifest.json"
+              "browser_download_url": "https://github.com/wp-cli/wp-cli/releases/download/v777.7.7/wp-cli-777.7.7.phar"
             }
           ],
           "tarball_url": "https://api.github.com/repos/wp-cli/wp-cli/tarball/v777.7.7",

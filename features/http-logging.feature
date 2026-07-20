@@ -67,6 +67,20 @@ Feature: HTTP request logging
 
   Scenario: Different HTTP methods are logged correctly
     Given a WP installation
+    And that HTTP requests to https://httpbin.org/get will respond with:
+      """
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {"url": "https://httpbin.org/get"}
+      """
+    And that HTTP requests to https://httpbin.org/post will respond with:
+      """
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {"url": "https://httpbin.org/post"}
+      """
     And a http-methods-test.php file:
       """
       <?php
@@ -94,6 +108,7 @@ Feature: HTTP request logging
     And a wp-cli.yml file:
       """
       require:
+        - mock-requests.php
         - http-methods-test.php
       """
 
