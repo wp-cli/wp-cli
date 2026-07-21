@@ -2,8 +2,10 @@
 
 use cli\Shell;
 use WP_CLI\Dispatcher;
-use WP_CLI\Utils;
+use WP_CLI\DocParser;
 use WP_CLI\Process;
+use WP_CLI\SynopsisParser;
+use WP_CLI\Utils;
 
 class Help_Command extends WP_CLI_Command {
 
@@ -205,6 +207,10 @@ class Help_Command extends WP_CLI_Command {
 				$binding['shortdesc'] .= "\n\nThis command runs on the '$hook_name' hook, $hook_description";
 			}
 		}
+		$deprecation_message = self::get_command_deprecation_message( $command );
+		if ( null !== $deprecation_message ) {
+			$binding['shortdesc'] .= "\n\nDeprecated" . ( '' !== $deprecation_message ? ': ' . $deprecation_message : '.' );
+		}
 
 		// Add description paragraphs from longdesc to shortdesc for DESCRIPTION section
 		if ( null === $longdesc_with_links ) {
@@ -276,6 +282,7 @@ class Help_Command extends WP_CLI_Command {
 
 	private static function get_help_as_string( $command ) {
 		$longdesc_with_links = self::parse_reference_links( $command->get_longdesc() );
+		$longdesc_with_links = self::inject_argument_deprecations( $command, $longdesc_with_links );
 		$out                 = self::get_initial_markdown( $command, $longdesc_with_links );
 
 		$subcommands       = '';
@@ -324,6 +331,75 @@ class Help_Command extends WP_CLI_Command {
 		$out = (string) preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
 
 		return $out;
+	}
+
+	/**
+	 * Get deprecation message for a command from its docblock.
+	 *
+	 * @param object $command Command instance.
+	 * @return string|null Deprecation message string if deprecated, null otherwise.
+	 */
+	private static function get_command_deprecation_message( $command ) {
+		if ( ! method_exists( $command, 'get_docparser' ) ) {
+			return null;
+		}
+
+		$docparser = $command->get_docparser();
+		if ( ! $docparser || ! $docparser->has_tag( 'deprecated' ) ) {
+			return null;
+		}
+
+		return $docparser->get_deprecation_message();
+	}
+
+	/**
+	 * Inject argument deprecation notices into help long description.
+	 *
+	 * @param object $command Command instance.
+	 * @param string $longdesc Help long description.
+	 * @return string
+	 */
+	private static function inject_argument_deprecations( $command, $longdesc ) {
+		if ( ! method_exists( $command, 'get_docparser' ) || ! method_exists( $command, 'get_synopsis' ) ) {
+			return $longdesc;
+		}
+
+		$docparser = $command->get_docparser();
+		if ( ! $docparser ) {
+			return $longdesc;
+		}
+
+		$synopsis_spec         = SynopsisParser::parse( $command->get_synopsis() );
+		$deprecated_assoc_args = DocParser::get_deprecated_assoc_args( $synopsis_spec, $docparser );
+		if ( empty( $deprecated_assoc_args ) ) {
+			return $longdesc;
+		}
+
+		foreach ( $synopsis_spec as $spec ) {
+			if ( ! isset( $deprecated_assoc_args[ $spec['name'] ] ) ) {
+				continue;
+			}
+
+			$deprecation_message = $deprecated_assoc_args[ $spec['name'] ];
+			$notice              = 'Deprecated' . ( '' !== $deprecation_message ? ': ' . $deprecation_message : '.' );
+			$token               = preg_quote( $spec['token'], '/' );
+			$pattern             = '/^(' . $token . ')(\n:[ \t]*[^\n]*)?(\n|$)/m';
+			$longdesc            = (string) preg_replace_callback(
+				$pattern,
+				static function ( $matches ) use ( $notice ) {
+					$desc_line = isset( $matches[2] ) ? $matches[2] : '';
+					if ( '' !== $desc_line && ':' !== trim( substr( $desc_line, 1 ) ) ) {
+						return $matches[1] . $desc_line . ' ' . $notice . $matches[3];
+					}
+
+					return $matches[1] . "\n: " . $notice . $matches[3];
+				},
+				$longdesc,
+				1
+			);
+		}
+
+		return $longdesc;
 	}
 
 	private static function get_max_len( $strings ) {
