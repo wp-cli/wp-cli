@@ -22,6 +22,13 @@ class ShutdownHandler {
 	private static $has_handled_error = false;
 
 	/**
+	 * Track the last computed skip flags.
+	 *
+	 * @var array<string, bool|string>|null
+	 */
+	private static $last_skip = null;
+
+	/**
 	 * Register the error message filter and shutdown handler.
 	 */
 	public static function register() {
@@ -58,10 +65,22 @@ class ShutdownHandler {
 			return;
 		}
 
-		if ( ! self::$has_handled_error && ! (bool) ini_get( 'display_errors' ) ) {
-			self::$has_handled_error = true;
-			$message                 = self::filter_error_message( $error['message'], $error );
-			WP_CLI::error( $message );
+		if ( self::$has_handled_error ) {
+			return;
+		}
+
+		if ( function_exists( 'wp_fatal_error_handler' ) ) {
+			return;
+		}
+
+		self::$has_handled_error = true;
+
+		if ( ! (bool) ini_get( 'display_errors' ) ) {
+			$message = self::filter_error_message( $error['message'], $error );
+			WP_CLI::error( $message, false );
+			if ( self::$last_skip ) {
+				self::prompt_and_rerun( self::$last_skip );
+			}
 		}
 	}
 
@@ -117,6 +136,8 @@ class ShutdownHandler {
 				'skip-themes'  => true,
 			];
 		}
+
+		self::$last_skip = $skip;
 
 		if ( ! self::should_handle_error_rerun() ) {
 			return $message;
