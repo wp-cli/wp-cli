@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\DocParser;
+use WP_CLI\SynopsisParser;
 use WP_CLI\Tests\TestCase;
 
 class DocParserTest extends TestCase {
@@ -209,5 +210,79 @@ EOB;
 		];
 		$this->assertEquals( $expected, $doc->get_arg_args( 'format' ) );
 		$this->assertNull( $doc->get_arg_args( 'hook' ) );
+	}
+
+	public function test_get_deprecation_message(): void {
+		$doc = new DocParser(
+			<<<'EOB'
+/**
+ * Old command.
+ *
+ * @deprecated Use `wp site switch-language` instead.
+ */
+EOB
+		);
+
+		$this->assertTrue( $doc->has_tag( 'deprecated' ) );
+		$this->assertEquals( 'Use `wp site switch-language` instead.', $doc->get_deprecation_message() );
+
+		$doc_bare = new DocParser(
+			<<<'EOB'
+/**
+ * Bare deprecated command.
+ *
+ * @deprecated
+ * @when before_wp_load
+ */
+EOB
+		);
+
+		$this->assertTrue( $doc_bare->has_tag( 'deprecated' ) );
+		$this->assertEquals( '', $doc_bare->get_deprecation_message() );
+	}
+
+	public function test_get_deprecated_assoc_args(): void {
+		$doc = new DocParser(
+			<<<'EOB'
+/**
+ * Command with deprecated arguments.
+ *
+ * ## OPTIONS
+ *
+ * [--old=<old>]
+ * : Old parameter.
+ * ---
+ * deprecated: Use `--new` instead.
+ * ---
+ *
+ * [--active=<active>]
+ * : Active parameter.
+ *
+ * [--empty-dep=<empty>]
+ * : Empty deprecation.
+ * ---
+ * deprecated: ''
+ * ---
+ *
+ * [--disabled-dep=<disabled>]
+ * : Explicitly not deprecated.
+ * ---
+ * deprecated: false
+ * ---
+ */
+EOB
+		);
+
+		// `--disabled-dep` opts out via `deprecated: false` and must be omitted from the result.
+		$synopsis = '[--old=<old>] [--active=<active>] [--empty-dep=<empty>] [--disabled-dep=<disabled>]';
+		$expected = [
+			'old'       => 'Use `--new` instead.',
+			'empty-dep' => '',
+		];
+
+		$this->assertEquals( $expected, DocParser::get_deprecated_assoc_args( $synopsis, $doc ) );
+		$this->assertEquals( $expected, DocParser::get_deprecated_assoc_args( SynopsisParser::parse( $synopsis ), $doc ) );
+		$this->assertEquals( [], DocParser::get_deprecated_assoc_args( '', $doc ) );
+		$this->assertEquals( [], DocParser::get_deprecated_assoc_args( $synopsis, null ) );
 	}
 }

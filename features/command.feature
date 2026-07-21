@@ -2015,3 +2015,143 @@ Feature: WP-CLI Commands
       Warning: The `showwarning` command is registering an argument '--quiet' that conflicts with a global argument of the same name.
       """
 
+  Scenario: Declarative deprecations for commands and arguments
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * Deprecated command.
+       *
+       * ## OPTIONS
+       *
+       * [--old=<old>]
+       * : Old parameter.
+       * ---
+       * deprecated: Use `--new` instead.
+       * ---
+       *
+       * [--old-with-default=<old-with-default>]
+       * : Old parameter with default.
+       * ---
+       * default: fallback
+       * deprecated: Use `--new-with-default` instead.
+       * ---
+       *
+       * [--no-desc=<no-desc>]
+       * ---
+       * deprecated: Use `--other` instead.
+       * ---
+       *
+       * @synopsis [--old=<old>] [--old-with-default=<old-with-default>] [--no-desc=<no-desc>]
+       * @deprecated Use `wp replacement` instead.
+       * @when before_wp_load
+       */
+      $deprecated = function( $args, $assoc_args ) {
+        WP_CLI::success( 'Deprecated command executed' );
+      };
+      WP_CLI::add_command( 'deprecated-cmd', $deprecated );
+
+      /**
+       * Bare deprecated command.
+       *
+       * @deprecated
+       * @when before_wp_load
+       */
+      $bare_deprecated = function( $args, $assoc_args ) {
+        WP_CLI::success( 'Bare deprecated command executed' );
+      };
+      WP_CLI::add_command( 'bare-deprecated-cmd', $bare_deprecated );
+      """
+
+    When I run `wp --require=custom-cmd.php help deprecated-cmd`
+    Then STDOUT should contain:
+      """
+      Deprecated: Use `wp replacement` instead.
+      """
+    And STDOUT should contain:
+      """
+      Old parameter. Deprecated: Use `--new` instead.
+      """
+    And STDOUT should contain:
+      """
+      Old parameter with default. Deprecated: Use `--new-with-default` instead.
+      """
+    And STDOUT should contain:
+      """
+        [--no-desc=<no-desc>]
+          Deprecated: Use `--other` instead.
+      """
+
+    When I run `wp --require=custom-cmd.php help bare-deprecated-cmd`
+    Then STDOUT should contain:
+      """
+      Deprecated.
+      """
+
+    When I try `wp --require=custom-cmd.php bare-deprecated-cmd`
+    Then STDERR should contain:
+      """
+      Warning: The `bare-deprecated-cmd` command is deprecated.
+      """
+    And STDERR should not contain:
+      """
+      @when
+      """
+    And STDOUT should contain:
+      """
+      Success: Bare deprecated command executed
+      """
+
+    When I try `wp --require=custom-cmd.php deprecated-cmd --old=value`
+    Then STDERR should contain:
+      """
+      Warning: The `deprecated-cmd` command is deprecated. Use `wp replacement` instead.
+      """
+    And STDERR should contain:
+      """
+      Warning: The `--old` argument for `deprecated-cmd` is deprecated. Use `--new` instead.
+      """
+    And STDERR should not contain:
+      """
+      Warning: The `--old-with-default` argument for `deprecated-cmd` is deprecated.
+      """
+    And STDOUT should contain:
+      """
+      Success: Deprecated command executed
+      """
+
+    When I try `wp --require=custom-cmd.php deprecated-cmd --old-with-default=custom`
+    Then STDERR should contain:
+      """
+      Warning: The `deprecated-cmd` command is deprecated. Use `wp replacement` instead.
+      """
+    And STDERR should contain:
+      """
+      Warning: The `--old-with-default` argument for `deprecated-cmd` is deprecated. Use `--new-with-default` instead.
+      """
+    And STDERR should not contain:
+      """
+      Warning: The `--old` argument for `deprecated-cmd` is deprecated.
+      """
+    And STDOUT should contain:
+      """
+      Success: Deprecated command executed
+      """
+
+    When I try `wp --require=custom-cmd.php deprecated-cmd --no-desc=custom`
+    Then STDERR should contain:
+      """
+      Warning: The `--no-desc` argument for `deprecated-cmd` is deprecated. Use `--other` instead.
+      """
+
+    Given a prompt-val file:
+      """
+      val
+      """
+
+    When I try `wp --prompt=old --require=custom-cmd.php deprecated-cmd < prompt-val`
+    Then STDERR should contain:
+      """
+      Warning: The `--old` argument for `deprecated-cmd` is deprecated. Use `--new` instead.
+      """

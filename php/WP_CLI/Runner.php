@@ -375,13 +375,227 @@ class Runner {
 		$wp_path_src = $matches[1] . $matches[2];
 		$wp_path_src = Path::replace_path_consts( $wp_path_src, $index_path );
 
-		$wp_path = eval( "return $wp_path_src;" ); // phpcs:ignore Squiz.PHP.Eval.Discouraged
+		$wp_path = self::safe_parse_path( $wp_path_src );
+		if ( false === $wp_path ) {
+			return false;
+		}
 
 		if ( ! Path::is_absolute( $wp_path ) ) {
 			$wp_path = dirname( $index_path ) . "/$wp_path";
 		}
 
 		return $wp_path;
+	}
+
+	/**
+	 * Safely evaluate a simple PHP path expression without using eval().
+	 *
+	 * Supports single/double-quoted string literals, dirname() calls
+	 * (including nested), and string concatenation with '.'. Returns false
+	 * for any expression that does not match these safe patterns.
+	 *
+	 * @param string $expression PHP path expression to parse.
+	 * @return string|false Resolved path string, or false on failure.
+	 */
+	private static function safe_parse_path( $expression ) {
+		$expression = trim( $expression );
+		$pos        = 0;
+		$result     = self::parse_concat_expr( $expression, $pos );
+
+		if ( false === $result ) {
+			return false;
+		}
+
+		// Skip any trailing whitespace and ensure nothing remains unparsed.
+		$len = strlen( $expression );
+		while ( $pos < $len && ctype_space( $expression[ $pos ] ) ) {
+			++$pos;
+		}
+
+		if ( $pos < $len ) {
+			return false;
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Parse a concatenation expression: term ( '.' term )*
+	 *
+	 * @param string $expr The full expression string.
+	 * @param int    &$pos Current offset, advanced as tokens are consumed.
+	 * @return string|false
+	 */
+	private static function parse_concat_expr( $expr, &$pos ) {
+		$result = self::parse_path_term( $expr, $pos );
+		if ( false === $result ) {
+			return false;
+		}
+
+		$len = strlen( $expr );
+		while ( $pos < $len ) {
+			// Skip whitespace.
+			while ( $pos < $len && ctype_space( $expr[ $pos ] ) ) {
+				++$pos;
+			}
+			if ( $pos >= $len || '.' !== $expr[ $pos ] ) {
+				break;
+			}
+			++$pos; // Consume '.'.
+
+			// Skip whitespace.
+			while ( $pos < $len && ctype_space( $expr[ $pos ] ) ) {
+				++$pos;
+			}
+
+			$next = self::parse_path_term( $expr, $pos );
+			if ( false === $next ) {
+				return false;
+			}
+			$result .= $next;
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Parse a single path term: dirname( expr ) or a quoted string literal.
+	 *
+	 * @param string $expr The full expression string.
+	 * @param int    &$pos Current offset, advanced as tokens are consumed.
+	 * @return string|false
+	 */
+	private static function parse_path_term( $expr, &$pos ) {
+		$len = strlen( $expr );
+
+		// Skip leading whitespace.
+		while ( $pos < $len && ctype_space( $expr[ $pos ] ) ) {
+			++$pos;
+		}
+
+		if ( $pos >= $len ) {
+			return false;
+		}
+
+		// Match dirname(...) — case-insensitive to mirror PHP semantics.
+		if ( 0 === strncasecmp( substr( $expr, $pos, 7 ), 'dirname', 7 ) ) {
+			$save_pos = $pos;
+			$pos     += 7;
+
+			while ( $pos < $len && ctype_space( $expr[ $pos ] ) ) {
+				++$pos;
+			}
+			if ( $pos >= $len || '(' !== $expr[ $pos ] ) {
+				$pos = $save_pos;
+				return false;
+			}
+			++$pos; // Consume '('.
+
+			$inner = self::parse_concat_expr( $expr, $pos );
+			if ( false === $inner ) {
+				$pos = $save_pos;
+				return false;
+			}
+
+			while ( $pos < $len && ctype_space( $expr[ $pos ] ) ) {
+				++$pos;
+			}
+			if ( $pos >= $len || ')' !== $expr[ $pos ] ) {
+				$pos = $save_pos;
+				return false;
+			}
+			++$pos; // Consume ')'.
+
+			return dirname( $inner );
+		}
+
+		// Match a quoted string literal.
+		return self::parse_path_string( $expr, $pos );
+	}
+
+	/**
+	 * Parse a single- or double-quoted PHP string literal.
+	 *
+	 * Handles the escape sequences recognised by PHP for each quote style.
+	 *
+	 * @param string $expr The full expression string.
+	 * @param int    &$pos Current offset, advanced past the closing quote.
+	 * @return string|false String value, or false if not a valid literal.
+	 */
+	private static function parse_path_string( $expr, &$pos ) {
+		$len = strlen( $expr );
+		if ( $pos >= $len ) {
+			return false;
+		}
+
+		$quote = $expr[ $pos ];
+		if ( "'" !== $quote && '"' !== $quote ) {
+			return false;
+		}
+
+		$save_pos = $pos;
+		++$pos; // Consume opening quote.
+		$result = '';
+
+		while ( $pos < $len ) {
+			$ch = $expr[ $pos ];
+
+			if ( $ch === $quote ) {
+				++$pos; // Consume closing quote.
+				return $result;
+			}
+
+			if ( '\\' === $ch && ( $pos + 1 ) < $len ) {
+				$next = $expr[ $pos + 1 ];
+				$pos += 2;
+
+				if ( "'" === $quote ) {
+					// Single-quoted strings: only \\ and \' are escape sequences.
+					if ( '\\' === $next || "'" === $next ) {
+						$result .= $next;
+					} else {
+						$result .= '\\' . $next;
+					}
+				} else {
+					// Double-quoted strings: handle the common escape sequences.
+					switch ( $next ) {
+						case 'n':
+							$result .= "\n";
+							break;
+						case 'r':
+							$result .= "\r";
+							break;
+						case 't':
+							$result .= "\t";
+							break;
+						case '"':
+						case '\\':
+						case '$':
+							$result .= $next;
+							break;
+						default:
+							$result .= '\\' . $next;
+							break;
+					}
+				}
+				continue;
+			}
+
+			if ( '"' === $quote && '$' === $ch ) {
+				// Unescaped $ in double-quoted strings may start variable interpolation,
+				// which this parser does not support. Reject the expression rather than
+				// treating it as a literal path fragment.
+				$pos = $save_pos;
+				return false;
+			}
+
+			$result .= $ch;
+			++$pos;
+		}
+
+		// Unterminated string literal.
+		$pos = $save_pos;
+		return false;
 	}
 
 	/**
@@ -762,7 +976,7 @@ class Runner {
 			if ( is_array( $alias_config ) ) {
 				foreach ( $alias_config as $key => $value ) {
 					// Skip connection-specific keys as they are not relevant to the remote WP-CLI instance.
-					if ( in_array( $key, [ 'ssh', 'http', 'proxyjump', 'key' ], true ) ) {
+					if ( in_array( $key, [ 'ssh', 'http', 'proxyjump', 'key', 'ssh_config' ], true ) ) {
 						continue;
 					}
 					$runtime_alias[ $key ] = $value;
@@ -840,7 +1054,7 @@ class Runner {
 			: '';
 
 		// Set default values.
-		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump' ] as $bit ) {
+		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
 			if ( ! isset( $bits[ $bit ] ) ) {
 				$bits[ $bit ] = null;
 			}
@@ -849,7 +1063,7 @@ class Runner {
 		}
 
 		/**
-		 * @var array{scheme: string|null, user: string|null, host: string, port: string|null, path: string|null, key: string|null, proxyjump: string|null} $bits
+		 * @var array{scheme: string|null, user: string|null, host: string, port: string|null, path: string|null, key: string|null, proxyjump: string|null, ssh_config: string|null} $bits
 		 */
 
 		/*
@@ -975,12 +1189,15 @@ class Runner {
 				$alias_config = isset( $this->aliases[ $this->alias ] ) ? $this->aliases[ $this->alias ] : false;
 
 				if ( is_array( $alias_config ) ) {
-					$bits['proxyjump'] = isset( $alias_config['proxyjump'] ) ? $alias_config['proxyjump'] : '';
-					$bits['key']       = isset( $alias_config['key'] ) ? $alias_config['key'] : '';
+					$bits['proxyjump']  = isset( $alias_config['proxyjump'] ) ? $alias_config['proxyjump'] : '';
+					$bits['key']        = isset( $alias_config['key'] ) ? $alias_config['key'] : '';
+					$bits['ssh_config'] = isset( $alias_config['ssh_config'] ) ? $alias_config['ssh_config'] : '';
 				}
 			}
 
 			$command_args = [
+				// @phpstan-ignore cast.string
+				$bits['ssh_config'] ? sprintf( '-F %s', escapeshellarg( (string) $bits['ssh_config'] ) ) : '',
 				// @phpstan-ignore cast.string
 				$bits['proxyjump'] ? sprintf( '-J %s', escapeshellarg( (string) $bits['proxyjump'] ) ) : '',
 				$bits['port'] ? sprintf( '-p %d', (int) $bits['port'] ) : '',
@@ -2025,6 +2242,19 @@ class Runner {
 
 		if ( $this->config['skip-themes'] ) {
 			WP_CLI::add_wp_hook( 'setup_theme', [ $this, 'action_setup_theme_wp_cli_skip_themes' ], 999 );
+		}
+
+		// Set the locale if configured
+		if ( ! empty( $this->config['locale'] ) ) {
+			$locale = $this->config['locale'];
+			WP_CLI::add_wp_hook(
+				'locale',
+				static function () use ( $locale ) {
+					return $locale;
+				},
+				PHP_INT_MAX,
+				0
+			);
 		}
 
 		// Log WordPress HTTP API requests
