@@ -1,0 +1,144 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v2.13.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  prepare-draft-release:
+    name: Prepare Stable Build & Create Draft Releases
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'wp-cli' }}
+
+    steps:
+      - name: Determine version
+        id: vars
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check out wp-cli/builds repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/builds
+          ref: gh-pages
+          token: ${{ secrets.ACTIONS_BOT }}
+          path: builds
+
+      - name: Check out wp-cli/wp-cli-dev repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/wp-cli-dev
+          path: wp-cli-dev
+
+      - name: Set up PHP and Composer
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: 'latest'
+          tools: composer
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies for maintenance tools
+        run: |
+          cd wp-cli-dev
+          composer install --no-interaction
+
+      - name: Generate Changelog and Contributor List
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_BOT || secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p release-assets
+          cd wp-cli-dev
+
+          echo "## Contributors" > ../release-assets/release_notes.md
+          echo "" >> ../release-assets/release_notes.md
+          vendor/bin/wp maintenance contrib-list --format=markdown >> ../release-assets/release_notes.md
+          echo "" >> ../release-assets/release_notes.md
+          echo "## Changelog" >> ../release-assets/release_notes.md
+          echo "" >> ../release-assets/release_notes.md
+          vendor/bin/wp maintenance release-notes >> ../release-assets/release_notes.md
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@cb9bde2e2525e6865904e392450c3401a753db76 # v6.2.0
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Promote release Phar to stable & generate signatures
+        run: |
+          VERSION="${{ steps.vars.outputs.version }}"
+
+          cd builds/phar
+
+          # Promote release files to stable
+          cp wp-cli-release.phar wp-cli.phar
+          cp wp-cli-release.manifest.json wp-cli.manifest.json
+
+          # Generate stable hashes
+          md5sum wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.md5
+          sha256sum wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha256
+          sha512sum wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha512
+
+          # Sign stable Phar with GPG
+          gpg --batch --yes --output wp-cli.phar.gpg --default-key releases@wp-cli.org --sign wp-cli.phar
+          gpg --batch --yes --output wp-cli.phar.asc --default-key releases@wp-cli.org --detach-sig --armor wp-cli.phar
+
+          # Prepare versioned files for GitHub release upload
+          cp wp-cli.phar "../../release-assets/wp-cli-${VERSION}.phar"
+          cp wp-cli.phar.gpg "../../release-assets/wp-cli-${VERSION}.phar.gpg"
+          cp wp-cli.phar.asc "../../release-assets/wp-cli-${VERSION}.phar.asc"
+          cp wp-cli.phar.md5 "../../release-assets/wp-cli-${VERSION}.phar.md5"
+          cp wp-cli.phar.sha256 "../../release-assets/wp-cli-${VERSION}.phar.sha256"
+          cp wp-cli.phar.sha512 "../../release-assets/wp-cli-${VERSION}.phar.sha512"
+          cp wp-cli.manifest.json "../../release-assets/wp-cli-${VERSION}.manifest.json"
+
+      - name: Commit & push updated stable build to wp-cli/builds
+        run: |
+          VERSION="${{ steps.vars.outputs.version }}"
+
+          cd builds
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add phar/wp-cli.phar phar/wp-cli.phar.* phar/wp-cli.manifest.json
+          git commit -m "Update stable to v${VERSION}"
+          git push origin gh-pages
+
+      - name: Create Draft Release on wp-cli/wp-cli
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.vars.outputs.tag }}"
+          VERSION="${{ steps.vars.outputs.version }}"
+
+          gh release create "$TAG" \
+            --repo wp-cli/wp-cli \
+            --draft \
+            --title "Version $VERSION" \
+            --notes-file release-assets/release_notes.md \
+            release-assets/wp-cli-*
+
+      - name: Create Draft Release on wp-cli/wp-cli-bundle
+        env:
+          GH_TOKEN: ${{ secrets.ACTIONS_BOT }}
+        run: |
+          TAG="${{ steps.vars.outputs.tag }}"
+          VERSION="${{ steps.vars.outputs.version }}"
+
+          gh release create "$TAG" \
+            --repo wp-cli/wp-cli-bundle \
+            --draft \
+            --title "Version $VERSION" \
+            --notes-file release-assets/release_notes.md \
+            release-assets/wp-cli-*

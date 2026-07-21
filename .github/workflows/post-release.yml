@@ -1,0 +1,114 @@
+name: Post-Release Automation
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Published release tag (e.g. v2.13.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  post-release:
+    name: Post-Release Version Bumps & Cleanup
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'wp-cli' }}
+
+    steps:
+      - name: Calculate next alpha and branch alias versions
+        id: vars
+        run: |
+          TAG="${{ github.event.inputs.tag || github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
+
+          # Extract Major.Minor.Patch
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          NEXT_MINOR=$((MINOR + 1))
+          NEXT_ALPHA="${MAJOR}.${NEXT_MINOR}.0-alpha"
+          NEXT_ALIAS="${MAJOR}.${NEXT_MINOR}.x-dev"
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "next_alpha=$NEXT_ALPHA" >> $GITHUB_OUTPUT
+          echo "next_alias=$NEXT_ALIAS" >> $GITHUB_OUTPUT
+
+      - name: Set up PHP and Composer
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: 'latest'
+          tools: composer
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check out wp-cli/wp-cli
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          path: wp-cli
+
+      - name: Bump alpha version and branch-alias in wp-cli/wp-cli
+        run: |
+          cd wp-cli
+          echo "${{ steps.vars.outputs.next_alpha }}" > VERSION
+          composer config extra.branch-alias.dev-main "${{ steps.vars.outputs.next_alias }}"
+
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add VERSION composer.json
+          git commit -m "Bump version to ${{ steps.vars.outputs.next_alpha }}"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check out wp-cli/wp-cli-bundle
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/wp-cli-bundle
+          ref: main
+          token: ${{ secrets.ACTIONS_BOT }}
+          path: wp-cli-bundle
+
+      - name: Reset framework constraint and branch-alias in wp-cli/wp-cli-bundle
+        run: |
+          cd wp-cli-bundle
+          composer require "wp-cli/wp-cli:dev-main" --no-update --no-interaction
+          composer config extra.branch-alias.dev-main "${{ steps.vars.outputs.next_alias }}"
+
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add composer.json
+          git commit -m "Reset wp-cli framework dependency to dev-main and bump branch alias"
+          git push origin main
+
+      - name: Check out wp-cli/wp-cli-dev for maintenance tools
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/wp-cli-dev
+          path: wp-cli-dev
+
+      - name: Close released milestones across bundle repos
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_BOT }}
+        run: |
+          cd wp-cli-dev
+          composer install --no-interaction
+          vendor/bin/wp maintenance close-released --bundle
+
+      - name: Dispatch release notification to website repository
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.ACTIONS_BOT }}
+          script: |
+            await github.rest.repos.createDispatchEvent({
+              owner: 'wp-cli',
+              repo: 'wp-cli.github.com',
+              event_type: 'release-published',
+              client_payload: {
+                tag: '${{ steps.vars.outputs.tag }}',
+                version: '${{ steps.vars.outputs.version }}'
+              }
+            });
