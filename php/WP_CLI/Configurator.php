@@ -57,6 +57,9 @@ class Configurator {
 	/**
 	 * Arguments that can be used in an alias.
 	 *
+	 * Note: Connection settings ('ssh', 'ssh-args', 'proxyjump', 'key')
+	 * defined at the root level also act as defaults for aliases.
+	 *
 	 * @var array
 	 */
 	private static $alias_spec = [
@@ -124,9 +127,10 @@ class Configurator {
 	 * @param string $key The alias name (with or without @ prefix).
 	 * @param array  $value The alias configuration.
 	 * @param string $yml_file_dir The directory of the YAML file for path resolution.
+	 * @param array  $yaml The parsed YAML configuration array.
 	 * @return void
 	 */
-	private function add_alias( $key, $value, $yml_file_dir ) {
+	private function add_alias( $key, $value, $yml_file_dir, $yaml = [] ) {
 		if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
 			// Remove the @ character from the alias name
 			$key = substr( $key, 1 );
@@ -142,9 +146,15 @@ class Configurator {
 
 				// Interpolate environment variables in alias values.
 				$value[ $i ] = self::interpolate_env_vars( $value[ $i ] );
-				if ( 'path' === $i && ! isset( $value['ssh'] ) ) {
-					self::absolutize( $value[ $i ], $yml_file_dir );
-					$value[ $i ] = Path::normalize( $value[ $i ] );
+				if ( 'path' === $i ) {
+					$has_alias_ssh = isset( $value['ssh'] ) && false !== $value['ssh'] && '' !== $value['ssh'];
+					$has_root_ssh  = ( ! isset( $value['ssh'] ) || ( false !== $value['ssh'] && '' !== $value['ssh'] ) )
+						&& ( ! empty( $this->config['ssh'] ) || ! empty( $yaml['ssh'] ) );
+
+					if ( ! $has_alias_ssh && ! $has_root_ssh ) {
+						self::absolutize( $value[ $i ], $yml_file_dir );
+						$value[ $i ] = Path::normalize( $value[ $i ] );
+					}
 				}
 				$this->aliases[ $key ][ $i ] = $value[ $i ];
 				$is_alias                    = true;
@@ -417,10 +427,10 @@ class Configurator {
 		$yml_file_dir = $path ? dirname( $path ) : '';
 		foreach ( $yaml as $key => $value ) {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
-				$this->add_alias( $key, $value, $yml_file_dir );
+				$this->add_alias( $key, $value, $yml_file_dir, $yaml );
 			} elseif ( 'aliases' === $key ) {
 				foreach ( $value as $alias => $alias_config ) {
-					$this->add_alias( $alias, $alias_config, $yml_file_dir );
+					$this->add_alias( $alias, $alias_config, $yml_file_dir, $yaml );
 				}
 			} elseif ( ! isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
 				if ( isset( $this->extra_config[ $key ] )

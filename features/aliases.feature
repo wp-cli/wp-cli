@@ -263,6 +263,21 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
   @skip-windows @skip-macos
+  Scenario: Relative-path alias with inherited root ssh preserves relative path
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: docker:user@wordpress
+      @foo:
+        path: relative/path
+      """
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      --workdir 'relative/path'
+      """
+
+  @skip-windows @skip-macos
   Scenario: SSH alias expands tilde in path
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
