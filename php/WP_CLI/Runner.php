@@ -2725,7 +2725,7 @@ class Runner {
 				'return'     => 'all',
 			]
 		);
-		if ( ! is_object( $result ) || $result->return_code ) {
+		if ( $result->return_code ) {
 			WP_CLI::debug( 'Background update check failed: ' . ( is_object( $result ) ? $result->stderr : '' ), 'auto-update' );
 			return;
 		}
