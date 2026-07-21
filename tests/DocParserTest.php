@@ -263,11 +263,18 @@ EOB
  * ---
  * deprecated: ''
  * ---
+ *
+ * [--disabled-dep=<disabled>]
+ * : Explicitly not deprecated.
+ * ---
+ * deprecated: false
+ * ---
  */
 EOB
 		);
 
-		$synopsis = '[--old=<old>] [--active=<active>] [--empty-dep=<empty>]';
+		// `--disabled-dep` opts out via `deprecated: false` and must be omitted from the result.
+		$synopsis = '[--old=<old>] [--active=<active>] [--empty-dep=<empty>] [--disabled-dep=<disabled>]';
 		$expected = [
 			'old'       => 'Use `--new` instead.',
 			'empty-dep' => '',
