@@ -446,6 +446,22 @@ Feature: Global flags
       Running SSH command: docker exec --user 'user' 'wordpress' sh -c
       """
 
+  Scenario: wp cli info skips WordPress loading when already running inside container
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: docker:user@wordpress
+      """
+    When I try `WP_CLI_SSH_RUN=1 wp cli info --debug`
+    Then STDOUT should contain:
+      """
+      WP-CLI version:
+      """
+    And STDERR should contain:
+      """
+      Skipping SSH from config file: already running inside an SSH/container session.
+      """
+
   @skip-windows @skip-macos
   Scenario: SSH args should be passed to SSH command
     When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --version`

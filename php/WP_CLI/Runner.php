@@ -1657,6 +1657,16 @@ class Runner {
 			$this->arguments[] = 'help';
 		}
 
+		if ( $this->config['ssh'] ) {
+			// Don't recurse if SSH came from config file and we're already in an SSH/container session.
+			// Still allow SSH if it was explicitly passed via --ssh= on the CLI (present in runtime_config).
+			$ssh_from_cli = isset( $this->runtime_config['ssh'] ) && '' !== $this->runtime_config['ssh'];
+			if ( getenv( 'WP_CLI_SSH_RUN' ) && ! $ssh_from_cli ) {
+				$this->config['ssh'] = false;
+				WP_CLI::debug( 'Skipping SSH from config file: already running inside an SSH/container session. Use the `--ssh` flag to override.', 'bootstrap' );
+			}
+		}
+
 		// Protect 'cli info' from most of the runtime,
 		// except when the command will be run over SSH
 		if ( 'cli' === $this->arguments[0] && ! empty( $this->arguments[1] ) && 'info' === $this->arguments[1] && ! $this->config['ssh'] ) {
@@ -1668,15 +1678,9 @@ class Runner {
 		}
 
 		if ( $this->config['ssh'] ) {
-			// Don't recurse if SSH came from config file and we're already in an SSH/container session.
-			// Still allow SSH if it was explicitly passed via --ssh= on the CLI (present in runtime_config).
-			$ssh_from_cli = isset( $this->runtime_config['ssh'] ) && '' !== $this->runtime_config['ssh'];
-			if ( getenv( 'WP_CLI_SSH_RUN' ) && ! $ssh_from_cli ) {
-				WP_CLI::debug( 'Skipping SSH from config file: already running inside an SSH/container session. Use the `--ssh` flag to override.', 'bootstrap' );
-			} else {
-				// @phpstan-ignore cast.string
-				$this->run_ssh_command( (string) $this->config['ssh'] );
-			}
+			// @phpstan-ignore cast.string
+			$this->run_ssh_command( (string) $this->config['ssh'] );
+			return;
 		}
 
 		// Log WP-CLI HTTP requests
