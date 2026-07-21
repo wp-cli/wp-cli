@@ -107,16 +107,21 @@ function wp_debug_mode() {
  * @return bool
  */
 function wp_debug_display_enabled() {
-	$display_errors = WP_CLI::get_config( 'debug' )
-		|| ( defined( 'WP_DEBUG' ) && WP_DEBUG && ( ! defined( 'WP_DEBUG_DISPLAY' ) || WP_DEBUG_DISPLAY ) );
+	if ( WP_CLI::get_config( 'debug' ) ) {
+		return true;
+	}
 
 	// wp_doing_ajax() might not be available.
 	// @phpstan-ignore phpstanWP.wpConstant.fetch
 	if ( defined( 'XMLRPC_REQUEST' ) || defined( 'REST_REQUEST' ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
-		$display_errors = false;
+		return false;
 	}
 
-	return $display_errors;
+	if ( defined( 'WP_DEBUG_DISPLAY' ) && ! WP_DEBUG_DISPLAY ) {
+		return false;
+	}
+
+	return true;
 }
 // phpcs:enable
 
