@@ -1055,11 +1055,15 @@ class Runner {
 
 		// Set default values.
 		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
+			if ( empty( $bits[ $bit ] ) && ! empty( $this->config[ $bit ] ) && is_scalar( $this->config[ $bit ] ) ) {
+				$bits[ $bit ] = (string) $this->config[ $bit ];
+			}
+
 			if ( ! isset( $bits[ $bit ] ) ) {
 				$bits[ $bit ] = null;
 			}
 
-			WP_CLI::debug( 'SSH ' . $bit . ': ' . $bits[ $bit ], 'bootstrap' );
+			WP_CLI::debug( 'SSH ' . $bit . ': ' . (string) $bits[ $bit ], 'bootstrap' );
 		}
 
 		/**
@@ -1185,24 +1189,11 @@ class Runner {
 				$bits['host'] = $bits['user'] . '@' . $bits['host'];
 			}
 
-			if ( ! empty( $this->alias ) ) {
-				$alias_config = isset( $this->aliases[ $this->alias ] ) ? $this->aliases[ $this->alias ] : false;
-
-				if ( is_array( $alias_config ) ) {
-					$bits['proxyjump']  = isset( $alias_config['proxyjump'] ) ? $alias_config['proxyjump'] : '';
-					$bits['key']        = isset( $alias_config['key'] ) ? $alias_config['key'] : '';
-					$bits['ssh_config'] = isset( $alias_config['ssh_config'] ) ? $alias_config['ssh_config'] : '';
-				}
-			}
-
 			$command_args = [
-				// @phpstan-ignore cast.string
-				$bits['ssh_config'] ? sprintf( '-F %s', escapeshellarg( (string) $bits['ssh_config'] ) ) : '',
-				// @phpstan-ignore cast.string
-				$bits['proxyjump'] ? sprintf( '-J %s', escapeshellarg( (string) $bits['proxyjump'] ) ) : '',
+				$bits['ssh_config'] ? sprintf( '-F %s', escapeshellarg( $bits['ssh_config'] ) ) : '',
+				$bits['proxyjump'] ? sprintf( '-J %s', escapeshellarg( $bits['proxyjump'] ) ) : '',
 				$bits['port'] ? sprintf( '-p %d', (int) $bits['port'] ) : '',
-				// @phpstan-ignore cast.string
-				$bits['key'] ? sprintf( '-i %s', escapeshellarg( (string) $bits['key'] ) ) : '',
+				$bits['key'] ? sprintf( '-i %s', escapeshellarg( $bits['key'] ) ) : '',
 				$is_vagrant_ssh ? '-o StrictHostKeyChecking=no' : '',
 				$is_vagrant_ssh ? '-o UserKnownHostsFile=/dev/null' : '',
 				$is_vagrant_ssh ? '-o BatchMode=yes' : '',
