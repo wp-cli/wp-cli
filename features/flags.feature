@@ -396,7 +396,7 @@ Feature: Global flags
     When I try `WP_CLI_STRICT_ARGS_MODE=1 wp --debug --ssh=/ --ssh-args="-o BatchMode=yes" --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh '-o BatchMode=yes' -T -vvv '' 'WP_CLI_STRICT_ARGS_MODE=1 WP_CLI_SSH_RUN=1  wp
+      Running SSH command: ssh '-o BatchMode=yes' -T -vvv '' 'WP_CLI_STRICT_ARGS_MODE=1 WP_CLI_SSH_RUN=1 wp
       """
 
   @skip-windows @skip-macos

@@ -230,7 +230,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo --debug --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -T WP_CLI_SSH_RUN=1 -vvv '' 'wp --debug --version'
+      Running SSH command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -T -vvv '' 'WP_CLI_SSH_RUN=1 wp --debug --version'
       """
 
   @skip-windows @skip-macos
