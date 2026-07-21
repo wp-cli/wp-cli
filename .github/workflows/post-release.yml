@@ -48,11 +48,13 @@ jobs:
       - name: Validate that released version matches current main
         env:
           RELEASED_VERSION: ${{ steps.vars.outputs.version }}
+          NEXT_ALPHA: ${{ steps.vars.outputs.next_alpha }}
         run: |
           CURRENT_VERSION=$(tr -d '[:space:]' < wp-cli/VERSION)
           CURRENT_BASE_VERSION="${CURRENT_VERSION%-alpha}"
 
-          if [ "$CURRENT_BASE_VERSION" != "$RELEASED_VERSION" ]; then
+          if [ "$CURRENT_BASE_VERSION" != "$RELEASED_VERSION" ] &&
+             [ "$CURRENT_VERSION" != "$NEXT_ALPHA" ]; then
             echo "::error::Current repository version ($CURRENT_VERSION) does not match released version ($RELEASED_VERSION). Skipping post-release bump."
             exit 1
           fi
