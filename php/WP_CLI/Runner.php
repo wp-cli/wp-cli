@@ -2726,7 +2726,7 @@ class Runner {
 			]
 		);
 		if ( ! is_object( $result ) || $result->return_code ) {
-			WP_CLI::debug( 'Background update check failed: ' . ( is_object( $result ) ? trim( $result->stderr ) : '' ), 'auto-update' );
+			WP_CLI::debug( 'Background update check failed: ' . ( is_object( $result ) ? $result->stderr : '' ), 'auto-update' );
 			return;
 		}
 		$count = $result->stdout;
