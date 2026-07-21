@@ -1054,12 +1054,19 @@ class Runner {
 			: '';
 
 		// Set default values.
+		$scheme = isset( $bits['scheme'] ) ? $bits['scheme'] : null;
 		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
 			if ( empty( $bits[ $bit ] ) ) {
-				if ( ! empty( $this->config[ $bit ] ) && is_scalar( $this->config[ $bit ] ) ) {
-					$bits[ $bit ] = (string) $this->config[ $bit ];
-				} elseif ( ! empty( $this->extra_config[ $bit ] ) && is_scalar( $this->extra_config[ $bit ] ) ) {
-					$bits[ $bit ] = (string) $this->extra_config[ $bit ];
+				// For 'path', only fall back to runner config for docker schemes which require --workdir.
+				// SSH schemes pass alias path via WP_CLI_RUNTIME_ALIAS to the remote WP-CLI instance.
+				$should_fallback = 'path' !== $bit || in_array( $scheme, [ 'docker', 'docker-compose', 'docker-compose-run' ], true );
+
+				if ( $should_fallback ) {
+					if ( ! empty( $this->config[ $bit ] ) && is_scalar( $this->config[ $bit ] ) ) {
+						$bits[ $bit ] = (string) $this->config[ $bit ];
+					} elseif ( ! empty( $this->extra_config[ $bit ] ) && is_scalar( $this->extra_config[ $bit ] ) ) {
+						$bits[ $bit ] = (string) $this->extra_config[ $bit ];
+					}
 				}
 			}
 

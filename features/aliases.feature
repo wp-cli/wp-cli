@@ -298,7 +298,7 @@ Feature: Create shortcuts to specific WordPress installs
     Given an empty directory
     And a wp-cli.yml file:
       """
-      ssh: user@host:/path/to/wordpress
+      ssh: user@host
       proxyjump: rootjump
       key: rootkey.key
       ssh_config: /root/ssh_config
@@ -308,7 +308,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo --debug --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -F '/root/ssh_config' -J 'rootjump' -i 'rootkey.key' -T -vvv 'user@host'
+      Running SSH command: ssh -F '/root/ssh_config' -J 'rootjump' -i 'rootkey.key' -T -vvv 'user@host' 'WP_CLI_SSH_RUN=1 env WP_CLI_RUNTIME_ALIAS=
       """
 
   @skip-windows @skip-macos
