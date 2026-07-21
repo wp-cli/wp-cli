@@ -415,6 +415,11 @@ Feature: Global flags
       Running SSH command: docker exec --user 'user' 'wordpress' sh -c
       """
 
+  @skip-windows @skip-macos
+  Scenario: SSH flag should support Docker Compose Run
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp --debug --ssh=docker-compose-run:user@wordpress --version`
+    Then STDERR should match /Running SSH command: (docker compose|docker-compose) run --user 'user' -e WP_CLI_SSH_RUN=1 'wordpress' wp/
+
   Scenario: Root-level ssh config should support Docker scheme
     Given an empty directory
     And a wp-cli.yml file:

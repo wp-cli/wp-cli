@@ -745,10 +745,12 @@ class Runner {
 		}
 
 		$env_vars = '';
-		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
-			$env_vars .= 'WP_CLI_STRICT_ARGS_MODE=1 ';
+		if ( ! isset( $bits['scheme'] ) || 'docker-compose-run' !== $bits['scheme'] ) {
+			if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
+				$env_vars .= 'WP_CLI_STRICT_ARGS_MODE=1 ';
+			}
+			$env_vars .= 'WP_CLI_SSH_RUN=1 ';
 		}
-		$env_vars .= 'WP_CLI_SSH_RUN=1 ';
 
 		$wp_binary = Utils\get_env_or_config( 'WP_CLI_SSH_BINARY' ) ?: 'wp';
 		$wp_args   = array_slice( (array) $GLOBALS['argv'], 1 );
