@@ -89,17 +89,7 @@ function wp_debug_mode() {
 
 	// Respect WP_DEBUG and WP_DEBUG_DISPLAY: display errors when --debug is passed or
 	// WP_DEBUG is true (and WP_DEBUG_DISPLAY is not explicitly false).
-	$display_errors = WP_CLI::get_config( 'debug' )
-		|| ( defined( 'WP_DEBUG' ) && WP_DEBUG && ( ! defined( 'WP_DEBUG_DISPLAY' ) || WP_DEBUG_DISPLAY ) );
-
-	// wp_doing_ajax() might not be available.
-	// @phpstan-ignore phpstanWP.wpConstant.fetch
-	if ( defined( 'XMLRPC_REQUEST' ) || defined( 'REST_REQUEST' ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
-		$display_errors = false;
-	}
-
-	// XDebug already sends errors to STDERR.
-	if ( $display_errors ) {
+	if ( wp_debug_display_enabled() ) {
 		ini_set( 'display_errors', function_exists( 'xdebug_debug_zval' ) ? false : 'stderr' );
 	} else {
 		ini_set( 'display_errors', 0 );
@@ -109,6 +99,24 @@ function wp_debug_mode() {
 			ini_set( 'log_errors', 0 );
 		}
 	}
+}
+
+/**
+ * Checks whether debug display is enabled based on WP-CLI configuration and WordPress constants.
+ *
+ * @return bool
+ */
+function wp_debug_display_enabled() {
+	$display_errors = WP_CLI::get_config( 'debug' )
+		|| ( defined( 'WP_DEBUG' ) && WP_DEBUG && ( ! defined( 'WP_DEBUG_DISPLAY' ) || WP_DEBUG_DISPLAY ) );
+
+	// wp_doing_ajax() might not be available.
+	// @phpstan-ignore phpstanWP.wpConstant.fetch
+	if ( defined( 'XMLRPC_REQUEST' ) || defined( 'REST_REQUEST' ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+		$display_errors = false;
+	}
+
+	return $display_errors;
 }
 // phpcs:enable
 
