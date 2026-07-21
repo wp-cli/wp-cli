@@ -294,6 +294,24 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
   @skip-windows @skip-macos
+  Scenario: Alias inherits root-level proxyjump, key, and ssh_config defaults
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: user@host:/path/to/wordpress
+      proxyjump: rootjump
+      key: rootkey.key
+      ssh_config: /root/ssh_config
+      @foo:
+        path: /other/path
+      """
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -F '/root/ssh_config' -J 'rootjump' -i 'rootkey.key' -T -vvv 'user@host' 'cd '\''/other/path'\''; WP_CLI_SSH_RUN=1 wp
+      """
+
+  @skip-windows @skip-macos
   Scenario: SSH alias expands tilde in path
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
