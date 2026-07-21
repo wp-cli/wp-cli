@@ -27,6 +27,24 @@ return [
 		'default'  => [],
 	],
 
+	'proxyjump'         => [
+		'runtime' => '=<proxyjump>',
+		'file'    => '<proxyjump>',
+		'desc'    => 'Pass proxyjump parameter to SSH.',
+	],
+
+	'key'               => [
+		'runtime' => '=<key>',
+		'file'    => '<key>',
+		'desc'    => 'Pass private key to SSH.',
+	],
+
+	'ssh_config'        => [
+		'runtime' => '=<path>',
+		'file'    => '<path>',
+		'desc'    => 'Path to SSH configuration file.',
+	],
+
 	'http'              => [
 		'runtime' => '=<http>',
 		'file'    => '<http>',

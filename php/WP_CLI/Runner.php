@@ -1055,8 +1055,12 @@ class Runner {
 
 		// Set default values.
 		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
-			if ( empty( $bits[ $bit ] ) && ! empty( $this->config[ $bit ] ) && is_scalar( $this->config[ $bit ] ) ) {
-				$bits[ $bit ] = (string) $this->config[ $bit ];
+			if ( empty( $bits[ $bit ] ) ) {
+				if ( ! empty( $this->config[ $bit ] ) && is_scalar( $this->config[ $bit ] ) ) {
+					$bits[ $bit ] = (string) $this->config[ $bit ];
+				} elseif ( ! empty( $this->extra_config[ $bit ] ) && is_scalar( $this->extra_config[ $bit ] ) ) {
+					$bits[ $bit ] = (string) $this->extra_config[ $bit ];
+				}
 			}
 
 			if ( ! isset( $bits[ $bit ] ) ) {
