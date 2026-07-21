@@ -359,6 +359,12 @@ class CLI_Command extends WP_CLI_Command {
 	 * Default behavior is to check the releases API for the newest stable
 	 * version, and prompt if one is available.
 	 *
+	 * By default the update stays within the current major version: a new major
+	 * release is not offered unless `--major` is passed. This prevents unintentionally
+	 * jumping to a major version that may drop support for the running PHP version or
+	 * change behavior. When a major update is available it is announced, along with the
+	 * `--major` flag needed to install it.
+	 *
 	 * Use `--stable` to install or reinstall the latest stable version.
 	 *
 	 * Use `--nightly` to install the latest built version of the master branch.
@@ -384,7 +390,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * : Only perform minor updates.
 	 *
 	 * [--major]
-	 * : Only perform major updates.
+	 * : Allow updating across a major version. Without this flag, the update stays within the current major version.
 	 *
 	 * [--stable]
 	 * : Update to the latest stable release. Skips update check.
@@ -413,6 +419,16 @@ class CLI_Command extends WP_CLI_Command {
 	 *     Downloading from https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar...
 	 *     New version works. Proceeding to replace.
 	 *     Success: Updated WP-CLI to 0.24.1.
+	 *
+	 *     # A new major version is available but withheld by default.
+	 *     $ wp cli update
+	 *     A new major version (3.0.0) is available. Run `wp cli update --major` to update across major versions.
+	 *     Success: WP-CLI is at the latest version.
+	 *
+	 *     # Update across a major version explicitly.
+	 *     $ wp cli update --major
+	 *     You have version 2.12.0. Would you like to update to 3.0.0? [y/n] y
+	 *     Success: Updated WP-CLI to 3.0.0.
 	 *
 	 * @param string[] $args Positional arguments. Unused.
 	 * @param array{patch?: bool, minor?: bool, major?: bool, stable?: bool, nightly?: bool, yes?: bool, insecure?: bool} $assoc_args Associative arguments.
@@ -449,17 +465,24 @@ class CLI_Command extends WP_CLI_Command {
 
 			$updates = $this->get_updates( $assoc_args );
 
+			$include_major = (bool) Utils\get_flag_value( $assoc_args, 'major', false );
+
+			$selection = $this->select_update_offer( is_array( $updates ) ? $updates : [], $include_major );
+
 			/**
 			 * @phpstan-var UpdateOffer|null $newest
 			 */
-			$newest = $this->array_find(
-				$updates,
-				static function ( $update ) {
-					return 'available' === $update['status'];
-				}
-			);
+			$newest = $selection['offer'];
 
 			if ( ! $newest ) {
+				if ( null !== $selection['suppressed_major'] ) {
+					WP_CLI::log(
+						sprintf(
+							'A new major version (%s) is available. Run `wp cli update --major` to update across major versions.',
+							$selection['suppressed_major']['version']
+						)
+					);
+				}
 				$update_type = $this->get_update_type_str( $assoc_args );
 				WP_CLI::success( "WP-CLI is at the latest{$update_type}version." );
 				return;
@@ -812,6 +835,51 @@ class CLI_Command extends WP_CLI_Command {
 		}
 
 		return array_merge( $updates_unavailable, array_values( $updates ) );
+	}
+
+	/**
+	 * Selects which available update to offer, enforcing the major-version boundary.
+	 *
+	 * By default an update must not cross a major version boundary: a major update
+	 * is only offered when it has been explicitly requested via `--major`. This stops
+	 * `wp cli update` from silently jumping to a new major release, which can drop
+	 * support for the running PHP version or otherwise change behavior. When a major
+	 * update is available but withheld, it is returned separately so the caller can
+	 * hint at the `--major` flag.
+	 *
+	 * @param array<array-key, UpdateOffer> $updates       Available updates, as returned by get_updates().
+	 * @param bool                          $include_major Whether a major update may be offered.
+	 * @return array{offer: UpdateOffer|null, suppressed_major: UpdateOffer|null}
+	 */
+	private function select_update_offer( array $updates, bool $include_major ) {
+		$suppressed_major = null;
+		$candidates       = [];
+
+		foreach ( $updates as $update ) {
+			if ( 'major' === $update['update_type'] && ! $include_major ) {
+				if ( null === $suppressed_major && 'available' === $update['status'] ) {
+					$suppressed_major = $update;
+				}
+				continue;
+			}
+
+			$candidates[] = $update;
+		}
+
+		/**
+		 * @phpstan-var UpdateOffer|null $offer
+		 */
+		$offer = $this->array_find(
+			$candidates,
+			static function ( $update ) {
+				return 'available' === $update['status'];
+			}
+		);
+
+		return [
+			'offer'            => $offer,
+			'suppressed_major' => $suppressed_major,
+		];
 	}
 
 	/**

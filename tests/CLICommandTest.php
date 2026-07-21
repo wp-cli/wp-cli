@@ -54,6 +54,100 @@ class CLICommandTest extends TestCase {
 		$method->invoke( $cli_command, $temp, $current_phar );
 	}
 
+	/**
+	 * @param array<array-key, array<string, mixed>> $updates
+	 * @param bool                                    $include_major
+	 * @return array{offer: array<string, mixed>|null, suppressed_major: array<string, mixed>|null}
+	 */
+	private function call_select_update_offer( $updates, $include_major ) {
+		$cli_command = new CLI_Command();
+		$method      = new \ReflectionMethod( $cli_command, 'select_update_offer' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$method->setAccessible( true );
+		}
+		return $method->invoke( $cli_command, $updates, $include_major );
+	}
+
+	/**
+	 * @param string $update_type
+	 * @param string $version
+	 * @param string $status
+	 * @return array<string, string>
+	 */
+	private function update_offer( $update_type, $version, $status = 'available' ) {
+		return [
+			'version'      => $version,
+			'update_type'  => $update_type,
+			'package_url'  => "https://example.com/wp-cli-{$version}.phar",
+			'status'       => $status,
+			'requires_php' => '',
+		];
+	}
+
+	public function testSelectUpdateOfferSkipsMajorByDefaultAndPicksMinor(): void {
+		$updates = [
+			'major' => $this->update_offer( 'major', '3.0.0' ),
+			'minor' => $this->update_offer( 'minor', '2.12.0' ),
+			'patch' => $this->update_offer( 'patch', '2.11.5' ),
+		];
+
+		$result = $this->call_select_update_offer( $updates, false );
+
+		$this->assertNotNull( $result['offer'] );
+		$this->assertSame( '2.12.0', $result['offer']['version'] );
+		$this->assertNotNull( $result['suppressed_major'] );
+		$this->assertSame( '3.0.0', $result['suppressed_major']['version'] );
+	}
+
+	public function testSelectUpdateOfferFallsBackToPatchWhenNoMinor(): void {
+		$updates = [
+			'major' => $this->update_offer( 'major', '3.0.0' ),
+			'patch' => $this->update_offer( 'patch', '2.11.5' ),
+		];
+
+		$result = $this->call_select_update_offer( $updates, false );
+
+		$this->assertSame( '2.11.5', $result['offer']['version'] );
+		$this->assertSame( '3.0.0', $result['suppressed_major']['version'] );
+	}
+
+	public function testSelectUpdateOfferReturnsMajorWhenRequested(): void {
+		$updates = [
+			'major' => $this->update_offer( 'major', '3.0.0' ),
+			'minor' => $this->update_offer( 'minor', '2.12.0' ),
+		];
+
+		$result = $this->call_select_update_offer( $updates, true );
+
+		$this->assertSame( '3.0.0', $result['offer']['version'] );
+		$this->assertNull( $result['suppressed_major'] );
+	}
+
+	public function testSelectUpdateOfferWithholdsLoneMajorByDefault(): void {
+		$updates = [
+			'major' => $this->update_offer( 'major', '3.0.0' ),
+		];
+
+		$result = $this->call_select_update_offer( $updates, false );
+
+		$this->assertNull( $result['offer'] );
+		$this->assertNotNull( $result['suppressed_major'] );
+		$this->assertSame( '3.0.0', $result['suppressed_major']['version'] );
+	}
+
+	public function testSelectUpdateOfferDoesNotHintUnavailableMajor(): void {
+		$updates = [
+			'major' => $this->update_offer( 'major', '3.0.0', 'unavailable' ),
+			'minor' => $this->update_offer( 'minor', '2.12.0' ),
+		];
+
+		$result = $this->call_select_update_offer( $updates, false );
+
+		$this->assertSame( '2.12.0', $result['offer']['version'] );
+		$this->assertNull( $result['suppressed_major'] );
+	}
+
 	public function testReplaceCurrentPharNonWindowsSuccess(): void {
 		if ( WP_CLI\Utils\is_windows() ) {
 			$this->markTestSkipped( 'Not applicable on Windows' );
