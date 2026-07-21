@@ -93,7 +93,7 @@ assignees: ''
 
 - [ ] Create a PR from the `release-x-x-x` branch in `wp-cli/wp-cli-bundle` and merge it. This will trigger the `wp-cli-release.*` builds.
 
-- [ ] Push the Git tag `v2.x.0` to [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/).
+- [ ] Push the Git tag `v2.x.0` to both [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/) and [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/).
 
     This automatically triggers the release workflow in `wp-cli/wp-cli` which:
     - Generates the contributor list and changelog.

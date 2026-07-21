@@ -22,8 +22,11 @@ jobs:
     steps:
       - name: Determine version
         id: vars
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          TAG="${INPUT_TAG:-$REF_NAME}"
           VERSION="${TAG#v}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
@@ -77,9 +80,9 @@ jobs:
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Promote release Phar to stable & generate signatures
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
         run: |
-          VERSION="${{ steps.vars.outputs.version }}"
-
           cd builds/phar
 
           # Promote release files to stable
@@ -105,40 +108,67 @@ jobs:
           cp wp-cli.manifest.json "../../release-assets/wp-cli-${VERSION}.manifest.json"
 
       - name: Commit & push updated stable build to wp-cli/builds
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
         run: |
-          VERSION="${{ steps.vars.outputs.version }}"
-
           cd builds
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git add phar/wp-cli.phar phar/wp-cli.phar.* phar/wp-cli.manifest.json
-          git commit -m "Update stable to v${VERSION}"
-          git push origin gh-pages
 
-      - name: Create Draft Release on wp-cli/wp-cli
+          if git diff --staged --quiet; then
+            echo "No changes to commit in builds repository."
+          else
+            git commit -m "Update stable to v${VERSION}"
+            git push origin gh-pages
+          fi
+
+      - name: Create or update Draft Release on wp-cli/wp-cli
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.vars.outputs.tag }}
+          VERSION: ${{ steps.vars.outputs.version }}
         run: |
-          TAG="${{ steps.vars.outputs.tag }}"
-          VERSION="${{ steps.vars.outputs.version }}"
+          if gh release view "$TAG" --repo wp-cli/wp-cli >/dev/null 2>&1; then
+            echo "Release $TAG already exists on wp-cli/wp-cli. Updating..."
+            gh release edit "$TAG" \
+              --repo wp-cli/wp-cli \
+              --draft \
+              --title "Version $VERSION" \
+              --notes-file release-assets/release_notes.md
+          else
+            echo "Creating draft release $TAG on wp-cli/wp-cli..."
+            gh release create "$TAG" \
+              --repo wp-cli/wp-cli \
+              --verify-tag \
+              --draft \
+              --title "Version $VERSION" \
+              --notes-file release-assets/release_notes.md
+          fi
 
-          gh release create "$TAG" \
-            --repo wp-cli/wp-cli \
-            --draft \
-            --title "Version $VERSION" \
-            --notes-file release-assets/release_notes.md \
-            release-assets/wp-cli-*
+          gh release upload "$TAG" release-assets/wp-cli-* --repo wp-cli/wp-cli --clobber
 
-      - name: Create Draft Release on wp-cli/wp-cli-bundle
+      - name: Create or update Draft Release on wp-cli/wp-cli-bundle
         env:
           GH_TOKEN: ${{ secrets.ACTIONS_BOT }}
+          TAG: ${{ steps.vars.outputs.tag }}
+          VERSION: ${{ steps.vars.outputs.version }}
         run: |
-          TAG="${{ steps.vars.outputs.tag }}"
-          VERSION="${{ steps.vars.outputs.version }}"
+          if gh release view "$TAG" --repo wp-cli/wp-cli-bundle >/dev/null 2>&1; then
+            echo "Release $TAG already exists on wp-cli/wp-cli-bundle. Updating..."
+            gh release edit "$TAG" \
+              --repo wp-cli/wp-cli-bundle \
+              --draft \
+              --title "Version $VERSION" \
+              --notes-file release-assets/release_notes.md
+          else
+            echo "Creating draft release $TAG on wp-cli/wp-cli-bundle..."
+            gh release create "$TAG" \
+              --repo wp-cli/wp-cli-bundle \
+              --verify-tag \
+              --draft \
+              --title "Version $VERSION" \
+              --notes-file release-assets/release_notes.md
+          fi
 
-          gh release create "$TAG" \
-            --repo wp-cli/wp-cli-bundle \
-            --draft \
-            --title "Version $VERSION" \
-            --notes-file release-assets/release_notes.md \
-            release-assets/wp-cli-*
+          gh release upload "$TAG" release-assets/wp-cli-* --repo wp-cli/wp-cli-bundle --clobber

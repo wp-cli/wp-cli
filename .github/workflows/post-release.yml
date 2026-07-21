@@ -19,10 +19,13 @@ jobs:
     if: ${{ github.repository_owner == 'wp-cli' }}
 
     steps:
-      - name: Calculate next alpha and branch alias versions
+      - name: Determine version
         id: vars
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          TAG="${{ github.event.inputs.tag || github.event.release.tag_name }}"
+          TAG="${INPUT_TAG:-$RELEASE_TAG}"
           VERSION="${TAG#v}"
 
           # Extract Major.Minor.Patch
@@ -36,6 +39,24 @@ jobs:
           echo "next_alpha=$NEXT_ALPHA" >> $GITHUB_OUTPUT
           echo "next_alias=$NEXT_ALIAS" >> $GITHUB_OUTPUT
 
+      - name: Check out wp-cli/wp-cli
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          path: wp-cli
+
+      - name: Validate that released version matches current main
+        env:
+          RELEASED_VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          CURRENT_VERSION=$(tr -d '[:space:]' < wp-cli/VERSION)
+          CURRENT_BASE_VERSION="${CURRENT_VERSION%-alpha}"
+
+          if [ "$CURRENT_BASE_VERSION" != "$RELEASED_VERSION" ]; then
+            echo "::error::Current repository version ($CURRENT_VERSION) does not match released version ($RELEASED_VERSION). Skipping post-release bump."
+            exit 1
+          fi
+
       - name: Set up PHP and Composer
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
@@ -44,25 +65,26 @@ jobs:
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check out wp-cli/wp-cli
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: main
-          path: wp-cli
-
       - name: Bump alpha version and branch-alias in wp-cli/wp-cli
+        env:
+          NEXT_ALPHA: ${{ steps.vars.outputs.next_alpha }}
+          NEXT_ALIAS: ${{ steps.vars.outputs.next_alias }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd wp-cli
-          echo "${{ steps.vars.outputs.next_alpha }}" > VERSION
-          composer config extra.branch-alias.dev-main "${{ steps.vars.outputs.next_alias }}"
+          echo "$NEXT_ALPHA" > VERSION
+          composer config extra.branch-alias.dev-main "$NEXT_ALIAS"
 
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git add VERSION composer.json
-          git commit -m "Bump version to ${{ steps.vars.outputs.next_alpha }}"
-          git push origin main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          if git diff --staged --quiet; then
+            echo "No version bump needed in wp-cli."
+          else
+            git commit -m "Bump version to $NEXT_ALPHA"
+            git push origin main
+          fi
 
       - name: Check out wp-cli/wp-cli-bundle
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -72,17 +94,24 @@ jobs:
           token: ${{ secrets.ACTIONS_BOT }}
           path: wp-cli-bundle
 
-      - name: Reset framework constraint and branch-alias in wp-cli/wp-cli-bundle
+      - name: Reset framework constraint, branch-alias and lockfile in wp-cli/wp-cli-bundle
+        env:
+          NEXT_ALIAS: ${{ steps.vars.outputs.next_alias }}
         run: |
           cd wp-cli-bundle
-          composer require "wp-cli/wp-cli:dev-main" --no-update --no-interaction
-          composer config extra.branch-alias.dev-main "${{ steps.vars.outputs.next_alias }}"
+          composer require "wp-cli/wp-cli:dev-main" --no-interaction --no-install
+          composer config extra.branch-alias.dev-main "$NEXT_ALIAS"
 
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
-          git add composer.json
-          git commit -m "Reset wp-cli framework dependency to dev-main and bump branch alias"
-          git push origin main
+          git add composer.json composer.lock
+
+          if git diff --staged --quiet; then
+            echo "No changes needed in wp-cli-bundle."
+          else
+            git commit -m "Reset wp-cli framework dependency to dev-main and bump branch alias"
+            git push origin main
+          fi
 
       - name: Check out wp-cli/wp-cli-dev for maintenance tools
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -100,15 +129,19 @@ jobs:
 
       - name: Dispatch release notification to website repository
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          TAG: ${{ steps.vars.outputs.tag }}
+          VERSION: ${{ steps.vars.outputs.version }}
         with:
           github-token: ${{ secrets.ACTIONS_BOT }}
           script: |
+            const { TAG, VERSION } = process.env;
             await github.rest.repos.createDispatchEvent({
               owner: 'wp-cli',
               repo: 'wp-cli.github.com',
               event_type: 'release-published',
               client_payload: {
-                tag: '${{ steps.vars.outputs.tag }}',
-                version: '${{ steps.vars.outputs.version }}'
+                tag: TAG,
+                version: VERSION
               }
             });
