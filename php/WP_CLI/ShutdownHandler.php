@@ -15,7 +15,14 @@ use WP_CLI;
 class ShutdownHandler {
 
 	/**
-	 * Register the error message filter.
+	 * Track whether a fatal error has already been handled and displayed.
+	 *
+	 * @var bool
+	 */
+	private static $has_handled_error = false;
+
+	/**
+	 * Register the error message filter and shutdown handler.
 	 */
 	public static function register() {
 		// Ensure WordPress's fatal error handler is always enabled for WP-CLI
@@ -33,6 +40,29 @@ class ShutdownHandler {
 			10,
 			2
 		);
+
+		register_shutdown_function( [ __CLASS__, 'handle_shutdown' ] );
+	}
+
+	/**
+	 * Handle PHP shutdown to ensure fatal errors are displayed even if display_errors is 0.
+	 */
+	public static function handle_shutdown() {
+		$error = error_get_last();
+		if ( ! is_array( $error ) ) {
+			return;
+		}
+
+		$fatal_error_types = [ E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR ];
+		if ( ! in_array( $error['type'], $fatal_error_types, true ) ) {
+			return;
+		}
+
+		if ( ! self::$has_handled_error && ! (bool) ini_get( 'display_errors' ) ) {
+			self::$has_handled_error = true;
+			$message                 = self::filter_error_message( $error['message'], $error );
+			WP_CLI::error( $message );
+		}
 	}
 
 	/**
@@ -43,6 +73,8 @@ class ShutdownHandler {
 	 * @return string Filtered error message.
 	 */
 	public static function filter_error_message( $message, $error ) {
+		self::$has_handled_error = true;
+
 		if ( ! is_array( $error ) || ! isset( $error['file'], $error['line'], $error['message'] ) ) {
 			return wp_strip_all_tags( $message );
 		}
