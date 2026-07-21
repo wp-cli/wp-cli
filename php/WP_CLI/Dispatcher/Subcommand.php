@@ -647,6 +647,20 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Get deprecated assoc arguments from the synopsis.
+	 *
+	 * @return array<string,string> Deprecated argument names and their deprecation messages.
+	 */
+	private function get_deprecated_assoc_args() {
+		$synopsis = $this->get_synopsis();
+		if ( ! $synopsis ) {
+			return [];
+		}
+
+		return DocParser::get_deprecated_assoc_args( $synopsis, $this->create_mock_docparser() );
+	}
+
+	/**
 	 * Invoke the subcommand with the supplied arguments.
 	 * Given a --prompt argument, interactively request input
 	 * from the end user.
@@ -740,6 +754,15 @@ class Subcommand extends CompositeCommand {
 		}
 		$args += $extra_positionals;
 
+		$provided_assoc_arg_names = [];
+		foreach ( [ $assoc_args, $extra_args ] as $assoc_arg_set ) {
+			foreach ( $assoc_arg_set as $arg_name => $value ) {
+				if ( ! is_numeric( $arg_name ) ) {
+					$provided_assoc_arg_names[ $arg_name ] = true;
+				}
+			}
+		}
+
 		list( $to_unset, $args, $assoc_args, $extra_args ) = $this->validate_args( $args, $assoc_args, $extra_args );
 
 		foreach ( $to_unset as $key ) {
@@ -754,6 +777,29 @@ class Subcommand extends CompositeCommand {
 			$cmd = $parent . ' ' . $cmd;
 		}
 		WP_CLI::do_hook( "before_invoke:{$cmd}", $cmd );
+
+		$docparser = $this->get_docparser();
+		if ( $docparser && $docparser->has_tag( 'deprecated' ) ) {
+			$deprecation_message = $docparser->get_deprecation_message();
+			$warning             = sprintf( 'The `%s` command is deprecated.', $cmd );
+			if ( '' !== $deprecation_message ) {
+				$warning .= ' ' . $deprecation_message;
+			}
+			WP_CLI::warning( $warning );
+		}
+
+		foreach ( $this->get_deprecated_assoc_args() as $arg_name => $deprecation_message ) {
+			if ( ! isset( $provided_assoc_arg_names[ $arg_name ] ) ) {
+				continue;
+			}
+
+			$warning = sprintf( 'The `--%s` argument for `%s` is deprecated.', $arg_name, $cmd );
+			if ( '' !== $deprecation_message ) {
+				$warning .= ' ' . $deprecation_message;
+			}
+
+			WP_CLI::warning( $warning );
+		}
 
 		// Check if `--prompt` arg passed or not.
 		if ( $prompted_once ) {
