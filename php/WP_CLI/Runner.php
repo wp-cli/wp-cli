@@ -2158,10 +2158,7 @@ class Runner {
 		if ( getenv( 'BEHAT_RUN' ) ) {
 			$show_errors = WP_CLI::get_config( 'debug' )
 				|| ( defined( 'WP_DEBUG' ) && WP_DEBUG && ( ! defined( 'WP_DEBUG_DISPLAY' ) || WP_DEBUG_DISPLAY ) );
-			// Match wp_debug_mode() suppression conditions: disable for XML-RPC, REST, and AJAX contexts.
-			if ( defined( 'XMLRPC_REQUEST' ) || defined( 'REST_REQUEST' ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
-				$show_errors = false;
-			}
+
 			if ( $show_errors ) {
 				$this->enable_error_reporting();
 			} else {
