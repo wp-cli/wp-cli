@@ -233,6 +233,35 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -T -vvv '' 'WP_CLI_SSH_RUN=1 wp --debug --version'
       """
 
+  Scenario: Alias can opt out of root-level ssh configuration
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: docker:user@wordpress
+      @local:
+        ssh: false
+      """
+    When I try `wp @local --debug --version`
+    Then STDERR should not contain:
+      """
+      Running SSH command:
+      """
+
+  @skip-windows @skip-macos
+  Scenario: Explicit CLI --ssh flag overrides alias ssh and root ssh
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: docker:root@wordpress
+      @foo:
+        ssh: docker:alias@wordpress
+      """
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp @foo --debug --ssh=docker:cli@wordpress --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: docker exec --user 'cli' 'wordpress' sh -c
+      """
+
   @skip-windows @skip-macos
   Scenario: SSH alias expands tilde in path
     Given a WP installation in 'foo'

@@ -1586,10 +1586,13 @@ class Runner {
 		// @phpstan-ignore varTag.type
 		$alias_config = (array) $this->aliases[ $alias ];
 		$this->config = array_merge( $orig_config, $alias_config );
+		if ( ! empty( $this->runtime_config ) ) {
+			$this->config = array_merge( $this->config, $this->runtime_config );
+		}
 		foreach ( $alias_config as $key => $_ ) {
-			if ( isset( $orig_config[ (string) $key ] ) && ! is_null( $orig_config[ (string) $key ] ) ) {
+			if ( isset( $this->runtime_config[ (string) $key ] ) && ! is_null( $this->runtime_config[ (string) $key ] ) ) {
 				// @phpstan-ignore assign.propertyType
-				$this->assoc_args[ (string) $key ] = $orig_config[ (string) $key ];
+				$this->assoc_args[ (string) $key ] = $this->runtime_config[ (string) $key ];
 			}
 		}
 	}
