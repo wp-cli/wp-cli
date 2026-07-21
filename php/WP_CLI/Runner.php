@@ -1800,19 +1800,14 @@ class Runner {
 	}
 
 	private function set_alias( $alias ): void {
-		$orig_config = $this->config;
 		/** @var array<string, mixed> $alias_config */
 		// @phpstan-ignore varTag.type
 		$alias_config = (array) $this->aliases[ $alias ];
-		$this->config = array_merge( $orig_config, $alias_config );
-		if ( ! empty( $this->runtime_config ) ) {
-			$this->config = array_merge( $this->config, $this->runtime_config );
-		}
-		foreach ( $alias_config as $key => $_ ) {
-			if ( isset( $this->runtime_config[ (string) $key ] ) && ! is_null( $this->runtime_config[ (string) $key ] ) ) {
-				// @phpstan-ignore assign.propertyType
-				$this->assoc_args[ (string) $key ] = $this->runtime_config[ (string) $key ];
-			}
+		// Merge alias config into the current config, then re-apply CLI runtime args only for
+		// keys overridden by the alias so runtime values still take precedence over alias config.
+		$this->config = array_merge( $this->config, $alias_config );
+		foreach ( array_intersect_key( $this->runtime_config, $alias_config ) as $key => $value ) {
+			$this->config[ $key ] = $value;
 		}
 	}
 
