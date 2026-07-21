@@ -172,4 +172,87 @@ final class PathTest extends TestCase {
 		$this->assertFalse( Path::inside_phar( '/regular/path/to/file.php' ) );
 		$this->assertTrue( Path::inside_phar( 'phar:///path/to/archive.phar/file.php' ) );
 	}
+
+	/**
+	 * @dataProvider dataPharSafe
+	 */
+	#[DataProvider( 'dataPharSafe' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testPharSafe( $path, $phar_path, $phar_root, $expected ): void {
+		$this->assertSame(
+			$expected,
+			Path::phar_safe( $path, $phar_path, $phar_root )
+		);
+	}
+
+	public static function dataPharSafe(): array {
+		$bundled    = 'phar://wp-cli.phar/vendor/wp-cli/wp-cli';
+		$standalone = 'phar://wp-cli.phar';
+
+		return [
+			// Not running inside a Phar: the path is returned unchanged.
+			'outside phar'                   => [
+				'/home/user/site/wp-config.php',
+				'/home/user/.local/bin/wp',
+				'/home/user/site',
+				'/home/user/site/wp-config.php',
+			],
+
+			// Canonical filename, WP_CLI_PHAR_PATH as a phar:// URL ( Phar::running( true ) ).
+			'canonical name, url phar path'  => [
+				'phar:///home/user/.local/bin/wp-cli.phar/vendor/wp-cli/config-command/templates/wp-config.mustache',
+				'phar:///home/user/.local/bin/wp-cli.phar',
+				$bundled,
+				'phar://wp-cli.phar/vendor/wp-cli/config-command/templates/wp-config.mustache',
+			],
+
+			// Renamed binary, WP_CLI_PHAR_PATH as a phar:// URL ( Phar::running( true ) ).
+			'renamed binary, url phar path'  => [
+				'phar:///home/user/.local/bin/wp/vendor/wp-cli/config-command/templates/wp-config.mustache',
+				'phar:///home/user/.local/bin/wp',
+				$bundled,
+				'phar://wp-cli.phar/vendor/wp-cli/config-command/templates/wp-config.mustache',
+			],
+
+			// Renamed binary, WP_CLI_PHAR_PATH as a bare path ( Phar::running( false ) ).
+			'renamed binary, bare phar path' => [
+				'phar:///home/user/.local/bin/wp/vendor/wp-cli/config-command/templates/wp-config.mustache',
+				'/home/user/.local/bin/wp',
+				$bundled,
+				'phar://wp-cli.phar/vendor/wp-cli/config-command/templates/wp-config.mustache',
+			],
+
+			// Windows bare path ( Phar::running( false ) ) with backslashes: the
+			// separators are normalized so the prefix still matches the stream URL.
+			'windows backslash phar path'    => [
+				'phar://C:/Users/bob/wp/vendor/wp-cli/config-command/templates/wp-config.mustache',
+				'C:\\Users\\bob\\wp',
+				$bundled,
+				'phar://wp-cli.phar/vendor/wp-cli/config-command/templates/wp-config.mustache',
+			],
+
+			// Standalone Phar layout (WP_CLI_ROOT without an internal path).
+			'standalone root'                => [
+				'phar:///home/user/.local/bin/wp/php/wp-cli.php',
+				'/home/user/.local/bin/wp',
+				$standalone,
+				'phar://wp-cli.phar/php/wp-cli.php',
+			],
+
+			// Already in alias form: no double rewrite.
+			'already aliased'                => [
+				'phar://wp-cli.phar/vendor/wp-cli/wp-cli/templates/wp-config.mustache',
+				'/home/user/.local/bin/wp',
+				$bundled,
+				'phar://wp-cli.phar/vendor/wp-cli/wp-cli/templates/wp-config.mustache',
+			],
+
+			// Root loaded via its physical path (no alias host): path left untouched.
+			'physical root, no alias'        => [
+				'phar:///home/user/.local/bin/wp/vendor/wp-cli/wp-cli/templates/wp-config.mustache',
+				'/home/user/.local/bin/wp',
+				'phar:///home/user/.local/bin/wp/vendor/wp-cli/wp-cli',
+				'phar:///home/user/.local/bin/wp/vendor/wp-cli/wp-cli/templates/wp-config.mustache',
+			],
+		];
+	}
 }
