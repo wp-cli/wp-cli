@@ -21,8 +21,8 @@ Feature: Various utilities for WP-CLI commands
       """
       <?php
       $_SERVER['HTTPS'] = 'on';
-      WP_CLI::set_url('http://example.com');
-      echo isset($_SERVER['HTTPS']) ? 'set' : 'not set';
+      WP_CLI::set_url( 'http://example.com' );
+      echo isset( $_SERVER['HTTPS'] ) ? 'set' : 'not set';
       """
 
     When I run `wp --skip-wordpress eval-file test.php`
@@ -36,8 +36,8 @@ Feature: Various utilities for WP-CLI commands
     And a test.php file:
       """
       <?php
-      WP_CLI::set_url('https://example.com');
-      echo isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'on' : 'off';
+      WP_CLI::set_url( 'https://example.com' );
+      echo isset( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' ? 'on' : 'off';
       """
 
     When I run `wp --skip-wordpress eval-file test.php`

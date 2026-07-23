@@ -74,7 +74,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       /**
        * Plugin Name: My Problematic Plugin
        */
-      trigger_error('Fatal error', E_USER_ERROR);
+      trigger_error( 'Fatal error', E_USER_ERROR );
       """
 
     When I try `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
@@ -188,7 +188,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
        * Plugin Name: Syntax Error Plugin
        */
       // Missing semicolon causes parse error
-      $var = "test"
+      $var = 'test'
       """
 
     When I try `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`
@@ -210,7 +210,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       <?php
       // Missing semicolon causes parse error
-      $var = "test"
+      $var = 'test'
       """
 
     When I try `WP_CLI_ERROR_RERUN=prompt wp plugin list < session_yes`

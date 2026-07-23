@@ -57,7 +57,7 @@ Feature: Bootstrap WP-CLI
       """
       <?php
       if ( ! class_exists( 'WP_CLI' ) ) {
-        return;
+      	return;
       }
       // Override bundled command.
       WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
@@ -66,9 +66,9 @@ Feature: Bootstrap WP-CLI
       """
       <?php
       class Custom_Eval_Command extends WP_CLI_Command {
-        public function __invoke() {
-          WP_CLI::success( "WP-Override-Eval" );
-        }
+      	public function __invoke() {
+      		WP_CLI::success( 'WP-Override-Eval' );
+      	}
       }
       """
     And a override/composer.json file:
@@ -102,42 +102,42 @@ Feature: Bootstrap WP-CLI
       """
       <?php
       if ( ! class_exists( 'WP_CLI' ) ) {
-        return;
+      	return;
       }
-      $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
+      $autoload = __DIR__ . '/vendor/autoload.php';
       if ( file_exists( $autoload ) && ! class_exists( 'Custom_CLI_Command' ) ) {
-        require_once $autoload;
+      	require_once $autoload;
       }
       // Override framework command.
       WP_CLI::add_command( 'cli', 'Custom_CLI_Command', array( 'when' => 'before_wp_load' ) );
       // Override bundled command.
       WP_CLI::add_hook(
-        'after_add_command:eval',
-        static function () {
-          static $added = false;
-          if ( ! $added ) {
-            $added = true;
-            WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
-          }
-        }
+      	'after_add_command:eval',
+      	static function () {
+      		static $added = false;
+      		if ( ! $added ) {
+      			$added = true;
+      			WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
+      		}
+      	}
       );
       """
     And a override/src/Custom_CLI_Command.php file:
       """
       <?php
       class Custom_CLI_Command extends WP_CLI_Command {
-        public function version() {
-          WP_CLI::success( "WP-Override-CLI" );
-        }
+      	public function version() {
+      		WP_CLI::success( 'WP-Override-CLI' );
+      	}
       }
       """
     And a override/src/Custom_Eval_Command.php file:
       """
       <?php
       class Custom_Eval_Command extends WP_CLI_Command {
-        public function __invoke() {
-          WP_CLI::success( "WP-Override-Eval" );
-        }
+      	public function __invoke() {
+      		WP_CLI::success( 'WP-Override-Eval' );
+      	}
       }
       """
     And a override/composer.json file:
@@ -190,42 +190,42 @@ Feature: Bootstrap WP-CLI
       """
       <?php
       if ( ! class_exists( 'WP_CLI' ) ) {
-        return;
+      	return;
       }
-      $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
+      $autoload = __DIR__ . '/vendor/autoload.php';
       if ( file_exists( $autoload ) && ! class_exists( 'Custom_CLI_Command' ) ) {
-        require_once $autoload;
+      	require_once $autoload;
       }
       // Override framework command.
       WP_CLI::add_command( 'cli', 'Custom_CLI_Command', array( 'when' => 'before_wp_load' ) );
       // Override bundled command.
       WP_CLI::add_hook(
-        'after_add_command:eval',
-        static function () {
-          static $added = false;
-          if ( ! $added ) {
-            $added = true;
-            WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
-          }
-        }
+      	'after_add_command:eval',
+      	static function () {
+      		static $added = false;
+      		if ( ! $added ) {
+      			$added = true;
+      			WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
+      		}
+      	}
       );
       """
     And a override/src/Custom_CLI_Command.php file:
       """
       <?php
       class Custom_CLI_Command extends WP_CLI_Command {
-        public function version() {
-          WP_CLI::success( "WP-Override-CLI" );
-        }
+      	public function version() {
+      		WP_CLI::success( 'WP-Override-CLI' );
+      	}
       }
       """
     And a override/src/Custom_Eval_Command.php file:
       """
       <?php
       class Custom_Eval_Command extends WP_CLI_Command {
-        public function __invoke() {
-          WP_CLI::success( "WP-Override-Eval" );
-        }
+      	public function __invoke() {
+      		WP_CLI::success( 'WP-Override-Eval' );
+      	}
       }
       """
     And a override/composer.json file:
@@ -278,20 +278,23 @@ Feature: Bootstrap WP-CLI
       """
       <?php
       if ( ! class_exists( 'WP_CLI' ) ) {
-        return;
+      	return;
       }
 
-      WP_CLI::add_hook( 'before_wp_load', static function () {
-        WP_CLI::add_command( 'plugin', 'My_Extended_Plugin_Command' );
-      } );
+      WP_CLI::add_hook(
+      	'before_wp_load',
+      	static function () {
+      		WP_CLI::add_command( 'plugin', 'My_Extended_Plugin_Command' );
+      	} 
+      );
       """
     And a override/src/My_Extended_Plugin_Command.php file:
       """
       <?php
       class My_Extended_Plugin_Command extends Plugin_Command {
-        public function install( $args, $assoc_args ) {
-          WP_CLI::error( 'Plugin installation has been disabled.' );
-        }
+      	public function install( $args, $assoc_args ) {
+      		WP_CLI::error( 'Plugin installation has been disabled.' );
+      	}
       }
       """
     And a override/composer.json file:
@@ -516,10 +519,9 @@ Feature: Bootstrap WP-CLI
       namespace WP_CLI\Bootstrap;
 
       // To override posix_geteuid in our namespace
-      function posix_geteuid() {
-        return 0;
-      }
-    ?>
+    function posix_geteuid() {
+    	return 0;
+    }
     """
 
     And I try `WP_CLI_EARLY_REQUIRE=include.php wp cli version --debug`
