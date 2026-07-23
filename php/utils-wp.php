@@ -73,15 +73,7 @@ function wp_debug_mode() {
 			if ( false !== $log_path ) {
 				ini_set( 'log_errors', 1 );
 				ini_set( 'error_log', $log_path );
-			} else {
-				// Explicitly disable inherited PHP error logging when WP_DEBUG_LOG is false.
-				ini_set( 'log_errors', 0 );
-				ini_set( 'error_log', '' );
 			}
-		} else {
-			// Explicitly disable inherited PHP error logging when WP_DEBUG_LOG is undefined.
-			ini_set( 'log_errors', 0 );
-			ini_set( 'error_log', '' );
 		}
 	} else {
 		error_reporting( E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_ERROR | E_WARNING | E_PARSE | E_USER_ERROR | E_USER_WARNING | E_RECOVERABLE_ERROR );
