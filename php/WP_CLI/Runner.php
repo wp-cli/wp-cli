@@ -1324,6 +1324,7 @@ class Runner {
 		if ( count( $args ) > 0 ) {
 			foreach ( $top_level_aliases as $old => $new ) {
 				if ( $old === $args[0] ) {
+					self::deprecated_syntax( "wp {$old}", "wp {$new}" );
 					$args[0] = $new;
 					break;
 				}
@@ -1332,6 +1333,7 @@ class Runner {
 
 		// *-meta  ->  * meta
 		if ( ! empty( $args ) && preg_match( '/(post|comment|user|network)-meta/', (string) $args[0], $matches ) ) {
+			self::deprecated_syntax( "wp {$args[0]}", "wp {$matches[1]} meta" );
 			array_shift( $args );
 			array_unshift( $args, 'meta' );
 			array_unshift( $args, $matches[1] );
@@ -1339,36 +1341,43 @@ class Runner {
 
 		// cli aliases  ->  cli alias list
 		if ( [ 'cli', 'aliases' ] === array_slice( $args, 0, 2 ) ) {
+			self::deprecated_syntax( 'wp cli aliases', 'wp cli alias list' );
 			list( $args[0], $args[1], $args[2] ) = [ 'cli', 'alias', 'list' ];
 		}
 
 		// core (multsite-)install --admin_name=  ->  --admin_user=
 		if ( count( $args ) > 0 && 'core' === $args[0] && isset( $assoc_args['admin_name'] ) ) {
+			self::deprecated_syntax( '--admin_name', '--admin_user' );
 			$assoc_args['admin_user'] = $assoc_args['admin_name'];
 			unset( $assoc_args['admin_name'] );
 		}
 
 		// core config  ->  config create
 		if ( [ 'core', 'config' ] === array_slice( $args, 0, 2 ) ) {
+			self::deprecated_syntax( 'wp core config', 'wp config create' );
 			list( $args[0], $args[1] ) = [ 'config', 'create' ];
 		}
 		// core language  ->  language core
 		if ( [ 'core', 'language' ] === array_slice( $args, 0, 2 ) ) {
+			self::deprecated_syntax( 'wp core language', 'wp language core' );
 			list( $args[0], $args[1] ) = [ 'language', 'core' ];
 		}
 
 		// checksum core  ->  core verify-checksums
 		if ( [ 'checksum', 'core' ] === array_slice( $args, 0, 2 ) ) {
+			self::deprecated_syntax( 'wp checksum core', 'wp core verify-checksums' );
 			list( $args[0], $args[1] ) = [ 'core', 'verify-checksums' ];
 		}
 
 		// checksum plugin  ->  plugin verify-checksums
 		if ( [ 'checksum', 'plugin' ] === array_slice( $args, 0, 2 ) ) {
+			self::deprecated_syntax( 'wp checksum plugin', 'wp plugin verify-checksums' );
 			list( $args[0], $args[1] ) = [ 'plugin', 'verify-checksums' ];
 		}
 
 		// site create --site_id=  ->  site create --network_id=
 		if ( count( $args ) >= 2 && 'site' === $args[0] && 'create' === $args[1] && isset( $assoc_args['site_id'] ) ) {
+			self::deprecated_syntax( '--site_id', '--network_id' );
 			$assoc_args['network_id'] = $assoc_args['site_id'];
 			unset( $assoc_args['site_id'] );
 		}
@@ -1377,24 +1386,28 @@ class Runner {
 		if ( count( $args ) > 1 && in_array( $args[0], [ 'plugin', 'theme' ], true )
 			&& 'update-all' === $args[1]
 		) {
+			self::deprecated_syntax( "wp {$args[0]} update-all", "wp {$args[0]} update --all" );
 			$args[1]           = 'update';
 			$assoc_args['all'] = true;
 		}
 
 		// transient delete-expired  ->  transient delete --expired
 		if ( count( $args ) > 1 && 'transient' === $args[0] && 'delete-expired' === $args[1] ) {
+			self::deprecated_syntax( 'wp transient delete-expired', 'wp transient delete --expired' );
 			$args[1]               = 'delete';
 			$assoc_args['expired'] = true;
 		}
 
 		// transient delete-all  ->  transient delete --all
 		if ( count( $args ) > 1 && 'transient' === $args[0] && 'delete-all' === $args[1] ) {
+			self::deprecated_syntax( 'wp transient delete-all', 'wp transient delete --all' );
 			$args[1]           = 'delete';
 			$assoc_args['all'] = true;
 		}
 
 		// plugin scaffold  ->  scaffold plugin
 		if ( [ 'plugin', 'scaffold' ] === array_slice( $args, 0, 2 ) ) {
+			self::deprecated_syntax( 'wp plugin scaffold', 'wp scaffold plugin' );
 			list( $args[0], $args[1] ) = [ $args[1], $args[0] ];
 		}
 
@@ -1409,6 +1422,7 @@ class Runner {
 			&& 'list' === $args[1]
 			&& isset( $assoc_args['ids'] )
 		) {
+			self::deprecated_syntax( '--ids', '--format=ids' );
 			$assoc_args['format'] = 'ids';
 			unset( $assoc_args['ids'] );
 		}
@@ -1433,6 +1447,7 @@ class Runner {
 
 		// (post|comment|site|term) url  --> (post|comment|site|term) list --*__in --field=url
 		if ( count( $args ) >= 2 && in_array( $args[0], [ 'post', 'comment', 'site', 'term' ], true ) && 'url' === $args[1] ) {
+			self::deprecated_syntax( "wp {$args[0]} url", "wp {$args[0]} list --field=url" );
 			switch ( $args[0] ) {
 				case 'post':
 					$post_ids                = array_slice( $args, 2 );
@@ -1493,6 +1508,33 @@ class Runner {
 		}
 
 		return [ $args, $assoc_args ];
+	}
+
+	/**
+	 * Emits a deprecation warning for a legacy command or flag syntax that is
+	 * still rewritten by back_compat_conversions().
+	 *
+	 * The rewrite keeps working throughout the 3.x cycle. These syntaxes were
+	 * never warned about before, so 3.0 is the first release to signal that they
+	 * are on their way out; they are scheduled for removal in WP-CLI 4.0. See
+	 * https://github.com/wp-cli/wp-cli/issues/6353.
+	 *
+	 * The conversion runs during the `ConfigureRunner` bootstrap step, before the
+	 * logger is initialized, so this writes to STDERR directly, matching the
+	 * existing `--blog`-style deprecation notice in Configurator.
+	 *
+	 * @param string $old_syntax The deprecated syntax that was used.
+	 * @param string $new_syntax The modern replacement to use instead.
+	 */
+	private static function deprecated_syntax( $old_syntax, $new_syntax ) {
+		fwrite(
+			STDERR,
+			sprintf(
+				"WP-CLI: The '%s' syntax is deprecated and will be removed in WP-CLI 4.0. Use '%s' instead.\n",
+				$old_syntax,
+				$new_syntax
+			)
+		);
 	}
 
 	/**
