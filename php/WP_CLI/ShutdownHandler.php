@@ -441,7 +441,7 @@ class ShutdownHandler {
 
 	/**
 	 * Strip HTML tags from a string safely, handling pre-WordPress loading contexts.
-	 * 
+	 *
 	 * Automatically falls back to strip_tags() function if the function from WP_CLI\Utils
 	 * is not available.
 	 *
