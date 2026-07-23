@@ -95,12 +95,12 @@ class ShutdownHandler {
 		self::$has_handled_error = true;
 
 		if ( ! is_array( $error ) || ! isset( $error['file'], $error['line'], $error['message'] ) ) {
-			return wp_strip_all_tags( $message );
+			return Utils\strip_tags( $message );
 		}
 
 		$message = 'There has been a critical error on this website.';
 
-		$message .= "\n\n" . wp_strip_all_tags( $error['message'] );
+		$message .= "\n\n" . Utils\strip_tags( $error['message'] );
 
 		/**
 		 * @var string $file
