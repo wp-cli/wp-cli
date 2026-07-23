@@ -95,12 +95,12 @@ class ShutdownHandler {
 		self::$has_handled_error = true;
 
 		if ( ! is_array( $error ) || ! isset( $error['file'], $error['line'], $error['message'] ) ) {
-			return Utils\strip_tags( $message );
+			return self::strip_tags( $message );
 		}
 
 		$message = 'There has been a critical error on this website.';
 
-		$message .= "\n\n" . Utils\strip_tags( $error['message'] );
+		$message .= "\n\n" . self::strip_tags( $error['message'] );
 
 		/**
 		 * @var string $file
@@ -437,5 +437,23 @@ class ShutdownHandler {
 		}
 
 		WP_CLI::error( 'Failed to launch subprocess for command rerun.' );
+	}
+
+	/**
+	 * Strip HTML tags from a string safely, handling pre-WordPress loading contexts.
+	 * 
+	 * Automatically falls back to strip_tags() function if the function from WP_CLI\Utils
+	 * is not available.
+	 *
+	 * @param string $text String to strip tags from.
+	 * @return string Stripped string.
+	 */
+	private static function strip_tags( $text ) {
+		if ( function_exists( 'WP_CLI\Utils\strip_tags' ) ) {
+			return Utils\strip_tags( $text );
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- Fallback before utils-wp load.
+		return trim( \strip_tags( (string) $text ) );
 	}
 }
