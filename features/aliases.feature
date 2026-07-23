@@ -157,12 +157,16 @@ Feature: Create shortcuts to specific WordPress installs
         path: {TEST_DIR}/foo
       """
 
-    When I run `wp cli aliases`
+    When I try `wp cli aliases`
     Then STDOUT should be YAML containing:
       """
       @all: Run command against every registered alias.
       @foo:
         path: {TEST_DIR}/foo
+      """
+    And STDERR should contain:
+      """
+      The 'wp cli aliases' syntax is deprecated and will be removed in WP-CLI 4.0. Use 'wp cli alias list' instead.
       """
 
     When I run `wp cli alias list --format=json`
@@ -171,10 +175,14 @@ Feature: Create shortcuts to specific WordPress installs
       {"@all":"Run command against every registered alias.","@foo":{"path":"{TEST_DIR}/foo"}}
       """
 
-    When I run `wp cli aliases --format=json`
+    When I try `wp cli aliases --format=json`
     Then STDOUT should be JSON containing:
       """
       {"@all":"Run command against every registered alias.","@foo":{"path":"{TEST_DIR}/foo"}}
+      """
+    And STDERR should contain:
+      """
+      The 'wp cli aliases' syntax is deprecated and will be removed in WP-CLI 4.0. Use 'wp cli alias list' instead.
       """
 
   Scenario: Get alias information
