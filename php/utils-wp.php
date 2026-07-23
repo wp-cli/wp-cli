@@ -90,7 +90,7 @@ function wp_debug_mode() {
 	// Respect WP_DEBUG and WP_DEBUG_DISPLAY: display errors when --debug is passed or
 	// WP_DEBUG is true (and WP_DEBUG_DISPLAY is not explicitly false).
 	if ( wp_debug_display_enabled() ) {
-		ini_set( 'display_errors', function_exists( 'xdebug_debug_zval' ) ? false : 'stderr' );
+		ini_set( 'display_errors', 'stderr' );
 	} else {
 		ini_set( 'display_errors', 0 );
 		// In PHP CLI mode, log_errors=1 with an empty error_log routes errors to STDERR even
