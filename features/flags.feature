@@ -217,7 +217,7 @@ Feature: Global flags
       <?php
       class Dummy_Logger {
 
-      	function __call( $method, $args ) {
+      	public function __call( $method, $args ) {
       		echo "log: called '$method' method";
       	}
       }
@@ -243,7 +243,7 @@ Feature: Global flags
        */
       class Test_Command extends WP_CLI_Command {
 
-      	function req( $args, $assoc_args ) {
+      	public function req( $args, $assoc_args ) {
       		WP_CLI::line( $args[0] );
       	}
       }

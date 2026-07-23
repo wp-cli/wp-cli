@@ -64,7 +64,8 @@ Feature: Utilities that depend on WordPress code
        * : Restrict returned tables to those that are views.
        */
       function test_wp_get_table_names( $args, $assoc_args ) {
-      	if ( $tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args ) ) {
+      	$tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
+      	if ( $tables ) {
       		echo implode( PHP_EOL, $tables ) . PHP_EOL;
       	}
       }
@@ -373,7 +374,8 @@ Feature: Utilities that depend on WordPress code
        * : List all tables in the database, regardless of the prefix, and even if not registered on $wpdb. Overrides --all-tables-with-prefix.
        */
       function test_wp_get_table_names( $args, $assoc_args ) {
-      	if ( $tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args ) ) {
+      	$tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
+      	if ( $tables ) {
       		echo implode( PHP_EOL, $tables ) . PHP_EOL;
       	}
       }
@@ -792,7 +794,8 @@ Feature: Utilities that depend on WordPress code
        * : List all tables in the database, regardless of the prefix, and even if not registered on $wpdb. Overrides --all-tables-with-prefix.
        */
       function test_wp_get_table_names( $args, $assoc_args ) {
-      	if ( $tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args ) ) {
+      	$tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
+      	if ( $tables ) {
       		echo implode( PHP_EOL, $tables ) . PHP_EOL;
       	}
       }

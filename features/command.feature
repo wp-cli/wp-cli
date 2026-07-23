@@ -160,7 +160,7 @@ Feature: WP-CLI Commands
       	 *
       	 * @when before_wp_load
       	 */
-      	function foo( $args ) {
+      	public function foo( $args ) {
       		WP_CLI::success( $this->prefix . ':' . $args[0] );
       	}
       }
@@ -206,7 +206,7 @@ Feature: WP-CLI Commands
       	 *
       	 * @when before_wp_load
       	 */
-      	function foo( $args ) {
+      	public function foo( $args ) {
       		WP_CLI::success( $args[0] );
       	}
       }
@@ -253,7 +253,7 @@ Feature: WP-CLI Commands
       	 *
       	 * @when before_wp_load
       	 */
-      	function __invoke( $args ) {
+      	public function __invoke( $args ) {
       		WP_CLI::success( $this->message );
       	}
       }
@@ -282,7 +282,7 @@ Feature: WP-CLI Commands
       	 *
       	 * @when before_wp_load
       	 */
-      	function foo( $args ) {
+      	public function foo( $args ) {
       		WP_CLI::success( $args[0] );
       	}
       }
@@ -995,7 +995,7 @@ Feature: WP-CLI Commands
       	 *
       	 * @when before_wp_load
       	 */
-      	function message( $args ) {
+      	public function message( $args ) {
       		WP_CLI::success( $this->message );
       	}
       }

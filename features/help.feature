@@ -680,7 +680,7 @@ Feature: Get help about WP-CLI commands
       	/**
       	 * A dummy command.
       	 */
-      	function __invoke() {}
+      	public function __invoke() {}
       }
 
       WP_CLI::add_command( 'test-help', 'Test_Help' );
@@ -723,24 +723,24 @@ Feature: Get help about WP-CLI commands
       	 *
       	 * @subcommand my-command
       	 */
-      	function my_command() {}
+      	public function my_command() {}
 
       	/**
       	 * Magic methods should not appear as commands
       	 */
-      	function __construct() {}
-      	function __destruct() {}
-      	function __call( $name, $arguments ) {}
-      	function __get( $key ) {}
-      	function __set( $key, $value ) {}
-      	function __isset( $key ) {}
-      	function __unset( $key ) {}
-      	function __sleep() {}
-      	function __wakeup() {}
-      	function __toString() {}
-      	static function __set_state( $properties ) {}
-      	function __clone() {}
-      	function __debugInfo() {}
+      	public function __construct() {}
+      	public function __destruct() {}
+      	public function __call( $name, $arguments ) {}
+      	public function __get( $key ) {}
+      	public function __set( $key, $value ) {}
+      	public function __isset( $key ) {}
+      	public function __unset( $key ) {}
+      	public function __sleep() {}
+      	public function __wakeup() {}
+      	public function __toString() {}
+      	public static function __set_state( $properties ) {}
+      	public function __clone() {}
+      	public function __debugInfo() {}
       }
 
       WP_CLI::add_command( 'test-magic-methods', 'Test_Magic_Methods' );
@@ -771,7 +771,7 @@ Feature: Get help about WP-CLI commands
       	 *
       	 * @subcommand my-command
       	 */
-      	function my_command() {}
+      	public function my_command() {}
       }
 
       WP_CLI::add_command( 'site test-extra', 'Test_CLI_Extra_Site_Command' );
@@ -797,7 +797,7 @@ Feature: Get help about WP-CLI commands
       	 *
       	 * @subcommand my-command
       	 */
-      	function my_command() {}
+      	public function my_command() {}
       }
 
       WP_CLI::add_command( 'config test-extra-config', 'Test_CLI_Extra_Command' );
@@ -929,7 +929,7 @@ Feature: Get help about WP-CLI commands
       	 *     # 123456789 123456789 123456789 12345
       	 *
       	 */
-      	function my_command() {}
+      	public function my_command() {}
       }
 
       WP_CLI::add_command( 'test-wordwrap', 'Test_Wordwrap' );
