@@ -3,6 +3,9 @@
 use WP_CLI\Tests\TestCase;
 use WP_CLI\ExitException;
 
+/**
+ * @phpstan-import-type UpdateOffer from CLI_Command
+ */
 class CLICommandTest extends TestCase {
 
 	private $prev_capture_exit;
@@ -55,9 +58,9 @@ class CLICommandTest extends TestCase {
 	}
 
 	/**
-	 * @param array<array-key, array<string, mixed>> $updates
-	 * @param bool                                    $include_major
-	 * @return array{offer: array<string, mixed>|null, suppressed_major: array<string, mixed>|null}
+	 * @param array<array-key, UpdateOffer> $updates
+	 * @param bool                           $include_major
+	 * @return UpdateOffer|null
 	 */
 	private function call_select_update_offer( $updates, $include_major ) {
 		$cli_command = new CLI_Command();
@@ -66,14 +69,19 @@ class CLICommandTest extends TestCase {
 			// @phpstan-ignore method.deprecated
 			$method->setAccessible( true );
 		}
-		return $method->invoke( $cli_command, $updates, $include_major );
+		/**
+		 * @var UpdateOffer|null $result
+		 */
+		$result = $method->invoke( $cli_command, $updates, $include_major );
+
+		return $result;
 	}
 
 	/**
 	 * @param string $update_type
 	 * @param string $version
 	 * @param string $status
-	 * @return array<string, string>
+	 * @return UpdateOffer
 	 */
 	private function update_offer( $update_type, $version, $status = 'available' ) {
 		return [
@@ -94,10 +102,8 @@ class CLICommandTest extends TestCase {
 
 		$result = $this->call_select_update_offer( $updates, false );
 
-		$this->assertNotNull( $result['offer'] );
-		$this->assertSame( '2.12.0', $result['offer']['version'] );
-		$this->assertNotNull( $result['suppressed_major'] );
-		$this->assertSame( '3.0.0', $result['suppressed_major']['version'] );
+		$this->assertSame( '2.12.0', $result['version'] ?? null );
+		$this->assertSame( '', $this->logger->stdout );
 	}
 
 	public function testSelectUpdateOfferFallsBackToPatchWhenNoMinor(): void {
@@ -108,8 +114,8 @@ class CLICommandTest extends TestCase {
 
 		$result = $this->call_select_update_offer( $updates, false );
 
-		$this->assertSame( '2.11.5', $result['offer']['version'] );
-		$this->assertSame( '3.0.0', $result['suppressed_major']['version'] );
+		$this->assertSame( '2.11.5', $result['version'] ?? null );
+		$this->assertSame( '', $this->logger->stdout );
 	}
 
 	public function testSelectUpdateOfferReturnsMajorWhenRequested(): void {
@@ -120,8 +126,8 @@ class CLICommandTest extends TestCase {
 
 		$result = $this->call_select_update_offer( $updates, true );
 
-		$this->assertSame( '3.0.0', $result['offer']['version'] );
-		$this->assertNull( $result['suppressed_major'] );
+		$this->assertSame( '3.0.0', $result['version'] ?? null );
+		$this->assertSame( '', $this->logger->stdout );
 	}
 
 	public function testSelectUpdateOfferWithholdsLoneMajorByDefault(): void {
@@ -131,9 +137,11 @@ class CLICommandTest extends TestCase {
 
 		$result = $this->call_select_update_offer( $updates, false );
 
-		$this->assertNull( $result['offer'] );
-		$this->assertNotNull( $result['suppressed_major'] );
-		$this->assertSame( '3.0.0', $result['suppressed_major']['version'] );
+		$this->assertNull( $result );
+		$this->assertSame(
+			"A new major version (3.0.0) is available. Run `wp cli update --major` to update across major versions.\n",
+			$this->logger->stdout
+		);
 	}
 
 	public function testSelectUpdateOfferDoesNotHintUnavailableMajor(): void {
@@ -144,8 +152,8 @@ class CLICommandTest extends TestCase {
 
 		$result = $this->call_select_update_offer( $updates, false );
 
-		$this->assertSame( '2.12.0', $result['offer']['version'] );
-		$this->assertNull( $result['suppressed_major'] );
+		$this->assertSame( '2.12.0', $result['version'] ?? null );
+		$this->assertSame( '', $this->logger->stdout );
 	}
 
 	public function testReplaceCurrentPharNonWindowsSuccess(): void {
