@@ -1233,14 +1233,14 @@ Feature: Get help about WP-CLI commands
 
       class WP_CLI_Foo_Bar_Command extends WP_CLI_Command {
       	/**
-      	* A command that has a link in its long description.
-      	*
-      	* This is a [reference link](https://wordpress.org/).
-      	* Also, there is a [second link](http://example.com/).
-      	* They should be displayed nicely!
-      	*
-      	* @synopsis <constant-name>
-      	*/
+      	 * A command that has a link in its long description.
+      	 *
+      	 * This is a [reference link](https://wordpress.org/).
+      	 * Also, there is a [second link](http://example.com/).
+      	 * They should be displayed nicely!
+      	 *
+      	 * @synopsis <constant-name>
+      	 */
       	public function __invoke( $args, $assoc_args ) {}
       }
 
@@ -1279,12 +1279,12 @@ Feature: Get help about WP-CLI commands
 
       class WP_CLI_Foo_Bar_Command extends WP_CLI_Command {
       	/**
-      	* A command that has a link in its long description.
-      	*
-      	* This is a [reference link](https://wordpress.org/). Also, there is a [second link](http://example.com/). They should be displayed nicely! Wow! This is a very, very long description.
-      	*
-      	* @synopsis <constant-name>
-      	*/
+      	 * A command that has a link in its long description.
+      	 *
+      	 * This is a [reference link](https://wordpress.org/). Also, there is a [second link](http://example.com/). They should be displayed nicely! Wow! This is a very, very long description.
+      	 *
+      	 * @synopsis <constant-name>
+      	 */
       	public function __invoke( $args, $assoc_args ) {}
       }
 
