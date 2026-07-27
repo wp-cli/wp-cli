@@ -1402,7 +1402,7 @@ class WP_CLI {
 		 */
 		$argv = $GLOBALS['argv'];
 
-		$script_path = $argv[0];
+		$script_path = escapeshellarg( $argv[0] );
 
 		$wp_cli_config_path = (string) getenv( 'WP_CLI_CONFIG_PATH' );
 
@@ -1570,7 +1570,7 @@ class WP_CLI {
 			 */
 
 			$php_bin     = escapeshellarg( Utils\get_php_binary() );
-			$script_path = $argv[0];
+			$script_path = escapeshellarg( $argv[0] );
 
 			// Persist runtime arguments unless they've been specified otherwise.
 			$configurator = self::get_configurator();
