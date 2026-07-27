@@ -1,6 +1,16 @@
 Changelog
 =========
 
+2.0.19
+------
+
+### Overview of changes
+- Update bundled certificates as of 2026-07-16. [#1050], [#1061]
+- General housekeeping.
+
+[#1050]: https://github.com/WordPress/Requests/pull/1050
+[#1061]: https://github.com/WordPress/Requests/pull/1061
+
 2.0.18
 ------
 
