@@ -366,7 +366,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * Use `--stable` to install or reinstall the latest stable version.
 	 *
-	 * Use `--nightly` to install the latest built version of the master branch.
+	 * Use `--nightly` to install the latest built version of the main branch.
 	 * While not recommended for production, nightly contains the latest and
 	 * greatest, and should be stable enough for development and staging
 	 * environments.
@@ -392,10 +392,10 @@ class CLI_Command extends WP_CLI_Command {
 	 * : Only perform major updates, and allow crossing a major-version boundary.
 	 *
 	 * [--stable]
-	 * : Update to the latest stable release. Skips update check.
+	 * : Update to the latest stable release. Skips update availability check.
 	 *
 	 * [--nightly]
-	 * : Update to the latest built version of the master branch. Potentially unstable.
+	 * : Update to the latest built version of the main branch. Potentially unstable.
 	 *
 	 * [--yes]
 	 * : Do not prompt for confirmation.
