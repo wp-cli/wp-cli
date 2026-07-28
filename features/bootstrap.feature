@@ -547,3 +547,28 @@ Feature: Bootstrap WP-CLI
     # installed packages override phar-bundled versions.
     When I try `wp cli version --debug`
     Then STDERR should match /WP_CLI\\Bootstrap\\IncludeFallbackAutoloader[\s\S]*WP_CLI\\Bootstrap\\IncludePackageAutoloader/
+
+  Scenario: Protected commands skip WP root discovery and Requests autoloader from current directory
+    Given an empty directory
+    And a index.php file:
+      """
+      <?php
+      file_put_contents( __DIR__ . '/executed_index.txt', '1' );
+      require __DIR__ . '/wp-blog-header.php';
+      """
+    And a wp-includes/Requests/src/Autoload.php file:
+      """
+      <?php
+      file_put_contents( __DIR__ . '/../../executed_requests.txt', '1' );
+      """
+
+    When I run `wp cli info`
+    Then the return code should be 0
+    And the executed_index.txt file should not exist
+    And the executed_requests.txt file should not exist
+
+    When I run `wp package list`
+    Then the return code should be 0
+    And the executed_index.txt file should not exist
+    And the executed_requests.txt file should not exist
+
