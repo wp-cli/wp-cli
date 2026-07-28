@@ -2114,18 +2114,22 @@ function get_mysql_binary_path() {
 	$mysql_binary   = trim( explode( "\n", $mysql->stdout )[0] );
 	$mariadb_binary = trim( explode( "\n", $mariadb->stdout )[0] );
 
-	if ( 0 === $mysql->return_code ) {
-		if ( '' !== $mysql_binary ) {
-			$path   = $mysql_binary;
-			$result = Process::create( escapeshellarg( $mysql_binary ) . ' --version', null, null )->run();
-
+	if ( 0 === $mysql->return_code && '' !== $mysql_binary ) {
+		$result = Process::create( escapeshellarg( $mysql_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$path = $mysql_binary;
 			// It's actually MariaDB disguised as MySQL.
-			if ( 0 === $result->return_code && false !== strpos( $result->stdout, 'MariaDB' ) && 0 === $mariadb->return_code ) {
+			if ( false !== strpos( $result->stdout, 'MariaDB' ) && 0 === $mariadb->return_code ) {
 				$path = $mariadb_binary;
 			}
 		}
-	} elseif ( 0 === $mariadb->return_code ) {
-		$path = $mariadb_binary;
+	}
+
+	if ( '' === $path && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
+		$result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$path = $mariadb_binary;
+		}
 	}
 
 	return $path;
