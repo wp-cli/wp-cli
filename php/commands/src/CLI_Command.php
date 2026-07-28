@@ -552,29 +552,58 @@ class CLI_Command extends WP_CLI_Command {
 			'insecure' => (bool) Utils\get_flag_value( $assoc_args, 'insecure', false ),
 		];
 
-		$response = Utils\http_request( 'GET', $manifest_url, null, [], $options );
+		$manifest_data = $this->get_manifest_data( $manifest_url, [], $options );
 
-		if ( $response->success && 200 === $response->status_code ) {
+		if (
+			isset( $manifest_data->requires_php ) &&
+			! $this->is_php_version_compatible( $manifest_data->requires_php )
+		) {
+			WP_CLI::error(
+				sprintf(
+					'The requested update requires PHP %s or higher. You are currently running PHP %s.',
+					$manifest_data->requires_php,
+					PHP_VERSION
+				)
+			);
+		}
+	}
+
+	/**
+	 * Fetches and parses a manifest JSON file.
+	 *
+	 * @param string               $url     Manifest URL.
+	 * @param array<string,string> $headers Request headers.
+	 * @param array                $options Request options.
+	 * @return object{requires_php?: string}|null Manifest data object, or null on failure.
+	 */
+	private function get_manifest_data( $url, array $headers = [], array $options = [] ) {
+		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
+
+		if ( $response->success && 200 === (int) $response->status_code ) {
 			/**
 			 * WP-CLI manifest.json data.
 			 *
 			 * @var object{requires_php?: string}|null $manifest_data
 			 */
 			$manifest_data = json_decode( $response->body, false );
-
-			if (
-				isset( $manifest_data->requires_php ) &&
-				! Comparator::greaterThanOrEqualTo( PHP_VERSION, $manifest_data->requires_php )
-			) {
-				WP_CLI::error(
-					sprintf(
-						'The requested update requires PHP %s or higher. You are currently running PHP %s.',
-						$manifest_data->requires_php,
-						PHP_VERSION
-					)
-				);
-			}
+			return $manifest_data;
 		}
+
+		return null;
+	}
+
+	/**
+	 * Checks if the current PHP version satisfies a requires_php constraint.
+	 *
+	 * @param string|null $requires_php Minimum PHP version required, if specified.
+	 * @return bool True if compatible or no requirement specified, false otherwise.
+	 */
+	private function is_php_version_compatible( $requires_php ) {
+		if ( empty( $requires_php ) ) {
+			return true;
+		}
+
+		return Comparator::greaterThanOrEqualTo( PHP_VERSION, $requires_php );
 	}
 
 	/**
@@ -768,16 +797,7 @@ class CLI_Command extends WP_CLI_Command {
 
 				// The manifest.json file, if it exists, contains information about PHP version requirements and similar.
 				if ( substr( $asset->browser_download_url, - strlen( 'manifest.json' ) ) === 'manifest.json' ) {
-					$response = Utils\http_request( 'GET', $asset->browser_download_url, null, $headers, $options );
-
-					if ( $response->success ) {
-						/**
-						 * WP-CLI manifest.json data.
-						 *
-						 * @var object{requires_php?: string}|null $manifest_data
-						 */
-						$manifest_data = json_decode( $response->body, false );
-					}
+					$manifest_data = $this->get_manifest_data( $asset->browser_download_url, $headers, $options );
 				}
 			}
 
@@ -788,7 +808,7 @@ class CLI_Command extends WP_CLI_Command {
 			// Release requires a newer version of PHP.
 			if (
 				isset( $manifest_data->requires_php ) &&
-				! Comparator::greaterThanOrEqualTo( PHP_VERSION, $manifest_data->requires_php )
+				! $this->is_php_version_compatible( $manifest_data->requires_php )
 			) {
 				$updates_unavailable[] = [
 					'version'      => $release_version,
@@ -831,24 +851,13 @@ class CLI_Command extends WP_CLI_Command {
 			$nightly_version = trim( $response->body );
 
 			if ( WP_CLI_VERSION !== $nightly_version ) {
-				$manifest_data = null;
-
 				// The manifest.json file, if it exists, contains information about PHP version requirements and similar.
-				$response = Utils\http_request( 'GET', 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.manifest.json', null, $headers, $options );
-
-				if ( $response->success ) {
-					/**
-					 * WP-CLI manifest.json data.
-					 *
-					 * @var object{requires_php?: string}|null $manifest_data
-					 */
-					$manifest_data = json_decode( $response->body );
-				}
+				$manifest_data = $this->get_manifest_data( 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.manifest.json', $headers, $options );
 
 				// Release requires a newer version of PHP.
 				if (
 					isset( $manifest_data->requires_php ) &&
-					! Comparator::greaterThanOrEqualTo( PHP_VERSION, $manifest_data->requires_php )
+					! $this->is_php_version_compatible( $manifest_data->requires_php )
 				) {
 					$updates_unavailable[] = [
 						'version'      => $nightly_version,
