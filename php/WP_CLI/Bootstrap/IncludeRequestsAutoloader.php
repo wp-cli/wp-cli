@@ -47,6 +47,11 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 			return $state;
 		}
 
+		// For protected commands, skip WP root detection and directly load bundled Requests.
+		if ( $state->getValue( BootstrapState::IS_PROTECTED_COMMAND ) ) {
+			return $this->load_bundled_requests( $state );
+		}
+
 		$runner = new RunnerInstance();
 
 		// Use `--path` from the alias if one is matching.
@@ -101,6 +106,16 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 		}
 
 		// Finally, fall back to the Requests version bundled with WP-CLI.
+		return $this->load_bundled_requests( $state );
+	}
+
+	/**
+	 * Load the Requests autoloader bundled with WP-CLI.
+	 *
+	 * @param BootstrapState $state Contextual state to pass into the step.
+	 * @return BootstrapState
+	 */
+	private function load_bundled_requests( BootstrapState $state ): BootstrapState {
 		$autoloader = new Autoloader();
 		$autoloader->add_namespace(
 			'WpOrg\Requests',
