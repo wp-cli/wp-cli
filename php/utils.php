@@ -2223,7 +2223,7 @@ function get_sql_dump_command() {
  * For MariaDB, prefers `mariadb-check` (available since MariaDB 10.5) but falls
  * back to `mysqlcheck` if the command is not found on the system.
  *
- * @return string The appropriate check command.
+ * @return string The appropriate check command, or an empty string if not found.
  */
 function get_sql_check_command() {
 	static $command = null;
@@ -2232,14 +2232,37 @@ function get_sql_check_command() {
 		return $command;
 	}
 
-	$command = 'mysqlcheck';
+	$command = '';
 
-	if ( 'mariadb' === get_db_type() ) {
-		$find_cmd = is_windows() ? 'where mariadb-check' : '/usr/bin/env which mariadb-check';
-		$result   = Process::create( $find_cmd, null, null )->run();
+	if ( is_windows() ) {
+		$mariadb = Process::create( 'where mariadb-check', null, null )->run();
+		$mysql   = Process::create( 'where mysqlcheck', null, null )->run();
+	} else {
+		$mariadb = Process::create( '/usr/bin/env which mariadb-check', null, null )->run();
+		$mysql   = Process::create( '/usr/bin/env which mysqlcheck', null, null )->run();
+	}
 
-		if ( 0 === $result->return_code && '' !== trim( $result->stdout ) ) {
-			$command = 'mariadb-check';
+	$mariadb_binary = trim( explode( "\n", $mariadb->stdout )[0] );
+	$mysql_binary   = trim( explode( "\n", $mysql->stdout )[0] );
+
+	if ( 'mariadb' === get_db_type() && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
+		$result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mariadb_binary;
+		}
+	}
+
+	if ( '' === $command && 0 === $mysql->return_code && '' !== $mysql_binary ) {
+		$result = Process::create( escapeshellarg( $mysql_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mysql_binary;
+		}
+	}
+
+	if ( '' === $command && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
+		$result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mariadb_binary;
 		}
 	}
 
