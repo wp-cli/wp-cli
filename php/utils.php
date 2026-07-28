@@ -2119,8 +2119,11 @@ function get_mysql_binary_path() {
 		if ( 0 === $result->return_code ) {
 			$path = $mysql_binary;
 			// It's actually MariaDB disguised as MySQL.
-			if ( false !== strpos( $result->stdout, 'MariaDB' ) && 0 === $mariadb->return_code ) {
-				$path = $mariadb_binary;
+			if ( false !== strpos( $result->stdout, 'MariaDB' ) && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
+				$mariadb_result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
+				if ( 0 === $mariadb_result->return_code ) {
+					$path = $mariadb_binary;
+				}
 			}
 		}
 	}
