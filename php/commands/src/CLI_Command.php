@@ -451,11 +451,13 @@ class CLI_Command extends WP_CLI_Command {
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'nightly' ) ) {
+			$this->check_manifest_php_requirement( 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.manifest.json', $assoc_args );
 			WP_CLI::confirm( sprintf( 'You are currently using WP-CLI version %s. Would you like to update to the latest nightly version?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar';
 			$md5_url      = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.md5';
 			$sha512_url   = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.sha512';
 		} elseif ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
+			$this->check_manifest_php_requirement( 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.manifest.json', $assoc_args );
 			WP_CLI::confirm( sprintf( 'You are currently using WP-CLI version %s. Would you like to update to the latest stable release?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
 			$md5_url      = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.md5';
@@ -533,6 +535,46 @@ class CLI_Command extends WP_CLI_Command {
 			$updated_version = isset( $newest['version'] ) ? $newest['version'] : '<not provided>';
 		}
 		WP_CLI::success( sprintf( 'Updated WP-CLI to %s.', $updated_version ) );
+	}
+
+	/**
+	 * Checks if the manifest at the given URL specifies a PHP version requirement
+	 * higher than the currently running PHP version, and exits with an error if so.
+	 *
+	 * @param string $manifest_url URL of the manifest JSON file.
+	 * @param array  $assoc_args   Associative arguments passed to the update command.
+	 *
+	 * @throws \WP_CLI\ExitException
+	 */
+	private function check_manifest_php_requirement( $manifest_url, $assoc_args ) {
+		$options = [
+			'timeout'  => 30,
+			'insecure' => (bool) Utils\get_flag_value( $assoc_args, 'insecure', false ),
+		];
+
+		$response = Utils\http_request( 'GET', $manifest_url, null, [], $options );
+
+		if ( $response->success && 200 === $response->status_code ) {
+			/**
+			 * WP-CLI manifest.json data.
+			 *
+			 * @var object{requires_php?: string}|null $manifest_data
+			 */
+			$manifest_data = json_decode( $response->body, false );
+
+			if (
+				isset( $manifest_data->requires_php ) &&
+				! Comparator::greaterThanOrEqualTo( PHP_VERSION, $manifest_data->requires_php )
+			) {
+				WP_CLI::error(
+					sprintf(
+						'The requested update requires PHP %s or higher. You are currently running PHP %s.',
+						$manifest_data->requires_php,
+						PHP_VERSION
+					)
+				);
+			}
+		}
 	}
 
 	/**
