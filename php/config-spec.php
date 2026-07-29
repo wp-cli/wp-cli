@@ -1,25 +1,25 @@
 <?php
 
 return [
-	'path'              => [
+	'path'                 => [
 		'runtime' => '=<path>',
 		'file'    => '<path>',
 		'desc'    => 'Path to the WordPress files.',
 	],
 
-	'url'               => [
+	'url'                  => [
 		'runtime' => '=<url>',
 		'file'    => '<url>',
 		'desc'    => 'Pretend request came from given URL. In multisite, this argument is how the target site is specified.',
 	],
 
-	'ssh'               => [
+	'ssh'                  => [
 		'runtime' => '=[<scheme>:][<user>@]<host|container>[:<port>][<path>]',
 		'file'    => '[<scheme>:][<user>@]<host|container>[:<port>][<path>]',
 		'desc'    => 'Perform operation against a remote server over SSH (or a container using scheme of "docker", "docker-compose", "docker-compose-run", "vagrant").',
 	],
 
-	'ssh-args'          => [
+	'ssh-args'             => [
 		'runtime'  => '=<args>',
 		'file'     => '<args>',
 		'desc'     => 'Pass additional arguments to SSH (or other tools specified by --ssh scheme).',
@@ -27,45 +27,45 @@ return [
 		'default'  => [],
 	],
 
-	'http'              => [
+	'http'                 => [
 		'runtime' => '=<http>',
 		'file'    => '<http>',
 		'desc'    => 'Perform operation against a remote WordPress installation over HTTP.',
 	],
 
-	'blog'              => [
+	'blog'                 => [
 		'deprecated' => 'Use --url instead.',
 		'runtime'    => '=<url>',
 	],
 
-	'user'              => [
+	'user'                 => [
 		'runtime' => '=<id|login|email>',
 		'file'    => '<id|login|email>',
 		'desc'    => 'Set the WordPress user.',
 	],
 
-	'skip-plugins'      => [
+	'skip-plugins'         => [
 		'runtime' => '[=<plugins>]',
 		'file'    => '<list>',
 		'desc'    => 'Skip loading all plugins, or a comma-separated list of plugins. Note: mu-plugins are still loaded.',
 		'default' => '',
 	],
 
-	'skip-themes'       => [
+	'skip-themes'          => [
 		'runtime' => '[=<themes>]',
 		'file'    => '<list>',
 		'desc'    => 'Skip loading all themes, or a comma-separated list of themes.',
 		'default' => '',
 	],
 
-	'skip-packages'     => [
+	'skip-packages'        => [
 		'runtime' => '',
 		'file'    => '<bool>',
 		'desc'    => 'Skip loading all installed packages.',
 		'default' => false,
 	],
 
-	'require'           => [
+	'require'              => [
 		'runtime'  => '=<path>',
 		'file'     => '<path>',
 		'desc'     => 'Load PHP file before running the command (may be used more than once).',
@@ -73,7 +73,7 @@ return [
 		'default'  => [],
 	],
 
-	'exec'              => [
+	'exec'                 => [
 		'runtime'  => '=<php-code>',
 		'file'     => '<php-code>',
 		'desc'     => 'Execute PHP code before running the command (may be used more than once).',
@@ -81,55 +81,63 @@ return [
 		'default'  => [],
 	],
 
-	'context'           => [
+	'trust-project-config' => [
+		'runtime'  => '[=<bool|path>]',
+		'file'     => '<bool|path>',
+		'desc'     => 'Trust project-level wp-cli.yml files containing exec or require directives.',
+		'multiple' => true,
+		'default'  => [],
+	],
+
+	'context'              => [
 		'runtime' => '=<context>',
 		'file'    => '<context>',
 		'default' => 'auto',
 		'desc'    => 'Load WordPress in a given context.',
 	],
 
-	'locale'            => [
+	'locale'               => [
 		'file'    => '<locale>',
 		'desc'    => 'Set the locale for WordPress when WP-CLI loads it (e.g., en_US, de_DE).',
 		'default' => '',
 	],
 
-	'disabled_commands' => [
+	'disabled_commands'    => [
 		'file'     => '<list>',
 		'default'  => [],
 		'multiple' => true,
 		'desc'     => '(Sub)commands to disable.',
 	],
 
-	'color'             => [
+	'color'                => [
 		'runtime' => true,
 		'file'    => '<bool>',
 		'default' => 'auto',
 		'desc'    => 'Whether to colorize the output.',
 	],
 
-	'debug'             => [
+	'debug'                => [
 		'runtime' => '[=<group>]',
 		'file'    => '<group>',
 		'default' => false,
 		'desc'    => 'Show all PHP errors and add verbosity to WP-CLI output. Built-in groups include: bootstrap, commandfactory, and help.',
 	],
 
-	'prompt'            => [
+	'prompt'               => [
 		'runtime' => '[=<assoc>]',
 		'file'    => false,
 		'default' => false,
 		'desc'    => 'Prompt the user to enter values for all command arguments, or a subset specified as comma-separated values.',
 	],
 
-	'quiet'             => [
+	'quiet'                => [
 		'runtime' => '',
 		'file'    => '<bool>',
 		'default' => false,
 		'desc'    => 'Suppress informational messages.',
 	],
 
-	'apache_modules'    => [
+	'apache_modules'       => [
 		'file'     => '<list>',
 		'desc'     => 'List of Apache Modules that are to be reported as loaded.',
 		'multiple' => true,
@@ -138,13 +146,13 @@ return [
 
 	# --allow-root => (NOT RECOMMENDED) Allow wp-cli to run as root. This poses
 	# a security risk, so you probably do not want to do this.
-	'allow-root'        => [
+	'allow-root'           => [
 		'file'    => false, # Explicit. Just in case the default changes.
 		'runtime' => '',
 		'hidden'  => true,
 	],
 
-	'alias'             => [
+	'alias'                => [
 		'runtime'  => '=<name>',
 		'file'     => '<name>',
 		'desc'     => 'Name of the alias to use. Aliases can reference local WordPress installations or remote SSH connections. Aliases are defined in the wp-cli.yml file.',
@@ -152,7 +160,7 @@ return [
 		'default'  => '',
 	],
 
-	'assume-https'      => [
+	'assume-https'         => [
 		'runtime' => '',
 		'file'    => '<bool>',
 		'default' => false,

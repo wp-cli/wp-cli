@@ -137,6 +137,25 @@ class Runner {
 	 */
 	private $required_files;
 
+	/**
+	 * List of exec commands.
+	 *
+	 * @var array
+	 */
+	private $exec_commands = [
+		'system'  => [],
+		'global'  => [],
+		'project' => [],
+		'runtime' => [],
+	];
+
+	/**
+	 * Trust project config setting from system/global config files.
+	 *
+	 * @var mixed
+	 */
+	private $global_trust_config = [];
+
 	public function __get( $key ) {
 		if ( '_' === $key[0] ) {
 			return null;
@@ -1569,6 +1588,14 @@ class Runner {
 		return $this->required_files;
 	}
 
+	public function get_exec_commands() {
+		return $this->exec_commands;
+	}
+
+	public function get_global_trust_config() {
+		return $this->global_trust_config;
+	}
+
 	/**
 	 * Do WordPress core files exist?
 	 */
@@ -1647,13 +1674,18 @@ class Runner {
 			$configurator->merge_yml( (string) $this->system_config_path, $this->alias );
 			$config                         = $configurator->to_array();
 			$this->required_files['system'] = $config[0]['require'];
+			$this->exec_commands['system']  = isset( $config[0]['exec'] ) ? (array) $config[0]['exec'] : [];
 			$configurator->merge_yml( (string) $this->global_config_path, $this->alias );
 			$config                         = $configurator->to_array();
 			$this->required_files['global'] = isset( $config[0]['require'] ) ? (array) $config[0]['require'] : [];
+			$this->exec_commands['global']  = isset( $config[0]['exec'] ) ? (array) $config[0]['exec'] : [];
+			$this->global_trust_config      = isset( $config[0]['trust-project-config'] ) ? $config[0]['trust-project-config'] : [];
 			$configurator->merge_yml( (string) $this->project_config_path, $this->alias );
 			$config                          = $configurator->to_array();
 			$this->required_files['project'] = isset( $config[0]['require'] ) ? (array) $config[0]['require'] : [];
+			$this->exec_commands['project']  = isset( $config[0]['exec'] ) ? (array) $config[0]['exec'] : [];
 			$this->required_files['runtime'] = [];
+			$this->exec_commands['runtime']  = [];
 		}
 
 		// Runtime config and args
@@ -1683,6 +1715,7 @@ class Runner {
 		$this->add_at_all_alias( $this->aliases );
 		$this->add_at_all_alias( $this->raw_aliases );
 		$this->required_files['runtime'] = $this->config['require'];
+		$this->exec_commands['runtime']  = isset( $this->config['exec'] ) ? (array) $this->config['exec'] : [];
 	}
 
 	/**
