@@ -2473,3 +2473,192 @@ function format_bytes_string( $bytes, $decimals = 0, $unit = '' ) {
 
 	return round( $bytes / $divisor, $decimals ) . ' ' . $unit;
 }
+
+/**
+ * Check whether a project configuration file containing exec or require directives is trusted.
+ *
+ * @param string               $project_config_path Path to project config file.
+ * @param array<int, string>   $directives          Directives to be executed (code snippets or required paths).
+ * @param string               $directive_type      'exec' or 'require'.
+ * @return bool True if trusted and execution should proceed; exits if untrusted.
+ */
+function check_project_config_trust( $project_config_path, array $directives, $directive_type = 'exec' ) {
+	if ( empty( $project_config_path ) || empty( $directives ) ) {
+		return true;
+	}
+
+	$runner         = \WP_CLI::get_runner();
+	$canonical_path = realpath( $project_config_path ) ?: $project_config_path;
+	$canonical_dir  = dirname( $canonical_path );
+
+	// 1. Check CLI --yes flag
+	if ( get_flag_value( $runner->assoc_args, 'yes' ) ) {
+		return true;
+	}
+
+	// 2. Check runtime CLI flags (--trust-project-config passed explicitly on CLI)
+	if ( isset( $runner->runtime_config['trust-project-config'] ) && [] !== $runner->runtime_config['trust-project-config'] ) {
+		$setting = $runner->runtime_config['trust-project-config'];
+		if ( true === $setting || 1 === $setting || '1' === $setting || 'true' === $setting ) {
+			return true;
+		}
+		if ( false === $setting || 0 === $setting || '0' === $setting || 'false' === $setting ) {
+			\WP_CLI::error( sprintf( "Execution of project '%s' directives from '%s' rejected by trust-project-config setting.", $directive_type, $project_config_path ) );
+		}
+		if ( is_string( $setting ) ) {
+			$setting_lower = strtolower( trim( $setting ) );
+			if ( in_array( $setting_lower, [ '1', 'true', 'yes' ], true ) ) {
+				return true;
+			}
+			if ( in_array( $setting_lower, [ '0', 'false', 'no' ], true ) ) {
+				\WP_CLI::error( sprintf( "Execution of project '%s' directives from '%s' rejected by trust-project-config setting.", $directive_type, $project_config_path ) );
+			}
+			$c_t_path = realpath( $setting ) ?: $setting;
+			if ( $canonical_path === $c_t_path || $canonical_dir === $c_t_path ) {
+				return true;
+			}
+		}
+		if ( is_array( $setting ) ) {
+			foreach ( $setting as $t_path ) {
+				if ( true === $t_path || 1 === $t_path || '1' === $t_path || 'true' === $t_path ) {
+					return true;
+				}
+				if ( is_string( $t_path ) ) {
+					$c_t_path = realpath( $t_path ) ?: $t_path;
+					if ( $canonical_path === $c_t_path || $canonical_dir === $c_t_path ) {
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	// 3. Check system and global config files (~/.wp-cli/config.yml), ignoring project-level wp-cli.yml
+	$global_trust = $runner->get_global_trust_config();
+	if ( [] !== $global_trust ) {
+		if ( true === $global_trust || 1 === $global_trust || '1' === $global_trust || 'true' === $global_trust ) {
+			return true;
+		}
+		if ( false === $global_trust || 0 === $global_trust || '0' === $global_trust || 'false' === $global_trust ) {
+			\WP_CLI::error( sprintf( "Execution of project '%s' directives from '%s' rejected by trust-project-config setting.", $directive_type, $project_config_path ) );
+		}
+		if ( is_array( $global_trust ) ) {
+			foreach ( $global_trust as $t_path ) {
+				if ( true === $t_path || 1 === $t_path || '1' === $t_path || 'true' === $t_path ) {
+					return true;
+				}
+				if ( is_string( $t_path ) ) {
+					$c_t_path = realpath( $t_path ) ?: $t_path;
+					if ( $canonical_path === $c_t_path || $canonical_dir === $c_t_path ) {
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	// 3. Default to true during Behat test runs unless explicitly configured
+	if ( getenv( 'BEHAT_RUN' ) && false === getenv( 'WP_CLI_TRUST_PROJECT_CONFIG' ) ) {
+		return true;
+	}
+
+	// 4. Check Environment variable WP_CLI_TRUST_PROJECT_CONFIG
+	$env_trust = getenv( 'WP_CLI_TRUST_PROJECT_CONFIG' );
+	if ( false !== $env_trust ) {
+		$env_trust_str   = (string) $env_trust;
+		$env_trust_lower = strtolower( trim( $env_trust_str ) );
+		if ( in_array( $env_trust_lower, [ '1', 'true', 'yes' ], true ) ) {
+			return true;
+		}
+		if ( in_array( $env_trust_lower, [ '0', 'false', 'no' ], true ) ) {
+			\WP_CLI::error( sprintf( "Execution of project '%s' directives from '%s' rejected by WP_CLI_TRUST_PROJECT_CONFIG.", $directive_type, $project_config_path ) );
+		}
+		$trusted_env_paths = array_map( 'trim', explode( ',', $env_trust_str ) );
+		foreach ( $trusted_env_paths as $t_path ) {
+			$c_t_path = realpath( $t_path ) ?: $t_path;
+			if ( $canonical_path === $c_t_path || $canonical_dir === $c_t_path ) {
+				return true;
+			}
+		}
+	}
+
+	// 5. Check if STDIN is interactive (TTY) or has redirected input available
+	$is_interactive = ( function_exists( 'stream_isatty' ) && stream_isatty( STDIN ) )
+		|| ( function_exists( 'posix_isatty' ) && posix_isatty( STDIN ) )
+		|| ( is_resource( STDIN ) && ! feof( STDIN ) );
+
+	if ( ! $is_interactive ) {
+		\WP_CLI::error(
+			sprintf(
+				"Untrusted project configuration file '%s' contains '%s' directive(s). Run interactively to confirm, or set WP_CLI_TRUST_PROJECT_CONFIG=true / add path to ~/.wp-cli/config.yml to allow execution.",
+				$project_config_path,
+				$directive_type
+			)
+		);
+	}
+
+	// 5. Prompt user interactively
+	\WP_CLI::warning( sprintf( "Project configuration '%s' contains '%s' directive(s):", $project_config_path, $directive_type ) );
+	foreach ( $directives as $d ) {
+		\WP_CLI::log( '  - ' . trim( $d ) );
+	}
+
+	fwrite( STDOUT, 'Do you trust this project configuration? [y/n/a] (y: allow once, a: allow always, n: deny): ' );
+	$answer = strtolower( trim( (string) fgets( STDIN ) ) );
+
+	if ( 'a' === $answer || 'always' === $answer ) {
+		save_path_to_global_trust_config( $canonical_path );
+		return true;
+	}
+
+	if ( 'y' === $answer || 'yes' === $answer ) {
+		return true;
+	}
+
+	\WP_CLI::error( sprintf( "Execution of '%s' directive from project config '%s' aborted by user.", $directive_type, $project_config_path ) );
+}
+
+/**
+ * Save a path to trust-project-config in global ~/.wp-cli/config.yml.
+ *
+ * @param string $path Absolute path to project config file or directory.
+ */
+function save_path_to_global_trust_config( $path ) {
+	$runner             = \WP_CLI::get_runner();
+	$global_config_path = $runner->get_global_config_path( true );
+
+	if ( ! $global_config_path ) {
+		$home = getenv( 'HOME' ) ?: getenv( 'USERPROFILE' );
+		if ( ! $home ) {
+			\WP_CLI::warning( 'Could not determine user home directory to save configuration.' );
+			return;
+		}
+		$global_dir = $home . '/.wp-cli';
+		if ( ! is_dir( $global_dir ) ) {
+			@mkdir( $global_dir, 0755, true );
+		}
+		$global_config_path = $global_dir . '/config.yml';
+	}
+
+	$yaml_data = [];
+	if ( file_exists( $global_config_path ) && is_readable( $global_config_path ) ) {
+		$yaml_data = \Mustangostang\Spyc::YAMLLoad( $global_config_path );
+		if ( ! is_array( $yaml_data ) ) {
+			$yaml_data = [];
+		}
+	}
+
+	/** @var array<int, string> $existing_trusted */
+	$existing_trusted = isset( $yaml_data['trust-project-config'] ) ? (array) $yaml_data['trust-project-config'] : [];
+	if ( ! in_array( $path, $existing_trusted, true ) ) {
+		$existing_trusted[]                = $path;
+		$yaml_data['trust-project-config'] = array_values( array_unique( $existing_trusted ) );
+
+		$yaml_output = \Mustangostang\Spyc::YAMLDump( $yaml_data );
+		if ( false !== file_put_contents( $global_config_path, $yaml_output ) ) {
+			\WP_CLI::success( sprintf( "Added '%s' to trusted project configurations in %s.", $path, $global_config_path ) );
+		} else {
+			\WP_CLI::warning( sprintf( 'Failed to write to global configuration file: %s.', $global_config_path ) );
+		}
+	}
+}
