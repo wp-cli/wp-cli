@@ -328,13 +328,16 @@ Feature: Run a WP-CLI command
   Scenario Outline: Apply backwards compat conversions
     Given a WP installation
 
-    When I run `wp <flag> run "term url category 1"`
+    When I try `wp <flag> run "term url category 1"`
     Then STDOUT should be:
       """
       https://example.com/?cat=1
       returned: NULL
       """
-    And STDERR should be empty
+    And STDERR should contain:
+      """
+      The 'wp term url' syntax is deprecated and will be removed in WP-CLI 4.0. Use 'wp term list --field=url' instead.
+      """
     And the return code should be 0
 
     Examples:
