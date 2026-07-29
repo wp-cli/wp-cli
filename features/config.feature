@@ -1122,3 +1122,137 @@ Feature: Have a config file
       """
       ssh: user@example.com/var/www/bar
       """
+
+  Scenario: Untrusted project exec directive in non-interactive environment
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'MALICIOUS EXEC';
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp eval "echo 'hello';" 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of project 'exec' directives from
+      """
+
+  Scenario: Trust project config via environment variable
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'EXECUTED_FROM_CONFIG';
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG=true wp eval --skip-wordpress "echo 'DONE';" 2>&1`
+    Then STDOUT should contain:
+      """
+      EXECUTED_FROM_CONFIG
+      """
+
+  Scenario: Trust project config via CLI runtime flag
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'RUNTIME_FLAG_TRUSTED';
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG=0 wp --trust-project-config eval --skip-wordpress "echo 'DONE';" 2>&1`
+    Then STDOUT should contain:
+      """
+      RUNTIME_FLAG_TRUSTED
+      """
+
+  Scenario: Project config cannot self-authorize trust-project-config
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      trust-project-config: true
+      exec:
+        - echo 'UNAUTHORIZED_SELF_TRUST';
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp eval --skip-wordpress "echo 'DONE';" 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of project 'exec' directives from
+      """
+    And STDOUT should not contain:
+      """
+      UNAUTHORIZED_SELF_TRUST
+      """
+
+  Scenario: Interactive prompt confirmation with y
+    Given an empty directory
+    And a session-y file:
+      """
+      y
+      """
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'PROMPT_ACCEPTED_ONCE';
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG= wp eval --skip-wordpress "echo 'DONE';" < session-y 2>&1`
+    Then STDOUT should contain:
+      """
+      Project configuration
+      """
+    And STDOUT should contain:
+      """
+      PROMPT_ACCEPTED_ONCE
+      """
+
+  Scenario: Interactive prompt rejection with n
+    Given an empty directory
+    And a session-n file:
+      """
+      n
+      """
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'PROMPT_REJECTED';
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG= wp eval --skip-wordpress "echo 'DONE';" < session-n 2>&1`
+    Then STDOUT should contain:
+      """
+      aborted by user
+      """
+    And STDOUT should not contain:
+      """
+      PROMPT_REJECTED
+      """
+
+  Scenario: Interactive prompt confirmation with a saves path to global config
+    Given an empty directory
+    And a session-a file:
+      """
+      a
+      """
+    And a user-config.yml file:
+      """
+      """
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'PROMPT_ACCEPTED_ALWAYS';
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_CONFIG_PATH=user-config.yml wp eval --skip-wordpress "echo 'DONE';" < session-a 2>&1`
+    Then STDOUT should contain:
+      """
+      Added
+      """
+    And STDOUT should contain:
+      """
+      PROMPT_ACCEPTED_ALWAYS
+      """
+    And the user-config.yml file should contain:
+      """
+      trust-project-config:
+      """

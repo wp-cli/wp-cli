@@ -1320,4 +1320,82 @@ class UtilsTest extends TestCase {
 
 		return escapeshellarg( $php ) . ' -r ' . escapeshellarg( $code );
 	}
+
+	public function testCheckProjectConfigTrustEmptyDirectives(): void {
+		$this->assertTrue( Utils\check_project_config_trust( '/path/wp-cli.yml', [] ) );
+		$this->assertTrue( Utils\check_project_config_trust( '', [ 'echo 1;' ] ) );
+	}
+
+	public function testCheckProjectConfigTrustWithYesFlag(): void {
+		$runner         = WP_CLI::get_runner();
+		$ref_assoc_args = new ReflectionProperty( $runner, 'assoc_args' );
+		$old_assoc_args = $ref_assoc_args->getValue( $runner );
+		$ref_assoc_args->setValue( $runner, [ 'yes' => true ] );
+
+		try {
+			$this->assertTrue( Utils\check_project_config_trust( '/path/wp-cli.yml', [ 'echo 1;' ] ) );
+		} finally {
+			$ref_assoc_args->setValue( $runner, $old_assoc_args );
+		}
+	}
+
+	public function testCheckProjectConfigTrustEnvironmentVariable(): void {
+		$env_key = 'WP_CLI_TRUST_PROJECT_CONFIG';
+		$old_env = getenv( $env_key );
+
+		$class_wp_cli              = new ReflectionClass( 'WP_CLI' );
+		$class_wp_cli_capture_exit = $class_wp_cli->getProperty( 'capture_exit' );
+		$prev_capture_exit         = $class_wp_cli_capture_exit->getValue();
+		$class_wp_cli_capture_exit->setValue( null, true );
+		$prev_logger = new Loggers\Execution();
+		WP_CLI::set_logger( $prev_logger );
+
+		try {
+			putenv( "{$env_key}=true" );
+			$this->assertTrue( Utils\check_project_config_trust( '/path/wp-cli.yml', [ 'echo 1;' ] ) );
+
+			putenv( "{$env_key}=/some/path/wp-cli.yml" );
+			$this->assertTrue( Utils\check_project_config_trust( '/some/path/wp-cli.yml', [ 'echo 1;' ] ) );
+
+			putenv( "{$env_key}=false" );
+			$this->expectException( ExitException::class );
+			Utils\check_project_config_trust( '/path/wp-cli.yml', [ 'echo 1;' ] );
+		} finally {
+			$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
+			if ( false !== $old_env ) {
+				putenv( "{$env_key}={$old_env}" );
+			} else {
+				putenv( $env_key );
+			}
+		}
+	}
+
+	public function testCheckProjectConfigTrustSaveGlobalConfig(): void {
+		$temp_dir = Utils\get_temp_dir() . 'test-trust-config-' . uniqid();
+		mkdir( $temp_dir );
+		$temp_yaml = $temp_dir . '/config.yml';
+		$old_env   = getenv( 'WP_CLI_CONFIG_PATH' );
+
+		try {
+			putenv( "WP_CLI_CONFIG_PATH={$temp_yaml}" );
+
+			Utils\save_path_to_global_trust_config( '/my/project/path/wp-cli.yml' );
+
+			$this->assertFileExists( $temp_yaml );
+			$data = \Mustangostang\Spyc::YAMLLoad( $temp_yaml );
+			$this->assertArrayHasKey( 'trust-project-config', $data );
+			$this->assertContains( '/my/project/path/wp-cli.yml', $data['trust-project-config'] );
+		} finally {
+			if ( false !== $old_env ) {
+				putenv( "WP_CLI_CONFIG_PATH={$old_env}" );
+			} else {
+				putenv( 'WP_CLI_CONFIG_PATH' );
+			}
+
+			if ( file_exists( $temp_yaml ) ) {
+				unlink( $temp_yaml );
+			}
+			rmdir( $temp_dir );
+		}
+	}
 }
