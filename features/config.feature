@@ -196,12 +196,12 @@ Feature: Have a config file
     When I run `wp cli has-command core`
     Then the return code should be 0
 
-  Scenario: 'core config' parameters
+  Scenario: 'config create' parameters
     Given an empty directory
     And WP files
     And a wp-cli.yml file:
       """
-      core config:
+      config create:
         dbname: wordpress
         dbuser: root
         extra-php: |
@@ -209,7 +209,7 @@ Feature: Have a config file
           define( 'WP_POST_REVISIONS', 50 );
       """
 
-    When I run `wp core config --skip-check`
+    When I run `wp config create --skip-check`
     And I run `grep WP_POST_REVISIONS wp-config.php`
     Then STDOUT should not be empty
 
