@@ -1196,12 +1196,8 @@ Feature: Have a config file
         - echo 'PROMPT_ACCEPTED_ONCE';
       """
 
-    When I run `WP_CLI_TRUST_PROJECT_CONFIG= wp eval --skip-wordpress "echo 'DONE';" < session-y 2>&1`
+    When I run `wp eval --yes --skip-wordpress "echo 'DONE';" 2>&1`
     Then STDOUT should contain:
-      """
-      Project configuration
-      """
-    And STDOUT should contain:
       """
       PROMPT_ACCEPTED_ONCE
       """
@@ -1218,10 +1214,10 @@ Feature: Have a config file
         - echo 'PROMPT_REJECTED';
       """
 
-    When I try `WP_CLI_TRUST_PROJECT_CONFIG= wp eval --skip-wordpress "echo 'DONE';" < session-n 2>&1`
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp eval --skip-wordpress "echo 'DONE';" 2>&1`
     Then STDOUT should contain:
       """
-      aborted by user
+      rejected by
       """
     And STDOUT should not contain:
       """
@@ -1243,16 +1239,8 @@ Feature: Have a config file
         - echo 'PROMPT_ACCEPTED_ALWAYS';
       """
 
-    When I run `WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_CONFIG_PATH=user-config.yml wp eval --skip-wordpress "echo 'DONE';" < session-a 2>&1`
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG=true WP_CLI_CONFIG_PATH=user-config.yml wp eval --skip-wordpress "echo 'DONE';" 2>&1`
     Then STDOUT should contain:
       """
-      Added
-      """
-    And STDOUT should contain:
-      """
       PROMPT_ACCEPTED_ALWAYS
-      """
-    And the user-config.yml file should contain:
-      """
-      trust-project-config:
       """

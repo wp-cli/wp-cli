@@ -1329,6 +1329,7 @@ class UtilsTest extends TestCase {
 	public function testCheckProjectConfigTrustWithYesFlag(): void {
 		$runner         = WP_CLI::get_runner();
 		$ref_assoc_args = new ReflectionProperty( $runner, 'assoc_args' );
+		$ref_assoc_args->setAccessible( true );
 		$old_assoc_args = $ref_assoc_args->getValue( $runner );
 		$ref_assoc_args->setValue( $runner, [ 'yes' => true ] );
 
@@ -1345,10 +1346,12 @@ class UtilsTest extends TestCase {
 
 		$class_wp_cli              = new ReflectionClass( 'WP_CLI' );
 		$class_wp_cli_capture_exit = $class_wp_cli->getProperty( 'capture_exit' );
+		$class_wp_cli_capture_exit->setAccessible( true );
 		$prev_capture_exit         = $class_wp_cli_capture_exit->getValue();
 		$class_wp_cli_capture_exit->setValue( null, true );
-		$prev_logger = new Loggers\Execution();
-		WP_CLI::set_logger( $prev_logger );
+		$prev_logger = WP_CLI::get_logger();
+		$logger      = new Loggers\Execution();
+		WP_CLI::set_logger( $logger );
 
 		try {
 			putenv( "{$env_key}=true" );
@@ -1362,6 +1365,7 @@ class UtilsTest extends TestCase {
 			Utils\check_project_config_trust( '/path/wp-cli.yml', [ 'echo 1;' ] );
 		} finally {
 			$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
+			WP_CLI::set_logger( $prev_logger );
 			if ( false !== $old_env ) {
 				putenv( "{$env_key}={$old_env}" );
 			} else {
