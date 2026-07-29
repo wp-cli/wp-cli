@@ -40,7 +40,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "2.13.x-dev"
+            "dev-main": "3.0.x-dev"
         },
         "commands": [
             "cli",
