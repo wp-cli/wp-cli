@@ -339,7 +339,7 @@ class CompositeCommand {
 	/**
 	 * Get the list of global parameters
 	 *
-	 * @param string $root_command whether to include or not root command specific description
+	 * @param bool|string $root_command whether to include or not root command specific description
 	 * @return string
 	 */
 	protected function get_global_params( $root_command = false ) {
@@ -366,7 +366,8 @@ class CompositeCommand {
 			if ( true === $details['runtime'] ) {
 				$synopsis = "--[no-]$key";
 			} else {
-				$synopsis = "--$key" . $details['runtime'];
+				$runtime_str = is_string( $details['runtime'] ) ? $details['runtime'] : '';
+				$synopsis    = "--$key" . $runtime_str;
 			}
 
 			// Check if global parameters synopsis should be displayed or not.

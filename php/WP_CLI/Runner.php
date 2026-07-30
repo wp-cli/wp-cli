@@ -162,8 +162,8 @@ class Runner {
 	/**
 	 * Register a command for early invocation, generally before WordPress loads.
 	 *
-	 * @param string $when Named execution hook
-	 * @param Subcommand $command
+	 * @param string                                          $when Named execution hook
+	 * @param Dispatcher\Subcommand|Dispatcher\CompositeCommand $command
 	 * @return void
 	 */
 	public function register_early_invoke( $when, $command ) {
@@ -171,7 +171,7 @@ class Runner {
 		$command_name = implode( ' ', $cmd_path );
 		WP_CLI::debug( "Attaching command '{$command_name}' to hook {$when}", 'bootstrap' );
 		$this->early_invoke[ $when ][] = $cmd_path;
-		if ( $command->get_alias() ) {
+		if ( method_exists( $command, 'get_alias' ) && $command->get_alias() ) {
 			array_pop( $cmd_path );
 			$cmd_path[] = $command->get_alias();
 			$alias_name = implode( ' ', $cmd_path );
