@@ -36,14 +36,29 @@ use WP_CLI\WpHttpCacheManager;
  */
 class WP_CLI {
 
+	/**
+	 * @var \WP_CLI\Loggers\Base
+	 */
 	private static $logger;
 
+	/**
+	 * @var array<string, array<int, callable>>
+	 */
 	private static $hooks = [];
 
+	/**
+	 * @var array<string, array<int|string, mixed>>
+	 */
 	private static $hooks_passed = [];
 
+	/**
+	 * @var bool
+	 */
 	private static $capture_exit = false;
 
+	/**
+	 * @var array<int|string, mixed>
+	 */
 	private static $deferred_additions = [];
 
 	/**
@@ -56,7 +71,7 @@ class WP_CLI {
 	/**
 	 * Set the logger instance.
 	 *
-	 * @param \WP_CLI\Loggers\Base|object $logger Logger instance to set.
+	 * @param \WP_CLI\Loggers\Base $logger Logger instance to set.
 	 */
 	public static function set_logger( $logger ) {
 		self::$logger = $logger;
@@ -65,7 +80,7 @@ class WP_CLI {
 	/**
 	 * Get the logger instance.
 	 *
-	 * @return \WP_CLI\Loggers\Base|object Logger instance.
+	 * @return \WP_CLI\Loggers\Base Logger instance.
 	 */
 	public static function get_logger() {
 		return self::$logger;

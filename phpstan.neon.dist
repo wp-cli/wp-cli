@@ -1,3 +1,6 @@
+includes:
+  - phar://phpstan.phar/conf/bleedingEdge.neon
+
 parameters:
   level: 9
   paths:
@@ -39,8 +42,12 @@ parameters:
     switchConditionsMatchingType: true
   ignoreErrors:
     - identifier: missingType.iterableValue
-    - identifier: missingType.property
     - identifier: missingType.parameter
     - identifier: missingType.return
     - identifier: function.deprecated
       path: tests
+    - identifier: staticMethod.alreadyNarrowedType
+      path: tests
+    - identifier: phpunit.assertEquals
+      path: tests
+    - identifier: staticMethod.internal

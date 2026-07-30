@@ -7,8 +7,14 @@ use WP_CLI\Utils;
 
 class ExtractorTest extends TestCase {
 
+	/**
+	 * @var string
+	 */
 	public static $copy_overwrite_files_prefix = 'wp-cli-test-utils-copy-overwrite-files-';
 
+	/**
+	 * @var array<string>
+	 */
 	public static $expected_wp = [
 		'index1.php',
 		'license2.php',
@@ -23,8 +29,15 @@ class ExtractorTest extends TestCase {
 		'xmlrpc8.php',
 	];
 
-	public static $logger      = null;
-	public static $prev_logger = null;
+	/**
+	 * @var Loggers\Execution
+	 */
+	public static $logger;
+
+	/**
+	 * @var Loggers\Base
+	 */
+	public static $prev_logger;
 
 	public function set_up(): void {
 		parent::set_up();

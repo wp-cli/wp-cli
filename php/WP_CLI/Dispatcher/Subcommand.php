@@ -766,8 +766,9 @@ class Subcommand extends CompositeCommand {
 			unset( $assoc_args[ $key ] );
 		}
 
-		$path   = get_path( $this->get_parent() );
-		$parent = implode( ' ', array_slice( $path, 1 ) );
+		$parent_cmd = $this->get_parent();
+		$path       = $parent_cmd ? get_path( $parent_cmd ) : [];
+		$parent     = implode( ' ', array_slice( $path, 1 ) );
 		$cmd    = $this->name;
 		if ( $parent ) {
 			/**

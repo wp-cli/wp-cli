@@ -8,8 +8,19 @@ use WP_CLI\ExitException;
  */
 class CLICommandTest extends TestCase {
 
+	/**
+	 * @var bool|mixed
+	 */
 	private $prev_capture_exit;
+
+	/**
+	 * @var \WP_CLI\Loggers\Base
+	 */
 	private $prev_logger;
+
+	/**
+	 * @var \WP_CLI\Loggers\Execution
+	 */
 	private $logger;
 
 	public static function set_up_before_class() {

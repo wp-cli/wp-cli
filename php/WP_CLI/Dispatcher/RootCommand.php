@@ -36,7 +36,7 @@ class RootCommand extends CompositeCommand {
 	 * command.
 	 *
 	 * @param array $args
-	 * @return Subcommand|false
+	 * @return Subcommand|CompositeCommand|false
 	 */
 	public function find_subcommand( &$args ) {
 		$command = array_shift( $args );

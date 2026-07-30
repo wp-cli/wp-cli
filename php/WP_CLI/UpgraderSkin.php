@@ -12,6 +12,9 @@ use WP_Upgrader_Skin;
  */
 class UpgraderSkin extends WP_Upgrader_Skin {
 
+	/**
+	 * @var \stdClass|null
+	 */
 	public $api;
 
 	public function header() {}
@@ -60,7 +63,7 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 	 */
 	public function process_feedback( $string, $args ) {
 
-		if ( 'parent_theme_prepare_install' === $string ) {
+		if ( 'parent_theme_prepare_install' === $string && is_object( $this->api ) ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $this->api->download_link, 'theme', $this->api->slug, $this->api->version );
 		}
 

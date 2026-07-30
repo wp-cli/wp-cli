@@ -17,7 +17,11 @@ use WP_CLI\Utils;
  */
 class CommandFactory {
 
-	// Cache of file contents, indexed by filename. Only used if opcache.save_comments is disabled.
+	/**
+	 * Cache of file contents, indexed by filename. Only used if opcache.save_comments is disabled.
+	 *
+	 * @var array<string, array<int, string>>
+	 */
 	private static $file_contents = [];
 
 	/**

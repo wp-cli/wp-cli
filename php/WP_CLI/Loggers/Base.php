@@ -8,17 +8,24 @@ use WP_CLI\Runner;
 
 /**
  * Base logger class
+ *
+ * @method void error( string $message )
+ * @method void error_multi_line( array $message_lines )
  */
 abstract class Base {
 
+	/**
+	 * @var bool
+	 */
 	protected $in_color = false;
 
 	/**
 	 * Informational message.
 	 *
 	 * @param string $message Message to write.
+	 * @param bool   $newline Optional. Whether to append a newline. Default true.
 	 */
-	abstract public function info( $message );
+	abstract public function info( $message, $newline = true );
 
 	/**
 	 * Success message.

@@ -4,6 +4,10 @@ use WpOrg\Requests\Transport;
 
 // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
 class Mock_Requests_Transport implements Transport {
+
+	/**
+	 * @var array<int, array{url: string, headers: array<string, string>, data: mixed, options: array<string, mixed>}>
+	 */
 	public $requests = [];
 
 	public function request( $url, $headers = [], $data = [], $options = [] ) {

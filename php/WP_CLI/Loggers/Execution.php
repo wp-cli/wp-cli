@@ -11,11 +11,15 @@ class Execution extends Regular {
 
 	/**
 	 * Captured writes to STDOUT.
+	 *
+	 * @var string
 	 */
 	public $stdout = '';
 
 	/**
 	 * Captured writes to STDERR.
+	 *
+	 * @var string
 	 */
 	public $stderr = '';
 

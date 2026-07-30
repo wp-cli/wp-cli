@@ -14,14 +14,44 @@ use WP_CLI\Utils;
  */
 class CompositeCommand {
 
+	/**
+	 * @var string
+	 */
 	protected $name;
+
+	/**
+	 * @var string
+	 */
 	protected $shortdesc;
+
+	/**
+	 * @var string
+	 */
 	protected $longdesc;
+
+	/**
+	 * @var string
+	 */
 	protected $synopsis;
+
+	/**
+	 * @var string|false
+	 */
 	protected $hook;
+
+	/**
+	 * @var DocParser
+	 */
 	protected $docparser;
 
+	/**
+	 * @var RootCommand|CompositeCommand|false
+	 */
 	protected $parent;
+
+	/**
+	 * @var array<string, Subcommand|CompositeCommand>
+	 */
 	protected $subcommands = [];
 
 	/**
@@ -51,7 +81,7 @@ class CompositeCommand {
 	/**
 	 * Get the parent composite (or root) command
 	 *
-	 * @return RootCommand|CompositeCommand
+	 * @return RootCommand|CompositeCommand|false
 	 */
 	public function get_parent() {
 		return $this->parent;
@@ -129,7 +159,7 @@ class CompositeCommand {
 	 * Get the hook name for this composite
 	 * command.
 	 *
-	 * @return string
+	 * @return string|false
 	 */
 	public function get_hook() {
 		return $this->hook;
@@ -245,7 +275,7 @@ class CompositeCommand {
 	 * subcommand
 	 *
 	 * @param array $args
-	 * @return Subcommand|false
+	 * @return Subcommand|CompositeCommand|false
 	 */
 	public function find_subcommand( &$args ) {
 		$name = array_shift( $args );
