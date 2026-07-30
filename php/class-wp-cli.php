@@ -72,6 +72,7 @@ class WP_CLI {
 	 * Set the logger instance.
 	 *
 	 * @param \WP_CLI\Loggers\Base $logger Logger instance to set.
+	 * @return void
 	 */
 	public static function set_logger( $logger ) {
 		self::$logger = $logger;
@@ -114,6 +115,9 @@ class WP_CLI {
 		return $root;
 	}
 
+	/**
+	 * @return Runner
+	 */
 	public static function get_runner() {
 		static $runner;
 
@@ -153,6 +157,9 @@ class WP_CLI {
 
 	/**
 	 * Set the context in which WP-CLI should be run
+	 *
+	 * @param string $url
+	 * @return void
 	 */
 	public static function set_url( $url ) {
 		self::debug( 'Set URL: ' . $url, 'bootstrap' );
@@ -160,6 +167,10 @@ class WP_CLI {
 		self::set_url_params( $url_parts );
 	}
 
+	/**
+	 * @param array<string, mixed> $url_parts
+	 * @return void
+	 */
 	private static function set_url_params( $url_parts ) {
 		$f = function ( $key ) use ( $url_parts ) {
 			return Utils\get_flag_value( $url_parts, $key, '' );
@@ -422,6 +433,11 @@ class WP_CLI {
 	 * Build Unique ID for storage and retrieval.
 	 *
 	 * Essentially _wp_filter_build_unique_id() without needing access to _wp_filter_build_unique_id()
+	 *
+	 * @param string   $tag
+	 * @param callable $function
+	 * @param int      $priority
+	 * @return string
 	 */
 	private static function wp_hook_build_unique_id( $tag, $function, $priority ) {
 		global $wp_filter;
@@ -721,6 +737,7 @@ class WP_CLI {
 	 *                                          two others.
 	 * @param CompositeCommand $old_command     Command that was already registered.
 	 * @param CompositeCommand $new_command     New command that is being added.
+	 * @return void
 	 */
 	private static function merge_sub_commands(
 		CompositeCommand $command_to_keep,
@@ -744,6 +761,7 @@ class WP_CLI {
 	 * @param string               $parent   Name for the parent command.
 	 * @param callable             $callable Command implementation as a class, function or closure.
 	 * @param array<string, mixed> $args     Optional. See `WP_CLI::add_command()` for details.
+	 * @return void
 	 */
 	private static function defer_command_addition( $name, $parent, $callable, $args = [] ) {
 		$args['is_deferred']               = true;
@@ -784,6 +802,9 @@ class WP_CLI {
 
 	/**
 	 * Remove a command addition from the list of outstanding deferred additions.
+	 *
+	 * @param string $name
+	 * @return void
 	 */
 	public static function remove_deferred_addition( $name ) {
 		if ( ! array_key_exists( $name, self::$deferred_additions ) ) {
@@ -801,6 +822,7 @@ class WP_CLI {
 	 *
 	 * @param string                    $command_name The name of the command being registered.
 	 * @param Dispatcher\Subcommand $command      The command object to check.
+	 * @return void
 	 */
 	public static function check_global_arg_conflicts( $command_name, $command ) {
 		$synopsis = $command->get_synopsis();
@@ -906,6 +928,7 @@ class WP_CLI {
 	 *
 	 * @param string $message Message to write to STDOUT.
 	 * @param bool   $newline Optional. Whether to append a newline to the end of the message. Default true.
+	 * @return void
 	 */
 	public static function log( $message, $newline = true ) {
 		if ( null === self::$logger ) {
@@ -1109,6 +1132,7 @@ class WP_CLI {
 	 * @category Output
 	 *
 	 * @param array<string|\WP_Error|\Exception|\Throwable> $message_lines Multi-line error message to be displayed.
+	 * @return void
 	 */
 	public static function error_multi_line( $message_lines ) {
 		if ( null === self::$logger ) {
@@ -1144,6 +1168,7 @@ class WP_CLI {
 	 *
 	 * @param string               $question Question to display before the prompt.
 	 * @param array<string, mixed> $assoc_args Skips prompt if 'yes' is provided.
+	 * @return void
 	 */
 	public static function confirm( $question, $assoc_args = [] ) {
 		if ( ! Utils\get_flag_value( $assoc_args, 'yes' ) ) {
@@ -1191,6 +1216,7 @@ class WP_CLI {
 	 *
 	 * @param string               $raw_value
 	 * @param array<string, mixed> $assoc_args
+	 * @return mixed
 	 */
 	public static function read_value( $raw_value, $assoc_args = [] ) {
 		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
@@ -1210,6 +1236,7 @@ class WP_CLI {
 	 *
 	 * @param mixed                $value Value to display.
 	 * @param array<string, mixed> $assoc_args Arguments passed to the command, determining format.
+	 * @return void
 	 */
 	public static function print_value( $value, $assoc_args = [] ) {
 		$raw_format = Utils\get_flag_value( $assoc_args, 'format', '' );
@@ -1271,6 +1298,7 @@ class WP_CLI {
 	 * to help identify where the exit originated from.
 	 *
 	 * @access private
+	 * @return void
 	 */
 	private static function debug_backtrace_on_exit() {
 		// Only output backtrace when debug mode is enabled.
@@ -1739,6 +1767,7 @@ class WP_CLI {
 	 *
 	 * @param array<int, string>   $args Positional arguments including command name.
 	 * @param array<string, mixed> $assoc_args
+	 * @return void
 	 */
 	public static function run_command( $args, $assoc_args = [] ) {
 		self::get_runner()->run_command( $args, $assoc_args );
@@ -1748,16 +1777,28 @@ class WP_CLI {
 
 	// DEPRECATED STUFF.
 
+	/**
+	 * @return void
+	 */
 	public static function add_man_dir() {
 		trigger_error( 'WP_CLI::add_man_dir() is deprecated. Add docs inline.', E_USER_WARNING );
 	}
 
 	// back-compat.
+	/**
+	 * @param string $str
+	 * @return void
+	 */
 	public static function out( $str ) {
 		fwrite( STDOUT, $str );
 	}
 
 	// back-compat.
+	/**
+	 * @param string $name
+	 * @param mixed $class
+	 * @return void
+	 */
 	// phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Deprecated method.
 	public static function addCommand( $name, $class ) {
 		trigger_error(
