@@ -1134,7 +1134,7 @@ Feature: Have a config file
     When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp eval "echo 'hello';" 2>&1`
     Then STDOUT should contain:
       """
-      Execution of project 'exec' directives from
+      Execution of project 'exec' directives rejected by
       """
     And STDOUT should not contain:
       """
@@ -1157,7 +1157,7 @@ Feature: Have a config file
     When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp eval "echo 'hello';" 2>&1`
     Then STDOUT should contain:
       """
-      Execution of project 'require' directives from
+      Execution of project 'require' directives rejected by
       """
     And STDOUT should not contain:
       """
@@ -1204,7 +1204,7 @@ Feature: Have a config file
     When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp eval --skip-wordpress "echo 'DONE';" 2>&1`
     Then STDOUT should contain:
       """
-      Execution of project 'exec' directives from
+      Execution of project 'exec' directives rejected by
       """
     And STDOUT should not contain:
       """
