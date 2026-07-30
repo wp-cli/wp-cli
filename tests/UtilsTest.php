@@ -15,30 +15,30 @@ class UtilsTest extends TestCase {
 
 	public function testIncrementVersion(): void {
 		// Keyword increments.
-		$this->assertEquals(
-			Utils\increment_version( '1.2.3-pre', 'same' ),
-			'1.2.3-pre'
+		$this->assertSame(
+			'1.2.3-pre',
+			Utils\increment_version( '1.2.3-pre', 'same' )
 		);
 
-		$this->assertEquals(
-			Utils\increment_version( '1.2.3-pre', 'patch' ),
-			'1.2.4'
+		$this->assertSame(
+			'1.2.4',
+			Utils\increment_version( '1.2.3-pre', 'patch' )
 		);
 
-		$this->assertEquals(
-			Utils\increment_version( '1.2.3-pre', 'minor' ),
-			'1.3.0'
+		$this->assertSame(
+			'1.3.0',
+			Utils\increment_version( '1.2.3-pre', 'minor' )
 		);
 
-		$this->assertEquals(
-			Utils\increment_version( '1.2.3-pre', 'major' ),
-			'2.0.0'
+		$this->assertSame(
+			'2.0.0',
+			Utils\increment_version( '1.2.3-pre', 'major' )
 		);
 
 		// Custom version string.
-		$this->assertEquals(
-			Utils\increment_version( '1.2.3-pre', '4.5.6-alpha1' ),
-			'4.5.6-alpha1'
+		$this->assertSame(
+			'4.5.6-alpha1',
+			Utils\increment_version( '1.2.3-pre', '4.5.6-alpha1' )
 		);
 	}
 
@@ -51,12 +51,12 @@ class UtilsTest extends TestCase {
 		$this->assertEmpty( Utils\get_named_sem_ver( '0.19.1-dev1', $original_version ) );
 		$this->assertEmpty( Utils\get_named_sem_ver( '0.19.1-beta3', $original_version ) );
 		$this->assertEmpty( Utils\get_named_sem_ver( '0.19.2-dev1', $original_version ) ); // -dev suffix not accepted by SemVer.
-		$this->assertEquals( 'patch', Utils\get_named_sem_ver( '0.19.2-beta3', $original_version ) );
-		$this->assertEquals( 'patch', Utils\get_named_sem_ver( '0.19.2', $original_version ) );
-		$this->assertEquals( 'minor', Utils\get_named_sem_ver( '0.20.0', $original_version ) );
-		$this->assertEquals( 'minor', Utils\get_named_sem_ver( '0.20.3', $original_version ) );
-		$this->assertEquals( 'major', Utils\get_named_sem_ver( '1.0.0', $original_version ) );
-		$this->assertEquals( 'major', Utils\get_named_sem_ver( '1.1.1', $original_version ) );
+		$this->assertSame( 'patch', Utils\get_named_sem_ver( '0.19.2-beta3', $original_version ) );
+		$this->assertSame( 'patch', Utils\get_named_sem_ver( '0.19.2', $original_version ) );
+		$this->assertSame( 'minor', Utils\get_named_sem_ver( '0.20.0', $original_version ) );
+		$this->assertSame( 'minor', Utils\get_named_sem_ver( '0.20.3', $original_version ) );
+		$this->assertSame( 'major', Utils\get_named_sem_ver( '1.0.0', $original_version ) );
+		$this->assertSame( 'major', Utils\get_named_sem_ver( '1.1.1', $original_version ) );
 	}
 
 	public function testGetSemVerWP(): void {
@@ -68,31 +68,31 @@ class UtilsTest extends TestCase {
 		$this->assertEmpty( Utils\get_named_sem_ver( '3.0-dev1', $original_version ) );
 		$this->assertEmpty( Utils\get_named_sem_ver( '3.0-beta3', $original_version ) );
 		$this->assertEmpty( Utils\get_named_sem_ver( '3.0.1-dev1', $original_version ) ); // -dev suffix not accepted by SemVer.
-		$this->assertEquals( 'patch', Utils\get_named_sem_ver( '3.0.1-beta3', $original_version ) );
-		$this->assertEquals( 'patch', Utils\get_named_sem_ver( '3.0.1', $original_version ) );
-		$this->assertEquals( 'minor', Utils\get_named_sem_ver( '3.1-beta3', $original_version ) );
-		$this->assertEquals( 'minor', Utils\get_named_sem_ver( '3.1', $original_version ) );
-		$this->assertEquals( 'minor', Utils\get_named_sem_ver( '3.1.1', $original_version ) );
-		$this->assertEquals( 'major', Utils\get_named_sem_ver( '4.0', $original_version ) );
-		$this->assertEquals( 'major', Utils\get_named_sem_ver( '4.1.1', $original_version ) );
+		$this->assertSame( 'patch', Utils\get_named_sem_ver( '3.0.1-beta3', $original_version ) );
+		$this->assertSame( 'patch', Utils\get_named_sem_ver( '3.0.1', $original_version ) );
+		$this->assertSame( 'minor', Utils\get_named_sem_ver( '3.1-beta3', $original_version ) );
+		$this->assertSame( 'minor', Utils\get_named_sem_ver( '3.1', $original_version ) );
+		$this->assertSame( 'minor', Utils\get_named_sem_ver( '3.1.1', $original_version ) );
+		$this->assertSame( 'major', Utils\get_named_sem_ver( '4.0', $original_version ) );
+		$this->assertSame( 'major', Utils\get_named_sem_ver( '4.1.1', $original_version ) );
 	}
 
 	public function testParseSSHUrl(): void {
 		$testcase = 'foo';
 		$this->assertEquals( [ 'host' => 'foo' ], Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( 'foo', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertSame( 'foo', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com';
 		$this->assertEquals( [ 'host' => 'foo.com' ], Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertSame( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com:2222';
 		$expected = [
@@ -100,11 +100,11 @@ class UtilsTest extends TestCase {
 			'port' => 2222,
 		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( 2222, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertSame( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertSame( '2222', Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com:2222/path/to/dir';
 		$expected = [
@@ -113,11 +113,11 @@ class UtilsTest extends TestCase {
 			'path' => '/path/to/dir',
 		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( 2222, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( '/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertSame( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertSame( '2222', Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertSame( '/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com~/path/to/dir';
 		$expected = [
@@ -125,20 +125,20 @@ class UtilsTest extends TestCase {
 			'path' => '~/path/to/dir',
 		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertSame( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertSame( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		// No host.
 		$testcase = '~/path/to/dir';
 		$this->assertEquals( [], Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		// Host and path, no port, with scp notation.
 		$testcase = 'foo.com:~/path/to/dir';
@@ -147,11 +147,11 @@ class UtilsTest extends TestCase {
 			'path' => '~/path/to/dir',
 		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertSame( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertSame( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com:2222~/path/to/dir';
 		$expected = [
@@ -160,11 +160,11 @@ class UtilsTest extends TestCase {
 			'port' => '2222',
 		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( '2222', Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertSame( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertSame( '2222', Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertSame( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		// Explicit scheme, user, host, path, no port.
 		$testcase = 'ssh:bar@foo.com:~/path/to/dir';
@@ -175,11 +175,11 @@ class UtilsTest extends TestCase {
 			'path'   => '~/path/to/dir',
 		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( 'ssh', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertSame( 'ssh', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertSame( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertSame( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertSame( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		// Container scheme
 		$testcase = 'docker:wordpress';
@@ -188,11 +188,11 @@ class UtilsTest extends TestCase {
 			'host'   => 'wordpress',
 		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( 'docker', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertSame( 'docker', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertSame( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		// Container scheme with user, and host.
 		$testcase = 'docker:bar@wordpress';
@@ -202,11 +202,11 @@ class UtilsTest extends TestCase {
 			'host'   => 'wordpress',
 		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( 'docker', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertSame( 'docker', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertSame( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertSame( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		// Container scheme with user, host, and path.
 		$testcase = 'docker-compose:bar@wordpress:~/path/to/dir';
@@ -217,11 +217,11 @@ class UtilsTest extends TestCase {
 			'path'   => '~/path/to/dir',
 		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( 'docker-compose', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertSame( 'docker-compose', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertSame( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertSame( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertSame( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		// Container scheme with user, host, and path.
 		$testcase = 'docker-compose-run:bar@wordpress:~/path/to/dir';
@@ -232,11 +232,11 @@ class UtilsTest extends TestCase {
 			'path'   => '~/path/to/dir',
 		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( 'docker-compose-run', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertSame( 'docker-compose-run', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertSame( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertSame( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertSame( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		// Vagrant scheme.
 		$testcase = 'vagrant:default';
@@ -245,11 +245,11 @@ class UtilsTest extends TestCase {
 			'host'   => 'default',
 		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( 'vagrant', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( 'default', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertSame( 'vagrant', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertSame( 'default', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		// Vagrant scheme.
 		$testcase = 'vagrant:/var/www/html';
@@ -259,11 +259,11 @@ class UtilsTest extends TestCase {
 			'path'   => '/var/www/html',
 		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
-		$this->assertEquals( 'vagrant', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
-		$this->assertEquals( '', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
-		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
-		$this->assertEquals( '/var/www/html', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+		$this->assertSame( 'vagrant', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertSame( '', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertSame( '/var/www/html', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		// Unsupported scheme, should not match.
 		$testcase = 'foo:bar';
@@ -507,7 +507,7 @@ class UtilsTest extends TestCase {
 	#[DataProvider( 'dataNormalizePath' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testNormalizePath( string $path, string $expected ): void {
 		// @phpstan-ignore function.deprecated
-		$this->assertEquals( $expected, Utils\normalize_path( $path ) );
+		$this->assertSame( $expected, Utils\normalize_path( $path ) );
 	}
 
 	public static function dataNormalizePath(): array {
@@ -949,7 +949,7 @@ class UtilsTest extends TestCase {
 	 */
 	#[DataProvider( 'dataEscLike' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function test_esc_like( string $input, string $expected ): void {
-		$this->assertEquals( $expected, Utils\esc_like( $input ) );
+		$this->assertSame( $expected, Utils\esc_like( $input ) );
 	}
 
 	/**
@@ -963,8 +963,8 @@ class UtilsTest extends TestCase {
 		$wpdb->method( 'esc_like' )
 			->willReturn( addcslashes( $input, '_%\\' ) );
 
-		$this->assertEquals( $expected, Utils\esc_like( $input ) );
-		$this->assertEquals( $expected, Utils\esc_like( $input ) );
+		$this->assertSame( $expected, Utils\esc_like( $input ) );
+		$this->assertSame( $expected, Utils\esc_like( $input ) );
 	}
 
 	/**
@@ -974,7 +974,7 @@ class UtilsTest extends TestCase {
 	public function test_esc_like_with_wpdb_being_null( string $input, string $expected ): void {
 		global $wpdb;
 		$wpdb = null;
-		$this->assertEquals( $expected, Utils\esc_like( $input ) );
+		$this->assertSame( $expected, Utils\esc_like( $input ) );
 	}
 
 	/**
@@ -985,7 +985,7 @@ class UtilsTest extends TestCase {
 	 */
 	#[DataProvider( 'dataIsJson' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testIsJson( $argument, $ignore_scalars, $expected ): void {
-		$this->assertEquals( $expected, Utils\is_json( $argument, $ignore_scalars ) );
+		$this->assertSame( $expected, Utils\is_json( $argument, $ignore_scalars ) );
 	}
 
 	public static function dataIsJson(): array {
@@ -1032,7 +1032,7 @@ class UtilsTest extends TestCase {
 	 */
 	#[DataProvider( 'dataPluralize' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testPluralize( $singular, $count, $expected ): void {
-		$this->assertEquals( $expected, Utils\pluralize( $singular, $count ) );
+		$this->assertSame( $expected, Utils\pluralize( $singular, $count ) );
 	}
 
 	public static function dataPluralize(): array {
@@ -1092,7 +1092,7 @@ class UtilsTest extends TestCase {
 	 */
 	#[DataProvider( 'dataEscapeCsvValue' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testEscapeCsvValue( string $input, string $expected ): void {
-		$this->assertEquals( $expected, Utils\escape_csv_value( $input ) );
+		$this->assertSame( $expected, Utils\escape_csv_value( $input ) );
 	}
 
 	public static function dataEscapeCsvValue(): array {
@@ -1258,7 +1258,7 @@ class UtilsTest extends TestCase {
 	 */
 	#[DataProvider( 'dataValidClassAndMethodPair' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testValidClassAndMethodPair( $pair, $is_valid ): void {
-		$this->assertEquals( $is_valid, Utils\is_valid_class_and_method_pair( $pair ) );
+		$this->assertSame( $is_valid, Utils\is_valid_class_and_method_pair( $pair ) );
 	}
 
 	public static function dataValidClassAndMethodPair(): array {
@@ -1318,41 +1318,41 @@ class UtilsTest extends TestCase {
 
 		// Test tilde expansion for home directory
 		// @phpstan-ignore function.deprecated
-		$this->assertEquals( $home, Utils\expand_tilde_path( '~' ) );
+		$this->assertSame( $home, Utils\expand_tilde_path( '~' ) );
 
 		// Test tilde expansion with subdirectory
 		// @phpstan-ignore function.deprecated
-		$this->assertEquals( $home . '/sites/wordpress', Utils\expand_tilde_path( '~/sites/wordpress' ) );
+		$this->assertSame( $home . '/sites/wordpress', Utils\expand_tilde_path( '~/sites/wordpress' ) );
 
 		// Test that paths without tilde are unchanged
 		// @phpstan-ignore function.deprecated
-		$this->assertEquals( '/absolute/path', Utils\expand_tilde_path( '/absolute/path' ) );
+		$this->assertSame( '/absolute/path', Utils\expand_tilde_path( '/absolute/path' ) );
 		// @phpstan-ignore function.deprecated
-		$this->assertEquals( 'relative/path', Utils\expand_tilde_path( 'relative/path' ) );
+		$this->assertSame( 'relative/path', Utils\expand_tilde_path( 'relative/path' ) );
 
 		// Test that tilde in the middle is not expanded
 		// @phpstan-ignore function.deprecated
-		$this->assertEquals( '/path/to/~something', Utils\expand_tilde_path( '/path/to/~something' ) );
+		$this->assertSame( '/path/to/~something', Utils\expand_tilde_path( '/path/to/~something' ) );
 	}
 
 	public function testEscapeshellargPreserveTilde(): void {
 		// Test that ~/ prefix is preserved and remainder is escaped
-		$this->assertEquals( '~/' . escapeshellarg( 'sites/wordpress' ), Utils\escapeshellarg_preserve_tilde( '~/sites/wordpress' ) );
-		$this->assertEquals( '~/' . escapeshellarg( 'my documents/site' ), Utils\escapeshellarg_preserve_tilde( '~/my documents/site' ) );
-		$this->assertEquals( '~/' . escapeshellarg( 'path with spaces' ), Utils\escapeshellarg_preserve_tilde( '~/path with spaces' ) );
+		$this->assertSame( '~/' . escapeshellarg( 'sites/wordpress' ), Utils\escapeshellarg_preserve_tilde( '~/sites/wordpress' ) );
+		$this->assertSame( '~/' . escapeshellarg( 'my documents/site' ), Utils\escapeshellarg_preserve_tilde( '~/my documents/site' ) );
+		$this->assertSame( '~/' . escapeshellarg( 'path with spaces' ), Utils\escapeshellarg_preserve_tilde( '~/path with spaces' ) );
 
 		// Test edge case: exactly ~/
-		$this->assertEquals( '~/' . escapeshellarg( '' ), Utils\escapeshellarg_preserve_tilde( '~/' ) );
+		$this->assertSame( '~/' . escapeshellarg( '' ), Utils\escapeshellarg_preserve_tilde( '~/' ) );
 
 		// Test that paths without ~/ are fully escaped
-		$this->assertEquals( escapeshellarg( '/absolute/path' ), Utils\escapeshellarg_preserve_tilde( '/absolute/path' ) );
-		$this->assertEquals( escapeshellarg( 'relative/path' ), Utils\escapeshellarg_preserve_tilde( 'relative/path' ) );
-		$this->assertEquals( escapeshellarg( '/path with spaces' ), Utils\escapeshellarg_preserve_tilde( '/path with spaces' ) );
+		$this->assertSame( escapeshellarg( '/absolute/path' ), Utils\escapeshellarg_preserve_tilde( '/absolute/path' ) );
+		$this->assertSame( escapeshellarg( 'relative/path' ), Utils\escapeshellarg_preserve_tilde( 'relative/path' ) );
+		$this->assertSame( escapeshellarg( '/path with spaces' ), Utils\escapeshellarg_preserve_tilde( '/path with spaces' ) );
 
 		// Test that lone ~ or ~username patterns are fully escaped (only ~/ is expanded)
-		$this->assertEquals( escapeshellarg( '~' ), Utils\escapeshellarg_preserve_tilde( '~' ) );
-		$this->assertEquals( escapeshellarg( '~user' ), Utils\escapeshellarg_preserve_tilde( '~user' ) );
-		$this->assertEquals( escapeshellarg( '~user/path' ), Utils\escapeshellarg_preserve_tilde( '~user/path' ) );
+		$this->assertSame( escapeshellarg( '~' ), Utils\escapeshellarg_preserve_tilde( '~' ) );
+		$this->assertSame( escapeshellarg( '~user' ), Utils\escapeshellarg_preserve_tilde( '~user' ) );
+		$this->assertSame( escapeshellarg( '~user/path' ), Utils\escapeshellarg_preserve_tilde( '~user/path' ) );
 	}
 
 	public function testHasStdinReturnsFalseForDevNull(): void {

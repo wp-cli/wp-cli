@@ -39,7 +39,7 @@ class WindowsArgsTest extends TestCase {
 		$this->assertCount( $expected_count, $result_args, 'Unexpected number of arguments' );
 
 		foreach ( $expected_values as $index => $expected_value ) {
-			$this->assertEquals( $expected_value, $result_args[ $index ], "Argument at index $index doesn't match" );
+			$this->assertSame( $expected_value, $result_args[ $index ], "Argument at index $index doesn't match" );
 		}
 	}
 

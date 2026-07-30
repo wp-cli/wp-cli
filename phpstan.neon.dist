@@ -41,6 +41,4 @@ parameters:
     numericOperandsInArithmeticOperators: true
     switchConditionsMatchingType: true
   ignoreErrors:
-    - identifier: phpunit.assertEquals
-      path: tests
     - identifier: staticMethod.internal

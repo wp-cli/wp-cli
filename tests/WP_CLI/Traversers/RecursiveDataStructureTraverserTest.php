@@ -59,11 +59,13 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 				'bar' => 'baz',
 			),
 		);
+		// @phpstan-ignore phpunit.assertEquals
 		$this->assertEquals( 'baz', $array['foo']['bar'] );
 
 		$traverser = new RecursiveDataStructureTraverser( $array );
 		$traverser->update( array( 'foo', 'bar' ), 'new' );
 
+		// @phpstan-ignore phpunit.assertEquals
 		$this->assertEquals( 'new', $array['foo']['bar'] );
 	}
 
@@ -73,11 +75,13 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 				'bar' => 'baz',
 			),
 		);
+		// @phpstan-ignore phpunit.assertEquals
 		$this->assertEquals( 'baz', $object->foo->bar );
 
 		$traverser = new RecursiveDataStructureTraverser( $object );
 		$traverser->update( array( 'foo', 'bar' ), 'new' );
 
+		// @phpstan-ignore phpunit.assertEquals
 		$this->assertEquals( 'new', $object->foo->bar );
 	}
 
@@ -85,11 +89,13 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 		$object = (object) array(
 			'test_mode' => 0,
 		);
+		// @phpstan-ignore phpunit.assertEquals
 		$this->assertEquals( 0, $object->test_mode );
 
 		$traverser = new RecursiveDataStructureTraverser( $object );
 		$traverser->update( array( 'test_mode' ), 1 );
 
+		// @phpstan-ignore phpunit.assertEquals
 		$this->assertEquals( 1, $object->test_mode );
 	}
 

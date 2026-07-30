@@ -165,7 +165,7 @@ class WpOrgApiTest extends TestCase {
 		}
 
 		$this->assertCount( 1, $transport_spy->requests );
-		$this->assertEquals( $expected_url, $transport_spy->requests[0]['url'] );
+		$this->assertSame( $expected_url, $transport_spy->requests[0]['url'] );
 		foreach ( $expected_options as $key => $value ) {
 			$this->assertEquals( $value, $transport_spy->requests[0]['options'][ $key ] );
 		}

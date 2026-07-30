@@ -183,23 +183,23 @@ class SynopsisParserTest extends TestCase {
 				],
 			],
 		];
-		$this->assertEquals( '<message> [<secrets>...] --meal=<meal> [--snack=<snack>] [--skip[=<skip>]]', SynopsisParser::render( $a ) );
+		$this->assertSame( '<message> [<secrets>...] --meal=<meal> [--snack=<snack>] [--skip[=<skip>]]', SynopsisParser::render( $a ) );
 	}
 
 	public function testParseThenRender(): void {
 		$o = '<positional> --assoc=<assoc> [--double[=<optional>]] --<field>=<value> [--flag]';
 		$a = SynopsisParser::parse( $o );
 		$r = SynopsisParser::render( $a );
-		$this->assertEquals( $o, $r );
+		$this->assertSame( $o, $r );
 	}
 
 	public function testParseThenRenderNumeric(): void {
 		$o = '<p1ositional> --a2ssoc=<assoc> --<field>=<value> [--f3lag]';
 		$a = SynopsisParser::parse( $o );
-		$this->assertEquals( 'p1ositional', $a[0]['name'] );
-		$this->assertEquals( 'a2ssoc', $a[1]['name'] );
-		$this->assertEquals( 'f3lag', $a[3]['name'] );
+		$this->assertSame( 'p1ositional', $a[0]['name'] );
+		$this->assertSame( 'a2ssoc', $a[1]['name'] );
+		$this->assertSame( 'f3lag', $a[3]['name'] );
 		$r = SynopsisParser::render( $a );
-		$this->assertEquals( $o, $r );
+		$this->assertSame( $o, $r );
 	}
 }
