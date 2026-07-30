@@ -534,7 +534,7 @@ class WP_CLI {
 	 * }
 	 * @return bool True on success, false if deferred, hard error if registration failed.
 	 *
-	 * @phpstan-param array{before_invoke?: callable, after_invoke?: callable, shortdesc?: string, longdesc?: string, synopsis?: string|CommandSynopsis[], when?: string, is_deferred?: bool} $args
+	 * @phpstan-param array<string, mixed> $args
 	 */
 	public static function add_command( $name, $callable, $args = [] ) {
 		// Bail immediately if the WP-CLI executable has not been run.

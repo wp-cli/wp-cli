@@ -58,8 +58,6 @@ class Path {
 	 *
 	 * @param string $path
 	 * @return bool
-	 *
-	 * @phpstan-assert-if-true non-empty-string $path
 	 */
 	public static function is_absolute( $path ) {
 		// Empty path is not absolute.
