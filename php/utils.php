@@ -204,7 +204,7 @@ function iterator_map( $it, ...$fns ) {
 
 	foreach ( $fns as $fn ) {
 		/**
-		 * @var Transform $it
+		 * @var Transform<int, mixed, mixed> $it
 		 */
 		$it->add_transform( $fn );
 	}

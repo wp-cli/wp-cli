@@ -9,7 +9,7 @@ use Iterator;
  *
  * @source https://gist.github.com/4060005
  *
- * @implements \Iterator<int, mixed>
+ * @implements \Iterator<int, object>
  */
 class Query implements Iterator {
 
