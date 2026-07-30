@@ -131,6 +131,7 @@ class ConfiguratorTest extends TestCase {
 		$logger = new Loggers\Execution();
 		WP_CLI::set_logger( $logger );
 
+		// @phpstan-ignore staticMethod.alreadyNarrowedType
 		$has_config = WP_CLI::has_config( 'url' );
 		$get_config = WP_CLI::get_config( 'url' );
 
