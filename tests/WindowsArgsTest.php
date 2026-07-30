@@ -12,6 +12,10 @@ class WindowsArgsTest extends TestCase {
 	 * Test that space-separated numeric IDs are split on Windows
 	 *
 	 * @dataProvider provideWindowsArguments
+	 * @param bool $is_windows
+	 * @param array<int, string> $input_args
+	 * @param int $expected_count
+	 * @param array<int, string> $expected_values
 	 */
 	#[PHPUnit\Framework\Attributes\DataProvider( 'provideWindowsArguments' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testWindowsArgumentSplitting( $is_windows, $input_args, $expected_count, $expected_values ): void {
