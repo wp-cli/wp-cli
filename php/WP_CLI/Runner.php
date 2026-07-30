@@ -1203,13 +1203,10 @@ class Runner {
 			}
 
 			$command_args = [
-				// @phpstan-ignore cast.string
-				$bits['ssh_config'] ? sprintf( '-F %s', escapeshellarg( (string) $bits['ssh_config'] ) ) : '',
-				// @phpstan-ignore cast.string
-				$bits['proxyjump'] ? sprintf( '-J %s', escapeshellarg( (string) $bits['proxyjump'] ) ) : '',
+				is_string( $bits['ssh_config'] ) && '' !== $bits['ssh_config'] ? sprintf( '-F %s', escapeshellarg( $bits['ssh_config'] ) ) : '',
+				is_string( $bits['proxyjump'] ) && '' !== $bits['proxyjump'] ? sprintf( '-J %s', escapeshellarg( $bits['proxyjump'] ) ) : '',
 				$bits['port'] ? sprintf( '-p %d', (int) $bits['port'] ) : '',
-				// @phpstan-ignore cast.string
-				$bits['key'] ? sprintf( '-i %s', escapeshellarg( (string) $bits['key'] ) ) : '',
+				is_string( $bits['key'] ) && '' !== $bits['key'] ? sprintf( '-i %s', escapeshellarg( $bits['key'] ) ) : '',
 				$is_vagrant_ssh ? '-o StrictHostKeyChecking=no' : '',
 				$is_vagrant_ssh ? '-o UserKnownHostsFile=/dev/null' : '',
 				$is_vagrant_ssh ? '-o BatchMode=yes' : '',
@@ -1576,8 +1573,7 @@ class Runner {
 		if ( 'auto' === $this->config['color'] ) {
 			$this->colorize = ( ! Utils\isPiped() && ! Utils\is_windows() );
 		} else {
-			// @phpstan-ignore assign.propertyType
-			$this->colorize = $this->config['color'];
+			$this->colorize = (bool) $this->config['color'];
 		}
 	}
 
@@ -1876,8 +1872,18 @@ class Runner {
 		WP_CLI::debug( $this->system_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( $this->global_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( $this->project_config_path_debug, 'bootstrap' );
-		// @phpstan-ignore argument.type
-		WP_CLI::debug( 'argv: ' . implode( ' ', (array) $GLOBALS['argv'] ), 'bootstrap' );
+		WP_CLI::debug(
+			'argv: ' . implode(
+				' ',
+				array_map(
+					function ( $v ) {
+						return is_scalar( $v ) ? (string) $v : '';
+					},
+					is_array( $GLOBALS['argv'] ) ? $GLOBALS['argv'] : []
+				)
+			),
+			'bootstrap'
+		);
 
 		if ( $this->alias ) {
 			if ( 'all' === $this->alias && ! isset( $this->aliases['all'] ) ) {
@@ -1943,8 +1949,7 @@ class Runner {
 		}
 
 		if ( $this->config['ssh'] ) {
-			// @phpstan-ignore cast.string
-			$this->run_ssh_command( (string) $this->config['ssh'] );
+			$this->run_ssh_command( is_string( $this->config['ssh'] ) ? $this->config['ssh'] : '' );
 			return;
 		}
 
