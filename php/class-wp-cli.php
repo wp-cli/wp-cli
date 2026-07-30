@@ -526,7 +526,7 @@ class WP_CLI {
 				$callable[0] = is_object( $callable[0] ) ? get_class( $callable[0] ) : $callable[0];
 				$callable    = [ $callable[0], $callable[1] ];
 			}
-			self::error( sprintf( 'Callable %s does not exist, and cannot be registered as `wp %s`.', json_encode( $callable ), $name ) );
+			self::error( sprintf( 'Callable %s does not exist, and cannot be registered as `wp %s`.', (string) json_encode( $callable ), $name ) );
 		}
 
 		$addition = new CommandAddition();

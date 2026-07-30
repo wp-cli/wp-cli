@@ -663,7 +663,7 @@ class CLI_Command extends WP_CLI_Command {
 		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
 
 		if ( ! $response->success || 200 !== $response->status_code ) {
-			$error_message = sprintf( 'Failed to get latest version (HTTP code %d).', $response->status_code );
+			$error_message = sprintf( 'Failed to get latest version (HTTP code %d).', (int) $response->status_code );
 			if ( 403 === $response->status_code ) {
 				$error_message .= ' This is due to GitHub API rate limiting.';
 				if ( false === $github_token ) {
@@ -784,7 +784,7 @@ class CLI_Command extends WP_CLI_Command {
 			$version_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/NIGHTLY_VERSION';
 			$response    = Utils\http_request( 'GET', $version_url, null, [], $options );
 			if ( ! $response->success || 200 !== $response->status_code ) {
-				WP_CLI::error( sprintf( 'Failed to get current nightly version (HTTP code %d)', $response->status_code ) );
+				WP_CLI::error( sprintf( 'Failed to get current nightly version (HTTP code %d)', (int) $response->status_code ) );
 			}
 			$nightly_version = trim( $response->body );
 
