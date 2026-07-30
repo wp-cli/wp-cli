@@ -38,14 +38,14 @@ class Configurator {
 	/**
 	 * Any aliases defined in config files.
 	 *
-	 * @var array<string, mixed>
+	 * @var array<string, array<int|string, mixed>>
 	 */
 	private $aliases = [];
 
 	/**
 	 * Raw aliases without environment variable interpolation.
 	 *
-	 * @var array<string, mixed>
+	 * @var array<string, array<int|string, mixed>>
 	 */
 	private $raw_aliases = [];
 
@@ -145,20 +145,24 @@ class Configurator {
 		$this->aliases[ $key ]     = [];
 		$this->raw_aliases[ $key ] = [];
 		$is_alias                  = false;
-		foreach ( self::$alias_spec as $i ) {
-			if ( isset( $value[ $i ] ) ) {
-				// Store raw value before interpolation.
-				$this->raw_aliases[ $key ][ $i ] = $value[ $i ];
+		if ( is_array( $value ) ) {
+			/** @var array<string, mixed> $val_arr */
+			$val_arr = $value;
+			foreach ( self::$alias_spec as $i ) {
+				if ( isset( $val_arr[ $i ] ) ) {
+					// Store raw value before interpolation.
+					$this->raw_aliases[ $key ][ $i ] = $val_arr[ $i ];
 
-				// Interpolate environment variables in alias values.
-				$val_i       = is_string( $value[ $i ] ) ? $value[ $i ] : '';
-				$value[ $i ] = self::interpolate_env_vars( $val_i );
-				if ( 'path' === $i && ! isset( $value['ssh'] ) && is_string( $value[ $i ] ) ) {
-					self::absolutize( $value[ $i ], $yml_file_dir );
-					$value[ $i ] = Path::normalize( $value[ $i ] );
+					// Interpolate environment variables in alias values.
+					$val_i         = is_string( $val_arr[ $i ] ) ? $val_arr[ $i ] : '';
+					$val_arr[ $i ] = self::interpolate_env_vars( $val_i );
+					if ( 'path' === $i && ! isset( $val_arr['ssh'] ) && is_string( $val_arr[ $i ] ) ) {
+						self::absolutize( $val_arr[ $i ], $yml_file_dir );
+						$val_arr[ $i ] = Path::normalize( $val_arr[ $i ] );
+					}
+					$this->aliases[ $key ][ $i ] = $val_arr[ $i ];
+					$is_alias                    = true;
 				}
-				$this->aliases[ $key ][ $i ] = $value[ $i ];
-				$is_alias                    = true;
 			}
 		}
 
@@ -269,7 +273,7 @@ class Configurator {
 	 * Splits a list of arguments into positional, associative and config.
 	 *
 	 * @param array<string> $arguments
-	 * @return array{0: array<string>, 1: array<string, mixed>, 2: array<string, array<int, string>|int|string|true>}
+	 * @return array{0: array<string>, 1: array<string, mixed>, 2: array<string, mixed>}
 	 */
 	public function parse_args( $arguments ) {
 		list( $positional_args, $mixed_args, $global_assoc, $local_assoc ) = self::extract_assoc( $arguments );
@@ -342,7 +346,7 @@ class Configurator {
 	 * @param array<int, array{0: string, 1: mixed}> $mixed_args
 	 * @param array<int, array{0: string, 1: mixed}> $global_assoc
 	 * @param array<int, array{0: string, 1: mixed}> $local_assoc
-	 * @return array{0: array<string, mixed>, 1: array<string, array<int, string>|int|string|true>}
+	 * @return array{0: array<string, mixed>, 1: array<string, mixed>}
 	 */
 	private function unmix_assoc_args( $mixed_args, $global_assoc = [], $local_assoc = [] ) {
 		$assoc_args     = [];
@@ -407,12 +411,17 @@ class Configurator {
 	 * @return void
 	 */
 	private function assoc_arg_to_runtime_config( $key, $value, &$runtime_config ) {
-		$details = $this->spec[ $key ];
+		$spec_val = $this->spec[ $key ] ?? null;
+		/** @var array<string, mixed> $details */
+		$details = is_array( $spec_val ) ? $spec_val : [];
 		if ( isset( $details['deprecated'] ) && is_string( $details['deprecated'] ) ) {
 			fwrite( STDERR, "WP-CLI: The --{$key} global parameter is deprecated. {$details['deprecated']}\n" );
 		}
 
-		if ( $details['multiple'] ) {
+		if ( ! empty( $details['multiple'] ) ) {
+			if ( ! isset( $runtime_config[ $key ] ) || ! is_array( $runtime_config[ $key ] ) ) {
+				$runtime_config[ $key ] = [];
+			}
 			$runtime_config[ $key ][] = $value;
 		} else {
 			$runtime_config[ $key ] = $value;
