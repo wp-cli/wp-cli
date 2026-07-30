@@ -214,6 +214,8 @@ class Subcommand extends CompositeCommand {
 		$spec = array_filter(
 			SynopsisParser::parse( $synopsis ),
 			function ( $spec_arg ) use ( $args, $assoc_args, &$arg_index ) {
+				/** @var array<string, mixed> $spec_arg */
+				$name = isset( $spec_arg['name'] ) && is_string( $spec_arg['name'] ) ? $spec_arg['name'] : '';
 				switch ( $spec_arg['type'] ) {
 					case 'positional':
 						// Only prompt for the positional arguments that are not
@@ -227,7 +229,7 @@ class Subcommand extends CompositeCommand {
 					default:
 						// Prompt for the specific flags that were not provided
 						// yet, based on name.
-						return ! isset( $assoc_args[ $spec_arg['name'] ] );
+						return ! isset( $assoc_args[ $name ] );
 				}
 			}
 		);
@@ -247,6 +249,8 @@ class Subcommand extends CompositeCommand {
 		$args = [];
 
 		foreach ( $spec as $key => $spec_arg ) {
+			/** @var array<string, mixed> $spec_arg */
+			$spec_name = isset( $spec_arg['name'] ) && is_string( $spec_arg['name'] ) ? $spec_arg['name'] : '';
 
 			// When prompting for specific arguments (e.g. --prompt=user_pass),
 			// ignore all arguments that don't match.
@@ -254,10 +258,10 @@ class Subcommand extends CompositeCommand {
 				if ( 'assoc' !== $spec_arg['type'] ) {
 					continue;
 				}
-				$matched = in_array( $spec_arg['name'], $prompt_args, true );
-				if ( ! $matched && ! empty( $spec_arg['aliases'] ) ) {
+				$matched = in_array( $spec_name, $prompt_args, true );
+				if ( ! $matched && ! empty( $spec_arg['aliases'] ) && is_array( $spec_arg['aliases'] ) ) {
 					foreach ( $spec_arg['aliases'] as $alias ) {
-						if ( in_array( $alias, $prompt_args, true ) ) {
+						if ( is_string( $alias ) && in_array( $alias, $prompt_args, true ) ) {
 							$matched = true;
 							break;
 						}
@@ -273,7 +277,8 @@ class Subcommand extends CompositeCommand {
 			// 'generic' permits arbitrary key=value (e.g. [--<field>=<value>] )
 			if ( 'generic' === $spec_arg['type'] ) {
 
-				list( $key_token, $value_token ) = explode( '=', $spec_arg['token'] );
+				$token                           = isset( $spec_arg['token'] ) && is_string( $spec_arg['token'] ) ? $spec_arg['token'] : '';
+				list( $key_token, $value_token ) = explode( '=', $token );
 
 				$repeat = false;
 				do {
@@ -306,7 +311,8 @@ class Subcommand extends CompositeCommand {
 				} while ( $repeat );
 
 			} else {
-				$prompt      = $current_prompt . $spec_arg['token'];
+				$token       = isset( $spec_arg['token'] ) && is_string( $spec_arg['token'] ) ? $spec_arg['token'] : '';
+				$prompt      = $current_prompt . $token;
 				$default_val = null;
 
 				// Add description if available
@@ -322,11 +328,11 @@ class Subcommand extends CompositeCommand {
 					$prompt .= ' (Y/n)';
 				} elseif ( 'positional' === $spec_arg['type'] || 'assoc' === $spec_arg['type'] ) {
 					$spec_args = ( 'positional' === $spec_arg['type'] )
-						? $docparser->get_arg_args( $spec_arg['name'] )
-						: $docparser->get_param_args( $spec_arg['name'] );
+						? $docparser->get_arg_args( $spec_name )
+						: $docparser->get_param_args( $spec_name );
 					if ( null !== $spec_args && isset( $spec_args['default'] ) ) {
 						$default_val = $spec_args['default'];
-						$prompt     .= ' [' . $default_val . ']';
+						$prompt     .= ' [' . ( is_scalar( $default_val ) ? (string) $default_val : '' ) . ']';
 					}
 				}
 
@@ -341,21 +347,22 @@ class Subcommand extends CompositeCommand {
 				}
 
 				if ( '' !== $response ) {
+					$resp_str = is_string( $response ) ? $response : ( is_scalar( $response ) ? (string) $response : '' );
 					switch ( $spec_arg['type'] ) {
 						case 'positional':
 							if ( $spec_arg['repeating'] ) {
-								$response = explode( ' ', $response );
+								$response = explode( ' ', $resp_str );
 							} else {
-								$response = [ $response ];
+								$response = [ $resp_str ];
 							}
 							$args = array_merge( $args, $response );
 							break;
 						case 'assoc':
-							$assoc_args[ $spec_arg['name'] ] = $response;
+							$assoc_args[ $spec_name ] = $response;
 							break;
 						case 'flag':
-							if ( 'Y' === strtoupper( $response ) ) {
-								$assoc_args[ $spec_arg['name'] ] = true;
+							if ( 'Y' === strtoupper( $resp_str ) ) {
+								$assoc_args[ $spec_name ] = true;
 							}
 							break;
 					}
@@ -467,12 +474,22 @@ class Subcommand extends CompositeCommand {
 			);
 		}
 
-		if ( ! $validator->enough_positionals( $args ) ) {
+		/** @var array<int, string> $positionals */
+		$positionals = array_values(
+			array_map(
+				static function ( $val ) {
+					return is_string( $val ) ? $val : ( is_scalar( $val ) ? (string) $val : '' );
+				},
+				$args
+			)
+		);
+
+		if ( ! $validator->enough_positionals( $positionals ) ) {
 			$this->show_usage();
 			exit( 1 );
 		}
 
-		$unknown_positionals = $validator->unknown_positionals( $args );
+		$unknown_positionals = $validator->unknown_positionals( $positionals );
 		if ( ! empty( $unknown_positionals ) ) {
 			\WP_CLI::error(
 				'Too many positional arguments: ' .
@@ -488,52 +505,55 @@ class Subcommand extends CompositeCommand {
 		];
 		$docparser     = $this->create_mock_docparser();
 		foreach ( $synopsis_spec as $spec ) {
+			$spec_name = isset( $spec['name'] ) && is_string( $spec['name'] ) ? $spec['name'] : '';
+
 			if ( 'positional' === $spec['type'] ) {
-				$spec_args = $docparser->get_arg_args( $spec['name'] );
+				$spec_args = $docparser->get_arg_args( $spec_name );
 				if ( ! isset( $args[ $i ] ) ) {
 					if ( isset( $spec_args['default'] ) ) {
 						$args[ $i ] = $spec_args['default'];
 					}
 				}
-				if ( isset( $spec_args['options'] ) ) {
+				if ( isset( $spec_args['options'] ) && is_array( $spec_args['options'] ) ) {
+					$options = $spec_args['options'];
 					if ( ! empty( $spec['repeating'] ) ) {
 						do {
 							// phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
-							if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) {
+							if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $options ) ) {
 								\WP_CLI::error( 'Invalid value specified for positional arg.' );
 							}
 							++$i;
 						} while ( isset( $args[ $i ] ) );
-					} elseif ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) { // phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
+					} elseif ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $options ) ) { // phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
 						\WP_CLI::error( 'Invalid value specified for positional arg.' );
 					}
 				}
 				++$i;
 			} elseif ( 'assoc' === $spec['type'] ) {
-				$spec_args = $docparser->get_param_args( $spec['name'] );
+				$spec_args = $docparser->get_param_args( $spec_name );
 
 				// Handle repeating parameter (e.g., [--status=<status>...])
-				if ( isset( $assoc_args[ $spec['name'] ] ) && is_array( $assoc_args[ $spec['name'] ] ) ) {
+				if ( isset( $assoc_args[ $spec_name ] ) && is_array( $assoc_args[ $spec_name ] ) ) {
 					// If repeating is not set, use only the last value
 					if ( empty( $spec['repeating'] ) ) {
-						$values       = $assoc_args[ $spec['name'] ];
+						$values       = $assoc_args[ $spec_name ];
 						$values_count = count( $values );
 						if ( $values_count > 0 ) {
-							$assoc_args[ $spec['name'] ] = $values[ $values_count - 1 ];
+							$assoc_args[ $spec_name ] = $values[ $values_count - 1 ];
 						}
 					}
 				}
 
-				if ( ! isset( $assoc_args[ $spec['name'] ] ) && ! isset( $extra_args[ $spec['name'] ] ) ) {
+				if ( ! isset( $assoc_args[ $spec_name ] ) && ! isset( $extra_args[ $spec_name ] ) ) {
 					if ( isset( $spec_args['default'] ) ) {
-						$assoc_args[ $spec['name'] ] = $spec_args['default'];
+						$assoc_args[ $spec_name ] = $spec_args['default'];
 					}
 				}
-				if ( isset( $assoc_args[ $spec['name'] ] ) && isset( $spec_args['options'] ) ) {
+				if ( isset( $assoc_args[ $spec_name ] ) && isset( $spec_args['options'] ) && is_array( $spec_args['options'] ) ) {
 					/**
 					 * @var string|string[] $value
 					 */
-					$value   = $assoc_args[ $spec['name'] ];
+					$value   = $assoc_args[ $spec_name ];
 					$options = $spec_args['options'];
 
 					// Handle validation for multiple values
@@ -541,7 +561,7 @@ class Subcommand extends CompositeCommand {
 						foreach ( $value as $single_value ) {
 							// phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
 							if ( ! in_array( $single_value, $options ) ) {
-								$errors['fatal'][ $spec['name'] ] = "Invalid value '{$single_value}' specified for '{$spec['name']}'";
+								$errors['fatal'][ $spec_name ] = "Invalid value '{$single_value}' specified for '{$spec_name}'";
 								break;
 							}
 						}
@@ -563,7 +583,7 @@ class Subcommand extends CompositeCommand {
 						) {
 							continue;
 						}
-						$errors['fatal'][ $spec['name'] ] = "Invalid value specified for '{$spec['name']}'";
+						$errors['fatal'][ $spec_name ] = "Invalid value specified for '{$spec_name}'";
 					}
 				}
 			}
@@ -597,7 +617,7 @@ class Subcommand extends CompositeCommand {
 			$out = 'Parameter errors:';
 			foreach ( $errors['fatal'] as $key => $error ) {
 				$out .= "\n {$error}";
-				$desc = $docparser->get_param_desc( $key );
+				$desc = $docparser->get_param_desc( (string) $key );
 				if ( '' !== $desc ) {
 					$out .= " ({$desc})";
 				}
@@ -628,7 +648,7 @@ class Subcommand extends CompositeCommand {
 		$sensitive_args = [];
 
 		foreach ( $synopsis_spec as $spec ) {
-			if ( 'assoc' === $spec['type'] ) {
+			if ( 'assoc' === $spec['type'] && isset( $spec['name'] ) && is_string( $spec['name'] ) ) {
 				$spec_args = $docparser->get_param_args( $spec['name'] );
 				if ( isset( $spec_args['sensitive'] ) && $spec_args['sensitive'] ) {
 					$sensitive_args[] = $spec['name'];
@@ -667,6 +687,7 @@ class Subcommand extends CompositeCommand {
 		static $prompted_once = false;
 
 		// Build alias map from the parsed synopsis and resolve to canonical names.
+		/** @var array<string, string> $aliases */
 		$aliases          = [];
 		$repeating_params = [];
 		$synopsis_spec    = SynopsisParser::parse( $this->get_synopsis() );
@@ -674,35 +695,38 @@ class Subcommand extends CompositeCommand {
 		// Build a set of assoc/flag canonical names (local + global) for conflict detection.
 		// Positional parameter names are excluded because an alias matching a positional
 		// name would not cause any real ambiguity (--alias vs bare positional).
+		/** @var list<string> $assoc_flag_names */
 		$assoc_flag_names = [];
 		foreach ( $synopsis_spec as $param ) {
-			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) ) {
+			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) && isset( $param['name'] ) && is_string( $param['name'] ) ) {
 				$assoc_flag_names[] = $param['name'];
 			}
-			if ( 'assoc' === $param['type'] && ! empty( $param['repeating'] ) ) {
+			if ( 'assoc' === $param['type'] && ! empty( $param['repeating'] ) && isset( $param['name'] ) && is_string( $param['name'] ) ) {
 				$repeating_params[ $param['name'] ] = true;
 			}
 		}
 		foreach ( SynopsisParser::parse( $this->get_global_params() ) as $param ) {
-			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) ) {
+			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) && isset( $param['name'] ) && is_string( $param['name'] ) ) {
 				$assoc_flag_names[] = $param['name'];
 			}
 		}
-		$assoc_flag_names = array_unique( $assoc_flag_names );
+		$assoc_flag_names = array_values( array_unique( $assoc_flag_names ) );
 
 		foreach ( $synopsis_spec as $param ) {
-			if ( empty( $param['aliases'] ) ) {
+			if ( empty( $param['aliases'] ) || ! is_array( $param['aliases'] ) || ! isset( $param['name'] ) || ! is_string( $param['name'] ) ) {
 				continue;
 			}
 
+			$param_name = $param['name'];
 			foreach ( $param['aliases'] as $alias ) {
+				$alias = is_string( $alias ) ? $alias : ( is_scalar( $alias ) ? (string) $alias : '' );
 				// Detect duplicate aliases (same alias used for different params).
-				if ( isset( $aliases[ $alias ] ) && $aliases[ $alias ] !== $param['name'] ) {
+				if ( isset( $aliases[ $alias ] ) && $aliases[ $alias ] !== $param_name ) {
 					WP_CLI::warning(
 						sprintf(
 							"Alias '%s' for parameter '%s' conflicts with existing alias for parameter '%s'. Skipping.",
 							$alias,
-							$param['name'],
+							$param_name,
 							$aliases[ $alias ]
 						)
 					);
@@ -710,18 +734,18 @@ class Subcommand extends CompositeCommand {
 				}
 
 				// Detect aliases that conflict with an assoc/flag canonical parameter name.
-				if ( in_array( $alias, $assoc_flag_names, true ) && $alias !== $param['name'] ) {
+				if ( in_array( $alias, $assoc_flag_names, true ) && $alias !== $param_name ) {
 					WP_CLI::warning(
 						sprintf(
 							"Alias '%s' for parameter '%s' conflicts with an existing parameter name. Skipping.",
 							$alias,
-							$param['name']
+							$param_name
 						)
 					);
 					continue;
 				}
 
-				$aliases[ $alias ] = $param['name'];
+				$aliases[ $alias ] = $param_name;
 			}
 		}
 		if ( ! empty( $aliases ) ) {
@@ -821,6 +845,9 @@ class Subcommand extends CompositeCommand {
 			// Get list of sensitive arguments to mask in output
 			$sensitive_args = $this->get_sensitive_args();
 
+			/** @var array<bool|float|int|string|null> $args_str */
+			$args_str = $args;
+
 			WP_CLI::log(
 				sprintf(
 					'wp %s %s',
@@ -829,7 +856,7 @@ class Subcommand extends CompositeCommand {
 						implode(
 							' ',
 							[
-								ltrim( Utils\args_to_str( $args ), ' ' ),
+								ltrim( Utils\args_to_str( $args_str ), ' ' ),
 								ltrim( Utils\assoc_args_to_str( $actual_args, $sensitive_args ), ' ' ),
 							]
 						),
@@ -867,12 +894,19 @@ class Subcommand extends CompositeCommand {
 	 * @return array<int, string> Array of parameter names
 	 */
 	private function get_parameters( $spec = [] ) {
-		$local_parameters  = array_column( $spec, 'name' );
-		$global_parameters = array_column(
-			SynopsisParser::parse( $this->get_global_params() ),
-			'name'
+		/** @var list<string> $local_parameters */
+		$local_parameters = array_values( array_filter( array_column( $spec, 'name' ), 'is_string' ) );
+		/** @var list<string> $global_parameters */
+		$global_parameters = array_values(
+			array_filter(
+				array_column(
+					SynopsisParser::parse( $this->get_global_params() ),
+					'name'
+				),
+				'is_string'
+			)
 		);
 
-		return array_unique( array_merge( $local_parameters, $global_parameters ) );
+		return array_values( array_unique( array_merge( $local_parameters, $global_parameters ) ) );
 	}
 }
