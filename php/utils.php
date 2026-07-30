@@ -354,7 +354,7 @@ function escapeshellarg_preserve_tilde( $arg ) {
 /**
  * Composes positional arguments into a command string.
  *
- * @param array<mixed> $args Positional arguments to compose.
+ * @param array<scalar|null> $args Positional arguments to compose.
  * @return string
  */
 function args_to_str( $args ) {

@@ -115,7 +115,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand list
 	 *
-	 * @param array                 $args      Positional arguments. Unused.
+	 * @param array<string>                     $args      Positional arguments. Unused.
 	 * @param array{format: string, raw?: bool} $assoc_args Associative arguments.
 	 */
 	public function list_( $args, $assoc_args ) {
@@ -464,7 +464,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @param bool   $create_config_file Optional. If a config file doesn't exist,
 	 *                                   should it be created? Defaults to false.
 	 *
-	 * @return array Config Path and Aliases in it.
+	 * @return array{0: string, 1: array<string, mixed>} Config Path and Aliases in it.
 	 * @throws ExitException
 	 */
 	private function get_aliases_data( $config, $alias, $create_config_file = false ) {
@@ -514,14 +514,14 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	/**
 	 * Return aliases array.
 	 *
-	 * @param array  $aliases     Current aliases data.
-	 * @param string $alias       Name of alias.
-	 * @param array  $assoc_args  Associative arguments.
-	 * @param bool   $is_grouping Check if its a grouping operation.
-	 * @param string $grouping    Grouping value.
-	 * @param bool   $is_update   Is this an update operation?
+	 * @param array<string, mixed> $aliases     Current aliases data.
+	 * @param string               $alias       Name of alias.
+	 * @param array<string, mixed> $assoc_args  Associative arguments.
+	 * @param bool                 $is_grouping Check if its a grouping operation.
+	 * @param string               $grouping    Grouping value.
+	 * @param bool                 $is_update   Is this an update operation?
 	 *
-	 * @return array<string, array<string, mixed>>
+	 * @return array<string, mixed>
 	 */
 	private function build_aliases( $aliases, $alias, $assoc_args, $is_grouping, $grouping = '', $is_update = false ) {
 		// For updates, we might receive @foo or foo depending on YAML format
@@ -551,7 +551,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			$alias_key = $this->find_alias_key( $aliases, $alias );
 			if ( null !== $alias_key ) {
 				// Get existing data based on format
-				if ( isset( $aliases['aliases'][ $normalized_alias ] ) ) {
+				if ( isset( $aliases['aliases'] ) && is_array( $aliases['aliases'] ) && isset( $aliases['aliases'][ $normalized_alias ] ) ) {
 					$existing_data = $aliases['aliases'][ $normalized_alias ];
 				} elseif ( isset( $aliases[ $alias_key ] ) ) {
 					$existing_data = $aliases[ $alias_key ];
@@ -568,14 +568,14 @@ class CLI_Alias_Command extends WP_CLI_Command {
 				unset( $aliases[ $at_key ] );
 			}
 			// Check if it's under aliases:
-			if ( isset( $aliases['aliases'][ $normalized_alias ] ) ) {
+			if ( isset( $aliases['aliases'] ) && is_array( $aliases['aliases'] ) && isset( $aliases['aliases'][ $normalized_alias ] ) ) {
 				unset( $aliases['aliases'][ $normalized_alias ] );
 			}
 		}
 
 		if ( ! $is_grouping ) {
 			// Start with existing data for updates, or empty array for new aliases
-			if ( ! isset( $aliases[ $normalized_alias ] ) ) {
+			if ( ! isset( $aliases[ $normalized_alias ] ) || ! is_array( $aliases[ $normalized_alias ] ) ) {
 				$aliases[ $normalized_alias ] = $existing_data;
 			}
 
@@ -583,7 +583,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 				if ( strpos( $key, 'set-' ) !== false ) {
 					$alias_key_info = explode( '-', $key );
 					$alias_key      = empty( $alias_key_info[1] ) ? '' : $alias_key_info[1];
-					if ( ! empty( $alias_key ) && ! empty( $value ) ) {
+					if ( ! empty( $alias_key ) && ! empty( $value ) && is_array( $aliases[ $normalized_alias ] ) ) {
 						$aliases[ $normalized_alias ][ $alias_key ] = $value;
 					}
 				}
@@ -606,8 +606,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	/**
 	 * Validate input of passed arguments.
 	 *
-	 * @param array       $assoc_args Arguments array.
-	 * @param string|null $grouping   Grouping argument value.
+	 * @param array<string, mixed> $assoc_args Arguments array.
+	 * @param string|null          $grouping   Grouping argument value.
 	 *
 	 * @throws ExitException
 	 */
@@ -631,10 +631,10 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	/**
 	 * Validate alias type before update.
 	 *
-	 * @param array  $aliases    Existing aliases data.
-	 * @param string $alias      Alias Name (can be normalized or with @).
-	 * @param array  $assoc_args Arguments array.
-	 * @param string $grouping   Grouping argument value.
+	 * @param array<string, mixed> $aliases    Existing aliases data.
+	 * @param string               $alias      Alias Name (can be normalized or with @).
+	 * @param array<string, mixed> $assoc_args Arguments array.
+	 * @param string               $grouping   Grouping argument value.
 	 *
 	 * @throws ExitException
 	 */
@@ -644,7 +644,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		$alias_key = $this->find_alias_key( $aliases, $alias );
 		if ( null === $alias_key ) {
 			$alias_data = null;
-		} elseif ( isset( $aliases['aliases'] ) && isset( $aliases['aliases'][ $alias_key ] ) ) {
+		} elseif ( isset( $aliases['aliases'] ) && is_array( $aliases['aliases'] ) && isset( $aliases['aliases'][ $alias_key ] ) ) {
 			$alias_data = $aliases['aliases'][ $alias_key ];
 		} else {
 			$alias_data = $aliases[ $alias_key ];
@@ -678,10 +678,10 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	/**
 	 * Save aliases data to config file.
 	 *
-	 * @param array  $aliases     Current aliases data.
-	 * @param string $alias       Name of alias.
-	 * @param string $config_path Path to config file.
-	 * @param string $operation   Current operation string fro message.
+	 * @param array<string, mixed> $aliases     Current aliases data.
+	 * @param string               $alias       Name of alias.
+	 * @param string               $config_path Path to config file.
+	 * @param string               $operation   Current operation string fro message.
 	 */
 	private function process_aliases( $aliases, $alias, $config_path, $operation = '' ) {
 		$alias = $this->normalize_alias( $alias );
@@ -745,8 +745,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *
 	 * Handles both @foo format and aliases: { foo: } format.
 	 *
-	 * @param array  $yaml_data The raw YAML data.
-	 * @param string $alias     The alias name (with or without @).
+	 * @param array<string, mixed> $yaml_data The raw YAML data.
+	 * @param string               $alias     The alias name (with or without @).
 	 * @return string|null      The actual key in YAML, or null if not found.
 	 */
 	private function find_alias_key( $yaml_data, $alias ) {

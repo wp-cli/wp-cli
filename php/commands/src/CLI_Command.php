@@ -886,8 +886,8 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * Polyfill for the `array_find()` function introduced in PHP 8.3.
 	 *
-	 * @param array    $arr      Array to search.
-	 * @param callable $callback The callback function for each element in the array.
+	 * @param array<mixed> $arr      Array to search.
+	 * @param callable     $callback The callback function for each element in the array.
 	 * @return mixed First array element for which the callback returns true, null otherwise.
 	 */
 	private function array_find( $arr, $callback ) {

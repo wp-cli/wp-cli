@@ -31,8 +31,8 @@ class Help_Command extends WP_CLI_Command {
 	 *     # get full help for `core`, including all subcommands
 	 *     wp help core --full
 	 *
-	 * @param string[] $args
-	 * @param array    $assoc_args
+	 * @param string[]             $args
+	 * @param array<string, mixed> $assoc_args
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$r = WP_CLI::get_runner()->find_command_to_run( $args, Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
