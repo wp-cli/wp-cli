@@ -2601,19 +2601,22 @@ function check_project_config_trust( $project_config_path, array $directives, $d
 		|| ( function_exists( 'posix_isatty' ) && posix_isatty( STDIN ) );
 
 	if ( ! $is_interactive ) {
+		$safe_config_path = addcslashes( $project_config_path, "\0..\37\177..\377" );
 		\WP_CLI::error(
 			sprintf(
 				"Untrusted project configuration file '%s' contains '%s' directive(s). Run interactively to confirm, or set WP_CLI_TRUST_PROJECT_CONFIG=true / add path to ~/.wp-cli/config.yml to allow execution.",
-				$project_config_path,
+				$safe_config_path,
 				$directive_type
 			)
 		);
 	}
 
 	// 5. Prompt user interactively
-	\WP_CLI::warning( sprintf( "Project configuration '%s' contains '%s' directive(s):", $project_config_path, $directive_type ) );
+	$safe_config_path = addcslashes( $project_config_path, "\0..\37\177..\377" );
+	\WP_CLI::warning( sprintf( "Project configuration '%s' contains '%s' directive(s):", $safe_config_path, $directive_type ) );
 	foreach ( $directives as $d ) {
-		\WP_CLI::log( '  - ' . trim( $d ) );
+		$safe_d = addcslashes( trim( $d ), "\0..\37\177..\377" );
+		\WP_CLI::log( '  - ' . $safe_d );
 	}
 
 	fwrite( STDOUT, 'Do you trust this project configuration? [y/n/a] (y: allow once, a: allow always, n: deny): ' );
@@ -2653,74 +2656,88 @@ function save_path_to_global_trust_config( $path ) {
 		$global_config_path = $global_dir . '/config.yml';
 	}
 
-	$yaml_data          = [];
-	$original_yaml_text = '';
-	if ( file_exists( $global_config_path ) && is_readable( $global_config_path ) ) {
-		$original_yaml_text = file_get_contents( $global_config_path );
-		$yaml_data          = \Mustangostang\Spyc::YAMLLoad( $global_config_path );
-		if ( ! is_array( $yaml_data ) ) {
-			$yaml_data = [];
-		}
+	$lock_file = $global_config_path . '.lock';
+	$lock_fp   = @fopen( $lock_file, 'c+' );
+	if ( $lock_fp ) {
+		flock( $lock_fp, LOCK_EX );
 	}
 
-	/** @var array<int, string> $existing_trusted */
-	$existing_trusted = isset( $yaml_data['trust-project-config'] ) ? (array) $yaml_data['trust-project-config'] : [];
-	if ( ! in_array( $path, $existing_trusted, true ) ) {
-		$existing_trusted[]                = $path;
-		$yaml_data['trust-project-config'] = array_values( array_unique( $existing_trusted ) );
-
-		// Preserve existing YAML document structure
-		if ( $original_yaml_text ) {
-			// Parse existing YAML to find root-level trust-project-config section
-			$lines     = explode( "\n", $original_yaml_text );
-			$trust_idx = null;
-			foreach ( $lines as $idx => $line ) {
-				if ( preg_match( '/^trust-project-config\s*:/', $line ) ) {
-					$trust_idx = $idx;
-					break;
-				}
+	try {
+		$yaml_data          = [];
+		$original_yaml_text = '';
+		if ( file_exists( $global_config_path ) && is_readable( $global_config_path ) ) {
+			$original_yaml_text = file_get_contents( $global_config_path );
+			$yaml_data          = \Mustangostang\Spyc::YAMLLoad( $global_config_path );
+			if ( ! is_array( $yaml_data ) ) {
+				$yaml_data = [];
 			}
+		}
 
-			if ( null !== $trust_idx ) {
-				// Find the end of the trust-project-config array
-				$array_end  = $trust_idx;
-				$line_count = count( $lines );
-				for ( $i = $trust_idx + 1; $i < $line_count; $i++ ) {
-					if ( preg_match( '/^\s*-\s+/', $lines[ $i ] ) ) {
-						$array_end = $i;
-					} elseif ( preg_match( '/^\s*\S/', $lines[ $i ] ) ) {
+		/** @var array<int, string> $existing_trusted */
+		$existing_trusted = isset( $yaml_data['trust-project-config'] ) ? (array) $yaml_data['trust-project-config'] : [];
+		if ( ! in_array( $path, $existing_trusted, true ) ) {
+			$existing_trusted[]                = $path;
+			$yaml_data['trust-project-config'] = array_values( array_unique( $existing_trusted ) );
+
+			// Preserve existing YAML document structure
+			if ( $original_yaml_text ) {
+				// Parse existing YAML to find root-level trust-project-config section
+				$lines     = explode( "\n", $original_yaml_text );
+				$trust_idx = null;
+				foreach ( $lines as $idx => $line ) {
+					if ( preg_match( '/^trust-project-config\s*:/', $line ) ) {
+						$trust_idx = $idx;
 						break;
 					}
 				}
-				// Remove old trust-project-config entries
-				array_splice( $lines, $trust_idx, $array_end - $trust_idx + 1 );
-				// Insert updated trust-project-config
-				$new_entries = [ 'trust-project-config:' ];
-				foreach ( $yaml_data['trust-project-config'] as $trust_path ) {
-					$new_entries[] = '  - ' . json_encode( $trust_path, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+
+				if ( null !== $trust_idx ) {
+					// Find the end of the trust-project-config array
+					$array_end  = $trust_idx;
+					$line_count = count( $lines );
+					for ( $i = $trust_idx + 1; $i < $line_count; $i++ ) {
+						if ( preg_match( '/^\s*-\s+/', $lines[ $i ] ) ) {
+							$array_end = $i;
+						} elseif ( preg_match( '/^\s*\S/', $lines[ $i ] ) ) {
+							break;
+						}
+					}
+					// Remove old trust-project-config entries
+					array_splice( $lines, $trust_idx, $array_end - $trust_idx + 1 );
+					// Insert updated trust-project-config
+					$new_entries = [ 'trust-project-config:' ];
+					foreach ( $yaml_data['trust-project-config'] as $trust_path ) {
+						$new_entries[] = '  - ' . json_encode( $trust_path, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+					}
+					array_splice( $lines, $trust_idx, 0, $new_entries );
+					$yaml_output = implode( "\n", $lines );
+				} else {
+					// Append trust-project-config to the end
+					$yaml_output  = rtrim( $original_yaml_text ) . "\n";
+					$yaml_output .= "trust-project-config:\n";
+					foreach ( $yaml_data['trust-project-config'] as $trust_path ) {
+						$yaml_output .= '  - ' . json_encode( $trust_path, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n";
+					}
 				}
-				array_splice( $lines, $trust_idx, 0, $new_entries );
-				$yaml_output = implode( "\n", $lines );
 			} else {
-				// Append trust-project-config to the end
-				$yaml_output  = rtrim( $original_yaml_text ) . "\n";
-				$yaml_output .= "trust-project-config:\n";
+				// No existing file, create fresh YAML
+				$yaml_output = "trust-project-config:\n";
 				foreach ( $yaml_data['trust-project-config'] as $trust_path ) {
 					$yaml_output .= '  - ' . json_encode( $trust_path, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n";
 				}
 			}
-		} else {
-			// No existing file, create fresh YAML
-			$yaml_output = "trust-project-config:\n";
-			foreach ( $yaml_data['trust-project-config'] as $trust_path ) {
-				$yaml_output .= '  - ' . json_encode( $trust_path, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n";
+
+			if ( false !== file_put_contents( $global_config_path, $yaml_output, LOCK_EX ) ) {
+				\WP_CLI::success( sprintf( "Added '%s' to trusted project configurations in %s.", $path, $global_config_path ) );
+			} else {
+				\WP_CLI::warning( sprintf( 'Failed to write to global configuration file: %s.', $global_config_path ) );
 			}
 		}
-
-		if ( false !== file_put_contents( $global_config_path, $yaml_output, LOCK_EX ) ) {
-			\WP_CLI::success( sprintf( "Added '%s' to trusted project configurations in %s.", $path, $global_config_path ) );
-		} else {
-			\WP_CLI::warning( sprintf( 'Failed to write to global configuration file: %s.', $global_config_path ) );
+	} finally {
+		if ( $lock_fp ) {
+			flock( $lock_fp, LOCK_UN );
+			fclose( $lock_fp );
+			@unlink( $lock_file );
 		}
 	}
 }

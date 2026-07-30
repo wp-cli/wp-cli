@@ -1380,6 +1380,36 @@ class UtilsTest extends TestCase {
 		}
 	}
 
+	public function testCheckProjectConfigTrustControlCharacterEscaping(): void {
+		$class_wp_cli              = new ReflectionClass( 'WP_CLI' );
+		$class_wp_cli_capture_exit = $class_wp_cli->getProperty( 'capture_exit' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$class_wp_cli_capture_exit->setAccessible( true );
+		}
+		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
+		$class_wp_cli_capture_exit->setValue( null, true );
+		$prev_logger = WP_CLI::get_logger();
+		$logger      = new Loggers\Execution();
+		WP_CLI::set_logger( $logger );
+
+		$malicious_path      = "/path/with\x1b[31mANSI\x1b[0m/wp-cli.yml";
+		$malicious_directive = "echo 'code\r\nwith\0null';";
+
+		try {
+			// In non-interactive test execution, this will exit via WP_CLI::error
+			Utils\check_project_config_trust( $malicious_path, [ $malicious_directive ] );
+		} catch ( ExitException $ex ) {
+			$this->assertSame( 1, $ex->getCode() );
+		} finally {
+			$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
+			WP_CLI::set_logger( $prev_logger );
+		}
+
+		$this->assertStringNotContainsString( "\x1b", $logger->stderr );
+		$this->assertStringContainsString( '\033', $logger->stderr );
+	}
+
 	public function testCheckProjectConfigTrustSaveGlobalConfig(): void {
 		$temp_dir = Utils\get_temp_dir() . 'test-trust-config-' . uniqid();
 		mkdir( $temp_dir );
