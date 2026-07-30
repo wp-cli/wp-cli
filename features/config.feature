@@ -1128,13 +1128,40 @@ Feature: Have a config file
     And a wp-cli.yml file:
       """
       exec:
-        - echo 'MALICIOUS EXEC';
+        - echo 'MALICIOUS_EXEC';
       """
 
     When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp eval "echo 'hello';" 2>&1`
     Then STDOUT should contain:
       """
       Execution of project 'exec' directives from
+      """
+    And STDOUT should not contain:
+      """
+      MALICIOUS_EXEC
+      """
+
+  Scenario: Untrusted project require directive in non-interactive environment
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      echo 'MALICIOUS_REQUIRE';
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - custom-cmd.php
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp eval "echo 'hello';" 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of project 'require' directives from
+      """
+    And STDOUT should not contain:
+      """
+      MALICIOUS_REQUIRE
       """
 
   Scenario: Trust project config via environment variable
@@ -1184,63 +1211,21 @@ Feature: Have a config file
       UNAUTHORIZED_SELF_TRUST
       """
 
-  Scenario: Interactive prompt confirmation with y
+  Scenario: Global config trust persists approval and affects subsequent runs
     Given an empty directory
-    And a session-y file:
-      """
-      y
-      """
-    And a wp-cli.yml file:
-      """
-      exec:
-        - echo 'PROMPT_ACCEPTED_ONCE';
-      """
-
-    When I run `wp eval --yes --skip-wordpress "echo 'DONE';" 2>&1`
-    Then STDOUT should contain:
-      """
-      PROMPT_ACCEPTED_ONCE
-      """
-
-  Scenario: Interactive prompt rejection with n
-    Given an empty directory
-    And a session-n file:
-      """
-      n
-      """
-    And a wp-cli.yml file:
-      """
-      exec:
-        - echo 'PROMPT_REJECTED';
-      """
-
-    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp eval --skip-wordpress "echo 'DONE';" 2>&1`
-    Then STDOUT should contain:
-      """
-      rejected by
-      """
-    And STDOUT should not contain:
-      """
-      PROMPT_REJECTED
-      """
-
-  Scenario: Interactive prompt confirmation with a saves path to global config
-    Given an empty directory
-    And a session-a file:
-      """
-      a
-      """
     And a user-config.yml file:
       """
+      trust-project-config:
+        - .
       """
     And a wp-cli.yml file:
       """
       exec:
-        - echo 'PROMPT_ACCEPTED_ALWAYS';
+        - echo 'PERSISTED_TRUST_EXEC';
       """
 
-    When I run `WP_CLI_TRUST_PROJECT_CONFIG=true WP_CLI_CONFIG_PATH=user-config.yml wp eval --skip-wordpress "echo 'DONE';" 2>&1`
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG=false WP_CLI_CONFIG_PATH=user-config.yml wp eval --skip-wordpress "echo 'DONE';" 2>&1`
     Then STDOUT should contain:
       """
-      PROMPT_ACCEPTED_ALWAYS
+      PERSISTED_TRUST_EXEC
       """

@@ -1386,15 +1386,26 @@ class UtilsTest extends TestCase {
 		$temp_yaml = $temp_dir . '/config.yml';
 		$old_env   = getenv( 'WP_CLI_CONFIG_PATH' );
 
+		// Pre-populate global config with a nested trust-project-config key to verify root-level matching
+		$initial_content = "custom_setting: true\nnested_section:\n  trust-project-config: false\n";
+		file_put_contents( $temp_yaml, $initial_content );
+
+		$special_path = '/my/project # comment/path with: colon/wp-cli.yml';
+
 		try {
 			putenv( "WP_CLI_CONFIG_PATH={$temp_yaml}" );
 
-			Utils\save_path_to_global_trust_config( '/my/project/path/wp-cli.yml' );
+			Utils\save_path_to_global_trust_config( $special_path );
 
 			$this->assertFileExists( $temp_yaml );
+			$raw_content = (string) file_get_contents( $temp_yaml );
+			$this->assertStringContainsString( 'custom_setting: true', $raw_content );
+			$this->assertStringContainsString( "nested_section:\n  trust-project-config: false", $raw_content );
+
 			$data = \Mustangostang\Spyc::YAMLLoad( $temp_yaml );
 			$this->assertArrayHasKey( 'trust-project-config', $data );
-			$this->assertContains( '/my/project/path/wp-cli.yml', $data['trust-project-config'] );
+			$this->assertContains( $special_path, $data['trust-project-config'] );
+			$this->assertEquals( false, $data['nested_section']['trust-project-config'] );
 		} finally {
 			if ( false !== $old_env ) {
 				putenv( "WP_CLI_CONFIG_PATH={$old_env}" );

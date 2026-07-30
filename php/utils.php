@@ -2671,14 +2671,12 @@ function save_path_to_global_trust_config( $path ) {
 
 		// Preserve existing YAML document structure
 		if ( $original_yaml_text ) {
-			// Parse existing YAML to find trust-project-config section
-			$lines        = explode( "\n", $original_yaml_text );
-			$trust_idx    = null;
-			$trust_indent = '';
+			// Parse existing YAML to find root-level trust-project-config section
+			$lines     = explode( "\n", $original_yaml_text );
+			$trust_idx = null;
 			foreach ( $lines as $idx => $line ) {
-				if ( preg_match( '/^(\s*)trust-project-config\s*:/', $line, $matches ) ) {
-					$trust_idx    = $idx;
-					$trust_indent = $matches[1];
+				if ( preg_match( '/^trust-project-config\s*:/', $line ) ) {
+					$trust_idx = $idx;
 					break;
 				}
 			}
@@ -2697,9 +2695,9 @@ function save_path_to_global_trust_config( $path ) {
 				// Remove old trust-project-config entries
 				array_splice( $lines, $trust_idx, $array_end - $trust_idx + 1 );
 				// Insert updated trust-project-config
-				$new_entries = [ $trust_indent . 'trust-project-config:' ];
+				$new_entries = [ 'trust-project-config:' ];
 				foreach ( $yaml_data['trust-project-config'] as $trust_path ) {
-					$new_entries[] = $trust_indent . '  - ' . $trust_path;
+					$new_entries[] = '  - ' . json_encode( $trust_path, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 				}
 				array_splice( $lines, $trust_idx, 0, $new_entries );
 				$yaml_output = implode( "\n", $lines );
@@ -2708,14 +2706,14 @@ function save_path_to_global_trust_config( $path ) {
 				$yaml_output  = rtrim( $original_yaml_text ) . "\n";
 				$yaml_output .= "trust-project-config:\n";
 				foreach ( $yaml_data['trust-project-config'] as $trust_path ) {
-					$yaml_output .= '  - ' . $trust_path . "\n";
+					$yaml_output .= '  - ' . json_encode( $trust_path, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n";
 				}
 			}
 		} else {
 			// No existing file, create fresh YAML
 			$yaml_output = "trust-project-config:\n";
 			foreach ( $yaml_data['trust-project-config'] as $trust_path ) {
-				$yaml_output .= '  - ' . $trust_path . "\n";
+				$yaml_output .= '  - ' . json_encode( $trust_path, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n";
 			}
 		}
 
