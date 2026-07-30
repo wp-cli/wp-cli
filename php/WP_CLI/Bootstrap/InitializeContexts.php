@@ -31,9 +31,9 @@ final class InitializeContexts implements BootstrapStep {
 		];
 
 		/**
-		 * Filter the list of registered contexts before initialization.
+		 * Filter the context implementations before they are registered.
 		 *
-		 * @param array<string, Context> $contexts Array of context objects keyed by context name.
+		 * `@param` array<string, Context> $contexts Array of context objects keyed by context name.
 		 */
 		$contexts = WP_CLI::do_hook( 'before_registering_contexts', $contexts );
 
