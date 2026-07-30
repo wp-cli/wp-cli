@@ -529,6 +529,12 @@ class WP_CLI {
 		}
 
 		$addition = new CommandAddition();
+
+		/**
+		 * Action triggered before a command is added to WP-CLI.
+		 *
+		 * @param CommandAddition $addition Details about the command addition, including ability to abort.
+		 */
 		self::do_hook( "before_add_command:{$name}", $addition );
 
 		if ( $addition->was_aborted() ) {
@@ -685,6 +691,9 @@ class WP_CLI {
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
 
+		/**
+		 * Action triggered after a command has been added to WP-CLI.
+		 */
 		self::do_hook( "after_add_command:{$name}" );
 		return true;
 	}

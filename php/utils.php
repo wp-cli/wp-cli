@@ -934,7 +934,13 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 	}
 
 	/**
-	 * @var array{halt_on_error?: bool, verify: bool|string, insecure?: bool} $options
+	 * Filter HTTP request options used by WP-CLI.
+	 *
+	 * @param array{halt_on_error?: bool, verify: bool|string, insecure?: bool} $options Request options.
+	 * @param string $method HTTP method (GET, POST, etc.).
+	 * @param string $url Target URL.
+	 * @param array|string|null $data Request body data.
+	 * @param array $headers Request headers.
 	 */
 	$options = WP_CLI::do_hook( 'http_request_options', $options, $method, $url, $data, $headers );
 

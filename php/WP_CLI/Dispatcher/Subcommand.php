@@ -773,9 +773,20 @@ class Subcommand extends CompositeCommand {
 		$parent = implode( ' ', array_slice( $path, 1 ) );
 		$cmd    = $this->name;
 		if ( $parent ) {
+			/**
+			 * Action triggered before a parent command is invoked.
+			 *
+			 * @param string $parent Parent command name.
+			 */
 			WP_CLI::do_hook( "before_invoke:{$parent}", $parent );
 			$cmd = $parent . ' ' . $cmd;
 		}
+
+		/**
+		 * Action triggered before a command is invoked.
+		 *
+		 * @param string $cmd Command name.
+		 */
 		WP_CLI::do_hook( "before_invoke:{$cmd}", $cmd );
 
 		$docparser = $this->get_docparser();
@@ -835,8 +846,19 @@ class Subcommand extends CompositeCommand {
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 
 		if ( $parent ) {
+			/**
+			 * Action triggered after a parent command has been invoked.
+			 *
+			 * @param string $parent Parent command name.
+			 */
 			WP_CLI::do_hook( "after_invoke:{$parent}", $parent );
 		}
+
+		/**
+		 * Action triggered after a command has been invoked.
+		 *
+		 * @param string $cmd Command name.
+		 */
 		WP_CLI::do_hook( "after_invoke:{$cmd}", $cmd );
 	}
 

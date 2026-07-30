@@ -734,6 +734,9 @@ class Runner {
 	public function find_command_to_run( $args, $autocorrect = 'none' ) {
 		$command = WP_CLI::get_root_command();
 
+		/**
+		 * Action triggered before WP-CLI attempts to find the command to run.
+		 */
 		WP_CLI::do_hook( 'find_command_to_run_pre' );
 
 		$cmd_path = [];
@@ -873,6 +876,13 @@ class Runner {
 	 * @param array $options     Configuration options for the function.
 	 */
 	public function run_command( $args, $assoc_args = [], $options = [] ) {
+		/**
+		 * Action triggered before running a command.
+		 *
+		 * @param array $args Positional arguments including command name.
+		 * @param array $assoc_args Associative arguments for the command.
+		 * @param array $options Configuration options for the function.
+		 */
 		WP_CLI::do_hook( 'before_run_command', $args, $assoc_args, $options );
 
 		if ( ! empty( $options['back_compat_conversions'] ) ) {
@@ -947,6 +957,9 @@ class Runner {
 	 */
 	private function run_ssh_command( string $connection_string ): void {
 
+		/**
+		 * Action triggered before executing a command via SSH.
+		 */
 		WP_CLI::do_hook( 'before_ssh' );
 
 		$bits = Utils\parse_ssh_url( $connection_string );
@@ -2079,6 +2092,10 @@ class Runner {
 		$this->context_manager->switch_context( $this->config );
 
 		WP_CLI::debug( 'Begin WordPress load', 'bootstrap' );
+
+		/**
+		 * Action triggered right before loading WordPress.
+		 */
 		WP_CLI::do_hook( 'before_wp_load' );
 
 		$this->check_wp_version();
@@ -2092,6 +2109,10 @@ class Runner {
 		}
 
 		WP_CLI::debug( 'wp-config.php path: ' . $wp_config_path, 'bootstrap' );
+
+		/**
+		 * Action triggered right before loading wp-config.php.
+		 */
 		WP_CLI::do_hook( 'before_wp_config_load' );
 
 		// Load wp-config.php code, in the global scope
@@ -2111,6 +2132,10 @@ class Runner {
 		}
 
 		$this->maybe_update_url_from_domain_constant();
+
+		/**
+		 * Action triggered right after loading wp-config.php.
+		 */
 		WP_CLI::do_hook( 'after_wp_config_load' );
 		$this->do_early_invoke( 'after_wp_config_load' );
 
@@ -2197,6 +2222,10 @@ class Runner {
 		}
 
 		WP_CLI::debug( 'Loaded WordPress', 'bootstrap' );
+
+		/**
+		 * Action triggered right after loading WordPress.
+		 */
 		WP_CLI::do_hook( 'after_wp_load' );
 	}
 
