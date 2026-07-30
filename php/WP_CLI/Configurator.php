@@ -8,6 +8,8 @@ use SplFileInfo;
 /**
  * Handles file- and runtime-based configuration values.
  *
+ * @phpstan-import-type GlobalConfig from \WP_CLI
+ *
  * @package WP_CLI
  */
 class Configurator {
@@ -175,10 +177,12 @@ class Configurator {
 	/**
 	 * Get declared configuration values as an array.
 	 *
-	 * @return array
+	 * @return array{0: GlobalConfig, 1: array<string, mixed>}
 	 */
 	public function to_array() {
-		return [ $this->config, $this->extra_config ];
+		/** @var GlobalConfig $config */
+		$config = $this->config;
+		return [ $config, $this->extra_config ];
 	}
 
 	/**

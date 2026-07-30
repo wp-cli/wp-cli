@@ -13,7 +13,7 @@ use WP_Error;
  * @property-read string         $system_config_path
  * @property-read string         $global_config_path
  * @property-read string         $project_config_path
- * @property-read array          $config
+ * @property-read GlobalConfig   $config
  * @property-read array          $extra_config
  * @property-read ContextManager $context_manager
  * @property-read string         $alias
@@ -28,6 +28,8 @@ use WP_Error;
  * @property-read string         $global_config_path_debug
  * @property-read string         $project_config_path_debug
  * @property-read array          $required_files
+ *
+ * @phpstan-import-type GlobalConfig from \WP_CLI
  *
  * @package WP_CLI
  */

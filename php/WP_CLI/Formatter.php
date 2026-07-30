@@ -14,6 +14,8 @@ use WP_CLI;
  * Supports built-in formats (table, json, csv, yaml, count, ids) and allows
  * extensions to register custom formats via Formatter::add_format().
  *
+ * @phpstan-type FormatterArgs array{format?: string, fields?: string|array<string>, field?: string, alignments?: array<string, int>, ascii?: bool}
+ *
  * @property-read string             $format
  * @property-read string[]           $fields
  * @property-read string|null        $field
@@ -65,8 +67,8 @@ class Formatter {
 	private $prefix;
 
 	/**
-	 * @param array $assoc_args Output format arguments.
-	 * @param array $fields Fields to display of each item.
+	 * @param FormatterArgs $assoc_args Output format arguments.
+	 * @param array<string>|string|null $fields Fields to display of each item.
 	 * @param string|false $prefix Check if fields have a standard prefix.
 	 * False indicates empty prefix.
 	 */
@@ -85,13 +87,14 @@ class Formatter {
 			}
 		}
 
-		if ( ! is_array( $format_args['fields'] ) ) {
+		if ( is_string( $format_args['fields'] ) ) {
 			$format_args['fields'] = explode( ',', $format_args['fields'] );
+		} elseif ( ! is_array( $format_args['fields'] ) ) {
+			$format_args['fields'] = [];
 		}
 
 		/** @var callable(string): string $trim */
-		$trim = 'trim';
-		// @phpstan-ignore argument.type
+		$trim                  = 'trim';
 		$format_args['fields'] = array_map( $trim, $format_args['fields'] );
 
 		$this->args   = $format_args;
