@@ -1017,7 +1017,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * @return void
 	 */
 	public function completions( $_, $assoc_args ) {
-		$line  = substr( $assoc_args['line'], 0, $assoc_args['point'] );
+		$line  = substr( $assoc_args['line'], 0, (int) $assoc_args['point'] );
 		$compl = new Completions( $line );
 		$compl->render();
 	}

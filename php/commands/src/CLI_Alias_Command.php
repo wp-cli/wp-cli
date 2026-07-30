@@ -192,22 +192,26 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		$raw     = Utils\get_flag_value( $assoc_args, 'raw', false );
 		$aliases = $raw ? WP_CLI::get_runner()->raw_aliases : WP_CLI::get_runner()->aliases;
 
-		if ( empty( $aliases[ $alias ] ) ) {
+		$alias_data = $aliases[ $alias ] ?? null;
+		if ( ! is_array( $alias_data ) ) {
 			WP_CLI::error( "No alias found with key '@{$alias}'." );
 		}
 
 		$field = Utils\get_flag_value( $assoc_args, 'field', null );
 
-		if ( null !== $field ) {
-			if ( ! array_key_exists( $field, $aliases[ $alias ] ) ) {
+		if ( null !== $field && is_string( $field ) ) {
+			if ( ! array_key_exists( $field, $alias_data ) ) {
 				WP_CLI::error( "The '{$field}' property does not exist for '@{$alias}'." );
 			}
-			WP_CLI::log( $aliases[ $alias ][ $field ] );
+			$field_val = $alias_data[ $field ];
+			WP_CLI::log( is_scalar( $field_val ) ? (string) $field_val : (string) json_encode( $field_val ) );
 			return;
 		}
 
-		foreach ( $aliases[ $alias ] as $key => $value ) {
-			WP_CLI::log( "{$key}: {$value}" );
+		foreach ( $alias_data as $key => $value ) {
+			$k_str = (string) $key;
+			$v_str = is_scalar( $value ) ? (string) $value : (string) json_encode( $value );
+			WP_CLI::log( "{$k_str}: {$v_str}" );
 		}
 	}
 
@@ -453,7 +457,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 		// + array keys are numeric
 		// + array values are strings (group members)
 
-		$first_item     = $aliases[ $alias ];
+		$first_item     = is_array( $aliases[ $alias ] ?? null ) ? $aliases[ $alias ] : [];
 		$first_item_key = key( $first_item );
 
 		if ( is_numeric( $first_item_key ) ) {
@@ -476,10 +480,16 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	private function get_aliases_data( $config, $alias, $create_config_file = false ) {
 
 		$global_config_path = WP_CLI::get_runner()->get_global_config_path( $create_config_file );
-		$global_aliases     = Spyc::YAMLLoad( $global_config_path );
+		$global_config_path = is_string( $global_config_path ) ? $global_config_path : '';
+		$global_aliases_raw = '' !== $global_config_path && file_exists( $global_config_path ) ? Spyc::YAMLLoad( $global_config_path ) : [];
+		/** @var array<string, mixed> $global_aliases */
+		$global_aliases = is_array( $global_aliases_raw ) ? $global_aliases_raw : [];
 
 		$project_config_path = WP_CLI::get_runner()->get_project_config_path();
-		$project_aliases     = Spyc::YAMLLoad( $project_config_path );
+		$project_config_path = is_string( $project_config_path ) ? $project_config_path : '';
+		$project_aliases_raw = '' !== $project_config_path && file_exists( $project_config_path ) ? Spyc::YAMLLoad( $project_config_path ) : [];
+		/** @var array<string, mixed> $project_aliases */
+		$project_aliases = is_array( $project_aliases_raw ) ? $project_aliases_raw : [];
 
 		if ( 'global' === $config ) {
 			$config_path = $global_config_path;

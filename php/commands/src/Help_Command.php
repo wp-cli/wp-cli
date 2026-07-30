@@ -407,13 +407,16 @@ class Help_Command extends WP_CLI_Command {
 		}
 
 		foreach ( $synopsis_spec as $spec ) {
-			if ( ! isset( $deprecated_assoc_args[ $spec['name'] ] ) ) {
+			$name = isset( $spec['name'] ) && is_string( $spec['name'] ) ? $spec['name'] : '';
+			if ( '' === $name || ! isset( $deprecated_assoc_args[ $name ] ) ) {
 				continue;
 			}
 
-			$deprecation_message = $deprecated_assoc_args[ $spec['name'] ];
+			$deprecation_message = $deprecated_assoc_args[ $name ];
 			$notice              = 'Deprecated' . ( '' !== $deprecation_message ? ': ' . $deprecation_message : '.' );
-			$token               = preg_quote( $spec['token'], '/' );
+			$token_raw           = $spec['token'] ?? '';
+			$token_str           = is_string( $token_raw ) ? $token_raw : '';
+			$token               = preg_quote( $token_str, '/' );
 			$pattern             = '/^(' . $token . ')(\n:[ \t]*[^\n]*)?(\n|$)/m';
 			$longdesc            = (string) preg_replace_callback(
 				$pattern,
