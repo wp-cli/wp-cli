@@ -87,7 +87,7 @@ class SynopsisParserTest extends TestCase {
 		$param = $r[2];
 		$this->assertEquals( 'assoc', $param['type'] );
 		$this->assertTrue( $param['optional'] );
-		$this->assertTrue( $param['value']['optional'] );
+		$this->assertTrue( is_array( $param['value'] ) && ! empty( $param['value']['optional'] ) );
 	}
 
 	public function testInvalidAssoc(): void {

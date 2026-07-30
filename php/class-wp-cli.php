@@ -683,8 +683,7 @@ class WP_CLI {
 			} elseif ( is_array( $args['synopsis'] ) ) {
 				/** @var array<int, array<string, mixed>> $synopsis_array */
 				$synopsis_array = $args['synopsis'];
-				// @phpstan-ignore argument.type
-				$synopsis = SynopsisParser::render( $synopsis_array );
+				$synopsis       = SynopsisParser::render( $synopsis_array );
 				$leaf_command->set_synopsis( $synopsis );
 				$long_desc = '';
 				$bits      = explode( ' ', $synopsis );
