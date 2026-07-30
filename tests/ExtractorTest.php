@@ -352,6 +352,9 @@ class ExtractorTest extends TestCase {
 		$this->assertEmpty( self::$logger->stderr );
 	}
 
+	/**
+	 * @return array{0: string, 1: string, 2: string}
+	 */
 	private static function create_test_directory_structure() {
 		$temp_dir = Utils\get_temp_dir() . uniqid( self::$copy_overwrite_files_prefix, true );
 		mkdir( $temp_dir );
@@ -373,6 +376,11 @@ class ExtractorTest extends TestCase {
 		return [ $temp_dir, $src_dir, $wp_dir ];
 	}
 
+	/**
+	 * @param string $dir
+	 * @param string $prefix_dir
+	 * @return array<int, string>
+	 */
 	private static function recursive_scandir( $dir, $prefix_dir = '' ) {
 		$dirs = scandir( $dir );
 		if ( ! $dirs ) {

@@ -58,6 +58,11 @@ class CLICommandTest extends TestCase {
 		parent::tearDown();
 	}
 
+	/**
+	 * @param string $temp
+	 * @param string $current_phar
+	 * @return void
+	 */
 	private function call_replace_current_phar( $temp, $current_phar ) {
 		$cli_command = new CLI_Command();
 		$method      = new \ReflectionMethod( $cli_command, 'replace_current_phar' );

@@ -275,6 +275,9 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 	}
 
+	/**
+	 * @return array<int, array{0: array<int, string>, 1: string}>
+	 */
 	public static function parseStrToArgvData() {
 		return [
 			[ [], '' ],
@@ -1219,7 +1222,7 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataFormatBytesString
 	 */
 	#[DataProvider( 'dataFormatBytesString' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testFormatBytesString( $bytes, $decimals, $unit, $expected ) {
+	public function testFormatBytesString( $bytes, $decimals, $unit, $expected ): void {
 		$actual = Utils\format_bytes_string( $bytes, $decimals, $unit );
 		$this->assertSame( $expected, $actual, "Failed asserting that format_bytes_string($bytes, $decimals, '$unit') equals '$expected'." );
 	}
@@ -1266,7 +1269,7 @@ class UtilsTest extends TestCase {
 		$this->assertEquals( '/path/to/~something', Utils\expand_tilde_path( '/path/to/~something' ) );
 	}
 
-	public function testEscapeshellargPreserveTilde() {
+	public function testEscapeshellargPreserveTilde(): void {
 		// Test that ~/ prefix is preserved and remainder is escaped
 		$this->assertEquals( '~/' . escapeshellarg( 'sites/wordpress' ), Utils\escapeshellarg_preserve_tilde( '~/sites/wordpress' ) );
 		$this->assertEquals( '~/' . escapeshellarg( 'my documents/site' ), Utils\escapeshellarg_preserve_tilde( '~/my documents/site' ) );

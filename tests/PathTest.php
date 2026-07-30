@@ -16,7 +16,7 @@ final class PathTest extends TestCase {
 	 * @dataProvider dataProviderPathCases
 	 */
 	#[DataProvider( 'dataProviderPathCases' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testIsAbsolute( $path, $expected ) {
+	public function testIsAbsolute( $path, $expected ): void {
 		$this->assertSame(
 			$expected,
 			Path::is_absolute( $path ),
@@ -28,7 +28,7 @@ final class PathTest extends TestCase {
 	 * @dataProvider dataProviderPathCases
 	 */
 	#[DataProvider( 'dataProviderPathCases' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testPathIsRecognizedAsAbsolute( $path, $expected ) {
+	public function testPathIsRecognizedAsAbsolute( $path, $expected ): void {
 		$this->assertSame(
 			$expected,
 			Utils\is_path_absolute( $path ),
