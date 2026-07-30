@@ -2527,6 +2527,10 @@ function check_project_config_trust( $project_config_path, array $directives, $d
 					\WP_CLI::error( sprintf( "Execution of project '%s' directives from '%s' rejected by trust-project-config setting.", $directive_type, $project_config_path ) );
 				}
 				if ( is_string( $t_path ) ) {
+					$t_path_lower = strtolower( trim( $t_path ) );
+					if ( in_array( $t_path_lower, [ '0', 'false', 'no' ], true ) ) {
+						\WP_CLI::error( sprintf( "Execution of project '%s' directives from '%s' rejected by trust-project-config setting.", $directive_type, $project_config_path ) );
+					}
 					$c_t_path = realpath( $t_path ) ?: $t_path;
 					if ( $canonical_path === $c_t_path || $canonical_dir === $c_t_path ) {
 						return true;
@@ -2554,6 +2558,10 @@ function check_project_config_trust( $project_config_path, array $directives, $d
 					\WP_CLI::error( sprintf( "Execution of project '%s' directives from '%s' rejected by trust-project-config setting.", $directive_type, $project_config_path ) );
 				}
 				if ( is_string( $t_path ) ) {
+					$t_path_lower = strtolower( trim( $t_path ) );
+					if ( in_array( $t_path_lower, [ '0', 'false', 'no' ], true ) ) {
+						\WP_CLI::error( sprintf( "Execution of project '%s' directives from '%s' rejected by trust-project-config setting.", $directive_type, $project_config_path ) );
+					}
 					$c_t_path = realpath( $t_path ) ?: $t_path;
 					if ( $canonical_path === $c_t_path || $canonical_dir === $c_t_path ) {
 						return true;
@@ -2677,8 +2685,9 @@ function save_path_to_global_trust_config( $path ) {
 
 			if ( null !== $trust_idx ) {
 				// Find the end of the trust-project-config array
-				$array_end = $trust_idx;
-				for ( $i = $trust_idx + 1; $i < count( $lines ); $i++ ) {
+				$array_end  = $trust_idx;
+				$line_count = count( $lines );
+				for ( $i = $trust_idx + 1; $i < $line_count; $i++ ) {
 					if ( preg_match( '/^\s*-\s+/', $lines[ $i ] ) ) {
 						$array_end = $i;
 					} elseif ( preg_match( '/^\s*\S/', $lines[ $i ] ) ) {

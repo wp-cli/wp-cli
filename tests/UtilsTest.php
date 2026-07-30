@@ -1329,7 +1329,10 @@ class UtilsTest extends TestCase {
 	public function testCheckProjectConfigTrustWithYesFlag(): void {
 		$runner         = WP_CLI::get_runner();
 		$ref_assoc_args = new ReflectionProperty( $runner, 'assoc_args' );
-		$ref_assoc_args->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$ref_assoc_args->setAccessible( true );
+		}
 		$old_assoc_args = $ref_assoc_args->getValue( $runner );
 		$ref_assoc_args->setValue( $runner, [ 'yes' => true ] );
 
@@ -1346,8 +1349,11 @@ class UtilsTest extends TestCase {
 
 		$class_wp_cli              = new ReflectionClass( 'WP_CLI' );
 		$class_wp_cli_capture_exit = $class_wp_cli->getProperty( 'capture_exit' );
-		$class_wp_cli_capture_exit->setAccessible( true );
-		$prev_capture_exit         = $class_wp_cli_capture_exit->getValue();
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$class_wp_cli_capture_exit->setAccessible( true );
+		}
+		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
 		$class_wp_cli_capture_exit->setValue( null, true );
 		$prev_logger = WP_CLI::get_logger();
 		$logger      = new Loggers\Execution();
