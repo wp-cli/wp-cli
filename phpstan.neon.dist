@@ -42,7 +42,6 @@ parameters:
     switchConditionsMatchingType: true
   ignoreErrors:
     - identifier: missingType.parameter
-    - identifier: missingType.return
     - identifier: function.deprecated
       path: tests
     - identifier: staticMethod.alreadyNarrowedType

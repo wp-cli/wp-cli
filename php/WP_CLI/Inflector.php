@@ -38,7 +38,7 @@ class Inflector {
 	/**
 	 * Plural inflector rules.
 	 *
-	 * @var array
+	 * @var array<string, array<int|string, string>>
 	 */
 	private static $plural = [
 		'rules'       => [
@@ -141,7 +141,7 @@ class Inflector {
 	/**
 	 * Singular inflector rules.
 	 *
-	 * @var array
+	 * @var array<string, array<int|string, string>>
 	 */
 	private static $singular = [
 		'rules'       => [
@@ -208,7 +208,7 @@ class Inflector {
 	/**
 	 * Words that should not be inflected.
 	 *
-	 * @var array
+	 * @var array<int, string>
 	 */
 	private static $uninflected = [
 		'Amoyese',
@@ -296,14 +296,14 @@ class Inflector {
 	/**
 	 * Method cache array.
 	 *
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	private static $cache = [];
 
 	/**
 	 * The initial state of Inflector so reset() works.
 	 *
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	private static $initial_state = [];
 
@@ -409,9 +409,9 @@ class Inflector {
 	 * ));
 	 * }}}
 	 *
-	 * @param string  $type  The type of inflection, either 'plural' or 'singular'
-	 * @param array   $rules An array of rules to be added.
-	 * @param boolean $reset If true, will unset default inflections for all
+	 * @param string               $type  The type of inflection, either 'plural' or 'singular'
+	 * @param array<string, mixed> $rules An array of rules to be added.
+	 * @param boolean              $reset If true, will unset default inflections for all
 	 *                       new rules that are being defined in $rules.
 	 *
 	 * @return void
