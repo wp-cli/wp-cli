@@ -946,7 +946,7 @@ class Runner {
 		}
 	}
 
-	private function run_command_and_exit( $help_exit_warning = '' ): void {
+	private function run_command_and_exit( string $help_exit_warning = '' ): void {
 		$this->show_synopsis_if_composite_command();
 		$this->run_command( $this->arguments, $this->assoc_args );
 		if ( $this->cmd_starts_with( [ 'help' ] ) ) {
@@ -1243,6 +1243,7 @@ class Runner {
 	/**
 	 * Check whether a given command is disabled by the config.
 	 *
+	 * @param Dispatcher\Subcommand|Dispatcher\CompositeCommand $command
 	 * @return bool
 	 */
 	public function is_command_disabled( $command ) {
@@ -1252,6 +1253,7 @@ class Runner {
 	/**
 	 * Get the reason why a command is disabled, or false if it isn't.
 	 *
+	 * @param Dispatcher\Subcommand|Dispatcher\CompositeCommand $command
 	 * @return string|false Reason string, or false if the command is not disabled.
 	 */
 	public function get_command_disabled_reason( $command ) {
@@ -1748,7 +1750,10 @@ class Runner {
 		}
 	}
 
-	private function run_alias_group( $aliases ): void {
+	/**
+	 * @param array<int|string, mixed> $aliases
+	 */
+	private function run_alias_group( array $aliases ): void {
 		Utils\check_proc_available( 'group alias' );
 
 		$php_bin = escapeshellarg( Utils\get_php_binary() );
@@ -1827,8 +1832,9 @@ class Runner {
 			// Note: Output from multiple processes will be interleaved and non-deterministic.
 			$procs = [];
 			foreach ( $aliases as $alias ) {
-				WP_CLI::log( '@' . $alias );
-				$full_command              = "{$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
+				$alias_str = is_scalar( $alias ) ? (string) $alias : '';
+				WP_CLI::log( '@' . $alias_str );
+				$full_command              = "{$php_bin} {$script_path} --alias=" . escapeshellarg( $alias_str ) . " {$args}{$assoc_args}{$runtime_config}";
 				$pipes                     = [];
 				$stdin_spec                = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
 				$env                       = getenv();
@@ -1856,8 +1862,9 @@ class Runner {
 		} else {
 			// Run aliases sequentially (original behavior).
 			foreach ( $aliases as $alias ) {
-				WP_CLI::log( '@' . $alias );
-				$full_command              = "{$php_bin} {$script_path} --alias=" . escapeshellarg( $alias ) . " {$args}{$assoc_args}{$runtime_config}";
+				$alias_str = is_scalar( $alias ) ? (string) $alias : '';
+				WP_CLI::log( '@' . $alias_str );
+				$full_command              = "{$php_bin} {$script_path} --alias=" . escapeshellarg( $alias_str ) . " {$args}{$assoc_args}{$runtime_config}";
 				$pipes                     = [];
 				$stdin_spec                = null !== $stdin_stream ? [ 'pipe', 'r' ] : STDIN;
 				$env                       = getenv();
@@ -1880,7 +1887,7 @@ class Runner {
 		}
 	}
 
-	private function set_alias( $alias ): void {
+	private function set_alias( string $alias ): void {
 		/** @var array<string, mixed> $alias_config */
 		$alias_config = (array) $this->aliases[ $alias ];
 		// Merge alias config into the current config, then re-apply CLI runtime args only for
@@ -2101,10 +2108,12 @@ class Runner {
 			if ( 'multisite-install' === $this->arguments[1] && $url ) {
 				// need to fake some globals to skip the checks in wp-includes/ms-settings.php
 				$url_parts = Utils\parse_url( $url );
-				self::fake_current_site_blog( $url_parts );
+				if ( is_array( $url_parts ) ) {
+					self::fake_current_site_blog( $url_parts );
 
-				if ( ! defined( 'COOKIEHASH' ) ) {
-					define( 'COOKIEHASH', md5( (string) ( $url_parts['host'] ?? '' ) ) );
+					if ( ! defined( 'COOKIEHASH' ) ) {
+						define( 'COOKIEHASH', md5( (string) ( $url_parts['host'] ?? '' ) ) );
+					}
 				}
 			}
 		}
@@ -2281,7 +2290,10 @@ class Runner {
 		WP_CLI::do_hook( 'after_wp_load' );
 	}
 
-	private static function fake_current_site_blog( $url_parts ): void {
+	/**
+	 * @param array<string, int|string> $url_parts
+	 */
+	private static function fake_current_site_blog( array $url_parts ): void {
 		global $current_site, $current_blog;
 
 		if ( ! isset( $url_parts['path'] ) ) {
