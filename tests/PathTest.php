@@ -16,7 +16,7 @@ final class PathTest extends TestCase {
 	 * @dataProvider dataProviderPathCases
 	 */
 	#[DataProvider( 'dataProviderPathCases' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testIsAbsolute( $path, $expected ): void {
+	public function testIsAbsolute( string $path, bool $expected ): void {
 		$this->assertSame(
 			$expected,
 			Path::is_absolute( $path ),
@@ -28,7 +28,7 @@ final class PathTest extends TestCase {
 	 * @dataProvider dataProviderPathCases
 	 */
 	#[DataProvider( 'dataProviderPathCases' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testPathIsRecognizedAsAbsolute( $path, $expected ): void {
+	public function testPathIsRecognizedAsAbsolute( string $path, bool $expected ): void {
 		$this->assertSame(
 			$expected,
 			Utils\is_path_absolute( $path ),
@@ -104,7 +104,7 @@ final class PathTest extends TestCase {
 	 * @dataProvider dataNormalize
 	 */
 	#[DataProvider( 'dataNormalize' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testNormalize( $path, $expected ): void {
+	public function testNormalize( string $path, string $expected ): void {
 		$this->assertEquals( $expected, Path::normalize( $path ) );
 	}
 
@@ -175,6 +175,10 @@ final class PathTest extends TestCase {
 
 	/**
 	 * @dataProvider dataPharSafe
+	 * @param string $path
+	 * @param string|null $phar_path
+	 * @param string|null $phar_root
+	 * @param string $expected
 	 */
 	#[DataProvider( 'dataPharSafe' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testPharSafe( $path, $phar_path, $phar_root, $expected ): void {
