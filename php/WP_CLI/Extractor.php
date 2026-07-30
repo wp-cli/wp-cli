@@ -75,6 +75,7 @@ class Extractor {
 			);
 
 			self::rmdir( $tempdir );
+			return $dest;
 		} else {
 			throw new Exception(
 				sprintf(
@@ -128,7 +129,7 @@ class Extractor {
 			);
 
 			if ( 0 === $process_run->return_code ) {
-				return;
+				return $dest;
 			}
 
 			throw new Exception( (string) self::tar_error_msg( $process_run ) );
@@ -158,7 +159,7 @@ class Extractor {
 					self::get_first_subfolder( $tempdir ),
 					$dest
 				);
-				return;
+				return $dest;
 			} catch ( Exception $e ) {
 				$phar_error = $e->getMessage();
 			} finally {
