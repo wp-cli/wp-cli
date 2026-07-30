@@ -437,7 +437,7 @@ class Configurator {
 	 */
 	public function merge_yml( $path, $current_alias = null ) {
 		$yaml = self::load_yml( $path );
-		if ( is_array( $yaml['_'] ) && ! empty( $yaml['_']['inherit'] ) && is_string( $yaml['_']['inherit'] ) ) {
+		if ( isset( $yaml['_'] ) && is_array( $yaml['_'] ) && ! empty( $yaml['_']['inherit'] ) && is_string( $yaml['_']['inherit'] ) ) {
 			$inherit_path = Path::is_absolute( $yaml['_']['inherit'] )
 				? $yaml['_']['inherit']
 				: ( new SplFileInfo( Path::normalize( dirname( $path ) . '/' . $yaml['_']['inherit'] ) ) )->getRealPath();
@@ -461,6 +461,7 @@ class Configurator {
 				}
 			} elseif ( ! isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
 				if ( isset( $this->extra_config[ $key ] )
+					&& isset( $yaml['_'] )
 					&& is_array( $yaml['_'] )
 					&& ! empty( $yaml['_']['merge'] )
 					&& is_array( $this->extra_config[ $key ] )

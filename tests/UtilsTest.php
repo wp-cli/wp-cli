@@ -1381,12 +1381,14 @@ class UtilsTest extends TestCase {
 	}
 
 	private function buildHasStdinCommand(): string {
-		$php        = Utils\get_php_binary();
-		$root       = WP_CLI_ROOT;
-		$vendor_dir = defined( 'WP_CLI_VENDOR_DIR' ) ? WP_CLI_VENDOR_DIR : $root . '/vendor';
-		$code       = sprintf(
+		$php      = Utils\get_php_binary();
+		$root     = WP_CLI_ROOT;
+		$autoload = defined( 'WP_CLI_VENDOR_DIR' ) && file_exists( WP_CLI_VENDOR_DIR . '/autoload.php' )
+			? WP_CLI_VENDOR_DIR . '/autoload.php'
+			: $root . '/vendor/autoload.php';
+		$code     = sprintf(
 			'require %s; require %s; echo WP_CLI\Utils\has_stdin() ? "true" : "false";',
-			var_export( $vendor_dir . '/autoload.php', true ),
+			var_export( $autoload, true ),
 			var_export( $root . '/php/utils.php', true )
 		);
 
