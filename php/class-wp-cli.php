@@ -64,7 +64,7 @@ class WP_CLI {
 	/**
 	 * Cached list of global argument names.
 	 *
-	 * @var array|null
+	 * @var array<string>|null
 	 */
 	private static $global_arg_names;
 
@@ -740,10 +740,10 @@ class WP_CLI {
 	 * Defer command addition for a sub-command if the parent command is not yet
 	 * registered.
 	 *
-	 * @param string   $name     Name for the sub-command.
-	 * @param string   $parent   Name for the parent command.
-	 * @param callable $callable Command implementation as a class, function or closure.
-	 * @param array    $args     Optional. See `WP_CLI::add_command()` for details.
+	 * @param string               $name     Name for the sub-command.
+	 * @param string               $parent   Name for the parent command.
+	 * @param callable             $callable Command implementation as a class, function or closure.
+	 * @param array<string, mixed> $args     Optional. See `WP_CLI::add_command()` for details.
 	 */
 	private static function defer_command_addition( $name, $parent, $callable, $args = [] ) {
 		$args['is_deferred']               = true;
@@ -757,14 +757,17 @@ class WP_CLI {
 			function () use ( $name ) {
 				$deferred_additions = WP_CLI::get_deferred_additions();
 
-				if ( ! array_key_exists( $name, $deferred_additions ) ) {
+				if ( ! array_key_exists( $name, $deferred_additions ) || ! is_array( $deferred_additions[ $name ] ) ) {
 					return;
 				}
 
+				/** @var callable $callable */
 				$callable = $deferred_additions[ $name ]['callable'];
-				$args     = $deferred_additions[ $name ]['args'];
+				/** @var array<string, mixed> $args */
+				$args = $deferred_additions[ $name ]['args'];
 				WP_CLI::remove_deferred_addition( $name );
 
+				// @phpstan-ignore argument.type
 				WP_CLI::add_command( $name, $callable, $args );
 			}
 		);
@@ -773,7 +776,7 @@ class WP_CLI {
 	/**
 	 * Get the list of outstanding deferred command additions.
 	 *
-	 * @return array Array of outstanding command additions.
+	 * @return array<int|string, mixed> Array of outstanding command additions.
 	 */
 	public static function get_deferred_additions() {
 		return self::$deferred_additions;
@@ -1139,8 +1142,8 @@ class WP_CLI {
 	 * @access public
 	 * @category Input
 	 *
-	 * @param string $question Question to display before the prompt.
-	 * @param array $assoc_args Skips prompt if 'yes' is provided.
+	 * @param string               $question Question to display before the prompt.
+	 * @param array<string, mixed> $assoc_args Skips prompt if 'yes' is provided.
 	 */
 	public static function confirm( $question, $assoc_args = [] ) {
 		if ( ! Utils\get_flag_value( $assoc_args, 'yes' ) ) {
@@ -1157,8 +1160,8 @@ class WP_CLI {
 	/**
 	 * Read value from a positional argument or from STDIN.
 	 *
-	 * @param array $args The list of positional arguments.
-	 * @param int $index At which position to check for the value.
+	 * @param array<int|string, scalar|null> $args The list of positional arguments.
+	 * @param int                            $index At which position to check for the value.
 	 *
 	 * @return string
 	 */
@@ -1186,8 +1189,8 @@ class WP_CLI {
 	 * @access public
 	 * @category Input
 	 *
-	 * @param string $raw_value
-	 * @param array $assoc_args
+	 * @param string               $raw_value
+	 * @param array<string, mixed> $assoc_args
 	 */
 	public static function read_value( $raw_value, $assoc_args = [] ) {
 		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
@@ -1205,11 +1208,12 @@ class WP_CLI {
 	/**
 	 * Display a value, in various formats
 	 *
-	 * @param mixed $value Value to display.
-	 * @param array $assoc_args Arguments passed to the command, determining format.
+	 * @param mixed                $value Value to display.
+	 * @param array<string, mixed> $assoc_args Arguments passed to the command, determining format.
 	 */
 	public static function print_value( $value, $assoc_args = [] ) {
-		$format = Utils\get_flag_value( $assoc_args, 'format' );
+		$raw_format = Utils\get_flag_value( $assoc_args, 'format', '' );
+		$format     = is_scalar( $raw_format ) ? (string) $raw_format : '';
 
 		$_value = \WP_CLI\Formatter::format_single_value( $value, $format );
 
@@ -1390,12 +1394,12 @@ class WP_CLI {
 	 * @access public
 	 * @category Execution
 	 *
-	 * @param string $command WP-CLI command to call.
-	 * @param array $args Positional arguments to include when calling the command.
-	 * @param array $assoc_args Associative arguments to include when calling the command.
-	 * @param bool $exit_on_error Whether to exit if the command returns an elevated return code.
-	 * @param bool $return_detailed Whether to return an exit status (default) or detailed execution results.
-	 * @param array $runtime_args Override one or more global args (path,url,user,allow-root)
+	 * @param string               $command WP-CLI command to call.
+	 * @param array<int, string>   $args Positional arguments to include when calling the command.
+	 * @param array<string, mixed> $assoc_args Associative arguments to include when calling the command.
+	 * @param bool                 $exit_on_error Whether to exit if the command returns an elevated return code.
+	 * @param bool                 $return_detailed Whether to return an exit status (default) or detailed execution results.
+	 * @param array<string, mixed> $runtime_args Override one or more global args (path,url,user,allow-root)
 	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
 	 *
 	 * @phpstan-return ($return_detailed is false ? int : ProcessRun)
@@ -1537,7 +1541,7 @@ class WP_CLI {
 	 * @category Execution
 	 *
 	 * @param string $command WP-CLI command to run, including arguments.
-	 * @param array  $options {
+	 * @param array<string, mixed> $options {
 	 *     Configuration options for command execution.
 	 *
 	 *     @type bool        $launch       Launches a new process (true) or reuses the existing process (false). Default: true.
@@ -1563,8 +1567,16 @@ class WP_CLI {
 		$parse        = $options['parse'];
 		$command_args = $options['command_args'];
 
-		if ( ! empty( $command_args ) ) {
-			$command .= ' ' . implode( ' ', $command_args );
+		if ( is_array( $command_args ) && ! empty( $command_args ) ) {
+			$command .= ' ' . implode(
+				' ',
+				array_map(
+					function ( $v ) {
+						return is_scalar( $v ) ? (string) $v : '';
+					},
+					$command_args
+				)
+			);
 		}
 
 		$retval = null;
@@ -1724,8 +1736,8 @@ class WP_CLI {
 	 * @access public
 	 * @category Execution
 	 *
-	 * @param array $args Positional arguments including command name.
-	 * @param array $assoc_args
+	 * @param array<int, string>   $args Positional arguments including command name.
+	 * @param array<string, mixed> $assoc_args
 	 */
 	public static function run_command( $args, $assoc_args = [] ) {
 		self::get_runner()->run_command( $args, $assoc_args );

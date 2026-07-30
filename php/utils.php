@@ -1214,10 +1214,10 @@ function get_named_sem_ver( $new_version, $original_version ) {
  * @access public
  * @category Input
  *
- * @param array<string|int,string|bool> $assoc_args Arguments array.
- * @param string|int                    $flag       Flag to get the value.
- * @param string|bool|int|null          $default    Default value for the flag. Default: NULL.
- * @return string|bool|int|null
+ * @param array<string|int, mixed> $assoc_args Arguments array.
+ * @param string|int               $flag       Flag to get the value.
+ * @param mixed                    $default    Default value for the flag. Default: NULL.
+ * @return mixed
  */
 function get_flag_value( $assoc_args, $flag, $default = null ) {
 	return isset( $assoc_args[ $flag ] ) ? $assoc_args[ $flag ] : $default;
