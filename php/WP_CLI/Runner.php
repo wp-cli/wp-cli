@@ -4,7 +4,6 @@ namespace WP_CLI;
 
 use WP_CLI;
 use WP_CLI\Dispatcher\CompositeCommand;
-use WP_CLI\Dispatcher\Subcommand;
 use WP_Error;
 
 /**
@@ -27,7 +26,7 @@ use WP_Error;
  * @property-read string         $system_config_path_debug
  * @property-read string         $global_config_path_debug
  * @property-read string         $project_config_path_debug
- * @property-read array<string, mixed> $required_files
+ * @property-read array<string, array<int, string>> $required_files
  *
  * @phpstan-import-type GlobalConfig from \WP_CLI
  *
@@ -135,7 +134,7 @@ class Runner {
 	/**
 	 * List of required files.
 	 *
-	 * @var array<string, mixed>
+	 * @var array<string, array<int, string>>
 	 */
 	private $required_files;
 
@@ -1730,7 +1729,9 @@ class Runner {
 		$this->raw_aliases                         = $configurator->get_raw_aliases();
 		$this->add_at_all_alias( $this->aliases );
 		$this->add_at_all_alias( $this->raw_aliases );
-		$this->required_files['runtime'] = $this->config['require'];
+		/** @var array<int, string> $runtime_requires */
+		$runtime_requires                = is_array( $this->config['require'] ) ? $this->config['require'] : [];
+		$this->required_files['runtime'] = $runtime_requires;
 	}
 
 	/**
@@ -2220,10 +2221,7 @@ class Runner {
 		if ( $this->is_multisite() ) {
 			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Intentional temporary override for error messaging.
 			$GLOBALS['current_screen'] = new class() {
-				/**
-				 * @return bool
-				 */
-				public function in_admin() {
+				public function in_admin(): bool {
 					return true;
 				}
 			};
@@ -2432,10 +2430,7 @@ class Runner {
 				// check for starter content.
 				if ( ! function_exists( 'is_customize_preview' ) ) {
 					// @phpstan-ignore function.inner
-					/**
-					 * @return bool
-					 */
-					function is_customize_preview() {
+					function is_customize_preview(): bool {
 						return false;
 					}
 				}
@@ -2699,8 +2694,10 @@ class Runner {
 			if ( true === $skipped_themes ) {
 				return '';
 			}
-			if ( ! is_array( $skipped_themes ) ) {
+			if ( is_string( $skipped_themes ) ) {
 				$skipped_themes = explode( ',', $skipped_themes );
+			} elseif ( ! is_array( $skipped_themes ) ) {
+				$skipped_themes = [];
 			}
 
 			$checked_value = $value;

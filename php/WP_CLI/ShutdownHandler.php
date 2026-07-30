@@ -364,7 +364,7 @@ class ShutdownHandler {
 					}
 					$existing = implode( ',', $parts );
 				} else {
-					$existing = (string) $runtime_config[ $skip_flag ];
+					$existing = is_scalar( $runtime_config[ $skip_flag ] ) ? (string) $runtime_config[ $skip_flag ] : '';
 				}
 
 				$runtime_config[ $skip_flag ] = '' !== $existing ? $existing . ',' . $slug : $slug;

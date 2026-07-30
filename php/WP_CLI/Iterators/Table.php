@@ -50,8 +50,13 @@ class Table extends Query {
 		$append     = is_string( $args['append'] ) ? $args['append'] : '';
 		$chunk_size = is_numeric( $args['chunk_size'] ) ? (int) $args['chunk_size'] : 500;
 
-		$fields     = self::build_fields( $args['fields'] );
-		$conditions = self::build_where_conditions( $args['where'] );
+		/** @var array<int, string>|string $fields_arg */
+		$fields_arg = is_array( $args['fields'] ) || is_string( $args['fields'] ) ? $args['fields'] : '*';
+		/** @var array<string, mixed>|string $where_arg */
+		$where_arg = is_array( $args['where'] ) || is_string( $args['where'] ) ? $args['where'] : [];
+
+		$fields     = self::build_fields( $fields_arg );
+		$conditions = self::build_where_conditions( $where_arg );
 		$where_sql  = $conditions ? " WHERE $conditions" : '';
 		$query      = "SELECT $fields FROM `$table` $where_sql $append";
 
@@ -65,6 +70,10 @@ class Table extends Query {
 	private static function build_fields( $fields ) {
 		if ( '*' === $fields ) {
 			return $fields;
+		}
+
+		if ( is_string( $fields ) ) {
+			$fields = array_map( 'trim', explode( ',', $fields ) );
 		}
 
 		return implode(
