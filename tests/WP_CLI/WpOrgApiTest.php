@@ -6,7 +6,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 class WpOrgApiTest extends TestCase {
 
-	public static function set_up_before_class() {
+	public static function set_up_before_class(): void {
+		parent::set_up_before_class();
 		require_once dirname( __DIR__ ) . '/mock-requests-transport.php';
 	}
 

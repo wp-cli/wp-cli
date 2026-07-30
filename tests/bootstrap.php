@@ -23,4 +23,5 @@ if ( file_exists( WP_CLI_VENDOR_DIR . '/wp-cli/wp-cli-tests/tests/includes/TestC
 	require_once dirname( WP_CLI_ROOT ) . '/wp-cli-tests/tests/includes/TestCase.php';
 }
 
+// @phpstan-ignore staticMethod.internal
 \WpOrg\Requests\Autoload::register();

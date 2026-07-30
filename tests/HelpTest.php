@@ -4,7 +4,8 @@ use WP_CLI\Tests\TestCase;
 
 class HelpTest extends TestCase {
 
-	public static function set_up_before_class() {
+	public static function set_up_before_class(): void {
+		parent::set_up_before_class();
 		require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
 		if ( ! class_exists( 'WP_CLI_Command' ) ) {
 			require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';

@@ -23,7 +23,8 @@ class CLICommandTest extends TestCase {
 	 */
 	private $logger;
 
-	public static function set_up_before_class() {
+	public static function set_up_before_class(): void {
+		parent::set_up_before_class();
 		require_once WP_CLI_ROOT . '/php/commands/src/CLI_Command.php';
 	}
 

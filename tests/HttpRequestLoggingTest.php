@@ -5,7 +5,8 @@ use WP_CLI\Utils;
 
 class HttpRequestLoggingTest extends TestCase {
 
-	public static function set_up_before_class() {
+	public static function set_up_before_class(): void {
+		parent::set_up_before_class();
 		require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
 		require_once __DIR__ . '/mock-requests-transport.php';
 	}

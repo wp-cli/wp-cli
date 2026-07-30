@@ -85,6 +85,7 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 			}
 
 			if ( class_exists( '\\WpOrg\\Requests\\Autoload' ) ) {
+				// @phpstan-ignore staticMethod.internal
 				\WpOrg\Requests\Autoload::register();
 				$this->store_requests_meta( RequestsLibrary::CLASS_NAME_V2, self::FROM_WP_CORE );
 				return $state;
@@ -114,6 +115,7 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 
 		$autoloader->register();
 
+		// @phpstan-ignore staticMethod.internal
 		\WpOrg\Requests\Autoload::register();
 
 		$this->store_requests_meta( RequestsLibrary::CLASS_NAME_V2, self::FROM_WP_CLI );

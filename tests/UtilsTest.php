@@ -8,9 +8,11 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 class UtilsTest extends TestCase {
 
-	public static function set_up_before_class() {
+	public static function set_up_before_class(): void {
+		parent::set_up_before_class();
 		require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
 		require_once __DIR__ . '/mock-requests-transport.php';
+		WP_CLI::get_runner()->init_config();
 	}
 
 	public function testIncrementVersion(): void {
@@ -1379,11 +1381,12 @@ class UtilsTest extends TestCase {
 	}
 
 	private function buildHasStdinCommand(): string {
-		$php  = Utils\get_php_binary();
-		$root = WP_CLI_ROOT;
-		$code = sprintf(
+		$php        = Utils\get_php_binary();
+		$root       = WP_CLI_ROOT;
+		$vendor_dir = defined( 'WP_CLI_VENDOR_DIR' ) ? WP_CLI_VENDOR_DIR : $root . '/vendor';
+		$code       = sprintf(
 			'require %s; require %s; echo WP_CLI\Utils\has_stdin() ? "true" : "false";',
-			var_export( $root . '/vendor/autoload.php', true ),
+			var_export( $vendor_dir . '/autoload.php', true ),
 			var_export( $root . '/php/utils.php', true )
 		);
 

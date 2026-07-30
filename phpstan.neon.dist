@@ -40,5 +40,3 @@ parameters:
     matchingInheritedMethodNames: true
     numericOperandsInArithmeticOperators: true
     switchConditionsMatchingType: true
-  ignoreErrors:
-    - identifier: staticMethod.internal

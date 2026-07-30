@@ -270,6 +270,7 @@ final class RequestsLibrary {
 					require_once WP_CLI_VENDOR_DIR . '/rmccue/requests/src/Autoload.php';
 				}
 			}
+			// @phpstan-ignore staticMethod.internal
 			\WpOrg\Requests\Autoload::register();
 		}
 	}
