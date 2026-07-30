@@ -442,6 +442,8 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     1
 	 *
 	 * @subcommand is-group
+	 * @param array<int, string>   $args
+	 * @param array<string, mixed> $assoc_args
 	 * @return void
 	 */
 	public function is_group( $args, $assoc_args = array() ) {

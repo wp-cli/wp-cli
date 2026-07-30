@@ -652,6 +652,7 @@ class CLI_Command extends WP_CLI_Command {
 	/**
 	 * Returns update information.
 	 *
+	 * @param array<string, mixed> $assoc_args
 	 * @return array<array-key, UpdateOffer>|false
 	 */
 	private function get_updates( $assoc_args ) {
