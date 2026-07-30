@@ -31,6 +31,7 @@ final class PathTest extends TestCase {
 	public function testPathIsRecognizedAsAbsolute( string $path, bool $expected ): void {
 		$this->assertSame(
 			$expected,
+			// @phpstan-ignore function.deprecated
 			Utils\is_path_absolute( $path ),
 			"Failed asserting that path '{$path}' is recognized correctly."
 		);

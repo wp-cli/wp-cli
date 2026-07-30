@@ -466,18 +466,22 @@ class UtilsTest extends TestCase {
 		$homepath  = getenv( 'HOMEPATH' );
 
 		putenv( 'HOME=/home/user' );
+		// @phpstan-ignore function.deprecated
 		$this->assertSame( '/home/user', Utils\get_home_dir() );
 
 		putenv( 'HOME' );
 
 		putenv( 'HOMEDRIVE=D:' );
 		putenv( 'HOMEPATH' );
+		// @phpstan-ignore function.deprecated
 		$this->assertSame( 'D:', Utils\get_home_dir() );
 
 		putenv( 'HOMEPATH=\\Windows\\User\\' );
+		// @phpstan-ignore function.deprecated
 		$this->assertSame( 'D:\\Windows\\User', Utils\get_home_dir() );
 
 		putenv( 'HOMEPATH=\\Windows\\User\\HOGE\\' );
+		// @phpstan-ignore function.deprecated
 		$this->assertSame( 'D:\\Windows\\User\\HOGE', Utils\get_home_dir() );
 
 		// Restore environments.
@@ -487,9 +491,13 @@ class UtilsTest extends TestCase {
 	}
 
 	public function testTrailingslashit(): void {
+		// @phpstan-ignore function.deprecated
 		$this->assertSame( 'a/', Utils\trailingslashit( 'a' ) );
+		// @phpstan-ignore function.deprecated
 		$this->assertSame( 'a/', Utils\trailingslashit( 'a/' ) );
+		// @phpstan-ignore function.deprecated
 		$this->assertSame( 'a/', Utils\trailingslashit( 'a\\' ) );
+		// @phpstan-ignore function.deprecated
 		$this->assertSame( 'a/', Utils\trailingslashit( 'a\\//\\' ) );
 	}
 
@@ -498,6 +506,7 @@ class UtilsTest extends TestCase {
 	 */
 	#[DataProvider( 'dataNormalizePath' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testNormalizePath( string $path, string $expected ): void {
+		// @phpstan-ignore function.deprecated
 		$this->assertEquals( $expected, Utils\normalize_path( $path ) );
 	}
 
@@ -540,13 +549,21 @@ class UtilsTest extends TestCase {
 	}
 
 	public function testIsStream(): void {
+		// @phpstan-ignore function.deprecated
 		$this->assertTrue( Utils\is_stream( 'phar:///path/to/file.phar' ) );
+		// @phpstan-ignore function.deprecated
 		$this->assertTrue( Utils\is_stream( 'php://stdin' ) );
+		// @phpstan-ignore function.deprecated
 		$this->assertTrue( Utils\is_stream( 'PHAR:///path/to/file.phar' ) );
+		// @phpstan-ignore function.deprecated
 		$this->assertTrue( Utils\is_stream( 'PhAr:///path/to/file.phar' ) );
+		// @phpstan-ignore function.deprecated
 		$this->assertFalse( Utils\is_stream( '/www/path' ) );
+		// @phpstan-ignore function.deprecated
 		$this->assertFalse( Utils\is_stream( 'C:/www/path' ) );
+		// @phpstan-ignore function.deprecated
 		$this->assertFalse( Utils\is_stream( '' ) );
+		// @phpstan-ignore function.deprecated
 		$this->assertFalse( Utils\is_stream( 'nonexistent_wrapper://path' ) );
 	}
 
@@ -1229,7 +1246,8 @@ class UtilsTest extends TestCase {
 	public function testReplacePathConstsAddSlashes(): void {
 		$expected = "define( 'ABSPATH', dirname( 'C:\\\\Users\\\\test\'s\\\\site' ) . '/' );";
 		$source   = "define( 'ABSPATH', dirname( __FILE__ ) . '/' );";
-		$actual   = Utils\replace_path_consts( $source, "C:\Users\\test's\site" );
+		// @phpstan-ignore function.deprecated
+		$actual = Utils\replace_path_consts( $source, "C:\Users\\test's\site" );
 		$this->assertSame( $expected, $actual );
 	}
 
@@ -1295,19 +1313,25 @@ class UtilsTest extends TestCase {
 	}
 
 	public function testExpandTildePath(): void {
+		// @phpstan-ignore function.deprecated
 		$home = Utils\get_home_dir();
 
 		// Test tilde expansion for home directory
+		// @phpstan-ignore function.deprecated
 		$this->assertEquals( $home, Utils\expand_tilde_path( '~' ) );
 
 		// Test tilde expansion with subdirectory
+		// @phpstan-ignore function.deprecated
 		$this->assertEquals( $home . '/sites/wordpress', Utils\expand_tilde_path( '~/sites/wordpress' ) );
 
 		// Test that paths without tilde are unchanged
+		// @phpstan-ignore function.deprecated
 		$this->assertEquals( '/absolute/path', Utils\expand_tilde_path( '/absolute/path' ) );
+		// @phpstan-ignore function.deprecated
 		$this->assertEquals( 'relative/path', Utils\expand_tilde_path( 'relative/path' ) );
 
 		// Test that tilde in the middle is not expanded
+		// @phpstan-ignore function.deprecated
 		$this->assertEquals( '/path/to/~something', Utils\expand_tilde_path( '/path/to/~something' ) );
 	}
 
