@@ -152,31 +152,32 @@ class Subcommand extends CompositeCommand {
 	/**
 	 * Get the description for an argument from documentation.
 	 *
-	 * @param array $spec_arg Argument specification from SynopsisParser
-	 * @param DocParser $docparser DocParser instance for retrieving descriptions
-	 * @param string $longdesc Long description text for regex matching
+	 * @param array<string, mixed> $spec_arg Argument specification from SynopsisParser
+	 * @param DocParser            $docparser DocParser instance for retrieving descriptions
+	 * @param string               $longdesc Long description text for regex matching
 	 * @return string Description text, or empty string if not found
 	 */
 	private function get_arg_description( $spec_arg, $docparser, $longdesc ) {
 		$description = '';
+		$name        = is_string( $spec_arg['name'] ) ? $spec_arg['name'] : '';
 
 		if ( 'positional' === $spec_arg['type'] ) {
-			$description = $docparser->get_arg_desc( $spec_arg['name'] );
+			$description = $docparser->get_arg_desc( $name );
 			// If get_arg_desc doesn't find it (e.g., for simple <arg> without modifiers),
 			// try a simpler pattern that matches <arg> followed by : description,
 			// using a pattern consistent with DocParser::get_arg_desc().
 			if ( empty( $description ) ) {
-				$arg_pattern = '/\[?<' . preg_quote( $spec_arg['name'], '/' ) . ">.+\n:\s*(.+?)(\n|$)/";
+				$arg_pattern = '/\[?<' . preg_quote( $name, '/' ) . ">.+\n:\s*(.+?)(\n|$)/";
 				if ( preg_match( $arg_pattern, $longdesc, $matches ) ) {
 					$description = trim( $matches[1] );
 				}
 			}
 		} elseif ( 'assoc' === $spec_arg['type'] ) {
-			$description = $docparser->get_param_desc( $spec_arg['name'] );
+			$description = $docparser->get_param_desc( $name );
 		} elseif ( 'flag' === $spec_arg['type'] ) {
 			// For flags, the pattern is [--flag] not [--flag=<value>]
 			// So we need a custom regex pattern in the longdesc
-			$flag_pattern = '/\[?--' . preg_quote( $spec_arg['name'], '/' ) . "\]\s*\n:\s*(.+?)(\n|$)/";
+			$flag_pattern = '/\[?--' . preg_quote( $name, '/' ) . "\]\s*\n:\s*(.+?)(\n|$)/";
 			if ( preg_match( $flag_pattern, $longdesc, $matches ) ) {
 				$description = trim( $matches[1] );
 			}
@@ -189,9 +190,9 @@ class Subcommand extends CompositeCommand {
 	 * Interactively prompt the user for input
 	 * based on defined synopsis and passed arguments.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 * @return array
+	 * @param array<mixed>         $args
+	 * @param array<string, mixed> $assoc_args
+	 * @return array{0: array<mixed>, 1: array<string, mixed>}
 	 */
 	private function prompt_args( $args, $assoc_args ) {
 
@@ -379,19 +380,12 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
-	 * Resolve argument aliases to their canonical names.
+	 * Resolve alias argument names to their canonical parameter names.
 	 *
-	 * Takes an associative array of arguments and replaces any aliases
-	 * with their canonical parameter names. This allows commands to define
-	 * shorter versions of arguments (e.g., -w for --with-dependencies).
-	 *
-	 * For repeating parameters, alias values are merged with any canonical
-	 * values already provided rather than being discarded.
-	 *
-	 * @param array $assoc_args      Arguments passed to command.
-	 * @param array $aliases         Map of alias => canonical_name.
-	 * @param array $repeating_params Map of canonical_name => true for repeating params.
-	 * @return array Arguments with aliases resolved to canonical names.
+	 * @param array<string, mixed>  $assoc_args      Arguments passed to command.
+	 * @param array<string, string> $aliases         Map of alias => canonical_name.
+	 * @param array<string, bool>   $repeating_params Map of canonical_name => true for repeating params.
+	 * @return array<string, mixed> Arguments with aliases resolved to canonical names.
 	 */
 	private function resolve_arg_aliases( $assoc_args, $aliases, $repeating_params = [] ) {
 		if ( empty( $aliases ) ) {
@@ -447,10 +441,10 @@ class Subcommand extends CompositeCommand {
 	 * Throws warnings or errors if arguments are missing
 	 * or invalid.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 * @param array $extra_args
-	 * @return array list of invalid $assoc_args keys to unset
+	 * @param array<mixed>         $args
+	 * @param array<string, mixed> $assoc_args
+	 * @param array<string, mixed> $extra_args
+	 * @return array{0: array<string>, 1: array<mixed>, 2: array<string, mixed>, 3: array<string, mixed>} list of invalid $assoc_args keys to unset
 	 */
 	private function validate_args( $args, $assoc_args, $extra_args ) {
 		$synopsis = $this->get_synopsis();
@@ -662,8 +656,9 @@ class Subcommand extends CompositeCommand {
 	 * Given a --prompt argument, interactively request input
 	 * from the end user.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @param array<mixed>         $args
+	 * @param array<string, mixed> $assoc_args
+	 * @param array<mixed>         $extra_args
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) {
 		static $prompted_once = false;
@@ -864,9 +859,9 @@ class Subcommand extends CompositeCommand {
 	 * Get an array of parameter names, by merging the command-specific and the
 	 * global parameters.
 	 *
-	 * @param array $spec Optional. Specification of the current command.
+	 * @param array<int, array<string, mixed>> $spec Optional. Specification of the current command.
 	 *
-	 * @return array Array of parameter names
+	 * @return array<int, string> Array of parameter names
 	 */
 	private function get_parameters( $spec = [] ) {
 		$local_parameters  = array_column( $spec, 'name' );

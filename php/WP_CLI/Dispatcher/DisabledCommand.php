@@ -46,9 +46,9 @@ class DisabledCommand extends Subcommand {
 	/**
 	 * Prevent execution of the command.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 * @param array $extra_args
+	 * @param array<mixed>         $args
+	 * @param array<string, mixed> $assoc_args
+	 * @param array<mixed>         $extra_args
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) {
 		$cmd_path = implode( ' ', get_path( $this ) );

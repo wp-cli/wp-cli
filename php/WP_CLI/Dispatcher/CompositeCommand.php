@@ -128,7 +128,7 @@ class CompositeCommand {
 	 * Get the subcommands contained by this composite
 	 * command.
 	 *
-	 * @return array
+	 * @return array<string, Subcommand|CompositeCommand>
 	 */
 	public function get_subcommands() {
 		ksort( $this->subcommands );
@@ -262,9 +262,9 @@ class CompositeCommand {
 	 * When a composite command is invoked, it shows usage
 	 * docs for its subcommands.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 * @param array $extra_args
+	 * @param array<mixed>         $args
+	 * @param array<string, mixed> $assoc_args
+	 * @param array<mixed>         $extra_args
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- arguments not used, as only help displayed.
 		$this->show_usage();
@@ -274,11 +274,14 @@ class CompositeCommand {
 	 * Given supplied arguments, find a contained
 	 * subcommand
 	 *
-	 * @param array $args
+	 * @param array<string> $args
 	 * @return Subcommand|CompositeCommand|false
 	 */
 	public function find_subcommand( &$args ) {
 		$name = array_shift( $args );
+		if ( null === $name ) {
+			return false;
+		}
 
 		$subcommands = $this->get_subcommands();
 
@@ -301,8 +304,8 @@ class CompositeCommand {
 	 * Get any registered aliases for this composite command's
 	 * subcommands.
 	 *
-	 * @param array $subcommands
-	 * @return array
+	 * @param array<string, Subcommand|CompositeCommand> $subcommands
+	 * @return array<string, string>
 	 */
 	private static function get_aliases( $subcommands ) {
 		$aliases = [];
