@@ -18,7 +18,7 @@ class SynopsisParser {
 
 	/**
 	 * @param string $synopsis A synopsis
-	 * @return array List of parameters
+	 * @return array<int, array<string, mixed>> List of parameters
 	 */
 	public static function parse( $synopsis ) {
 		$tokens = array_filter( (array) preg_split( '/[\s\t]+/', $synopsis ) );
