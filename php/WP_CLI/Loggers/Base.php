@@ -10,7 +10,7 @@ use WP_CLI\Runner;
  * Base logger class
  *
  * @method void error( string $message )
- * @method void error_multi_line( array $message_lines )
+ * @method void error_multi_line( array<int, string> $message_lines )
  */
 abstract class Base {
 

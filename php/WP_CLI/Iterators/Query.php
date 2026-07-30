@@ -51,7 +51,7 @@ class Query implements Iterator {
 	/**
 	 * The current chunk of results.
 	 *
-	 * @var array
+	 * @var array<int, mixed>
 	 */
 	private $results = [];
 
@@ -156,7 +156,7 @@ class Query implements Iterator {
 
 	#[\ReturnTypeWillChange]
 	public function current() {
-		return $this->results[ $this->index_in_results ];
+		return (object) $this->results[ $this->index_in_results ];
 	}
 
 	#[\ReturnTypeWillChange]

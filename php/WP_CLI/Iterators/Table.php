@@ -28,7 +28,7 @@ class Table extends Query {
 	 * }
 	 * </code>
 	 *
-	 * @param array $args Supported arguments:
+	 * @param array<string, mixed> $args Supported arguments:
 	 *      table – the name of the database table
 	 *      fields – an array of columns to get from the table, '*' is a valid value and the default
 	 *      where – conditions for filtering rows. Supports two formats:
@@ -38,22 +38,24 @@ class Table extends Query {
 	 *      append - add arbitrary extra SQL
 	 */
 	public function __construct( $args = [] ) {
-		$defaults = [
+		$defaults   = [
 			'fields'     => '*',
 			'where'      => [],
 			'append'     => '',
 			'table'      => null,
 			'chunk_size' => 500,
 		];
-		$table    = $args['table'];
-		$args     = array_merge( $defaults, $args );
+		$table      = is_string( $args['table'] ) ? $args['table'] : '';
+		$args       = array_merge( $defaults, $args );
+		$append     = is_string( $args['append'] ) ? $args['append'] : '';
+		$chunk_size = is_numeric( $args['chunk_size'] ) ? (int) $args['chunk_size'] : 500;
 
 		$fields     = self::build_fields( $args['fields'] );
 		$conditions = self::build_where_conditions( $args['where'] );
 		$where_sql  = $conditions ? " WHERE $conditions" : '';
-		$query      = "SELECT $fields FROM `$table` $where_sql {$args['append']}";
+		$query      = "SELECT $fields FROM `$table` $where_sql $append";
 
-		parent::__construct( $query, $args['chunk_size'] );
+		parent::__construct( $query, $chunk_size );
 	}
 
 	private static function build_fields( $fields ) {

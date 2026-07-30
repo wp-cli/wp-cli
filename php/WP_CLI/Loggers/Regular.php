@@ -56,7 +56,7 @@ class Regular extends Base {
 	/**
 	 * Similar to error( $message ), but outputs $message in a red box.
 	 *
-	 * @param non-empty-array<string> $message_lines Message to write.
+	 * @param array<int, string> $message_lines Message to write.
 	 */
 	public function error_multi_line( $message_lines ) {
 		// Convert tabs to four spaces, as some shells will output the tabs as variable-length.
@@ -66,6 +66,10 @@ class Regular extends Base {
 			},
 			$message_lines
 		);
+
+		if ( empty( $message_lines ) ) {
+			return;
+		}
 
 		$longest = max( array_map( 'strlen', $message_lines ) );
 
