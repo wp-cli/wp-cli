@@ -4,6 +4,8 @@ namespace WP_CLI;
 
 /**
  * Checks if the list of parameters matches the specification defined in the synopsis.
+ *
+ * @phpstan-import-type CommandSynopsis from \WP_CLI
  */
 class SynopsisValidator {
 

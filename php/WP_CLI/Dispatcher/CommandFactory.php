@@ -26,6 +26,7 @@ class CommandFactory {
 	 * @param string                                       $name     Represents how the command should be invoked
 	 * @param string|callable-string|callable|array|object $callable A subclass of WP_CLI_Command, a function, or a closure
 	 * @param RootCommand|CompositeCommand                 $parent   The new command's parent Composite (or Root) command
+	 * @return Subcommand|CompositeCommand|CommandNamespace
 	 */
 	public static function create( $name, $callable, $parent ) {
 

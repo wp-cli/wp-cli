@@ -920,7 +920,7 @@ function replace_path_consts( $source, $path ) {
  * @throws RuntimeException If the request failed.
  * @throws ExitException If the request failed and $halt_on_error is true.
  *
- * @phpstan-param array{halt_on_error?: bool, verify?: bool|string, insecure?: bool, max_retries?: int} $options
+ * @phpstan-param array{halt_on_error?: bool, verify?: bool|string, insecure?: bool, max_retries?: int, timeout?: float|int, ...array<string, mixed>} $options
  */
 function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
