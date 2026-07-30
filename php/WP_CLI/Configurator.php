@@ -17,35 +17,35 @@ class Configurator {
 	/**
 	 * Configurator argument specification.
 	 *
-	 * @var array
+	 * @var array<string, array<string, mixed>>
 	 */
 	private $spec;
 
 	/**
 	 * Values for keys defined in Configurator spec.
 	 *
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	private $config = [];
 
 	/**
 	 * Extra config values not specified in spec.
 	 *
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	private $extra_config = [];
 
 	/**
 	 * Any aliases defined in config files.
 	 *
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	private $aliases = [];
 
 	/**
 	 * Raw aliases without environment variable interpolation.
 	 *
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	private $raw_aliases = [];
 
@@ -59,7 +59,7 @@ class Configurator {
 	/**
 	 * Arguments that can be used in an alias.
 	 *
-	 * @var array
+	 * @var array<int, string>
 	 */
 	private static $alias_spec = [
 		'user',
@@ -101,7 +101,13 @@ class Configurator {
 			if ( ! isset( $this->config['require'] ) ) {
 				$this->config['require'] = [];
 			}
-			$this->config['require'] = array_unique( array_merge( $env_files, $this->config['require'] ) );
+			$require                 = is_array( $this->config['require'] ) ? array_map(
+				function ( $v ) {
+					return is_scalar( $v ) ? (string) $v : '';
+				},
+				$this->config['require']
+			) : [];
+			$this->config['require'] = array_unique( array_merge( $env_files, $require ) );
 		}
 	}
 
@@ -124,9 +130,9 @@ class Configurator {
 	/**
 	 * Add the given alias to the internal aliases array.
 	 *
-	 * @param string $key The alias name (with or without @ prefix).
-	 * @param array  $value The alias configuration.
-	 * @param string $yml_file_dir The directory of the YAML file for path resolution.
+	 * @param string        $key The alias name (with or without @ prefix).
+	 * @param array<mixed>  $value The alias configuration.
+	 * @param string        $yml_file_dir The directory of the YAML file for path resolution.
 	 * @return void
 	 */
 	private function add_alias( $key, $value, $yml_file_dir ) {
@@ -144,8 +150,9 @@ class Configurator {
 				$this->raw_aliases[ $key ][ $i ] = $value[ $i ];
 
 				// Interpolate environment variables in alias values.
-				$value[ $i ] = self::interpolate_env_vars( $value[ $i ] );
-				if ( 'path' === $i && ! isset( $value['ssh'] ) ) {
+				$val_i       = is_string( $value[ $i ] ) ? $value[ $i ] : '';
+				$value[ $i ] = self::interpolate_env_vars( $val_i );
+				if ( 'path' === $i && ! isset( $value['ssh'] ) && is_string( $value[ $i ] ) ) {
 					self::absolutize( $value[ $i ], $yml_file_dir );
 					$value[ $i ] = Path::normalize( $value[ $i ] );
 				}
@@ -157,7 +164,7 @@ class Configurator {
 		// If it's not an alias, it might be a group of aliases.
 		if ( ! $is_alias && is_array( $value ) ) {
 			/**
-			 * @var list<string> $value
+			 * @var array<int, string> $value
 			 */
 			$alias_group = [];
 			foreach ( $value as $k ) {
@@ -188,7 +195,7 @@ class Configurator {
 	/**
 	 * Get configuration specification, i.e. list of accepted keys.
 	 *
-	 * @return array
+	 * @return array<string, array<string, mixed>>
 	 */
 	public function get_spec() {
 		return $this->spec;
@@ -197,7 +204,7 @@ class Configurator {
 	/**
 	 * Get any aliases defined in config files.
 	 *
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public function get_aliases() {
 		$runtime_aliases = $this->get_runtime_aliases( true );
@@ -211,7 +218,7 @@ class Configurator {
 	/**
 	 * Get raw aliases without environment variable interpolation.
 	 *
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public function get_raw_aliases() {
 		$runtime_aliases = $this->get_runtime_aliases( false );
@@ -226,7 +233,7 @@ class Configurator {
 	 * Get runtime aliases from environment variable.
 	 *
 	 * @param bool $interpolate Whether to interpolate environment variables.
-	 * @return array|null Returns aliases array if runtime alias is set, null otherwise.
+	 * @return array<string, mixed>|null Returns aliases array if runtime alias is set, null otherwise.
 	 */
 	private function get_runtime_aliases( $interpolate ) {
 		$runtime_alias = getenv( 'WP_CLI_RUNTIME_ALIAS' );
@@ -331,7 +338,9 @@ class Configurator {
 	/**
 	 * Separate runtime parameters from command-specific parameters.
 	 *
-	 * @param array $mixed_args
+	 * @param array<int, array{0: string, 1: mixed}> $mixed_args
+	 * @param array<int, array{0: string, 1: mixed}> $global_assoc
+	 * @param array<int, array{0: string, 1: mixed}> $local_assoc
 	 * @return array{0: array<string, mixed>, 1: array<string, array<int, string>|int|string|true>}
 	 */
 	private function unmix_assoc_args( $mixed_args, $global_assoc = [], $local_assoc = [] ) {
@@ -393,7 +402,7 @@ class Configurator {
 	 */
 	private function assoc_arg_to_runtime_config( $key, $value, &$runtime_config ) {
 		$details = $this->spec[ $key ];
-		if ( isset( $details['deprecated'] ) ) {
+		if ( isset( $details['deprecated'] ) && is_string( $details['deprecated'] ) ) {
 			fwrite( STDERR, "WP-CLI: The --{$key} global parameter is deprecated. {$details['deprecated']}\n" );
 		}
 
@@ -411,7 +420,7 @@ class Configurator {
 	 */
 	public function merge_yml( $path, $current_alias = null ) {
 		$yaml = self::load_yml( $path );
-		if ( ! empty( $yaml['_']['inherit'] ) ) {
+		if ( is_array( $yaml['_'] ) && ! empty( $yaml['_']['inherit'] ) && is_string( $yaml['_']['inherit'] ) ) {
 			$inherit_path = Path::is_absolute( $yaml['_']['inherit'] )
 				? $yaml['_']['inherit']
 				: ( new SplFileInfo( Path::normalize( dirname( $path ) . '/' . $yaml['_']['inherit'] ) ) )->getRealPath();
@@ -422,13 +431,20 @@ class Configurator {
 		$yml_file_dir = $path ? dirname( $path ) : '';
 		foreach ( $yaml as $key => $value ) {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
-				$this->add_alias( $key, $value, $yml_file_dir );
+				if ( is_array( $value ) ) {
+					$this->add_alias( $key, $value, $yml_file_dir );
+				}
 			} elseif ( 'aliases' === $key ) {
-				foreach ( $value as $alias => $alias_config ) {
-					$this->add_alias( $alias, $alias_config, $yml_file_dir );
+				if ( is_array( $value ) ) {
+					foreach ( $value as $alias => $alias_config ) {
+						if ( is_string( $alias ) && is_array( $alias_config ) ) {
+							$this->add_alias( $alias, $alias_config, $yml_file_dir );
+						}
+					}
 				}
 			} elseif ( ! isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
 				if ( isset( $this->extra_config[ $key ] )
+					&& is_array( $yaml['_'] )
 					&& ! empty( $yaml['_']['merge'] )
 					&& is_array( $this->extra_config[ $key ] )
 					&& is_array( $value ) ) {
@@ -438,7 +454,7 @@ class Configurator {
 				}
 			} elseif ( $this->spec[ $key ]['multiple'] ) {
 				self::arrayify( $value );
-				$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
+				$this->config[ $key ] = array_merge( (array) $this->config[ $key ], $value );
 			} else {
 				if ( $current_alias && in_array( $key, self::$alias_spec, true ) ) {
 					continue;
@@ -451,7 +467,7 @@ class Configurator {
 	/**
 	 * Merge an array of values into the configurator config.
 	 *
-	 * @param array $config
+	 * @param array<string, mixed> $config
 	 */
 	public function merge_array( $config ) {
 		foreach ( $this->spec as $key => $details ) {
@@ -459,12 +475,19 @@ class Configurator {
 				$value = $config[ $key ];
 
 				if ( 'require' === $key ) {
-					$value = Utils\expand_globs( $value );
+					$value = Utils\expand_globs(
+						is_array( $value ) ? array_map(
+							function ( $v ) {
+								return is_scalar( $v ) ? (string) $v : '';
+							},
+							$value
+						) : ( is_scalar( $value ) ? (string) $value : '' )
+					);
 				}
 
 				if ( $details['multiple'] ) {
 					self::arrayify( $value );
-					$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
+					$this->config[ $key ] = array_merge( (array) $this->config[ $key ], $value );
 				} else {
 					$this->config[ $key ] = $value;
 				}
@@ -476,7 +499,7 @@ class Configurator {
 	 * Load values from a YAML file.
 	 *
 	 * @param string $yml_file Path to the YAML file
-	 * @return array Declared configuration values
+	 * @return array<string, mixed> Declared configuration values
 	 */
 	private static function load_yml( $yml_file ) {
 		if ( ! $yml_file ) {

@@ -67,8 +67,8 @@ class Formatter {
 	private $prefix;
 
 	/**
-	 * @param FormatterArgs $assoc_args Output format arguments.
-	 * @param-out array $assoc_args
+	 * @param array<string, mixed> $assoc_args Output format arguments.
+	 * @param-out array<string, mixed> $assoc_args
 	 * @param array<string>|string|null $fields Fields to display of each item.
 	 * @param string|false $prefix Check if fields have a standard prefix.
 	 * False indicates empty prefix.
@@ -94,10 +94,16 @@ class Formatter {
 			$format_args['fields'] = [];
 		}
 
-		/** @var callable(string): string $trim */
-		$trim                  = 'trim';
-		$format_args['fields'] = array_map( $trim, $format_args['fields'] );
+		/** @var array<int, string> $fields_array */
+		$fields_array          = is_array( $format_args['fields'] ) ? $format_args['fields'] : [];
+		$format_args['fields'] = array_map(
+			function ( $v ) {
+				return (string) $v;
+			},
+			$fields_array
+		);
 
+		/** @var array{format: string, fields: array<string>, field: string|null, alignments: array<string, int>} $format_args */
 		$this->args   = $format_args;
 		$this->prefix = $prefix;
 	}
@@ -303,7 +309,7 @@ class Formatter {
 			'yaml',
 			static function ( $value ) {
 				/**
-				 * @var array $value
+				 * @var array<mixed> $value
 				 */
 				return Spyc::YAMLDump( $value, 2, 0 );
 			}
@@ -367,8 +373,8 @@ class Formatter {
 	/**
 	 * Display multiple items according to the output arguments.
 	 *
-	 * @param iterable   $items               The items to display.
-	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `format()` if items in the table are pre-colorized. Default false.
+	 * @param iterable<int, array<string, mixed>|object> $items The items to display.
+	 * @param bool|array<string, bool>                   $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `format()` if items in the table are pre-colorized. Default false.
 	 */
 	public function display_items( $items, $ascii_pre_colorized = false ) {
 		if ( $this->args['field'] ) {
@@ -393,18 +399,20 @@ class Formatter {
 			}
 
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
-				$items = array_map( [ $this, 'transform_item_values_to_json' ], (array) $items );
+				/** @var array<int, array<string, mixed>|object> $transformed */
+				$transformed = array_map( [ $this, 'transform_item_values_to_json' ], (array) $items );
+				$this->format( $transformed, $ascii_pre_colorized );
+			} else {
+				$this->format( $items, $ascii_pre_colorized );
 			}
-
-			$this->format( $items, $ascii_pre_colorized );
 		}
 	}
 
 	/**
 	 * Display a single item according to the output arguments.
 	 *
-	 * @param mixed      $item
-	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_multiple_fields()` if the item in the table is pre-colorized. Default false.
+	 * @param mixed                    $item
+	 * @param bool|array<string, bool> $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_multiple_fields()` if the item in the table is pre-colorized. Default false.
 	 */
 	public function display_item( $item, $ascii_pre_colorized = false ) {
 		if ( isset( $this->args['field'] ) ) {
@@ -427,7 +435,7 @@ class Formatter {
 			);
 		} else {
 			/**
-			 * @var array $item
+			 * @var array<string, mixed> $item
 			 */
 			$this->show_multiple_fields( $item, $this->args['format'], $ascii_pre_colorized );
 		}
@@ -436,8 +444,8 @@ class Formatter {
 	/**
 	 * Format items according to arguments.
 	 *
-	 * @param iterable   $items               Items.
-	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if items in the table are pre-colorized. Default false.
+	 * @param iterable<int, array<string, mixed>|object> $items Items.
+	 * @param bool|array<string, bool>                   $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if items in the table are pre-colorized. Default false.
 	 */
 	private function format( $items, $ascii_pre_colorized = false ): void {
 		$fields = $this->args['fields'];
@@ -459,7 +467,6 @@ class Formatter {
 			$formatted_items = [];
 			foreach ( $items as $item ) {
 				if ( is_array( $item ) || is_object( $item ) ) {
-					// @phpstan-ignore-next-line - $item is guaranteed to be array|object here
 					$formatted_items[] = Utils\pick_fields( $item, $fields );
 				} else {
 					WP_CLI::debug( 'Skipping item that is neither array nor object in format handler.', 'formatter' );
@@ -491,8 +498,8 @@ class Formatter {
 	/**
 	 * Show a single field from a list of items.
 	 *
-	 * @param iterable $items Array of objects to show fields from
-	 * @param string   $field The field to show
+	 * @param iterable<int, array<string, mixed>|object> $items Array of objects to show fields from
+	 * @param string                                     $field The field to show
 	 */
 	private function show_single_field( $items, $field ): void {
 		$key         = null;
@@ -541,7 +548,7 @@ class Formatter {
 	 * Warns if a field doesn't exist in any item.
 	 * Also resolves field names to their actual keys (including prefixes).
 	 *
-	 * @param iterable $items Items to validate
+	 * @param iterable<int, array<string, mixed>|object> $items Items to validate
 	 */
 	private function validate_fields( $items ): void {
 		// Track which fields have been found and their resolved keys
@@ -592,9 +599,9 @@ class Formatter {
 	 * Find an object's key.
 	 * If $prefix is set, a key with that prefix will be prioritized.
 	 *
-	 * @param array|object $item
-	 * @param string       $field
-	 * @param bool         $lenient If true, return null instead of erroring when field is not found.
+	 * @param array<string, mixed>|object $item
+	 * @param string                      $field
+	 * @param bool                        $lenient If true, return null instead of erroring when field is not found.
 	 * @return string|null
 	 */
 	private function find_item_key( $item, $field, $lenient = false ) {
@@ -621,9 +628,9 @@ class Formatter {
 	/**
 	 * Show multiple fields of an object.
 	 *
-	 * @param iterable   $data                Data to display
-	 * @param string     $format              Format to display the data in
-	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if the item in the table is pre-colorized. Default false.
+	 * @param array<string, mixed>|object $data Data to display
+	 * @param string                      $format Format to display the data in
+	 * @param bool|array<string, bool>    $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if the item in the table is pre-colorized. Default false.
 	 */
 	private function show_multiple_fields( $data, $format, $ascii_pre_colorized = false ): void {
 
@@ -638,7 +645,7 @@ class Formatter {
 			}
 		}
 
-		foreach ( $data as $key => $value ) {
+		foreach ( (array) $data as $key => $value ) {
 			if ( ! in_array( $key, $true_fields, true ) ) {
 				if ( is_array( $data ) ) {
 					unset( $data[ $key ] );
@@ -685,9 +692,9 @@ class Formatter {
 	/**
 	 * Show items in a \cli\Table.
 	 *
-	 * @param iterable   $items               Items.
-	 * @param array      $fields              Fields.
-	 * @param bool|array $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `Table::setAsciiPreColorized()` if items in the table are pre-colorized. Default false.
+	 * @param iterable<int, array<string, mixed>|object> $items Items.
+	 * @param array<int, string>                         $fields Fields.
+	 * @param bool|array<string, bool>                   $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `Table::setAsciiPreColorized()` if items in the table are pre-colorized. Default false.
 	 */
 	private function show_table( $items, $fields, $ascii_pre_colorized = false ) {
 		$table = new Table();
@@ -719,8 +726,8 @@ class Formatter {
 	/**
 	 * Format an associative array as a table.
 	 *
-	 * @param iterable $fields Fields and values to format
-	 * @return array
+	 * @param array<string, mixed> $fields Fields and values to format
+	 * @return array<int, \stdClass>
 	 */
 	private function assoc_array_to_rows( $fields ) {
 		$rows = [];
@@ -752,7 +759,7 @@ class Formatter {
 	 * - Objects and arrays are converted to JSON strings
 	 * - Booleans are converted to "true" or "false"
 	 *
-	 * @param array|object $item
+	 * @param array<string, mixed>|object $item
 	 * @return mixed
 	 */
 	public function transform_item_values_to_json( $item ) {
