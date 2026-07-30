@@ -958,7 +958,8 @@ class Runner {
 	private function run_ssh_command( string $connection_string ): void {
 
 		/**
-		 * Action triggered before executing a command via SSH.
+		 * Action triggered before executing a command through any supported
+		 * remote execution mode, including SSH, Vagrant, Docker, and Docker Compose.
 		 */
 		WP_CLI::do_hook( 'before_ssh' );
 

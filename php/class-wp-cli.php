@@ -248,7 +248,7 @@ class WP_CLI {
 	 *
 	 * WP-CLI hooks include:
 	 *
-	 * * `before_add_command:<command>` - Before the command is added.
+	 * * `before_add_command:<command>` (1) - Before the command is added.
 	 * * `after_add_command:<command>` - After the command was added.
 	 * * `before_invoke:<command>` (1) - Just before a command is invoked.
 	 * * `after_invoke:<command>` (1) - Just after a command is invoked.
@@ -259,6 +259,7 @@ class WP_CLI {
 	 * * `after_wp_config_load` - After wp-config.php has been loaded into scope.
 	 * * `after_wp_load` - Just after the WP load process has completed.
 	 * * `before_run_command` (3) - Just before the command is executed.
+	 * * `before_ssh` - Before executing a command through any supported remote mode.
 	 *
 	 * The parentheses behind the hook name denote the number of arguments
 	 * being passed into the hook. For such hooks, the callback should return
