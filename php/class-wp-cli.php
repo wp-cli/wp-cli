@@ -1354,6 +1354,7 @@ class WP_CLI {
 
 		// Forward environment variables when available so child processes can still
 		// read DB_* (and other) values via getenv() / $_ENV in wp-config.php.
+		/** @var array<string, string> $env */
 		$env = $_ENV;
 
 		if ( ! empty( $env ) ) {

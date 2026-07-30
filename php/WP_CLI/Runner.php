@@ -14,20 +14,20 @@ use WP_Error;
  * @property-read string         $global_config_path
  * @property-read string         $project_config_path
  * @property-read GlobalConfig   $config
- * @property-read array          $extra_config
+ * @property-read array<string, mixed> $extra_config
  * @property-read ContextManager $context_manager
  * @property-read string         $alias
- * @property-read array          $aliases
- * @property-read array          $raw_aliases
- * @property-read array          $arguments
- * @property-read array          $assoc_args
- * @property-read array          $runtime_config
+ * @property-read array<string, mixed> $aliases
+ * @property-read array<string, mixed> $raw_aliases
+ * @property-read array<int, string> $arguments
+ * @property-read array<string, mixed> $assoc_args
+ * @property-read array<string, mixed> $runtime_config
  * @property-read bool           $colorize
- * @property-read array          $early_invoke
+ * @property-read array<string, array<int, array<string>>> $early_invoke
  * @property-read string         $system_config_path_debug
  * @property-read string         $global_config_path_debug
  * @property-read string         $project_config_path_debug
- * @property-read array          $required_files
+ * @property-read array<string, mixed> $required_files
  *
  * @phpstan-import-type GlobalConfig from \WP_CLI
  *
@@ -84,19 +84,19 @@ class Runner {
 	/** @var string|null */
 	private $alias;
 
-	/** @var array<string, array<string|int, array<string, string>>|string> */
+	/** @var array<string, mixed> */
 	private $aliases = [];
 
 	/**
 	 * Raw aliases configuration.
 	 *
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	private $raw_aliases;
 
 	/** @var array<string> */
 	private $arguments = [];
-	/** @var array<string, array<int, string>|int|string|true> */
+	/** @var array<string, mixed> */
 	private $assoc_args = [];
 	/** @var array<string, mixed> */
 	private $runtime_config;
@@ -135,7 +135,7 @@ class Runner {
 	/**
 	 * List of required files.
 	 *
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	private $required_files;
 
@@ -687,7 +687,7 @@ class Runner {
 	/**
 	 * Guess which URL context WP-CLI has been invoked under.
 	 *
-	 * @param array $assoc_args
+	 * @param array<string, mixed> $assoc_args
 	 * @return string|false
 	 */
 	private static function guess_url( $assoc_args ) {
@@ -706,7 +706,7 @@ class Runner {
 				return false;
 			}
 
-			return $url;
+			return is_string( $url ) ? $url : false;
 		}
 
 		return false;
@@ -715,8 +715,8 @@ class Runner {
 	/**
 	 * Checks if the arguments passed to the WP-CLI binary start with the specified prefix.
 	 *
-	 * @param array $prefix An array of strings specifying the expected start of the arguments passed to the WP-CLI binary.
-	 *                      For example, `['user', 'list']` checks if the arguments passed to the WP-CLI binary start with `user list`.
+	 * @param array<int, string> $prefix An array of strings specifying the expected start of the arguments passed to the WP-CLI binary.
+	 *                                   For example, `['user', 'list']` checks if the arguments passed to the WP-CLI binary start with `user list`.
 	 *
 	 * @return bool `true` if the arguments passed to the WP-CLI binary start with the specified prefix, `false` otherwise.
 	 */
@@ -727,9 +727,9 @@ class Runner {
 	/**
 	 * Given positional arguments, find the command to execute.
 	 *
-	 * @param array $args
-	 * @param string $autocorrect Whether to autocorrect commands based on suggestions.
-	 * @return array{0: CompositeCommand, 1: array, 2: array}|string Command, args, and path on success; error message on failure
+	 * @param array<int, string> $args
+	 * @param string             $autocorrect Whether to autocorrect commands based on suggestions.
+	 * @return array{0: CompositeCommand, 1: array<int, string>, 2: array<int, string>}|string Command, args, and path on success; error message on failure
 	 *
 	 * @phpstan-param 'none'|'confirm'|'auto' $autocorrect
 	 */
@@ -873,9 +873,9 @@ class Runner {
 	/**
 	 * Find the WP-CLI command to run given arguments, and invoke it.
 	 *
-	 * @param array $args        Positional arguments including command name
-	 * @param array $assoc_args  Associative arguments for the command.
-	 * @param array $options     Configuration options for the function.
+	 * @param array<int, string>   $args        Positional arguments including command name
+	 * @param array<string, mixed> $assoc_args  Associative arguments for the command.
+	 * @param array<string, mixed> $options     Configuration options for the function.
 	 */
 	public function run_command( $args, $assoc_args = [], $options = [] ) {
 		/**
@@ -1307,9 +1307,9 @@ class Runner {
 	/**
 	 * Transparently convert deprecated syntaxes
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 * @return array
+	 * @param array<int, string>   $args
+	 * @param array<string, mixed> $assoc_args
+	 * @return array{0: array<int, string>, 1: array<string, mixed>}
 	 */
 	private static function back_compat_conversions( $args, $assoc_args ) {
 		// On Windows (PowerShell), command substitution like $(wp post list --format=ids)
@@ -1523,7 +1523,17 @@ class Runner {
 			}
 		}
 
-		return [ $args, $assoc_args ];
+		return [
+			array_values(
+				array_map(
+					function ( $v ) {
+						return is_scalar( $v ) ? (string) $v : '';
+					},
+					$args
+				)
+			),
+			$assoc_args,
+		];
 	}
 
 	/**
@@ -1704,7 +1714,7 @@ class Runner {
 	/**
 	 * Add the @all alias to an aliases array if it doesn't already exist.
 	 *
-	 * @param array $aliases Aliases array passed by reference.
+	 * @param array<string, mixed> $aliases Aliases array passed by reference.
 	 */
 	private function add_at_all_alias( &$aliases ) {
 		if ( count( $aliases ) && ! isset( $aliases['all'] ) ) {
@@ -1848,7 +1858,6 @@ class Runner {
 
 	private function set_alias( $alias ): void {
 		/** @var array<string, mixed> $alias_config */
-		// @phpstan-ignore varTag.type
 		$alias_config = (array) $this->aliases[ $alias ];
 		// Merge alias config into the current config, then re-apply CLI runtime args only for
 		// keys overridden by the alias so runtime values still take precedence over alias config.
@@ -1894,9 +1903,9 @@ class Runner {
 				WP_CLI::error( $error_msg );
 			}
 			// Numerically indexed means a group of aliases
-			if ( isset( $this->aliases[ $this->alias ][0] ) ) {
+			if ( is_array( $this->aliases[ $this->alias ] ) && isset( $this->aliases[ $this->alias ][0] ) ) {
 				/** @var array<string> $group_aliases */
-				$group_aliases = (array) $this->aliases[ $this->alias ];
+				$group_aliases = $this->aliases[ $this->alias ];
 				$all_aliases   = array_keys( $this->aliases );
 				$diff          = array_diff( $group_aliases, $all_aliases );
 				if ( ! empty( $diff ) ) {
@@ -2899,9 +2908,9 @@ class Runner {
 	/**
 	 * Recursive method to enumerate all known commands.
 	 *
-	 * @param CompositeCommand $command Composite command to recurse over.
-	 * @param array            $list    Reference to list accumulating results.
-	 * @param string           $parent  Parent command to use as prefix.
+	 * @param CompositeCommand   $command Composite command to recurse over.
+	 * @param array<int, string> $list    Reference to list accumulating results.
+	 * @param string             $parent  Parent command to use as prefix.
 	 */
 	private function enumerate_commands( CompositeCommand $command, array &$list, $parent = '' ): void {
 		foreach ( $command->get_subcommands() as $subcommand ) {
