@@ -5,8 +5,10 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 class CommandFactoryTest extends TestCase {
 
-	public static function set_up_before_class() {
-		require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
+	public static function set_up_before_class(): void {
+		if ( ! class_exists( 'WP_CLI_Command' ) ) {
+			require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
+		}
 	}
 
 	/**
