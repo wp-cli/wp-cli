@@ -38,7 +38,17 @@ class Inflector {
 	/**
 	 * Plural inflector rules.
 	 *
-	 * @var array<string, array<int|string, string>>
+	 * @var array{
+	 *     rules: array<string, string>,
+	 *     uninflected: array<int, string>,
+	 *     irregular: array<string, string>,
+	 *     merged?: array{
+	 *         irregular?: array<string, string>,
+	 *         uninflected?: array<int, string>
+	 *     },
+	 *     cacheUninflected?: string,
+	 *     cacheIrregular?: string
+	 * }
 	 */
 	private static $plural = [
 		'rules'       => [
@@ -141,7 +151,17 @@ class Inflector {
 	/**
 	 * Singular inflector rules.
 	 *
-	 * @var array<string, array<int|string, string>>
+	 * @var array{
+	 *     rules: array<string, string>,
+	 *     uninflected: array<int, string>,
+	 *     irregular: array<string, string>,
+	 *     merged?: array{
+	 *         irregular?: array<string, string>,
+	 *         uninflected?: array<int, string>
+	 *     },
+	 *     cacheUninflected?: string,
+	 *     cacheIrregular?: string
+	 * }
 	 */
 	private static $singular = [
 		'rules'       => [
@@ -296,7 +316,7 @@ class Inflector {
 	/**
 	 * Method cache array.
 	 *
-	 * @var array<string, mixed>
+	 * @var array<string, array<string, string>>
 	 */
 	private static $cache = [];
 
@@ -454,8 +474,15 @@ class Inflector {
 	 *
 	 * @return string The word in plural form.
 	 */
+	/**
+	 * Returns a word in plural form.
+	 *
+	 * @param string $word The word in singular form.
+	 *
+	 * @return string The word in plural form.
+	 */
 	public static function pluralize( $word ) {
-		if ( isset( self::$cache['pluralize'][ $word ] ) ) {
+		if ( isset( self::$cache['pluralize'][ $word ] ) && is_string( self::$cache['pluralize'][ $word ] ) ) {
 			return self::$cache['pluralize'][ $word ];
 		}
 
@@ -464,27 +491,42 @@ class Inflector {
 		}
 
 		if ( ! isset( self::$plural['merged']['uninflected'] ) ) {
-			self::$plural['merged']['uninflected'] = array_merge( self::$plural['uninflected'], self::$uninflected );
+			/** @var array<int, string> $plural_uninflected */
+			$plural_uninflected                    = is_array( self::$plural['uninflected'] ) ? self::$plural['uninflected'] : [];
+			self::$plural['merged']['uninflected'] = array_merge( $plural_uninflected, self::$uninflected );
 		}
 
 		if ( ! isset( self::$plural['cacheUninflected'] ) || ! isset( self::$plural['cacheIrregular'] ) ) {
-			self::$plural['cacheUninflected'] = '(?:' . implode( '|', self::$plural['merged']['uninflected'] ) . ')';
-			self::$plural['cacheIrregular']   = '(?:' . implode( '|', array_keys( self::$plural['merged']['irregular'] ) ) . ')';
+			/** @var array<int, string> $merged_uninflected */
+			$merged_uninflected = is_array( self::$plural['merged']['uninflected'] ) ? self::$plural['merged']['uninflected'] : [];
+			/** @var array<string, string> $merged_irregular */
+			$merged_irregular = is_array( self::$plural['merged']['irregular'] ) ? self::$plural['merged']['irregular'] : [];
+
+			self::$plural['cacheUninflected'] = '(?:' . implode( '|', $merged_uninflected ) . ')';
+			self::$plural['cacheIrregular']   = '(?:' . implode( '|', array_keys( $merged_irregular ) ) . ')';
 		}
 
-		if ( preg_match( '/(.*)\\b(' . self::$plural['cacheIrregular'] . ')$/i', $word, $regs ) ) {
-			self::$cache['pluralize'][ $word ] = $regs[1] . substr( $word, 0, 1 ) . substr( self::$plural['merged']['irregular'][ strtolower( $regs[2] ) ], 1 );
+		$cache_irregular   = is_string( self::$plural['cacheIrregular'] ) ? self::$plural['cacheIrregular'] : '';
+		$cache_uninflected = is_string( self::$plural['cacheUninflected'] ) ? self::$plural['cacheUninflected'] : '';
+
+		if ( '' !== $cache_irregular && preg_match( '/(.*)\\b(' . $cache_irregular . ')$/i', $word, $regs ) ) {
+			/** @var array<string, string> $merged_irregular */
+			$merged_irregular                  = is_array( self::$plural['merged']['irregular'] ) ? self::$plural['merged']['irregular'] : [];
+			$replacement                       = isset( $merged_irregular[ strtolower( $regs[2] ) ] ) ? $merged_irregular[ strtolower( $regs[2] ) ] : '';
+			self::$cache['pluralize'][ $word ] = $regs[1] . substr( $word, 0, 1 ) . substr( $replacement, 1 );
 
 			return self::$cache['pluralize'][ $word ];
 		}
 
-		if ( preg_match( '/^(' . self::$plural['cacheUninflected'] . ')$/i', $word, $regs ) ) {
+		if ( '' !== $cache_uninflected && preg_match( '/^(' . $cache_uninflected . ')$/i', $word, $regs ) ) {
 			self::$cache['pluralize'][ $word ] = $word;
 
 			return $word;
 		}
 
-		foreach ( self::$plural['rules'] as $rule => $replacement ) {
+		/** @var array<string, string> $rules */
+		$rules = is_array( self::$plural['rules'] ) ? self::$plural['rules'] : [];
+		foreach ( $rules as $rule => $replacement ) {
 			if ( preg_match( $rule, $word ) ) {
 				self::$cache['pluralize'][ $word ] = (string) preg_replace( $rule, $replacement, $word );
 
@@ -505,42 +547,61 @@ class Inflector {
 	 * @return string The word in singular form.
 	 */
 	public static function singularize( $word ) {
-		if ( isset( self::$cache['singularize'][ $word ] ) ) {
+		if ( isset( self::$cache['singularize'][ $word ] ) && is_string( self::$cache['singularize'][ $word ] ) ) {
 			return self::$cache['singularize'][ $word ];
 		}
 
 		if ( ! isset( self::$singular['merged']['uninflected'] ) ) {
+			/** @var array<int, string> $singular_uninflected */
+			$singular_uninflected                    = is_array( self::$singular['uninflected'] ) ? self::$singular['uninflected'] : [];
 			self::$singular['merged']['uninflected'] = array_merge(
-				self::$singular['uninflected'],
+				$singular_uninflected,
 				self::$uninflected
 			);
 		}
 
 		if ( ! isset( self::$singular['merged']['irregular'] ) ) {
+			/** @var array<string, string> $singular_irregular */
+			$singular_irregular = is_array( self::$singular['irregular'] ) ? self::$singular['irregular'] : [];
+			/** @var array<string, string> $plural_irregular */
+			$plural_irregular                      = is_array( self::$plural['irregular'] ) ? self::$plural['irregular'] : [];
 			self::$singular['merged']['irregular'] = array_merge(
-				self::$singular['irregular'],
-				array_flip( self::$plural['irregular'] )
+				$singular_irregular,
+				array_flip( $plural_irregular )
 			);
 		}
 
 		if ( ! isset( self::$singular['cacheUninflected'] ) || ! isset( self::$singular['cacheIrregular'] ) ) {
-			self::$singular['cacheUninflected'] = '(?:' . join( '|', self::$singular['merged']['uninflected'] ) . ')';
-			self::$singular['cacheIrregular']   = '(?:' . join( '|', array_keys( self::$singular['merged']['irregular'] ) ) . ')';
+			/** @var array<int, string> $merged_uninflected */
+			$merged_uninflected = is_array( self::$singular['merged']['uninflected'] ) ? self::$singular['merged']['uninflected'] : [];
+			/** @var array<string, string> $merged_irregular */
+			$merged_irregular = is_array( self::$singular['merged']['irregular'] ) ? self::$singular['merged']['irregular'] : [];
+
+			self::$singular['cacheUninflected'] = '(?:' . join( '|', $merged_uninflected ) . ')';
+			self::$singular['cacheIrregular']   = '(?:' . join( '|', array_keys( $merged_irregular ) ) . ')';
 		}
 
-		if ( preg_match( '/(.*)\\b(' . self::$singular['cacheIrregular'] . ')$/i', $word, $regs ) ) {
-			self::$cache['singularize'][ $word ] = $regs[1] . substr( $word, 0, 1 ) . substr( self::$singular['merged']['irregular'][ strtolower( $regs[2] ) ], 1 );
+		$cache_irregular   = is_string( self::$singular['cacheIrregular'] ) ? self::$singular['cacheIrregular'] : '';
+		$cache_uninflected = is_string( self::$singular['cacheUninflected'] ) ? self::$singular['cacheUninflected'] : '';
+
+		if ( '' !== $cache_irregular && preg_match( '/(.*)\\b(' . $cache_irregular . ')$/i', $word, $regs ) ) {
+			/** @var array<string, string> $merged_irregular */
+			$merged_irregular                    = is_array( self::$singular['merged']['irregular'] ) ? self::$singular['merged']['irregular'] : [];
+			$replacement                         = isset( $merged_irregular[ strtolower( $regs[2] ) ] ) ? $merged_irregular[ strtolower( $regs[2] ) ] : '';
+			self::$cache['singularize'][ $word ] = $regs[1] . substr( $word, 0, 1 ) . substr( $replacement, 1 );
 
 			return self::$cache['singularize'][ $word ];
 		}
 
-		if ( preg_match( '/^(' . self::$singular['cacheUninflected'] . ')$/i', $word, $regs ) ) {
+		if ( '' !== $cache_uninflected && preg_match( '/^(' . $cache_uninflected . ')$/i', $word, $regs ) ) {
 			self::$cache['singularize'][ $word ] = $word;
 
 			return $word;
 		}
 
-		foreach ( self::$singular['rules'] as $rule => $replacement ) {
+		/** @var array<string, string> $rules */
+		$rules = is_array( self::$singular['rules'] ) ? self::$singular['rules'] : [];
+		foreach ( $rules as $rule => $replacement ) {
 			if ( preg_match( $rule, $word ) ) {
 				self::$cache['singularize'][ $word ] = (string) preg_replace( $rule, $replacement, $word );
 
