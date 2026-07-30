@@ -1877,8 +1877,10 @@ class Runner {
 
 			if ( 'all' === $this->alias && is_string( $this->aliases['all'] ) ) {
 				$aliases = array_keys( $this->aliases );
-				$k       = array_search( 'all', $aliases, true );
-				unset( $aliases[ $k ] );
+				$k = array_search( 'all', $aliases, true );
+				if ( false !== $k ) {
+					unset( $aliases[ $k ] );
+				}
 				$this->run_alias_group( $aliases );
 				exit;
 			}

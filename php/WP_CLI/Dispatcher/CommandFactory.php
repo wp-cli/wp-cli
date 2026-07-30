@@ -104,7 +104,9 @@ class CommandFactory {
 
 		$when_invoked = function ( $args, $assoc_args ) use ( $callable ) {
 			if ( is_array( $callable ) ) {
-				$callable[0] = is_object( $callable[0] ) ? $callable[0] : new $callable[0]();
+				if ( is_string( $callable[0] ) ) {
+					$callable[0] = new $callable[0]();
+				}
 
 				/**
 				 * @var callable $command
