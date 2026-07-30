@@ -139,6 +139,10 @@ class Runner {
 	 */
 	private $required_files;
 
+	/**
+	 * @param string $key
+	 * @return mixed
+	 */
 	public function __get( $key ) {
 		if ( '_' === $key[0] ) {
 			return null;
@@ -147,6 +151,10 @@ class Runner {
 		return $this->$key;
 	}
 
+	/**
+	 * @param ContextManager $context_manager
+	 * @return void
+	 */
 	public function register_context_manager( ContextManager $context_manager ) {
 		$this->context_manager = $context_manager;
 	}
@@ -156,6 +164,7 @@ class Runner {
 	 *
 	 * @param string $when Named execution hook
 	 * @param Subcommand $command
+	 * @return void
 	 */
 	public function register_early_invoke( $when, $command ) {
 		$cmd_path     = array_slice( Dispatcher\get_path( $command ), 1 );
@@ -660,6 +669,7 @@ class Runner {
 	 * Set WordPress root as a given path.
 	 *
 	 * @param string $path
+	 * @return void
 	 */
 	private static function set_wp_root( $path ) {
 		if ( ! defined( 'ABSPATH' ) ) {
@@ -876,6 +886,7 @@ class Runner {
 	 * @param array<int, string>   $args        Positional arguments including command name
 	 * @param array<string, mixed> $assoc_args  Associative arguments for the command.
 	 * @param array<string, mixed> $options     Configuration options for the function.
+	 * @return void
 	 */
 	public function run_command( $args, $assoc_args = [], $options = [] ) {
 		/**
@@ -921,6 +932,8 @@ class Runner {
 
 	/**
 	 * Show synopsis if the called command is a composite command
+	 *
+	 * @return void
 	 */
 	public function show_synopsis_if_composite_command() {
 		$r = $this->find_command_to_run( $this->arguments );
@@ -1548,6 +1561,7 @@ class Runner {
 	 *
 	 * @param string $old_syntax The deprecated syntax that was used.
 	 * @param string $new_syntax The modern replacement to use instead.
+	 * @return void
 	 */
 	private static function deprecated_syntax( $old_syntax, $new_syntax ) {
 		fwrite(
@@ -1569,6 +1583,9 @@ class Runner {
 		return $this->colorize;
 	}
 
+	/**
+	 * @return void
+	 */
 	public function init_colorization() {
 		if ( 'auto' === $this->config['color'] ) {
 			$this->colorize = ( ! Utils\isPiped() && ! Utils\is_windows() );
@@ -1577,6 +1594,9 @@ class Runner {
 		}
 	}
 
+	/**
+	 * @return void
+	 */
 	public function init_logger() {
 		if ( $this->config['quiet'] ) {
 			$logger = new Loggers\Quiet( $this->in_color() );
@@ -1587,6 +1607,9 @@ class Runner {
 		WP_CLI::set_logger( $logger );
 	}
 
+	/**
+	 * @return array<string, array<int, string>>
+	 */
 	public function get_required_files() {
 		return $this->required_files;
 	}
@@ -1646,6 +1669,9 @@ class Runner {
 		}
 	}
 
+	/**
+	 * @return void
+	 */
 	public function init_config() {
 		$configurator = WP_CLI::get_configurator();
 
@@ -1711,6 +1737,7 @@ class Runner {
 	 * Add the @all alias to an aliases array if it doesn't already exist.
 	 *
 	 * @param array<string, mixed> $aliases Aliases array passed by reference.
+	 * @return void
 	 */
 	private function add_at_all_alias( &$aliases ) {
 		if ( count( $aliases ) && ! isset( $aliases['all'] ) ) {
@@ -1863,6 +1890,9 @@ class Runner {
 		}
 	}
 
+	/**
+	 * @return void
+	 */
 	public function start() {
 		// Enable PHP error reporting to stderr if testing. Will need to be re-enabled after WP loads.
 		if ( getenv( 'BEHAT_RUN' ) ) {
@@ -2095,6 +2125,8 @@ class Runner {
 
 	/**
 	 * Load WordPress, if it hasn't already been loaded
+	 *
+	 * @return void
 	 */
 	public function load_wordpress() {
 		static $wp_cli_is_loaded;
@@ -2188,6 +2220,9 @@ class Runner {
 		if ( $this->is_multisite() ) {
 			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Intentional temporary override for error messaging.
 			$GLOBALS['current_screen'] = new class() {
+				/**
+				 * @return bool
+				 */
 				public function in_admin() {
 					return true;
 				}
@@ -2397,6 +2432,9 @@ class Runner {
 				// check for starter content.
 				if ( ! function_exists( 'is_customize_preview' ) ) {
 					// @phpstan-ignore function.inner
+					/**
+					 * @return bool
+					 */
 					function is_customize_preview() {
 						return false;
 					}
@@ -2599,6 +2637,8 @@ class Runner {
 
 	/**
 	 * Set up the filters to skip the loaded plugins
+	 *
+	 * @return void
 	 */
 	private function setup_skip_plugins_filters() {
 		$wp_cli_filter_active_plugins = static function ( $plugins ) {
@@ -2650,6 +2690,8 @@ class Runner {
 
 	/**
 	 * Set up the filters to skip the loaded theme
+	 *
+	 * @return void
 	 */
 	public function action_setup_theme_wp_cli_skip_themes() {
 		$wp_cli_filter_active_theme = static function ( $value ) {
@@ -2738,6 +2780,9 @@ class Runner {
 
 	/**
 	 * Error handler for `wp_die()` when the command is help to try to trap errors (db connection failure in particular) during WordPress load.
+	 *
+	 * @param string|\WP_Error $message
+	 * @return void
 	 */
 	public function help_wp_die_handler( $message ) {
 		$help_exit_warning = 'Error during WordPress load.';
