@@ -2018,6 +2018,8 @@ function describe_callable( $callable ) {
  *
  * @param array $pair The class and method pair to check.
  * @return bool
+ *
+ * @phpstan-assert-if-true array{0: class-string|object, 1: string} $pair
  */
 function is_valid_class_and_method_pair( $pair ) {
 	if ( ! is_array( $pair ) || 2 !== count( $pair ) ) {

@@ -1457,7 +1457,7 @@ class WP_CLI {
 	 *
 	 * @return bool
 	 *
-	 * @phpstan-param key-of<GlobalConfig> $key
+	 * @phpstan-assert-if-true key-of<GlobalConfig> $key
 	 */
 	public static function has_config( $key ) {
 		return array_key_exists( $key, self::get_runner()->config );
