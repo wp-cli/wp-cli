@@ -764,7 +764,7 @@ class Subcommand extends CompositeCommand {
 		$parent_cmd = $this->get_parent();
 		$path       = $parent_cmd ? get_path( $parent_cmd ) : [];
 		$parent     = implode( ' ', array_slice( $path, 1 ) );
-		$cmd    = $this->name;
+		$cmd        = $this->name;
 		if ( $parent ) {
 			/**
 			 * Action triggered before a parent command is invoked.
