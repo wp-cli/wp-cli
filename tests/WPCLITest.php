@@ -24,6 +24,9 @@ class WPCLITest extends TestCase {
 
 	/**
 	 * @dataProvider data_print_value
+	 * @param mixed $value
+	 * @param array<string, mixed> $assoc_args
+	 * @param string $expected_contains
 	 */
 	#[DataProvider( 'data_print_value' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function test_print_value( $value, $assoc_args, $expected_contains ): void {
