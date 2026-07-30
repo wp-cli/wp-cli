@@ -147,7 +147,7 @@ class SynopsisParserTest extends TestCase {
 
 	public function testRender(): void {
 		/**
-		 * @phpstan-var array{0: PositionalParameter, 1: PositionalParameter, 2: AssocParameter, 3: AssocParameter, 4: AssocParameter} $a
+		 * @var CommandSynopsis[] $a
 		 */
 		$a = [
 			[

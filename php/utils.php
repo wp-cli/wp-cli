@@ -189,9 +189,9 @@ function load_command( $name ) {
  *       var_dump($val);
  *     }
  *
- * @param array|Iterator $it     Either a plain array or another iterator.
- * @param callable       ...$fns The function to apply to an element.
- * @return Iterator An iterator that applies the given callback(s).
+ * @param array|Iterator<int|string, mixed> $it     Either a plain array or another iterator.
+ * @param callable                          ...$fns The function to apply to an element.
+ * @return Iterator<int|string, mixed> An iterator that applies the given callback(s).
  */
 function iterator_map( $it, ...$fns ) {
 	if ( is_array( $it ) ) {
@@ -403,6 +403,7 @@ function assoc_args_to_str( $assoc_args, $sensitive_args = [] ) {
  *
  * @param string $cmd
  * @param string ...$args
+ * @return string
  */
 function esc_cmd( $cmd, ...$args ) {
 	if ( func_num_args() < 2 ) {
@@ -501,6 +502,7 @@ function wp_version_compare( $since, $operator ) {
  * @param string       $format Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count'.
  * @param array<mixed> $items  An array of items to output.
  * @param array<string>|string $fields Named fields for each item of data. Can be array or comma-separated list.
+ * @return void
  */
 function format_items( $format, $items, $fields ) {
 	$assoc_args = [
@@ -516,9 +518,10 @@ function format_items( $format, $items, $fields ) {
  *
  * @access public
  *
- * @param resource                 $fd      File descriptor.
- * @param array<string[]>|iterable $rows    Array of rows to output.
- * @param array<string>            $headers List of CSV columns (optional).
+ * @param resource                           $fd      File descriptor.
+ * @param array<string[]>|iterable<array<string, mixed>> $rows    Array of rows to output.
+ * @param array<string>                      $headers List of CSV columns (optional).
+ * @return void
  */
 function write_csv( $fd, $rows, $headers = [] ) {
 	if ( ! empty( $headers ) ) {
@@ -766,6 +769,7 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
  *
  * @param string               $template_name
  * @param array<string, mixed> $data
+ * @return string
  */
 function mustache_render( $template_name, $data = [] ) {
 	if ( ! file_exists( $template_name ) ) {
@@ -920,7 +924,7 @@ function replace_path_consts( $source, $path ) {
  * @throws RuntimeException If the request failed.
  * @throws ExitException If the request failed and $halt_on_error is true.
  *
- * @phpstan-param array{halt_on_error?: bool, verify?: bool|string, insecure?: bool, max_retries?: int, timeout?: float|int, ...array<string, mixed>} $options
+ * @phpstan-param array{halt_on_error?: bool, verify?: bool|string, insecure?: bool, max_retries?: int, timeout?: float|int, ...} $options
  */
 function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];

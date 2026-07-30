@@ -608,9 +608,9 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataHttpRequestBadCAcert
 	 *
-	 * @param array                    $additional_options Associative array of additional options to pass to http_request().
-	 * @param class-string<\Throwable> $exception          Class of the exception to expect.
-	 * @param string                   $exception_message  Message of the exception to expect.
+	 * @param array                          $additional_options Associative array of additional options to pass to http_request().
+	 * @param class-string<\Throwable>|false $exception          Class of the exception to expect, or false if no exception expected.
+	 * @param string                         $exception_message  Message of the exception to expect.
 	 */
 	#[DataProvider( 'dataHttpRequestBadCAcert' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testHttpRequestBadCAcert( $additional_options, $exception, $exception_message ): void {

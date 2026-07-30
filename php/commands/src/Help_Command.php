@@ -402,6 +402,12 @@ class Help_Command extends WP_CLI_Command {
 		return $longdesc;
 	}
 
+	/**
+	 * Get max length of strings.
+	 *
+	 * @param array<string> $strings
+	 * @return int
+	 */
 	private static function get_max_len( $strings ) {
 		$max_len = 0;
 		foreach ( $strings as $str ) {
