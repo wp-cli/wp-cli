@@ -6,10 +6,17 @@ use WpOrg\Requests\Transport;
 class Mock_Requests_Transport implements Transport {
 
 	/**
-	 * @var array<int, array{url: string, headers: array<string, string>, data: mixed, options: array<string, mixed>}>
+	 * @var array<int, array{url: string, headers: array<mixed>, data: mixed, options: array<mixed>}>
 	 */
 	public $requests = [];
 
+	/**
+	 * @param string              $url
+	 * @param array<mixed>        $headers
+	 * @param array<mixed>|string $data
+	 * @param array<mixed>        $options
+	 * @return string
+	 */
 	public function request( $url, $headers = [], $data = [], $options = [] ) {
 		// Simulate retrying without SSL verification when a custom (bad) cert file is used.
 		// Use realpath() to normalize paths so that 8.3 short paths on Windows
@@ -33,6 +40,11 @@ class Mock_Requests_Transport implements Transport {
 			. "\r\n\r\n"; // This last line is actually important or the request will error.
 	}
 
+	/**
+	 * @param array<mixed> $requests
+	 * @param array<mixed> $options
+	 * @return array<mixed>
+	 */
 	public function request_multiple( $requests, $options ) {
 		throw new Exception( 'Method not implemented: ' . __METHOD__ );
 	}

@@ -189,8 +189,8 @@ function load_command( $name ) {
  *       var_dump($val);
  *     }
  *
- * @param array|Iterator<int|string, mixed> $it     Either a plain array or another iterator.
- * @param callable                          ...$fns The function to apply to an element.
+ * @param array<mixed>|Iterator<int|string, mixed> $it     Either a plain array or another iterator.
+ * @param callable                                ...$fns The function to apply to an element.
  * @return Iterator<int|string, mixed> An iterator that applies the given callback(s).
  */
 function iterator_map( $it, ...$fns ) {
@@ -689,6 +689,7 @@ function mysql_host_to_cli_args( $raw_host ) {
  *     @type string $stderr    Output that was sent to STDERR.
  *     @type int    $exit_code Exit code of the process.
  * }
+ * @phpstan-return array{0: string, 1: string, 2: int}
  */
 function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true, $interactive = false ) {
 	check_proc_available( 'run_mysql_command' );
@@ -920,16 +921,19 @@ function replace_path_consts( $source, $path ) {
  *     @type bool $insecure      Whether to retry automatically without certificate validation.
  *     @type int  $max_retries   Maximum number of retries of failed requests. Default 3.
  * }
+ * @param string               $method  HTTP method.
+ * @param string               $url     URL to request.
+ * @param array<string, mixed>|string|null $data Array of data to send or string.
+ * @param array<string, string> $headers Array of headers to send.
+ * @param array<string, mixed> $options Array of options for the request.
  * @return \Requests_Response|Response
  * @throws RuntimeException If the request failed.
  * @throws ExitException If the request failed and $halt_on_error is true.
- *
- * @phpstan-param array{halt_on_error?: bool, verify?: bool|string, insecure?: bool, max_retries?: int, timeout?: float|int, ...} $options
  */
 function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
-	$max_retries   = isset( $options['max_retries'] ) ? (int) $options['max_retries'] : 3;
+	$max_retries   = isset( $options['max_retries'] ) && is_numeric( $options['max_retries'] ) ? (int) $options['max_retries'] : 3;
 	unset( $options['halt_on_error'] );
 
 	if ( ! isset( $options['verify'] ) ) {
@@ -2020,7 +2024,7 @@ function describe_callable( $callable ) {
  * This accommodates changes to `is_callable()` in PHP 8 that mean an array of a
  * classname and instance method is no longer callable.
  *
- * @param array $pair The class and method pair to check.
+ * @param array<mixed> $pair The class and method pair to check.
  * @return bool
  *
  * @phpstan-assert-if-true array{0: class-string|object, 1: string} $pair
