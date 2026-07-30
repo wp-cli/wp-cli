@@ -41,7 +41,6 @@ parameters:
     numericOperandsInArithmeticOperators: true
     switchConditionsMatchingType: true
   ignoreErrors:
-    - identifier: missingType.iterableValue
     - identifier: missingType.parameter
     - identifier: missingType.return
     - identifier: function.deprecated
