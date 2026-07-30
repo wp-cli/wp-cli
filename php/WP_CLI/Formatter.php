@@ -136,6 +136,7 @@ class Formatter {
 	 * @param string                    $format_name Name of the format (e.g. 'xml', 'nagios').
 	 * @param callable                  $handler     Callback to handle formatting. Receives ($items, $fields, $formatter, $args) and should output directly.
 	 * @param array{single_item?: bool} $options     Optional metadata/options.
+	 * @return void
 	 */
 	public static function add_format( $format_name, $handler, $options = [] ) {
 		if ( ! is_callable( $handler ) ) {
@@ -167,6 +168,7 @@ class Formatter {
 	 *
 	 * @param string   $format_name Name of the format (e.g. 'json', 'yaml', 'plaintext').
 	 * @param callable $handler     Callback to handle formatting. Receives ($value) and should return formatted string.
+	 * @return void
 	 */
 	public static function add_single_value_format( $format_name, $handler ) {
 		if ( ! is_callable( $handler ) ) {
@@ -203,6 +205,8 @@ class Formatter {
 	 *
 	 * This method registers the default format handlers (table, json, csv, yaml, count, ids)
 	 * using the add_format() API, allowing them to be overridden like custom formats.
+	 *
+	 * @return void
 	 */
 	public static function register_builtin_formats() {
 		// Register 'table' format
@@ -375,6 +379,7 @@ class Formatter {
 	 *
 	 * @param iterable<int, array<string, mixed>|object> $items The items to display.
 	 * @param bool|array<string, bool>                   $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `format()` if items in the table are pre-colorized. Default false.
+	 * @return void
 	 */
 	public function display_items( $items, $ascii_pre_colorized = false ) {
 		if ( $this->args['field'] ) {
@@ -413,6 +418,7 @@ class Formatter {
 	 *
 	 * @param mixed                    $item
 	 * @param bool|array<string, bool> $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_multiple_fields()` if the item in the table is pre-colorized. Default false.
+	 * @return void
 	 */
 	public function display_item( $item, $ascii_pre_colorized = false ) {
 		if ( isset( $this->args['field'] ) ) {
@@ -695,6 +701,7 @@ class Formatter {
 	 * @param iterable<int, array<string, mixed>|object> $items Items.
 	 * @param array<int, string>                         $fields Fields.
 	 * @param bool|array<string, bool>                   $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `Table::setAsciiPreColorized()` if items in the table are pre-colorized. Default false.
+	 * @return void
 	 */
 	private function show_table( $items, $fields, $ascii_pre_colorized = false ) {
 		$table = new Table();

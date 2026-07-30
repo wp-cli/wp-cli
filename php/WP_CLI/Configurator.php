@@ -115,6 +115,7 @@ class Configurator {
 	 * Loads the config spec file.
 	 *
 	 * @param string $path Path to the config spec file.
+	 * @return void
 	 */
 	private function load_config_spec( $path ) {
 		$config_spec = include $path;
@@ -399,6 +400,11 @@ class Configurator {
 
 	/**
 	 * Handle turning an $assoc_arg into a runtime arg.
+	 *
+	 * @param string               $key
+	 * @param mixed                $value
+	 * @param array<string, mixed> $runtime_config
+	 * @return void
 	 */
 	private function assoc_arg_to_runtime_config( $key, $value, &$runtime_config ) {
 		$details = $this->spec[ $key ];
@@ -416,7 +422,9 @@ class Configurator {
 	/**
 	 * Load a YAML file of parameters into scope.
 	 *
-	 * @param string $path Path to YAML file.
+	 * @param string      $path          Path to YAML file.
+	 * @param string|null $current_alias Current alias name.
+	 * @return void
 	 */
 	public function merge_yml( $path, $current_alias = null ) {
 		$yaml = self::load_yml( $path );
@@ -468,6 +476,7 @@ class Configurator {
 	 * Merge an array of values into the configurator config.
 	 *
 	 * @param array<string, mixed> $config
+	 * @return void
 	 */
 	public function merge_array( $config ) {
 		foreach ( $this->spec as $key => $details ) {
@@ -550,6 +559,7 @@ class Configurator {
 	 * @param mixed $val A string or an array
 	 *
 	 * @param-out array<mixed> $val
+	 * @return void
 	 */
 	private static function arrayify( &$val ) {
 		$val = (array) $val;
@@ -560,6 +570,7 @@ class Configurator {
 	 *
 	 * @param string $path Path to file.
 	 * @param string $base Base path to prepend.
+	 * @return void
 	 */
 	private static function absolutize( &$path, $base ) {
 		if ( ! empty( $path ) ) {

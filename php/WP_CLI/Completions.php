@@ -301,6 +301,7 @@ class Completions {
 	 * @param \WP_CLI\Dispatcher\CompositeCommand $command Command object.
 	 * @param string                               $param_name Parameter name.
 	 * @param string                               $param_value Current partial value.
+	 * @return void
 	 */
 	private function add_param_values( $command, $param_name, $param_value ) {
 		$options = [];
