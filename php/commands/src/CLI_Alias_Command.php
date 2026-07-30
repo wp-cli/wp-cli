@@ -117,6 +117,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *
 	 * @param array<string>                     $args      Positional arguments. Unused.
 	 * @param array{format: string, raw?: bool} $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function list_( $args, $assoc_args ) {
 		$raw     = Utils\get_flag_value( $assoc_args, 'raw', false );
@@ -180,6 +181,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *
 	 * @param array{string} $args Positional arguments.
 	 * @param array{field?: string, raw?: bool} $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function get( $args, $assoc_args = [] ) {
 		list( $alias ) = $args;
@@ -260,6 +262,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *
 	 * @param array{string} $args Positional arguments.
 	 * @param array{'set-user'?: string, 'set-url'?: string, 'set-path'?: string, 'set-ssh'?: string, 'set-http'?: string, grouping?: string, config?: string} $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function add( $args, $assoc_args ) {
 
@@ -320,6 +323,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *
 	 * @param array{string}          $args       Positional arguments.
 	 * @param array{config?: string} $assoc_args Associative arguments
+	 * @return void
 	 */
 	public function delete( $args, $assoc_args ) {
 
@@ -386,6 +390,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *
 	 * @param array{string} $args Positional arguments.
 	 * @param array{'set-user'?: string, 'set-url'?: string, 'set-path'?: string, 'set-ssh'?: string, 'set-http'?: string, grouping?: string, config?: string} $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function update( $args, $assoc_args ) {
 
@@ -433,6 +438,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *     1
 	 *
 	 * @subcommand is-group
+	 * @return void
 	 */
 	public function is_group( $args, $assoc_args = array() ) {
 		$alias = ltrim( $args[0], '@' );
@@ -608,6 +614,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *
 	 * @param array<string, mixed> $assoc_args Arguments array.
 	 * @param string|null          $grouping   Grouping argument value.
+	 * @return void
 	 *
 	 * @throws ExitException
 	 */
@@ -635,6 +642,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @param string               $alias      Alias Name (can be normalized or with @).
 	 * @param array<string, mixed> $assoc_args Arguments array.
 	 * @param string               $grouping   Grouping argument value.
+	 * @return void
 	 *
 	 * @throws ExitException
 	 */
@@ -682,6 +690,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * @param string               $alias       Name of alias.
 	 * @param string               $config_path Path to config file.
 	 * @param string               $operation   Current operation string fro message.
+	 * @return void
 	 */
 	private function process_aliases( $aliases, $alias, $config_path, $operation = '' ) {
 		$alias = $this->normalize_alias( $alias );
@@ -733,6 +742,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 * - Remove @ if present.
 	 *
 	 * @param string $alias Name of alias.
+	 * @return string
 	 */
 	private function normalize_alias( $alias ) {
 		// Remove the @ prefix if present for storage

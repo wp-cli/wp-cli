@@ -33,6 +33,7 @@ class Help_Command extends WP_CLI_Command {
 	 *
 	 * @param string[]             $args
 	 * @param array<string, mixed> $assoc_args
+	 * @return void
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$r = WP_CLI::get_runner()->find_command_to_run( $args, Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
@@ -50,16 +51,29 @@ class Help_Command extends WP_CLI_Command {
 		}
 	}
 
+	/**
+	 * @param Dispatcher\CompositeCommand|Dispatcher\Subcommand $command
+	 * @return void
+	 */
 	private static function show_help( $command ) {
 		self::pass_through_pager( self::get_help_as_string( $command ) );
 	}
 
+	/**
+	 * @param array<int, string> $matches
+	 * @return string
+	 */
 	private static function rewrap_param_desc( $matches ) {
 		$param = $matches[1];
 		$desc  = self::indent( "\t\t", $matches[2] );
 		return "\t$param\n$desc\n\n";
 	}
 
+	/**
+	 * @param string $whitespace
+	 * @param string $text
+	 * @return string
+	 */
 	private static function indent( $whitespace, $text ) {
 		$lines = explode( "\n", $text );
 		foreach ( $lines as &$line ) {
@@ -184,6 +198,11 @@ class Help_Command extends WP_CLI_Command {
 		return $process ? proc_close( $process ) : -1;
 	}
 
+	/**
+	 * @param Dispatcher\CompositeCommand|Dispatcher\Subcommand $command
+	 * @param string|null                                        $longdesc_with_links
+	 * @return string
+	 */
 	private static function get_initial_markdown( $command, $longdesc_with_links = null ) {
 		$name = implode( ' ', Dispatcher\get_path( $command ) );
 
@@ -230,6 +249,10 @@ class Help_Command extends WP_CLI_Command {
 		return Utils\mustache_render( 'man.mustache', $binding );
 	}
 
+	/**
+	 * @param Dispatcher\CompositeCommand $command
+	 * @return array<int, string>
+	 */
 	private static function render_subcommands( $command ) {
 		$subcommands = [];
 		foreach ( $command->get_subcommands() as $subcommand ) {
@@ -265,6 +288,10 @@ class Help_Command extends WP_CLI_Command {
 		return $lines;
 	}
 
+	/**
+	 * @param Dispatcher\CompositeCommand|Dispatcher\Subcommand $command
+	 * @return string
+	 */
 	private static function get_help_full( $command ) {
 		$out = self::get_help_as_string( $command );
 
@@ -280,6 +307,10 @@ class Help_Command extends WP_CLI_Command {
 		return $out;
 	}
 
+	/**
+	 * @param Dispatcher\CompositeCommand|Dispatcher\Subcommand $command
+	 * @return string
+	 */
 	private static function get_help_as_string( $command ) {
 		$longdesc_with_links = self::parse_reference_links( $command->get_longdesc() );
 		$longdesc_with_links = self::inject_argument_deprecations( $command, $longdesc_with_links );

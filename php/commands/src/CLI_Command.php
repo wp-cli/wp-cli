@@ -44,6 +44,10 @@ class CLI_Command extends WP_CLI_Command {
 	 */
 	private const MEMORY_LIMIT_WARNING_THRESHOLD = 536870912;
 
+	/**
+	 * @param \WP_CLI\Dispatcher\CompositeCommand|\WP_CLI\Dispatcher\Subcommand $command
+	 * @return array<string, mixed>
+	 */
 	private function command_to_array( $command ) {
 		$dump = [
 			'name'        => $command->get_name(),
@@ -76,6 +80,8 @@ class CLI_Command extends WP_CLI_Command {
 	 *     # Display CLI version.
 	 *     $ wp cli version
 	 *     WP-CLI 0.24.1
+	 *
+	 * @return void
 	 */
 	public function version() {
 		WP_CLI::line( 'WP-CLI ' . WP_CLI_VERSION );
@@ -129,6 +135,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @param string[]              $args       Positional arguments. Unused.
 	 * @param array{format: string} $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function info( $args, $assoc_args ) {
 		$system_os = sprintf(
@@ -209,6 +216,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * Checks if the PHP memory limit is too low and emits a warning if needed.
 	 *
 	 * @param string $memory_limit The current memory limit value from ini_get().
+	 * @return void
 	 */
 	private function check_memory_limit( $memory_limit ) {
 		// If memory limit is -1 (unlimited), no warning needed.
@@ -337,6 +345,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @param string[] $args Positional arguments. Unused.
 	 * @param array{patch?: bool, minor?: bool, major?: bool, field?: string, fields?: string, format: string} $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function check_update( $args, $assoc_args ) {
 		$updates = $this->get_updates( $assoc_args );
@@ -431,6 +440,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @param string[] $args Positional arguments. Unused.
 	 * @param array{patch?: bool, minor?: bool, major?: bool, stable?: bool, nightly?: bool, yes?: bool, insecure?: bool} $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function update( $args, $assoc_args ) {
 		if ( ! Path::inside_phar() ) {
@@ -540,6 +550,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @param string $temp         Path to the newly downloaded Phar.
 	 * @param string $current_phar Path to the current Phar.
+	 * @return void
 	 */
 	private function replace_current_phar( $temp, $current_phar ) {
 		if ( Utils\is_windows() ) {
@@ -940,6 +951,10 @@ class CLI_Command extends WP_CLI_Command {
 	 *       array (
 	 *
 	 * @subcommand param-dump
+	 *
+	 * @param array<int, string>   $_          Positional arguments.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function param_dump( $_, $assoc_args ) {
 		$spec = WP_CLI::get_configurator()->get_spec();
@@ -973,6 +988,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *     {"name":"wp","description":"Manage WordPress through the command-line.","longdesc":"\n\n## GLOBAL PARAMETERS\n\n  --path=<path>\n      Path to the WordPress files.\n\n  --ssh=<ssh>\n      Perform operation against a remote server over SSH (or a container using scheme of "docker" or "docker-compose").\n\n  --url=<url>\n      Pretend request came from given URL. In multisite, this argument is how the target site is specified. \n\n  --user=<id|login|email>\n
 	 *
 	 * @subcommand cmd-dump
+	 * @return void
 	 */
 	public function cmd_dump() {
 		echo json_encode( $this->command_to_array( WP_CLI::get_root_command() ) );
@@ -995,6 +1011,10 @@ class CLI_Command extends WP_CLI_Command {
 	 *     $ wp cli completions --line='wp eva' --point=100
 	 *     eval
 	 *     eval-file
+	 *
+	 * @param array<int, string>                   $_          Positional arguments.
+	 * @param array{line: string, point: int|numeric-string} $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function completions( $_, $assoc_args ) {
 		$line  = substr( $assoc_args['line'], 0, $assoc_args['point'] );
@@ -1004,6 +1024,9 @@ class CLI_Command extends WP_CLI_Command {
 
 	/**
 	 * Get a string representing the type of update being checked for.
+	 *
+	 * @param array<string, mixed> $assoc_args
+	 * @return string
 	 */
 	private function get_update_type_str( $assoc_args ) {
 		$update_type = ' ';
@@ -1050,6 +1073,10 @@ class CLI_Command extends WP_CLI_Command {
 	 * @subcommand has-command
 	 *
 	 * @when after_wp_load
+	 *
+	 * @param array<int, string>   $_          Positional arguments.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function has_command( $_, $assoc_args ) {
 
