@@ -56,7 +56,7 @@ class WP_CLI {
 	/**
 	 * Set the logger instance.
 	 *
-	 * @param object $logger Logger instance to set.
+	 * @param \WP_CLI\Loggers\Base|object $logger Logger instance to set.
 	 */
 	public static function set_logger( $logger ) {
 		self::$logger = $logger;
@@ -65,7 +65,7 @@ class WP_CLI {
 	/**
 	 * Get the logger instance.
 	 *
-	 * @return object $logger Logger instance.
+	 * @return \WP_CLI\Loggers\Base|object Logger instance.
 	 */
 	public static function get_logger() {
 		return self::$logger;
