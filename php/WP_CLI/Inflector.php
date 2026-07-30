@@ -474,13 +474,6 @@ class Inflector {
 	 *
 	 * @return string The word in plural form.
 	 */
-	/**
-	 * Returns a word in plural form.
-	 *
-	 * @param string $word The word in singular form.
-	 *
-	 * @return string The word in plural form.
-	 */
 	public static function pluralize( $word ) {
 		if ( isset( self::$cache['pluralize'][ $word ] ) && is_string( self::$cache['pluralize'][ $word ] ) ) {
 			return self::$cache['pluralize'][ $word ];
