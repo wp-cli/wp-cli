@@ -40,6 +40,8 @@ final class RegisterDeferredCommands implements BootstrapStep {
 
 	/**
 	 * Add deferred commands that are still waiting to be processed.
+	 *
+	 * @return void
 	 */
 	public function add_deferred_commands() {
 		$deferred_additions = WP_CLI::get_deferred_additions();

@@ -29,6 +29,7 @@ final class ContextManager {
 	 *
 	 * @param string  $name           Name of the context.
 	 * @param Context $implementation Implementation of the context.
+	 * @return void
 	 */
 	public function register_context( $name, Context $implementation ) {
 		$this->contexts[ $name ] = $implementation;

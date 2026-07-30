@@ -20,6 +20,8 @@ class CommandNamespace extends CompositeCommand {
 	/**
 	 * Show the usage for all subcommands contained
 	 * by the composite command.
+	 *
+	 * @return void
 	 */
 	public function show_usage() {
 		$methods = $this->get_subcommands();

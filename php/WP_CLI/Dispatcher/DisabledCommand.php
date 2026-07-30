@@ -49,6 +49,7 @@ class DisabledCommand extends Subcommand {
 	 * @param array<mixed>         $args
 	 * @param array<string, mixed> $assoc_args
 	 * @param array<mixed>         $extra_args
+	 * @return void
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) {
 		$cmd_path = implode( ' ', get_path( $this ) );

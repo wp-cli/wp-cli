@@ -95,6 +95,7 @@ class CompositeCommand {
 	 * @param Subcommand|CompositeCommand $command  Cub-command to add.
 	 * @param bool                        $override Optional. Whether to override an existing subcommand of the same
 	 *                                              name.
+	 * @return void
 	 */
 	public function add_subcommand( $name, $command, $override = true ) {
 		if ( $override || ! array_key_exists( $name, $this->subcommands ) ) {
@@ -107,6 +108,7 @@ class CompositeCommand {
 	 * subcommands
 	 *
 	 * @param string $name Represents how subcommand should be invoked
+	 * @return void
 	 */
 	public function remove_subcommand( $name ) {
 		if ( isset( $this->subcommands[ $name ] ) ) {
@@ -178,6 +180,7 @@ class CompositeCommand {
 	 * Set the short description for this composite command.
 	 *
 	 * @param string $shortdesc
+	 * @return void
 	 */
 	public function set_shortdesc( $shortdesc ) {
 		$this->shortdesc = Utils\normalize_eols( $shortdesc );
@@ -197,6 +200,7 @@ class CompositeCommand {
 	 * Set the long description for this composite command
 	 *
 	 * @param string $longdesc
+	 * @return void
 	 */
 	public function set_longdesc( $longdesc ) {
 		$this->longdesc = Utils\normalize_eols( $longdesc );
@@ -232,6 +236,8 @@ class CompositeCommand {
 	/**
 	 * Show the usage for all subcommands contained
 	 * by the composite command.
+	 *
+	 * @return void
 	 */
 	public function show_usage() {
 		$methods = $this->get_subcommands();
@@ -265,6 +271,7 @@ class CompositeCommand {
 	 * @param array<mixed>         $args
 	 * @param array<string, mixed> $assoc_args
 	 * @param array<mixed>         $extra_args
+	 * @return void
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- arguments not used, as only help displayed.
 		$this->show_usage();
@@ -329,7 +336,7 @@ class CompositeCommand {
 		return false;
 	}
 
-	/***
+	/**
 	 * Get the list of global parameters
 	 *
 	 * @param string $root_command whether to include or not root command specific description

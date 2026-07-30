@@ -72,6 +72,8 @@ class CommandFactory {
 
 	/**
 	 * Clear the file contents cache.
+	 *
+	 * @return void
 	 */
 	public static function clear_file_contents_cache() {
 		self::$file_contents = [];
@@ -85,6 +87,7 @@ class CommandFactory {
 	 *                                                                        If false, will be determined from the documented subject, represented by `$reflection`.
 	 * @param mixed                                               $callable   A callable function or closure, or class name and method
 	 * @param ReflectionClass|ReflectionMethod|ReflectionFunction $reflection Reflection instance, for doc parsing
+	 * @return Subcommand
 	 *
 	 * @template T of object
 	 * @phpstan-param ReflectionClass<T>|ReflectionMethod|ReflectionFunction $reflection
@@ -146,6 +149,7 @@ class CommandFactory {
 	 * @param RootCommand|CompositeCommand $parent   The new command's parent Root or Composite command
 	 * @param string                       $name     Represents how the command should be invoked
 	 * @param class-string                 $callable
+	 * @return CompositeCommand
 	 */
 	private static function create_composite_command( $parent, $name, $callable ) {
 		$reflection  = new ReflectionClass( $callable );
@@ -181,6 +185,7 @@ class CommandFactory {
 	 * @param RootCommand|CompositeCommand $parent   The new namespace's parent Root or Composite command.
 	 * @param string                       $name     Represents how the command should be invoked
 	 * @param class-string                 $callable
+	 * @return CommandNamespace
 	 */
 	private static function create_namespace( $parent, $name, $callable ) {
 		$reflection  = new ReflectionClass( $callable );

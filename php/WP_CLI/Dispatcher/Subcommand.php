@@ -86,6 +86,7 @@ class Subcommand extends CompositeCommand {
 	 * Set the synopsis string for this subcommand.
 	 *
 	 * @param string $synopsis
+	 * @return void
 	 */
 	public function set_synopsis( $synopsis ) {
 		$this->synopsis = $synopsis;
@@ -106,6 +107,7 @@ class Subcommand extends CompositeCommand {
 	 * Print the usage details to the end user.
 	 *
 	 * @param string $prefix
+	 * @return void
 	 */
 	public function show_usage( $prefix = 'usage: ' ) {
 		\WP_CLI::line( $this->get_usage( $prefix ) );
@@ -659,6 +661,7 @@ class Subcommand extends CompositeCommand {
 	 * @param array<mixed>         $args
 	 * @param array<string, mixed> $assoc_args
 	 * @param array<mixed>         $extra_args
+	 * @return void
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) {
 		static $prompted_once = false;
