@@ -156,7 +156,7 @@ class WP_CLI {
 	}
 
 	/**
-	 * Set the context in which WP-CLI should be run
+	 * Set the database/site URL for WordPress.
 	 *
 	 * @param string $url
 	 * @return void
@@ -164,11 +164,13 @@ class WP_CLI {
 	public static function set_url( $url ) {
 		self::debug( 'Set URL: ' . $url, 'bootstrap' );
 		$url_parts = Utils\parse_url( $url );
-		self::set_url_params( $url_parts );
+		if ( is_array( $url_parts ) ) {
+			self::set_url_params( $url_parts );
+		}
 	}
 
 	/**
-	 * @param array<string, mixed> $url_parts
+	 * @param array<string, int|string> $url_parts
 	 * @return void
 	 */
 	private static function set_url_params( $url_parts ) {
@@ -177,21 +179,21 @@ class WP_CLI {
 		};
 
 		if ( isset( $url_parts['host'] ) ) {
-			if ( isset( $url_parts['scheme'] ) && 'https' === strtolower( $url_parts['scheme'] ) ) {
+			if ( isset( $url_parts['scheme'] ) && 'https' === strtolower( (string) $url_parts['scheme'] ) ) {
 				$_SERVER['HTTPS'] = 'on';
 			} elseif ( ! self::get_config( 'assume-https' ) ) {
 				unset( $_SERVER['HTTPS'] );
 			}
 
-			$_SERVER['HTTP_HOST'] = $url_parts['host'];
+			$_SERVER['HTTP_HOST'] = (string) $url_parts['host'];
 			if ( isset( $url_parts['port'] ) ) {
-				$_SERVER['HTTP_HOST'] .= ':' . $url_parts['port'];
+				$_SERVER['HTTP_HOST'] .= ':' . (string) $url_parts['port'];
 			}
 
-			$_SERVER['SERVER_NAME'] = $url_parts['host'];
+			$_SERVER['SERVER_NAME'] = (string) $url_parts['host'];
 		}
 
-		$_SERVER['REQUEST_URI']  = $f( 'path' ) . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
+		$_SERVER['REQUEST_URI']  = $f( 'path' ) . ( isset( $url_parts['query'] ) ? '?' . (string) $url_parts['query'] : '' );
 		$_SERVER['SERVER_PORT']  = Utils\get_flag_value( $url_parts, 'port', '80' );
 		$_SERVER['QUERY_STRING'] = $f( 'query' );
 	}
@@ -437,7 +439,7 @@ class WP_CLI {
 	 * @param string   $tag
 	 * @param callable $function
 	 * @param int      $priority
-	 * @return string
+	 * @return string|false
 	 */
 	private static function wp_hook_build_unique_id( $tag, $function, $priority ) {
 		global $wp_filter;
@@ -481,6 +483,8 @@ class WP_CLI {
 			// Static Calling.
 			return $function[0] . '::' . $function[1];
 		}
+
+		return false;
 	}
 
 	/**
@@ -574,7 +578,7 @@ class WP_CLI {
 		}
 
 		foreach ( [ 'before_invoke', 'after_invoke' ] as $when ) {
-			if ( isset( $args[ $when ] ) ) {
+			if ( isset( $args[ $when ] ) && is_callable( $args[ $when ] ) ) {
 				self::add_hook( "{$when}:{$name}", $args[ $when ] );
 			}
 		}
@@ -665,11 +669,11 @@ class WP_CLI {
 
 		/** @var Dispatcher\Subcommand $leaf_command */
 
-		if ( isset( $args['shortdesc'] ) ) {
+		if ( isset( $args['shortdesc'] ) && is_string( $args['shortdesc'] ) ) {
 			$leaf_command->set_shortdesc( $args['shortdesc'] );
 		}
 
-		if ( isset( $args['longdesc'] ) ) {
+		if ( isset( $args['longdesc'] ) && is_string( $args['longdesc'] ) ) {
 			$leaf_command->set_longdesc( $args['longdesc'] );
 		}
 
@@ -677,13 +681,16 @@ class WP_CLI {
 			if ( is_string( $args['synopsis'] ) ) {
 				$leaf_command->set_synopsis( $args['synopsis'] );
 			} elseif ( is_array( $args['synopsis'] ) ) {
-				$synopsis = SynopsisParser::render( $args['synopsis'] );
+				/** @var array<int, array<string, mixed>> $synopsis_array */
+				$synopsis_array = $args['synopsis'];
+				// @phpstan-ignore argument.type
+				$synopsis = SynopsisParser::render( $synopsis_array );
 				$leaf_command->set_synopsis( $synopsis );
 				$long_desc = '';
 				$bits      = explode( ' ', $synopsis );
-				foreach ( $args['synopsis'] as $key => $arg ) {
+				foreach ( $synopsis_array as $key => $arg ) {
 					$long_desc .= $bits[ $key ] . "\n";
-					if ( ! empty( $arg['description'] ) ) {
+					if ( ! empty( $arg['description'] ) && is_string( $arg['description'] ) ) {
 						$long_desc .= ': ' . $arg['description'] . "\n";
 					}
 					$yamlify = [];
@@ -701,7 +708,7 @@ class WP_CLI {
 				if ( ! empty( $long_desc ) ) {
 					$long_desc = rtrim( $long_desc, "\r\n" );
 					$long_desc = '## OPTIONS' . "\n\n" . $long_desc;
-					if ( ! empty( $args['longdesc'] ) ) {
+					if ( ! empty( $args['longdesc'] ) && is_string( $args['longdesc'] ) ) {
 						$long_desc .= "\n\n" . ltrim( $args['longdesc'], "\r\n" );
 					}
 					$leaf_command->set_longdesc( $long_desc );
@@ -709,7 +716,7 @@ class WP_CLI {
 			}
 		}
 
-		if ( isset( $args['when'] ) ) {
+		if ( isset( $args['when'] ) && is_string( $args['when'] ) ) {
 			self::get_runner()->register_early_invoke( $args['when'], $leaf_command );
 		}
 
@@ -785,7 +792,6 @@ class WP_CLI {
 				$args = $deferred_additions[ $name ]['args'];
 				WP_CLI::remove_deferred_addition( $name );
 
-				// @phpstan-ignore argument.type
 				WP_CLI::add_command( $name, $callable, $args );
 			}
 		);
@@ -1795,8 +1801,8 @@ class WP_CLI {
 
 	// back-compat.
 	/**
-	 * @param string $name
-	 * @param mixed $class
+	 * @param string        $name
+	 * @param object|string $class
 	 * @return void
 	 */
 	// phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Deprecated method.
