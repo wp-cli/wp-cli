@@ -17,4 +17,10 @@ require_once WP_CLI_ROOT . '/bundle/rmccue/requests/src/Autoload.php';
 
 require_once __DIR__ . '/includes/wpdb.php';
 
+if ( file_exists( WP_CLI_VENDOR_DIR . '/wp-cli/wp-cli-tests/tests/includes/TestCase.php' ) ) {
+	require_once WP_CLI_VENDOR_DIR . '/wp-cli/wp-cli-tests/tests/includes/TestCase.php';
+} elseif ( file_exists( dirname( WP_CLI_ROOT ) . '/wp-cli-tests/tests/includes/TestCase.php' ) ) {
+	require_once dirname( WP_CLI_ROOT ) . '/wp-cli-tests/tests/includes/TestCase.php';
+}
+
 \WpOrg\Requests\Autoload::register();
