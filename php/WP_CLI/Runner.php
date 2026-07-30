@@ -1665,7 +1665,7 @@ class Runner {
 				$assoc_args
 			);
 
-			$configurator->merge_array( (array) $this->runtime_config );
+			$configurator->merge_array( $this->runtime_config );
 		}
 
 		// Check if --alias flag was used (takes precedence over @foo if both provided)
