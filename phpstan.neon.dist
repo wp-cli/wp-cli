@@ -41,7 +41,6 @@ parameters:
     numericOperandsInArithmeticOperators: true
     switchConditionsMatchingType: true
   ignoreErrors:
-    - identifier: missingType.parameter
     - identifier: function.deprecated
       path: tests
     - identifier: staticMethod.alreadyNarrowedType
