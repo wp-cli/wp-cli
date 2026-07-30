@@ -58,8 +58,8 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 	/**
 	 * Process the feedback collected through the compat indirection.
 	 *
-	 * @param string $string String to use as feedback message.
-	 * @param array $args Array of additional arguments to process.
+	 * @param string       $string String to use as feedback message.
+	 * @param array<mixed> $args Array of additional arguments to process.
 	 */
 	public function process_feedback( $string, $args ) {
 
@@ -71,8 +71,18 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 			$string = $this->upgrader->strings[ $string ];
 		}
 
-		if ( ! empty( $args ) && strpos( $string, '%' ) !== false ) {
-			$string = vsprintf( $string, $args );
+		if ( ! empty( $args ) && is_array( $args ) && strpos( $string, '%' ) !== false ) {
+			$string = vsprintf(
+				$string,
+				array_values(
+					array_map(
+						function ( $v ) {
+							return is_scalar( $v ) ? (string) $v : '';
+						},
+						$args
+					)
+				)
+			);
 		}
 
 		if ( empty( $string ) ) {

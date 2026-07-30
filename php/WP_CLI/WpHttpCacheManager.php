@@ -76,10 +76,10 @@ class WpHttpCacheManager {
 	/**
 	 * cache wp http api downloads
 	 *
-	 * @param array  $response
-	 * @param array  $args
-	 * @param string $url
-	 * @return array
+	 * @param array<string, mixed> $response
+	 * @param array<string, mixed> $args
+	 * @param string               $url
+	 * @return array<string, mixed>
 	 */
 	public function filter_http_response( $response, $args, $url ) {
 		// check if whitelisted
@@ -95,7 +95,7 @@ class WpHttpCacheManager {
 			return $response;
 		}
 		// Validate before caching.
-		if ( ! $this->validate_downloaded_file( $response['filename'], $url ) ) {
+		if ( ! isset( $response['filename'] ) || ! is_string( $response['filename'] ) || ! $this->validate_downloaded_file( $response['filename'], $url ) ) {
 			WP_CLI::warning( "Invalid or corrupt file from {$url}, skipping cache." );
 			return $response;
 		}

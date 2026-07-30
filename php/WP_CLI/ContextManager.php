@@ -37,13 +37,13 @@ final class ContextManager {
 	/**
 	 * Switch the context in which to run WP-CLI.
 	 *
-	 * @param array $config Associative array of configuration data.
+	 * @param array<string, mixed> $config Associative array of configuration data.
 	 * @return void
 	 *
 	 * @throws ExitException When an invalid context was requested.
 	 */
 	public function switch_context( $config ) {
-		$context = isset( $config['context'] )
+		$context = isset( $config['context'] ) && is_string( $config['context'] )
 			? $config['context']
 			: $this->current_context;
 

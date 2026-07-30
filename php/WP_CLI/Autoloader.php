@@ -18,7 +18,7 @@ class Autoloader {
 	/**
 	 * Array containing the registered namespace structures
 	 *
-	 * @var array
+	 * @var array<int, array{root: string, base_dir: string, prefix: string, suffix: string, lowercase: bool, underscores: bool}>
 	 */
 	protected $namespaces = [];
 
