@@ -89,7 +89,7 @@ class Formatter {
 		}
 
 		if ( is_string( $format_args['fields'] ) ) {
-			$format_args['fields'] = explode( ',', $format_args['fields'] );
+			$format_args['fields'] = array_map( 'trim', explode( ',', $format_args['fields'] ) );
 		} elseif ( ! is_array( $format_args['fields'] ) ) {
 			$format_args['fields'] = [];
 		}
@@ -405,7 +405,12 @@ class Formatter {
 
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
 				/** @var array<int, array<string, mixed>|object> $transformed */
-				$transformed = array_map( [ $this, 'transform_item_values_to_json' ], (array) $items );
+				$transformed = array_map(
+					function ( $item ) {
+						return $this->transform_item_values_to_json( is_object( $item ) ? clone $item : $item );
+					},
+					(array) $items
+				);
 				$this->format( $transformed, $ascii_pre_colorized );
 			} else {
 				$this->format( $items, $ascii_pre_colorized );
@@ -651,7 +656,7 @@ class Formatter {
 			}
 		}
 
-		foreach ( (array) $data as $key => $value ) {
+		foreach ( array_keys( (array) $data ) as $key ) {
 			if ( ! in_array( $key, $true_fields, true ) ) {
 				if ( is_array( $data ) ) {
 					unset( $data[ $key ] );

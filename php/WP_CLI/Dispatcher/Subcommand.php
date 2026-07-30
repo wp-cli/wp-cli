@@ -169,7 +169,7 @@ class Subcommand extends CompositeCommand {
 			// try a simpler pattern that matches <arg> followed by : description,
 			// using a pattern consistent with DocParser::get_arg_desc().
 			if ( empty( $description ) ) {
-				$arg_pattern = '/\[?<' . preg_quote( $name, '/' ) . ">.+\n:\s*(.+?)(\n|$)/";
+				$arg_pattern = '/\[?<' . preg_quote( $name, '/' ) . ">.*\n:\s*(.+?)(\n|$)/";
 				if ( preg_match( $arg_pattern, $longdesc, $matches ) ) {
 					$description = trim( $matches[1] );
 				}

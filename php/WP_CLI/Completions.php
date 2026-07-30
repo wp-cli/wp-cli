@@ -188,7 +188,7 @@ class Completions {
 		}
 
 		/**
-		 * @var array{0: \WP_CLI\Dispatcher\CompositeCommand, 1: array<int, string>, 2: array<int, string>}|string $r
+		 * @var array{0: \WP_CLI\Dispatcher\CompositeCommand, 1: array<int, string>}|string $r
 		 */
 
 		if ( ! is_array( $r ) ) {

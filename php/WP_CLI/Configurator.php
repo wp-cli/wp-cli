@@ -154,8 +154,7 @@ class Configurator {
 					$this->raw_aliases[ $key ][ $i ] = $val_arr[ $i ];
 
 					// Interpolate environment variables in alias values.
-					$val_i         = is_string( $val_arr[ $i ] ) ? $val_arr[ $i ] : '';
-					$val_arr[ $i ] = self::interpolate_env_vars( $val_i );
+					$val_arr[ $i ] = self::interpolate_env_vars( $val_arr[ $i ] );
 					if ( 'path' === $i && ! isset( $val_arr['ssh'] ) && is_string( $val_arr[ $i ] ) ) {
 						self::absolutize( $val_arr[ $i ], $yml_file_dir );
 						$val_arr[ $i ] = Path::normalize( $val_arr[ $i ] );

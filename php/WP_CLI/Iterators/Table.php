@@ -45,8 +45,8 @@ class Table extends Query {
 			'table'      => null,
 			'chunk_size' => 500,
 		];
-		$table      = is_string( $args['table'] ) ? $args['table'] : '';
 		$args       = array_merge( $defaults, $args );
+		$table      = is_string( $args['table'] ) ? $args['table'] : '';
 		$append     = is_string( $args['append'] ) ? $args['append'] : '';
 		$chunk_size = is_numeric( $args['chunk_size'] ) ? (int) $args['chunk_size'] : 500;
 

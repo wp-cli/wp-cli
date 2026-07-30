@@ -15,7 +15,7 @@ use WP_Error;
  * @property-read GlobalConfig   $config
  * @property-read array<string, mixed> $extra_config
  * @property-read ContextManager $context_manager
- * @property-read string         $alias
+ * @property-read string|null    $alias
  * @property-read array<string, mixed> $aliases
  * @property-read array<string, mixed> $raw_aliases
  * @property-read array<int, string> $arguments
@@ -738,7 +738,7 @@ class Runner {
 	 *
 	 * @param array<int, string> $args
 	 * @param string             $autocorrect Whether to autocorrect commands based on suggestions.
-	 * @return array{0: CompositeCommand, 1: array<int, string>, 2: array<int, string>}|string Command, args, and path on success; error message on failure
+	 * @return array{0: CompositeCommand|\WP_CLI\Dispatcher\Subcommand, 1: array<int, string>, 2: array<int, string>}|string Command, args, and path on success; error message on failure
 	 *
 	 * @phpstan-param 'none'|'confirm'|'auto' $autocorrect
 	 */
@@ -1732,7 +1732,7 @@ class Runner {
 		$this->add_at_all_alias( $this->aliases );
 		$this->add_at_all_alias( $this->raw_aliases );
 		/** @var array<int, string> $runtime_requires */
-		$runtime_requires                = is_array( $this->config['require'] ) ? $this->config['require'] : [];
+		$runtime_requires                = is_array( $this->config['require'] ) ? $this->config['require'] : ( is_scalar( $this->config['require'] ) ? [ (string) $this->config['require'] ] : [] );
 		$this->required_files['runtime'] = $runtime_requires;
 	}
 
@@ -2973,14 +2973,15 @@ class Runner {
 	 */
 	private function enumerate_commands( CompositeCommand $command, array &$list, $parent = '' ): void {
 		foreach ( $command->get_subcommands() as $subcommand ) {
-			/** @var CompositeCommand $subcommand */
 			$command_string = empty( $parent )
 				? $subcommand->get_name()
 				: "{$parent} {$subcommand->get_name()}";
 
 			$list[] = $command_string;
 
-			$this->enumerate_commands( $subcommand, $list, $command_string );
+			if ( $subcommand instanceof CompositeCommand ) {
+				$this->enumerate_commands( $subcommand, $list, $command_string );
+			}
 		}
 	}
 
