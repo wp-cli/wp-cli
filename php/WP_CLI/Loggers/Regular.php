@@ -21,6 +21,7 @@ class Regular extends Base {
 	 *
 	 * @param string $message Message to write.
 	 * @param bool   $newline Optional. Whether to append a newline to the end of the message. Default true.
+	 * @return void
 	 */
 	public function info( $message, $newline = true ) {
 		$this->write( STDOUT, $message . ( $newline ? "\n" : '' ) );
@@ -30,6 +31,7 @@ class Regular extends Base {
 	 * Write a success message, prefixed with "Success: ".
 	 *
 	 * @param string $message Message to write.
+	 * @return void
 	 */
 	public function success( $message ) {
 		$this->_line( $message, 'Success', '%G' );
@@ -39,6 +41,7 @@ class Regular extends Base {
 	 * Write a warning message to STDERR, prefixed with "Warning: ".
 	 *
 	 * @param string $message Message to write.
+	 * @return void
 	 */
 	public function warning( $message ) {
 		$this->_line( $message, 'Warning', '%C', STDERR );
@@ -48,6 +51,7 @@ class Regular extends Base {
 	 * Write an message to STDERR, prefixed with "Error: ".
 	 *
 	 * @param string $message Message to write.
+	 * @return void
 	 */
 	public function error( $message ) {
 		$this->_line( $message, 'Error', '%R', STDERR );
@@ -57,6 +61,7 @@ class Regular extends Base {
 	 * Similar to error( $message ), but outputs $message in a red box.
 	 *
 	 * @param array<int, string> $message_lines Message to write.
+	 * @return void
 	 */
 	public function error_multi_line( $message_lines ) {
 		// Convert tabs to four spaces, as some shells will output the tabs as variable-length.

@@ -16,6 +16,8 @@ class ShutdownHandler {
 
 	/**
 	 * Register the error message filter.
+	 *
+	 * @return void
 	 */
 	public static function register() {
 		// Ensure WordPress's fatal error handler is always enabled for WP-CLI
@@ -244,6 +246,7 @@ class ShutdownHandler {
 	 * Prompt the user to rerun the command with the skip flag.
 	 *
 	 * @param array<string, bool|string> $skip Skip flag(s) to append.
+	 * @return void
 	 */
 	private static function prompt_and_rerun( $skip ) {
 		// Get environment variable to check default behavior
@@ -300,6 +303,7 @@ class ShutdownHandler {
 	 * are not part of any individual subcommand's synopsis.
 	 *
 	 * @param array<string, bool|string> $skip Skip flag(s) to append.
+	 * @return void
 	 */
 	private static function rerun_with_skip( $skip ) {
 		$runner = WP_CLI::get_runner();

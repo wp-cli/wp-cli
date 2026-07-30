@@ -18,7 +18,9 @@ class Extractor {
 	/**
 	 * Extract the archive file to a specific destination.
 	 *
+	 * @param string $tarball_or_zip
 	 * @param string $dest
+	 * @return string Destination directory
 	 */
 	public static function extract( $tarball_or_zip, $dest ) {
 		if ( preg_match( '/\.zip$/', $tarball_or_zip ) ) {
@@ -37,6 +39,7 @@ class Extractor {
 	 *
 	 * @param string $zipfile
 	 * @param string $dest
+	 * @return string Destination directory
 	 */
 	private static function extract_zip( $zipfile, $dest ) {
 		if ( ! class_exists( 'ZipArchive' ) ) {
@@ -88,6 +91,7 @@ class Extractor {
 	 *
 	 * @param string $tarball
 	 * @param string $dest
+	 * @return string Destination directory
 	 */
 	private static function extract_tarball( $tarball, $dest ) {
 		// Ensure the destination folder exists or can be created.
@@ -190,6 +194,7 @@ class Extractor {
 	 *
 	 * @param string $source
 	 * @param string $dest
+	 * @return void
 	 */
 	public static function copy_overwrite_files( $source, $dest ) {
 		$iterator = new RecursiveIteratorIterator(
@@ -237,6 +242,7 @@ class Extractor {
 	 * must exist.
 	 *
 	 * @param string $dir
+	 * @return void
 	 */
 	public static function rmdir( $dir ) {
 		$files = new RecursiveIteratorIterator(

@@ -42,6 +42,11 @@ class WpHttpCacheManager {
 
 	/**
 	 * short circuit wp http api with cached file
+	 *
+	 * @param false|array<string, mixed>|\WP_Error $response
+	 * @param array<string, mixed>                  $args
+	 * @param string                                $url
+	 * @return false|array<string, mixed>|\WP_Error
 	 */
 	public function filter_pre_http_request( $response, $args, $url ) {
 		// check if whitelisted
@@ -161,6 +166,7 @@ class WpHttpCacheManager {
 	 * @param string $slug    package slug
 	 * @param string $version package version
 	 * @param int    $ttl
+	 * @return void
 	 */
 	public function whitelist_package( $url, $group, $slug, $version, $ttl = null ) {
 		$ext = pathinfo( (string) Utils\parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION );
@@ -175,6 +181,7 @@ class WpHttpCacheManager {
 	 * @param string $url
 	 * @param string $key
 	 * @param int    $ttl
+	 * @return void
 	 */
 	public function whitelist_url( $url, $key = null, $ttl = null ) {
 		$key                     = $key ? : $url;

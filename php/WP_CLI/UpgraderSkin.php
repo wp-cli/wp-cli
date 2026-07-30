@@ -17,9 +17,24 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 	 */
 	public $api;
 
+	/**
+	 * @return void
+	 */
 	public function header() {}
+
+	/**
+	 * @return void
+	 */
 	public function footer() {}
+
+	/**
+	 * @return void
+	 */
 	public function bulk_header() {}
+
+	/**
+	 * @return void
+	 */
 	public function bulk_footer() {}
 
 	/**
@@ -60,6 +75,7 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 	 *
 	 * @param string       $string String to use as feedback message.
 	 * @param array<mixed> $args Array of additional arguments to process.
+	 * @return void
 	 */
 	public function process_feedback( $string, $args ) {
 

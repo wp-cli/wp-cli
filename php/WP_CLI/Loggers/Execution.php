@@ -34,6 +34,7 @@ class Execution extends Regular {
 	 * Similar to error( $message ), but outputs $message in a red box.
 	 *
 	 * @param array<int, string> $message_lines Message to write.
+	 * @return void
 	 */
 	public function error_multi_line( $message_lines ) {
 		$message = implode( "\n", $message_lines );
@@ -47,6 +48,7 @@ class Execution extends Regular {
 	 *
 	 * @param resource $handle Commonly STDOUT or STDERR.
 	 * @param string $str Message to write.
+	 * @return void
 	 */
 	protected function write( $handle, $str ) {
 		switch ( $handle ) {
@@ -61,6 +63,8 @@ class Execution extends Regular {
 
 	/**
 	 * Starts output buffering, using a callback to capture output from `echo`, `print`, `printf` (which write to the output buffer 'php://output' rather than STDOUT).
+	 *
+	 * @return void
 	 */
 	public function ob_start() {
 		ob_start( [ $this, 'ob_start_callback' ], 1 );
@@ -79,6 +83,8 @@ class Execution extends Regular {
 
 	/**
 	 * To match `ob_start() above. Does an `ob_end_flush()`.
+	 *
+	 * @return void
 	 */
 	public function ob_end() {
 		ob_end_flush();

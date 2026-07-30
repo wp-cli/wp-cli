@@ -134,6 +134,9 @@ class Query implements Iterator {
 		$this->row_count = $row_count;
 	}
 
+	/**
+	 * @return bool
+	 */
 	private function load_items_from_db() {
 		$this->adjust_offset_for_shrinking_result_set();
 

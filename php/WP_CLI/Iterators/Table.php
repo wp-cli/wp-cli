@@ -58,6 +58,10 @@ class Table extends Query {
 		parent::__construct( $query, $chunk_size );
 	}
 
+	/**
+	 * @param array<int, string>|string $fields
+	 * @return string
+	 */
 	private static function build_fields( $fields ) {
 		if ( '*' === $fields ) {
 			return $fields;
@@ -74,6 +78,10 @@ class Table extends Query {
 		);
 	}
 
+	/**
+	 * @param array<string, mixed>|string $where
+	 * @return string
+	 */
 	private static function build_where_conditions( $where ) {
 		global $wpdb;
 		if ( is_array( $where ) ) {
