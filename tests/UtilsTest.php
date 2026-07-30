@@ -295,6 +295,8 @@ class UtilsTest extends TestCase {
 
 	/**
 	 * @dataProvider parseStrToArgvData
+	 * @param array<int, string> $expected
+	 * @param string $parseable_string
 	 */
 	#[DataProvider( 'parseStrToArgvData' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testParseStrToArgv( $expected, $parseable_string ): void {
@@ -328,6 +330,8 @@ class UtilsTest extends TestCase {
 	 *
 	 * @dataProvider parseStrToArgvStripsQuotesFromAssocValuesData
 	 * @see https://github.com/wp-cli/wp-cli/issues/5541
+	 * @param string $input
+	 * @param array<int, string> $expected
 	 */
 	#[DataProvider( 'parseStrToArgvStripsQuotesFromAssocValuesData' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testParseStrToArgvStripsQuotesFromAssocValues( $input, $expected ): void {
@@ -493,7 +497,7 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataNormalizePath
 	 */
 	#[DataProvider( 'dataNormalizePath' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testNormalizePath( $path, $expected ): void {
+	public function testNormalizePath( string $path, string $expected ): void {
 		$this->assertEquals( $expected, Utils\normalize_path( $path ) );
 	}
 
@@ -655,6 +659,8 @@ class UtilsTest extends TestCase {
 
 	/**
 	 * @dataProvider dataHttpRequestVerify
+	 * @param bool|string $expected
+	 * @param array<string, mixed> $options
 	 */
 	#[DataProvider( 'dataHttpRequestVerify' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testHttpRequestVerify( $expected, $options ): void {
@@ -701,7 +707,7 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataPastTenseVerb
 	 */
 	#[DataProvider( 'dataPastTenseVerb' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testPastTenseVerb( $verb, $expected ): void {
+	public function testPastTenseVerb( string $verb, string $expected ): void {
 		$this->assertSame( $expected, Utils\past_tense_verb( $verb ) );
 	}
 
@@ -737,6 +743,8 @@ class UtilsTest extends TestCase {
 
 	/**
 	 * @dataProvider dataExpandGlobs
+	 * @param string $path
+	 * @param array<int, string> $expected
 	 */
 	#[DataProvider( 'dataExpandGlobs' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testExpandGlobs( $path, $expected ): void {
@@ -782,6 +790,14 @@ class UtilsTest extends TestCase {
 
 	/**
 	 * @dataProvider dataReportBatchOperationResults
+	 * @param string $stdout
+	 * @param string $stderr
+	 * @param string $noun
+	 * @param string $verb
+	 * @param int $total
+	 * @param int $successes
+	 * @param int $failures
+	 * @param int|null $skips
 	 */
 	#[DataProvider( 'dataReportBatchOperationResults' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testReportBatchOperationResults( $stdout, $stderr, $noun, $verb, $total, $successes, $failures, $skips ): void {
@@ -862,6 +878,10 @@ class UtilsTest extends TestCase {
 
 	/**
 	 * @dataProvider dataProcOpenCompatWinEnv
+	 * @param string $cmd
+	 * @param array<string, string> $env
+	 * @param string $expected_cmd
+	 * @param array<string, string> $expected_env
 	 */
 	#[DataProvider( 'dataProcOpenCompatWinEnv' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testProcOpenCompatWinEnv( $cmd, $env, $expected_cmd, $expected_env ): void {
@@ -911,7 +931,7 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataEscLike
 	 */
 	#[DataProvider( 'dataEscLike' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function test_esc_like( $input, $expected ): void {
+	public function test_esc_like( string $input, string $expected ): void {
 		$this->assertEquals( $expected, Utils\esc_like( $input ) );
 	}
 
@@ -919,7 +939,7 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataEscLike
 	 */
 	#[DataProvider( 'dataEscLike' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function test_esc_like_with_wpdb( $input, $expected ): void {
+	public function test_esc_like_with_wpdb( string $input, string $expected ): void {
 		global $wpdb;
 
 		$wpdb = $this->createMock( WP_CLI_Mock_WPDB::class );
@@ -934,7 +954,7 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataEscLike
 	 */
 	#[DataProvider( 'dataEscLike' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function test_esc_like_with_wpdb_being_null( $input, $expected ): void {
+	public function test_esc_like_with_wpdb_being_null( string $input, string $expected ): void {
 		global $wpdb;
 		$wpdb = null;
 		$this->assertEquals( $expected, Utils\esc_like( $input ) );
@@ -942,6 +962,9 @@ class UtilsTest extends TestCase {
 
 	/**
 	 * @dataProvider dataIsJson
+	 * @param string $argument
+	 * @param bool $ignore_scalars
+	 * @param bool $expected
 	 */
 	#[DataProvider( 'dataIsJson' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testIsJson( $argument, $ignore_scalars, $expected ): void {
@@ -967,6 +990,9 @@ class UtilsTest extends TestCase {
 
 	/**
 	 * @dataProvider dataParseShellArray
+	 * @param array<string, string> $assoc_args
+	 * @param array<int, string> $array_arguments
+	 * @param array<string, mixed> $expected
 	 */
 	#[DataProvider( 'dataParseShellArray' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testParseShellArray( $assoc_args, $array_arguments, $expected ): void {
@@ -983,6 +1009,9 @@ class UtilsTest extends TestCase {
 
 	/**
 	 * @dataProvider dataPluralize
+	 * @param string $singular
+	 * @param int|null $count
+	 * @param string $expected
 	 */
 	#[DataProvider( 'dataPluralize' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testPluralize( $singular, $count, $expected ): void {
@@ -999,6 +1028,9 @@ class UtilsTest extends TestCase {
 
 	/**
 	 * @dataProvider dataPickFields
+	 * @param array<string|int, mixed>|object $data
+	 * @param array<int, string|int> $fields
+	 * @param array<string|int, mixed> $expected
 	 */
 	#[DataProvider( 'dataPickFields' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testPickFields( $data, $fields, $expected ): void {
@@ -1019,6 +1051,10 @@ class UtilsTest extends TestCase {
 
 	/**
 	 * @dataProvider dataParseUrl
+	 * @param string $url
+	 * @param int $component
+	 * @param bool $auto_add_scheme
+	 * @param array<string, mixed>|string|false $expected
 	 */
 	#[DataProvider( 'dataParseUrl' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testParseUrl( $url, $component, $auto_add_scheme, $expected ): void {
@@ -1038,7 +1074,7 @@ class UtilsTest extends TestCase {
 	 * @dataProvider dataEscapeCsvValue
 	 */
 	#[DataProvider( 'dataEscapeCsvValue' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testEscapeCsvValue( $input, $expected ): void {
+	public function testEscapeCsvValue( string $input, string $expected ): void {
 		$this->assertEquals( $expected, Utils\escape_csv_value( $input ) );
 	}
 
@@ -1199,6 +1235,8 @@ class UtilsTest extends TestCase {
 
 	/**
 	 * @dataProvider dataValidClassAndMethodPair
+	 * @param mixed $pair
+	 * @param bool $is_valid
 	 */
 	#[DataProvider( 'dataValidClassAndMethodPair' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testValidClassAndMethodPair( $pair, $is_valid ): void {
@@ -1220,6 +1258,10 @@ class UtilsTest extends TestCase {
 
 	/**
 	 * @dataProvider dataFormatBytesString
+	 * @param int|float|string $bytes
+	 * @param int $decimals
+	 * @param string $unit
+	 * @param string $expected
 	 */
 	#[DataProvider( 'dataFormatBytesString' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testFormatBytesString( $bytes, $decimals, $unit, $expected ): void {

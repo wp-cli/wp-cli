@@ -551,9 +551,9 @@ function write_csv( $fd, $rows, $headers = [] ) {
 /**
  * Pick fields from an associative array or object.
  *
- * @param array<string, mixed>|object $item   Associative array or object to pick fields from.
- * @param array<string>               $fields List of fields to pick.
- * @return array<string, mixed>
+ * @param array<string|int, mixed>|object $item   Associative array or object to pick fields from.
+ * @param array<int, string|int>          $fields List of fields to pick.
+ * @return array<string|int, mixed>
  */
 function pick_fields( $item, $fields ) {
 	$values = [];
@@ -2024,7 +2024,7 @@ function describe_callable( $callable ) {
  * This accommodates changes to `is_callable()` in PHP 8 that mean an array of a
  * classname and instance method is no longer callable.
  *
- * @param array<mixed> $pair The class and method pair to check.
+ * @param mixed $pair The class and method pair to check.
  * @return bool
  *
  * @phpstan-assert-if-true array{0: class-string|object, 1: string} $pair
@@ -2455,12 +2455,15 @@ function escape_csv_value( $value ) {
 /**
  * Convert a size in bytes to a human-readable format.
  *
- * @param int|float $bytes    Size in bytes.
+ * @param int|float|string $bytes    Size in bytes.
  * @param int       $decimals Optional. Number of decimal places to round to. Default 0.
  * @param string    $unit     Optional. Specific unit to use. Default is auto-detect.
  * @return string Human-readable size.
  */
 function format_bytes_string( $bytes, $decimals = 0, $unit = '' ) {
+	if ( is_string( $bytes ) ) {
+		$bytes = (float) $bytes;
+	}
 	if ( 0 === (int) $bytes ) {
 		return '0 B';
 	}
