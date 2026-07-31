@@ -5,12 +5,6 @@ use WP_CLI\WpOrgApi;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class WpOrgApiTest extends TestCase {
-
-	public static function set_up_before_class(): void {
-		parent::set_up_before_class();
-		require_once dirname( __DIR__ ) . '/mock-requests-transport.php';
-	}
-
 	public static function data_http_request_verify(): array {
 		return [
 			'can retrieve core checksums'              => [

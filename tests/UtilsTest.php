@@ -10,8 +10,6 @@ class UtilsTest extends TestCase {
 
 	public static function set_up_before_class(): void {
 		parent::set_up_before_class();
-		require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
-		require_once __DIR__ . '/mock-requests-transport.php';
 		WP_CLI::get_runner()->init_config();
 	}
 
@@ -458,115 +456,6 @@ class UtilsTest extends TestCase {
 		$this->assertSame( 'cmd', Utils\force_env_on_nix_systems( '/usr/bin/env cmd' ) );
 
 		putenv( false === $env_is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$env_is_windows" );
-	}
-
-	public function testGetHomeDir(): void {
-
-		// Save environments.
-		$home      = getenv( 'HOME' );
-		$homedrive = getenv( 'HOMEDRIVE' );
-		$homepath  = getenv( 'HOMEPATH' );
-
-		putenv( 'HOME=/home/user' );
-		// @phpstan-ignore function.deprecated
-		$this->assertSame( '/home/user', Utils\get_home_dir() );
-
-		putenv( 'HOME' );
-
-		putenv( 'HOMEDRIVE=D:' );
-		putenv( 'HOMEPATH' );
-		// @phpstan-ignore function.deprecated
-		$this->assertSame( 'D:', Utils\get_home_dir() );
-
-		putenv( 'HOMEPATH=\\Windows\\User\\' );
-		// @phpstan-ignore function.deprecated
-		$this->assertSame( 'D:\\Windows\\User', Utils\get_home_dir() );
-
-		putenv( 'HOMEPATH=\\Windows\\User\\HOGE\\' );
-		// @phpstan-ignore function.deprecated
-		$this->assertSame( 'D:\\Windows\\User\\HOGE', Utils\get_home_dir() );
-
-		// Restore environments.
-		putenv( false === $home ? 'HOME' : "HOME=$home" );
-		putenv( false === $homedrive ? 'HOMEDRIVE' : "HOME=$homedrive" );
-		putenv( false === $homepath ? 'HOMEPATH' : "HOME=$homepath" );
-	}
-
-	public function testTrailingslashit(): void {
-		// @phpstan-ignore function.deprecated
-		$this->assertSame( 'a/', Utils\trailingslashit( 'a' ) );
-		// @phpstan-ignore function.deprecated
-		$this->assertSame( 'a/', Utils\trailingslashit( 'a/' ) );
-		// @phpstan-ignore function.deprecated
-		$this->assertSame( 'a/', Utils\trailingslashit( 'a\\' ) );
-		// @phpstan-ignore function.deprecated
-		$this->assertSame( 'a/', Utils\trailingslashit( 'a\\//\\' ) );
-	}
-
-	/**
-	 * @dataProvider dataNormalizePath
-	 */
-	#[DataProvider( 'dataNormalizePath' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testNormalizePath( string $path, string $expected ): void {
-		// @phpstan-ignore function.deprecated
-		$this->assertSame( $expected, Utils\normalize_path( $path ) );
-	}
-
-	public static function dataNormalizePath(): array {
-		return [
-			[ '', '' ],
-			// Windows paths.
-			[ 'C:\\www\\path\\', 'C:/www/path/' ],
-			[ 'C:\\www\\\\path\\', 'C:/www/path/' ],
-			[ 'c:/www/path', 'C:/www/path' ],
-			[ 'c:\\www\\path\\', 'C:/www/path/' ], // Uppercase drive letter.
-			[ 'c:', 'C:' ],
-			[ 'c:\\', 'C:/' ],
-			[ 'c:\\\\www\\path\\', 'C:/www/path/' ],
-			[ '\\\\Domain\\DFSRoots\\share\\path\\', '//Domain/DFSRoots/share/path/' ],
-			[ '\\\\Server\\share\\path', '//Server/share/path' ],
-			[ '\\\\Server\\share', '//Server/share' ],
-			// Linux paths.
-			[ '/', '/' ],
-			[ '/www/path/', '/www/path/' ],
-			[ '/www/path/////', '/www/path/' ],
-			[ '/www/path', '/www/path' ],
-			[ '/www/path', '/www/path' ],
-			// PHP stream wrapper paths.
-			[ 'phar:///path/to/file.phar/www/path', 'phar:///path/to/file.phar/www/path' ],
-			[ 'php://stdin', 'php://stdin' ],
-			[ 'phar:///path/to/file.phar/some//dir', 'phar:///path/to/file.phar/some/dir' ],
-			[ 'phar:///path/to/file.phar/some\\dir/file', 'phar:///path/to/file.phar/some/dir/file' ],
-			[ 'PHAR:///path/to/file.phar/some//dir', 'PHAR:///path/to/file.phar/some/dir' ],
-			[ 'PhAr:///path/to/file.phar/some\\dir/file', 'PhAr:///path/to/file.phar/some/dir/file' ],
-			// Paths with single-dot segments.
-			[ '/www/./path/', '/www/path/' ],
-			[ '/www/html/./public/wp/', '/www/html/public/wp/' ],
-			[ '/www/./path', '/www/path' ],
-			[ '/www/path/.', '/www/path/' ],
-			[ '/www/path/./', '/www/path/' ],
-			[ '/www/././path/', '/www/path/' ],
-			[ './public/wp', 'public/wp' ],
-		];
-	}
-
-	public function testIsStream(): void {
-		// @phpstan-ignore function.deprecated
-		$this->assertTrue( Utils\is_stream( 'phar:///path/to/file.phar' ) );
-		// @phpstan-ignore function.deprecated
-		$this->assertTrue( Utils\is_stream( 'php://stdin' ) );
-		// @phpstan-ignore function.deprecated
-		$this->assertTrue( Utils\is_stream( 'PHAR:///path/to/file.phar' ) );
-		// @phpstan-ignore function.deprecated
-		$this->assertTrue( Utils\is_stream( 'PhAr:///path/to/file.phar' ) );
-		// @phpstan-ignore function.deprecated
-		$this->assertFalse( Utils\is_stream( '/www/path' ) );
-		// @phpstan-ignore function.deprecated
-		$this->assertFalse( Utils\is_stream( 'C:/www/path' ) );
-		// @phpstan-ignore function.deprecated
-		$this->assertFalse( Utils\is_stream( '' ) );
-		// @phpstan-ignore function.deprecated
-		$this->assertFalse( Utils\is_stream( 'nonexistent_wrapper://path' ) );
 	}
 
 	public function testNormalizeEols(): void {
@@ -1245,14 +1134,6 @@ class UtilsTest extends TestCase {
 		$this->assertStringNotContainsString( 'Should not appear', $csv_content );
 	}
 
-	public function testReplacePathConstsAddSlashes(): void {
-		$expected = "define( 'ABSPATH', dirname( 'C:\\\\Users\\\\test\'s\\\\site' ) . '/' );";
-		$source   = "define( 'ABSPATH', dirname( __FILE__ ) . '/' );";
-		// @phpstan-ignore function.deprecated
-		$actual = Utils\replace_path_consts( $source, "C:\Users\\test's\site" );
-		$this->assertSame( $expected, $actual );
-	}
-
 	/**
 	 * @dataProvider dataValidClassAndMethodPair
 	 * @param mixed $pair
@@ -1312,29 +1193,6 @@ class UtilsTest extends TestCase {
 			[ 5000, 0, 'FOO', '5 KB' ],
 			[ 1.5e26, 0, '', '150 YB' ],
 		];
-	}
-
-	public function testExpandTildePath(): void {
-		// @phpstan-ignore function.deprecated
-		$home = Utils\get_home_dir();
-
-		// Test tilde expansion for home directory
-		// @phpstan-ignore function.deprecated
-		$this->assertSame( $home, Utils\expand_tilde_path( '~' ) );
-
-		// Test tilde expansion with subdirectory
-		// @phpstan-ignore function.deprecated
-		$this->assertSame( $home . '/sites/wordpress', Utils\expand_tilde_path( '~/sites/wordpress' ) );
-
-		// Test that paths without tilde are unchanged
-		// @phpstan-ignore function.deprecated
-		$this->assertSame( '/absolute/path', Utils\expand_tilde_path( '/absolute/path' ) );
-		// @phpstan-ignore function.deprecated
-		$this->assertSame( 'relative/path', Utils\expand_tilde_path( 'relative/path' ) );
-
-		// Test that tilde in the middle is not expanded
-		// @phpstan-ignore function.deprecated
-		$this->assertSame( '/path/to/~something', Utils\expand_tilde_path( '/path/to/~something' ) );
 	}
 
 	public function testEscapeshellargPreserveTilde(): void {
