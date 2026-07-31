@@ -378,7 +378,7 @@ class Formatter {
 	 * Display multiple items according to the output arguments.
 	 *
 	 * @param iterable<int, array<string, mixed>|object> $items The items to display.
-	 * @param bool|array<string, bool>                   $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `format()` if items in the table are pre-colorized. Default false.
+	 * @param bool|array<int, bool>                      $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `format()` if items in the table are pre-colorized. Default false.
 	 * @return void
 	 */
 	public function display_items( $items, $ascii_pre_colorized = false ) {
@@ -422,7 +422,7 @@ class Formatter {
 	 * Display a single item according to the output arguments.
 	 *
 	 * @param mixed                    $item
-	 * @param bool|array<string, bool> $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_multiple_fields()` if the item in the table is pre-colorized. Default false.
+	 * @param bool|array<int, bool>    $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_multiple_fields()` if the item in the table is pre-colorized. Default false.
 	 * @return void
 	 */
 	public function display_item( $item, $ascii_pre_colorized = false ) {
@@ -456,7 +456,7 @@ class Formatter {
 	 * Format items according to arguments.
 	 *
 	 * @param iterable<int, array<string, mixed>|object> $items Items.
-	 * @param bool|array<string, bool>                   $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if items in the table are pre-colorized. Default false.
+	 * @param bool|array<int, bool>                      $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if items in the table are pre-colorized. Default false.
 	 */
 	private function format( $items, $ascii_pre_colorized = false ): void {
 		$fields = $this->args['fields'];
@@ -641,7 +641,7 @@ class Formatter {
 	 *
 	 * @param array<string, mixed>|object $data Data to display
 	 * @param string                      $format Format to display the data in
-	 * @param bool|array<string, bool>    $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if the item in the table is pre-colorized. Default false.
+	 * @param bool|array<int, bool>       $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if the item in the table is pre-colorized. Default false.
 	 */
 	private function show_multiple_fields( $data, $format, $ascii_pre_colorized = false ): void {
 
@@ -705,7 +705,7 @@ class Formatter {
 	 *
 	 * @param iterable<int, array<string, mixed>|object> $items Items.
 	 * @param array<int, string>                         $fields Fields.
-	 * @param bool|array<string, bool>                   $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `Table::setAsciiPreColorized()` if items in the table are pre-colorized. Default false.
+	 * @param bool|array<int, bool>                      $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `Table::setAsciiPreColorized()` if items in the table are pre-colorized. Default false.
 	 * @return void
 	 */
 	private function show_table( $items, $fields, $ascii_pre_colorized = false ) {

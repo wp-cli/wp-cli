@@ -595,8 +595,8 @@ class Configurator {
 	 *
 	 * Replaces ${env.VARIABLE_NAME} with the value of the VARIABLE_NAME environment variable.
 	 *
-	 * @param string $value The string value to interpolate.
-	 * @return string The interpolated string.
+	 * @param mixed $value The value to interpolate.
+	 * @return mixed The interpolated value.
 	 */
 	private static function interpolate_env_vars( $value ) {
 		if ( ! is_string( $value ) ) {

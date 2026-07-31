@@ -162,7 +162,7 @@ class Completions {
 	 *
 	 * @param array<int, string> $words Individual input line words.
 	 *
-	 * @return array{0: \WP_CLI\Dispatcher\CompositeCommand, 1: array<int, string>, 2: array<string, bool>}|string Array with command, args, and assoc_args on success; error string on failure.
+	 * @return array{0: \WP_CLI\Dispatcher\CompositeCommand|\WP_CLI\Dispatcher\Subcommand, 1: array<int, string>, 2: array<string, bool>}|string Array with command, args, and assoc_args on success; error string on failure.
 	 */
 	private function get_command( $words ) {
 		$positional_args = [];
@@ -186,10 +186,6 @@ class Completions {
 		if ( ! is_array( $r ) && array_pop( $positional_args ) === $this->cur_word ) {
 			$r = WP_CLI::get_runner()->find_command_to_run( $positional_args );
 		}
-
-		/**
-		 * @var array{0: \WP_CLI\Dispatcher\CompositeCommand, 1: array<int, string>}|string $r
-		 */
 
 		if ( ! is_array( $r ) ) {
 			return $r;

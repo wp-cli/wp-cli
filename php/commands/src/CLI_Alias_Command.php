@@ -481,15 +481,13 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 */
 	private function get_aliases_data( $config, $alias, $create_config_file = false ) {
 
-		$global_config_path = WP_CLI::get_runner()->get_global_config_path( $create_config_file );
-		$global_config_path = is_string( $global_config_path ) ? $global_config_path : '';
-		$global_aliases_raw = '' !== $global_config_path && file_exists( $global_config_path ) ? Spyc::YAMLLoad( $global_config_path ) : [];
+		$global_config_path = WP_CLI::get_runner()->get_global_config_path( $create_config_file ) ?: '';
+		$global_aliases_raw = $global_config_path ? Spyc::YAMLLoad( $global_config_path ) : [];
 		/** @var array<string, mixed> $global_aliases */
 		$global_aliases = is_array( $global_aliases_raw ) ? $global_aliases_raw : [];
 
-		$project_config_path = WP_CLI::get_runner()->get_project_config_path();
-		$project_config_path = is_string( $project_config_path ) ? $project_config_path : '';
-		$project_aliases_raw = '' !== $project_config_path && file_exists( $project_config_path ) ? Spyc::YAMLLoad( $project_config_path ) : [];
+		$project_config_path = WP_CLI::get_runner()->get_project_config_path() ?: '';
+		$project_aliases_raw = $project_config_path ? Spyc::YAMLLoad( $project_config_path ) : [];
 		/** @var array<string, mixed> $project_aliases */
 		$project_aliases = is_array( $project_aliases_raw ) ? $project_aliases_raw : [];
 
