@@ -488,7 +488,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		WP_CLI::log( sprintf( 'Downloading from %s...', $download_url ) );
 
-		$temp = Utils\get_temp_dir() . uniqid( 'wp_', true ) . '.phar';
+		$temp = Utils\make_temp_file( 'wp_', '.phar' );
 
 		$headers = [];
 		$options = [
