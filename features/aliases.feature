@@ -265,6 +265,22 @@ Feature: Create shortcuts to specific WordPress installs
       Running SSH command: ssh -F '/path/to/ssh/config' -T -vvv
       """
 
+  Scenario: SSH alias with leading hyphen in proxyjump should error
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @badproxy:
+        ssh: user@host:/path/to/wordpress
+        proxyjump: -oProxyCommand=touch /tmp/pwn
+      """
+    When I try `wp @badproxy cli info`
+    Then STDERR should contain:
+      """
+      Error: Invalid SSH proxyjump: value cannot start with a hyphen.
+      """
+    And the return code should be 1
+    And the /tmp/pwn file should not exist
+
   @skip-windows @skip-macos
   Scenario: Vagrant SSH disables strict host key checking
     Given a WP installation in 'foo'
