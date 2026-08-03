@@ -79,7 +79,7 @@ function extract_from_phar( $path ) {
 
 	$fname = Path::basename( $path );
 
-	$tmp_path = get_temp_dir() . uniqid( 'wp-cli-extract-from-phar-', true ) . "-$fname";
+	$tmp_path = make_temp_file( 'wp-cli-extract-from-phar-', "-$fname" );
 
 	copy( $path, $tmp_path );
 
@@ -607,6 +607,7 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 			continue;
 		}
 		if ( $fp ) {
+			fwrite( $fp, $input );
 			fclose( $fp );
 		}
 	} while ( ! $tmpfile );
@@ -615,8 +616,6 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 	if ( ! $tmpfile ) {
 		WP_CLI::error( 'Error creating temporary file.' );
 	}
-
-	file_put_contents( $tmpfile, $input );
 
 	$editor = getenv( 'EDITOR' );
 	if ( ! $editor ) {
