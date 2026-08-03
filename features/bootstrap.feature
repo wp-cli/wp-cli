@@ -550,7 +550,7 @@ Feature: Bootstrap WP-CLI
 
   Scenario: Protected commands skip WP root discovery and Requests autoloader from current directory
     Given an empty directory
-    And a index.php file:
+    And an index.php file:
       """
       <?php
       file_put_contents( __DIR__ . '/executed_index.txt', '1' );
@@ -559,8 +559,7 @@ Feature: Bootstrap WP-CLI
     And a wp-includes/Requests/src/Autoload.php file:
       """
       <?php
-      file_put_contents( __DIR__ . '/../../executed_requests.txt', '1' );
-      """
+      file_put_contents( __DIR__ . '/../../../executed_requests.txt', '1' );
 
     When I run `wp cli info`
     Then the return code should be 0
