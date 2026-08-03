@@ -196,4 +196,40 @@ class ConfiguratorTest extends TestCase {
 		$this->assertArrayHasKey( 'verbose', $assoc_args2 );
 		$this->assertFalse( $assoc_args2['verbose'] );
 	}
+
+	public function testMergeYmlSelfInheritRecursionGuard(): void {
+		$temp_dir = sys_get_temp_dir();
+		$file     = tempnam( $temp_dir, 'wp-cli-test-self-' ) . '.yml';
+
+		file_put_contents( $file, "_:\n  inherit: " . basename( $file ) . "\nfoo: bar\n" );
+
+		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+		$configurator->merge_yml( $file );
+
+		[ $config, $extra_config ] = $configurator->to_array();
+
+		unlink( $file );
+
+		$this->assertEquals( 'bar', $extra_config['foo'] );
+	}
+
+	public function testMergeYmlCircularInheritRecursionGuard(): void {
+		$temp_dir = sys_get_temp_dir();
+		$file1    = tempnam( $temp_dir, 'wp-cli-test-1-' ) . '.yml';
+		$file2    = tempnam( $temp_dir, 'wp-cli-test-2-' ) . '.yml';
+
+		file_put_contents( $file1, "_:\n  inherit: " . basename( $file2 ) . "\nfoo: bar\n" );
+		file_put_contents( $file2, "_:\n  inherit: " . basename( $file1 ) . "\nfoo: baz\nbaz: qux\n" );
+
+		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+		$configurator->merge_yml( $file1 );
+
+		[ $config, $extra_config ] = $configurator->to_array();
+
+		unlink( $file1 );
+		unlink( $file2 );
+
+		$this->assertEquals( 'bar', $extra_config['foo'] );
+		$this->assertEquals( 'qux', $extra_config['baz'] );
+	}
 }
