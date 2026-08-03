@@ -358,6 +358,26 @@ class ExtractorTest extends TestCase {
 		rmdir( $dir );
 	}
 
+	public function test_get_first_subfolder(): void {
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		$test_class = new ReflectionClass( Extractor::class );
+		$method     = $test_class->getMethod( 'get_first_subfolder' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$method->setAccessible( true );
+		}
+
+		$result_with_slash    = $method->invoke( null, rtrim( $src_dir, '/\\' ) . '/' );
+		$result_without_slash = $method->invoke( null, rtrim( $src_dir, '/\\' ) );
+
+		$this->assertSame( $wp_dir, $result_with_slash );
+		$this->assertSame( $wp_dir, $result_without_slash );
+		$this->assertStringNotContainsString( '//', $result_with_slash );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
 	private static function create_test_directory_structure() {
 		$temp_dir = Utils\get_temp_dir() . uniqid( self::$copy_overwrite_files_prefix, true );
 		mkdir( $temp_dir );

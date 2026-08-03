@@ -343,6 +343,7 @@ class Extractor {
 	 */
 	private static function get_first_subfolder( $path ) {
 		$iterator = new DirectoryIterator( $path );
+		$path     = rtrim( $path, '/\\' );
 
 		foreach ( $iterator as $fileinfo ) {
 			if ( $fileinfo->isDir() && ! $fileinfo->isDot() ) {
