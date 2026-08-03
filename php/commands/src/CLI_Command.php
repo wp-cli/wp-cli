@@ -684,30 +684,39 @@ class CLI_Command extends WP_CLI_Command {
 	 * @throws \WP_CLI\ExitException
 	 */
 	private function validate_hashes( $file, $sha512_url, $md5_url ): void {
-		$algos = [
-			'sha512' => $sha512_url,
-			'md5'    => $md5_url,
-		];
+		// Note: Utils\http_request() is intentionally called without the 'insecure' option
+		// to ensure hash fetches remain TLS certificate-verified even if --insecure was used for downloading the phar.
 
-		foreach ( $algos as $algo => $url ) {
-			$response = Utils\http_request( 'GET', $url );
-			if ( '20' !== substr( (string) $response->status_code, 0, 2 ) ) {
-				WP_CLI::log( "Couldn't access $algo hash for release (HTTP code {$response->status_code})." );
-				continue;
-			}
-
-			$file_hash = hash_file( $algo, $file );
-
-			$release_hash = trim( $response->body );
-			if ( $file_hash === $release_hash ) {
-				WP_CLI::log( "$algo hash verified: $release_hash" );
-				return;
-			} else {
-				WP_CLI::error( "$algo hash for download ($file_hash) is different than the release hash ($release_hash)." );
-			}
+		// SHA-512 is required; an unfetchable or mismatched SHA-512 is fatal.
+		$response = Utils\http_request( 'GET', $sha512_url );
+		if ( '20' !== substr( (string) $response->status_code, 0, 2 ) ) {
+			WP_CLI::error( "Couldn't access sha512 hash for release (HTTP code {$response->status_code})." );
 		}
 
-		WP_CLI::error( 'Release hash verification failed.' );
+		$file_sha512    = hash_file( 'sha512', $file );
+		$release_sha512 = trim( $response->body );
+		if ( $file_sha512 !== $release_sha512 ) {
+			WP_CLI::error( "sha512 hash for download ($file_sha512) is different than the release hash ($release_sha512)." );
+		}
+
+		WP_CLI::log( "sha512 hash verified: $release_sha512" );
+
+		// MD5 is an optional additional check and must never be a replacement for SHA-512.
+		if ( $md5_url ) {
+			$response = Utils\http_request( 'GET', $md5_url );
+			if ( '20' !== substr( (string) $response->status_code, 0, 2 ) ) {
+				WP_CLI::log( "Couldn't access md5 hash for release (HTTP code {$response->status_code})." );
+				return;
+			}
+
+			$file_md5    = hash_file( 'md5', $file );
+			$release_md5 = trim( $response->body );
+			if ( $file_md5 !== $release_md5 ) {
+				WP_CLI::error( "md5 hash for download ($file_md5) is different than the release hash ($release_md5)." );
+			}
+
+			WP_CLI::log( "md5 hash verified: $release_md5" );
+		}
 	}
 
 	/**
