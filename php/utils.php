@@ -604,7 +604,12 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 		$tmpfile  = preg_replace( '|\.[^.]*$|', '', $tmpfile );
 		$tmpfile .= '-' . substr( md5( (string) mt_rand() ), 0, 6 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand -- no crypto and WP not loaded.
 		$tmpfile  = $tmpdir . $tmpfile . '.' . $ext;
-		$fp       = @fopen( $tmpfile, 'xb' );
+
+		// Restrict the file to its owner, as it can hold sensitive input.
+		$old_umask = umask( 0177 );
+		$fp        = @fopen( $tmpfile, 'xb' );
+		umask( $old_umask );
+
 		if ( $fp ) {
 			$created = true;
 			if ( false === fwrite( $fp, $input ) ) {
@@ -1330,6 +1335,8 @@ function get_temp_dir() {
 /**
  * Create a unique temporary file safely without following symlinks.
  *
+ * The file is only readable and writable by its owner on non-Windows systems.
+ *
  * @access public
  * @category System
  *
@@ -1346,8 +1353,13 @@ function make_temp_file( $prefix = 'wp-cli-', $suffix = '' ) {
 	$attempts = 0;
 
 	do {
-		$path   = $temp_dir . uniqid( $prefix, true ) . $suffix;
-		$handle = @fopen( $path, 'xb' );
+		$path = $temp_dir . uniqid( $prefix, true ) . $suffix;
+
+		// Restrict the file to its owner, as callers may write sensitive data to it.
+		$old_umask = umask( 0177 );
+		$handle    = @fopen( $path, 'xb' );
+		umask( $old_umask );
+
 		++$attempts;
 	} while ( ! $handle && $attempts < 100 );
 

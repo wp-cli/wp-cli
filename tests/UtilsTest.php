@@ -562,6 +562,9 @@ class UtilsTest extends TestCase {
 		$file = Utils\make_temp_file();
 		$this->assertFileExists( $file );
 		$this->assertFalse( is_link( $file ) );
+		if ( ! Utils\is_windows() ) {
+			$this->assertSame( '0600', substr( sprintf( '%o', fileperms( $file ) ), -4 ) );
+		}
 		unlink( $file );
 
 		$file_with_suffix = Utils\make_temp_file( 'wp-test-', '.phar' );
