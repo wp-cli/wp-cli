@@ -199,8 +199,7 @@ class ConfiguratorTest extends TestCase {
 
 	public function testMergeYmlSelfInheritRecursionGuard(): void {
 		$temp_dir = sys_get_temp_dir();
-		$file     = tempnam( $temp_dir, 'wp-cli-test-self-' ) . '.yml';
-
+		$file     = tempnam( $temp_dir, 'wp-cli-test-self-' );
 		file_put_contents( $file, "_:\n  inherit: " . basename( $file ) . "\nfoo: bar\n" );
 
 		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
