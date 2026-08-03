@@ -373,6 +373,7 @@ class ExtractorTest extends TestCase {
 
 		$this->assertSame( $wp_dir, $result_with_slash );
 		$this->assertSame( $wp_dir, $result_without_slash );
+		$this->assertIsString( $result_with_slash );
 		$this->assertStringNotContainsString( '//', $result_with_slash );
 
 		Extractor::rmdir( $temp_dir );

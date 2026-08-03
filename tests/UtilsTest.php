@@ -600,7 +600,7 @@ class UtilsTest extends TestCase {
 					Utils\make_temp_file( $prefix, $suffix );
 					$this->fail( 'Expected ExitException for invalid prefix/suffix.' );
 				} catch ( ExitException $ex ) {
-					$this->assertInstanceOf( ExitException::class, $ex );
+					$this->assertSame( 1, $ex->getCode() );
 				}
 			}
 		} finally {
@@ -641,7 +641,7 @@ class UtilsTest extends TestCase {
 					Utils\make_temp_dir( $prefix );
 					$this->fail( 'Expected ExitException for invalid prefix.' );
 				} catch ( ExitException $ex ) {
-					$this->assertInstanceOf( ExitException::class, $ex );
+					$this->assertSame( 1, $ex->getCode() );
 				}
 			}
 		} finally {
