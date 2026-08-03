@@ -1070,7 +1070,7 @@ class Runner {
 		}
 
 		foreach ( [ 'user', 'host', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
-			if ( ! empty( $bits[ $bit ] ) && 0 === strpos( (string) $bits[ $bit ], '-' ) ) {
+			if ( ! empty( $bits[ $bit ] ) && is_string( $bits[ $bit ] ) && 0 === strpos( $bits[ $bit ], '-' ) ) {
 				WP_CLI::error( sprintf( 'Invalid SSH %s: value cannot start with a hyphen.', $bit ) );
 			}
 		}
