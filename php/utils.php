@@ -12,6 +12,7 @@ use Closure;
 use Composer\Semver\Comparator;
 use Composer\Semver\Semver;
 use Exception;
+use InvalidArgumentException;
 use Iterator;
 use Mustache\Engine as Mustache_Engine;
 use ReflectionFunction;
@@ -367,11 +368,21 @@ function args_to_str( $args ) {
  * @param array<string, mixed> $assoc_args Associative arguments to compose.
  * @param array<string> $sensitive_args Optional. Array of argument keys that should be masked.
  * @return string
+ * @throws InvalidArgumentException If an argument key contains invalid characters.
  */
 function assoc_args_to_str( $assoc_args, $sensitive_args = [] ) {
 	$str = '';
 
 	foreach ( $assoc_args as $key => $value ) {
+		if ( ! preg_match( '/^[a-zA-Z0-9_:\.-]+$/', (string) $key ) ) {
+			throw new InvalidArgumentException(
+				sprintf(
+					"Invalid associative argument key '%s'.",
+					$key
+				)
+			);
+		}
+
 		if ( true === $value ) {
 			$str .= " --$key";
 		} elseif ( is_array( $value ) ) {
