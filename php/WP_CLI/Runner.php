@@ -1059,6 +1059,22 @@ class Runner {
 			WP_CLI::debug( 'SSH ' . $bit . ': ' . $bits[ $bit ], 'bootstrap' );
 		}
 
+		if ( ! empty( $this->alias ) ) {
+			$alias_config = isset( $this->aliases[ $this->alias ] ) ? $this->aliases[ $this->alias ] : false;
+
+			if ( is_array( $alias_config ) ) {
+				$bits['proxyjump']  = isset( $alias_config['proxyjump'] ) ? $alias_config['proxyjump'] : $bits['proxyjump'];
+				$bits['key']        = isset( $alias_config['key'] ) ? $alias_config['key'] : $bits['key'];
+				$bits['ssh_config'] = isset( $alias_config['ssh_config'] ) ? $alias_config['ssh_config'] : $bits['ssh_config'];
+			}
+		}
+
+		foreach ( [ 'user', 'host', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
+			if ( ! empty( $bits[ $bit ] ) && 0 === strpos( (string) $bits[ $bit ], '-' ) ) {
+				WP_CLI::error( sprintf( 'Invalid SSH %s: value cannot start with a hyphen.', $bit ) );
+			}
+		}
+
 		/**
 		 * @var array{scheme: string|null, user: string|null, host: string, port: string|null, path: string|null, key: string|null, proxyjump: string|null, ssh_config: string|null} $bits
 		 */

@@ -5,6 +5,7 @@ namespace WP_CLI\Tests;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 use ReflectionClass;
+use ReflectionProperty;
 use WP_CLI\Runner;
 
 /**
@@ -63,6 +64,76 @@ final class RunnerTest extends TestCase {
 			[ 'SOME_CONSTANT', false ],
 			[ "'path' + '/foo'", false ],
 			[ '', false ],
+		];
+	}
+
+	/**
+	 * @dataProvider dataGenerateSshCommandHyphenValidation
+	 */
+	#[DataProvider( 'dataGenerateSshCommandHyphenValidation' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testGenerateSshCommandHyphenValidation( array $bits, string $invalid_bit ): void {
+		$class_wp_cli_capture_exit = new ReflectionProperty( 'WP_CLI', 'capture_exit' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$class_wp_cli_capture_exit->setAccessible( true );
+		}
+		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
+		$class_wp_cli_capture_exit->setValue( null, true );
+
+		$prev_logger = \WP_CLI::get_logger();
+		$logger      = new \WP_CLI\Loggers\Execution();
+		\WP_CLI::set_logger( $logger );
+
+		try {
+			$runner_class = new ReflectionClass( Runner::class );
+			$runner       = $runner_class->newInstanceWithoutConstructor();
+			$method       = $runner_class->getMethod( 'generate_ssh_command' );
+			if ( PHP_VERSION_ID < 80100 ) {
+				// @phpstan-ignore method.deprecated
+				$method->setAccessible( true );
+			}
+
+			$method->invoke( $runner, $bits, 'wp status' );
+			$this->fail( 'Should have thrown ExitException' );
+		} catch ( \WP_CLI\ExitException $e ) {
+			$this->assertStringContainsString( sprintf( 'Invalid SSH %s: value cannot start with a hyphen.', $invalid_bit ), $logger->stderr );
+		} finally {
+			$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
+			\WP_CLI::set_logger( $prev_logger );
+		}
+	}
+
+	public static function dataGenerateSshCommandHyphenValidation(): array {
+		return [
+			[ [ 'host' => '-oProxyCommand=id' ], 'host' ],
+			[
+				[
+					'user' => '-oProxyCommand=id',
+					'host' => 'example.com',
+				],
+				'user',
+			],
+			[
+				[
+					'host' => 'example.com',
+					'key'  => '-oProxyCommand=id',
+				],
+				'key',
+			],
+			[
+				[
+					'host'      => 'example.com',
+					'proxyjump' => '-oProxyCommand=id',
+				],
+				'proxyjump',
+			],
+			[
+				[
+					'host'       => 'example.com',
+					'ssh_config' => '-oProxyCommand=id',
+				],
+				'ssh_config',
+			],
 		];
 	}
 }
