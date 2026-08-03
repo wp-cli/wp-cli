@@ -1323,6 +1323,61 @@ function get_temp_dir() {
 }
 
 /**
+ * Create a unique temporary file safely without following symlinks.
+ *
+ * @access public
+ * @category System
+ *
+ * @param string $prefix Optional. Prefix for the temporary file name. Default 'wp-cli-'.
+ * @param string $suffix Optional. Suffix for the temporary file name. Default ''.
+ * @return string Path to the created temporary file.
+ */
+function make_temp_file( $prefix = 'wp-cli-', $suffix = '' ) {
+	$temp_dir = get_temp_dir();
+	$attempts = 0;
+
+	do {
+		$path   = $temp_dir . uniqid( $prefix, true ) . $suffix;
+		$handle = @fopen( $path, 'xb' );
+		++$attempts;
+	} while ( ! $handle && $attempts < 100 );
+
+	if ( ! $handle ) {
+		WP_CLI::error( 'Failed to create a temporary file.' );
+	}
+
+	fclose( $handle );
+
+	return $path;
+}
+
+/**
+ * Create a unique temporary directory safely without following symlinks.
+ *
+ * @access public
+ * @category System
+ *
+ * @param string $prefix Optional. Prefix for the temporary directory name. Default 'wp-cli-'.
+ * @return string Path to the created temporary directory with a trailing slash.
+ */
+function make_temp_dir( $prefix = 'wp-cli-' ) {
+	$temp_dir = get_temp_dir();
+	$attempts = 0;
+
+	do {
+		$path    = $temp_dir . uniqid( $prefix, true );
+		$success = @mkdir( $path, 0700 );
+		++$attempts;
+	} while ( ! $success && $attempts < 100 );
+
+	if ( ! $success ) {
+		WP_CLI::error( 'Failed to create a temporary directory.' );
+	}
+
+	return Path::trailingslashit( $path );
+}
+
+/**
  * Parse a SSH url for its host, port, and path.
  *
  * Similar to parse_url(), but adds support for defined SSH aliases.

@@ -558,6 +558,26 @@ class UtilsTest extends TestCase {
 		$this->assertTrue( '/' === substr( Utils\get_temp_dir(), -1 ) );
 	}
 
+	public function testMakeTempFile(): void {
+		$file = Utils\make_temp_file();
+		$this->assertFileExists( $file );
+		$this->assertFalse( is_link( $file ) );
+		unlink( $file );
+
+		$file_with_suffix = Utils\make_temp_file( 'wp-test-', '.phar' );
+		$this->assertFileExists( $file_with_suffix );
+		$this->assertStringEndsWith( '.phar', $file_with_suffix );
+		unlink( $file_with_suffix );
+	}
+
+	public function testMakeTempDir(): void {
+		$dir = Utils\make_temp_dir();
+		$this->assertDirectoryExists( $dir );
+		$this->assertFalse( is_link( rtrim( $dir, '/\\' ) ) );
+		$this->assertTrue( '/' === substr( $dir, -1 ) );
+		rmdir( $dir );
+	}
+
 	public function testHttpRequestBadAddress(): void {
 		// Save WP_CLI state.
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
