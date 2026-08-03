@@ -596,24 +596,30 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 
 	$tmpdir = get_temp_dir();
 
+	$created  = false;
+	$attempts = 0;
+
 	do {
 		$tmpfile  = Path::basename( $title );
 		$tmpfile  = preg_replace( '|\.[^.]*$|', '', $tmpfile );
 		$tmpfile .= '-' . substr( md5( (string) mt_rand() ), 0, 6 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand -- no crypto and WP not loaded.
 		$tmpfile  = $tmpdir . $tmpfile . '.' . $ext;
-		$fp       = fopen( $tmpfile, 'xb' );
-		if ( ! $fp && is_writable( $tmpdir ) && file_exists( $tmpfile ) ) {
-			$tmpfile = '';
-			continue;
-		}
+		$fp       = @fopen( $tmpfile, 'xb' );
 		if ( $fp ) {
-			fwrite( $fp, $input );
+			$created = true;
+			if ( false === fwrite( $fp, $input ) ) {
+				fclose( $fp );
+				@unlink( $tmpfile );
+				WP_CLI::error( 'Error writing to temporary file.' );
+			}
 			fclose( $fp );
+			break;
 		}
-	} while ( ! $tmpfile );
+		$tmpfile = '';
+		++$attempts;
+	} while ( $attempts < 100 );
 
-	// @phpstan-ignore booleanNot.alwaysFalse
-	if ( ! $tmpfile ) {
+	if ( ! $created ) {
 		WP_CLI::error( 'Error creating temporary file.' );
 	}
 
