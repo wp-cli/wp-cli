@@ -136,4 +136,76 @@ final class RunnerTest extends TestCase {
 			],
 		];
 	}
+
+	public function testGenerateSshCommandValidHost(): void {
+		$runner_class = new ReflectionClass( Runner::class );
+		$runner       = $runner_class->newInstanceWithoutConstructor();
+		$method       = $runner_class->getMethod( 'generate_ssh_command' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$method->setAccessible( true );
+		}
+
+		$command = $method->invoke( $runner, [ 'host' => 'example.com' ], 'wp status' );
+		$this->assertStringContainsString( 'example.com', $command );
+	}
+
+	/**
+	 * @dataProvider dataGenerateSshCommandAliasHyphenValidation
+	 */
+	#[DataProvider( 'dataGenerateSshCommandAliasHyphenValidation' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testGenerateSshCommandAliasHyphenValidation( array $alias_config, string $invalid_bit ): void {
+		$class_wp_cli_capture_exit = new ReflectionProperty( 'WP_CLI', 'capture_exit' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$class_wp_cli_capture_exit->setAccessible( true );
+		}
+		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
+		$class_wp_cli_capture_exit->setValue( null, true );
+
+		$prev_logger = \WP_CLI::get_logger();
+		$logger      = new \WP_CLI\Loggers\Execution();
+		\WP_CLI::set_logger( $logger );
+
+		try {
+			$runner_class = new ReflectionClass( Runner::class );
+			$runner       = $runner_class->newInstanceWithoutConstructor();
+
+			$prop_alias = $runner_class->getProperty( 'alias' );
+			if ( PHP_VERSION_ID < 80100 ) {
+				// @phpstan-ignore method.deprecated
+				$prop_alias->setAccessible( true );
+			}
+			$prop_alias->setValue( $runner, 'testalias' );
+
+			$prop_aliases = $runner_class->getProperty( 'aliases' );
+			if ( PHP_VERSION_ID < 80100 ) {
+				// @phpstan-ignore method.deprecated
+				$prop_aliases->setAccessible( true );
+			}
+			$prop_aliases->setValue( $runner, [ 'testalias' => $alias_config ] );
+
+			$method = $runner_class->getMethod( 'generate_ssh_command' );
+			if ( PHP_VERSION_ID < 80100 ) {
+				// @phpstan-ignore method.deprecated
+				$method->setAccessible( true );
+			}
+
+			$method->invoke( $runner, [ 'host' => 'example.com' ], 'wp status' );
+			$this->fail( 'Should have thrown ExitException' );
+		} catch ( \WP_CLI\ExitException $e ) {
+			$this->assertStringContainsString( sprintf( 'Invalid SSH %s: value cannot start with a hyphen.', $invalid_bit ), $logger->stderr );
+		} finally {
+			$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
+			\WP_CLI::set_logger( $prev_logger );
+		}
+	}
+
+	public static function dataGenerateSshCommandAliasHyphenValidation(): array {
+		return [
+			[ [ 'key' => '-oProxyCommand=id' ], 'key' ],
+			[ [ 'proxyjump' => '-oProxyCommand=id' ], 'proxyjump' ],
+			[ [ 'ssh_config' => '-oProxyCommand=id' ], 'ssh_config' ],
+		];
+	}
 }

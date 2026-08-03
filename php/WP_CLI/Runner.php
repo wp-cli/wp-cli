@@ -1192,16 +1192,6 @@ class Runner {
 				$bits['host'] = $bits['user'] . '@' . $bits['host'];
 			}
 
-			if ( ! empty( $this->alias ) ) {
-				$alias_config = isset( $this->aliases[ $this->alias ] ) ? $this->aliases[ $this->alias ] : false;
-
-				if ( is_array( $alias_config ) ) {
-					$bits['proxyjump']  = isset( $alias_config['proxyjump'] ) ? $alias_config['proxyjump'] : '';
-					$bits['key']        = isset( $alias_config['key'] ) ? $alias_config['key'] : '';
-					$bits['ssh_config'] = isset( $alias_config['ssh_config'] ) ? $alias_config['ssh_config'] : '';
-				}
-			}
-
 			$command_args = [
 				// @phpstan-ignore cast.string
 				$bits['ssh_config'] ? sprintf( '-F %s', escapeshellarg( (string) $bits['ssh_config'] ) ) : '',
