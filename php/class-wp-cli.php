@@ -1596,7 +1596,15 @@ class WP_CLI {
 			 * @phpstan-var array<int, resource> $pipes
 			 */
 			$pipes = [];
-			$proc  = Utils\proc_open_compat( $runcommand, $descriptors, $pipes, getcwd() ?: null );
+
+			// The child process inherits the current working directory, so it is not
+			// passed along explicitly: as of PHP 8.3 that makes the spawn fail
+			// outright whenever the child cannot enter that directory.
+			$proc = Utils\proc_open_compat( $runcommand, $descriptors, $pipes );
+
+			if ( ! $proc ) {
+				self::error( "Failed to launch a new process for the command: {$command}" );
+			}
 
 			$stdout = '';
 			$stderr = '';
@@ -1607,7 +1615,7 @@ class WP_CLI {
 				$stderr = (string) stream_get_contents( $pipes[2] );
 				fclose( $pipes[2] );
 			}
-			$return_code = $proc ? proc_close( $proc ) : -1;
+			$return_code = proc_close( $proc );
 			if ( -1 === $return_code ) {
 				self::warning( 'Spawned process returned exit code -1, which could be caused by a custom compiled version of PHP that uses the --enable-sigchild option.' );
 			} elseif ( $return_code && $exit_error ) {
