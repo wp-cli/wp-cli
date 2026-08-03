@@ -560,6 +560,7 @@ Feature: Bootstrap WP-CLI
       """
       <?php
       file_put_contents( __DIR__ . '/../../../executed_requests.txt', '1' );
+      """
 
     When I run `wp cli info`
     Then the return code should be 0
