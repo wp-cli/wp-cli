@@ -402,6 +402,13 @@ class UtilsTest extends TestCase {
 		$this->assertStringNotContainsString( 'token2', $actual );
 	}
 
+	public function testAssocArgsToStringWithInvalidKeys(): void {
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( "Invalid associative argument key '$(id -u)'." );
+
+		Utils\assoc_args_to_str( [ '$(id -u)' => true ] );
+	}
+
 	public function testMysqlHostToCLIArgs(): void {
 		// Test hostname only, with and without 'p:' modifier.
 		$expected = [

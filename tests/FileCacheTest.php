@@ -57,6 +57,9 @@ class FileCacheTest extends TestCase {
 		$result = $method->invokeArgs( $cache, [ $cache_dir . '/test1' ] );
 		$this->assertTrue( $result );
 		$this->assertTrue( is_dir( $cache_dir . '/test1' ) );
+		if ( ! Utils\is_windows() ) {
+			$this->assertSame( '0700', substr( sprintf( '%o', fileperms( $cache_dir . '/test1' ) ), -4 ) );
+		}
 
 		// Try to create the same directory again. it should return true.
 		$result = $method->invokeArgs( $cache, [ $cache_dir . '/test1' ] );
