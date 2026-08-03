@@ -1480,8 +1480,20 @@ class UtilsTest extends TestCase {
 			if ( file_exists( $temp_dir . '/trusted-configs.json' ) ) {
 				unlink( $temp_dir . '/trusted-configs.json' );
 			}
+			if ( file_exists( $temp_dir . '/trusted-configs.json.lock' ) ) {
+				unlink( $temp_dir . '/trusted-configs.json.lock' );
+			}
 			if ( file_exists( $temp_global_config ) ) {
 				unlink( $temp_global_config );
+			}
+			// Unlink any remaining files in temp_dir before rmdir
+			$files = glob( $temp_dir . '/*' );
+			if ( is_array( $files ) ) {
+				foreach ( $files as $file ) {
+					if ( is_file( $file ) ) {
+						unlink( $file );
+					}
+				}
 			}
 			rmdir( $temp_dir );
 		}
