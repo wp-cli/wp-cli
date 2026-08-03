@@ -1338,6 +1338,10 @@ function get_temp_dir() {
  * @return string Path to the created temporary file.
  */
 function make_temp_file( $prefix = 'wp-cli-', $suffix = '' ) {
+	if ( false !== strpbrk( $prefix, "/\\\0" ) || false !== strpbrk( $suffix, "/\\\0" ) ) {
+		WP_CLI::error( 'Invalid temporary file prefix or suffix.' );
+	}
+
 	$temp_dir = get_temp_dir();
 	$attempts = 0;
 
@@ -1366,6 +1370,10 @@ function make_temp_file( $prefix = 'wp-cli-', $suffix = '' ) {
  * @return string Path to the created temporary directory with a trailing slash.
  */
 function make_temp_dir( $prefix = 'wp-cli-' ) {
+	if ( false !== strpbrk( $prefix, "/\\\0" ) ) {
+		WP_CLI::error( 'Invalid temporary directory prefix.' );
+	}
+
 	$temp_dir = get_temp_dir();
 	$attempts = 0;
 
