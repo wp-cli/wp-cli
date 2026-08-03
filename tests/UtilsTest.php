@@ -1333,7 +1333,7 @@ class UtilsTest extends TestCase {
 		$this->assertTrue( Utils\check_project_config_trust( '', [ 'echo 1;' ] ) );
 	}
 
-	public function testCheckProjectConfigTrustWithYesFlag(): void {
+	public function testCheckProjectConfigTrustWithYesFlagDoesNotBypass(): void {
 		$runner         = WP_CLI::get_runner();
 		$ref_assoc_args = new ReflectionProperty( $runner, 'assoc_args' );
 		if ( PHP_VERSION_ID < 80100 ) {
@@ -1343,10 +1343,31 @@ class UtilsTest extends TestCase {
 		$old_assoc_args = $ref_assoc_args->getValue( $runner );
 		$ref_assoc_args->setValue( $runner, [ 'yes' => true ] );
 
+		$class_wp_cli_capture_exit = new ReflectionProperty( 'WP_CLI', 'capture_exit' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$class_wp_cli_capture_exit->setAccessible( true );
+		}
+		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
+		$class_wp_cli_capture_exit->setValue( null, true );
+		$prev_logger = WP_CLI::get_logger();
+		$logger      = new Loggers\Execution();
+		WP_CLI::set_logger( $logger );
+
+		$old_env = getenv( 'WP_CLI_TRUST_PROJECT_CONFIG' );
+		putenv( 'WP_CLI_TRUST_PROJECT_CONFIG' );
+
 		try {
-			$this->assertTrue( Utils\check_project_config_trust( '/path/wp-cli.yml', [ 'echo 1;' ] ) );
+			// Passing --yes MUST NOT bypass trust in non-interactive mode.
+			$this->expectException( ExitException::class );
+			Utils\check_project_config_trust( '/path/wp-cli.yml', [ 'exec: echo 1;' ] );
 		} finally {
+			$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
+			WP_CLI::set_logger( $prev_logger );
 			$ref_assoc_args->setValue( $runner, $old_assoc_args );
+			if ( false !== $old_env ) {
+				putenv( "WP_CLI_TRUST_PROJECT_CONFIG={$old_env}" );
+			}
 		}
 	}
 
@@ -1386,44 +1407,81 @@ class UtilsTest extends TestCase {
 		}
 	}
 
-	public function testCheckProjectConfigTrustSaveGlobalConfig(): void {
-		$temp_dir = Utils\get_temp_dir() . 'test-trust-config-' . uniqid();
-		mkdir( $temp_dir );
-		$temp_yaml = $temp_dir . '/config.yml';
+	public function testCheckProjectConfigTrustSaveJsonStoreAndContentHash(): void {
+		$temp_dir = Utils\get_temp_dir() . 'test-trust-json-' . uniqid();
+		mkdir( $temp_dir, 0700, true );
+		$temp_yaml = $temp_dir . '/wp-cli.yml';
+		file_put_contents( $temp_yaml, "exec:\n  - echo 1;\n" );
+
+		$temp_global_config = $temp_dir . '/config.yml';
+		file_put_contents( $temp_global_config, '' );
+
 		$old_env   = getenv( 'WP_CLI_CONFIG_PATH' );
+		$old_trust = getenv( 'WP_CLI_TRUST_PROJECT_CONFIG' );
+		putenv( 'WP_CLI_TRUST_PROJECT_CONFIG' );
 
-		// Pre-populate global config with a nested trust-project-config key to verify root-level matching
-		// and comments within the list to verify comment scanning behavior.
-		$initial_content = "custom_setting: true\ntrust-project-config:\n  - /existing/path/one\n  # Comment inside array\n  - /existing/path/two\nnested_section:\n  trust-project-config: false\n";
-		file_put_contents( $temp_yaml, $initial_content );
-
-		$special_path = '/my/project # comment/path with: colon/wp-cli.yml';
+		$class_wp_cli_capture_exit = new ReflectionProperty( 'WP_CLI', 'capture_exit' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$class_wp_cli_capture_exit->setAccessible( true );
+		}
+		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
+		$class_wp_cli_capture_exit->setValue( null, true );
+		$prev_logger = WP_CLI::get_logger();
+		$logger      = new Loggers\Execution();
+		WP_CLI::set_logger( $logger );
 
 		try {
-			putenv( "WP_CLI_CONFIG_PATH={$temp_yaml}" );
+			putenv( "WP_CLI_CONFIG_PATH={$temp_global_config}" );
 
-			Utils\save_path_to_global_trust_config( $special_path );
+			// Save trust for temp_yaml
+			Utils\save_path_to_global_trust_config( $temp_yaml );
 
-			$this->assertFileExists( $temp_yaml );
-			$raw_content = (string) file_get_contents( $temp_yaml );
-			$this->assertStringContainsString( 'custom_setting: true', $raw_content );
-			$this->assertStringContainsString( "nested_section:\n  trust-project-config: false", $raw_content );
+			$json_file = $temp_dir . '/trusted-configs.json';
+			$this->assertFileExists( $json_file );
 
-			$data = \Mustangostang\Spyc::YAMLLoad( $temp_yaml );
-			$this->assertArrayHasKey( 'trust-project-config', $data );
-			$this->assertContains( '/existing/path/one', $data['trust-project-config'] );
-			$this->assertContains( '/existing/path/two', $data['trust-project-config'] );
-			$this->assertContains( $special_path, $data['trust-project-config'] );
-			$this->assertEquals( false, $data['nested_section']['trust-project-config'] );
+			$json_data = json_decode( (string) file_get_contents( $json_file ), true );
+			$canonical = realpath( $temp_yaml );
+			$this->assertIsArray( $json_data );
+			$this->assertArrayHasKey( $canonical, $json_data );
+			$expected_hash = hash_file( 'sha256', $canonical );
+			$this->assertEquals( $expected_hash, $json_data[ $canonical ] );
+
+			// Should be trusted since hash matches
+			$this->assertTrue( Utils\check_project_config_trust( $temp_yaml, [ 'exec: echo 1;' ] ) );
+
+			// Modify file content to trigger hash mismatch
+			file_put_contents( $temp_yaml, "exec:\n  - echo 'MALICIOUS';\n" );
+
+			// Modified file should trigger hash mismatch and exit non-interactively
+			try {
+				Utils\check_project_config_trust( $temp_yaml, [ 'exec: echo MALICIOUS;' ] );
+				$this->fail( 'Expected ExitException on modified trusted file' );
+			} catch ( ExitException $e ) {
+				$this->assertStringContainsString( 'has been modified since it was trusted', $logger->stderr );
+			}
 		} finally {
+			$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
+			WP_CLI::set_logger( $prev_logger );
 			if ( false !== $old_env ) {
 				putenv( "WP_CLI_CONFIG_PATH={$old_env}" );
 			} else {
 				putenv( 'WP_CLI_CONFIG_PATH' );
 			}
+			if ( false !== $old_trust ) {
+				putenv( "WP_CLI_TRUST_PROJECT_CONFIG={$old_trust}" );
+			} else {
+				putenv( 'WP_CLI_TRUST_PROJECT_CONFIG' );
+			}
 
 			if ( file_exists( $temp_yaml ) ) {
 				unlink( $temp_yaml );
+			}
+			if ( file_exists( $temp_dir . '/trusted-configs.json' ) ) {
+				unlink( $temp_dir . '/trusted-configs.json' );
+			}
+			if ( file_exists( $temp_global_config ) ) {
+				unlink( $temp_global_config );
 			}
 			rmdir( $temp_dir );
 		}
