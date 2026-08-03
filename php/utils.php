@@ -374,7 +374,7 @@ function assoc_args_to_str( $assoc_args, $sensitive_args = [] ) {
 	$str = '';
 
 	foreach ( $assoc_args as $key => $value ) {
-		if ( ! preg_match( '/^[a-zA-Z0-9_:\.-]+$/', (string) $key ) ) {
+		if ( ! preg_match( '/\A[a-zA-Z0-9_:\.-]+\z/', (string) $key ) ) {
 			throw new InvalidArgumentException(
 				sprintf(
 					"Invalid associative argument key '%s'.",
