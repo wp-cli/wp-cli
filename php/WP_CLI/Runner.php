@@ -1731,8 +1731,8 @@ class Runner {
 			}
 
 			foreach ( $new_aliases as $alias_name => $alias_def ) {
-				if ( is_array( $alias_def ) && ( isset( $alias_def['ssh'] ) || isset( $alias_def['ssh-args'] ) ) ) {
-					$gated_directives[] = 'alias @' . $alias_name . ': ssh-args=' . ( is_scalar( $alias_def['ssh-args'] ?? '' ) ? $alias_def['ssh-args'] ?? '' : json_encode( $alias_def['ssh-args'] ?? '' ) );
+				if ( is_array( $alias_def ) && ! empty( $alias_def['ssh-args'] ) ) {
+					$gated_directives[] = 'alias @' . $alias_name . ': ssh-args=' . ( is_scalar( $alias_def['ssh-args'] ) ? $alias_def['ssh-args'] : json_encode( $alias_def['ssh-args'] ) );
 				}
 			}
 
