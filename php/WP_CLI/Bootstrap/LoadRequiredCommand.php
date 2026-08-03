@@ -32,16 +32,6 @@ final class LoadRequiredCommand implements BootstrapStep {
 			return $state;
 		}
 
-		$required_files   = $runner()->get_required_files();
-		$project_requires = array_diff( $required_files['project'], $required_files['global'] );
-
-		if ( ! empty( $project_requires ) ) {
-			$project_config_path = $runner()->get_project_config_path();
-			if ( $project_config_path ) {
-				Utils\check_project_config_trust( $project_config_path, $project_requires, 'require' );
-			}
-		}
-
 		foreach ( $runner()->config['require'] as $path ) {
 			if ( ! file_exists( $path ) ) {
 				$context        = '';

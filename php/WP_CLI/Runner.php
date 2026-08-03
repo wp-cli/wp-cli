@@ -1679,13 +1679,67 @@ class Runner {
 			$config                         = $configurator->to_array();
 			$this->required_files['global'] = isset( $config[0]['require'] ) ? (array) $config[0]['require'] : [];
 			$this->exec_commands['global']  = isset( $config[0]['exec'] ) ? (array) $config[0]['exec'] : [];
-			$this->global_trust_config      = isset( $config[0]['trust-project-config'] ) ? $config[0]['trust-project-config'] : [];
+
+			// CRITICAL / LOAD-BEARING ORDERING:
+			// Snapshot global_trust_config from system and global configurations ONLY
+			// BEFORE merging the project configuration. This prevents a project configuration
+			// file from granting itself trust via 'trust-project-config: true'.
+			$this->global_trust_config = isset( $config[0]['trust-project-config'] ) ? $config[0]['trust-project-config'] : [];
+			$global_env                = isset( $config[1]['env'] ) && is_array( $config[1]['env'] ) ? $config[1]['env'] : [];
+			$global_ssh_args           = isset( $config[0]['ssh-args'] ) ? (array) $config[0]['ssh-args'] : [];
+			$global_aliases            = $configurator->get_aliases();
+
 			$configurator->merge_yml( (string) $this->project_config_path, $this->alias );
 			$config                          = $configurator->to_array();
 			$this->required_files['project'] = isset( $config[0]['require'] ) ? (array) $config[0]['require'] : [];
 			$this->exec_commands['project']  = isset( $config[0]['exec'] ) ? (array) $config[0]['exec'] : [];
 			$this->required_files['runtime'] = [];
 			$this->exec_commands['runtime']  = [];
+
+			// Evaluate project configuration trust right after project config merge
+		if ( $this->project_config_path ) {
+			$project_requires = array_diff( $this->required_files['project'], $this->required_files['global'] );
+			$project_exec     = array_diff( $this->exec_commands['project'], $this->exec_commands['global'] );
+			$project_env_all  = isset( $config[1]['env'] ) && is_array( $config[1]['env'] ) ? $config[1]['env'] : [];
+			$project_env_keys = array_diff( array_keys( $project_env_all ), array_keys( $global_env ) );
+
+			$project_ssh_args = isset( $config[0]['ssh-args'] ) ? (array) $config[0]['ssh-args'] : [];
+			$new_ssh_args     = array_diff( $project_ssh_args, $global_ssh_args );
+
+			$project_aliases = $configurator->get_aliases();
+			$new_aliases     = array_diff_key( $project_aliases, $global_aliases );
+
+			$gated_directives = [];
+			foreach ( $project_requires as $req ) {
+				$gated_directives[] = 'require: ' . $req;
+			}
+			foreach ( $project_exec as $ex ) {
+				$gated_directives[] = 'exec: ' . $ex;
+			}
+
+			// Allowlist of safe env keys that do not affect code execution
+			$safe_env_keys = [ 'WP_ENV', 'WP_DEBUG', 'WP_DEBUG_LOG', 'WP_DEBUG_DISPLAY' ];
+			foreach ( $project_env_keys as $env_key ) {
+				if ( ! in_array( strtoupper( $env_key ), $safe_env_keys, true ) ) {
+					$env_val            = $project_env_all[ $env_key ];
+					$gated_directives[] = 'env: ' . $env_key . '=' . ( is_scalar( $env_val ) ? $env_val : json_encode( $env_val ) );
+				}
+			}
+
+			foreach ( $new_ssh_args as $ssh_arg ) {
+				$gated_directives[] = 'ssh-args: ' . $ssh_arg;
+			}
+
+			foreach ( $new_aliases as $alias_name => $alias_def ) {
+				if ( is_array( $alias_def ) && ( isset( $alias_def['ssh'] ) || isset( $alias_def['ssh-args'] ) ) ) {
+					$gated_directives[] = 'alias @' . $alias_name . ': ssh-args=' . ( is_scalar( $alias_def['ssh-args'] ?? '' ) ? $alias_def['ssh-args'] ?? '' : json_encode( $alias_def['ssh-args'] ?? '' ) );
+				}
+			}
+
+			if ( ! empty( $gated_directives ) ) {
+				Utils\check_project_config_trust( $this->project_config_path, $gated_directives );
+			}
+		}
 		}
 
 		// Runtime config and args
