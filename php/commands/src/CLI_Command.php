@@ -503,10 +503,11 @@ class CLI_Command extends WP_CLI_Command {
 
 		$this->validate_hashes( $temp, $sha512_url, $md5_url );
 
-		$allow_root = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
-		$php_binary = escapeshellarg( Utils\get_php_binary() );
-		$process    = Process::create( "{$php_binary} $temp --info {$allow_root}" );
-		$result     = $process->run();
+		$allow_root   = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
+		$php_binary   = escapeshellarg( Utils\get_php_binary() );
+		$escaped_temp = escapeshellarg( $temp );
+		$process      = Process::create( "{$php_binary} {$escaped_temp} --info {$allow_root}" );
+		$result       = $process->run();
 		if ( 0 !== $result->return_code || false === stripos( $result->stdout, 'WP-CLI version' ) ) {
 			$multi_line = explode( PHP_EOL, $result->stderr );
 			WP_CLI::error_multi_line( $multi_line );
