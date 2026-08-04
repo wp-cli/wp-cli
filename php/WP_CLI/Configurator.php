@@ -430,9 +430,10 @@ class Configurator {
 	/**
 	 * Load a YAML file of parameters into scope.
 	 *
-	 * @param string      $path Path to YAML file.
-	 * @param string|null $current_alias Optional. Current alias name.
-	 * @param array       $visited Optional. List of visited realpaths.
+	 * @param string           $path Path to YAML file.
+	 * @param string|null      $current_alias Optional. Current alias name.
+	 * @param array<int, string> $visited Optional. List of visited realpaths.
+	 * @return void
 	 */
 	public function merge_yml( $path, $current_alias = null, array $visited = [] ) {
 		$realpath = $path ? ( ( new SplFileInfo( $path ) )->getRealPath() ?: $path ) : false;

@@ -54,8 +54,9 @@ class WpHttpCacheManager {
 			return $response;
 		}
 		// check if downloading
+		$method      = isset( $args['method'] ) && is_string( $args['method'] ) ? $args['method'] : '';
 		$target_file = isset( $args['filename'] ) && is_string( $args['filename'] ) ? $args['filename'] : '';
-		if ( 'GET' !== $args['method'] || '' === $target_file ) {
+		if ( 'GET' !== $method || '' === $target_file ) {
 			return $response;
 		}
 		// check cache and export to designated location
@@ -93,7 +94,8 @@ class WpHttpCacheManager {
 			return $response;
 		}
 		// check if downloading
-		if ( 'GET' !== $args['method'] || empty( $args['filename'] ) ) {
+		$method = isset( $args['method'] ) && is_string( $args['method'] ) ? $args['method'] : '';
+		if ( 'GET' !== $method || empty( $args['filename'] ) ) {
 			return $response;
 		}
 		// check if download was successful

@@ -552,8 +552,9 @@ class CLI_Command extends WP_CLI_Command {
 	 * Checks if the manifest at the given URL specifies a PHP version requirement
 	 * higher than the currently running PHP version, and exits with an error if so.
 	 *
-	 * @param string $manifest_url URL of the manifest JSON file.
-	 * @param array  $assoc_args   Associative arguments passed to the update command.
+	 * @param string               $manifest_url URL of the manifest JSON file.
+	 * @param array<string, mixed> $assoc_args   Associative arguments passed to the update command.
+	 * @return void
 	 *
 	 * @throws \WP_CLI\ExitException
 	 */
@@ -584,7 +585,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @param string               $url     Manifest URL.
 	 * @param array<string,string> $headers Request headers.
-	 * @param array                $options Request options.
+	 * @param array<string, mixed> $options Request options.
 	 * @return object{requires_php?: string}|null Manifest data object, or null on failure.
 	 */
 	private function get_manifest_data( $url, array $headers = [], array $options = [] ) {
