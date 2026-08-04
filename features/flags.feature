@@ -440,13 +440,15 @@ Feature: Global flags
       """
 
   Scenario: SSH connection string with leading hyphen in host should error
-    When I try `wp --ssh="-oProxyCommand=touch /tmp/pwn" cli info`
+    # The payload must not contain a slash, as that would be parsed as the path
+    # and thus separated from the host.
+    When I try `wp --ssh="-oProxyCommand=touch pwn.txt" cli info`
     Then STDERR should contain:
       """
       Error: Invalid SSH host: value cannot start with a hyphen.
       """
     And the return code should be 1
-    And the /tmp/pwn file should not exist
+    And the pwn.txt file should not exist
 
   Scenario: SSH connection string with leading hyphen in user should error
     When I try `wp --ssh="-user@example.com" cli info`

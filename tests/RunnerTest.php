@@ -68,10 +68,10 @@ final class RunnerTest extends TestCase {
 	}
 
 	/**
-	 * @dataProvider dataGenerateSshCommandHyphenValidation
+	 * @dataProvider dataGenerateSshCommandValidation
 	 */
-	#[DataProvider( 'dataGenerateSshCommandHyphenValidation' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testGenerateSshCommandHyphenValidation( array $bits, string $invalid_bit ): void {
+	#[DataProvider( 'dataGenerateSshCommandValidation' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testGenerateSshCommandValidation( array $bits, string $expected_error ): void {
 		$class_wp_cli_capture_exit = new ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		if ( PHP_VERSION_ID < 80100 ) {
 			// @phpstan-ignore method.deprecated
@@ -96,43 +96,54 @@ final class RunnerTest extends TestCase {
 			$method->invoke( $runner, $bits, 'wp status' );
 			$this->fail( 'Should have thrown ExitException' );
 		} catch ( \WP_CLI\ExitException $e ) {
-			$this->assertStringContainsString( sprintf( 'Invalid SSH %s: value cannot start with a hyphen.', $invalid_bit ), $logger->stderr );
+			$this->assertStringContainsString( $expected_error, $logger->stderr );
 		} finally {
 			$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
 			\WP_CLI::set_logger( $prev_logger );
 		}
 	}
 
-	public static function dataGenerateSshCommandHyphenValidation(): array {
+	public static function dataGenerateSshCommandValidation(): array {
 		return [
-			[ [ 'host' => '-oProxyCommand=id' ], 'host' ],
+			[ [ 'host' => '-oProxyCommand=id' ], 'Invalid SSH host: value cannot start with a hyphen.' ],
 			[
 				[
 					'user' => '-oProxyCommand=id',
 					'host' => 'example.com',
 				],
-				'user',
+				'Invalid SSH user: value cannot start with a hyphen.',
 			],
 			[
 				[
 					'host' => 'example.com',
 					'key'  => '-oProxyCommand=id',
 				],
-				'key',
+				'Invalid SSH key: value cannot start with a hyphen.',
 			],
 			[
 				[
 					'host'      => 'example.com',
 					'proxyjump' => '-oProxyCommand=id',
 				],
-				'proxyjump',
+				'Invalid SSH proxyjump: value cannot start with a hyphen.',
 			],
 			[
 				[
 					'host'       => 'example.com',
 					'ssh_config' => '-oProxyCommand=id',
 				],
-				'ssh_config',
+				'Invalid SSH ssh_config: value cannot start with a hyphen.',
+			],
+			[
+				[ 'host' => [ 'example.com' ] ],
+				'Invalid SSH host: value must be a string.',
+			],
+			[
+				[
+					'host' => 'example.com',
+					'key'  => [ 'identityfile.key' ],
+				],
+				'Invalid SSH key: value must be a string.',
 			],
 		];
 	}
@@ -152,10 +163,10 @@ final class RunnerTest extends TestCase {
 	}
 
 	/**
-	 * @dataProvider dataGenerateSshCommandAliasHyphenValidation
+	 * @dataProvider dataGenerateSshCommandAliasValidation
 	 */
-	#[DataProvider( 'dataGenerateSshCommandAliasHyphenValidation' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testGenerateSshCommandAliasHyphenValidation( array $alias_config, string $invalid_bit ): void {
+	#[DataProvider( 'dataGenerateSshCommandAliasValidation' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testGenerateSshCommandAliasValidation( array $alias_config, string $expected_error ): void {
 		$class_wp_cli_capture_exit = new ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		if ( PHP_VERSION_ID < 80100 ) {
 			// @phpstan-ignore method.deprecated
@@ -195,18 +206,22 @@ final class RunnerTest extends TestCase {
 			$method->invoke( $runner, [ 'host' => 'example.com' ], 'wp status' );
 			$this->fail( 'Should have thrown ExitException' );
 		} catch ( \WP_CLI\ExitException $e ) {
-			$this->assertStringContainsString( sprintf( 'Invalid SSH %s: value cannot start with a hyphen.', $invalid_bit ), $logger->stderr );
+			$this->assertStringContainsString( $expected_error, $logger->stderr );
 		} finally {
 			$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
 			\WP_CLI::set_logger( $prev_logger );
 		}
 	}
 
-	public static function dataGenerateSshCommandAliasHyphenValidation(): array {
+	public static function dataGenerateSshCommandAliasValidation(): array {
 		return [
-			[ [ 'key' => '-oProxyCommand=id' ], 'key' ],
-			[ [ 'proxyjump' => '-oProxyCommand=id' ], 'proxyjump' ],
-			[ [ 'ssh_config' => '-oProxyCommand=id' ], 'ssh_config' ],
+			[ [ 'key' => '-oProxyCommand=id' ], 'Invalid SSH key: value cannot start with a hyphen.' ],
+			[ [ 'proxyjump' => '-oProxyCommand=id' ], 'Invalid SSH proxyjump: value cannot start with a hyphen.' ],
+			[ [ 'ssh_config' => '-oProxyCommand=id' ], 'Invalid SSH ssh_config: value cannot start with a hyphen.' ],
+			// Alias values are not guaranteed to be strings, e.g. when a YAML list is used.
+			[ [ 'key' => [ 'identityfile.key' ] ], 'Invalid SSH key: value must be a string.' ],
+			[ [ 'proxyjump' => [ 'proxyhost' ] ], 'Invalid SSH proxyjump: value must be a string.' ],
+			[ [ 'ssh_config' => [ '/path/to/ssh/config' ] ], 'Invalid SSH ssh_config: value must be a string.' ],
 		];
 	}
 }
