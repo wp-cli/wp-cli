@@ -442,6 +442,8 @@ Feature: Global flags
   Scenario: SSH connection string with leading hyphen in host should error
     # The payload must not contain a slash, as that would be parsed as the path
     # and thus separated from the host.
+    Given an empty directory
+
     When I try `wp --ssh="-oProxyCommand=touch pwn.txt" cli info`
     Then STDERR should contain:
       """
