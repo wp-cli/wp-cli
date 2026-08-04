@@ -1055,8 +1055,23 @@ class Runner {
 			if ( ! isset( $bits[ $bit ] ) ) {
 				$bits[ $bit ] = null;
 			}
+		}
 
-			WP_CLI::debug( 'SSH ' . $bit . ': ' . $bits[ $bit ], 'bootstrap' );
+		if ( ! empty( $this->alias ) ) {
+			$alias_config = isset( $this->aliases[ $this->alias ] ) ? $this->aliases[ $this->alias ] : false;
+
+			if ( is_array( $alias_config ) ) {
+				$bits['proxyjump']  = isset( $alias_config['proxyjump'] ) ? $alias_config['proxyjump'] : $bits['proxyjump'];
+				$bits['key']        = isset( $alias_config['key'] ) ? $alias_config['key'] : $bits['key'];
+				$bits['ssh_config'] = isset( $alias_config['ssh_config'] ) ? $alias_config['ssh_config'] : $bits['ssh_config'];
+			}
+		}
+
+		$this->validate_ssh_bits( $bits );
+
+		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
+			$value = $bits[ $bit ];
+			WP_CLI::debug( 'SSH ' . $bit . ': ' . ( is_string( $value ) ? $value : '' ), 'bootstrap' );
 		}
 
 		/**
@@ -1154,6 +1169,9 @@ class Runner {
 				$bits['user']   = isset( $values['User'] ) ? $values['User'] : '';
 				$bits['key']    = isset( $values['IdentityFile'] ) ? $values['IdentityFile'] : '';
 				$is_vagrant_ssh = true;
+
+				// The values from `vagrant ssh-config` have not been validated yet.
+				$this->validate_ssh_bits( $bits );
 			}
 
 			// If we could not resolve the bits still, fallback to just `vagrant ssh`
@@ -1176,24 +1194,11 @@ class Runner {
 				$bits['host'] = $bits['user'] . '@' . $bits['host'];
 			}
 
-			if ( ! empty( $this->alias ) ) {
-				$alias_config = isset( $this->aliases[ $this->alias ] ) ? $this->aliases[ $this->alias ] : false;
-
-				if ( is_array( $alias_config ) ) {
-					$bits['proxyjump']  = isset( $alias_config['proxyjump'] ) ? $alias_config['proxyjump'] : '';
-					$bits['key']        = isset( $alias_config['key'] ) ? $alias_config['key'] : '';
-					$bits['ssh_config'] = isset( $alias_config['ssh_config'] ) ? $alias_config['ssh_config'] : '';
-				}
-			}
-
 			$command_args = [
-				// @phpstan-ignore cast.string
-				$bits['ssh_config'] ? sprintf( '-F %s', escapeshellarg( (string) $bits['ssh_config'] ) ) : '',
-				// @phpstan-ignore cast.string
-				$bits['proxyjump'] ? sprintf( '-J %s', escapeshellarg( (string) $bits['proxyjump'] ) ) : '',
+				$bits['ssh_config'] ? sprintf( '-F %s', escapeshellarg( $bits['ssh_config'] ) ) : '',
+				$bits['proxyjump'] ? sprintf( '-J %s', escapeshellarg( $bits['proxyjump'] ) ) : '',
 				$bits['port'] ? sprintf( '-p %d', (int) $bits['port'] ) : '',
-				// @phpstan-ignore cast.string
-				$bits['key'] ? sprintf( '-i %s', escapeshellarg( (string) $bits['key'] ) ) : '',
+				$bits['key'] ? sprintf( '-i %s', escapeshellarg( $bits['key'] ) ) : '',
 				$is_vagrant_ssh ? '-o StrictHostKeyChecking=no' : '',
 				$is_vagrant_ssh ? '-o UserKnownHostsFile=/dev/null' : '',
 				$is_vagrant_ssh ? '-o BatchMode=yes' : '',
@@ -1213,6 +1218,33 @@ class Runner {
 		WP_CLI::debug( 'Running SSH command: ' . $escaped_command, 'bootstrap' );
 
 		return $escaped_command;
+	}
+
+	/**
+	 * Validate the values used to assemble an SSH command.
+	 *
+	 * Values that start with a hyphen would be picked up as options by the
+	 * `ssh` binary instead of being treated as the value they are meant to be.
+	 * Values that are not strings cannot be escaped and are rejected as well,
+	 * as they can only stem from a malformed alias configuration.
+	 *
+	 * @param array<string, mixed> $bits Parsed connection string.
+	 * @return void
+	 */
+	private function validate_ssh_bits( $bits ) {
+		foreach ( [ 'user', 'host', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
+			$value = isset( $bits[ $bit ] ) ? $bits[ $bit ] : null;
+
+			if ( null === $value || '' === $value ) {
+				continue;
+			}
+
+			if ( ! is_string( $value ) ) {
+				WP_CLI::error( sprintf( 'Invalid SSH %s: value must be a string.', $bit ) );
+			} elseif ( 0 === strpos( $value, '-' ) ) {
+				WP_CLI::error( sprintf( 'Invalid SSH %s: value cannot start with a hyphen.', $bit ) );
+			}
+		}
 	}
 
 	/**
