@@ -440,7 +440,7 @@ Feature: Global flags
       """
 
   Scenario: SSH connection string with leading hyphen in host should error
-    When I try `wp --ssh='-oProxyCommand=touch /tmp/pwn' cli info`
+    When I try `wp --ssh="-oProxyCommand=touch /tmp/pwn" cli info`
     Then STDERR should contain:
       """
       Error: Invalid SSH host: value cannot start with a hyphen.
@@ -449,7 +449,7 @@ Feature: Global flags
     And the /tmp/pwn file should not exist
 
   Scenario: SSH connection string with leading hyphen in user should error
-    When I try `wp --ssh='-user@example.com' cli info`
+    When I try `wp --ssh="-user@example.com" cli info`
     Then STDERR should contain:
       """
       Error: Invalid SSH user: value cannot start with a hyphen.
