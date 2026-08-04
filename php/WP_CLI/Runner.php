@@ -1037,7 +1037,7 @@ class Runner {
 	/**
 	 * Generate a shell command from the parsed connection string.
 	 *
-	 * @param array{scheme?: string, user?: string, host?: string, port?: string, path?: string} $bits Parsed connection string.
+	 * @param array<string, mixed> $bits Parsed connection string.
 	 * @param string $wp_command WP-CLI command to run.
 	 * @return string
 	 */
@@ -1050,33 +1050,23 @@ class Runner {
 			? implode( ' ', array_map( 'escapeshellarg', $ssh_args_config ) )
 			: '';
 
-		// Set default values.
-		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
-			if ( ! isset( $bits[ $bit ] ) ) {
-				$bits[ $bit ] = null;
-			}
-		}
-
 		if ( ! empty( $this->alias ) ) {
 			$alias_config = isset( $this->aliases[ $this->alias ] ) ? $this->aliases[ $this->alias ] : false;
 
 			if ( is_array( $alias_config ) ) {
-				$bits['proxyjump']  = isset( $alias_config['proxyjump'] ) ? $alias_config['proxyjump'] : $bits['proxyjump'];
-				$bits['key']        = isset( $alias_config['key'] ) ? $alias_config['key'] : $bits['key'];
-				$bits['ssh_config'] = isset( $alias_config['ssh_config'] ) ? $alias_config['ssh_config'] : $bits['ssh_config'];
+				foreach ( [ 'proxyjump', 'key', 'ssh_config' ] as $bit ) {
+					if ( isset( $alias_config[ $bit ] ) ) {
+						$bits[ $bit ] = $alias_config[ $bit ];
+					}
+				}
 			}
 		}
 
-		$this->validate_ssh_bits( $bits );
+		$bits = $this->validate_ssh_bits( $bits );
 
 		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
-			$value = $bits[ $bit ];
-			WP_CLI::debug( 'SSH ' . $bit . ': ' . ( is_string( $value ) ? $value : '' ), 'bootstrap' );
+			WP_CLI::debug( 'SSH ' . $bit . ': ' . ( $bits[ $bit ] ?? '' ), 'bootstrap' );
 		}
-
-		/**
-		 * @var array{scheme: string|null, user: string|null, host: string, port: string|null, path: string|null, key: string|null, proxyjump: string|null, ssh_config: string|null} $bits
-		 */
 
 		/*
 		 * posix_isatty(STDIN) is generally true unless something was passed on stdin
@@ -1171,7 +1161,7 @@ class Runner {
 				$is_vagrant_ssh = true;
 
 				// The values from `vagrant ssh-config` have not been validated yet.
-				$this->validate_ssh_bits( $bits );
+				$bits = $this->validate_ssh_bits( $bits );
 			}
 
 			// If we could not resolve the bits still, fallback to just `vagrant ssh`
@@ -1228,23 +1218,49 @@ class Runner {
 	 * Values that are not strings cannot be escaped and are rejected as well,
 	 * as they can only stem from a malformed alias configuration.
 	 *
+	 * Missing values default to `null`, except for the host, which defaults to
+	 * an empty string as it is always passed along to the command.
+	 *
 	 * @param array<string, mixed> $bits Parsed connection string.
-	 * @return void
+	 * @return array{scheme: string|null, user: string|null, host: string, port: string|null, path: string|null, key: string|null, proxyjump: string|null, ssh_config: string|null} Validated connection string.
 	 */
 	private function validate_ssh_bits( $bits ) {
-		foreach ( [ 'user', 'host', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
+		$validated = [
+			'scheme'     => null,
+			'user'       => null,
+			'host'       => '',
+			'port'       => null,
+			'path'       => null,
+			'key'        => null,
+			'proxyjump'  => null,
+			'ssh_config' => null,
+		];
+
+		// These values are passed to the `ssh` binary as separate arguments.
+		$argument_bits = [ 'user', 'host', 'key', 'proxyjump', 'ssh_config' ];
+
+		foreach ( array_keys( $validated ) as $bit ) {
 			$value = isset( $bits[ $bit ] ) ? $bits[ $bit ] : null;
 
 			if ( null === $value || '' === $value ) {
 				continue;
 			}
 
+			// The port is only ever used as a number, so allow integers as well.
+			if ( 'port' === $bit && is_int( $value ) ) {
+				$value = (string) $value;
+			}
+
 			if ( ! is_string( $value ) ) {
 				WP_CLI::error( sprintf( 'Invalid SSH %s: value must be a string.', $bit ) );
-			} elseif ( 0 === strpos( $value, '-' ) ) {
+			} elseif ( in_array( $bit, $argument_bits, true ) && 0 === strpos( $value, '-' ) ) {
 				WP_CLI::error( sprintf( 'Invalid SSH %s: value cannot start with a hyphen.', $bit ) );
+			} else {
+				$validated[ $bit ] = $value;
 			}
 		}
+
+		return $validated;
 	}
 
 	/**
