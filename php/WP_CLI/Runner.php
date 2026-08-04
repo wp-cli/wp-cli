@@ -1069,13 +1069,14 @@ class Runner {
 
 		$this->validate_ssh_bits( $bits );
 
+		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
+			$value = $bits[ $bit ];
+			WP_CLI::debug( 'SSH ' . $bit . ': ' . ( is_string( $value ) ? $value : '' ), 'bootstrap' );
+		}
+
 		/**
 		 * @var array{scheme: string|null, user: string|null, host: string, port: string|null, path: string|null, key: string|null, proxyjump: string|null, ssh_config: string|null} $bits
 		 */
-
-		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
-			WP_CLI::debug( 'SSH ' . $bit . ': ' . $bits[ $bit ], 'bootstrap' );
-		}
 
 		/*
 		 * posix_isatty(STDIN) is generally true unless something was passed on stdin
