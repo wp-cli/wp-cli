@@ -76,6 +76,26 @@
       "description": "Execute PHP code before running the command (may be used more than once).",
       "default": []
     },
+    "trust-project-config": {
+      "description": "Trust project-level wp-cli.yml files containing exec or require directives. Only honored in system and global configuration files.",
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "string",
+          "description": "Path to a trusted project directory or wp-cli.yml file"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Path to a trusted project directory or wp-cli.yml file"
+          }
+        }
+      ],
+      "default": []
+    },
     "context": {
       "type": "string",
       "description": "Load WordPress in a given context.",

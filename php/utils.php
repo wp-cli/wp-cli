@@ -2518,7 +2518,18 @@ function load_trusted_configs() {
 		return [];
 	}
 	$data = json_decode( $content, true );
-	return is_array( $data ) ? $data : [];
+	if ( ! is_array( $data ) ) {
+		return [];
+	}
+
+	$trusted_configs = [];
+	foreach ( $data as $config_path => $hash ) {
+		if ( is_string( $config_path ) && is_string( $hash ) ) {
+			$trusted_configs[ $config_path ] = $hash;
+		}
+	}
+
+	return $trusted_configs;
 }
 
 /**
