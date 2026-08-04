@@ -339,6 +339,32 @@ class ExtractorTest extends TestCase {
 		$this->assertEmpty( self::$logger->stderr );
 	}
 
+	public function test_ensure_dir_exists(): void {
+		$dir        = Utils\get_temp_dir() . uniqid( 'wp-cli-test-extractor-', true );
+		$test_class = new ReflectionClass( Extractor::class );
+		$method     = $test_class->getMethod( 'ensure_dir_exists' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$method->setAccessible( true );
+		}
+
+		$result = $method->invoke( null, $dir );
+		$this->assertTrue( $result );
+		$this->assertTrue( is_dir( $dir ) );
+		if ( ! Utils\is_windows() ) {
+			// Assert the write bits rather than a literal mode: the exact result depends on the
+			// umask, and what matters is that no other local user can write into the directory.
+			$perms = fileperms( $dir ) & 0777;
+			$this->assertSame(
+				0,
+				$perms & 0022,
+				sprintf( 'Extraction directory must not be group- or world-writable, got %o.', $perms )
+			);
+		}
+
+		rmdir( $dir );
+	}
+
 	private static function create_test_directory_structure() {
 		$temp_dir = Utils\get_temp_dir() . uniqid( self::$copy_overwrite_files_prefix, true );
 		mkdir( $temp_dir );
