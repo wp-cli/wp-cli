@@ -234,7 +234,6 @@ class Subcommand extends CompositeCommand {
 		/**
 		 * @var string|true $prompt_args
 		 */
-		// @phpstan-ignore varTag.type
 		$prompt_args = WP_CLI::get_config( 'prompt' );
 		if ( true !== $prompt_args ) {
 			$prompt_args = explode( ',', $prompt_args );

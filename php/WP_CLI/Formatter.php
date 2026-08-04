@@ -347,6 +347,7 @@ class Formatter {
 		 *
 		 * @param string[] $formats Array of format names.
 		 */
+		// @phpstan-ignore-next-line - We trust the hook to return the correct type
 		return WP_CLI::do_hook( 'formatter_available_formats', $all_formats );
 	}
 

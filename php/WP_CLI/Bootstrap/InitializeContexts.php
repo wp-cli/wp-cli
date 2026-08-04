@@ -33,7 +33,6 @@ final class InitializeContexts implements BootstrapStep {
 		/**
 		 * @var array<string, Context> $contexts
 		 */
-		// @phpstan-ignore varTag.type
 		$contexts = WP_CLI::do_hook( 'before_registering_contexts', $contexts );
 
 		foreach ( $contexts as $name => $implementation ) {
