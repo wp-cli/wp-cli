@@ -25,7 +25,7 @@ use WP_CLI\WpHttpCacheManager;
 /**
  * Various utilities for WP-CLI commands.
  *
- * @phpstan-type GlobalConfig array{path: string|null, ssh: string|null, 'ssh-args': string[], http: string|null, url: string|null, user: string|null, 'skip-plugins': true|string[], 'skip-themes': true|string[], 'skip-packages': bool, require: string[], exec: string[], context: string, debug: string|true, prompt: false|string, quiet: bool, apache_modules: string[], 'assume-https': bool}
+ * @phpstan-type GlobalConfig array{path: string|null, ssh: string|null, 'ssh-args': string[], http: string|null, url: string|null, user: string|null, 'skip-plugins': true|string[], 'skip-themes': true|string[], 'skip-packages': bool, require: string[], exec: string[], context: string, debug: string|true, prompt: true|string, quiet: bool, apache_modules: string[], 'assume-https': bool, color: string|bool, disabled_commands: string[], locale: string, 'allow-root': bool, alias: string}
  *
  * @phpstan-type FlagParameter array{type: 'flag', name: string, description?: string, optional?: bool, repeating?: bool, aliases?: string[]}
  * @phpstan-type AssocParameter array{type: 'assoc', name: string, description?: string, options?: string[], default?: string, optional?: bool, value: array{optional: bool, name?: string}, repeating?: bool, aliases?: string[]}
@@ -1596,7 +1596,15 @@ class WP_CLI {
 			 * @phpstan-var array<int, resource> $pipes
 			 */
 			$pipes = [];
-			$proc  = Utils\proc_open_compat( $runcommand, $descriptors, $pipes, getcwd() ?: null );
+
+			// The child process inherits the current working directory, so it is not
+			// passed along explicitly: as of PHP 8.3 that makes the spawn fail
+			// outright whenever the child cannot enter that directory.
+			$proc = Utils\proc_open_compat( $runcommand, $descriptors, $pipes );
+
+			if ( ! $proc ) {
+				self::error( "Failed to launch a new process for the command: {$command}" );
+			}
 
 			$stdout = '';
 			$stderr = '';
@@ -1607,7 +1615,7 @@ class WP_CLI {
 				$stderr = (string) stream_get_contents( $pipes[2] );
 				fclose( $pipes[2] );
 			}
-			$return_code = $proc ? proc_close( $proc ) : -1;
+			$return_code = proc_close( $proc );
 			if ( -1 === $return_code ) {
 				self::warning( 'Spawned process returned exit code -1, which could be caused by a custom compiled version of PHP that uses the --enable-sigchild option.' );
 			} elseif ( $return_code && $exit_error ) {

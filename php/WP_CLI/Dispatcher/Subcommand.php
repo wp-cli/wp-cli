@@ -231,9 +231,6 @@ class Subcommand extends CompositeCommand {
 
 		$spec = array_values( $spec );
 
-		/**
-		 * @var string|true $prompt_args
-		 */
 		$prompt_args = WP_CLI::get_config( 'prompt' );
 		if ( true !== $prompt_args ) {
 			$prompt_args = explode( ',', $prompt_args );
