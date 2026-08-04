@@ -352,6 +352,25 @@ class ExtractorTest extends TestCase {
 		$this->assertEmpty( self::$logger->stderr );
 	}
 
+	public function test_ensure_dir_exists(): void {
+		$dir        = Utils\get_temp_dir() . uniqid( 'wp-cli-test-extractor-', true );
+		$test_class = new ReflectionClass( Extractor::class );
+		$method     = $test_class->getMethod( 'ensure_dir_exists' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$method->setAccessible( true );
+		}
+
+		$result = $method->invoke( null, $dir );
+		$this->assertTrue( $result );
+		$this->assertTrue( is_dir( $dir ) );
+		if ( ! Utils\is_windows() ) {
+			$this->assertSame( '0700', substr( sprintf( '%o', fileperms( $dir ) ), -4 ) );
+		}
+
+		rmdir( $dir );
+	}
+
 	/**
 	 * @return array{0: string, 1: string, 2: string}
 	 */

@@ -430,18 +430,26 @@ class Configurator {
 	/**
 	 * Load a YAML file of parameters into scope.
 	 *
-	 * @param string      $path          Path to YAML file.
-	 * @param string|null $current_alias Current alias name.
-	 * @return void
+	 * @param string      $path Path to YAML file.
+	 * @param string|null $current_alias Optional. Current alias name.
+	 * @param array       $visited Optional. List of visited realpaths.
 	 */
-	public function merge_yml( $path, $current_alias = null ) {
+	public function merge_yml( $path, $current_alias = null, array $visited = [] ) {
+		$realpath = $path ? ( ( new SplFileInfo( $path ) )->getRealPath() ?: $path ) : false;
+		if ( $realpath ) {
+			if ( in_array( $realpath, $visited, true ) ) {
+				return;
+			}
+			$visited[] = $realpath;
+		}
+
 		$yaml = self::load_yml( $path );
 		if ( isset( $yaml['_'] ) && is_array( $yaml['_'] ) && ! empty( $yaml['_']['inherit'] ) && is_string( $yaml['_']['inherit'] ) ) {
 			$inherit_path = Path::is_absolute( $yaml['_']['inherit'] )
 				? $yaml['_']['inherit']
 				: ( new SplFileInfo( Path::normalize( dirname( $path ) . '/' . $yaml['_']['inherit'] ) ) )->getRealPath();
 
-			$this->merge_yml( $inherit_path, $current_alias );
+			$this->merge_yml( $inherit_path, $current_alias, $visited );
 		}
 		// Prepare the base path for absolutized alias paths.
 		$yml_file_dir = $path ? dirname( $path ) : '';
