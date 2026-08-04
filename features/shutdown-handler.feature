@@ -262,7 +262,6 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       Would you like to run the command again
       """
 
-
   Scenario: No prompting when not running interactively
     Given a wp-content/plugins/non-interactive-plugin/non-interactive-plugin.php file:
       """
@@ -301,7 +300,9 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       Rerunning command with
       """
-    And the return code should be 1
+    # The exact code differs per PHP version: PHP < 8.0 keeps the fatal error's
+    # 255 while PHP >= 8.0 lets the shutdown handler's exit(1) take over.
+    And the return code should not be 0
 
   Scenario: Automatic rerun with WP_CLI_ERROR_RERUN=yes automatically reruns without prompting
     Given a wp-content/plugins/broken-plugin-yes/broken-plugin-yes.php file:

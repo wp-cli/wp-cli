@@ -253,7 +253,9 @@ class ShutdownHandler {
 	 * @return bool
 	 */
 	private static function is_interactive() {
-		// Honors the SHELL_PIPE environment variable as an explicit override.
+		// A truthy SHELL_PIPE environment variable forces non-interactive mode.
+		// A falsy one only opts out of the pipe detection, it cannot declare a
+		// session interactive: the terminal checks below still have to pass.
 		if ( Utils\isPiped() ) {
 			return false;
 		}
