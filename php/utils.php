@@ -2486,14 +2486,6 @@ function format_bytes_string( $bytes, $decimals = 0, $unit = '' ) {
 }
 
 /**
- * Check whether a project configuration file containing exec or require directives is trusted.
- *
- * @param string               $project_config_path Path to project config file.
- * @param array<int, string>   $directives          Directives to be executed (code snippets or required paths).
- * @param string               $directive_type      'exec' or 'require'.
- * @return bool True if trusted and execution should proceed; exits if untrusted.
- */
-/**
  * Get the path to the trusted configs JSON file.
  *
  * @return string
@@ -2589,6 +2581,9 @@ function check_project_config_trust( $project_config_path, array $directives, $d
 	$canonical_dir  = is_dir( $canonical_path ) ? $canonical_path : dirname( $canonical_path );
 	$current_hash   = is_file( $canonical_path ) ? ( hash_file( 'sha256', $canonical_path ) ?: '' ) : '';
 
+	// The path is attacker-controlled, so never render it to the terminal unescaped.
+	$safe_config_path = addcslashes( $canonical_path, "\0..\37\177..\377" );
+
 	// 1. Check runtime CLI flags (--trust-project-config passed explicitly on CLI)
 	if ( isset( $runner->runtime_config['trust-project-config'] ) && [] !== $runner->runtime_config['trust-project-config'] ) {
 		$res = normalise_trust_setting( $runner->runtime_config['trust-project-config'] );
@@ -2643,7 +2638,7 @@ function check_project_config_trust( $project_config_path, array $directives, $d
 
 	// 4. Check Environment variable WP_CLI_TRUST_PROJECT_CONFIG
 	$env_trust = getenv( 'WP_CLI_TRUST_PROJECT_CONFIG' );
-	if ( false !== $env_trust ) {
+	if ( false !== $env_trust && '' !== trim( $env_trust ) ) {
 		$res = normalise_trust_setting( $env_trust );
 		if ( true === $res ) {
 			return true;
@@ -2670,13 +2665,14 @@ function check_project_config_trust( $project_config_path, array $directives, $d
 			\WP_CLI::error(
 				sprintf(
 					"Project configuration file '%s' has been modified since it was trusted. Run interactively to confirm changes, or set WP_CLI_TRUST_PROJECT_CONFIG=true.",
-					$canonical_path
+					$safe_config_path
 				)
 			);
 		}
 		\WP_CLI::error(
 			sprintf(
-				"Untrusted project configuration file contains '%s' directive(s). Run interactively to confirm, or set WP_CLI_TRUST_PROJECT_CONFIG=true / add path to system or global config file to allow execution.",
+				"Untrusted project configuration file '%s' contains '%s' directive(s). Run interactively to confirm, or set WP_CLI_TRUST_PROJECT_CONFIG=true / add path to system or global config file to allow execution.",
+				$safe_config_path,
 				$directive_type
 			)
 		);
@@ -2684,9 +2680,9 @@ function check_project_config_trust( $project_config_path, array $directives, $d
 
 	// 6. Prompt user interactively via STDERR
 	if ( $hash_mismatch ) {
-		fwrite( STDERR, sprintf( "Warning: Project configuration file '%s' has been modified since it was trusted.\n", $canonical_path ) );
+		fwrite( STDERR, sprintf( "Warning: Project configuration file '%s' has been modified since it was trusted.\n", $safe_config_path ) );
 	}
-	fwrite( STDERR, sprintf( "Project configuration '%s' contains directive(s):\n", $canonical_path ) );
+	fwrite( STDERR, sprintf( "Project configuration '%s' contains directive(s):\n", $safe_config_path ) );
 	foreach ( $directives as $d ) {
 		$sanitized = addcslashes( trim( (string) $d ), "\0..\37\177..\377" );
 		fwrite( STDERR, '  - ' . $sanitized . "\n" );
@@ -2704,7 +2700,7 @@ function check_project_config_trust( $project_config_path, array $directives, $d
 		return true;
 	}
 
-	\WP_CLI::error( sprintf( "Execution of directives from project config '%s' aborted by user.", $canonical_path ) );
+	\WP_CLI::error( sprintf( "Execution of directives from project config '%s' aborted by user.", $safe_config_path ) );
 }
 
 /**
@@ -2742,11 +2738,27 @@ function save_path_to_global_trust_config( $path ) {
 	try {
 		$trusted_configs                    = load_trusted_configs();
 		$trusted_configs[ $canonical_path ] = $hash;
-		$json_content                       = json_encode( $trusted_configs, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n";
+		$json_content                       = json_encode( $trusted_configs, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+
+		// Never truncate the existing trust store because the new content could not be encoded.
+		if ( false === $json_content ) {
+			\WP_CLI::warning( sprintf( 'Failed to encode trusted configuration file: %s.', $file_path ) );
+			return;
+		}
+
+		$json_content .= "\n";
 
 		if ( false !== file_put_contents( $file_path, $json_content, LOCK_EX ) ) {
 			@chmod( $file_path, 0600 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-			\WP_CLI::success( sprintf( "Added '%s' to trusted project configurations.", $canonical_path ) );
+
+			$message = sprintf( "Added '%s' to trusted project configurations.", addcslashes( $canonical_path, "\0..\37\177..\377" ) );
+
+			// The trust prompt runs before the logger is initialized, so fall back to STDERR.
+			if ( null === \WP_CLI::get_logger() ) {
+				fwrite( STDERR, 'Success: ' . $message . "\n" );
+			} else {
+				\WP_CLI::success( $message );
+			}
 		} else {
 			\WP_CLI::warning( sprintf( 'Failed to write trusted configuration file: %s.', $file_path ) );
 		}

@@ -1665,6 +1665,10 @@ class Runner {
 			$this->alias = substr( array_shift( $argv ), 1 ); // Remove the @ prefix and shift from argv
 		}
 
+		// Project configuration directives that need to be trusted before being acted upon.
+		$gated_directives = [];
+		$gated_types      = [];
+
 		// File config
 		{
 			$this->system_config_path  = $this->get_system_config_path();
@@ -1696,50 +1700,53 @@ class Runner {
 			$this->required_files['runtime'] = [];
 			$this->exec_commands['runtime']  = [];
 
-			// Evaluate project configuration trust right after project config merge
-		if ( $this->project_config_path ) {
-			$project_requires = array_diff( $this->required_files['project'], $this->required_files['global'] );
-			$project_exec     = array_diff( $this->exec_commands['project'], $this->exec_commands['global'] );
-			$project_env_all  = isset( $config[1]['env'] ) && is_array( $config[1]['env'] ) ? $config[1]['env'] : [];
-			$project_env_keys = array_diff( array_keys( $project_env_all ), array_keys( $global_env ) );
+			// Collect the directives that originate from the project configuration file and
+			// that need to be trusted before they are acted upon. The trust verification
+			// itself happens at the end of this method, once the runtime configuration has
+			// been parsed, so that `--trust-project-config` can be taken into account.
+			if ( $this->project_config_path ) {
+				$project_requires = array_diff( $this->required_files['project'], $this->required_files['global'] );
+				$project_exec     = array_diff( $this->exec_commands['project'], $this->exec_commands['global'] );
+				$project_env_all  = isset( $config[1]['env'] ) && is_array( $config[1]['env'] ) ? $config[1]['env'] : [];
+				$project_env_keys = array_diff( array_keys( $project_env_all ), array_keys( $global_env ) );
 
-			$project_ssh_args = isset( $config[0]['ssh-args'] ) ? (array) $config[0]['ssh-args'] : [];
-			$new_ssh_args     = array_diff( $project_ssh_args, $global_ssh_args );
+				$project_ssh_args = isset( $config[0]['ssh-args'] ) ? (array) $config[0]['ssh-args'] : [];
+				$new_ssh_args     = array_diff( $project_ssh_args, $global_ssh_args );
 
-			$project_aliases = $configurator->get_aliases();
-			$new_aliases     = array_diff_key( $project_aliases, $global_aliases );
+				$project_aliases = $configurator->get_aliases();
+				$new_aliases     = array_diff_key( $project_aliases, $global_aliases );
 
-			$gated_directives = [];
-			foreach ( $project_requires as $req ) {
-				$gated_directives[] = 'require: ' . $req;
-			}
-			foreach ( $project_exec as $ex ) {
-				$gated_directives[] = 'exec: ' . $ex;
-			}
+				foreach ( $project_requires as $req ) {
+					$gated_directives[] = 'require: ' . $req;
+					$gated_types[]      = 'require';
+				}
+				foreach ( $project_exec as $ex ) {
+					$gated_directives[] = 'exec: ' . $ex;
+					$gated_types[]      = 'exec';
+				}
 
-			// Allowlist of safe env keys that do not affect code execution
-			$safe_env_keys = [ 'WP_ENV', 'WP_DEBUG', 'WP_DEBUG_LOG', 'WP_DEBUG_DISPLAY' ];
-			foreach ( $project_env_keys as $env_key ) {
-				if ( ! in_array( strtoupper( $env_key ), $safe_env_keys, true ) ) {
-					$env_val            = $project_env_all[ $env_key ];
-					$gated_directives[] = 'env: ' . $env_key . '=' . ( is_scalar( $env_val ) ? $env_val : json_encode( $env_val ) );
+				// Allowlist of safe env keys that do not affect code execution
+				$safe_env_keys = [ 'WP_ENV', 'WP_DEBUG', 'WP_DEBUG_LOG', 'WP_DEBUG_DISPLAY' ];
+				foreach ( $project_env_keys as $env_key ) {
+					if ( ! in_array( strtoupper( $env_key ), $safe_env_keys, true ) ) {
+						$env_val            = $project_env_all[ $env_key ];
+						$gated_directives[] = 'env: ' . $env_key . '=' . ( is_scalar( $env_val ) ? $env_val : json_encode( $env_val ) );
+						$gated_types[]      = 'env';
+					}
+				}
+
+				foreach ( $new_ssh_args as $ssh_arg ) {
+					$gated_directives[] = 'ssh-args: ' . $ssh_arg;
+					$gated_types[]      = 'ssh-args';
+				}
+
+				foreach ( $new_aliases as $alias_name => $alias_def ) {
+					if ( is_array( $alias_def ) && ! empty( $alias_def['ssh-args'] ) ) {
+						$gated_directives[] = 'alias @' . $alias_name . ': ssh-args=' . ( is_scalar( $alias_def['ssh-args'] ) ? $alias_def['ssh-args'] : json_encode( $alias_def['ssh-args'] ) );
+						$gated_types[]      = 'alias';
+					}
 				}
 			}
-
-			foreach ( $new_ssh_args as $ssh_arg ) {
-				$gated_directives[] = 'ssh-args: ' . $ssh_arg;
-			}
-
-			foreach ( $new_aliases as $alias_name => $alias_def ) {
-				if ( is_array( $alias_def ) && ! empty( $alias_def['ssh-args'] ) ) {
-					$gated_directives[] = 'alias @' . $alias_name . ': ssh-args=' . ( is_scalar( $alias_def['ssh-args'] ) ? $alias_def['ssh-args'] : json_encode( $alias_def['ssh-args'] ) );
-				}
-			}
-
-			if ( ! empty( $gated_directives ) ) {
-				Utils\check_project_config_trust( $this->project_config_path, $gated_directives );
-			}
-		}
 		}
 
 		// Runtime config and args
@@ -1770,6 +1777,36 @@ class Runner {
 		$this->add_at_all_alias( $this->raw_aliases );
 		$this->required_files['runtime'] = $this->config['require'];
 		$this->exec_commands['runtime']  = isset( $this->config['exec'] ) ? (array) $this->config['exec'] : [];
+
+		// Verify that the project configuration is trusted before any of its directives is
+		// acted upon. This deliberately runs after the runtime configuration has been parsed
+		// so that an explicit `--trust-project-config` on the command line is honored.
+		if ( ! empty( $gated_directives ) ) {
+			Utils\check_project_config_trust(
+				(string) $this->project_config_path,
+				$gated_directives,
+				self::get_gated_directive_label( $gated_types )
+			);
+		}
+	}
+
+	/**
+	 * Derive a human-readable label for a set of gated project configuration directives.
+	 *
+	 * Directives of a single type are reported as such, a mix of types is reported
+	 * using the generic "project configuration" label.
+	 *
+	 * @param array<int, string> $types Types of the gated directives.
+	 * @return string
+	 */
+	private static function get_gated_directive_label( array $types ) {
+		$unique = array_values( array_unique( $types ) );
+
+		if ( 1 === count( $unique ) && in_array( $unique[0], [ 'exec', 'require' ], true ) ) {
+			return $unique[0];
+		}
+
+		return 'project configuration';
 	}
 
 	/**
