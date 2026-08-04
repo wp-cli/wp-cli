@@ -367,9 +367,6 @@ class Extractor {
 	 */
 	private static function ensure_dir_exists( $dir ) {
 		if ( ! is_dir( $dir ) ) {
-			// 0755, not 0700: this is called on the *destination* of an extraction, which is
-			// frequently a WordPress document root or a plugin/theme directory that the web
-			// server user has to be able to read.
 			if ( ! @mkdir( $dir, 0755, true ) ) {
 				$error = error_get_last();
 				WP_CLI::warning(

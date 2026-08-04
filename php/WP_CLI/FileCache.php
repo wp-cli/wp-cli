@@ -396,10 +396,6 @@ class FileCache {
 				return false;
 			}
 
-			// 0755, not 0700: the risk being guarded against is another local user *writing*
-			// into the cache, whose contents get extracted and executed. Read access was never
-			// the problem, and revoking it breaks setups that point `WP_CLI_CACHE_DIR` at a
-			// location shared between users.
 			if ( ! @mkdir( $dir, 0755, true ) ) {
 				$message = "Failed to create directory '{$dir}'";
 				$error   = error_get_last();
