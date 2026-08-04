@@ -147,6 +147,7 @@ final class RunnerTest extends TestCase {
 		}
 
 		$command = $method->invoke( $runner, [ 'host' => 'example.com' ], 'wp status' );
+		$this->assertIsString( $command );
 		$this->assertStringContainsString( 'example.com', $command );
 	}
 
