@@ -15,9 +15,12 @@ Feature: Prompt user for input
        *
        * @when before_wp_load
        */
-      WP_CLI::add_command( 'test-prompt', function( $_, $assoc_args ){
-        var_dump( WP_CLI\Utils\get_flag_value( $assoc_args, 'flag' ) );
-      });
+      WP_CLI::add_command(
+      	'test-prompt',
+      	function ( $_, $assoc_args ) {
+      		var_dump( WP_CLI\Utils\get_flag_value( $assoc_args, 'flag' ) );
+      	}
+      );
       """
     And a uppercase-session file:
       """
@@ -66,10 +69,13 @@ Feature: Prompt user for input
        *
        * @when before_wp_load
        */
-      WP_CLI::add_command( 'foobar', function( $_, $assoc_args ) {
-        WP_CLI::line( 'arg: ' . $_[0] );
-        WP_CLI::line( 'flag1: ' . $assoc_args['flag1'] );
-      } );
+      WP_CLI::add_command(
+      	'foobar',
+      	function ( $_, $assoc_args ) {
+      		WP_CLI::line( 'arg: ' . $_[0] );
+      		WP_CLI::line( 'flag1: ' . $assoc_args['flag1'] );
+      	} 
+      );
       """
     And a wp-cli.yml file:
       """
@@ -123,13 +129,16 @@ Feature: Prompt user for input
        *
        * @when before_wp_load
        */
-      WP_CLI::add_command( 'test-prompt', function( $args, $assoc_args ) {
-        WP_CLI::line( 'arg1: ' . $args[0] );
-        WP_CLI::line( 'arg2: ' . $args[1] );
-        WP_CLI::line( 'flag1: ' . $assoc_args['flag1'] );
-        WP_CLI::line( 'flag2: ' . $assoc_args['flag2'] );
-        WP_CLI::line( 'flag3: ' . $assoc_args['flag3'] );
-      } );
+      WP_CLI::add_command(
+      	'test-prompt',
+      	function ( $args, $assoc_args ) {
+      		WP_CLI::line( 'arg1: ' . $args[0] );
+      		WP_CLI::line( 'arg2: ' . $args[1] );
+      		WP_CLI::line( 'flag1: ' . $assoc_args['flag1'] );
+      		WP_CLI::line( 'flag2: ' . $assoc_args['flag2'] );
+      		WP_CLI::line( 'flag3: ' . $assoc_args['flag3'] );
+      	} 
+      );
       """
     And a value-file file:
       """
@@ -251,11 +260,14 @@ Feature: Prompt user for input
        *
        * @when before_wp_load
        */
-      WP_CLI::add_command( 'test-sensitive', function( $args, $assoc_args ) {
-        WP_CLI::line( 'username: ' . ( isset( $assoc_args['username'] ) ? $assoc_args['username'] : 'none' ) );
-        WP_CLI::line( 'password: ' . ( isset( $assoc_args['password'] ) ? $assoc_args['password'] : 'none' ) );
-        WP_CLI::line( 'api-key: ' . ( isset( $assoc_args['api-key'] ) ? $assoc_args['api-key'] : 'none' ) );
-      } );
+      WP_CLI::add_command(
+      	'test-sensitive',
+      	function ( $args, $assoc_args ) {
+      		WP_CLI::line( 'username: ' . ( isset( $assoc_args['username'] ) ? $assoc_args['username'] : 'none' ) );
+      		WP_CLI::line( 'password: ' . ( isset( $assoc_args['password'] ) ? $assoc_args['password'] : 'none' ) );
+      		WP_CLI::line( 'api-key: ' . ( isset( $assoc_args['api-key'] ) ? $assoc_args['api-key'] : 'none' ) );
+      	} 
+      );
       """
     And a value-file file:
       """
@@ -304,10 +316,13 @@ Feature: Prompt user for input
        *
        * @when before_wp_load
        */
-      WP_CLI::add_command( 'test-flag-y', function( $_, $assoc_args ){
-        $flag_value = isset( $assoc_args['flag'] ) ? 'true' : 'false';
-        WP_CLI::line( 'flag: ' . $flag_value );
-      });
+      WP_CLI::add_command(
+      	'test-flag-y',
+      	function ( $_, $assoc_args ) {
+      		$flag_value = isset( $assoc_args['flag'] ) ? 'true' : 'false';
+      		WP_CLI::line( 'flag: ' . $flag_value );
+      	}
+      );
       """
     And a yes-response file:
       """
@@ -351,9 +366,12 @@ Feature: Prompt user for input
        *
        * @when before_wp_load
        */
-      WP_CLI::add_command( 'test-assoc-default', function( $_, $assoc_args ){
-        WP_CLI::line( 'format: ' . $assoc_args['format'] );
-      });
+      WP_CLI::add_command(
+      	'test-assoc-default',
+      	function ( $_, $assoc_args ) {
+      		WP_CLI::line( 'format: ' . $assoc_args['format'] );
+      	}
+      );
       """
     And a empty-response file:
       """
@@ -390,10 +408,13 @@ Feature: Prompt user for input
        *
        * @when before_wp_load
        */
-      WP_CLI::add_command( 'test-positional-default', function( $args, $_ ){
-        $name = isset( $args[0] ) ? $args[0] : 'Nobody';
-        WP_CLI::line( 'Hello ' . $name );
-      });
+      WP_CLI::add_command(
+      	'test-positional-default',
+      	function ( $args, $_ ) {
+      		$name = isset( $args[0] ) ? $args[0] : 'Nobody';
+      		WP_CLI::line( 'Hello ' . $name );
+      	}
+      );
       """
     And a empty-response file:
       """
@@ -433,11 +454,14 @@ Feature: Prompt user for input
        *
        * @when before_wp_load
        */
-      WP_CLI::add_command( 'test-desc', function( $args, $assoc_args ) {
-        WP_CLI::line( 'name: ' . ( isset( $args[0] ) ? $args[0] : 'none' ) );
-        WP_CLI::line( 'type: ' . ( isset( $assoc_args['type'] ) ? $assoc_args['type'] : 'none' ) );
-        WP_CLI::line( 'enabled: ' . ( isset( $assoc_args['enabled'] ) ? 'yes' : 'no' ) );
-      } );
+      WP_CLI::add_command(
+      	'test-desc',
+      	function ( $args, $assoc_args ) {
+      		WP_CLI::line( 'name: ' . ( isset( $args[0] ) ? $args[0] : 'none' ) );
+      		WP_CLI::line( 'type: ' . ( isset( $assoc_args['type'] ) ? $assoc_args['type'] : 'none' ) );
+      		WP_CLI::line( 'enabled: ' . ( isset( $assoc_args['enabled'] ) ? 'yes' : 'no' ) );
+      	} 
+      );
       """
     And a value-file file:
       """

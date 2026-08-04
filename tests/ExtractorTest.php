@@ -352,7 +352,14 @@ class ExtractorTest extends TestCase {
 		$this->assertTrue( $result );
 		$this->assertTrue( is_dir( $dir ) );
 		if ( ! Utils\is_windows() ) {
-			$this->assertSame( '0700', substr( sprintf( '%o', fileperms( $dir ) ), -4 ) );
+			// Assert the write bits rather than a literal mode: the exact result depends on the
+			// umask, and what matters is that no other local user can write into the directory.
+			$perms = fileperms( $dir ) & 0777;
+			$this->assertSame(
+				0,
+				$perms & 0022,
+				sprintf( 'Extraction directory must not be group- or world-writable, got %o.', $perms )
+			);
 		}
 
 		rmdir( $dir );
