@@ -210,7 +210,7 @@ class Extractor {
 		$error = 0;
 
 		if ( ! is_dir( $dest ) ) {
-			mkdir( $dest, 0777, true );
+			mkdir( $dest, 0755, true );
 		}
 
 		/**
@@ -222,7 +222,7 @@ class Extractor {
 
 			if ( $item->isDir() ) {
 				if ( ! is_dir( $dest_path ) ) {
-					mkdir( $dest_path );
+					mkdir( $dest_path, 0755 );
 				}
 			} elseif ( file_exists( $dest_path ) && is_writable( $dest_path ) ) {
 					copy( $item, $dest_path );
@@ -375,7 +375,7 @@ class Extractor {
 	 */
 	private static function ensure_dir_exists( $dir ) {
 		if ( ! is_dir( $dir ) ) {
-			if ( ! @mkdir( $dir, 0700, true ) ) {
+			if ( ! @mkdir( $dir, 0755, true ) ) {
 				$error = error_get_last();
 				WP_CLI::warning(
 					sprintf(
