@@ -23,6 +23,9 @@ final class InitializeContexts implements BootstrapStep {
 	public function process( BootstrapState $state ) {
 		$context_manager = new ContextManager();
 
+		/**
+		 * @var array<string, Context> $contexts
+		 */
 		$contexts = [
 			Context::CLI      => new Context\Cli(),
 			Context::ADMIN    => new Context\Admin(),

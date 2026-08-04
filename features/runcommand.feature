@@ -328,13 +328,16 @@ Feature: Run a WP-CLI command
   Scenario Outline: Apply backwards compat conversions
     Given a WP installation
 
-    When I run `wp <flag> run "term url category 1"`
+    When I try `wp <flag> run "term url category 1"`
     Then STDOUT should be:
       """
       https://example.com/?cat=1
       returned: NULL
       """
-    And STDERR should be empty
+    And STDERR should contain:
+      """
+      The 'wp term url' syntax is deprecated and will be removed in WP-CLI 4.0. Use 'wp term list --field=url' instead.
+      """
     And the return code should be 0
 
     Examples:
@@ -357,6 +360,50 @@ Feature: Run a WP-CLI command
       | func       |
       | proc_open  |
       | proc_close |
+
+  # This only exercises the regression when the test suite runs as a non-root
+  # user, as root can enter the locked directory regardless of its permissions.
+  @skip-windows
+  Scenario: Launch a command from a working directory the process cannot enter
+    Given a locked-cwd.php file:
+      """
+      <?php
+      WP_CLI::add_command(
+        'locked-cwd',
+        function () {
+          $dir = getcwd() . '/locked';
+          mkdir( $dir );
+          chdir( $dir );
+
+          // Make sure the test run directory can be cleaned up again.
+          register_shutdown_function(
+            static function () use ( $dir ) {
+              chmod( $dir, 0755 );
+            }
+          );
+
+          chmod( $dir, 0000 );
+
+          $version = WP_CLI::runcommand( 'cli version', array( 'launch' => true, 'return' => true ) );
+
+          WP_CLI::log( 'returned: ' . $version );
+        },
+        array( 'when' => 'before_wp_load' )
+      );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - locked-cwd.php
+      """
+
+    When I run `wp locked-cwd`
+    Then STDOUT should contain:
+      """
+      returned: WP-CLI
+      """
+    And STDERR should be empty
+    And the return code should be 0
 
   Scenario: Check that command_args provided to runcommand are used in command
     Given a WP installation

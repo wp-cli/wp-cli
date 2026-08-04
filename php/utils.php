@@ -12,6 +12,7 @@ use Closure;
 use Composer\Semver\Comparator;
 use Composer\Semver\Semver;
 use Exception;
+use InvalidArgumentException;
 use Iterator;
 use Mustache\Engine as Mustache_Engine;
 use ReflectionFunction;
@@ -367,11 +368,21 @@ function args_to_str( $args ) {
  * @param array<string, mixed> $assoc_args Associative arguments to compose.
  * @param array<string> $sensitive_args Optional. Array of argument keys that should be masked.
  * @return string
+ * @throws InvalidArgumentException If an argument key contains invalid characters.
  */
 function assoc_args_to_str( $assoc_args, $sensitive_args = [] ) {
 	$str = '';
 
 	foreach ( $assoc_args as $key => $value ) {
+		if ( ! preg_match( '/\A[a-zA-Z0-9_:\.-]+\z/', (string) $key ) ) {
+			throw new InvalidArgumentException(
+				sprintf(
+					"Invalid associative argument key '%s'.",
+					$key
+				)
+			);
+		}
+
 		if ( true === $value ) {
 			$str .= " --$key";
 		} elseif ( is_array( $value ) ) {
@@ -2114,18 +2125,25 @@ function get_mysql_binary_path() {
 	$mysql_binary   = trim( explode( "\n", $mysql->stdout )[0] );
 	$mariadb_binary = trim( explode( "\n", $mariadb->stdout )[0] );
 
-	if ( 0 === $mysql->return_code ) {
-		if ( '' !== $mysql_binary ) {
-			$path   = $mysql_binary;
-			$result = Process::create( escapeshellarg( $mysql_binary ) . ' --version', null, null )->run();
-
+	if ( 0 === $mysql->return_code && '' !== $mysql_binary ) {
+		$result = Process::create( escapeshellarg( $mysql_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$path = $mysql_binary;
 			// It's actually MariaDB disguised as MySQL.
-			if ( 0 === $result->return_code && false !== strpos( $result->stdout, 'MariaDB' ) && 0 === $mariadb->return_code ) {
-				$path = $mariadb_binary;
+			if ( false !== strpos( $result->stdout, 'MariaDB' ) && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
+				$mariadb_result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
+				if ( 0 === $mariadb_result->return_code ) {
+					$path = $mariadb_binary;
+				}
 			}
 		}
-	} elseif ( 0 === $mariadb->return_code ) {
-		$path = $mariadb_binary;
+	}
+
+	if ( '' === $path && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
+		$result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$path = $mariadb_binary;
+		}
 	}
 
 	return $path;
@@ -2167,7 +2185,7 @@ function get_mysql_version() {
  * For MariaDB, prefers `mariadb-dump` (available since MariaDB 10.5) but falls
  * back to `mysqldump` if the command is not found on the system.
  *
- * @return string The appropriate dump command.
+ * @return string The appropriate dump command, or an empty string if not found.
  */
 function get_sql_dump_command() {
 	static $command = null;
@@ -2176,14 +2194,37 @@ function get_sql_dump_command() {
 		return $command;
 	}
 
-	$command = 'mysqldump';
+	$command = '';
 
-	if ( 'mariadb' === get_db_type() ) {
-		$find_cmd = is_windows() ? 'where mariadb-dump' : '/usr/bin/env which mariadb-dump';
-		$result   = Process::create( $find_cmd, null, null )->run();
+	if ( is_windows() ) {
+		$mariadb = Process::create( 'where mariadb-dump', null, null )->run();
+		$mysql   = Process::create( 'where mysqldump', null, null )->run();
+	} else {
+		$mariadb = Process::create( '/usr/bin/env which mariadb-dump', null, null )->run();
+		$mysql   = Process::create( '/usr/bin/env which mysqldump', null, null )->run();
+	}
 
-		if ( 0 === $result->return_code && '' !== trim( $result->stdout ) ) {
-			$command = 'mariadb-dump';
+	$mariadb_binary = trim( explode( "\n", $mariadb->stdout )[0] );
+	$mysql_binary   = trim( explode( "\n", $mysql->stdout )[0] );
+
+	if ( 'mariadb' === get_db_type() && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
+		$result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mariadb_binary;
+		}
+	}
+
+	if ( '' === $command && 0 === $mysql->return_code && '' !== $mysql_binary ) {
+		$result = Process::create( escapeshellarg( $mysql_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mysql_binary;
+		}
+	}
+
+	if ( '' === $command && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
+		$result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mariadb_binary;
 		}
 	}
 
@@ -2196,7 +2237,7 @@ function get_sql_dump_command() {
  * For MariaDB, prefers `mariadb-check` (available since MariaDB 10.5) but falls
  * back to `mysqlcheck` if the command is not found on the system.
  *
- * @return string The appropriate check command.
+ * @return string The appropriate check command, or an empty string if not found.
  */
 function get_sql_check_command() {
 	static $command = null;
@@ -2205,14 +2246,37 @@ function get_sql_check_command() {
 		return $command;
 	}
 
-	$command = 'mysqlcheck';
+	$command = '';
 
-	if ( 'mariadb' === get_db_type() ) {
-		$find_cmd = is_windows() ? 'where mariadb-check' : '/usr/bin/env which mariadb-check';
-		$result   = Process::create( $find_cmd, null, null )->run();
+	if ( is_windows() ) {
+		$mariadb = Process::create( 'where mariadb-check', null, null )->run();
+		$mysql   = Process::create( 'where mysqlcheck', null, null )->run();
+	} else {
+		$mariadb = Process::create( '/usr/bin/env which mariadb-check', null, null )->run();
+		$mysql   = Process::create( '/usr/bin/env which mysqlcheck', null, null )->run();
+	}
 
-		if ( 0 === $result->return_code && '' !== trim( $result->stdout ) ) {
-			$command = 'mariadb-check';
+	$mariadb_binary = trim( explode( "\n", $mariadb->stdout )[0] );
+	$mysql_binary   = trim( explode( "\n", $mysql->stdout )[0] );
+
+	if ( 'mariadb' === get_db_type() && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
+		$result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mariadb_binary;
+		}
+	}
+
+	if ( '' === $command && 0 === $mysql->return_code && '' !== $mysql_binary ) {
+		$result = Process::create( escapeshellarg( $mysql_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mysql_binary;
+		}
+	}
+
+	if ( '' === $command && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
+		$result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mariadb_binary;
 		}
 	}
 
