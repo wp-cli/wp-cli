@@ -396,7 +396,7 @@ class FileCache {
 				return false;
 			}
 
-			if ( ! @mkdir( $dir, 0700, true ) ) {
+			if ( ! @mkdir( $dir, 0755, true ) ) {
 				$message = "Failed to create directory '{$dir}'";
 				$error   = error_get_last();
 				if ( is_array( $error ) ) {
