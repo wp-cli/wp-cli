@@ -5,11 +5,6 @@ use WP_CLI\WpOrgApi;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class WpOrgApiTest extends TestCase {
-
-	public static function set_up_before_class() {
-		require_once dirname( __DIR__ ) . '/mock-requests-transport.php';
-	}
-
 	public static function data_http_request_verify(): array {
 		return [
 			'can retrieve core checksums'              => [
@@ -130,6 +125,11 @@ class WpOrgApiTest extends TestCase {
 
 	/**
 	 * @dataProvider data_http_request_verify
+	 * @param string $method
+	 * @param array<int|string, mixed> $arguments
+	 * @param array<string, mixed> $options
+	 * @param string $expected_url
+	 * @param array<string, mixed> $expected_options
 	 */
 	#[DataProvider( 'data_http_request_verify' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function test_http_request_verify( $method, $arguments, $options, $expected_url, $expected_options ): void {
@@ -160,7 +160,7 @@ class WpOrgApiTest extends TestCase {
 		}
 
 		$this->assertCount( 1, $transport_spy->requests );
-		$this->assertEquals( $expected_url, $transport_spy->requests[0]['url'] );
+		$this->assertSame( $expected_url, $transport_spy->requests[0]['url'] );
 		foreach ( $expected_options as $key => $value ) {
 			$this->assertEquals( $value, $transport_spy->requests[0]['options'][ $key ] );
 		}

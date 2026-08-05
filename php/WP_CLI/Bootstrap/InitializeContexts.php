@@ -23,6 +23,9 @@ final class InitializeContexts implements BootstrapStep {
 	public function process( BootstrapState $state ) {
 		$context_manager = new ContextManager();
 
+		/**
+		 * @var array<string, Context> $contexts
+		 */
 		$contexts = [
 			Context::CLI      => new Context\Cli(),
 			Context::ADMIN    => new Context\Admin(),
@@ -31,7 +34,9 @@ final class InitializeContexts implements BootstrapStep {
 		];
 
 		/**
-		 * @var array<string, Context> $contexts
+		 * Filter the context implementations before they are registered.
+		 *
+		 * `@param` array<string, Context> $contexts Array of context objects keyed by context name.
 		 */
 		$contexts = WP_CLI::do_hook( 'before_registering_contexts', $contexts );
 

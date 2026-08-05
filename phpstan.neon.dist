@@ -1,3 +1,6 @@
+includes:
+  - phar://phpstan.phar/conf/bleedingEdge.neon
+
 parameters:
   level: 9
   paths:
@@ -37,10 +40,3 @@ parameters:
     matchingInheritedMethodNames: true
     numericOperandsInArithmeticOperators: true
     switchConditionsMatchingType: true
-  ignoreErrors:
-    - identifier: missingType.iterableValue
-    - identifier: missingType.property
-    - identifier: missingType.parameter
-    - identifier: missingType.return
-    - identifier: function.deprecated
-      path: tests

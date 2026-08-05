@@ -32,6 +32,7 @@ final class CommandAddition {
 	 * Abort the current command addition.
 	 *
 	 * @param string $reason Reason as to why the addition was aborted.
+	 * @return void
 	 */
 	public function abort( $reason = '' ) {
 		$this->abort  = true;
