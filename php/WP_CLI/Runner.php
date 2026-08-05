@@ -1044,7 +1044,10 @@ class Runner {
 		foreach ( $wp_args as $arg ) {
 			// Quote empty strings and arguments with any characters outside the safe set.
 			// The empty string check is explicit for clarity, though regex would also catch it.
-			if ( '' !== $arg && preg_match( '/^[a-zA-Z0-9_=.\/:-]+$/', $arg ) ) {
+			// Anchor with \A and \z rather than ^ and $: PCRE's $ also matches just before a
+			// trailing newline, which would let a value ending in "\n" skip escaping and smuggle
+			// a command separator into the remote shell command.
+			if ( '' !== $arg && preg_match( '/\A[a-zA-Z0-9_=.\/:-]+\z/', $arg ) ) {
 				$escaped_args[] = $arg;
 			} else {
 				$escaped_args[] = escapeshellarg( $arg );
