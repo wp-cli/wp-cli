@@ -111,15 +111,12 @@ Feature: Global flags
   Scenario: Debug run
     Given a WP installation
 
-    When I try `wp eval "echo CONST_WITHOUT_QUOTES;"`
+    When I run `wp eval "echo CONST_WITHOUT_QUOTES;"`
     Then STDOUT should be:
       """
       CONST_WITHOUT_QUOTES
       """
-    And STDERR should contain:
-      """
-      Use of undefined constant CONST_WITHOUT_QUOTES
-      """
+    And STDERR should be empty
     And the return code should be 0
 
     When I try `wp eval "echo CONST_WITHOUT_QUOTES;" --debug`
