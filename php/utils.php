@@ -2599,7 +2599,7 @@ function normalise_trust_setting( $setting ) {
  * @param string             $project_config_path Path to project config file.
  * @param array<int, string> $directives          List of directives (or string representation of directives).
  * @param string             $directive_type      Type of directive or label.
- * @return bool True if trusted; exits with error if untrusted.
+ * @return true True if trusted; exits with error if untrusted.
  */
 function check_project_config_trust( $project_config_path, array $directives, $directive_type = 'project configuration' ) {
 	if ( empty( $project_config_path ) || empty( $directives ) ) {
@@ -2737,6 +2737,7 @@ function check_project_config_trust( $project_config_path, array $directives, $d
  * Save a path and its SHA-256 content hash to the trusted configs JSON store.
  *
  * @param string $path Absolute path to project config file or directory.
+ * @return void
  */
 function save_path_to_global_trust_config( $path ) {
 	$canonical_path = realpath( $path ) ?: $path;

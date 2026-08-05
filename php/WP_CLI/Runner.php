@@ -141,7 +141,7 @@ class Runner {
 	/**
 	 * List of exec commands.
 	 *
-	 * @var array
+	 * @var array<string, array<int, string>>
 	 */
 	private $exec_commands = [
 		'system'  => [],
@@ -1634,10 +1634,16 @@ class Runner {
 		return $this->required_files;
 	}
 
+	/**
+	 * @return array<string, array<int, string>>
+	 */
 	public function get_exec_commands() {
 		return $this->exec_commands;
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function get_global_trust_config() {
 		return $this->global_trust_config;
 	}
@@ -1831,7 +1837,9 @@ class Runner {
 		/** @var array<int, string> $runtime_requires */
 		$runtime_requires                = is_array( $this->config['require'] ) ? $this->config['require'] : ( is_scalar( $this->config['require'] ) ? [ (string) $this->config['require'] ] : [] );
 		$this->required_files['runtime'] = $runtime_requires;
-		$this->exec_commands['runtime']  = isset( $this->config['exec'] ) ? (array) $this->config['exec'] : [];
+		/** @var array<int, string> $runtime_execs */
+		$runtime_execs                  = is_array( $this->config['exec'] ) ? $this->config['exec'] : ( is_scalar( $this->config['exec'] ) ? [ (string) $this->config['exec'] ] : [] );
+		$this->exec_commands['runtime'] = $runtime_execs;
 
 		// Verify that the project configuration is trusted before any of its directives is
 		// acted upon. This deliberately runs after the runtime configuration has been parsed
