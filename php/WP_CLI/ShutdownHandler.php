@@ -54,7 +54,7 @@ class ShutdownHandler {
 
 	/**
 	 * Handle PHP shutdown to ensure fatal errors are displayed even if display_errors is 0.
-	 * 
+	 *
 	 * @return void
 	 */
 	public static function handle_shutdown() {
@@ -326,6 +326,10 @@ class ShutdownHandler {
 	 * @return void
 	 */
 	private static function prompt_and_rerun( $skip ) {
+		if ( ! self::should_handle_error_rerun() ) {
+			return;
+		}
+
 		// Get environment variable to check default behavior
 		$error_rerun = Utils\get_env_or_config( 'WP_CLI_ERROR_RERUN' );
 
