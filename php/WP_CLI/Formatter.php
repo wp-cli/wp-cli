@@ -607,6 +607,29 @@ class Formatter {
 	}
 
 	/**
+	 * Check if an object property is accessible.
+	 *
+	 * @param object $item
+	 * @param string $key
+	 * @return bool
+	 */
+	private function is_object_property_accessible( $item, $key ): bool {
+		if ( ! is_object( $item ) ) {
+			return false;
+		}
+
+		if ( isset( $item->$key ) ) {
+			return true;
+		}
+
+		if ( property_exists( $item, $key ) ) {
+			return ( new \ReflectionProperty( $item, $key ) )->isPublic();
+		}
+
+		return false;
+	}
+
+	/**
 	 * Find an object's key.
 	 * If $prefix is set, a key with that prefix will be prioritized.
 	 *
@@ -618,7 +641,7 @@ class Formatter {
 	private function find_item_key( $item, $field, $lenient = false ) {
 		foreach ( [ $field, $this->prefix . '_' . $field ] as $maybe_key ) {
 			if (
-				( is_object( $item ) && ( property_exists( $item, $maybe_key ) || isset( $item->$maybe_key ) ) ) ||
+				( is_object( $item ) && $this->is_object_property_accessible( $item, $maybe_key ) ) ||
 				( is_array( $item ) && array_key_exists( $maybe_key, $item ) )
 			) {
 				$key = $maybe_key;
