@@ -1078,6 +1078,36 @@ class Runner {
 			? implode( ' ', array_map( 'escapeshellarg', $ssh_args_config ) )
 			: '';
 
+		// Vagrant ssh-config.
+		$is_vagrant_ssh = false;
+		if ( isset( $bits['scheme'] ) && 'vagrant' === $bits['scheme'] ) {
+			$cache     = WP_CLI::get_cache();
+			$cache_key = 'vagrant:' . $this->project_config_path;
+			if ( $cache->has( $cache_key ) ) {
+				$cached = (string) $cache->read( $cache_key );
+				$values = json_decode( $cached, true );
+			} else {
+				$ssh_config = (string) shell_exec( 'vagrant ssh-config 2>/dev/null' );
+				if ( preg_match_all( '#\s*(?<NAME>[a-zA-Z]+)\s(?<VALUE>.+)\s*#', $ssh_config, $matches ) ) {
+					$values = array_combine( $matches['NAME'], $matches['VALUE'] );
+					$cache->write( $cache_key, (string) json_encode( $values ) );
+				}
+			}
+
+			/**
+			 * @var array{HostName?: string, Port?: int, User?: string, IdentityFile?: string} $values
+			 */
+
+			if ( empty( $bits['host'] ) || ( isset( $values['Host'] ) && $bits['host'] === $values['Host'] ) ) {
+				$bits['scheme'] = 'ssh';
+				$bits['host']   = isset( $values['HostName'] ) ? $values['HostName'] : '';
+				$bits['port']   = isset( $values['Port'] ) ? $values['Port'] : '';
+				$bits['user']   = isset( $values['User'] ) ? $values['User'] : '';
+				$bits['key']    = isset( $values['IdentityFile'] ) ? $values['IdentityFile'] : '';
+				$is_vagrant_ssh = true;
+			}
+		}
+
 		if ( ! empty( $this->alias ) ) {
 			$alias_config = isset( $this->aliases[ $this->alias ] ) ? $this->aliases[ $this->alias ] : false;
 
@@ -1160,48 +1190,15 @@ class Runner {
 			$wp_command = 'cd ' . Utils\escapeshellarg_preserve_tilde( $bits['path'] ) . '; ' . $wp_command;
 		}
 
-		// Vagrant ssh-config.
-		$is_vagrant_ssh = false;
+		// If we could not resolve the vagrant bits still, fallback to just `vagrant ssh`
 		if ( 'vagrant' === $bits['scheme'] ) {
-			$cache     = WP_CLI::get_cache();
-			$cache_key = 'vagrant:' . $this->project_config_path;
-			if ( $cache->has( $cache_key ) ) {
-				$cached = (string) $cache->read( $cache_key );
-				$values = json_decode( $cached, true );
-			} else {
-				$ssh_config = (string) shell_exec( 'vagrant ssh-config 2>/dev/null' );
-				if ( preg_match_all( '#\s*(?<NAME>[a-zA-Z]+)\s(?<VALUE>.+)\s*#', $ssh_config, $matches ) ) {
-					$values = array_combine( $matches['NAME'], $matches['VALUE'] );
-					$cache->write( $cache_key, (string) json_encode( $values ) );
-				}
-			}
+			$command = 'vagrant ssh' . ( $ssh_args ? ' ' . $ssh_args : '' ) . ' -c %s %s';
 
-			/**
-			 * @var array{HostName?: string, Port?: int, User?: string, IdentityFile?: string} $values
-			 */
-
-			if ( empty( $bits['host'] ) || ( isset( $values['Host'] ) && $bits['host'] === $values['Host'] ) ) {
-				$bits['scheme'] = 'ssh';
-				$bits['host']   = isset( $values['HostName'] ) ? $values['HostName'] : '';
-				$bits['port']   = isset( $values['Port'] ) ? $values['Port'] : '';
-				$bits['user']   = isset( $values['User'] ) ? $values['User'] : '';
-				$bits['key']    = isset( $values['IdentityFile'] ) ? $values['IdentityFile'] : '';
-				$is_vagrant_ssh = true;
-
-				// The values from `vagrant ssh-config` have not been validated yet.
-				$bits = $this->validate_ssh_bits( $bits );
-			}
-
-			// If we could not resolve the bits still, fallback to just `vagrant ssh`
-			if ( 'vagrant' === $bits['scheme'] ) {
-				$command = 'vagrant ssh' . ( $ssh_args ? ' ' . $ssh_args : '' ) . ' -c %s %s';
-
-				$escaped_command = sprintf(
-					$command,
-					escapeshellarg( $wp_command ),
-					escapeshellarg( $bits['host'] )
-				);
-			}
+			$escaped_command = sprintf(
+				$command,
+				escapeshellarg( $wp_command ),
+				escapeshellarg( $bits['host'] )
+			);
 		}
 
 		// Default scheme is SSH.

@@ -228,4 +228,49 @@ final class RunnerTest extends TestCase {
 			[ [ 'ssh_config' => [ '/path/to/ssh/config' ] ], 'Invalid SSH ssh_config: value must be a string.' ],
 		];
 	}
+
+	public function testGenerateSshCommandVagrantAliasKeyOverride(): void {
+		$runner_class = new ReflectionClass( Runner::class );
+		$runner       = $runner_class->newInstanceWithoutConstructor();
+
+		$prop_alias = $runner_class->getProperty( 'alias' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$prop_alias->setAccessible( true );
+		}
+		$prop_alias->setValue( $runner, 'testalias' );
+
+		$prop_aliases = $runner_class->getProperty( 'aliases' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$prop_aliases->setAccessible( true );
+		}
+		$prop_aliases->setValue( $runner, [ 'testalias' => [ 'key' => '/custom/alias/key' ] ] );
+
+		$cache     = \WP_CLI::get_cache();
+		$cache_key = 'vagrant:';
+		$cache->write(
+			$cache_key,
+			(string) json_encode(
+				[
+					'HostName'     => '127.0.0.1',
+					'Port'         => '2222',
+					'User'         => 'vagrant',
+					'IdentityFile' => '/default/vagrant/identityfile',
+				]
+			)
+		);
+
+		$method = $runner_class->getMethod( 'generate_ssh_command' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$method->setAccessible( true );
+		}
+
+		$command = $method->invoke( $runner, [ 'scheme' => 'vagrant' ], 'wp status' );
+		$this->assertIsString( $command );
+
+		$this->assertStringContainsString( "-i '/custom/alias/key'", $command );
+		$this->assertStringNotContainsString( '/default/vagrant/identityfile', $command );
+	}
 }
