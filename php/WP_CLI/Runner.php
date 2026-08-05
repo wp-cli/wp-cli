@@ -2277,10 +2277,9 @@ class Runner {
 			99
 		);
 
-		// Re-enable PHP error reporting to stderr if testing.
-		if ( getenv( 'BEHAT_RUN' ) ) {
-			$this->enable_error_reporting();
-		}
+		// Re-enforce debug mode settings after WP finishes loading, since wp-admin/includes/admin.php
+		// and other late-loading files may reset error_reporting, display_errors, or log_errors.
+		Utils\wp_debug_mode();
 
 		WP_CLI::debug( 'Loaded WordPress', 'bootstrap' );
 
