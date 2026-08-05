@@ -6,9 +6,17 @@ Feature: Load WP-CLI
     And a wp-content/mu-plugins/test.php file:
       """
       <?php
-      add_action( 'plugins_loaded', function(){
-        wp_signon( array( 'user_login' => 'testuser', 'user_password' => 'testuser' ) );
-      });
+      add_action(
+      	'plugins_loaded',
+      	function () {
+      		wp_signon(
+      			array(
+      				'user_login'    => 'testuser',
+      				'user_password' => 'testuser',
+      			) 
+      		);
+      	}
+      );
       """
 
     When I run `wp option get home`
@@ -21,21 +29,20 @@ Feature: Load WP-CLI
       <?php
       class Load_WordPress_Command_Class extends WP_CLI_Command {
 
-          /**
-           * @when before_wp_load
-           */
-          public function __invoke() {
-              if ( ! function_exists( 'update_option' ) ) {
-                  WP_CLI::log( 'WordPress not loaded.' );
-              }
-              WP_CLI::get_runner()->load_wordpress();
-              if ( function_exists( 'update_option' ) ) {
-                  WP_CLI::log( 'WordPress loaded!' );
-              }
-              WP_CLI::get_runner()->load_wordpress();
-              WP_CLI::log( 'load_wordpress() can safely be called twice.' );
-          }
-
+      	/**
+      	 * @when before_wp_load
+      	 */
+      	public function __invoke() {
+      		if ( ! function_exists( 'update_option' ) ) {
+      			WP_CLI::log( 'WordPress not loaded.' );
+      		}
+      		WP_CLI::get_runner()->load_wordpress();
+      		if ( function_exists( 'update_option' ) ) {
+      			WP_CLI::log( 'WordPress loaded!' );
+      		}
+      		WP_CLI::get_runner()->load_wordpress();
+      		WP_CLI::log( 'load_wordpress() can safely be called twice.' );
+      	}
       }
       WP_CLI::add_command( 'load-wordpress', 'Load_WordPress_Command_Class' );
       """
@@ -55,21 +62,20 @@ Feature: Load WP-CLI
       <?php
       class Load_WordPress_Command_Class extends WP_CLI_Command {
 
-          /**
-           * @when before_wp_load
-           */
-          public function __invoke() {
-              if ( ! function_exists( 'update_option' ) ) {
-                  WP_CLI::log( 'WordPress not loaded.' );
-              }
-              WP_CLI::get_runner()->load_wordpress();
-              if ( function_exists( 'update_option' ) ) {
-                  WP_CLI::log( 'WordPress loaded!' );
-              }
-              WP_CLI::get_runner()->load_wordpress();
-              WP_CLI::log( 'load_wordpress() can safely be called twice.' );
-          }
-
+      	/**
+      	 * @when before_wp_load
+      	 */
+      	public function __invoke() {
+      		if ( ! function_exists( 'update_option' ) ) {
+      			WP_CLI::log( 'WordPress not loaded.' );
+      		}
+      		WP_CLI::get_runner()->load_wordpress();
+      		if ( function_exists( 'update_option' ) ) {
+      			WP_CLI::log( 'WordPress loaded!' );
+      		}
+      		WP_CLI::get_runner()->load_wordpress();
+      		WP_CLI::log( 'load_wordpress() can safely be called twice.' );
+      	}
       }
       WP_CLI::add_command( 'load-wordpress', 'Load_WordPress_Command_Class' );
       """
@@ -164,7 +170,7 @@ Feature: Load WP-CLI
       """
       <?php
       function my_custom_function() {
-          WP_CLI::error( 'Test error message.' );
+      	WP_CLI::error( 'Test error message.' );
       }
       my_custom_function();
       """
@@ -194,7 +200,7 @@ Feature: Load WP-CLI
       """
       <?php
       function trigger_halt() {
-          WP_CLI::halt( 2 );
+      	WP_CLI::halt( 2 );
       }
       trigger_halt();
       """
@@ -234,9 +240,12 @@ Feature: Load WP-CLI
     And a wp-content/mu-plugins/redirect.php file:
       """
       <?php
-      add_action( 'init', function(){
-          wp_redirect( 'http://apple.com' );
-      });
+      add_action(
+      	'init',
+      	function () {
+      		wp_redirect( 'http://apple.com' );
+      	}
+      );
       """
 
     When I try `wp option get home`
@@ -250,9 +259,12 @@ Feature: Load WP-CLI
     And a wp-content/mu-plugins/redirect.php file:
       """
       <?php
-      add_action( 'init', function(){
-          wp_redirect( 'http://apple.com' );
-      });
+      add_action(
+      	'init',
+      	function () {
+      		wp_redirect( 'http://apple.com' );
+      	}
+      );
       """
 
     When I try `wp plugin list --debug=bootstrap`
@@ -303,12 +315,19 @@ Feature: Load WP-CLI
       """
       <?php
 
-      WP_CLI::add_hook( 'foo', function( $bar ){
-        WP_CLI::log( $bar );
-      });
-      WP_CLI::add_command( 'my-command', function( $args ){
-        WP_CLI::do_hook( 'foo', $args[0] );
-      }, array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_hook(
+      	'foo',
+      	function ( $bar ) {
+      		WP_CLI::log( $bar );
+      	}
+      );
+      WP_CLI::add_command(
+      	'my-command',
+      	function ( $args ) {
+      		WP_CLI::do_hook( 'foo', $args[0] );
+      	},
+      	array( 'when' => 'before_wp_load' ) 
+      );
       """
 
     When I run `wp --require=my-command.php my-command bar`
@@ -324,12 +343,14 @@ Feature: Load WP-CLI
     And a eval-table-prefix.php file:
       """
       <?php
-      global $table_prefix; echo $table_prefix;
+      global $table_prefix;
+      echo $table_prefix;
       """
     And a eval-blog-id.php file:
       """
       <?php
-      global $blog_id; echo $blog_id;
+      global $blog_id;
+      echo $blog_id;
       """
 
     When I run `wp eval-file eval-table-prefix.php`
@@ -503,10 +524,10 @@ Feature: Load WP-CLI
       <?php
       // Force ms_not_installed() to be triggered by returning empty network
       WP_CLI::add_wp_hook(
-        'the_networks',
-        static function() {
-          return [];
-        }
+      	'the_networks',
+      	static function () {
+      		return [];
+      	}
       );
       """
     And I run `wp config delete DOMAIN_CURRENT_SITE --type=constant`
@@ -533,13 +554,13 @@ Feature: Load WP-CLI
       <?php
       // Force ms_not_installed() to be triggered by returning empty network
       WP_CLI::add_wp_hook(
-        'the_networks',
-        static function() {
-          return [
-            new \WP_Network( new stdClass() ),
-            new \WP_Network( new stdClass() ),
-          ];
-        }
+      	'the_networks',
+      	static function () {
+      		return [
+      			new \WP_Network( new stdClass() ),
+      			new \WP_Network( new stdClass() ),
+      		];
+      	}
       );
       """
     And I run `wp config delete DOMAIN_CURRENT_SITE --type=constant`
@@ -574,21 +595,21 @@ Feature: Load WP-CLI
       <?php
       // Simulate a plugin that prepends its own autoloader.
       function wpcli_test_mu_autoload( $class ) {
-          // This intentionally does nothing but exists to be prepended.
+      	// This intentionally does nothing but exists to be prepended.
       }
 
       spl_autoload_register(
-          'wpcli_test_mu_autoload',
-          true,
-          true
+      	'wpcli_test_mu_autoload',
+      	true,
+      	true
       );
       """
 
     And a check-autoloaders.php file:
       """
       <?php
-      $autoloaders = spl_autoload_functions();
-      $first = $autoloaders[0];
+      $autoloaders  = spl_autoload_functions();
+      $first        = $autoloaders[0];
       $plugin_index = array_search( 'wpcli_test_mu_autoload', $autoloaders, true );
       echo ( $plugin_index !== false && 0 !== $plugin_index ) ? 'WP-CLI autoloader is first' : 'Plugin autoloader is first';
       """

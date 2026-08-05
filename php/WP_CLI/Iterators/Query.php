@@ -9,7 +9,7 @@ use Iterator;
  *
  * @source https://gist.github.com/4060005
  *
- * @implements \Iterator<int, mixed>
+ * @implements \Iterator<int, object>
  */
 class Query implements Iterator {
 
@@ -51,7 +51,7 @@ class Query implements Iterator {
 	/**
 	 * The current chunk of results.
 	 *
-	 * @var array
+	 * @var array<int, mixed>
 	 */
 	private $results = [];
 
@@ -134,6 +134,9 @@ class Query implements Iterator {
 		$this->row_count = $row_count;
 	}
 
+	/**
+	 * @return bool
+	 */
 	private function load_items_from_db() {
 		$this->adjust_offset_for_shrinking_result_set();
 
@@ -156,7 +159,7 @@ class Query implements Iterator {
 
 	#[\ReturnTypeWillChange]
 	public function current() {
-		return $this->results[ $this->index_in_results ];
+		return (object) $this->results[ $this->index_in_results ];
 	}
 
 	#[\ReturnTypeWillChange]

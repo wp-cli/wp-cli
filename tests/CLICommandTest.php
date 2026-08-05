@@ -8,11 +8,23 @@ use WP_CLI\ExitException;
  */
 class CLICommandTest extends TestCase {
 
+	/**
+	 * @var bool|mixed
+	 */
 	private $prev_capture_exit;
+
+	/**
+	 * @var \WP_CLI\Loggers\Base
+	 */
 	private $prev_logger;
+
+	/**
+	 * @var \WP_CLI\Loggers\Execution
+	 */
 	private $logger;
 
-	public static function set_up_before_class() {
+	public static function set_up_before_class(): void {
+		parent::set_up_before_class();
 		require_once WP_CLI_ROOT . '/php/commands/src/CLI_Command.php';
 	}
 
@@ -47,6 +59,11 @@ class CLICommandTest extends TestCase {
 		parent::tearDown();
 	}
 
+	/**
+	 * @param string $temp
+	 * @param string $current_phar
+	 * @return void
+	 */
 	private function call_replace_current_phar( $temp, $current_phar ) {
 		$cli_command = new CLI_Command();
 		$method      = new \ReflectionMethod( $cli_command, 'replace_current_phar' );

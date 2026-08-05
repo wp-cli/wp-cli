@@ -56,15 +56,20 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 
 		// Use `--path` from the alias if one is matching.
 		$alias_path = null;
-		if ( $runner()->alias
-			&& isset( $runner()->aliases[ $runner()->alias ]['path'] ) ) {
-			$alias_path = $runner()->aliases[ $runner()->alias ]['path'];
+		$aliases    = $runner()->aliases;
+		$alias_name = $runner()->alias;
+		if ( is_string( $alias_name )
+			&& isset( $aliases[ $alias_name ] )
+			&& is_array( $aliases[ $alias_name ] )
+			&& isset( $aliases[ $alias_name ]['path'] )
+			&& is_string( $aliases[ $alias_name ]['path'] ) ) {
+			$alias_path = $aliases[ $alias_name ]['path'];
 			// Make sure it isn't an invalid value.
-			if ( is_bool( $alias_path ) || empty( $alias_path ) ) {
+			if ( empty( $alias_path ) ) {
 				return $state;
 			}
 			if ( ! Path::is_absolute( $alias_path ) ) {
-				$alias_path = getcwd() . '/' . $alias_path;
+				$alias_path = (string) getcwd() . '/' . $alias_path;
 			}
 			$wp_root = rtrim( $alias_path, '/' );
 		} else {
@@ -85,6 +90,7 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 			}
 
 			if ( class_exists( '\\WpOrg\\Requests\\Autoload' ) ) {
+				// @phpstan-ignore staticMethod.internal
 				\WpOrg\Requests\Autoload::register();
 				$this->store_requests_meta( RequestsLibrary::CLASS_NAME_V2, self::FROM_WP_CORE );
 				return $state;
@@ -124,6 +130,7 @@ final class IncludeRequestsAutoloader implements BootstrapStep {
 
 		$autoloader->register();
 
+		// @phpstan-ignore staticMethod.internal
 		\WpOrg\Requests\Autoload::register();
 
 		$this->store_requests_meta( RequestsLibrary::CLASS_NAME_V2, self::FROM_WP_CLI );

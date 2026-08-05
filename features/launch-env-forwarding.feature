@@ -18,7 +18,7 @@ Feature: Environment variables are forwarded to spawned processes
     And a run-env-check.php file:
       """
       <?php
-      $result = WP_CLI::launch( "php env-dump.php", true, true );
+      $result = WP_CLI::launch( 'php env-dump.php', true, true );
       echo $result->stdout;
       """
 

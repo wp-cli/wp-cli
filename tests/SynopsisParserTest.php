@@ -87,7 +87,7 @@ class SynopsisParserTest extends TestCase {
 		$param = $r[2];
 		$this->assertEquals( 'assoc', $param['type'] );
 		$this->assertTrue( $param['optional'] );
-		$this->assertTrue( $param['value']['optional'] );
+		$this->assertTrue( is_array( $param['value'] ) && ! empty( $param['value']['optional'] ) );
 	}
 
 	public function testInvalidAssoc(): void {
@@ -147,7 +147,7 @@ class SynopsisParserTest extends TestCase {
 
 	public function testRender(): void {
 		/**
-		 * @phpstan-var array{0: PositionalParameter, 1: PositionalParameter, 2: AssocParameter, 3: AssocParameter, 4: AssocParameter} $a
+		 * @var CommandSynopsis[] $a
 		 */
 		$a = [
 			[
@@ -183,23 +183,23 @@ class SynopsisParserTest extends TestCase {
 				],
 			],
 		];
-		$this->assertEquals( '<message> [<secrets>...] --meal=<meal> [--snack=<snack>] [--skip[=<skip>]]', SynopsisParser::render( $a ) );
+		$this->assertSame( '<message> [<secrets>...] --meal=<meal> [--snack=<snack>] [--skip[=<skip>]]', SynopsisParser::render( $a ) );
 	}
 
 	public function testParseThenRender(): void {
 		$o = '<positional> --assoc=<assoc> [--double[=<optional>]] --<field>=<value> [--flag]';
 		$a = SynopsisParser::parse( $o );
 		$r = SynopsisParser::render( $a );
-		$this->assertEquals( $o, $r );
+		$this->assertSame( $o, $r );
 	}
 
 	public function testParseThenRenderNumeric(): void {
 		$o = '<p1ositional> --a2ssoc=<assoc> --<field>=<value> [--f3lag]';
 		$a = SynopsisParser::parse( $o );
-		$this->assertEquals( 'p1ositional', $a[0]['name'] );
-		$this->assertEquals( 'a2ssoc', $a[1]['name'] );
-		$this->assertEquals( 'f3lag', $a[3]['name'] );
+		$this->assertSame( 'p1ositional', $a[0]['name'] );
+		$this->assertSame( 'a2ssoc', $a[1]['name'] );
+		$this->assertSame( 'f3lag', $a[3]['name'] );
 		$r = SynopsisParser::render( $a );
-		$this->assertEquals( $o, $r );
+		$this->assertSame( $o, $r );
 	}
 }

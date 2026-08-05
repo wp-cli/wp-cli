@@ -7,8 +7,14 @@ use WP_CLI\Utils;
 
 class ExtractorTest extends TestCase {
 
+	/**
+	 * @var string
+	 */
 	public static $copy_overwrite_files_prefix = 'wp-cli-test-utils-copy-overwrite-files-';
 
+	/**
+	 * @var array<string>
+	 */
 	public static $expected_wp = [
 		'index1.php',
 		'license2.php',
@@ -23,8 +29,15 @@ class ExtractorTest extends TestCase {
 		'xmlrpc8.php',
 	];
 
-	public static $logger      = null;
-	public static $prev_logger = null;
+	/**
+	 * @var Loggers\Execution
+	 */
+	public static $logger;
+
+	/**
+	 * @var Loggers\Base
+	 */
+	public static $prev_logger;
 
 	public function set_up(): void {
 		parent::set_up();
@@ -365,6 +378,9 @@ class ExtractorTest extends TestCase {
 		rmdir( $dir );
 	}
 
+	/**
+	 * @return array{0: string, 1: string, 2: string}
+	 */
 	private static function create_test_directory_structure() {
 		$temp_dir = Utils\get_temp_dir() . uniqid( self::$copy_overwrite_files_prefix, true );
 		mkdir( $temp_dir );
@@ -386,6 +402,11 @@ class ExtractorTest extends TestCase {
 		return [ $temp_dir, $src_dir, $wp_dir ];
 	}
 
+	/**
+	 * @param string $dir
+	 * @param string $prefix_dir
+	 * @return array<int, string>
+	 */
 	private static function recursive_scandir( $dir, $prefix_dir = '' ) {
 		$dirs = scandir( $dir );
 		if ( ! $dirs ) {
