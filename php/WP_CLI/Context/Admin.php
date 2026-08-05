@@ -15,7 +15,7 @@ final class Admin implements Context {
 	/**
 	 * Process the context to set up the environment correctly.
 	 *
-	 * @param array $config Associative array of configuration data.
+	 * @param array<string, mixed> $config Associative array of configuration data.
 	 * @return void
 	 */
 	public function process( $config ) {
@@ -44,9 +44,9 @@ final class Admin implements Context {
 		WP_CLI::add_wp_hook(
 			'plugins_loaded',
 			function () use ( $config ) {
-				if ( isset( $config['user'] ) ) {
+				if ( isset( $config['user'] ) && ( is_string( $config['user'] ) || is_int( $config['user'] ) ) ) {
 					$fetcher       = new User();
-					$user          = $fetcher->get_check( $config['user'] );
+					$user          = $fetcher->get_check( (string) $config['user'] );
 					$admin_user_id = $user->ID;
 				} else {
 					$admin_user_id = $this->find_admin_user_id();

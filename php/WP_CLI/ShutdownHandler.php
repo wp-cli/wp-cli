@@ -30,6 +30,7 @@ class ShutdownHandler {
 
 	/**
 	 * Register the error message filter and shutdown handler.
+	 * @return void
 	 */
 	public static function register() {
 		// Ensure WordPress's fatal error handler is always enabled for WP-CLI
@@ -53,6 +54,8 @@ class ShutdownHandler {
 
 	/**
 	 * Handle PHP shutdown to ensure fatal errors are displayed even if display_errors is 0.
+	 * 
+	 * @return void
 	 */
 	public static function handle_shutdown() {
 		$error = error_get_last();
@@ -289,14 +292,38 @@ class ShutdownHandler {
 			return 'no' !== $error_rerun;
 		}
 
-		// Default: handle the error rerun (prompt)
-		return true;
+		// Default: only prompt when there is a human around to answer. Scripted
+		// usage (cron, CI, deployment tooling) needs to fail right away instead
+		// of blocking on input that will never arrive.
+		return self::is_interactive();
+	}
+
+	/**
+	 * Check whether the current command is running interactively.
+	 *
+	 * Both input and output need to be attached to a terminal: without a
+	 * terminal on STDIN there is nobody to answer the prompt, and without one
+	 * on STDOUT the prompt itself would end up in a pipe or file instead of in
+	 * front of the user.
+	 *
+	 * @return bool
+	 */
+	private static function is_interactive() {
+		// A truthy SHELL_PIPE environment variable forces non-interactive mode.
+		// A falsy one only opts out of the pipe detection, it cannot declare a
+		// session interactive: the terminal checks below still have to pass.
+		if ( Utils\isPiped() ) {
+			return false;
+		}
+
+		return stream_isatty( STDIN ) && stream_isatty( STDOUT );
 	}
 
 	/**
 	 * Prompt the user to rerun the command with the skip flag.
 	 *
 	 * @param array<string, bool|string> $skip Skip flag(s) to append.
+	 * @return void
 	 */
 	private static function prompt_and_rerun( $skip ) {
 		// Get environment variable to check default behavior
@@ -353,6 +380,7 @@ class ShutdownHandler {
 	 * are not part of any individual subcommand's synopsis.
 	 *
 	 * @param array<string, bool|string> $skip Skip flag(s) to append.
+	 * @return void
 	 */
 	private static function rerun_with_skip( $skip ) {
 		$runner = WP_CLI::get_runner();
@@ -413,7 +441,7 @@ class ShutdownHandler {
 					}
 					$existing = implode( ',', $parts );
 				} else {
-					$existing = (string) $runtime_config[ $skip_flag ];
+					$existing = is_scalar( $runtime_config[ $skip_flag ] ) ? (string) $runtime_config[ $skip_flag ] : '';
 				}
 
 				$runtime_config[ $skip_flag ] = '' !== $existing ? $existing . ',' . $slug : $slug;

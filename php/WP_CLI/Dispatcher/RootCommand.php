@@ -35,11 +35,14 @@ class RootCommand extends CompositeCommand {
 	 * Find a subcommand registered on the root
 	 * command.
 	 *
-	 * @param array $args
-	 * @return Subcommand|false
+	 * @param array<string> $args
+	 * @return Subcommand|CompositeCommand|false
 	 */
 	public function find_subcommand( &$args ) {
 		$command = array_shift( $args );
+		if ( null === $command ) {
+			return false;
+		}
 
 		Utils\load_command( $command );
 

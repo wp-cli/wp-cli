@@ -80,14 +80,14 @@ final class WpOrgApi {
 	/**
 	 * Options to pass onto the Requests library for executing the remote calls.
 	 *
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	private $options;
 
 	/**
 	 * WpOrgApi constructor.
 	 *
-	 * @param array $options Associative array of options to pass to the API abstraction.
+	 * @param array<string, mixed> $options Associative array of options to pass to the API abstraction.
 	 */
 	public function __construct( $options = [] ) {
 		$this->options = $options;
@@ -98,7 +98,7 @@ final class WpOrgApi {
 	 *
 	 * @param string $version Version string to query.
 	 * @param string $locale  Optional. Locale to query. Defaults to 'en_US'.
-	 * @return false|array False on failure. An array of checksums on success.
+	 * @return array<mixed>|false False on failure. An array of checksums on success.
 	 * @throws RuntimeException If the remote request fails.
 	 */
 	public function get_core_checksums( $version, $locale = 'en_US' ) {
@@ -130,7 +130,7 @@ final class WpOrgApi {
 	 * Gets a core version check.
 	 *
 	 * @param string $locale Optional. Locale to request a version check for. Defaults to 'en_US'.
-	 * @return array|false False on failure. Associative array of the offer on success.
+	 * @return array<string, mixed>|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
 	public function get_core_version_check( $locale = 'en_US' ) {
@@ -153,7 +153,7 @@ final class WpOrgApi {
 	 * Gets a download offer.
 	 *
 	 * @param string $locale Optional. Locale to request an offer from. Defaults to 'en_US'.
-	 * @return array|false False on failure. Associative array of the offer on success.
+	 * @return array<string, mixed>|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
 	public function get_core_download_offer( $locale = 'en_US' ) {
@@ -181,7 +181,7 @@ final class WpOrgApi {
 	 *
 	 * @param string $plugin  Plugin slug to query.
 	 * @param string $version Version string to query.
-	 * @return false|array False on failure. An array of checksums on success.
+	 * @return array<mixed>|false False on failure. An array of checksums on success.
 	 * @throws RuntimeException If the remote request fails.
 	 */
 	public function get_plugin_checksums( $plugin, $version ) {
@@ -208,10 +208,10 @@ final class WpOrgApi {
 	/**
 	 * Gets a plugin's info.
 	 *
-	 * @param string $plugin Plugin slug to query.
-	 * @param string $locale Optional. Locale to request info for. Defaults to 'en_US'.
-	 * @param array $fields Optional. Fields to include/omit from the response.
-	 * @return array|false False on failure. Associative array of the offer on success.
+	 * @param string                      $plugin Plugin slug to query.
+	 * @param string                      $locale Optional. Locale to request info for. Defaults to 'en_US'.
+	 * @param array<string, bool>|array<string> $fields Optional. Fields to include/omit from the response.
+	 * @return array<string, mixed>|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
 	public function get_plugin_info( $plugin, $locale = 'en_US', array $fields = [] ) {
@@ -243,10 +243,10 @@ final class WpOrgApi {
 	/**
 	 * Gets a theme's info.
 	 *
-	 * @param string $theme  Theme slug to query.
-	 * @param string $locale Optional. Locale to request info for. Defaults to 'en_US'.
-	 * @param array $fields Optional. Fields to include/omit from the response.
-	 * @return array|false False on failure. Associative array of the offer on success.
+	 * @param string                      $theme  Theme slug to query.
+	 * @param string                      $locale Optional. Locale to request info for. Defaults to 'en_US'.
+	 * @param array<string, bool>|array<string> $fields Optional. Fields to include/omit from the response.
+	 * @return array<string, mixed>|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
 	public function get_theme_info( $theme, $locale = 'en_US', array $fields = [] ) {
@@ -288,10 +288,10 @@ final class WpOrgApi {
 	/**
 	 * Execute a remote GET request.
 	 *
-	 * @param string $url     URL to execute the GET request on.
-	 * @param array  $headers Optional. Associative array of headers.
-	 * @param array  $options Optional. Associative array of options.
-	 * @return mixed|false False on failure. Decoded JSON on success.
+	 * @param string                $url     URL to execute the GET request on.
+	 * @param array<string, string> $headers Optional. Associative array of headers.
+	 * @param array<string, mixed>  $options Optional. Associative array of options.
+	 * @return array<mixed>|false False on failure. Decoded JSON on success.
 	 * @throws RuntimeException If the JSON could not be decoded.
 	 */
 	private function json_get_request( $url, $headers = [], $options = [] ) {
@@ -314,15 +314,19 @@ final class WpOrgApi {
 			throw new RuntimeException( 'Failed to decode JSON: ' . json_last_error_msg() );
 		}
 
+		if ( ! is_array( $data ) ) {
+			return false;
+		}
+
 		return $data;
 	}
 
 	/**
 	 * Execute a remote GET request.
 	 *
-	 * @param string $url     URL to execute the GET request on.
-	 * @param array  $headers Optional. Associative array of headers.
-	 * @param array  $options Optional. Associative array of options.
+	 * @param string                $url     URL to execute the GET request on.
+	 * @param array<string, string> $headers Optional. Associative array of headers.
+	 * @param array<string, mixed>  $options Optional. Associative array of options.
 	 * @return string Response body.
 	 * @throws RuntimeException If the remote request fails.
 	 */

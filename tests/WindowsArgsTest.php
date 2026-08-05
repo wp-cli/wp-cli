@@ -12,9 +12,13 @@ class WindowsArgsTest extends TestCase {
 	 * Test that space-separated numeric IDs are split on Windows
 	 *
 	 * @dataProvider provideWindowsArguments
+	 * @param bool $is_windows
+	 * @param array<int, string> $input_args
+	 * @param int $expected_count
+	 * @param array<int, string> $expected_values
 	 */
 	#[PHPUnit\Framework\Attributes\DataProvider( 'provideWindowsArguments' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testWindowsArgumentSplitting( $is_windows, $input_args, $expected_count, $expected_values ) {
+	public function testWindowsArgumentSplitting( $is_windows, $input_args, $expected_count, $expected_values ): void {
 		// Set the Windows environment variable
 		putenv( $is_windows ? 'WP_CLI_TEST_IS_WINDOWS=1' : 'WP_CLI_TEST_IS_WINDOWS=0' );
 
@@ -35,10 +39,13 @@ class WindowsArgsTest extends TestCase {
 		$this->assertCount( $expected_count, $result_args, 'Unexpected number of arguments' );
 
 		foreach ( $expected_values as $index => $expected_value ) {
-			$this->assertEquals( $expected_value, $result_args[ $index ], "Argument at index $index doesn't match" );
+			$this->assertSame( $expected_value, $result_args[ $index ], "Argument at index $index doesn't match" );
 		}
 	}
 
+	/**
+	 * @return array<string, array{0: bool, 1: array<int, string>, 2: int, 3: array<int, string>}>
+	 */
 	public static function provideWindowsArguments() {
 		return [
 			// is_windows, input_args, expected_count, expected_values

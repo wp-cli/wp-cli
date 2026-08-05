@@ -38,10 +38,10 @@ Feature: Skipping themes
     And STDERR should be empty
 
     # The specified theme should still show up as an active theme
-    When I run `wp --skip-themes theme status twentyseventeen`
-    Then STDOUT should contain:
+    When I run `wp --skip-themes theme get twentyseventeen --field=status`
+    Then STDOUT should be:
       """
-      Active
+      active
       """
     And STDERR should be empty
 
@@ -124,18 +124,12 @@ Feature: Skipping themes
     And I run `wp theme install default`
 
     # The classic theme should show up as an active theme
-    When I run `wp theme status`
-    Then STDOUT should contain:
-      """
-      A classic
-      """
-    And STDERR should be empty
-
     # The default theme should show up as an installed theme
-    When I run `wp theme status`
+    When I run `wp theme list --fields=name,status --format=csv`
     Then STDOUT should contain:
       """
-      I default
+      classic,active
+      default,inactive
       """
     And STDERR should be empty
 

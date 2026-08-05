@@ -14,9 +14,11 @@ final class RunnerTest extends TestCase {
 
 	/**
 	 * @dataProvider dataSafeParsePath
+	 * @param string $expression
+	 * @param string|false $expected
 	 */
 	#[DataProvider( 'dataSafeParsePath' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testSafeParsePath( $expression, $expected ): void {
+	public function testSafeParsePath( string $expression, $expected ): void {
 		$runner = new ReflectionClass( Runner::class );
 		$method = $runner->getMethod( 'safe_parse_path' );
 		if ( PHP_VERSION_ID < 80100 ) {

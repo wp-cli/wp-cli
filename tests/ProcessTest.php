@@ -9,6 +9,10 @@ class ProcessTest extends TestCase {
 
 	/**
 	 * @dataProvider data_process_env
+	 * @param string $cmd_prefix
+	 * @param array<string, string> $env
+	 * @param array<int, string> $expected_env_vars
+	 * @param string $expected_out
 	 */
 	#[DataProvider( 'data_process_env' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function test_process_env( $cmd_prefix, $env, $expected_env_vars, $expected_out ): void {

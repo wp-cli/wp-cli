@@ -126,6 +126,7 @@ function replace_wp_die_handler() {
 }
 
 /**
+ * @param string|\WP_Error|\Stringable $message
  * @return never
  */
 function wp_die_handler( $message ) {
