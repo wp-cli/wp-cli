@@ -2405,10 +2405,9 @@ class Runner {
 			99
 		);
 
-		// Re-enable PHP error reporting to stderr if testing.
-		if ( getenv( 'BEHAT_RUN' ) ) {
-			$this->enable_error_reporting();
-		}
+		// Re-enforce debug mode settings after WP finishes loading, since wp-admin/includes/admin.php
+		// and other late-loading files may reset error_reporting, display_errors, or log_errors.
+		Utils\wp_debug_mode();
 
 		WP_CLI::debug( 'Loaded WordPress', 'bootstrap' );
 
@@ -2986,14 +2985,20 @@ class Runner {
 		$cache->write( $cache_key, (string) time() );
 
 		// Check whether any updates are available.
-		ob_start();
-		WP_CLI::run_command(
-			[ 'cli', 'check-update' ],
+		// Use exit_error => false so that any HTTP/network errors do not fail the user's command.
+		$result = WP_CLI::runcommand(
+			'cli check-update --format=count',
 			[
-				'format' => 'count',
+				'launch'     => false,
+				'exit_error' => false,
+				'return'     => 'all',
 			]
 		);
-		$count = ob_get_clean();
+		if ( ! is_object( $result ) || $result->return_code ) {
+			WP_CLI::debug( 'Background update check failed: ' . ( is_object( $result ) ? $result->stderr : '' ), 'auto-update' );
+			return;
+		}
+		$count = $result->stdout;
 		if ( ! $count ) {
 			return;
 		}
