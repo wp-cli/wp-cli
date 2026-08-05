@@ -656,20 +656,10 @@ class Formatter {
 			}
 		}
 
-		foreach ( array_keys( (array) $data ) as $key ) {
-			if ( ! in_array( $key, $true_fields, true ) ) {
-				if ( is_array( $data ) ) {
-					unset( $data[ $key ] );
-				} elseif ( is_object( $data ) ) {
-					unset( $data->$key );
-				}
-			}
-		}
-
 		$ordered_data = [];
 
 		foreach ( $true_fields as $field ) {
-			$ordered_data[ $field ] = ( ( (array) $data )[ $field ] );
+			$ordered_data[ $field ] = is_object( $data ) ? $data->$field : $data[ $field ];
 		}
 
 		// Check if a formatter is registered for this format

@@ -317,4 +317,32 @@ class FormatterTest extends TestCase {
 		// Should match var_export output
 		$this->assertStringContainsString( "'nested' => 'value'", $result );
 	}
+
+	public function test_display_item_object_with_protected_properties(): void {
+		Formatter::register_builtin_formats();
+
+		$dummy = new class() {
+			/** @var string */
+			public $public_prop = 'public_val';
+
+			/** @var string */
+			protected $protected_prop = 'protected_val';
+
+			/** @var string */
+			private $private_prop = 'private_val';
+
+			public function get_private_prop(): string {
+				return $this->private_prop;
+			}
+		};
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'public_prop' ] );
+
+		ob_start();
+		$formatter->display_item( $dummy );
+		$output = ob_get_clean();
+
+		$this->assertSame( '{"public_prop":"public_val"}', $output );
+	}
 }
