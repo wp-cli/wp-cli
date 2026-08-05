@@ -18,15 +18,19 @@ class Extractor {
 	/**
 	 * Extract the archive file to a specific destination.
 	 *
+	 * @param string $tarball_or_zip
 	 * @param string $dest
+	 * @return void
 	 */
 	public static function extract( $tarball_or_zip, $dest ) {
 		if ( preg_match( '/\.zip$/', $tarball_or_zip ) ) {
-			return self::extract_zip( $tarball_or_zip, $dest );
+			self::extract_zip( $tarball_or_zip, $dest );
+			return;
 		}
 
 		if ( preg_match( '/\.tar\.gz$/', $tarball_or_zip ) ) {
-			return self::extract_tarball( $tarball_or_zip, $dest );
+			self::extract_tarball( $tarball_or_zip, $dest );
+			return;
 		}
 
 		throw new Exception( "Extraction only supported for '.zip' and '.tar.gz' file types." );
@@ -37,6 +41,7 @@ class Extractor {
 	 *
 	 * @param string $zipfile
 	 * @param string $dest
+	 * @return void
 	 */
 	private static function extract_zip( $zipfile, $dest ) {
 		if ( ! class_exists( 'ZipArchive' ) ) {
@@ -85,6 +90,7 @@ class Extractor {
 	 *
 	 * @param string $tarball
 	 * @param string $dest
+	 * @return void
 	 */
 	private static function extract_tarball( $tarball, $dest ) {
 		// Ensure the destination folder exists or can be created.
@@ -184,6 +190,7 @@ class Extractor {
 	 *
 	 * @param string $source
 	 * @param string $dest
+	 * @return void
 	 */
 	public static function copy_overwrite_files( $source, $dest ) {
 		$iterator = new RecursiveIteratorIterator(
@@ -197,7 +204,7 @@ class Extractor {
 		$error = 0;
 
 		if ( ! is_dir( $dest ) ) {
-			mkdir( $dest, 0777, true );
+			mkdir( $dest, 0755, true );
 		}
 
 		/**
@@ -209,7 +216,7 @@ class Extractor {
 
 			if ( $item->isDir() ) {
 				if ( ! is_dir( $dest_path ) ) {
-					mkdir( $dest_path );
+					mkdir( $dest_path, 0755 );
 				}
 			} elseif ( file_exists( $dest_path ) && is_writable( $dest_path ) ) {
 					copy( $item, $dest_path );
@@ -231,6 +238,7 @@ class Extractor {
 	 * must exist.
 	 *
 	 * @param string $dir
+	 * @return void
 	 */
 	public static function rmdir( $dir ) {
 		$files = new RecursiveIteratorIterator(
@@ -362,7 +370,7 @@ class Extractor {
 	 */
 	private static function ensure_dir_exists( $dir ) {
 		if ( ! is_dir( $dir ) ) {
-			if ( ! @mkdir( $dir, 0700, true ) ) {
+			if ( ! @mkdir( $dir, 0755, true ) ) {
 				$error = error_get_last();
 				WP_CLI::warning(
 					sprintf(

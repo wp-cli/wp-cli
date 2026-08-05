@@ -9,20 +9,20 @@ class ArgValidationTest extends TestCase {
 		$validator = new SynopsisValidator( '<foo> <bar> [<baz>]' );
 
 		$this->assertFalse( $validator->enough_positionals( [] ) );
-		$this->assertTrue( $validator->enough_positionals( [ 1, 2 ] ) );
-		$this->assertTrue( $validator->enough_positionals( [ 1, 2, 3, 4 ] ) );
+		$this->assertTrue( $validator->enough_positionals( [ '1', '2' ] ) );
+		$this->assertTrue( $validator->enough_positionals( [ '1', '2', '3', '4' ] ) );
 
-		$this->assertEquals( [ 4 ], $validator->unknown_positionals( [ 1, 2, 3, 4 ] ) );
+		$this->assertEquals( [ '4' ], $validator->unknown_positionals( [ '1', '2', '3', '4' ] ) );
 	}
 
 	public function testRepeatingPositional(): void {
 		$validator = new SynopsisValidator( '<foo> [<bar>...]' );
 
 		$this->assertFalse( $validator->enough_positionals( [] ) );
-		$this->assertTrue( $validator->enough_positionals( [ 1 ] ) );
-		$this->assertTrue( $validator->enough_positionals( [ 1, 2, 3 ] ) );
+		$this->assertTrue( $validator->enough_positionals( [ '1' ] ) );
+		$this->assertTrue( $validator->enough_positionals( [ '1', '2', '3' ] ) );
 
-		$this->assertEmpty( $validator->unknown_positionals( [ 1, 2, 3 ] ) );
+		$this->assertEmpty( $validator->unknown_positionals( [ '1', '2', '3' ] ) );
 	}
 
 	public function testUnknownAssocEmpty(): void {

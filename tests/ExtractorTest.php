@@ -7,8 +7,14 @@ use WP_CLI\Utils;
 
 class ExtractorTest extends TestCase {
 
+	/**
+	 * @var string
+	 */
 	public static $copy_overwrite_files_prefix = 'wp-cli-test-utils-copy-overwrite-files-';
 
+	/**
+	 * @var array<string>
+	 */
 	public static $expected_wp = [
 		'index1.php',
 		'license2.php',
@@ -23,8 +29,15 @@ class ExtractorTest extends TestCase {
 		'xmlrpc8.php',
 	];
 
-	public static $logger      = null;
-	public static $prev_logger = null;
+	/**
+	 * @var Loggers\Execution
+	 */
+	public static $logger;
+
+	/**
+	 * @var Loggers\Base
+	 */
+	public static $prev_logger;
 
 	public function set_up(): void {
 		parent::set_up();
@@ -352,7 +365,14 @@ class ExtractorTest extends TestCase {
 		$this->assertTrue( $result );
 		$this->assertTrue( is_dir( $dir ) );
 		if ( ! Utils\is_windows() ) {
-			$this->assertSame( '0700', substr( sprintf( '%o', fileperms( $dir ) ), -4 ) );
+			// Assert the write bits rather than a literal mode: the exact result depends on the
+			// umask, and what matters is that no other local user can write into the directory.
+			$perms = fileperms( $dir ) & 0777;
+			$this->assertSame(
+				0,
+				$perms & 0022,
+				sprintf( 'Extraction directory must not be group- or world-writable, got %o.', $perms )
+			);
 		}
 
 		rmdir( $dir );
@@ -379,6 +399,9 @@ class ExtractorTest extends TestCase {
 		Extractor::rmdir( $temp_dir );
 	}
 
+	/**
+	 * @return array{0: string, 1: string, 2: string}
+	 */
 	private static function create_test_directory_structure() {
 		$temp_dir = Utils\get_temp_dir() . uniqid( self::$copy_overwrite_files_prefix, true );
 		mkdir( $temp_dir );
@@ -400,6 +423,11 @@ class ExtractorTest extends TestCase {
 		return [ $temp_dir, $src_dir, $wp_dir ];
 	}
 
+	/**
+	 * @param string $dir
+	 * @param string $prefix_dir
+	 * @return array<int, string>
+	 */
 	private static function recursive_scandir( $dir, $prefix_dir = '' ) {
 		$dirs = scandir( $dir );
 		if ( ! $dirs ) {

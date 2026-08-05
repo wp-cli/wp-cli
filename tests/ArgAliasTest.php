@@ -80,7 +80,7 @@ class ArgAliasTest extends TestCase {
 		];
 
 		$rendered = SynopsisParser::render( $synopsis );
-		$this->assertEquals( '[--verbose|v|wordy]', $rendered );
+		$this->assertSame( '[--verbose|v|wordy]', $rendered );
 	}
 
 	public function test_synopsis_parser_render_includes_aliases_for_assoc(): void {
@@ -99,13 +99,13 @@ class ArgAliasTest extends TestCase {
 		];
 
 		$rendered = SynopsisParser::render( $synopsis );
-		$this->assertEquals( '[--number=<number>|n]', $rendered );
+		$this->assertSame( '[--number=<number>|n]', $rendered );
 	}
 
 	public function test_synopsis_roundtrip_with_aliases(): void {
 		$synopsis = '[--number=<number>|n] [--with-dependencies|w] [--verbose|v|wordy]';
 		$parsed   = SynopsisParser::parse( $synopsis );
 		$rendered = SynopsisParser::render( $parsed );
-		$this->assertEquals( $synopsis, $rendered );
+		$this->assertSame( $synopsis, $rendered );
 	}
 }

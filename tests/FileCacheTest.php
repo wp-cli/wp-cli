@@ -6,11 +6,6 @@ use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
 class FileCacheTest extends TestCase {
-
-	public static function set_up_before_class() {
-		require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
-	}
-
 	/**
 	 * Test get_root() deals with backslashed directory.
 	 */
@@ -58,7 +53,14 @@ class FileCacheTest extends TestCase {
 		$this->assertTrue( $result );
 		$this->assertTrue( is_dir( $cache_dir . '/test1' ) );
 		if ( ! Utils\is_windows() ) {
-			$this->assertSame( '0700', substr( sprintf( '%o', fileperms( $cache_dir . '/test1' ) ), -4 ) );
+			// Assert the write bits rather than a literal mode: the exact result depends on the
+			// umask, and what matters is that no other local user can write into the cache.
+			$perms = fileperms( $cache_dir . '/test1' ) & 0777;
+			$this->assertSame(
+				0,
+				$perms & 0022,
+				sprintf( 'Cache directory must not be group- or world-writable, got %o.', $perms )
+			);
 		}
 
 		// Try to create the same directory again. it should return true.

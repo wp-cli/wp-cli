@@ -14,7 +14,7 @@ final class Auto implements Context {
 	/**
 	 * Array of commands to intercept.
 	 *
-	 * @var array<array>
+	 * @var array<int, array<int, string>>
 	 */
 	const COMMANDS_TO_RUN_AS_ADMIN = [
 		[ 'plugin' ],
@@ -40,7 +40,7 @@ final class Auto implements Context {
 	/**
 	 * Process the context to set up the environment correctly.
 	 *
-	 * @param array $config Associative array of configuration data.
+	 * @param array<string, mixed> $config Associative array of configuration data.
 	 * @return void
 	 * @throws WP_CLI\ExitException If an invalid context was deduced.
 	 */
