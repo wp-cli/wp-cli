@@ -238,8 +238,31 @@ class ShutdownHandler {
 			return 'no' !== $error_rerun;
 		}
 
-		// Default: handle the error rerun (prompt)
-		return true;
+		// Default: only prompt when there is a human around to answer. Scripted
+		// usage (cron, CI, deployment tooling) needs to fail right away instead
+		// of blocking on input that will never arrive.
+		return self::is_interactive();
+	}
+
+	/**
+	 * Check whether the current command is running interactively.
+	 *
+	 * Both input and output need to be attached to a terminal: without a
+	 * terminal on STDIN there is nobody to answer the prompt, and without one
+	 * on STDOUT the prompt itself would end up in a pipe or file instead of in
+	 * front of the user.
+	 *
+	 * @return bool
+	 */
+	private static function is_interactive() {
+		// A truthy SHELL_PIPE environment variable forces non-interactive mode.
+		// A falsy one only opts out of the pipe detection, it cannot declare a
+		// session interactive: the terminal checks below still have to pass.
+		if ( Utils\isPiped() ) {
+			return false;
+		}
+
+		return stream_isatty( STDIN ) && stream_isatty( STDOUT );
 	}
 
 	/**
