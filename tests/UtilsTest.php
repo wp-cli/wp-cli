@@ -202,11 +202,25 @@ class UtilsTest extends TestCase {
 			'host'   => 'wordpress',
 		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
+
 		$this->assertSame( 'docker', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertSame( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertSame( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
 		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		// Host or user starting with a hyphen (option injection prevention parsed as-is).
+		$testcase = '-oProxyCommand=id';
+		$this->assertEquals( [ 'host' => '-oProxyCommand=id' ], Utils\parse_ssh_url( $testcase ) );
+		$this->assertSame( '-oProxyCommand=id', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+
+		$testcase = 'user@-oProxyCommand=id';
+		$this->assertEquals( [ 'user' => 'user', 'host' => '-oProxyCommand=id' ], Utils\parse_ssh_url( $testcase ) );
+		$this->assertSame( '-oProxyCommand=id', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+
+		$testcase = '-user@foo.com';
+		$this->assertEquals( [ 'user' => '-user', 'host' => 'foo.com' ], Utils\parse_ssh_url( $testcase ) );
+		$this->assertSame( '-user', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 
 		// Container scheme with user, host, and path.
 		$testcase = 'docker-compose:bar@wordpress:~/path/to/dir';
