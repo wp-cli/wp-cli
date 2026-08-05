@@ -270,7 +270,7 @@ final class RunnerTest extends TestCase {
 		$command = $method->invoke( $runner, [ 'scheme' => 'vagrant' ], 'wp status' );
 		$this->assertIsString( $command );
 
-		$this->assertStringContainsString( "-i '/custom/alias/key'", $command );
+		$this->assertStringContainsString( sprintf( '-i %s', escapeshellarg( '/custom/alias/key' ) ), $command );
 		$this->assertStringNotContainsString( '/default/vagrant/identityfile', $command );
 	}
 }
