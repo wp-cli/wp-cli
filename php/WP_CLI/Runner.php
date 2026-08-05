@@ -1822,7 +1822,6 @@ class Runner {
 			$new_ssh_args     = array_diff( $project_ssh_args, $global_ssh_args );
 
 			$project_aliases = $configurator->get_aliases();
-			$new_aliases     = array_diff_key( $project_aliases, $global_aliases );
 
 			foreach ( $project_requires as $req ) {
 				$gated_directives[] = 'require: ' . $req;
@@ -1848,11 +1847,27 @@ class Runner {
 				$gated_types[]      = 'ssh-args';
 			}
 
-			foreach ( $new_aliases as $alias_name => $alias_def ) {
-				if ( is_array( $alias_def ) && ! empty( $alias_def['ssh-args'] ) ) {
-					$gated_directives[] = 'alias @' . $alias_name . ': ssh-args=' . ( is_scalar( $alias_def['ssh-args'] ) ? $alias_def['ssh-args'] : json_encode( $alias_def['ssh-args'] ) );
-					$gated_types[]      = 'alias';
+			// Gate any project alias whose ssh-args is new or differs from the
+			// same-named alias in the trusted system/global config. Comparing per
+			// alias (rather than only flagging aliases with brand-new names) ensures
+			// a project config cannot silently redefine an existing alias such as
+			// @prod to inject SSH options like -oProxyCommand.
+			foreach ( $project_aliases as $alias_name => $alias_def ) {
+				if ( ! is_array( $alias_def ) || empty( $alias_def['ssh-args'] ) ) {
+					continue;
 				}
+
+				$global_alias_def      = isset( $global_aliases[ $alias_name ] ) && is_array( $global_aliases[ $alias_name ] )
+					? $global_aliases[ $alias_name ]
+					: [];
+				$global_alias_ssh_args = isset( $global_alias_def['ssh-args'] ) ? $global_alias_def['ssh-args'] : null;
+
+				if ( $alias_def['ssh-args'] === $global_alias_ssh_args ) {
+					continue;
+				}
+
+				$gated_directives[] = 'alias @' . $alias_name . ': ssh-args=' . ( is_scalar( $alias_def['ssh-args'] ) ? $alias_def['ssh-args'] : json_encode( $alias_def['ssh-args'] ) );
+				$gated_types[]      = 'alias';
 			}
 		}
 

