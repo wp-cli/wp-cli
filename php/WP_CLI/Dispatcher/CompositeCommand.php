@@ -14,14 +14,44 @@ use WP_CLI\Utils;
  */
 class CompositeCommand {
 
+	/**
+	 * @var string
+	 */
 	protected $name;
+
+	/**
+	 * @var string
+	 */
 	protected $shortdesc;
+
+	/**
+	 * @var string
+	 */
 	protected $longdesc;
+
+	/**
+	 * @var string
+	 */
 	protected $synopsis;
+
+	/**
+	 * @var string|false
+	 */
 	protected $hook;
+
+	/**
+	 * @var DocParser
+	 */
 	protected $docparser;
 
+	/**
+	 * @var RootCommand|CompositeCommand|false
+	 */
 	protected $parent;
+
+	/**
+	 * @var array<string, Subcommand|CompositeCommand>
+	 */
 	protected $subcommands = [];
 
 	/**
@@ -51,7 +81,7 @@ class CompositeCommand {
 	/**
 	 * Get the parent composite (or root) command
 	 *
-	 * @return RootCommand|CompositeCommand
+	 * @return RootCommand|CompositeCommand|false
 	 */
 	public function get_parent() {
 		return $this->parent;
@@ -65,6 +95,7 @@ class CompositeCommand {
 	 * @param Subcommand|CompositeCommand $command  Cub-command to add.
 	 * @param bool                        $override Optional. Whether to override an existing subcommand of the same
 	 *                                              name.
+	 * @return void
 	 */
 	public function add_subcommand( $name, $command, $override = true ) {
 		if ( $override || ! array_key_exists( $name, $this->subcommands ) ) {
@@ -77,6 +108,7 @@ class CompositeCommand {
 	 * subcommands
 	 *
 	 * @param string $name Represents how subcommand should be invoked
+	 * @return void
 	 */
 	public function remove_subcommand( $name ) {
 		if ( isset( $this->subcommands[ $name ] ) ) {
@@ -98,7 +130,7 @@ class CompositeCommand {
 	 * Get the subcommands contained by this composite
 	 * command.
 	 *
-	 * @return array
+	 * @return array<string, Subcommand|CompositeCommand>
 	 */
 	public function get_subcommands() {
 		ksort( $this->subcommands );
@@ -129,7 +161,7 @@ class CompositeCommand {
 	 * Get the hook name for this composite
 	 * command.
 	 *
-	 * @return string
+	 * @return string|false
 	 */
 	public function get_hook() {
 		return $this->hook;
@@ -148,6 +180,7 @@ class CompositeCommand {
 	 * Set the short description for this composite command.
 	 *
 	 * @param string $shortdesc
+	 * @return void
 	 */
 	public function set_shortdesc( $shortdesc ) {
 		$this->shortdesc = Utils\normalize_eols( $shortdesc );
@@ -167,6 +200,7 @@ class CompositeCommand {
 	 * Set the long description for this composite command
 	 *
 	 * @param string $longdesc
+	 * @return void
 	 */
 	public function set_longdesc( $longdesc ) {
 		$this->longdesc = Utils\normalize_eols( $longdesc );
@@ -202,6 +236,8 @@ class CompositeCommand {
 	/**
 	 * Show the usage for all subcommands contained
 	 * by the composite command.
+	 *
+	 * @return void
 	 */
 	public function show_usage() {
 		$methods = $this->get_subcommands();
@@ -232,9 +268,10 @@ class CompositeCommand {
 	 * When a composite command is invoked, it shows usage
 	 * docs for its subcommands.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 * @param array $extra_args
+	 * @param array<mixed>         $args
+	 * @param array<string, mixed> $assoc_args
+	 * @param array<mixed>         $extra_args
+	 * @return void
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- arguments not used, as only help displayed.
 		$this->show_usage();
@@ -244,11 +281,14 @@ class CompositeCommand {
 	 * Given supplied arguments, find a contained
 	 * subcommand
 	 *
-	 * @param array $args
-	 * @return Subcommand|false
+	 * @param array<string> $args
+	 * @return Subcommand|CompositeCommand|false
 	 */
 	public function find_subcommand( &$args ) {
 		$name = array_shift( $args );
+		if ( null === $name ) {
+			return false;
+		}
 
 		$subcommands = $this->get_subcommands();
 
@@ -271,8 +311,8 @@ class CompositeCommand {
 	 * Get any registered aliases for this composite command's
 	 * subcommands.
 	 *
-	 * @param array $subcommands
-	 * @return array
+	 * @param array<string, Subcommand|CompositeCommand> $subcommands
+	 * @return array<string, string>
 	 */
 	private static function get_aliases( $subcommands ) {
 		$aliases = [];
@@ -296,10 +336,10 @@ class CompositeCommand {
 		return false;
 	}
 
-	/***
+	/**
 	 * Get the list of global parameters
 	 *
-	 * @param string $root_command whether to include or not root command specific description
+	 * @param bool|string $root_command whether to include or not root command specific description
 	 * @return string
 	 */
 	protected function get_global_params( $root_command = false ) {
@@ -326,7 +366,8 @@ class CompositeCommand {
 			if ( true === $details['runtime'] ) {
 				$synopsis = "--[no-]$key";
 			} else {
-				$synopsis = "--$key" . $details['runtime'];
+				$runtime_str = is_string( $details['runtime'] ) ? $details['runtime'] : '';
+				$synopsis    = "--$key" . $runtime_str;
 			}
 
 			// Check if global parameters synopsis should be displayed or not.

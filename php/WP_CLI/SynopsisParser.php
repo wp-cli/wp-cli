@@ -18,7 +18,7 @@ class SynopsisParser {
 
 	/**
 	 * @param string $synopsis A synopsis
-	 * @return array List of parameters
+	 * @return array<int, array<string, mixed>> List of parameters
 	 */
 	public static function parse( $synopsis ) {
 		$tokens = array_filter( (array) preg_split( '/[\s\t]+/', $synopsis ) );
@@ -44,11 +44,9 @@ class SynopsisParser {
 	/**
 	 * Render the Synopsis into a format string.
 	 *
-	 * @param array $synopsis A structured synopsis. This might get reordered
-	 *                        to match the parsed output.
 	 * @return string Rendered synopsis.
 	 *
-	 * @phpstan-param CommandSynopsis[] $synopsis
+	 * @phpstan-param array<int, array<string, mixed>> $synopsis
 	 */
 	public static function render( &$synopsis ) {
 		if ( ! is_array( $synopsis ) ) {

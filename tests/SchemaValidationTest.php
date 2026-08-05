@@ -51,8 +51,8 @@ class SchemaValidationTest extends TestCase {
 	/**
 	 * Format validation errors into a readable message.
 	 *
-	 * @param string $filename The YAML filename being validated.
-	 * @param array  $errors   Array of validation errors from JsonSchema\Validator.
+	 * @param string                                                           $filename The YAML filename being validated.
+	 * @param array<int, array{property?: string, pointer?: string, message?: string}> $errors   Array of validation errors from JsonSchema\Validator.
 	 * @return string Formatted error message.
 	 */
 	private function formatValidationErrors( string $filename, array $errors ): string {

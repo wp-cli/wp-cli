@@ -4,16 +4,13 @@ use WP_CLI\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class CommandFactoryTest extends TestCase {
-
-	public static function set_up_before_class() {
-		require_once dirname( __DIR__ ) . '/php/class-wp-cli-command.php';
-	}
-
 	/**
 	 * @dataProvider dataProviderExtractLastDocComment
+	 * @param string $content
+	 * @param string|false $expected
 	 */
 	#[DataProvider( 'dataProviderExtractLastDocComment' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testExtractLastDocComment( $content, $expected ): void {
+	public function testExtractLastDocComment( string $content, $expected ): void {
 		// Save and set test env var.
 		$is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
 		putenv( 'WP_CLI_TEST_IS_WINDOWS=0' );
@@ -36,9 +33,11 @@ class CommandFactoryTest extends TestCase {
 
 	/**
 	 * @dataProvider dataProviderExtractLastDocComment
+	 * @param string $content
+	 * @param string|false $expected
 	 */
 	#[DataProvider( 'dataProviderExtractLastDocComment' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testExtractLastDocCommentWin( $content, $expected ): void {
+	public function testExtractLastDocCommentWin( string $content, $expected ): void {
 		// Save and set test env var.
 		$is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
 		putenv( 'WP_CLI_TEST_IS_WINDOWS=1' );

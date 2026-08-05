@@ -19,6 +19,7 @@ class Quiet extends Base {
 	 *
 	 * @param string $message Message to write.
 	 * @param bool   $newline Optional. Whether to append a newline to the end of the message. Default true.
+	 * @return void
 	 */
 	public function info( $message, $newline = true ) {
 		// Nothing.
@@ -28,6 +29,7 @@ class Quiet extends Base {
 	 * Success messages aren't logged.
 	 *
 	 * @param string $message Message to write.
+	 * @return void
 	 */
 	public function success( $message ) {
 		// Nothing.
@@ -37,6 +39,7 @@ class Quiet extends Base {
 	 * Warning messages aren't logged.
 	 *
 	 * @param string $message Message to write.
+	 * @return void
 	 */
 	public function warning( $message ) {
 		// Nothing.
@@ -46,6 +49,7 @@ class Quiet extends Base {
 	 * Write an error message to STDERR, prefixed with "Error: ".
 	 *
 	 * @param string $message Message to write.
+	 * @return void
 	 */
 	public function error( $message ) {
 		$this->_line( $message, 'Error', '%R', STDERR );
@@ -54,7 +58,8 @@ class Quiet extends Base {
 	/**
 	 * Similar to error( $message ), but outputs $message in a red box.
 	 *
-	 * @param  array $message_lines Message to write.
+	 * @param array<int, string> $message_lines Message to write.
+	 * @return void
 	 */
 	public function error_multi_line( $message_lines ) {
 		$message = implode( "\n", $message_lines );

@@ -12,11 +12,29 @@ use WP_Upgrader_Skin;
  */
 class UpgraderSkin extends WP_Upgrader_Skin {
 
+	/**
+	 * @var \stdClass|null
+	 */
 	public $api;
 
+	/**
+	 * @return void
+	 */
 	public function header() {}
+
+	/**
+	 * @return void
+	 */
 	public function footer() {}
+
+	/**
+	 * @return void
+	 */
 	public function bulk_header() {}
+
+	/**
+	 * @return void
+	 */
 	public function bulk_footer() {}
 
 	/**
@@ -55,12 +73,13 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 	/**
 	 * Process the feedback collected through the compat indirection.
 	 *
-	 * @param string $string String to use as feedback message.
-	 * @param array $args Array of additional arguments to process.
+	 * @param string       $string String to use as feedback message.
+	 * @param array<mixed> $args Array of additional arguments to process.
+	 * @return void
 	 */
 	public function process_feedback( $string, $args ) {
 
-		if ( 'parent_theme_prepare_install' === $string ) {
+		if ( 'parent_theme_prepare_install' === $string && is_object( $this->api ) ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $this->api->download_link, 'theme', $this->api->slug, $this->api->version );
 		}
 
@@ -68,8 +87,18 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 			$string = $this->upgrader->strings[ $string ];
 		}
 
-		if ( ! empty( $args ) && strpos( $string, '%' ) !== false ) {
-			$string = vsprintf( $string, $args );
+		if ( ! empty( $args ) && is_array( $args ) && strpos( $string, '%' ) !== false ) {
+			$string = vsprintf(
+				$string,
+				array_values(
+					array_map(
+						function ( $v ) {
+							return is_scalar( $v ) ? (string) $v : '';
+						},
+						$args
+					)
+				)
+			);
 		}
 
 		if ( empty( $string ) ) {
