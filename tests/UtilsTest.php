@@ -503,9 +503,11 @@ class UtilsTest extends TestCase {
 		$invalid_inputs = [
 			[ '../prefix', '' ],
 			[ 'prefix/', '' ],
+			[ 'prefix\\', '' ],
 			[ "prefix\0", '' ],
 			[ 'prefix', '../suffix' ],
 			[ 'prefix', '/suffix' ],
+			[ 'prefix', '\\suffix' ],
 			[ 'prefix', "suffix\0" ],
 		];
 
@@ -529,6 +531,9 @@ class UtilsTest extends TestCase {
 		$this->assertDirectoryExists( $dir );
 		$this->assertFalse( is_link( rtrim( $dir, '/\\' ) ) );
 		$this->assertTrue( '/' === substr( $dir, -1 ) );
+		if ( ! Utils\is_windows() ) {
+			$this->assertSame( '0700', substr( sprintf( '%o', (int) fileperms( $dir ) ), -4 ) );
+		}
 		rmdir( $dir );
 	}
 
@@ -547,6 +552,7 @@ class UtilsTest extends TestCase {
 		$invalid_prefixes = [
 			'../prefix',
 			'prefix/',
+			'prefix\\',
 			"prefix\0",
 		];
 
