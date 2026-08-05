@@ -59,12 +59,14 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 				'bar' => 'baz',
 			),
 		);
-		$this->assertEquals( 'baz', $array['foo']['bar'] );
+		// @phpstan-ignore method.alreadyNarrowedType
+		$this->assertSame( 'baz', $array['foo']['bar'] );
 
 		$traverser = new RecursiveDataStructureTraverser( $array );
 		$traverser->update( array( 'foo', 'bar' ), 'new' );
 
-		$this->assertEquals( 'new', $array['foo']['bar'] );
+		// @phpstan-ignore method.impossibleType
+		$this->assertSame( 'new', $array['foo']['bar'] );
 	}
 
 	public function test_it_can_set_a_nested_object_value(): void {
@@ -73,24 +75,24 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 				'bar' => 'baz',
 			),
 		);
-		$this->assertEquals( 'baz', $object->foo->bar );
+		$this->assertSame( 'baz', $object->foo->bar );
 
 		$traverser = new RecursiveDataStructureTraverser( $object );
 		$traverser->update( array( 'foo', 'bar' ), 'new' );
 
-		$this->assertEquals( 'new', $object->foo->bar );
+		$this->assertSame( 'new', $object->foo->bar );
 	}
 
 	public function test_it_can_update_an_integer_object_value(): void {
 		$object = (object) array(
 			'test_mode' => 0,
 		);
-		$this->assertEquals( 0, $object->test_mode );
+		$this->assertSame( 0, $object->test_mode );
 
 		$traverser = new RecursiveDataStructureTraverser( $object );
 		$traverser->update( array( 'test_mode' ), 1 );
 
-		$this->assertEquals( 1, $object->test_mode );
+		$this->assertSame( 1, $object->test_mode );
 	}
 
 	public function test_it_can_delete_a_nested_array_value(): void {

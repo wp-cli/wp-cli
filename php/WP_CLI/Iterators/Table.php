@@ -28,7 +28,7 @@ class Table extends Query {
 	 * }
 	 * </code>
 	 *
-	 * @param array $args Supported arguments:
+	 * @param array<string, mixed> $args Supported arguments:
 	 *      table – the name of the database table
 	 *      fields – an array of columns to get from the table, '*' is a valid value and the default
 	 *      where – conditions for filtering rows. Supports two formats:
@@ -38,27 +38,42 @@ class Table extends Query {
 	 *      append - add arbitrary extra SQL
 	 */
 	public function __construct( $args = [] ) {
-		$defaults = [
+		$defaults   = [
 			'fields'     => '*',
 			'where'      => [],
 			'append'     => '',
 			'table'      => null,
 			'chunk_size' => 500,
 		];
-		$table    = $args['table'];
-		$args     = array_merge( $defaults, $args );
+		$args       = array_merge( $defaults, $args );
+		$table      = is_string( $args['table'] ) ? $args['table'] : '';
+		$append     = is_string( $args['append'] ) ? $args['append'] : '';
+		$chunk_size = is_numeric( $args['chunk_size'] ) ? (int) $args['chunk_size'] : 500;
 
-		$fields     = self::build_fields( $args['fields'] );
-		$conditions = self::build_where_conditions( $args['where'] );
+		/** @var array<int, string>|string $fields_arg */
+		$fields_arg = is_array( $args['fields'] ) || is_string( $args['fields'] ) ? $args['fields'] : '*';
+		/** @var array<string, mixed>|string $where_arg */
+		$where_arg = is_array( $args['where'] ) || is_string( $args['where'] ) ? $args['where'] : [];
+
+		$fields     = self::build_fields( $fields_arg );
+		$conditions = self::build_where_conditions( $where_arg );
 		$where_sql  = $conditions ? " WHERE $conditions" : '';
-		$query      = "SELECT $fields FROM `$table` $where_sql {$args['append']}";
+		$query      = "SELECT $fields FROM `$table` $where_sql $append";
 
-		parent::__construct( $query, $args['chunk_size'] );
+		parent::__construct( $query, $chunk_size );
 	}
 
+	/**
+	 * @param array<int, string>|string $fields
+	 * @return string
+	 */
 	private static function build_fields( $fields ) {
 		if ( '*' === $fields ) {
 			return $fields;
+		}
+
+		if ( is_string( $fields ) ) {
+			$fields = array_map( 'trim', explode( ',', $fields ) );
 		}
 
 		return implode(
@@ -72,6 +87,10 @@ class Table extends Query {
 		);
 	}
 
+	/**
+	 * @param array<string, mixed>|string $where
+	 * @return string
+	 */
 	private static function build_where_conditions( $where ) {
 		global $wpdb;
 		if ( is_array( $where ) ) {

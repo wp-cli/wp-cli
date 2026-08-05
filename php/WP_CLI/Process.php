@@ -19,12 +19,12 @@ class Process {
 	private $cwd;
 
 	/**
-	 * @var array|null Environment variables to set when running the command.
+	 * @var array<string, string>|null Environment variables to set when running the command.
 	 */
 	private $env;
 
 	/**
-	 * @var array Descriptor spec for `proc_open()`.
+	 * @var array<int, resource|array{0: string, 1: string}> Descriptor spec for `proc_open()`.
 	 */
 	private static $descriptors = [
 		0 => STDIN,
@@ -38,14 +38,14 @@ class Process {
 	public static $log_run_times = false;
 
 	/**
-	 * @var array Array of process run time info, keyed by process command, each a 2-element array containing run time and run count.
+	 * @var array<string, array{0: float, 1: int}> Array of process run time info, keyed by process command, each a 2-element array containing run time and run count.
 	 */
 	public static $run_times = [];
 
 	/**
-	 * @param string      $command Command to execute.
-	 * @param string|null $cwd     Directory to execute the command in.
-	 * @param array|null  $env     Environment variables to set when running the command.
+	 * @param string                    $command Command to execute.
+	 * @param string|null               $cwd     Directory to execute the command in.
+	 * @param array<string, string>|null $env     Environment variables to set when running the command.
 	 *
 	 * @return Process
 	 */

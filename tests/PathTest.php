@@ -16,7 +16,7 @@ final class PathTest extends TestCase {
 	 * @dataProvider dataProviderPathCases
 	 */
 	#[DataProvider( 'dataProviderPathCases' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testIsAbsolute( $path, $expected ) {
+	public function testIsAbsolute( string $path, bool $expected ): void {
 		$this->assertSame(
 			$expected,
 			Path::is_absolute( $path ),
@@ -28,9 +28,10 @@ final class PathTest extends TestCase {
 	 * @dataProvider dataProviderPathCases
 	 */
 	#[DataProvider( 'dataProviderPathCases' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testPathIsRecognizedAsAbsolute( $path, $expected ) {
+	public function testPathIsRecognizedAsAbsolute( string $path, bool $expected ): void {
 		$this->assertSame(
 			$expected,
+			// @phpstan-ignore function.deprecated
 			Utils\is_path_absolute( $path ),
 			"Failed asserting that path '{$path}' is recognized correctly."
 		);
@@ -104,8 +105,8 @@ final class PathTest extends TestCase {
 	 * @dataProvider dataNormalize
 	 */
 	#[DataProvider( 'dataNormalize' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testNormalize( $path, $expected ): void {
-		$this->assertEquals( $expected, Path::normalize( $path ) );
+	public function testNormalize( string $path, string $expected ): void {
+		$this->assertSame( $expected, Path::normalize( $path ) );
 	}
 
 	public static function dataNormalize(): array {
@@ -154,11 +155,11 @@ final class PathTest extends TestCase {
 	public function testExpandTilde(): void {
 		$home = Path::get_home_dir();
 
-		$this->assertEquals( $home, Path::expand_tilde( '~' ) );
-		$this->assertEquals( $home . '/sites/wordpress', Path::expand_tilde( '~/sites/wordpress' ) );
-		$this->assertEquals( '/absolute/path', Path::expand_tilde( '/absolute/path' ) );
-		$this->assertEquals( 'relative/path', Path::expand_tilde( 'relative/path' ) );
-		$this->assertEquals( '/path/to/~something', Path::expand_tilde( '/path/to/~something' ) );
+		$this->assertSame( $home, Path::expand_tilde( '~' ) );
+		$this->assertSame( $home . '/sites/wordpress', Path::expand_tilde( '~/sites/wordpress' ) );
+		$this->assertSame( '/absolute/path', Path::expand_tilde( '/absolute/path' ) );
+		$this->assertSame( 'relative/path', Path::expand_tilde( 'relative/path' ) );
+		$this->assertSame( '/path/to/~something', Path::expand_tilde( '/path/to/~something' ) );
 	}
 
 	public function testReplacePathConsts(): void {
@@ -175,6 +176,10 @@ final class PathTest extends TestCase {
 
 	/**
 	 * @dataProvider dataPharSafe
+	 * @param string $path
+	 * @param string|null $phar_path
+	 * @param string|null $phar_root
+	 * @param string $expected
 	 */
 	#[DataProvider( 'dataPharSafe' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testPharSafe( $path, $phar_path, $phar_root, $expected ): void {

@@ -10,7 +10,7 @@ class FormatterTest extends TestCase {
 		Formatter::register_builtin_formats();
 	}
 
-	public function test_add_format() {
+	public function test_add_format(): void {
 		$called             = false;
 		$received_items     = null;
 		$received_fields    = null;
@@ -59,7 +59,7 @@ class FormatterTest extends TestCase {
 		$this->assertIsArray( $received_args, 'Handler should receive args array' );
 	}
 
-	public function test_get_available_formats() {
+	public function test_get_available_formats(): void {
 		$formats = Formatter::get_available_formats();
 		$this->assertContains( 'table', $formats );
 		$this->assertContains( 'json', $formats );
@@ -80,7 +80,7 @@ class FormatterTest extends TestCase {
 		$this->assertContains( 'xml', $formats );
 	}
 
-	public function test_custom_format_with_single_item() {
+	public function test_custom_format_with_single_item(): void {
 		$output_collected = '';
 		$handler          = static function ( $items ) use ( &$output_collected ) {
 			foreach ( $items as $item ) {
@@ -107,7 +107,7 @@ class FormatterTest extends TestCase {
 		$this->assertStringContainsString( 'age:35', $output_collected );
 	}
 
-	public function test_custom_format_field_filtering() {
+	public function test_custom_format_field_filtering(): void {
 		$received_items = null;
 		$handler        = function ( $items ) use ( &$received_items ) {
 			$received_items = $items;
@@ -140,7 +140,7 @@ class FormatterTest extends TestCase {
 		$this->assertArrayNotHasKey( 'email', $received_items[0], 'Non-requested field should be filtered out' );
 	}
 
-	public function test_custom_format_with_prefix() {
+	public function test_custom_format_with_prefix(): void {
 		$received_items = null;
 		$handler        = function ( $items ) use ( &$received_items ) {
 			$received_items = $items;
@@ -174,7 +174,7 @@ class FormatterTest extends TestCase {
 		$this->assertSame( 'publish', $received_items[0]['post_status'] );
 	}
 
-	public function test_override_builtin_format() {
+	public function test_override_builtin_format(): void {
 		$called  = false;
 		$handler = function () use ( &$called ) {
 			$called = true;
@@ -199,7 +199,7 @@ class FormatterTest extends TestCase {
 		$this->assertSame( 'OVERRIDDEN', $output );
 	}
 
-	public function test_add_single_value_format() {
+	public function test_add_single_value_format(): void {
 		$called         = false;
 		$received_value = null;
 		$handler        = function ( $value ) use ( &$called, &$received_value ) {
@@ -217,25 +217,25 @@ class FormatterTest extends TestCase {
 		$this->assertSame( 'CUSTOM:test_value', $result, 'Handler should return formatted value' );
 	}
 
-	public function test_format_single_value_json() {
+	public function test_format_single_value_json(): void {
 		$value  = [ 'key' => 'value' ];
 		$result = Formatter::format_single_value( $value, 'json' );
 		$this->assertSame( '{"key":"value"}', $result );
 	}
 
-	public function test_format_single_value_yaml() {
+	public function test_format_single_value_yaml(): void {
 		$value  = [ 'key' => 'value' ];
 		$result = Formatter::format_single_value( $value, 'yaml' );
 		$this->assertStringContainsString( 'key: value', $result );
 	}
 
-	public function test_format_single_value_var_export() {
+	public function test_format_single_value_var_export(): void {
 		$value  = [ 'key' => 'value' ];
 		$result = Formatter::format_single_value( $value, 'var_export' );
 		$this->assertStringContainsString( "'key' => 'value'", $result );
 	}
 
-	public function test_format_single_value_fallback() {
+	public function test_format_single_value_fallback(): void {
 		// Test fallback for unregistered format
 		$value  = [ 'key' => 'value' ];
 		$result = Formatter::format_single_value( $value, 'unknown_format' );
@@ -246,7 +246,7 @@ class FormatterTest extends TestCase {
 		$this->assertSame( 'simple_string', $result, 'Should return string as-is for scalars' );
 	}
 
-	public function test_single_item_unsupported_formats() {
+	public function test_single_item_unsupported_formats(): void {
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		if ( PHP_VERSION_ID < 80100 ) {
 			// @phpstan-ignore method.deprecated
@@ -274,7 +274,7 @@ class FormatterTest extends TestCase {
 		}
 	}
 
-	public function test_custom_format_options() {
+	public function test_custom_format_options(): void {
 		$called  = false;
 		$handler = function () use ( &$called ) {
 			$called = true;
@@ -310,7 +310,7 @@ class FormatterTest extends TestCase {
 		}
 	}
 
-	public function test_plaintext_alias_print_value() {
+	public function test_plaintext_alias_print_value(): void {
 		$value  = [ 'nested' => 'value' ];
 		$result = Formatter::format_single_value( $value, 'plaintext' );
 

@@ -262,6 +262,47 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       Would you like to run the command again
       """
 
+  Scenario: No prompting when not running interactively
+    Given a wp-content/plugins/non-interactive-plugin/non-interactive-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Non Interactive Plugin
+       */
+      // Working initially
+      """
+
+    When I run `wp plugin activate non-interactive-plugin`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    Given a wp-content/plugins/non-interactive-plugin/non-interactive-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Non Interactive Plugin
+       */
+      call_to_undefined_non_interactive();
+      """
+
+    When I try `wp plugin list`
+    Then STDERR should contain:
+      """
+      --skip-plugins=non-interactive-plugin
+      """
+    And STDOUT should not contain:
+      """
+      Would you like to run the command again
+      """
+    And STDOUT should not contain:
+      """
+      Rerunning command with
+      """
+    # The exact code differs per PHP version: PHP < 8.0 keeps the fatal error's
+    # 255 while PHP >= 8.0 lets the shutdown handler's exit(1) take over.
+    And the return code should not be 0
 
   Scenario: Automatic rerun with WP_CLI_ERROR_RERUN=yes automatically reruns without prompting
     Given a wp-content/plugins/broken-plugin-yes/broken-plugin-yes.php file:

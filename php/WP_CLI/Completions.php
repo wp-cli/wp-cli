@@ -16,14 +16,14 @@ class Completions {
 	/**
 	 * The words in the input line.
 	 *
-	 * @var array
+	 * @var array<int, string>
 	 */
 	private $words;
 
 	/**
 	 * The stored completion options.
 	 *
-	 * @var array
+	 * @var array<int, string>
 	 */
 	private $opts = [];
 
@@ -122,15 +122,16 @@ class Completions {
 		} else {
 			foreach ( $spec as $arg ) {
 				if ( in_array( $arg['type'], [ 'flag', 'assoc' ], true ) ) {
-					if ( isset( $assoc_args[ $arg['name'] ] ) ) {
+					$arg_name = is_scalar( $arg['name'] ) ? (string) $arg['name'] : '';
+					if ( isset( $assoc_args[ $arg_name ] ) ) {
 						continue;
 					}
 
-					$opt = "--{$arg['name']}";
+					$opt = "--{$arg_name}";
 
 					if ( 'flag' === $arg['type'] ) {
 						$opt .= ' ';
-					} elseif ( ! $arg['value']['optional'] ) {
+					} elseif ( is_array( $arg['value'] ) && isset( $arg['value']['optional'] ) && ! $arg['value']['optional'] ) {
 						$opt .= '=';
 					}
 
@@ -159,9 +160,9 @@ class Completions {
 	/**
 	 * Get the specific WP-CLI command that is being referenced.
 	 *
-	 * @param array $words Individual input line words.
+	 * @param array<int, string> $words Individual input line words.
 	 *
-	 * @return array{0: \WP_CLI\Dispatcher\CompositeCommand, 1: array, 2: array}|string Array with command, args, and assoc_args on success; error string on failure.
+	 * @return array{0: \WP_CLI\Dispatcher\CompositeCommand|\WP_CLI\Dispatcher\Subcommand, 1: array<int, string>, 2: array<string, bool>}|string Array with command, args, and assoc_args on success; error string on failure.
 	 */
 	private function get_command( $words ) {
 		$positional_args = [];
@@ -186,10 +187,6 @@ class Completions {
 			$r = WP_CLI::get_runner()->find_command_to_run( $positional_args );
 		}
 
-		/**
-		 * @var array{0: \WP_CLI\Dispatcher\CompositeCommand, 1: array, 2: array}|string $r
-		 */
-
 		if ( ! is_array( $r ) ) {
 			return $r;
 		}
@@ -202,7 +199,7 @@ class Completions {
 	/**
 	 * Get global parameters.
 	 *
-	 * @return array Associative array of global parameters.
+	 * @return array<string, mixed> Associative array of global parameters.
 	 */
 	private function get_global_parameters() {
 		$params = [];
@@ -300,6 +297,7 @@ class Completions {
 	 * @param \WP_CLI\Dispatcher\CompositeCommand $command Command object.
 	 * @param string                               $param_name Parameter name.
 	 * @param string                               $param_value Current partial value.
+	 * @return void
 	 */
 	private function add_param_values( $command, $param_name, $param_value ) {
 		$options = [];
@@ -328,10 +326,12 @@ class Completions {
 		}
 
 		// Add each option as a completion
-		foreach ( $options as $option ) {
-			// Check if the option matches the current partial value
-			if ( '' === $param_value || 0 === strpos( (string) $option, $param_value ) ) {
-				$this->opts[] = $option . ' ';
+		if ( is_iterable( $options ) ) {
+			foreach ( $options as $option ) {
+				// Check if the option matches the current partial value
+				if ( '' === $param_value || 0 === strpos( (string) $option, $param_value ) ) {
+					$this->opts[] = $option . ' ';
+				}
 			}
 		}
 	}

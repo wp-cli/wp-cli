@@ -18,15 +18,19 @@ class Extractor {
 	/**
 	 * Extract the archive file to a specific destination.
 	 *
+	 * @param string $tarball_or_zip
 	 * @param string $dest
+	 * @return void
 	 */
 	public static function extract( $tarball_or_zip, $dest ) {
 		if ( preg_match( '/\.zip$/', $tarball_or_zip ) ) {
-			return self::extract_zip( $tarball_or_zip, $dest );
+			self::extract_zip( $tarball_or_zip, $dest );
+			return;
 		}
 
 		if ( preg_match( '/\.tar\.gz$/', $tarball_or_zip ) ) {
-			return self::extract_tarball( $tarball_or_zip, $dest );
+			self::extract_tarball( $tarball_or_zip, $dest );
+			return;
 		}
 
 		throw new Exception( "Extraction only supported for '.zip' and '.tar.gz' file types." );
@@ -37,6 +41,7 @@ class Extractor {
 	 *
 	 * @param string $zipfile
 	 * @param string $dest
+	 * @return void
 	 */
 	private static function extract_zip( $zipfile, $dest ) {
 		if ( ! class_exists( 'ZipArchive' ) ) {
@@ -88,6 +93,7 @@ class Extractor {
 	 *
 	 * @param string $tarball
 	 * @param string $dest
+	 * @return void
 	 */
 	private static function extract_tarball( $tarball, $dest ) {
 		// Ensure the destination folder exists or can be created.
@@ -190,6 +196,7 @@ class Extractor {
 	 *
 	 * @param string $source
 	 * @param string $dest
+	 * @return void
 	 */
 	public static function copy_overwrite_files( $source, $dest ) {
 		$iterator = new RecursiveIteratorIterator(
@@ -237,6 +244,7 @@ class Extractor {
 	 * must exist.
 	 *
 	 * @param string $dir
+	 * @return void
 	 */
 	public static function rmdir( $dir ) {
 		$files = new RecursiveIteratorIterator(

@@ -190,9 +190,9 @@ function load_command( $name ) {
  *       var_dump($val);
  *     }
  *
- * @param array|Iterator $it     Either a plain array or another iterator.
- * @param callable       ...$fns The function to apply to an element.
- * @return Iterator An iterator that applies the given callback(s).
+ * @param array<mixed>|Iterator<int|string, mixed> $it     Either a plain array or another iterator.
+ * @param callable                                ...$fns The function to apply to an element.
+ * @return Iterator<int|string, mixed> An iterator that applies the given callback(s).
  */
 function iterator_map( $it, ...$fns ) {
 	if ( is_array( $it ) ) {
@@ -205,7 +205,7 @@ function iterator_map( $it, ...$fns ) {
 
 	foreach ( $fns as $fn ) {
 		/**
-		 * @var Transform $it
+		 * @var Transform<int, mixed, mixed> $it
 		 */
 		$it->add_transform( $fn );
 	}
@@ -355,7 +355,7 @@ function escapeshellarg_preserve_tilde( $arg ) {
 /**
  * Composes positional arguments into a command string.
  *
- * @param array<string> $args Positional arguments to compose.
+ * @param array<scalar|null> $args Positional arguments to compose.
  * @return string
  */
 function args_to_str( $args ) {
@@ -414,6 +414,7 @@ function assoc_args_to_str( $assoc_args, $sensitive_args = [] ) {
  *
  * @param string $cmd
  * @param string ...$args
+ * @return string
  */
 function esc_cmd( $cmd, ...$args ) {
 	if ( func_num_args() < 2 ) {
@@ -509,9 +510,10 @@ function wp_version_compare( $since, $operator ) {
  * @access public
  * @category Output
  *
- * @param string       $format Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count'.
- * @param array<mixed> $items  An array of items to output.
- * @param array<string>|string $fields Named fields for each item of data. Can be array or comma-separated list.
+ * @param string                                                                   $format Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count'.
+ * @param array<int, array<string, mixed>|object>|iterable<int, array<string, mixed>|object> $items  An array of items to output.
+ * @param array<string>|string                                                     $fields Named fields for each item of data. Can be array or comma-separated list.
+ * @return void
  */
 function format_items( $format, $items, $fields ) {
 	$assoc_args = [
@@ -527,9 +529,10 @@ function format_items( $format, $items, $fields ) {
  *
  * @access public
  *
- * @param resource                 $fd      File descriptor.
- * @param array<string[]>|iterable $rows    Array of rows to output.
- * @param array<string>            $headers List of CSV columns (optional).
+ * @param resource                           $fd      File descriptor.
+ * @param array<string[]>|iterable<array<string, mixed>> $rows    Array of rows to output.
+ * @param array<string>                      $headers List of CSV columns (optional).
+ * @return void
  */
 function write_csv( $fd, $rows, $headers = [] ) {
 	if ( ! empty( $headers ) ) {
@@ -559,9 +562,9 @@ function write_csv( $fd, $rows, $headers = [] ) {
 /**
  * Pick fields from an associative array or object.
  *
- * @param array<string, mixed>|object $item   Associative array or object to pick fields from.
- * @param array<string>               $fields List of fields to pick.
- * @return array<string, mixed>
+ * @param array<string|int, mixed>|object $item   Associative array or object to pick fields from.
+ * @param array<int, string|int>          $fields List of fields to pick.
+ * @return array<string|int, mixed>
  */
 function pick_fields( $item, $fields ) {
 	$values = [];
@@ -697,6 +700,7 @@ function mysql_host_to_cli_args( $raw_host ) {
  *     @type string $stderr    Output that was sent to STDERR.
  *     @type int    $exit_code Exit code of the process.
  * }
+ * @phpstan-return array{0: string, 1: string, 2: int}
  */
 function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true, $interactive = false ) {
 	check_proc_available( 'run_mysql_command' );
@@ -777,6 +781,7 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
  *
  * @param string               $template_name
  * @param array<string, mixed> $data
+ * @return string
  */
 function mustache_render( $template_name, $data = [] ) {
 	if ( ! file_exists( $template_name ) ) {
@@ -927,16 +932,19 @@ function replace_path_consts( $source, $path ) {
  *     @type bool $insecure      Whether to retry automatically without certificate validation.
  *     @type int  $max_retries   Maximum number of retries of failed requests. Default 3.
  * }
+ * @param string               $method  HTTP method.
+ * @param string               $url     URL to request.
+ * @param array<string, mixed>|string|null $data Array of data to send or string.
+ * @param array<string, string> $headers Array of headers to send.
+ * @param array<string, mixed> $options Array of options for the request.
  * @return \Requests_Response|Response
  * @throws RuntimeException If the request failed.
  * @throws ExitException If the request failed and $halt_on_error is true.
- *
- * @phpstan-param array{halt_on_error?: bool, verify?: bool|string, insecure?: bool} $options
  */
 function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
-	$max_retries   = isset( $options['max_retries'] ) ? (int) $options['max_retries'] : 3;
+	$max_retries   = isset( $options['max_retries'] ) && is_numeric( $options['max_retries'] ) ? (int) $options['max_retries'] : 3;
 	unset( $options['halt_on_error'] );
 
 	if ( ! isset( $options['verify'] ) ) {
@@ -945,7 +953,13 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 	}
 
 	/**
-	 * @var array{halt_on_error?: bool, verify: bool|string, insecure?: bool} $options
+	 * Filter HTTP request options used by WP-CLI.
+	 *
+	 * @param array{verify: bool|string, insecure?: bool, max_retries?: int} $options Request options.
+	 * @param string $method HTTP method (GET, POST, etc.).
+	 * @param string $url Target URL.
+	 * @param array|string|null $data Request body data.
+	 * @param array $headers Request headers.
 	 */
 	$options = WP_CLI::do_hook( 'http_request_options', $options, $method, $url, $data, $headers );
 
@@ -1211,10 +1225,10 @@ function get_named_sem_ver( $new_version, $original_version ) {
  * @access public
  * @category Input
  *
- * @param array<string|int,string|bool> $assoc_args Arguments array.
- * @param string|int                    $flag       Flag to get the value.
- * @param string|bool|int|null          $default    Default value for the flag. Default: NULL.
- * @return string|bool|int|null
+ * @param array<string|int, mixed> $assoc_args Arguments array.
+ * @param string|int               $flag       Flag to get the value.
+ * @param mixed                    $default    Default value for the flag. Default: NULL.
+ * @return mixed
  */
 function get_flag_value( $assoc_args, $flag, $default = null ) {
 	return isset( $assoc_args[ $flag ] ) ? $assoc_args[ $flag ] : $default;
@@ -2021,8 +2035,10 @@ function describe_callable( $callable ) {
  * This accommodates changes to `is_callable()` in PHP 8 that mean an array of a
  * classname and instance method is no longer callable.
  *
- * @param array $pair The class and method pair to check.
+ * @param mixed $pair The class and method pair to check.
  * @return bool
+ *
+ * @phpstan-assert-if-true array{0: class-string|object, 1: string} $pair
  */
 function is_valid_class_and_method_pair( $pair ) {
 	if ( ! is_array( $pair ) || 2 !== count( $pair ) ) {
@@ -2450,12 +2466,15 @@ function escape_csv_value( $value ) {
 /**
  * Convert a size in bytes to a human-readable format.
  *
- * @param int|float $bytes    Size in bytes.
+ * @param int|float|string $bytes    Size in bytes.
  * @param int       $decimals Optional. Number of decimal places to round to. Default 0.
  * @param string    $unit     Optional. Specific unit to use. Default is auto-detect.
  * @return string Human-readable size.
  */
 function format_bytes_string( $bytes, $decimals = 0, $unit = '' ) {
+	if ( is_string( $bytes ) ) {
+		$bytes = (float) $bytes;
+	}
 	if ( 0 === (int) $bytes ) {
 		return '0 B';
 	}
