@@ -15,8 +15,21 @@ use WP_CLI;
 class ShutdownHandler {
 
 	/**
-	 * Register the error message filter.
+	 * Track whether a fatal error has already been handled and displayed.
 	 *
+	 * @var bool
+	 */
+	private static $has_handled_error = false;
+
+	/**
+	 * Track the last computed skip flags.
+	 *
+	 * @var array<string, bool|string>|null
+	 */
+	private static $last_skip = null;
+
+	/**
+	 * Register the error message filter and shutdown handler.
 	 * @return void
 	 */
 	public static function register() {
@@ -35,6 +48,43 @@ class ShutdownHandler {
 			10,
 			2
 		);
+
+		register_shutdown_function( [ __CLASS__, 'handle_shutdown' ] );
+	}
+
+	/**
+	 * Handle PHP shutdown to ensure fatal errors are displayed even if display_errors is 0.
+	 *
+	 * @return void
+	 */
+	public static function handle_shutdown() {
+		$error = error_get_last();
+		if ( ! is_array( $error ) ) {
+			return;
+		}
+
+		$fatal_error_types = [ E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR ];
+		if ( ! in_array( $error['type'], $fatal_error_types, true ) ) {
+			return;
+		}
+
+		if ( self::$has_handled_error ) {
+			return;
+		}
+
+		if ( function_exists( 'wp_fatal_error_handler' ) ) {
+			return;
+		}
+
+		self::$has_handled_error = true;
+
+		if ( ! (bool) ini_get( 'display_errors' ) ) {
+			$message = self::filter_error_message( $error['message'], $error );
+			WP_CLI::error( $message, false );
+			if ( self::$last_skip ) {
+				self::prompt_and_rerun( self::$last_skip );
+			}
+		}
 	}
 
 	/**
@@ -45,13 +95,15 @@ class ShutdownHandler {
 	 * @return string Filtered error message.
 	 */
 	public static function filter_error_message( $message, $error ) {
+		self::$has_handled_error = true;
+
 		if ( ! is_array( $error ) || ! isset( $error['file'], $error['line'], $error['message'] ) ) {
-			return wp_strip_all_tags( $message );
+			return self::strip_tags( $message );
 		}
 
 		$message = 'There has been a critical error on this website.';
 
-		$message .= "\n\n" . wp_strip_all_tags( $error['message'] );
+		$message .= "\n\n" . self::strip_tags( $error['message'] );
 
 		/**
 		 * @var string $file
@@ -87,6 +139,8 @@ class ShutdownHandler {
 				'skip-themes'  => true,
 			];
 		}
+
+		self::$last_skip = $skip;
 
 		if ( ! self::should_handle_error_rerun() ) {
 			return $message;
@@ -272,6 +326,10 @@ class ShutdownHandler {
 	 * @return void
 	 */
 	private static function prompt_and_rerun( $skip ) {
+		if ( ! self::should_handle_error_rerun() ) {
+			return;
+		}
+
 		// Get environment variable to check default behavior
 		$error_rerun = Utils\get_env_or_config( 'WP_CLI_ERROR_RERUN' );
 
@@ -411,5 +469,23 @@ class ShutdownHandler {
 		}
 
 		WP_CLI::error( 'Failed to launch subprocess for command rerun.' );
+	}
+
+	/**
+	 * Strip HTML tags from a string safely, handling pre-WordPress loading contexts.
+	 *
+	 * Automatically falls back to strip_tags() function if the function from WP_CLI\Utils
+	 * is not available.
+	 *
+	 * @param string $text String to strip tags from.
+	 * @return string Stripped string.
+	 */
+	private static function strip_tags( $text ) {
+		if ( function_exists( 'WP_CLI\Utils\strip_tags' ) ) {
+			return Utils\strip_tags( $text );
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- Fallback before utils-wp load.
+		return trim( \strip_tags( (string) $text ) );
 	}
 }
