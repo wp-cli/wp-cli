@@ -478,7 +478,7 @@ class UtilsTest extends TestCase {
 		$this->assertFileExists( $file );
 		$this->assertFalse( is_link( $file ) );
 		if ( ! Utils\is_windows() ) {
-			$this->assertSame( '0600', substr( sprintf( '%o', fileperms( $file ) ), -4 ) );
+			$this->assertSame( '0600', substr( sprintf( '%o', (int) fileperms( $file ) ), -4 ) );
 		}
 		unlink( $file );
 
