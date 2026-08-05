@@ -902,3 +902,43 @@ Feature: Format output
       """
     And the return code should be 0
 
+  Scenario: Format an object containing protected and private properties
+    Given an empty directory
+    And a test-object-properties.php file:
+      """
+      <?php
+      class TestObjectWithProperties {
+      	public $public_prop       = 'public_value';
+      	protected $protected_prop = 'protected_value';
+      	private $private_prop     = 'private_value';
+      }
+
+      /**
+       * Test command for object properties formatting
+       *
+       * @when before_wp_load
+       */
+      $test_command = function ( $args, $assoc_args ) {
+      	$item      = new TestObjectWithProperties();
+      	$fields    = array( 'public_prop', 'protected_prop', 'private_prop' );
+      	$formatter = new \WP_CLI\Formatter( $assoc_args, $fields );
+      	$formatter->display_item( $item );
+      };
+      WP_CLI::add_command( 'test-object-properties', $test_command );
+      """
+
+    When I try `wp --require=test-object-properties.php test-object-properties --format=json`
+    Then STDOUT should be:
+      """
+      {"public_prop":"public_value"}
+      """
+    And STDERR should contain:
+      """
+      Warning: Field not found in item: protected_prop.
+      """
+    And STDERR should contain:
+      """
+      Warning: Field not found in item: private_prop.
+      """
+    And the return code should be 0
+
