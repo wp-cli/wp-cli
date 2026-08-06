@@ -25,11 +25,14 @@ Feature: Run a WP-CLI command
        * [--parse=<format>]
        * : Parse returned output as a particular format.
        */
-      WP_CLI::add_command( 'run', function( $args, $assoc_args ){
-        $ret = WP_CLI::runcommand( $args[0], $assoc_args );
-        $ret = is_object( $ret ) ? (array) $ret : $ret;
-        WP_CLI::log( 'returned: ' . var_export( $ret, true ) );
-      });
+      WP_CLI::add_command(
+      	'run',
+      	function ( $args, $assoc_args ) {
+      		$ret = WP_CLI::runcommand( $args[0], $assoc_args );
+      		$ret = is_object( $ret ) ? (array) $ret : $ret;
+      		WP_CLI::log( 'returned: ' . var_export( $ret, true ) );
+      	}
+      );
       """
     And a wp-cli.yml file:
       """
@@ -235,7 +238,7 @@ Feature: Run a WP-CLI command
       <?php
       echo 'echo';
       WP_CLI::log( 'log' );
-      WP_CLI::warning( 'warning');
+      WP_CLI::warning( 'warning' );
       WP_CLI::success( 'success' );
       """
 
@@ -328,13 +331,16 @@ Feature: Run a WP-CLI command
   Scenario Outline: Apply backwards compat conversions
     Given a WP installation
 
-    When I run `wp <flag> run "term url category 1"`
+    When I try `wp <flag> run "term url category 1"`
     Then STDOUT should be:
       """
       https://example.com/?cat=1
       returned: NULL
       """
-    And STDERR should be empty
+    And STDERR should contain:
+      """
+      The 'wp term url' syntax is deprecated and will be removed in WP-CLI 4.0. Use 'wp term list --field=url' instead.
+      """
     And the return code should be 0
 
     Examples:
@@ -358,6 +364,50 @@ Feature: Run a WP-CLI command
       | proc_open  |
       | proc_close |
 
+  # This only exercises the regression when the test suite runs as a non-root
+  # user, as root can enter the locked directory regardless of its permissions.
+  @skip-windows
+  Scenario: Launch a command from a working directory the process cannot enter
+    Given a locked-cwd.php file:
+      """
+      <?php
+      WP_CLI::add_command(
+        'locked-cwd',
+        function () {
+          $dir = getcwd() . '/locked';
+          mkdir( $dir );
+          chdir( $dir );
+
+          // Make sure the test run directory can be cleaned up again.
+          register_shutdown_function(
+            static function () use ( $dir ) {
+              chmod( $dir, 0755 );
+            }
+          );
+
+          chmod( $dir, 0000 );
+
+          $version = WP_CLI::runcommand( 'cli version', array( 'launch' => true, 'return' => true ) );
+
+          WP_CLI::log( 'returned: ' . $version );
+        },
+        array( 'when' => 'before_wp_load' )
+      );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - locked-cwd.php
+      """
+
+    When I run `wp locked-cwd`
+    Then STDOUT should contain:
+      """
+      returned: WP-CLI
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
   Scenario: Check that command_args provided to runcommand are used in command
     Given a WP installation
     And a custom-cmd.php file:
@@ -365,19 +415,19 @@ Feature: Run a WP-CLI command
       <?php
       class Custom_Command extends WP_CLI_Command {
 
-        /**
-         * Custom command to test passing command_args via runcommand options
-         *
-         * @when after_wp_load
-         */
-        public function echo_test( $args ) {
-          $cli_opts = array( 'command_args' => array( '--exec="echo \'test\' . PHP_EOL;"' ) );
-          WP_CLI::runcommand( 'option get home', $cli_opts);
-        }
-        public function bad_path( $args ) {
-          $cli_opts = array( 'command_args' => array('--path=/bad/path' ) );
-          WP_CLI::runcommand( 'option get home', $cli_opts);
-        }
+      	/**
+      	 * Custom command to test passing command_args via runcommand options
+      	 *
+      	 * @when after_wp_load
+      	 */
+      	public function echo_test( $args ) {
+      		$cli_opts = array( 'command_args' => array( '--exec="echo \'test\' . PHP_EOL;"' ) );
+      		WP_CLI::runcommand( 'option get home', $cli_opts );
+      	}
+      	public function bad_path( $args ) {
+      		$cli_opts = array( 'command_args' => array( '--path=/bad/path' ) );
+      		WP_CLI::runcommand( 'option get home', $cli_opts );
+      	}
       }
       WP_CLI::add_command( 'custom-command', 'Custom_Command' );
       """
@@ -402,14 +452,14 @@ Feature: Run a WP-CLI command
       """
       <?php
       class Custom_Command extends WP_CLI_Command {
-        /**
-         * Custom command to test passing command_args via runcommand options
-         *
-         * @when after_wp_load
-         */
-         public function echo_test( $args ) {
-         echo "test" . PHP_EOL;
-        }
+      	/**
+      	 * Custom command to test passing command_args via runcommand options
+      	 *
+      	 * @when after_wp_load
+      	 */
+      	public function echo_test( $args ) {
+      		echo 'test' . PHP_EOL;
+      	}
       }
       WP_CLI::add_command( 'custom-command', 'Custom_Command' );
       """
@@ -452,14 +502,14 @@ Feature: Run a WP-CLI command
       """
       <?php
       class Custom_Command extends WP_CLI_Command {
-        /**
-         * Custom command to test passing command_args via runcommand options
-         *
-         * @when after_wp_load
-         */
-         public function echo_test( $args ) {
-         echo "test" . PHP_EOL;
-        }
+      	/**
+      	 * Custom command to test passing command_args via runcommand options
+      	 *
+      	 * @when after_wp_load
+      	 */
+      	public function echo_test( $args ) {
+      		echo 'test' . PHP_EOL;
+      	}
       }
       WP_CLI::add_command( 'custom-command', 'Custom_Command' );
       """

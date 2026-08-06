@@ -42,6 +42,11 @@ class WpHttpCacheManager {
 
 	/**
 	 * short circuit wp http api with cached file
+	 *
+	 * @param false|array<string, mixed>|\WP_Error $response
+	 * @param array<string, mixed>                  $args
+	 * @param string                                $url
+	 * @return false|array<string, mixed>|\WP_Error
 	 */
 	public function filter_pre_http_request( $response, $args, $url ) {
 		// check if whitelisted
@@ -49,21 +54,23 @@ class WpHttpCacheManager {
 			return $response;
 		}
 		// check if downloading
-		if ( 'GET' !== $args['method'] || empty( $args['filename'] ) ) {
+		$method      = isset( $args['method'] ) && is_string( $args['method'] ) ? $args['method'] : '';
+		$target_file = isset( $args['filename'] ) && is_string( $args['filename'] ) ? $args['filename'] : '';
+		if ( 'GET' !== $method || '' === $target_file ) {
 			return $response;
 		}
 		// check cache and export to designated location
 		$filename = $this->cache->has( $this->whitelist[ $url ]['key'], $this->whitelist[ $url ]['ttl'] );
 		if ( $filename ) {
 			WP_CLI::log( sprintf( 'Using cached file \'%s\'...', $filename ) );
-			if ( copy( $filename, $args['filename'] ) ) {
+			if ( copy( $filename, $target_file ) ) {
 				// simulate successful download response
 				return [
 					'response' => [
 						'code'    => 200,
 						'message' => 'OK',
 					],
-					'filename' => $args['filename'],
+					'filename' => $target_file,
 				];
 			}
 
@@ -76,10 +83,10 @@ class WpHttpCacheManager {
 	/**
 	 * cache wp http api downloads
 	 *
-	 * @param array  $response
-	 * @param array  $args
-	 * @param string $url
-	 * @return array
+	 * @param array<string, mixed> $response
+	 * @param array<string, mixed> $args
+	 * @param string               $url
+	 * @return array<string, mixed>
 	 */
 	public function filter_http_response( $response, $args, $url ) {
 		// check if whitelisted
@@ -87,7 +94,8 @@ class WpHttpCacheManager {
 			return $response;
 		}
 		// check if downloading
-		if ( 'GET' !== $args['method'] || empty( $args['filename'] ) ) {
+		$method = isset( $args['method'] ) && is_string( $args['method'] ) ? $args['method'] : '';
+		if ( 'GET' !== $method || empty( $args['filename'] ) ) {
 			return $response;
 		}
 		// check if download was successful
@@ -95,7 +103,7 @@ class WpHttpCacheManager {
 			return $response;
 		}
 		// Validate before caching.
-		if ( ! $this->validate_downloaded_file( $response['filename'], $url ) ) {
+		if ( ! isset( $response['filename'] ) || ! is_string( $response['filename'] ) || ! $this->validate_downloaded_file( $response['filename'], $url ) ) {
 			WP_CLI::warning( "Invalid or corrupt file from {$url}, skipping cache." );
 			return $response;
 		}
@@ -161,6 +169,7 @@ class WpHttpCacheManager {
 	 * @param string $slug    package slug
 	 * @param string $version package version
 	 * @param int    $ttl
+	 * @return void
 	 */
 	public function whitelist_package( $url, $group, $slug, $version, $ttl = null ) {
 		$ext = pathinfo( (string) Utils\parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION );
@@ -175,6 +184,7 @@ class WpHttpCacheManager {
 	 * @param string $url
 	 * @param string $key
 	 * @param int    $ttl
+	 * @return void
 	 */
 	public function whitelist_url( $url, $key = null, $ttl = null ) {
 		$key                     = $key ? : $url;

@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\DocParser;
+use WP_CLI\SynopsisParser;
 use WP_CLI\Tests\TestCase;
 
 class DocParserTest extends TestCase {
@@ -8,10 +9,10 @@ class DocParserTest extends TestCase {
 	public function test_empty(): void {
 		$doc = new DocParser( '' );
 
-		$this->assertEquals( '', $doc->get_shortdesc() );
-		$this->assertEquals( '', $doc->get_longdesc() );
-		$this->assertEquals( '', $doc->get_synopsis() );
-		$this->assertEquals( '', $doc->get_tag( 'alias' ) );
+		$this->assertSame( '', $doc->get_shortdesc() );
+		$this->assertSame( '', $doc->get_longdesc() );
+		$this->assertSame( '', $doc->get_synopsis() );
+		$this->assertSame( '', $doc->get_tag( 'alias' ) );
 	}
 
 	public function test_only_tags(): void {
@@ -24,12 +25,12 @@ class DocParserTest extends TestCase {
 EOB
 		);
 
-		$this->assertEquals( '', $doc->get_shortdesc() );
-		$this->assertEquals( '', $doc->get_longdesc() );
-		$this->assertEquals( '', $doc->get_synopsis() );
-		$this->assertEquals( '', $doc->get_tag( 'foo' ) );
-		$this->assertEquals( 'rock-on', $doc->get_tag( 'alias' ) );
-		$this->assertEquals( 'revoke-md5-passwords', $doc->get_tag( 'subcommand' ) );
+		$this->assertSame( '', $doc->get_shortdesc() );
+		$this->assertSame( '', $doc->get_longdesc() );
+		$this->assertSame( '', $doc->get_synopsis() );
+		$this->assertSame( '', $doc->get_tag( 'foo' ) );
+		$this->assertSame( 'rock-on', $doc->get_tag( 'alias' ) );
+		$this->assertSame( 'revoke-md5-passwords', $doc->get_tag( 'subcommand' ) );
 	}
 
 	public function test_no_longdesc(): void {
@@ -42,10 +43,10 @@ EOB
 EOB
 		);
 
-		$this->assertEquals( 'Rock and roll!', $doc->get_shortdesc() );
-		$this->assertEquals( '', $doc->get_longdesc() );
-		$this->assertEquals( '', $doc->get_synopsis() );
-		$this->assertEquals( 'rock-on', $doc->get_tag( 'alias' ) );
+		$this->assertSame( 'Rock and roll!', $doc->get_shortdesc() );
+		$this->assertSame( '', $doc->get_longdesc() );
+		$this->assertSame( '', $doc->get_synopsis() );
+		$this->assertSame( 'rock-on', $doc->get_tag( 'alias' ) );
 	}
 
 	public function test_complete(): void {
@@ -75,11 +76,11 @@ EOB
 EOB
 		);
 
-		$this->assertEquals( 'Rock and roll!', $doc->get_shortdesc() );
-		$this->assertEquals( '[--volume=<number>]', $doc->get_synopsis() );
-		$this->assertEquals( 'Start with one or more genres.', $doc->get_arg_desc( 'genre' ) );
-		$this->assertEquals( 'Sets the volume.', $doc->get_param_desc( 'volume' ) );
-		$this->assertEquals( 'rock-on', $doc->get_tag( 'alias' ) );
+		$this->assertSame( 'Rock and roll!', $doc->get_shortdesc() );
+		$this->assertSame( '[--volume=<number>]', $doc->get_synopsis() );
+		$this->assertSame( 'Start with one or more genres.', $doc->get_arg_desc( 'genre' ) );
+		$this->assertSame( 'Sets the volume.', $doc->get_param_desc( 'volume' ) );
+		$this->assertSame( 'rock-on', $doc->get_tag( 'alias' ) );
 
 		$longdesc = <<<'EOB'
 ## OPTIONS
@@ -97,7 +98,7 @@ EOB
 
 wp rock-on --volume=11
 EOB;
-		$this->assertEquals( $longdesc, $doc->get_longdesc() );
+		$this->assertSame( $longdesc, $doc->get_longdesc() );
 	}
 
 	public function test_desc_parses_yaml(): void {
@@ -136,8 +137,8 @@ wp rock-on electronic --volume=11
 EOB;
 
 		$doc = new DocParser( $longdesc );
-		$this->assertEquals( 'Start with one or more genres.', $doc->get_arg_desc( 'genre' ) );
-		$this->assertEquals( 'Sets the volume.', $doc->get_param_desc( 'volume' ) );
+		$this->assertSame( 'Start with one or more genres.', $doc->get_arg_desc( 'genre' ) );
+		$this->assertSame( 'Sets the volume.', $doc->get_param_desc( 'volume' ) );
 
 		$expected = [
 			'options' => [ 'rock', 'electronic' ],
@@ -209,5 +210,79 @@ EOB;
 		];
 		$this->assertEquals( $expected, $doc->get_arg_args( 'format' ) );
 		$this->assertNull( $doc->get_arg_args( 'hook' ) );
+	}
+
+	public function test_get_deprecation_message(): void {
+		$doc = new DocParser(
+			<<<'EOB'
+/**
+ * Old command.
+ *
+ * @deprecated Use `wp site switch-language` instead.
+ */
+EOB
+		);
+
+		$this->assertTrue( $doc->has_tag( 'deprecated' ) );
+		$this->assertSame( 'Use `wp site switch-language` instead.', $doc->get_deprecation_message() );
+
+		$doc_bare = new DocParser(
+			<<<'EOB'
+/**
+ * Bare deprecated command.
+ *
+ * @deprecated
+ * @when before_wp_load
+ */
+EOB
+		);
+
+		$this->assertTrue( $doc_bare->has_tag( 'deprecated' ) );
+		$this->assertSame( '', $doc_bare->get_deprecation_message() );
+	}
+
+	public function test_get_deprecated_assoc_args(): void {
+		$doc = new DocParser(
+			<<<'EOB'
+/**
+ * Command with deprecated arguments.
+ *
+ * ## OPTIONS
+ *
+ * [--old=<old>]
+ * : Old parameter.
+ * ---
+ * deprecated: Use `--new` instead.
+ * ---
+ *
+ * [--active=<active>]
+ * : Active parameter.
+ *
+ * [--empty-dep=<empty>]
+ * : Empty deprecation.
+ * ---
+ * deprecated: ''
+ * ---
+ *
+ * [--disabled-dep=<disabled>]
+ * : Explicitly not deprecated.
+ * ---
+ * deprecated: false
+ * ---
+ */
+EOB
+		);
+
+		// `--disabled-dep` opts out via `deprecated: false` and must be omitted from the result.
+		$synopsis = '[--old=<old>] [--active=<active>] [--empty-dep=<empty>] [--disabled-dep=<disabled>]';
+		$expected = [
+			'old'       => 'Use `--new` instead.',
+			'empty-dep' => '',
+		];
+
+		$this->assertEquals( $expected, DocParser::get_deprecated_assoc_args( $synopsis, $doc ) );
+		$this->assertEquals( $expected, DocParser::get_deprecated_assoc_args( SynopsisParser::parse( $synopsis ), $doc ) );
+		$this->assertEquals( [], DocParser::get_deprecated_assoc_args( '', $doc ) );
+		$this->assertEquals( [], DocParser::get_deprecated_assoc_args( $synopsis, null ) );
 	}
 }

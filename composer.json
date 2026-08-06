@@ -11,15 +11,16 @@
         "php": ">=7.2.24 || ^8.0",
         "mustache/mustache": "^3.0.0",
         "wp-cli/mustangostang-spyc": "^0.6.3",
-        "wp-cli/php-cli-tools": "~0.12.7"
+        "wp-cli/php-cli-tools": "~0.13.0"
     },
     "require-dev": {
         "justinrainbow/json-schema": "^6.3",
         "roave/security-advisories": "dev-latest",
-        "wp-cli/db-command": "^2",
-        "wp-cli/entity-command": "^2",
-        "wp-cli/extension-command": "^2",
-        "wp-cli/package-command": "^2",
+        "wp-cli/db-command": "^2 || ^3",
+        "wp-cli/entity-command": "^2 || ^3",
+        "wp-cli/extension-command": "^2 || ^3",
+        "wp-cli/language-command": "^2 || ^3",
+        "wp-cli/package-command": "^2 || ^3",
         "wp-cli/wp-cli-tests": "^5"
     },
     "suggest": {
@@ -39,7 +40,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "2.13.x-dev"
+            "dev-main": "3.0.x-dev"
         },
         "commands": [
             "cli",

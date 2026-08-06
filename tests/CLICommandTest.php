@@ -3,13 +3,28 @@
 use WP_CLI\Tests\TestCase;
 use WP_CLI\ExitException;
 
+/**
+ * @phpstan-import-type UpdateOffer from CLI_Command
+ */
 class CLICommandTest extends TestCase {
 
+	/**
+	 * @var bool|mixed
+	 */
 	private $prev_capture_exit;
+
+	/**
+	 * @var \WP_CLI\Loggers\Base
+	 */
 	private $prev_logger;
+
+	/**
+	 * @var \WP_CLI\Loggers\Execution
+	 */
 	private $logger;
 
-	public static function set_up_before_class() {
+	public static function set_up_before_class(): void {
+		parent::set_up_before_class();
 		require_once WP_CLI_ROOT . '/php/commands/src/CLI_Command.php';
 	}
 
@@ -44,6 +59,11 @@ class CLICommandTest extends TestCase {
 		parent::tearDown();
 	}
 
+	/**
+	 * @param string $temp
+	 * @param string $current_phar
+	 * @return void
+	 */
 	private function call_replace_current_phar( $temp, $current_phar ) {
 		$cli_command = new CLI_Command();
 		$method      = new \ReflectionMethod( $cli_command, 'replace_current_phar' );
@@ -52,6 +72,105 @@ class CLICommandTest extends TestCase {
 			$method->setAccessible( true );
 		}
 		$method->invoke( $cli_command, $temp, $current_phar );
+	}
+
+	/**
+	 * @param array<array-key, UpdateOffer> $updates
+	 * @param bool                           $include_major
+	 * @return UpdateOffer|null
+	 */
+	private function call_select_update_offer( $updates, $include_major ) {
+		$cli_command = new CLI_Command();
+		$method      = new \ReflectionMethod( $cli_command, 'select_update_offer' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$method->setAccessible( true );
+		}
+		/**
+		 * @var UpdateOffer|null $result
+		 */
+		$result = $method->invoke( $cli_command, $updates, $include_major );
+
+		return $result;
+	}
+
+	/**
+	 * @param string $update_type
+	 * @param string $version
+	 * @param string $status
+	 * @return UpdateOffer
+	 */
+	private function update_offer( $update_type, $version, $status = 'available' ) {
+		return [
+			'version'      => $version,
+			'update_type'  => $update_type,
+			'package_url'  => "https://example.com/wp-cli-{$version}.phar",
+			'status'       => $status,
+			'requires_php' => '',
+		];
+	}
+
+	public function testSelectUpdateOfferSkipsMajorByDefaultAndPicksMinor(): void {
+		$updates = [
+			'major' => $this->update_offer( 'major', '3.0.0' ),
+			'minor' => $this->update_offer( 'minor', '2.12.0' ),
+			'patch' => $this->update_offer( 'patch', '2.11.5' ),
+		];
+
+		$result = $this->call_select_update_offer( $updates, false );
+
+		$this->assertSame( '2.12.0', $result['version'] ?? null );
+		$this->assertSame( '', $this->logger->stdout );
+	}
+
+	public function testSelectUpdateOfferFallsBackToPatchWhenNoMinor(): void {
+		$updates = [
+			'major' => $this->update_offer( 'major', '3.0.0' ),
+			'patch' => $this->update_offer( 'patch', '2.11.5' ),
+		];
+
+		$result = $this->call_select_update_offer( $updates, false );
+
+		$this->assertSame( '2.11.5', $result['version'] ?? null );
+		$this->assertSame( '', $this->logger->stdout );
+	}
+
+	public function testSelectUpdateOfferReturnsMajorWhenRequested(): void {
+		$updates = [
+			'major' => $this->update_offer( 'major', '3.0.0' ),
+			'minor' => $this->update_offer( 'minor', '2.12.0' ),
+		];
+
+		$result = $this->call_select_update_offer( $updates, true );
+
+		$this->assertSame( '3.0.0', $result['version'] ?? null );
+		$this->assertSame( '', $this->logger->stdout );
+	}
+
+	public function testSelectUpdateOfferWithholdsLoneMajorByDefault(): void {
+		$updates = [
+			'major' => $this->update_offer( 'major', '3.0.0' ),
+		];
+
+		$result = $this->call_select_update_offer( $updates, false );
+
+		$this->assertNull( $result );
+		$this->assertSame(
+			"A new major version (3.0.0) is available. Run `wp cli update --major` to update across major versions.\n",
+			$this->logger->stdout
+		);
+	}
+
+	public function testSelectUpdateOfferDoesNotHintUnavailableMajor(): void {
+		$updates = [
+			'major' => $this->update_offer( 'major', '3.0.0', 'unavailable' ),
+			'minor' => $this->update_offer( 'minor', '2.12.0' ),
+		];
+
+		$result = $this->call_select_update_offer( $updates, false );
+
+		$this->assertSame( '2.12.0', $result['version'] ?? null );
+		$this->assertSame( '', $this->logger->stdout );
 	}
 
 	public function testReplaceCurrentPharNonWindowsSuccess(): void {

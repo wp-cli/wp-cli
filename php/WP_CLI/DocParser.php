@@ -105,6 +105,53 @@ class DocParser {
 	}
 
 	/**
+	 * Get the deprecation message for this command.
+	 *
+	 * @return string
+	 */
+	public function get_deprecation_message() {
+		if ( ! preg_match( '|^@deprecated(?:[ \t]+(.+))?[ \t]*$|m', $this->doc_comment, $matches ) ) {
+			return '';
+		}
+
+		return isset( $matches[1] ) ? trim( $matches[1] ) : '';
+	}
+
+	/**
+	 * Get deprecated assoc arguments from a synopsis and docparser.
+	 *
+	 * @param string|array<int, array<string, mixed>> $synopsis  Synopsis string or parsed specification.
+	 * @param DocParser|null                          $docparser DocParser instance.
+	 * @return array<string, string> Deprecated argument names and their deprecation messages.
+	 */
+	public static function get_deprecated_assoc_args( $synopsis, $docparser ) {
+		if ( ! $docparser || empty( $synopsis ) ) {
+			return [];
+		}
+
+		$synopsis_spec         = is_array( $synopsis ) ? $synopsis : SynopsisParser::parse( $synopsis );
+		$deprecated_assoc_args = [];
+
+		foreach ( $synopsis_spec as $spec ) {
+			if ( 'assoc' !== $spec['type'] || ! is_string( $spec['name'] ) ) {
+				continue;
+			}
+
+			$spec_name = $spec['name'];
+			$spec_args = $docparser->get_param_args( $spec_name );
+			if ( ! isset( $spec_args['deprecated'] ) || false === $spec_args['deprecated'] ) {
+				continue;
+			}
+
+			$deprecation_message = is_string( $spec_args['deprecated'] ) ? trim( $spec_args['deprecated'] ) : '';
+
+			$deprecated_assoc_args[ $spec_name ] = $deprecation_message;
+		}
+
+		return $deprecated_assoc_args;
+	}
+
+	/**
 	 * Get the command's synopsis.
 	 *
 	 * @return string
@@ -136,7 +183,7 @@ class DocParser {
 	 * Get the arguments for a given argument.
 	 *
 	 * @param string $name Argument's doc name.
-	 * @return array|null
+	 * @return array<string, mixed>|null
 	 */
 	public function get_arg_args( $name ) {
 		return $this->get_arg_or_param_args( "/^\[?<{$name}>.*/" );
@@ -161,7 +208,7 @@ class DocParser {
 	 * Get the arguments for a given parameter.
 	 *
 	 * @param string $key Parameter's key.
-	 * @return array|null
+	 * @return array<string, mixed>|null
 	 */
 	public function get_param_args( $key ) {
 		return $this->get_arg_or_param_args( "/^\[?--{$key}=.*/" );
@@ -171,7 +218,7 @@ class DocParser {
 	 * Get the args for an arg or param
 	 *
 	 * @param string $regex Pattern to match against
-	 * @return array|null Interpreted YAML document, or null.
+	 * @return array<string, mixed>|null Interpreted YAML document, or null.
 	 */
 	private function get_arg_or_param_args( $regex ) {
 		$bits       = explode( "\n", $this->doc_comment );

@@ -7,8 +7,14 @@ use WP_CLI\Utils;
 
 class ExtractorTest extends TestCase {
 
+	/**
+	 * @var string
+	 */
 	public static $copy_overwrite_files_prefix = 'wp-cli-test-utils-copy-overwrite-files-';
 
+	/**
+	 * @var array<string>
+	 */
 	public static $expected_wp = [
 		'index1.php',
 		'license2.php',
@@ -23,8 +29,15 @@ class ExtractorTest extends TestCase {
 		'xmlrpc8.php',
 	];
 
-	public static $logger      = null;
-	public static $prev_logger = null;
+	/**
+	 * @var Loggers\Execution
+	 */
+	public static $logger;
+
+	/**
+	 * @var Loggers\Base
+	 */
+	public static $prev_logger;
 
 	public function set_up(): void {
 		parent::set_up();
@@ -64,14 +77,16 @@ class ExtractorTest extends TestCase {
 	}
 
 	public function test_err_rmdir(): void {
-		$msg = '';
+		$caught = null;
 		try {
 			Extractor::rmdir( 'no-such-dir' );
 		} catch ( \Exception $e ) {
-			$msg = $e->getMessage();
+			$caught = $e;
 		}
-		$this->assertTrue( false !== strpos( $msg, 'no-such-dir' ) );
-		$this->assertTrue( empty( self::$logger->stderr ) );
+		// Assert the type, not the message: PHP 8.6 dropped the path argument
+		// from the RecursiveDirectoryIterator::__construct() exception message.
+		$this->assertInstanceOf( \UnexpectedValueException::class, $caught );
+		$this->assertEmpty( self::$logger->stderr );
 	}
 
 	public function test_copy_overwrite_files(): void {
@@ -84,21 +99,23 @@ class ExtractorTest extends TestCase {
 		$files = self::recursive_scandir( $dest_dir );
 
 		$this->assertSame( self::$expected_wp, $files );
-		$this->assertTrue( empty( self::$logger->stderr ) );
+		$this->assertEmpty( self::$logger->stderr );
 
 		// Clean up.
 		Extractor::rmdir( $temp_dir );
 	}
 
 	public function test_err_copy_overwrite_files(): void {
-		$msg = '';
+		$caught = null;
 		try {
 			Extractor::copy_overwrite_files( 'no-such-dir', 'dest-dir' );
 		} catch ( \Exception $e ) {
-			$msg = $e->getMessage();
+			$caught = $e;
 		}
-		$this->assertTrue( false !== strpos( $msg, 'no-such-dir' ) );
-		$this->assertTrue( empty( self::$logger->stderr ) );
+		// Assert the type, not the message: PHP 8.6 dropped the path argument
+		// from the RecursiveDirectoryIterator::__construct() exception message.
+		$this->assertInstanceOf( \UnexpectedValueException::class, $caught );
+		$this->assertEmpty( self::$logger->stderr );
 	}
 
 	public function test_extract_tarball(): void {
@@ -146,7 +163,7 @@ class ExtractorTest extends TestCase {
 
 		$files = self::recursive_scandir( $dest_dir );
 		$this->assertSame( self::$expected_wp, $files );
-		$this->assertTrue( empty( self::$logger->stderr ) );
+		$this->assertEmpty( self::$logger->stderr );
 
 		// Clean up.
 		Extractor::rmdir( $temp_dir );
@@ -198,7 +215,7 @@ class ExtractorTest extends TestCase {
 		// Clean up.
 		Extractor::rmdir( $temp_dir );
 		$this->assertSame( self::$expected_wp, $files );
-		$this->assertTrue( 0 === strpos( self::$logger->stderr, 'Warning: tar xz failed, falling back to PharData' ) );
+		$this->assertStringStartsWith( 'Warning: tar xz failed, falling back to PharData', self::$logger->stderr );
 		$this->assertEmpty( $msg );
 	}
 
@@ -211,8 +228,8 @@ class ExtractorTest extends TestCase {
 			$msg = $e->getMessage();
 		}
 
-		$this->assertTrue( false !== strpos( $msg, 'no-such-tar' ) );
-		$this->assertTrue( empty( self::$logger->stderr ) );
+		$this->assertStringContainsString( 'no-such-tar', $msg );
+		$this->assertEmpty( self::$logger->stderr );
 
 		// Reset logger.
 		self::$logger->stderr = '';
@@ -229,8 +246,8 @@ class ExtractorTest extends TestCase {
 		}
 		unlink( $zero_tar );
 
-		$this->assertTrue( false !== strpos( $msg, 'zero-tar' ) );
-		$this->assertTrue( empty( self::$logger->stderr ) );
+		$this->assertStringContainsString( 'zero-tar', $msg );
+		$this->assertEmpty( self::$logger->stderr );
 	}
 
 	public function test_extract_tarball_both_failed(): void {
@@ -245,12 +262,12 @@ class ExtractorTest extends TestCase {
 		}
 		unlink( $invalid_tar );
 
-		$this->assertTrue( false !== strpos( $msg, 'Failed to extract the tarball.' ) );
-		$this->assertTrue( false !== strpos( $msg, 'tar xz failed:' ) );
+		$this->assertStringContainsString( 'Failed to extract the tarball.', $msg );
+		$this->assertStringContainsString( 'tar xz failed:', $msg );
 		if ( class_exists( 'PharData' ) ) {
-			$this->assertTrue( false !== strpos( $msg, 'PharData failed:' ) );
+			$this->assertStringContainsString( 'PharData failed:', $msg );
 		} else {
-			$this->assertFalse( strpos( $msg, 'PharData failed:' ) );
+			$this->assertStringNotContainsString( 'PharData failed:', $msg );
 		}
 	}
 
@@ -285,7 +302,7 @@ class ExtractorTest extends TestCase {
 
 		$files = self::recursive_scandir( $dest_dir );
 		$this->assertSame( self::$expected_wp, $files );
-		$this->assertTrue( empty( self::$logger->stderr ) );
+		$this->assertEmpty( self::$logger->stderr );
 
 		// Clean up.
 		Extractor::rmdir( $temp_dir );
@@ -303,8 +320,8 @@ class ExtractorTest extends TestCase {
 		} catch ( \Exception $e ) {
 			$msg = $e->getMessage();
 		}
-		$this->assertTrue( false !== strpos( $msg, 'no-such-zip' ) );
-		$this->assertTrue( empty( self::$logger->stderr ) );
+		$this->assertStringContainsString( 'no-such-zip', $msg );
+		$this->assertEmpty( self::$logger->stderr );
 
 		// Reset logger.
 		self::$logger->stderr = '';
@@ -320,8 +337,8 @@ class ExtractorTest extends TestCase {
 			$msg = $e->getMessage();
 		}
 		unlink( $zero_zip );
-		$this->assertTrue( false !== strpos( $msg, 'zero-zip' ) );
-		$this->assertTrue( empty( self::$logger->stderr ) );
+		$this->assertStringContainsString( 'zero-zip', $msg );
+		$this->assertEmpty( self::$logger->stderr );
 	}
 
 	public function test_err_extract(): void {
@@ -332,9 +349,38 @@ class ExtractorTest extends TestCase {
 			$msg = $e->getMessage();
 		}
 		$this->assertSame( "Extraction only supported for '.zip' and '.tar.gz' file types.", $msg );
-		$this->assertTrue( empty( self::$logger->stderr ) );
+		$this->assertEmpty( self::$logger->stderr );
 	}
 
+	public function test_ensure_dir_exists(): void {
+		$dir        = Utils\get_temp_dir() . uniqid( 'wp-cli-test-extractor-', true );
+		$test_class = new ReflectionClass( Extractor::class );
+		$method     = $test_class->getMethod( 'ensure_dir_exists' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$method->setAccessible( true );
+		}
+
+		$result = $method->invoke( null, $dir );
+		$this->assertTrue( $result );
+		$this->assertTrue( is_dir( $dir ) );
+		if ( ! Utils\is_windows() ) {
+			// Assert the write bits rather than a literal mode: the exact result depends on the
+			// umask, and what matters is that no other local user can write into the directory.
+			$perms = fileperms( $dir ) & 0777;
+			$this->assertSame(
+				0,
+				$perms & 0022,
+				sprintf( 'Extraction directory must not be group- or world-writable, got %o.', $perms )
+			);
+		}
+
+		rmdir( $dir );
+	}
+
+	/**
+	 * @return array{0: string, 1: string, 2: string}
+	 */
 	private static function create_test_directory_structure() {
 		$temp_dir = Utils\get_temp_dir() . uniqid( self::$copy_overwrite_files_prefix, true );
 		mkdir( $temp_dir );
@@ -356,6 +402,11 @@ class ExtractorTest extends TestCase {
 		return [ $temp_dir, $src_dir, $wp_dir ];
 	}
 
+	/**
+	 * @param string $dir
+	 * @param string $prefix_dir
+	 * @return array<int, string>
+	 */
 	private static function recursive_scandir( $dir, $prefix_dir = '' ) {
 		$dirs = scandir( $dir );
 		if ( ! $dirs ) {

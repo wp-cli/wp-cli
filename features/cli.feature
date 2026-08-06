@@ -36,7 +36,7 @@ Feature: `wp cli` tasks
     When I run `wp cli param-dump --with-values | grep -o '"current":' | uniq -c | tr -d ' '`
     Then STDOUT should be:
       """
-      22"current":
+      23"current":
       """
     And STDERR should be empty
     And the return code should be 0
@@ -61,21 +61,21 @@ Feature: `wp cli` tasks
       <?php
       class Custom_Command extends WP_CLI_Command {
 
-          /**
-           * Custom command to validate a global configuration does exist or not.
-           *
-           * <config>
-           * : Configuration parameter name to check for.
-           *
-           * @when after_wp_load
-           */
-          public function __invoke( $args ) {
-              if ( WP_CLI::has_config( $args[0] ) ) {
-                  WP_CLI::log( "Global configuration '{$args[0]}' does exist." );
-              } else {
-                  WP_CLI::log( "Global configuration '{$args[0]}' does not exist." );
-              }
-          }
+      	/**
+      	 * Custom command to validate a global configuration does exist or not.
+      	 *
+      	 * <config>
+      	 * : Configuration parameter name to check for.
+      	 *
+      	 * @when after_wp_load
+      	 */
+      	public function __invoke( $args ) {
+      		if ( WP_CLI::has_config( $args[0] ) ) {
+      			WP_CLI::log( "Global configuration '{$args[0]}' does exist." );
+      		} else {
+      			WP_CLI::log( "Global configuration '{$args[0]}' does not exist." );
+      		}
+      	}
       }
       WP_CLI::add_command( 'custom-command', 'Custom_Command' );
       """
@@ -99,15 +99,15 @@ Feature: `wp cli` tasks
       <?php
       class Custom_Alias_Command extends WP_CLI_Command {
 
-          /**
-           * Custom command with an alias.
-           *
-           * @alias custom-alias
-           * @when after_wp_load
-           */
-          public function __invoke( $args ) {
-              WP_CLI::success( 'Command executed.' );
-          }
+      	/**
+      	 * Custom command with an alias.
+      	 *
+      	 * @alias custom-alias
+      	 * @when after_wp_load
+      	 */
+      	public function __invoke( $args ) {
+      		WP_CLI::success( 'Command executed.' );
+      	}
       }
       WP_CLI::add_command( 'custom-command-with-alias', 'Custom_Alias_Command' );
       """

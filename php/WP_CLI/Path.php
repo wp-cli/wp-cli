@@ -200,22 +200,62 @@ class Path {
 	/**
 	 * Get a Phar-safe version of a path.
 	 *
-	 * For paths inside a Phar, this strips the outer filesystem's location to
-	 * reduce the path to what it needs to be within the Phar archive.
+	 * For paths inside a Phar, this rewrites the outer filesystem's location to
+	 * the Phar's stream alias, so the path keeps resolving even when the Phar
+	 * file has been renamed (e.g. from `wp-cli.phar` to `wp`).
 	 *
 	 * Use the __FILE__ or __DIR__ constants as a starting point.
 	 *
-	 * @param string $path An absolute path that might be within a Phar.
+	 * @param string      $path      An absolute path that might be within a Phar.
+	 * @param string|null $phar_path Optional. On-disk location of the running
+	 *                               Phar. Defaults to the WP_CLI_PHAR_PATH
+	 *                               constant.
+	 * @param string|null $phar_root Optional. Phar root URL that carries the
+	 *                               stream alias. Defaults to the WP_CLI_ROOT
+	 *                               constant.
 	 * @return string A Phar-safe version of the path.
 	 */
-	public static function phar_safe( $path ) {
-		if ( ! self::inside_phar() ) {
+	public static function phar_safe( $path, $phar_path = null, $phar_root = null ) {
+		if ( null === $phar_path ) {
+			$phar_path = defined( 'WP_CLI_PHAR_PATH' ) ? WP_CLI_PHAR_PATH : '';
+		}
+
+		if ( null === $phar_root ) {
+			$phar_root = defined( 'WP_CLI_ROOT' ) ? WP_CLI_ROOT : '';
+		}
+
+		if ( ! self::inside_phar( $phar_root ) ) {
+			return $path;
+		}
+
+		// WP_CLI_PHAR_PATH is the on-disk location of the running Phar. Depending
+		// on the wp-cli-bundle version that defines it, this is either a bare
+		// filesystem path ( Phar::running( false ) ) or a `phar://` stream URL
+		// ( Phar::running( true ) ). Normalize to the bare path so the search
+		// prefix is built the same way in both cases.
+		if ( 0 === stripos( $phar_path, self::PHAR_STREAM_PREFIX ) ) {
+			$phar_path = substr( $phar_path, strlen( self::PHAR_STREAM_PREFIX ) );
+		}
+
+		// The Phar stream URL in $path always uses forward slashes, but a bare
+		// path from Phar::running( false ) can be backslash-separated on Windows.
+		// Normalize so the search prefix matches regardless of separator style.
+		$phar_path = self::normalize( $phar_path );
+
+		// Rewrite to the Phar's stable stream alias (e.g. `wp-cli.phar`) taken
+		// from the root URL's host, rather than a bare `phar://` that would not
+		// resolve without an archive name. Without a host the Phar was loaded via
+		// its physical path, so there is no alias to rewrite to and the path is
+		// left untouched.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Own version.
+		$phar_alias = parse_url( $phar_root, PHP_URL_HOST );
+		if ( empty( $phar_alias ) ) {
 			return $path;
 		}
 
 		return str_replace(
-			self::PHAR_STREAM_PREFIX . rtrim( WP_CLI_PHAR_PATH, '/' ) . '/',
-			self::PHAR_STREAM_PREFIX,
+			self::PHAR_STREAM_PREFIX . rtrim( $phar_path, '/' ) . '/',
+			self::PHAR_STREAM_PREFIX . $phar_alias . '/',
 			$path
 		);
 	}

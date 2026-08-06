@@ -24,11 +24,12 @@ class DisabledCommand extends Subcommand {
 	 *
 	 * @param RootCommand|CompositeCommand $parent_command Parent command.
 	 * @param string                       $name           Command name.
-	 * @param DocParser                    $docparser      DocParser instance.
+	 * @param DocParser|null               $docparser      DocParser instance.
 	 * @param string                       $reason         Reason why the command is disabled.
 	 */
 	public function __construct( $parent_command, $name, $docparser, $reason ) {
 		// Pass a dummy closure for when_invoked since it should not be run.
+		$docparser = $docparser ?: new DocParser( '' );
 		parent::__construct( $parent_command, $name, $docparser, function () {} );
 		$this->disabled_reason = $reason;
 	}
@@ -45,9 +46,10 @@ class DisabledCommand extends Subcommand {
 	/**
 	 * Prevent execution of the command.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 * @param array $extra_args
+	 * @param array<mixed>         $args
+	 * @param array<string, mixed> $assoc_args
+	 * @param array<mixed>         $extra_args
+	 * @return void
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) {
 		$cmd_path = implode( ' ', get_path( $this ) );

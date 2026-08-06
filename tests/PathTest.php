@@ -16,7 +16,7 @@ final class PathTest extends TestCase {
 	 * @dataProvider dataProviderPathCases
 	 */
 	#[DataProvider( 'dataProviderPathCases' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testIsAbsolute( $path, $expected ) {
+	public function testIsAbsolute( string $path, bool $expected ): void {
 		$this->assertSame(
 			$expected,
 			Path::is_absolute( $path ),
@@ -28,9 +28,10 @@ final class PathTest extends TestCase {
 	 * @dataProvider dataProviderPathCases
 	 */
 	#[DataProvider( 'dataProviderPathCases' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testPathIsRecognizedAsAbsolute( $path, $expected ) {
+	public function testPathIsRecognizedAsAbsolute( string $path, bool $expected ): void {
 		$this->assertSame(
 			$expected,
+			// @phpstan-ignore function.deprecated
 			Utils\is_path_absolute( $path ),
 			"Failed asserting that path '{$path}' is recognized correctly."
 		);
@@ -104,8 +105,8 @@ final class PathTest extends TestCase {
 	 * @dataProvider dataNormalize
 	 */
 	#[DataProvider( 'dataNormalize' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testNormalize( $path, $expected ): void {
-		$this->assertEquals( $expected, Path::normalize( $path ) );
+	public function testNormalize( string $path, string $expected ): void {
+		$this->assertSame( $expected, Path::normalize( $path ) );
 	}
 
 	public static function dataNormalize(): array {
@@ -154,11 +155,11 @@ final class PathTest extends TestCase {
 	public function testExpandTilde(): void {
 		$home = Path::get_home_dir();
 
-		$this->assertEquals( $home, Path::expand_tilde( '~' ) );
-		$this->assertEquals( $home . '/sites/wordpress', Path::expand_tilde( '~/sites/wordpress' ) );
-		$this->assertEquals( '/absolute/path', Path::expand_tilde( '/absolute/path' ) );
-		$this->assertEquals( 'relative/path', Path::expand_tilde( 'relative/path' ) );
-		$this->assertEquals( '/path/to/~something', Path::expand_tilde( '/path/to/~something' ) );
+		$this->assertSame( $home, Path::expand_tilde( '~' ) );
+		$this->assertSame( $home . '/sites/wordpress', Path::expand_tilde( '~/sites/wordpress' ) );
+		$this->assertSame( '/absolute/path', Path::expand_tilde( '/absolute/path' ) );
+		$this->assertSame( 'relative/path', Path::expand_tilde( 'relative/path' ) );
+		$this->assertSame( '/path/to/~something', Path::expand_tilde( '/path/to/~something' ) );
 	}
 
 	public function testReplacePathConsts(): void {
@@ -171,5 +172,92 @@ final class PathTest extends TestCase {
 	public function testInsidePhar(): void {
 		$this->assertFalse( Path::inside_phar( '/regular/path/to/file.php' ) );
 		$this->assertTrue( Path::inside_phar( 'phar:///path/to/archive.phar/file.php' ) );
+	}
+
+	/**
+	 * @dataProvider dataPharSafe
+	 * @param string $path
+	 * @param string|null $phar_path
+	 * @param string|null $phar_root
+	 * @param string $expected
+	 */
+	#[DataProvider( 'dataPharSafe' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testPharSafe( $path, $phar_path, $phar_root, $expected ): void {
+		$this->assertSame(
+			$expected,
+			Path::phar_safe( $path, $phar_path, $phar_root )
+		);
+	}
+
+	public static function dataPharSafe(): array {
+		$bundled    = 'phar://wp-cli.phar/vendor/wp-cli/wp-cli';
+		$standalone = 'phar://wp-cli.phar';
+
+		return [
+			// Not running inside a Phar: the path is returned unchanged.
+			'outside phar'                   => [
+				'/home/user/site/wp-config.php',
+				'/home/user/.local/bin/wp',
+				'/home/user/site',
+				'/home/user/site/wp-config.php',
+			],
+
+			// Canonical filename, WP_CLI_PHAR_PATH as a phar:// URL ( Phar::running( true ) ).
+			'canonical name, url phar path'  => [
+				'phar:///home/user/.local/bin/wp-cli.phar/vendor/wp-cli/config-command/templates/wp-config.mustache',
+				'phar:///home/user/.local/bin/wp-cli.phar',
+				$bundled,
+				'phar://wp-cli.phar/vendor/wp-cli/config-command/templates/wp-config.mustache',
+			],
+
+			// Renamed binary, WP_CLI_PHAR_PATH as a phar:// URL ( Phar::running( true ) ).
+			'renamed binary, url phar path'  => [
+				'phar:///home/user/.local/bin/wp/vendor/wp-cli/config-command/templates/wp-config.mustache',
+				'phar:///home/user/.local/bin/wp',
+				$bundled,
+				'phar://wp-cli.phar/vendor/wp-cli/config-command/templates/wp-config.mustache',
+			],
+
+			// Renamed binary, WP_CLI_PHAR_PATH as a bare path ( Phar::running( false ) ).
+			'renamed binary, bare phar path' => [
+				'phar:///home/user/.local/bin/wp/vendor/wp-cli/config-command/templates/wp-config.mustache',
+				'/home/user/.local/bin/wp',
+				$bundled,
+				'phar://wp-cli.phar/vendor/wp-cli/config-command/templates/wp-config.mustache',
+			],
+
+			// Windows bare path ( Phar::running( false ) ) with backslashes: the
+			// separators are normalized so the prefix still matches the stream URL.
+			'windows backslash phar path'    => [
+				'phar://C:/Users/bob/wp/vendor/wp-cli/config-command/templates/wp-config.mustache',
+				'C:\\Users\\bob\\wp',
+				$bundled,
+				'phar://wp-cli.phar/vendor/wp-cli/config-command/templates/wp-config.mustache',
+			],
+
+			// Standalone Phar layout (WP_CLI_ROOT without an internal path).
+			'standalone root'                => [
+				'phar:///home/user/.local/bin/wp/php/wp-cli.php',
+				'/home/user/.local/bin/wp',
+				$standalone,
+				'phar://wp-cli.phar/php/wp-cli.php',
+			],
+
+			// Already in alias form: no double rewrite.
+			'already aliased'                => [
+				'phar://wp-cli.phar/vendor/wp-cli/wp-cli/templates/wp-config.mustache',
+				'/home/user/.local/bin/wp',
+				$bundled,
+				'phar://wp-cli.phar/vendor/wp-cli/wp-cli/templates/wp-config.mustache',
+			],
+
+			// Root loaded via its physical path (no alias host): path left untouched.
+			'physical root, no alias'        => [
+				'phar:///home/user/.local/bin/wp/vendor/wp-cli/wp-cli/templates/wp-config.mustache',
+				'/home/user/.local/bin/wp',
+				'phar:///home/user/.local/bin/wp/vendor/wp-cli/wp-cli',
+				'phar:///home/user/.local/bin/wp/vendor/wp-cli/wp-cli/templates/wp-config.mustache',
+			],
+		];
 	}
 }

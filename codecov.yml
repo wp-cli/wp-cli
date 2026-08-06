@@ -1,0 +1,23 @@
+# Coverage for this repository is reported from two separate CI uploads:
+#
+#   * `unit`    – PHPUnit tests (fast, finishes in ~1 minute).
+#   * `feature` – Behat functional tests (slow, can take ~45 minutes).
+#
+# Much of the framework is only exercised through the functional tests. Because
+# the Behat upload lands long after the unit upload, Codecov would otherwise
+# evaluate the commit/patch status (and post its comment) on unit-only data and
+# report a spurious failure for code that is actually covered once the functional
+# tests finish. Waiting for both uploads before reporting fixes that.
+#
+# Note: this repository normally produces exactly two coverage uploads. If the
+# feature job ever fails to upload, the Codecov status may stay pending until the
+# next push. A fully count-independent fix (aggregating both reports into a
+# single upload, or a `manual_trigger` finalizer step) would need to live in the
+# shared CI workflow rather than here.
+
+codecov:
+  notify:
+    after_n_builds: 2
+
+comment:
+  after_n_builds: 2

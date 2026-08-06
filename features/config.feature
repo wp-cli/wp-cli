@@ -79,6 +79,13 @@ Feature: Have a config file
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
+    Given an index.php file:
+      """
+      require __DIR__ . '/foo/wp-blog-header.php';
+      """
+    When I run `wp core is-installed`
+    Then STDOUT should be empty
+
     Given an empty other/subdir directory
     And a other/subdir/index.php file:
       """
@@ -189,12 +196,12 @@ Feature: Have a config file
     When I run `wp cli has-command core`
     Then the return code should be 0
 
-  Scenario: 'core config' parameters
+  Scenario: 'config create' parameters
     Given an empty directory
     And WP files
     And a wp-cli.yml file:
       """
-      core config:
+      config create:
         dbname: wordpress
         dbuser: root
         extra-php: |
@@ -202,7 +209,7 @@ Feature: Have a config file
           define( 'WP_POST_REVISIONS', 50 );
       """
 
-    When I run `wp core config --skip-check`
+    When I run `wp config create --skip-check`
     And I run `grep WP_POST_REVISIONS wp-config.php`
     Then STDOUT should not be empty
 
@@ -439,8 +446,8 @@ Feature: Have a config file
     And a test-cmd.php file:
       """
       <?php
-      $command = function( $_, $assoc_args ) {
-         echo json_encode( $assoc_args );
+      $command = function ( $_, $assoc_args ) {
+      	echo json_encode( $assoc_args );
       };
       WP_CLI::add_command( 'test-cmd', $command, array( 'when' => 'before_wp_load' ) );
       """
@@ -492,8 +499,8 @@ Feature: Have a config file
     And a test-cmd.php file:
       """
       <?php
-      $command = function( $_, $assoc_args ) {
-         echo json_encode( $assoc_args );
+      $command = function ( $_, $assoc_args ) {
+      	echo json_encode( $assoc_args );
       };
       WP_CLI::add_command( 'test-cmd', $command, array( 'when' => 'before_wp_load' ) );
       """
@@ -604,49 +611,50 @@ Feature: Have a config file
       """
       <?php
       if ( file_exists( __DIR__ . '/local-dev.php' ) ) {
-        require_once __DIR__ . '/local-dev.php';
+      	require_once __DIR__ . '/local-dev.php';
       }
 
       // ** MySQL settings ** //
       /** The name of the database for WordPress */
-      define('DB_NAME', '{DB_NAME}');
+      define( 'DB_NAME', '{DB_NAME}' );
 
       /** MySQL database username */
-      define('DB_USER', '{DB_USER}');
+      define( 'DB_USER', '{DB_USER}' );
 
       /** MySQL database password */
-      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define( 'DB_PASSWORD', '{DB_PASSWORD}' );
 
       /** MySQL hostname */
-      define('DB_HOST', '{DB_HOST}');
+      define( 'DB_HOST', '{DB_HOST}' );
 
       /** Database Charset to use in creating database tables. */
-      define('DB_CHARSET', 'utf8');
+      define( 'DB_CHARSET', 'utf8' );
 
       /** The Database Collate type. Don't change this if in doubt. */
-      define('DB_COLLATE', '');
+      define( 'DB_COLLATE', '' );
 
       $table_prefix = 'wp_';
 
       define( 'WP_ALLOW_MULTISITE', true );
-      define('MULTISITE', true);
-      define('SUBDOMAIN_INSTALL', false);
+      define( 'MULTISITE', true );
+      define( 'SUBDOMAIN_INSTALL', false );
       $base = '/';
       if ( ! defined( 'DOMAIN_CURRENT_SITE' ) ) {
-        define('DOMAIN_CURRENT_SITE', 'example.com');
+      	define( 'DOMAIN_CURRENT_SITE', 'example.com' );
       }
-      define('PATH_CURRENT_SITE', '/');
-      define('SITE_ID_CURRENT_SITE', 1);
-      define('BLOG_ID_CURRENT_SITE', 1);
+      define( 'PATH_CURRENT_SITE', '/' );
+      define( 'SITE_ID_CURRENT_SITE', 1 );
+      define( 'BLOG_ID_CURRENT_SITE', 1 );
 
       /* That's all, stop editing! Happy publishing. */
 
       /** Absolute path to the WordPress directory. */
-      if ( !defined('ABSPATH') )
-        define('ABSPATH', dirname(__FILE__) . '/');
+      if ( ! defined( 'ABSPATH' ) ) {
+      	define( 'ABSPATH', __DIR__ . '/' );
+      }
 
       /** Sets up WordPress vars and included files. */
-      require_once(ABSPATH . 'wp-settings.php');
+      require_once ABSPATH . 'wp-settings.php';
       """
 
     When I try `wp option get home`
@@ -666,18 +674,18 @@ Feature: Have a config file
     And a wp-config.php file:
       """
       <?php
-      define('DB_NAME', '{DB_NAME}');
-      define('DB_USER', '{DB_USER}');
-      define('DB_PASSWORD', '{DB_PASSWORD}');
-      define('DB_HOST', '{DB_HOST}');
-      define('DB_CHARSET', 'utf8');
-      define('DB_COLLATE', '');
+      define( 'DB_NAME', '{DB_NAME}' );
+      define( 'DB_USER', '{DB_USER}' );
+      define( 'DB_PASSWORD', '{DB_PASSWORD}' );
+      define( 'DB_HOST', '{DB_HOST}' );
+      define( 'DB_CHARSET', 'utf8' );
+      define( 'DB_COLLATE', '' );
       $table_prefix = 'wp_';
 
       /* That's all, stop editing! Happy publishing. */
 
       /** Sets up WordPress vars and included files. */
-      require_once(ABSPATH . 'wp-settings.php');
+      require_once ABSPATH . 'wp-settings.php';
       """
     And I run `awk 'BEGIN {print "\xef\xbb\xbf"} {print}' wp-config.php > wp-config.php`
 
@@ -696,12 +704,12 @@ Feature: Have a config file
     And a wp-config.php file:
       """
       <?php
-      define('DB_NAME', '{DB_NAME}');
-      define('DB_USER', '{DB_USER}');
-      define('DB_PASSWORD', '{DB_PASSWORD}');
-      define('DB_HOST', '{DB_HOST}');
-      define('DB_CHARSET', 'utf8');
-      define('DB_COLLATE', '');
+      define( 'DB_NAME', '{DB_NAME}' );
+      define( 'DB_USER', '{DB_USER}' );
+      define( 'DB_PASSWORD', '{DB_PASSWORD}' );
+      define( 'DB_HOST', '{DB_HOST}' );
+      define( 'DB_CHARSET', 'utf8' );
+      define( 'DB_COLLATE', '' );
       $table_prefix = 'wp_';
 
       /* That's all, stop editing! Happy publishing. */
@@ -719,23 +727,21 @@ Feature: Have a config file
       """
       <?php
       if ( 1 === 1 ) {
-        require_once ABSPATH . 'some-other-file.php';
+      	require_once ABSPATH . 'some-other-file.php';
       }
 
-      define('DB_NAME', '{DB_NAME}');
-      define('DB_USER', '{DB_USER}');
-      define('DB_PASSWORD', '{DB_PASSWORD}');
-      define('DB_HOST', '{DB_HOST}');
-      define('DB_CHARSET', 'utf8');
-      define('DB_COLLATE', '');
+      define( 'DB_NAME', '{DB_NAME}' );
+      define( 'DB_USER', '{DB_USER}' );
+      define( 'DB_PASSWORD', '{DB_PASSWORD}' );
+      define( 'DB_HOST', '{DB_HOST}' );
+      define( 'DB_CHARSET', 'utf8' );
+      define( 'DB_COLLATE', '' );
       $table_prefix = 'wp_';
 
       /* That's all, stop editing! Happy publishing. */
 
       /** Sets up WordPress vars and included files. */
-      require_once
-        ABSPATH . 'wp-settings.php'
-      ;
+      require_once ABSPATH . 'wp-settings.php';
       """
 
     When I try `wp core is-installed`
@@ -750,23 +756,21 @@ Feature: Have a config file
       """
       <?php
       if ( 1 === 1 ) {
-        require_once ABSPATH . 'some-other-file.php';
+      	require_once ABSPATH . 'some-other-file.php';
       }
 
-      define('DB_NAME', '{DB_NAME}');
-      define('DB_USER', '{DB_USER}');
-      define('DB_PASSWORD', '{DB_PASSWORD}');
-      define('DB_HOST', '{DB_HOST}');
-      define('DB_CHARSET', 'utf8');
-      define('DB_COLLATE', '');
+      define( 'DB_NAME', '{DB_NAME}' );
+      define( 'DB_USER', '{DB_USER}' );
+      define( 'DB_PASSWORD', '{DB_PASSWORD}' );
+      define( 'DB_HOST', '{DB_HOST}' );
+      define( 'DB_CHARSET', 'utf8' );
+      define( 'DB_COLLATE', '' );
       $table_prefix = 'wp_';
 
       /* That's all, stop editing! Happy publishing. */
 
       /** Sets up WordPress vars and included files. */
-      require_once
-        ABSPATH . 'wp-settings.php'
-      ;
+      require_once ABSPATH . 'wp-settings.php';
 
       require_once ABSPATH . 'includes-file.php';
       """
@@ -857,10 +861,14 @@ Feature: Have a config file
     And a test-cache-config.php file:
       """
       <?php
-      WP_CLI::add_command( 'test-cache-config', function() {
-          $expiry = WP_CLI\Utils\get_env_or_config('WP_CLI_CACHE_EXPIRY');
-          WP_CLI::log( 'Cache expiry: ' . $expiry );
-      }, array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_command(
+      	'test-cache-config',
+      	function () {
+      		$expiry = WP_CLI\Utils\get_env_or_config( 'WP_CLI_CACHE_EXPIRY' );
+      		WP_CLI::log( 'Cache expiry: ' . $expiry );
+      	},
+      	array( 'when' => 'before_wp_load' ) 
+      );
       """
     And a wp-cli.yml file:
       """
@@ -879,10 +887,14 @@ Feature: Have a config file
     And a test-cache-config.php file:
       """
       <?php
-      WP_CLI::add_command( 'test-cache-config', function() {
-          $max_size = WP_CLI\Utils\get_env_or_config('WP_CLI_CACHE_MAX_SIZE');
-          WP_CLI::log( 'Cache max size: ' . $max_size );
-      }, array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_command(
+      	'test-cache-config',
+      	function () {
+      		$max_size = WP_CLI\Utils\get_env_or_config( 'WP_CLI_CACHE_MAX_SIZE' );
+      		WP_CLI::log( 'Cache max size: ' . $max_size );
+      	},
+      	array( 'when' => 'before_wp_load' ) 
+      );
       """
     And a wp-cli.yml file:
       """
@@ -901,12 +913,16 @@ Feature: Have a config file
     And a test-cache-config.php file:
       """
       <?php
-      WP_CLI::add_command( 'test-cache-config', function() {
-          $expiry = WP_CLI\Utils\get_env_or_config('WP_CLI_CACHE_EXPIRY');
-          $max_size = WP_CLI\Utils\get_env_or_config('WP_CLI_CACHE_MAX_SIZE');
-          WP_CLI::log( 'Cache expiry: ' . $expiry );
-          WP_CLI::log( 'Cache max size: ' . $max_size );
-      }, array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_command(
+      	'test-cache-config',
+      	function () {
+      		$expiry   = WP_CLI\Utils\get_env_or_config( 'WP_CLI_CACHE_EXPIRY' );
+      		$max_size = WP_CLI\Utils\get_env_or_config( 'WP_CLI_CACHE_MAX_SIZE' );
+      		WP_CLI::log( 'Cache expiry: ' . $expiry );
+      		WP_CLI::log( 'Cache max size: ' . $max_size );
+      	},
+      	array( 'when' => 'before_wp_load' ) 
+      );
       """
     And a wp-cli.yml file:
       """
@@ -930,10 +946,14 @@ Feature: Have a config file
     And a test-error-rerun.php file:
       """
       <?php
-      WP_CLI::add_command( 'test-error-rerun', function() {
-          $error_rerun = WP_CLI\Utils\get_env_or_config('WP_CLI_ERROR_RERUN');
-          WP_CLI::log( 'WP_CLI_ERROR_RERUN: ' . $error_rerun );
-      }, array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_command(
+      	'test-error-rerun',
+      	function () {
+      		$error_rerun = WP_CLI\Utils\get_env_or_config( 'WP_CLI_ERROR_RERUN' );
+      		WP_CLI::log( 'WP_CLI_ERROR_RERUN: ' . $error_rerun );
+      	},
+      	array( 'when' => 'before_wp_load' ) 
+      );
       """
     And a wp-cli.yml file:
       """
@@ -952,10 +972,14 @@ Feature: Have a config file
     And a test-auto-update.php file:
       """
       <?php
-      WP_CLI::add_command( 'test-auto-update', function() {
-          $auto_update = WP_CLI\Utils\get_env_or_config('WP_CLI_AUTO_UPDATE_PROMPT');
-          WP_CLI::log( 'WP_CLI_AUTO_UPDATE_PROMPT: ' . $auto_update );
-      }, array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_command(
+      	'test-auto-update',
+      	function () {
+      		$auto_update = WP_CLI\Utils\get_env_or_config( 'WP_CLI_AUTO_UPDATE_PROMPT' );
+      		WP_CLI::log( 'WP_CLI_AUTO_UPDATE_PROMPT: ' . $auto_update );
+      	},
+      	array( 'when' => 'before_wp_load' ) 
+      );
       """
     And a wp-cli.yml file:
       """
@@ -974,10 +998,14 @@ Feature: Have a config file
     And a test-autocorrect.php file:
       """
       <?php
-      WP_CLI::add_command( 'test-autocorrect', function() {
-          $autocorrect = WP_CLI\Utils\get_env_or_config('WP_CLI_AUTOCORRECT');
-          WP_CLI::log( 'WP_CLI_AUTOCORRECT: ' . $autocorrect );
-      }, array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_command(
+      	'test-autocorrect',
+      	function () {
+      		$autocorrect = WP_CLI\Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' );
+      		WP_CLI::log( 'WP_CLI_AUTOCORRECT: ' . $autocorrect );
+      	},
+      	array( 'when' => 'before_wp_load' ) 
+      );
       """
     And a wp-cli.yml file:
       """
@@ -991,6 +1019,58 @@ Feature: Have a config file
       WP_CLI_AUTOCORRECT: 1
       """
 
+  Scenario: Adheres to locale configuration
+    Given a WP install
+    When I run `wp language core install de_DE`
+    And I run `wp site switch-language de_DE`
+    And I run `wp language core list --field=language --status=active`
+    Then STDOUT should be:
+      """
+      de_DE
+      """
+
+    When I run `wp eval "echo __('Settings');"`
+    Then STDOUT should contain:
+      """
+      Einstellungen
+      """
+
+    Given a wp-cli.yml file:
+      """
+      locale: en_US
+      """
+
+    When I run `wp eval "echo get_locale();"`
+    Then STDOUT should be:
+      """
+      en_US
+      """
+
+    When I run `wp eval "echo __('Settings');"`
+    Then STDOUT should contain:
+      """
+      Settings
+      """
+
+    When I run `wp site switch-language en_US`
+
+    Given a wp-cli.yml file:
+      """
+      locale: de_DE
+      """
+
+    When I run `wp eval "echo get_locale();"`
+    Then STDOUT should be:
+      """
+      de_DE
+      """
+
+    When I run `wp eval "echo __('Settings');"`
+    Then STDOUT should contain:
+      """
+      Einstellungen
+      """
+
   Scenario: Custom system config path via WP_CLI_SYSTEM_SETTINGS_PATH
     Given an empty directory
     And a system-config.yml file:
@@ -1001,8 +1081,8 @@ Feature: Have a config file
     And a test-cmd.php file:
       """
       <?php
-      $command = function( $_, $assoc_args ) {
-         echo json_encode( $assoc_args );
+      $command = function ( $_, $assoc_args ) {
+      	echo json_encode( $assoc_args );
       };
       WP_CLI::add_command( 'test-cmd', $command, array( 'when' => 'before_wp_load' ) );
       """

@@ -111,15 +111,12 @@ Feature: Global flags
   Scenario: Debug run
     Given a WP installation
 
-    When I try `wp eval "echo CONST_WITHOUT_QUOTES;"`
+    When I run `wp eval "echo CONST_WITHOUT_QUOTES;"`
     Then STDOUT should be:
       """
       CONST_WITHOUT_QUOTES
       """
-    And STDERR should contain:
-      """
-      Use of undefined constant CONST_WITHOUT_QUOTES
-      """
+    And STDERR should be empty
     And the return code should be 0
 
     When I try `wp eval "echo CONST_WITHOUT_QUOTES;" --debug`
@@ -217,12 +214,12 @@ Feature: Global flags
       <?php
       class Dummy_Logger {
 
-        function __call( $method, $args ) {
-          echo "log: called '$method' method";
-        }
+      	public function __call( $method, $args ) {
+      		echo "log: called '$method' method";
+      	}
       }
 
-      WP_CLI::set_logger( new Dummy_Logger );
+      WP_CLI::set_logger( new Dummy_Logger() );
       """
 
     When I try `wp --require=custom-logger.php is-installed`
@@ -243,9 +240,9 @@ Feature: Global flags
        */
       class Test_Command extends WP_CLI_Command {
 
-        function req( $args, $assoc_args ) {
-          WP_CLI::line( $args[0] );
-        }
+      	public function req( $args, $assoc_args ) {
+      		WP_CLI::line( $args[0] );
+      	}
       }
 
       WP_CLI::add_command( 'test', 'Test_Command' );
@@ -253,12 +250,12 @@ Feature: Global flags
 
     And a foo.php file:
       """
-      <?php echo basename(__FILE__) . "\n";
+      <?php echo basename( __FILE__ ) . "\n";
       """
 
     And a bar.php file:
       """
-      <?php echo basename(__FILE__) . "\n";
+      <?php echo basename( __FILE__ ) . "\n";
       """
 
     And a wp-cli.yml file:
@@ -293,15 +290,15 @@ Feature: Global flags
     Given an empty directory
     And a foober/foo.php file:
       """
-      <?php echo basename(__FILE__) . "\n";
+      <?php echo basename( __FILE__ ) . "\n";
       """
     And a foober/bar.php file:
       """
-      <?php echo basename(__FILE__) . "\n";
+      <?php echo basename( __FILE__ ) . "\n";
       """
     And a doobie/doo.php file:
       """
-      <?php echo basename(__FILE__) . "\n";
+      <?php echo basename( __FILE__ ) . "\n";
       """
 
     And a wp-cli.yml file:
@@ -347,11 +344,11 @@ Feature: Global flags
        * [--url=<url>]
        * : URL passed to the callback.
        */
-      $cmd_test = function( $args, $assoc_args ) {
-          $url = WP_CLI::get_runner()->config['url'] ? ' ' . WP_CLI::get_runner()->config['url'] : '';
-          WP_CLI::log( 'global:' . $url );
-          $url = isset( $assoc_args['url'] ) ? ' ' . $assoc_args['url'] : '';
-          WP_CLI::log( 'local:' . $url );
+      $cmd_test = function ( $args, $assoc_args ) {
+      	$url = WP_CLI::get_runner()->config['url'] ? ' ' . WP_CLI::get_runner()->config['url'] : '';
+      	WP_CLI::log( 'global:' . $url );
+      	$url = isset( $assoc_args['url'] ) ? ' ' . $assoc_args['url'] : '';
+      	WP_CLI::log( 'local:' . $url );
       };
       WP_CLI::add_command( 'cmd-test', $cmd_test );
       """
@@ -439,14 +436,47 @@ Feature: Global flags
       Running SSH command: docker exec '--env MY_VAR=value' 'wordpress' sh -c
       """
 
+  @skip-windows @skip-macos
+  Scenario: SSH arguments with a trailing newline should be escaped
+    # A trailing newline used to satisfy the "safe characters" check because
+    # PCRE's $ anchor also matches just before a final newline, letting the
+    # argument reach the remote shell unquoted.
+    When I try `newline_arg="$(printf 'foo\nx')"; wp --debug --ssh=wordpress option get "${newline_arg%x}"`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'wordpress' 'wp --debug option get '\''foo
+      '\'''
+      """
+
+  Scenario: SSH connection string with leading hyphen in host should error
+    # The payload must not contain a slash, as that would be parsed as the path
+    # and thus separated from the host.
+    Given an empty directory
+
+    When I try `wp --ssh="-oProxyCommand=touch pwn.txt" cli info`
+    Then STDERR should contain:
+      """
+      Error: Invalid SSH host: value cannot start with a hyphen.
+      """
+    And the return code should be 1
+    And the pwn.txt file should not exist
+
+  Scenario: SSH connection string with leading hyphen in user should error
+    When I try `wp --ssh="-user@example.com" cli info`
+    Then STDERR should contain:
+      """
+      Error: Invalid SSH user: value cannot start with a hyphen.
+      """
+    And the return code should be 1
+
   Scenario: Customize config-spec with WP_CLI_CONFIG_SPEC_FILTER_CALLBACK
     Given a WP installation
     And a wp-cli-early-require.php file:
       """
       <?php
       function wp_cli_remove_user_arg( $spec ) {
-        unset( $spec['user'] );
-        return $spec;
+      	unset( $spec['user'] );
+      	return $spec;
       }
       define( 'WP_CLI_CONFIG_SPEC_FILTER_CALLBACK', 'wp_cli_remove_user_arg' );
       """
@@ -473,9 +503,9 @@ Feature: Global flags
        *
        * @when before_wp_load
        */
-      $test_cmd = function( $args, $assoc_args ) {
-          WP_CLI::log( 'Positional args: ' . implode( ', ', $args ) );
-          WP_CLI::log( 'Assoc args: ' . json_encode( $assoc_args ) );
+      $test_cmd = function ( $args, $assoc_args ) {
+      	WP_CLI::log( 'Positional args: ' . implode( ', ', $args ) );
+      	WP_CLI::log( 'Assoc args: ' . json_encode( $assoc_args ) );
       };
       WP_CLI::add_command( 'test-args', $test_cmd );
       """
@@ -514,10 +544,10 @@ Feature: Global flags
        *
        * @when before_wp_load
        */
-      $test_cmd = function( $args, $assoc_args ) {
-          // If --require was parsed as a global option, this file would fail to load
-          // because /nonexistent doesn't exist. If we get here, -- worked correctly.
-          WP_CLI::log( 'Args: ' . implode( ', ', $args ) );
+      $test_cmd = function ( $args, $assoc_args ) {
+      	// If --require was parsed as a global option, this file would fail to load
+      	// because /nonexistent doesn't exist. If we get here, -- worked correctly.
+      	WP_CLI::log( 'Args: ' . implode( ', ', $args ) );
       };
       WP_CLI::add_command( 'test-global', $test_cmd );
       """
