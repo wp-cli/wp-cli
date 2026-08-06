@@ -377,8 +377,8 @@ class Formatter {
 	/**
 	 * Display multiple items according to the output arguments.
 	 *
-	 * @param iterable<int, array<string, mixed>|object> $items The items to display.
-	 * @param bool|array<int, bool>                      $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `format()` if items in the table are pre-colorized. Default false.
+	 * @param iterable<mixed>       $items The items to display.
+	 * @param bool|array<int, bool> $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `format()` if items in the table are pre-colorized. Default false.
 	 * @return void
 	 */
 	public function display_items( $items, $ascii_pre_colorized = false ) {
@@ -455,8 +455,8 @@ class Formatter {
 	/**
 	 * Format items according to arguments.
 	 *
-	 * @param iterable<int, array<string, mixed>|object> $items Items.
-	 * @param bool|array<int, bool>                      $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if items in the table are pre-colorized. Default false.
+	 * @param iterable<mixed>       $items Items.
+	 * @param bool|array<int, bool> $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if items in the table are pre-colorized. Default false.
 	 */
 	private function format( $items, $ascii_pre_colorized = false ): void {
 		$fields = $this->args['fields'];
@@ -509,8 +509,8 @@ class Formatter {
 	/**
 	 * Show a single field from a list of items.
 	 *
-	 * @param iterable<int, array<string, mixed>|object> $items Array of objects to show fields from
-	 * @param string                                     $field The field to show
+	 * @param iterable<mixed> $items Array of objects to show fields from
+	 * @param string          $field The field to show
 	 */
 	private function show_single_field( $items, $field ): void {
 		$key         = null;
@@ -559,7 +559,7 @@ class Formatter {
 	 * Warns if a field doesn't exist in any item.
 	 * Also resolves field names to their actual keys (including prefixes).
 	 *
-	 * @param iterable<int, array<string, mixed>|object> $items Items to validate
+	 * @param iterable<mixed> $items Items to validate
 	 */
 	private function validate_fields( $items ): void {
 		// Track which fields have been found and their resolved keys
@@ -633,9 +633,9 @@ class Formatter {
 	 * Find an object's key.
 	 * If $prefix is set, a key with that prefix will be prioritized.
 	 *
-	 * @param array<string, mixed>|object $item
-	 * @param string                      $field
-	 * @param bool                        $lenient If true, return null instead of erroring when field is not found.
+	 * @param mixed  $item
+	 * @param string $field
+	 * @param bool   $lenient If true, return null instead of erroring when field is not found.
 	 * @return string|null
 	 */
 	private function find_item_key( $item, $field, $lenient = false ) {
@@ -784,10 +784,14 @@ class Formatter {
 	 * - Objects and arrays are converted to JSON strings
 	 * - Booleans are converted to "true" or "false"
 	 *
-	 * @param array<string, mixed>|object $item
+	 * @param mixed $item
 	 * @return mixed
 	 */
 	public function transform_item_values_to_json( $item ) {
+		if ( ! is_object( $item ) && ! is_array( $item ) ) {
+			return $item;
+		}
+
 		foreach ( $this->args['fields'] as $field ) {
 			$true_field = $this->find_item_key( $item, $field, true );
 			if ( null === $true_field ) {
