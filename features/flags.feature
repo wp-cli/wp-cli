@@ -436,6 +436,18 @@ Feature: Global flags
       Running SSH command: docker exec '--env MY_VAR=value' 'wordpress' sh -c
       """
 
+  @skip-windows @skip-macos
+  Scenario: SSH arguments with a trailing newline should be escaped
+    # A trailing newline used to satisfy the "safe characters" check because
+    # PCRE's $ anchor also matches just before a final newline, letting the
+    # argument reach the remote shell unquoted.
+    When I try `newline_arg="$(printf 'foo\nx')"; wp --debug --ssh=wordpress option get "${newline_arg%x}"`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'wordpress' 'wp --debug option get '\''foo
+      '\'''
+      """
+
   Scenario: SSH connection string with leading hyphen in host should error
     # The payload must not contain a slash, as that would be parsed as the path
     # and thus separated from the host.
