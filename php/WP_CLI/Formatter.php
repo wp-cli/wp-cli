@@ -4,8 +4,8 @@ namespace WP_CLI;
 
 use cli\Colors;
 use cli\Table;
-use Iterator;
 use Mustangostang\Spyc;
+use Traversable;
 use WP_CLI;
 
 /**
@@ -385,8 +385,8 @@ class Formatter {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
-			// Convert iterator to array early to avoid consumption issues and enable validation
-			if ( $items instanceof Iterator ) {
+			// Convert Traversable to array early to avoid consumption issues and enable validation
+			if ( $items instanceof Traversable ) {
 				$items = iterator_to_array( $items );
 			}
 
@@ -404,7 +404,7 @@ class Formatter {
 			}
 
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
-				/** @var array<int, array<string, mixed>|object> $transformed */
+				/** @var array<int, mixed> $transformed */
 				$transformed = array_map(
 					function ( $item ) {
 						return $this->transform_item_values_to_json( is_object( $item ) ? clone $item : $item );
@@ -480,13 +480,16 @@ class Formatter {
 				if ( is_array( $item ) || is_object( $item ) ) {
 					$formatted_items[] = Utils\pick_fields( $item, $fields );
 				} else {
-					WP_CLI::debug( 'Skipping item that is neither array nor object in format handler.', 'formatter' );
+					$formatted_items[] = $item;
 				}
 			}
 
 			// Truncate cell values exactly once for table/CSV output
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
 				foreach ( $formatted_items as &$row ) {
+					if ( ! is_array( $row ) && ! is_object( $row ) ) {
+						continue;
+					}
 					foreach ( $row as $key => $value ) {
 						if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
 							$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
@@ -509,7 +512,7 @@ class Formatter {
 	/**
 	 * Show a single field from a list of items.
 	 *
-	 * @param iterable<mixed> $items Array of objects to show fields from
+	 * @param iterable<mixed> $items An iterable of items to show fields from.
 	 * @param string          $field The field to show
 	 */
 	private function show_single_field( $items, $field ): void {
