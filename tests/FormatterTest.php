@@ -412,4 +412,54 @@ class FormatterTest extends TestCase {
 
 		$this->assertSame( '{"protected_prop":"protected_val"}', $output );
 	}
+
+	public function test_display_items_with_traversable(): void {
+		Formatter::register_builtin_formats();
+
+		$items = new \ArrayObject(
+			[
+				[
+					'name' => 'Alice',
+					'role' => 'admin',
+				],
+				[
+					'name' => 'Bob',
+					'role' => 'editor',
+				],
+			]
+		);
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name', 'role' ] );
+
+		ob_start();
+		$formatter->display_items( $items );
+		$output = ob_get_clean();
+
+		$this->assertSame( '[{"name":"Alice","role":"admin"},{"name":"Bob","role":"editor"}]', $output );
+	}
+
+	public function test_display_items_scalar_items_in_json_and_yaml(): void {
+		Formatter::register_builtin_formats();
+
+		$items = [ 1, 2, 3 ];
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args );
+
+		ob_start();
+		$formatter->display_items( $items );
+		$output = ob_get_clean();
+
+		$this->assertSame( '[1,2,3]', $output );
+
+		$assoc_args = [ 'format' => 'yaml' ];
+		$formatter  = new Formatter( $assoc_args );
+
+		ob_start();
+		$formatter->display_items( $items );
+		$output = ob_get_clean();
+
+		$this->assertSame( "---\n- 1\n- 2\n- 3", trim( (string) $output ) );
+	}
 }
