@@ -180,7 +180,6 @@ jobs:
     if: ${{ github.repository_owner == 'wp-cli' }}
 
     env:
-      TAG: ${{ needs.verify-release.outputs.tag }}
       VERSION: ${{ needs.verify-release.outputs.version }}
 
     steps:
@@ -312,20 +311,3 @@ jobs:
           # Registered as `maintenance release` in wp-cli-dev's bootstrap.php,
           # with `close-released` as a subcommand of that.
           vendor/bin/wp maintenance release close-released --bundle
-
-      - name: Dispatch release notification to website repository
-        if: ${{ env.DRY_RUN != 'true' }}
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          github-token: ${{ secrets.ACTIONS_BOT }}
-          script: |
-            const { TAG, VERSION } = process.env;
-            await github.rest.repos.createDispatchEvent({
-              owner: 'wp-cli',
-              repo: 'wp-cli.github.com',
-              event_type: 'release-published',
-              client_payload: {
-                tag: TAG,
-                version: VERSION
-              }
-            });

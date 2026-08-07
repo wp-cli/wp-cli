@@ -115,7 +115,6 @@ assignees: ''
     - Bump the version to the next alpha in [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli) (`VERSION` file and `composer.json` branch alias).
     - Reset the framework dependency in [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle) back to `"dev-main"`.
     - Close the shipped milestones across all bundled repositories.
-    - Dispatch a `release-published` event to the website repository.
 
     Handbook regeneration runs separately, from [`trigger-handbook-regeneration.yml`](https://github.com/wp-cli/wp-cli/blob/main/.github/workflows/trigger-handbook-regeneration.yml).
 
