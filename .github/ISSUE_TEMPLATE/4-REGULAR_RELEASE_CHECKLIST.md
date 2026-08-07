@@ -73,7 +73,7 @@ assignees: ''
 
 - [ ] Submit the PR and merge it once all checks are green.
 
-- [ ] Create a Git tag for the new version. **Do not create a GitHub _release_ just yet**. 
+    Do not tag anything by hand — the `Prepare Release` workflow creates both tags later on.
 
 #### In [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/)
 
@@ -93,11 +93,17 @@ assignees: ''
 
 - [ ] Create a PR from the `release-x-x-x` branch in `wp-cli/wp-cli-bundle` and merge it. This will trigger the `wp-cli-release.*` builds.
 
-- [ ] Push the Git tag `v2.x.0` to both [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/) and [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/).
+- [ ] Optional: dry-run the [`Prepare Release`](https://github.com/wp-cli/wp-cli/actions/workflows/prepare-release.yml) workflow with **Dry run** ticked.
 
-    This automatically triggers the release workflow in `wp-cli/wp-cli` which:
-    - Generates the contributor list and changelog.
+    This runs every validation — `VERSION` matches, the bundle locks the framework version, the release Phar was actually built for this version, neither tag exists yet — without pushing anything.
+
+- [ ] Run the [`Prepare Release`](https://github.com/wp-cli/wp-cli/actions/workflows/prepare-release.yml) workflow with the version to release (e.g. `2.13.0`).
+
+    It tags [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/) first and then [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/), which in turn triggers the release workflow. That workflow:
+    - Re-checks that the release Phar matches the tag, and refuses to continue if it is stale.
+    - Generates the contributor list and changelog (also uploaded as a workflow artifact).
     - Promotes the Phar and manifest in the `builds` repo to stable, generates checksums, and signs with GPG.
+    - Verifies its own signatures and checksums, and repoints `deb/php-wpcli_latest_all.deb`.
     - Pushes the updated stable build back to `wp-cli/builds`.
     - Creates draft releases with the changelog and all 7 attached assets on both [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/) and [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/).
 
@@ -105,13 +111,17 @@ assignees: ''
     - Review draft on [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/releases) and publish.
     - Review draft on [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/releases) and publish.
 
-    Publishing the release on `wp-cli/wp-cli` automatically triggers post-release automation workflows which:
+    Publishing the release on `wp-cli/wp-cli` automatically triggers post-release automation, which first verifies the published artifacts (checksums, GPG signatures, that the Phar runs and reports the right version, and that it is byte-identical to the stable build in `wp-cli/builds`). Only if that passes does it:
     - Bump the version to the next alpha in [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli) (`VERSION` file and `composer.json` branch alias).
     - Reset the framework dependency in [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle) back to `"dev-main"`.
     - Close the shipped milestones across all bundled repositories.
-    - Trigger handbook docs regeneration and website repository dispatch.
+    - Dispatch a `release-published` event to the website repository.
 
-- [ ] Verify Phar release artifact
+    Handbook regeneration runs separately, from [`trigger-handbook-regeneration.yml`](https://github.com/wp-cli/wp-cli/blob/main/.github/workflows/trigger-handbook-regeneration.yml).
+
+- [ ] Spot-check the upgrade path end to end
+
+    The artifacts themselves are verified automatically; this covers the parts that automation cannot reach.
 
     ```
     $ wp cli update
