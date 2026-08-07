@@ -1859,27 +1859,46 @@ class Runner {
 				$gated_types[]      = 'ssh-args';
 			}
 
-			// Gate any project alias whose ssh-args is new or differs from the
-			// same-named alias in the trusted system/global config. Comparing per
-			// alias (rather than only flagging aliases with brand-new names) ensures
-			// a project config cannot silently redefine an existing alias such as
-			// @prod to inject SSH options like -oProxyCommand.
+			// Connection-related alias fields, each of which can redirect where a
+			// command runs or inject options into the local `ssh` invocation.
+			// `ssh_config` is as powerful as `ssh-args`, as an attacker-supplied SSH
+			// configuration file can carry a `ProxyCommand` that `ssh` executes
+			// locally. `path`, `url` and `user` are deliberately not gated here, as
+			// pointing a project at a given install is the documented purpose of a
+			// project configuration file.
+			$gated_alias_fields = [ 'ssh', 'ssh-args', 'ssh_config', 'proxyjump', 'key', 'http' ];
+
+			// Gate any project alias whose connection fields are new or differ from
+			// the same-named alias in the trusted system/global config. Comparing per
+			// alias and per field (rather than only flagging aliases with brand-new
+			// names) ensures a project config can neither introduce an alias that
+			// redirects a command nor silently redefine an existing one such as
+			// @prod. An alias that repeats the trusted values is not gated, so no
+			// additional prompts appear for already-trusted configurations.
 			foreach ( $project_aliases as $alias_name => $alias_def ) {
-				if ( ! is_array( $alias_def ) || empty( $alias_def['ssh-args'] ) ) {
+				if ( ! is_array( $alias_def ) ) {
 					continue;
 				}
 
-				$global_alias_def      = isset( $global_aliases[ $alias_name ] ) && is_array( $global_aliases[ $alias_name ] )
+				$global_alias_def = isset( $global_aliases[ $alias_name ] ) && is_array( $global_aliases[ $alias_name ] )
 					? $global_aliases[ $alias_name ]
 					: [];
-				$global_alias_ssh_args = isset( $global_alias_def['ssh-args'] ) ? $global_alias_def['ssh-args'] : null;
 
-				if ( $alias_def['ssh-args'] === $global_alias_ssh_args ) {
-					continue;
+				foreach ( $gated_alias_fields as $alias_field ) {
+					if ( ! isset( $alias_def[ $alias_field ] ) || '' === $alias_def[ $alias_field ] ) {
+						continue;
+					}
+
+					$global_field_value = isset( $global_alias_def[ $alias_field ] ) ? $global_alias_def[ $alias_field ] : null;
+
+					if ( $alias_def[ $alias_field ] === $global_field_value ) {
+						continue;
+					}
+
+					$alias_field_value  = $alias_def[ $alias_field ];
+					$gated_directives[] = 'alias @' . $alias_name . ': ' . $alias_field . '=' . ( is_scalar( $alias_field_value ) ? $alias_field_value : json_encode( $alias_field_value ) );
+					$gated_types[]      = 'alias';
 				}
-
-				$gated_directives[] = 'alias @' . $alias_name . ': ssh-args=' . ( is_scalar( $alias_def['ssh-args'] ) ? $alias_def['ssh-args'] : json_encode( $alias_def['ssh-args'] ) );
-				$gated_types[]      = 'alias';
 			}
 		}
 
