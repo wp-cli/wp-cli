@@ -79,7 +79,7 @@ function extract_from_phar( $path ) {
 
 	$fname = Path::basename( $path );
 
-	$tmp_path = get_temp_dir() . uniqid( 'wp-cli-extract-from-phar-', true ) . "-$fname";
+	$tmp_path = make_temp_file( 'wp-cli-extract-from-phar-', "-$fname" );
 
 	copy( $path, $tmp_path );
 
@@ -599,27 +599,37 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 
 	$tmpdir = get_temp_dir();
 
+	$created  = false;
+	$attempts = 0;
+
 	do {
 		$tmpfile  = Path::basename( $title );
 		$tmpfile  = preg_replace( '|\.[^.]*$|', '', $tmpfile );
 		$tmpfile .= '-' . substr( md5( (string) mt_rand() ), 0, 6 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand -- no crypto and WP not loaded.
 		$tmpfile  = $tmpdir . $tmpfile . '.' . $ext;
-		$fp       = fopen( $tmpfile, 'xb' );
-		if ( ! $fp && is_writable( $tmpdir ) && file_exists( $tmpfile ) ) {
-			$tmpfile = '';
-			continue;
-		}
-		if ( $fp ) {
-			fclose( $fp );
-		}
-	} while ( ! $tmpfile );
 
-	// @phpstan-ignore booleanNot.alwaysFalse
-	if ( ! $tmpfile ) {
+		// Restrict the file to its owner, as it can hold sensitive input.
+		$old_umask = umask( 0177 );
+		$fp        = @fopen( $tmpfile, 'xb' );
+		umask( $old_umask );
+
+		if ( $fp ) {
+			$created = true;
+			if ( false === fwrite( $fp, $input ) ) {
+				fclose( $fp );
+				@unlink( $tmpfile );
+				WP_CLI::error( 'Error writing to temporary file.' );
+			}
+			fclose( $fp );
+			break;
+		}
+		$tmpfile = '';
+		++$attempts;
+	} while ( $attempts < 100 );
+
+	if ( ! $created ) {
 		WP_CLI::error( 'Error creating temporary file.' );
 	}
-
-	file_put_contents( $tmpfile, $input );
 
 	$editor = getenv( 'EDITOR' );
 	if ( ! $editor ) {
@@ -1334,6 +1344,76 @@ function get_temp_dir() {
 	}
 
 	return $temp;
+}
+
+/**
+ * Create a unique temporary file safely without following symlinks.
+ *
+ * The file is only readable and writable by its owner on non-Windows systems.
+ *
+ * @access public
+ * @category System
+ *
+ * @param string $prefix Optional. Prefix for the temporary file name. Default 'wp-cli-'.
+ * @param string $suffix Optional. Suffix for the temporary file name. Default ''.
+ * @return string Path to the created temporary file.
+ */
+function make_temp_file( $prefix = 'wp-cli-', $suffix = '' ) {
+	if ( false !== strpbrk( $prefix, "/\\\0" ) || false !== strpbrk( $suffix, "/\\\0" ) ) {
+		WP_CLI::error( 'Invalid temporary file prefix or suffix.' );
+	}
+
+	$temp_dir = get_temp_dir();
+	$attempts = 0;
+
+	do {
+		$path = $temp_dir . uniqid( $prefix, true ) . $suffix;
+
+		// Restrict the file to its owner, as callers may write sensitive data to it.
+		$old_umask = umask( 0177 );
+		$handle    = @fopen( $path, 'xb' );
+		umask( $old_umask );
+
+		++$attempts;
+	} while ( ! $handle && $attempts < 100 );
+
+	if ( ! $handle ) {
+		WP_CLI::error( 'Failed to create a temporary file.' );
+	}
+
+	fclose( $handle );
+
+	return $path;
+}
+
+/**
+ * Create a unique temporary directory safely without following symlinks.
+ *
+ * @access public
+ * @category System
+ *
+ * @param string $prefix Optional. Prefix for the temporary directory name. Default 'wp-cli-'.
+ * @return string Path to the created temporary directory with a trailing slash.
+ */
+function make_temp_dir( $prefix = 'wp-cli-' ) {
+	if ( false !== strpbrk( $prefix, "/\\\0" ) ) {
+		WP_CLI::error( 'Invalid temporary directory prefix.' );
+	}
+
+	$temp_dir = get_temp_dir();
+	$attempts = 0;
+
+	do {
+		$path    = $temp_dir . uniqid( $prefix, true );
+		$success = @mkdir( $path, 0700 );
+		++$attempts;
+	} while ( ! $success && $attempts < 100 );
+
+	if ( ! $success ) {
+		WP_CLI::error( 'Failed to create a temporary directory.' );
+	}
+
+	return Path::trailingslashit( $path );
 }
 
 /**
