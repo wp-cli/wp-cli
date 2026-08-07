@@ -1,77 +1,243 @@
 name: Post-Release Automation
 
+# Runs once a release draft has been published.
+#
+# `released` rather than `published`: the `published` event also fires for
+# pre-releases, which would bump versions, reset the bundle constraint and close
+# milestones off the back of something like v3.0.0-beta.1. `released` only fires
+# for stable releases, and matches what trigger-handbook-regeneration.yml and
+# check-branch-alias.yml already listen for.
+
 on:
   release:
-    types: [published]
+    types: [released]
   workflow_dispatch:
     inputs:
       tag:
         description: 'Published release tag (e.g. v2.13.0)'
         required: true
+        type: string
+      dry_run:
+        description: 'Verify the release and report what would change, but do not push anything'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
 
+concurrency:
+  group: wp-cli-post-release
+  cancel-in-progress: false
+
+defaults:
+  run:
+    # Naming bash explicitly gets us `-o pipefail`, which the default shell
+    # (`bash -e {0}`) does not set.
+    shell: bash
+
+env:
+  DRY_RUN: ${{ inputs.dry_run || false }}
+
 jobs:
-  post-release:
-    name: Post-Release Version Bumps & Cleanup
+  verify-release:
+    name: Verify Published Release Artifacts
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'wp-cli' }}
+
+    outputs:
+      tag: ${{ steps.vars.outputs.tag }}
+      version: ${{ steps.vars.outputs.version }}
 
     steps:
       - name: Determine version
         id: vars
         env:
-          INPUT_TAG: ${{ github.event.inputs.tag }}
+          INPUT_TAG: ${{ inputs.tag }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           TAG="${INPUT_TAG:-$RELEASE_TAG}"
           VERSION="${TAG#v}"
 
-          # Extract Major.Minor.Patch
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-          NEXT_MINOR=$((MINOR + 1))
-          NEXT_ALPHA="${MAJOR}.${NEXT_MINOR}.0-alpha"
-          NEXT_ALIAS="${MAJOR}.${NEXT_MINOR}.x-dev"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::'$VERSION' is not a stable X.Y.Z version. Post-release automation only supports stable releases."
+            exit 1
+          fi
 
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "next_alpha=$NEXT_ALPHA" >> $GITHUB_OUTPUT
-          echo "next_alias=$NEXT_ALIAS" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: 'latest'
+          coverage: none
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download the published release assets
+        env:
+          GH_TOKEN: ${{ secrets.ACTIONS_BOT || secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.vars.outputs.tag }}
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          mkdir -p verify
+          cd verify
+          gh release download "$TAG" \
+            --repo wp-cli/wp-cli \
+            --pattern "wp-cli-${VERSION}.*"
+          ls -1
+
+      - name: Verify the published checksums
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          cd verify
+
+          for ALGO in md5 sha256 sha512; do
+            FILE="wp-cli-${VERSION}.phar.${ALGO}"
+
+            if [ ! -s "$FILE" ]; then
+              echo "::error::$FILE is missing or empty on the published release."
+              exit 1
+            fi
+
+            EXPECTED="$(cat "$FILE")"
+            ACTUAL="$("${ALGO}sum" "wp-cli-${VERSION}.phar" | cut -d ' ' -f 1)"
+
+            if [ "$EXPECTED" != "$ACTUAL" ]; then
+              echo "::error::Published $ALGO does not match the published Phar (expected '$EXPECTED', got '$ACTUAL')."
+              exit 1
+            fi
+
+            echo "$ALGO OK: $ACTUAL"
+          done
+
+      - name: Verify the published Phar runs and reports the right version
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          cd verify
+
+          PHAR_VERSION="$(php "wp-cli-${VERSION}.phar" --version | awk '{print $2}')"
+
+          if [ "$PHAR_VERSION" != "$VERSION" ]; then
+            echo "::error::Published Phar reports '$PHAR_VERSION' but the release is '$VERSION'."
+            exit 1
+          fi
+
+          php "wp-cli-${VERSION}.phar" --info
+
+          if ! jq -e . "wp-cli-${VERSION}.manifest.json" > /dev/null; then
+            echo "::error::wp-cli-${VERSION}.manifest.json is not valid JSON."
+            exit 1
+          fi
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@cb9bde2e2525e6865904e392450c3401a753db76 # v6.2.0
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Verify the published GPG signatures
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          cd verify
+          gpg --verify "wp-cli-${VERSION}.phar.asc" "wp-cli-${VERSION}.phar"
+          gpg --verify "wp-cli-${VERSION}.phar.gpg"
+
+      - name: Check out wp-cli/builds repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/builds
+          ref: gh-pages
+          path: builds
+
+      # `wp cli update` downloads from the release page while the website serves
+      # the stable Phar out of wp-cli/builds. If those two ever diverge, users
+      # get different binaries depending on how they installed.
+      - name: Verify the release asset matches the stable build
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          RELEASED="$(sha512sum "verify/wp-cli-${VERSION}.phar" | cut -d ' ' -f 1)"
+          STABLE="$(sha512sum builds/phar/wp-cli.phar | cut -d ' ' -f 1)"
+
+          if [ "$RELEASED" != "$STABLE" ]; then
+            echo "::error::The published release asset does not match phar/wp-cli.phar in wp-cli/builds."
+            echo "  release: $RELEASED"
+            echo "  stable:  $STABLE"
+            exit 1
+          fi
+
+          echo "Release asset and stable build match."
+
+  post-release:
+    name: Post-Release Version Bumps & Cleanup
+    runs-on: ubuntu-latest
+    needs: [verify-release]
+    if: ${{ github.repository_owner == 'wp-cli' }}
+
+    env:
+      TAG: ${{ needs.verify-release.outputs.tag }}
+      VERSION: ${{ needs.verify-release.outputs.version }}
+
+    steps:
       - name: Check out wp-cli/wp-cli
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: main
+          # Not GITHUB_TOKEN: main is branch-protected, and pushes made with
+          # GITHUB_TOKEN do not trigger downstream workflows such as
+          # check-branch-alias.
+          token: ${{ secrets.ACTIONS_BOT }}
           path: wp-cli
 
-      - name: Validate that released version matches current main
-        env:
-          RELEASED_VERSION: ${{ steps.vars.outputs.version }}
-          NEXT_ALPHA: ${{ steps.vars.outputs.next_alpha }}
+      - name: Work out the next development version
+        id: vars
         run: |
-          CURRENT_VERSION=$(tr -d '[:space:]' < wp-cli/VERSION)
-          CURRENT_BASE_VERSION="${CURRENT_VERSION%-alpha}"
+          IFS='.' read -r MAJOR MINOR _PATCH <<< "$VERSION"
+          NEXT_ALPHA="${MAJOR}.$((MINOR + 1)).0-alpha"
+          NEXT_ALIAS="${MAJOR}.$((MINOR + 1)).x-dev"
 
-          if [ "$CURRENT_BASE_VERSION" != "$RELEASED_VERSION" ] &&
-             [ "$CURRENT_VERSION" != "$NEXT_ALPHA" ]; then
-            echo "::error::Current repository version ($CURRENT_VERSION) does not match released version ($RELEASED_VERSION). Skipping post-release bump."
-            exit 1
+          CURRENT_VERSION="$(tr -d '[:space:]' < wp-cli/VERSION)"
+          CURRENT_BASE="${CURRENT_VERSION%-alpha}"
+
+          # Only bump when the release actually came off the current main. A
+          # patch release cut from a maintenance branch, or a re-run after the
+          # bump already happened, is a no-op rather than a failed workflow --
+          # milestone closing and the website dispatch below still need to run.
+          if [ "$CURRENT_BASE" = "$VERSION" ]; then
+            SHOULD_BUMP=true
+          elif [ "$CURRENT_VERSION" = "$NEXT_ALPHA" ]; then
+            SHOULD_BUMP=false
+            echo "::notice::wp-cli/wp-cli is already on $NEXT_ALPHA. Skipping the version bump."
+          else
+            SHOULD_BUMP=false
+            echo "::notice::wp-cli/wp-cli main is on $CURRENT_VERSION, which does not follow from the $VERSION release. Skipping the version bump."
           fi
+
+          {
+            echo "next_alpha=$NEXT_ALPHA"
+            echo "next_alias=$NEXT_ALIAS"
+            echo "should_bump=$SHOULD_BUMP"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Set up PHP and Composer
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
           php-version: 'latest'
+          coverage: none
           tools: composer
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Bump alpha version and branch-alias in wp-cli/wp-cli
+        if: ${{ steps.vars.outputs.should_bump == 'true' }}
         env:
           NEXT_ALPHA: ${{ steps.vars.outputs.next_alpha }}
           NEXT_ALIAS: ${{ steps.vars.outputs.next_alias }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd wp-cli
           echo "$NEXT_ALPHA" > VERSION
@@ -83,6 +249,9 @@ jobs:
 
           if git diff --staged --quiet; then
             echo "No version bump needed in wp-cli."
+          elif [ "$DRY_RUN" = "true" ]; then
+            echo "[dry run] Would commit and push to wp-cli/wp-cli:"
+            git diff --staged
           else
             git commit -m "Bump version to $NEXT_ALPHA"
             git push origin main
@@ -97,6 +266,7 @@ jobs:
           path: wp-cli-bundle
 
       - name: Reset framework constraint, branch-alias and lockfile in wp-cli/wp-cli-bundle
+        if: ${{ steps.vars.outputs.should_bump == 'true' }}
         env:
           NEXT_ALIAS: ${{ steps.vars.outputs.next_alias }}
         run: |
@@ -110,6 +280,9 @@ jobs:
 
           if git diff --staged --quiet; then
             echo "No changes needed in wp-cli-bundle."
+          elif [ "$DRY_RUN" = "true" ]; then
+            echo "[dry run] Would commit and push to wp-cli/wp-cli-bundle:"
+            git diff --staged
           else
             git commit -m "Reset wp-cli framework dependency to dev-main and bump branch alias"
             git push origin main
@@ -124,16 +297,25 @@ jobs:
       - name: Close released milestones across bundle repos
         env:
           GITHUB_TOKEN: ${{ secrets.ACTIONS_BOT }}
+          # The wp-cli-dev composer install clones the whole WP-CLI org via its
+          # pre-install-cmd hook, so let it use every core the runner has.
+          CLONE_JOBS: 8
         run: |
           cd wp-cli-dev
           composer install --no-interaction
-          vendor/bin/wp maintenance close-released --bundle
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "[dry run] Would run: wp maintenance release close-released --bundle"
+            exit 0
+          fi
+
+          # Registered as `maintenance release` in wp-cli-dev's bootstrap.php,
+          # with `close-released` as a subcommand of that.
+          vendor/bin/wp maintenance release close-released --bundle
 
       - name: Dispatch release notification to website repository
+        if: ${{ env.DRY_RUN != 'true' }}
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        env:
-          TAG: ${{ steps.vars.outputs.tag }}
-          VERSION: ${{ steps.vars.outputs.version }}
         with:
           github-token: ${{ secrets.ACTIONS_BOT }}
           script: |
