@@ -59,6 +59,9 @@ class Configurator {
 	/**
 	 * Arguments that can be used in an alias.
 	 *
+	 * Note: Connection settings ('ssh', 'ssh-args', 'proxyjump', 'key')
+	 * defined at the root level also act as defaults for aliases.
+	 *
 	 * @var array<int, string>
 	 */
 	private static $alias_spec = [
@@ -131,12 +134,13 @@ class Configurator {
 	/**
 	 * Add the given alias to the internal aliases array.
 	 *
-	 * @param string        $key The alias name (with or without @ prefix).
-	 * @param array<mixed>  $value The alias configuration.
-	 * @param string        $yml_file_dir The directory of the YAML file for path resolution.
+	 * @param string       $key The alias name (with or without @ prefix).
+	 * @param array<mixed> $value The alias configuration.
+	 * @param string       $yml_file_dir The directory of the YAML file for path resolution.
+	 * @param array<mixed> $yaml The parsed YAML configuration array.
 	 * @return void
 	 */
-	private function add_alias( $key, $value, $yml_file_dir ) {
+	private function add_alias( $key, $value, $yml_file_dir, $yaml = [] ) {
 		if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
 			// Remove the @ character from the alias name
 			$key = substr( $key, 1 );
@@ -155,9 +159,15 @@ class Configurator {
 
 					// Interpolate environment variables in alias values.
 					$val_arr[ $i ] = self::interpolate_env_vars( $val_arr[ $i ] );
-					if ( 'path' === $i && ! isset( $val_arr['ssh'] ) && is_string( $val_arr[ $i ] ) ) {
-						self::absolutize( $val_arr[ $i ], $yml_file_dir );
-						$val_arr[ $i ] = Path::normalize( $val_arr[ $i ] );
+					if ( 'path' === $i ) {
+						$has_alias_ssh = isset( $value['ssh'] ) && false !== $value['ssh'] && '' !== $value['ssh'];
+						$has_root_ssh  = ( ! isset( $val_arr['ssh'] ) || ( false !== $value['ssh'] && '' !== $value['ssh'] ) )
+							&& ( ! empty( $this->config['ssh'] ) || ! empty( $yaml['ssh'] ) );
+
+						if ( ! $has_alias_ssh && ! $has_root_ssh && is_string( $val_arr[ $i ] ) ) {
+							self::absolutize( $val_arr[ $i ], $yml_file_dir );
+							$val_arr[ $i ] = Path::normalize( $val_arr[ $i ] );
+						}
 					}
 					$this->aliases[ $key ][ $i ] = $val_arr[ $i ];
 					$is_alias                    = true;
@@ -457,13 +467,13 @@ class Configurator {
 		foreach ( $yaml as $key => $value ) {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
 				if ( is_array( $value ) ) {
-					$this->add_alias( $key, $value, $yml_file_dir );
+					$this->add_alias( $key, $value, $yml_file_dir, $yaml );
 				}
 			} elseif ( 'aliases' === $key ) {
 				if ( is_array( $value ) ) {
 					foreach ( $value as $alias => $alias_config ) {
 						if ( is_string( $alias ) && is_array( $alias_config ) ) {
-							$this->add_alias( $alias, $alias_config, $yml_file_dir );
+							$this->add_alias( $alias, $alias_config, $yml_file_dir, $yaml );
 						}
 					}
 				}
@@ -482,7 +492,7 @@ class Configurator {
 				self::arrayify( $value );
 				$this->config[ $key ] = array_merge( (array) $this->config[ $key ], $value );
 			} else {
-				if ( $current_alias && in_array( $key, self::$alias_spec, true ) ) {
+				if ( $current_alias && in_array( $key, self::$alias_spec, true ) && ! in_array( $key, [ 'ssh', 'ssh-args', 'proxyjump', 'key', 'ssh_config' ], true ) ) {
 					continue;
 				}
 				$this->config[ $key ] = $value;
