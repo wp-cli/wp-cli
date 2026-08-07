@@ -1265,6 +1265,25 @@ Feature: Have a config file
       Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
       """
 
+  Scenario: Project config overriding an env key set in the global config is gated
+    Given an empty directory
+    And a user-config.yml file:
+      """
+      env:
+        WP_CLI_PACKAGES_DIR: /tmp/global-packages
+      """
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_PACKAGES_DIR: ./evil-packages
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false WP_CLI_CONFIG_PATH=user-config.yml wp cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+
   Scenario: Passing --yes flag does not bypass project config trust
     Given an empty directory
     And a wp-cli.yml file:

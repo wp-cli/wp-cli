@@ -1816,7 +1816,19 @@ class Runner {
 			$project_requires = array_diff( $this->required_files['project'], $this->required_files['global'] );
 			$project_exec     = array_diff( $this->exec_commands['project'], $this->exec_commands['global'] );
 			$project_env_all  = isset( $config[1]['env'] ) && is_array( $config[1]['env'] ) ? $config[1]['env'] : [];
-			$project_env_keys = array_diff( array_keys( $project_env_all ), array_keys( $global_env ) );
+
+			// Gate env keys that are new or whose value differs from the trusted
+			// system/global configuration. Comparing values (rather than only key
+			// names) ensures a project config cannot silently override an env key
+			// the operator already set globally: the project `env` array replaces
+			// the global one wholesale, so an unchecked key name would still yield
+			// the project's value from `Utils\get_env_or_config()`.
+			$project_env_keys = [];
+			foreach ( $project_env_all as $env_key => $env_value ) {
+				if ( ! array_key_exists( $env_key, $global_env ) || $env_value !== $global_env[ $env_key ] ) {
+					$project_env_keys[] = $env_key;
+				}
+			}
 
 			$project_ssh_args = isset( $config[0]['ssh-args'] ) ? (array) $config[0]['ssh-args'] : [];
 			$new_ssh_args     = array_diff( $project_ssh_args, $global_ssh_args );
