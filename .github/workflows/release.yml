@@ -1,0 +1,357 @@
+name: Release
+
+# Promotes the release Phar built by wp-cli/wp-cli-bundle to stable, signs it,
+# and creates draft releases on wp-cli/wp-cli and wp-cli/wp-cli-bundle.
+#
+# Normally triggered by the tag push that the Prepare Release workflow performs.
+# Publishing the resulting draft release then kicks off Post-Release Automation.
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v2.13.0)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Build, sign and verify, but do not push to wp-cli/builds or create releases'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wp-cli-release
+  cancel-in-progress: false
+
+defaults:
+  run:
+    # Naming bash explicitly gets us `-o pipefail`, which the default shell
+    # (`bash -e {0}`) does not set. Without it, a failing `sha512sum` in a
+    # `sha512sum ... | cut ...` pipeline would silently produce an empty
+    # checksum file that then gets signed and published.
+    shell: bash
+
+env:
+  DRY_RUN: ${{ inputs.dry_run || false }}
+
+jobs:
+  prepare-draft-release:
+    name: Prepare Stable Build & Create Draft Releases
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'wp-cli' }}
+
+    steps:
+      - name: Determine version
+        id: vars
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          TAG="${INPUT_TAG:-$REF_NAME}"
+          VERSION="${TAG#v}"
+
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::'$VERSION' is not a stable X.Y.Z version. The release automation only supports stable releases."
+            exit 1
+          fi
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check out wp-cli/builds repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/builds
+          ref: gh-pages
+          token: ${{ secrets.ACTIONS_BOT }}
+          path: builds
+
+      - name: Check out wp-cli/wp-cli-dev repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/wp-cli-dev
+          path: wp-cli-dev
+
+      - name: Set up PHP and Composer
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: 'latest'
+          coverage: none
+          tools: composer
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # This is the gate that keeps a stale or failed bundle build from being
+      # signed and published as the official stable release. wp-cli-release.phar
+      # is produced by a different workflow in a different repository, so
+      # nothing else guarantees it corresponds to the tag being released.
+      - name: Verify the release Phar matches the tag
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          PHAR="builds/phar/wp-cli-release.phar"
+
+          if [ ! -f "$PHAR" ]; then
+            echo "::error::$PHAR does not exist in wp-cli/builds. Has the bundle Deployment workflow run for the release-x-x-x branch?"
+            exit 1
+          fi
+
+          PHAR_VERSION="$(php "$PHAR" --version | awk '{print $2}')"
+
+          if [ "$PHAR_VERSION" != "$VERSION" ]; then
+            echo "::error::$PHAR reports version '$PHAR_VERSION' but '$VERSION' is being released. The release build is stale or failed."
+            exit 1
+          fi
+
+          # Same sanity check the manual checklist used to ask for.
+          php "$PHAR" --info
+
+          if ! jq -e . builds/phar/wp-cli-release.manifest.json > /dev/null; then
+            echo "::error::builds/phar/wp-cli-release.manifest.json is not valid JSON."
+            exit 1
+          fi
+
+      - name: Install dependencies for maintenance tools
+        env:
+          # The wp-cli-dev composer install clones the whole WP-CLI org via its
+          # pre-install-cmd hook, so let it use every core the runner has.
+          CLONE_JOBS: 8
+        run: |
+          cd wp-cli-dev
+          composer install --no-interaction
+
+      # NOTE: `contrib-list` and `release-notes` derive their content from the
+      # currently *open* milestone when invoked without arguments, which is the
+      # only mode that covers the whole bundle. That means this step must run
+      # before Post-Release Automation closes the milestones, and re-running it
+      # afterwards produces empty output. The guards below turn that into a hard
+      # failure rather than silently overwriting good release notes with nothing.
+      - name: Generate changelog and contributor list
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_BOT || secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p release-assets
+          cd wp-cli-dev
+
+          vendor/bin/wp maintenance contrib-list --format=markdown > ../release-assets/contributors.md
+          vendor/bin/wp maintenance release-notes > ../release-assets/changelog.md
+
+          if [ ! -s ../release-assets/contributors.md ]; then
+            echo "::error::The contributor list came back empty. Is the release milestone still open?"
+            exit 1
+          fi
+
+          if [ ! -s ../release-assets/changelog.md ]; then
+            echo "::error::The changelog came back empty. Is the release milestone still open?"
+            exit 1
+          fi
+
+          cd ..
+          {
+            echo "## Contributors"
+            echo ""
+            cat release-assets/contributors.md
+            echo ""
+            echo "## Changelog"
+            echo ""
+            cat release-assets/changelog.md
+          } > release-assets/release_notes.md
+
+      # Uploaded before anything is published so the generated notes survive
+      # even if a later step fails and the milestones have since been closed.
+      - name: Upload generated release notes
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: release-notes-${{ steps.vars.outputs.version }}
+          path: release-assets/*.md
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@cb9bde2e2525e6865904e392450c3401a753db76 # v6.2.0
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Promote release Phar to stable & generate signatures
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          cd builds/phar
+
+          # Promote release files to stable
+          cp wp-cli-release.phar wp-cli.phar
+          cp wp-cli-release.manifest.json wp-cli.manifest.json
+
+          # Generate stable hashes
+          md5sum wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.md5
+          sha256sum wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha256
+          sha512sum wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha512
+
+          # Sign stable Phar with GPG
+          gpg --batch --yes --output wp-cli.phar.gpg --default-key releases@wp-cli.org --sign wp-cli.phar
+          gpg --batch --yes --output wp-cli.phar.asc --default-key releases@wp-cli.org --detach-sig --armor wp-cli.phar
+
+          # Prepare versioned files for GitHub release upload
+          cp wp-cli.phar "../../release-assets/wp-cli-${VERSION}.phar"
+          cp wp-cli.phar.gpg "../../release-assets/wp-cli-${VERSION}.phar.gpg"
+          cp wp-cli.phar.asc "../../release-assets/wp-cli-${VERSION}.phar.asc"
+          cp wp-cli.phar.md5 "../../release-assets/wp-cli-${VERSION}.phar.md5"
+          cp wp-cli.phar.sha256 "../../release-assets/wp-cli-${VERSION}.phar.sha256"
+          cp wp-cli.phar.sha512 "../../release-assets/wp-cli-${VERSION}.phar.sha512"
+          cp wp-cli.manifest.json "../../release-assets/wp-cli-${VERSION}.manifest.json"
+
+      - name: Verify the generated signatures and checksums
+        run: |
+          cd builds/phar
+
+          gpg --verify wp-cli.phar.asc wp-cli.phar
+          gpg --verify wp-cli.phar.gpg
+
+          for ALGO in md5 sha256 sha512; do
+            EXPECTED="$(cat "wp-cli.phar.${ALGO}")"
+            ACTUAL="$("${ALGO}sum" wp-cli.phar | cut -d ' ' -f 1)"
+
+            if [ -z "$EXPECTED" ] || [ "$EXPECTED" != "$ACTUAL" ]; then
+              echo "::error::${ALGO} checksum file does not match the Phar (expected '$EXPECTED', got '$ACTUAL')."
+              exit 1
+            fi
+          done
+
+      # Previously a manual checklist item that this automation dropped: apt
+      # users resolve php-wpcli_latest_all.deb, so it has to follow stable.
+      - name: Point the latest Debian package at the new stable version
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          cd builds/deb
+          DEB_FILE="php-wpcli_${VERSION}_all.deb"
+
+          if [ ! -f "$DEB_FILE" ]; then
+            echo "::warning::$DEB_FILE not found in wp-cli/builds; leaving php-wpcli_latest_all.deb untouched."
+            exit 0
+          fi
+
+          ln -sfn "$DEB_FILE" php-wpcli_latest_all.deb
+          echo "php-wpcli_latest_all.deb -> $DEB_FILE"
+
+      - name: Commit & push updated stable build to wp-cli/builds
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          cd builds
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add phar/wp-cli.phar phar/wp-cli.phar.* phar/wp-cli.manifest.json
+          git add deb/php-wpcli_latest_all.deb
+
+          if git diff --staged --quiet; then
+            echo "No changes to commit in builds repository."
+          elif [ "$DRY_RUN" = "true" ]; then
+            echo "[dry run] Would commit and push the following to wp-cli/builds:"
+            git diff --staged --stat
+          else
+            git commit -m "Update stable to v${VERSION}"
+
+            # gh-pages also receives nightly and package builds, so a push can
+            # lose a race. Retry on top of whatever landed in the meantime.
+            for _ in 1 2 3; do
+              if git push origin gh-pages; then
+                exit 0
+              fi
+              echo "Push rejected, rebasing onto the latest gh-pages and retrying..."
+              git pull --rebase origin gh-pages
+            done
+
+            echo "::error::Could not push the stable build to wp-cli/builds."
+            exit 1
+          fi
+
+      # Prepare Release tags the bundle first, so this should already be true.
+      # It is checked anyway to cover tags pushed by hand in the wrong order,
+      # because `gh release create --verify-tag` fails outright without it.
+      - name: Wait for the tag to exist in wp-cli/wp-cli-bundle
+        env:
+          TAG: ${{ steps.vars.outputs.tag }}
+        run: |
+          for _ in $(seq 1 30); do
+            if git ls-remote --tags https://github.com/wp-cli/wp-cli-bundle.git "refs/tags/$TAG" | grep -q .; then
+              echo "Tag $TAG found in wp-cli/wp-cli-bundle."
+              exit 0
+            fi
+            sleep 10
+          done
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "::warning::Tag $TAG is not in wp-cli/wp-cli-bundle. Continuing because this is a dry run."
+            exit 0
+          fi
+
+          echo "::error::Tag $TAG never appeared in wp-cli/wp-cli-bundle."
+          exit 1
+
+      - name: Create or update Draft Release on wp-cli/wp-cli
+        env:
+          GH_TOKEN: ${{ secrets.ACTIONS_BOT }}
+          TAG: ${{ steps.vars.outputs.tag }}
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "[dry run] Would create/update draft release $TAG on wp-cli/wp-cli with these assets:"
+            ls -1 release-assets/wp-cli-*
+            exit 0
+          fi
+
+          if gh release view "$TAG" --repo wp-cli/wp-cli >/dev/null 2>&1; then
+            echo "Release $TAG already exists on wp-cli/wp-cli. Updating..."
+            gh release edit "$TAG" \
+              --repo wp-cli/wp-cli \
+              --draft \
+              --title "Version $VERSION" \
+              --notes-file release-assets/release_notes.md
+          else
+            echo "Creating draft release $TAG on wp-cli/wp-cli..."
+            gh release create "$TAG" \
+              --repo wp-cli/wp-cli \
+              --verify-tag \
+              --draft \
+              --title "Version $VERSION" \
+              --notes-file release-assets/release_notes.md
+          fi
+
+          gh release upload "$TAG" release-assets/wp-cli-* --repo wp-cli/wp-cli --clobber
+
+      - name: Create or update Draft Release on wp-cli/wp-cli-bundle
+        env:
+          GH_TOKEN: ${{ secrets.ACTIONS_BOT }}
+          TAG: ${{ steps.vars.outputs.tag }}
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "[dry run] Would create/update draft release $TAG on wp-cli/wp-cli-bundle with these assets:"
+            ls -1 release-assets/wp-cli-*
+            exit 0
+          fi
+
+          if gh release view "$TAG" --repo wp-cli/wp-cli-bundle >/dev/null 2>&1; then
+            echo "Release $TAG already exists on wp-cli/wp-cli-bundle. Updating..."
+            gh release edit "$TAG" \
+              --repo wp-cli/wp-cli-bundle \
+              --draft \
+              --title "Version $VERSION" \
+              --notes-file release-assets/release_notes.md
+          else
+            echo "Creating draft release $TAG on wp-cli/wp-cli-bundle..."
+            gh release create "$TAG" \
+              --repo wp-cli/wp-cli-bundle \
+              --verify-tag \
+              --draft \
+              --title "Version $VERSION" \
+              --notes-file release-assets/release_notes.md
+          fi
+
+          gh release upload "$TAG" release-assets/wp-cli-* --repo wp-cli/wp-cli-bundle --clobber

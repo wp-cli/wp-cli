@@ -1,0 +1,204 @@
+name: Prepare Release
+
+# Creates the release tags in wp-cli/wp-cli-bundle and wp-cli/wp-cli.
+#
+# The bundle is tagged first, because pushing the wp-cli tag is what triggers
+# the Release workflow, and that workflow needs the bundle tag to already exist
+# in order to attach a draft release to it.
+#
+# The tags are pushed with ACTIONS_BOT rather than GITHUB_TOKEN on purpose:
+# pushes made with GITHUB_TOKEN do not trigger further workflow runs, so the
+# Release workflow would never start.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release, without the leading "v" (e.g. 2.13.0)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Run every validation but do not create or push any tags'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wp-cli-release
+  cancel-in-progress: false
+
+defaults:
+  run:
+    # Naming bash explicitly gets us `-o pipefail`, which the default shell
+    # (`bash -e {0}`) does not set.
+    shell: bash
+
+env:
+  DRY_RUN: ${{ inputs.dry_run || false }}
+
+jobs:
+  create-tags:
+    name: Validate & Create Release Tags
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'wp-cli' }}
+
+    steps:
+      - name: Determine version
+        id: vars
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          VERSION="${INPUT_VERSION#v}"
+
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::'$VERSION' is not a stable X.Y.Z version. The release automation only supports stable releases."
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check out wp-cli/wp-cli
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          token: ${{ secrets.ACTIONS_BOT }}
+          path: wp-cli
+
+      - name: Check out wp-cli/wp-cli-bundle
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/wp-cli-bundle
+          ref: main
+          token: ${{ secrets.ACTIONS_BOT }}
+          path: wp-cli-bundle
+
+      - name: Check out wp-cli/builds repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/builds
+          ref: gh-pages
+          path: builds
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: 'latest'
+          coverage: none
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify the VERSION file in wp-cli/wp-cli matches
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          CURRENT_VERSION="$(tr -d '[:space:]' < wp-cli/VERSION)"
+
+          if [ "$CURRENT_VERSION" != "$VERSION" ]; then
+            echo "::error::wp-cli/wp-cli main is on '$CURRENT_VERSION' but you asked to release '$VERSION'. Merge the version bump PR first."
+            exit 1
+          fi
+
+      - name: Verify wp-cli/wp-cli-bundle locks the framework version
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          CONSTRAINT="$(jq -r '.require["wp-cli/wp-cli"]' wp-cli-bundle/composer.json)"
+
+          if [ "$CONSTRAINT" = "dev-main" ] || [ "$CONSTRAINT" = "null" ]; then
+            echo "::error::wp-cli/wp-cli-bundle still requires 'wp-cli/wp-cli: $CONSTRAINT'. Merge the release-x-x-x PR that locks it to ^$VERSION first."
+            exit 1
+          fi
+
+          if [[ "$CONSTRAINT" != *"$VERSION"* ]]; then
+            echo "::error::wp-cli/wp-cli-bundle requires 'wp-cli/wp-cli: $CONSTRAINT', which does not reference $VERSION."
+            exit 1
+          fi
+
+      - name: Verify the release Phar was built for this version
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          PHAR="builds/phar/wp-cli-release.phar"
+
+          if [ ! -f "$PHAR" ]; then
+            echo "::error::$PHAR does not exist in wp-cli/builds. Has the bundle Deployment workflow run for the release-x-x-x branch?"
+            exit 1
+          fi
+
+          PHAR_VERSION="$(php "$PHAR" --version | awk '{print $2}')"
+
+          if [ "$PHAR_VERSION" != "$VERSION" ]; then
+            echo "::error::$PHAR reports version '$PHAR_VERSION' but '$VERSION' is being released. The release build is stale or failed."
+            exit 1
+          fi
+
+          echo "Release Phar reports $PHAR_VERSION."
+
+      - name: Verify the tags do not already exist
+        env:
+          TAG: ${{ steps.vars.outputs.tag }}
+        run: |
+          FOUND=0
+
+          for REPO in wp-cli/wp-cli wp-cli/wp-cli-bundle; do
+            if git ls-remote --tags "https://github.com/${REPO}.git" "refs/tags/${TAG}" | grep -q .; then
+              echo "::error::Tag $TAG already exists in $REPO."
+              FOUND=1
+            fi
+          done
+
+          exit "$FOUND"
+
+      - name: Create tag in wp-cli/wp-cli-bundle
+        env:
+          TAG: ${{ steps.vars.outputs.tag }}
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          cd wp-cli-bundle
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git tag -a "$TAG" -m "Version $VERSION"
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "[dry run] Would push tag $TAG to wp-cli/wp-cli-bundle ($(git rev-parse --short HEAD))."
+          else
+            git push origin "refs/tags/$TAG"
+          fi
+
+      - name: Create tag in wp-cli/wp-cli
+        env:
+          TAG: ${{ steps.vars.outputs.tag }}
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          cd wp-cli
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git tag -a "$TAG" -m "Version $VERSION"
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "[dry run] Would push tag $TAG to wp-cli/wp-cli ($(git rev-parse --short HEAD))."
+          else
+            git push origin "refs/tags/$TAG"
+          fi
+
+      - name: Summary
+        env:
+          TAG: ${{ steps.vars.outputs.tag }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            {
+              echo "### Dry run complete for $TAG"
+              echo ""
+              echo "All validations passed. No tags were pushed."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "### Tagged $TAG"
+              echo ""
+              echo "The Release workflow should now be building the draft releases."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi

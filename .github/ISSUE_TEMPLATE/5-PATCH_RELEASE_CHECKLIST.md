@@ -159,16 +159,6 @@ assignees: 'schlessera'
     brew bump-formula-pr --strict wp-cli --url=https://github.com/wp-cli/wp-cli/releases/download/v2.x.x/wp-cli-2.x.x.phar --sha256=$(wget -qO- https://github.com/wp-cli/wp-cli/releases/download/v2.x.x/wp-cli-2.x.x.phar - | sha256sum | cut -d " " -f 1)
     ```
 
-### Updating the website
-
-- [ ] Verify <https://github.com/wp-cli/wp-cli.github.com#readme> is up-to-date
-
-- [ ] Update the [roadmap](https://make.wordpress.org/cli/handbook/roadmap/)
-
-- [ ] Update all version references on the homepage (and localized homepages).
-
-- [ ] Tag a release of the website
-
 ### Announcing
 
 - [ ] Announce release on the [WP-CLI Twitter account](https://twitter.com/wpcli)
