@@ -1049,6 +1049,7 @@ class WP_CLI {
 	 */
 	public static function warning( $message ) {
 		if ( null === self::$logger ) {
+			fwrite( STDERR, 'Warning: ' . self::error_to_string( $message ) . "\n" );
 			return;
 		}
 
@@ -1087,6 +1088,8 @@ class WP_CLI {
 	public static function error( $message, $exit = true ) {
 		if ( null !== self::$logger && ! isset( self::get_runner()->assoc_args['completions'] ) ) {
 			self::$logger->error( self::error_to_string( $message ) );
+		} elseif ( null === self::$logger ) {
+			fwrite( STDERR, 'Error: ' . self::error_to_string( $message ) . "\n" );
 		}
 
 		$return_code = false;
