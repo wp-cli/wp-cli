@@ -111,15 +111,12 @@ Feature: Global flags
   Scenario: Debug run
     Given a WP installation
 
-    When I try `wp eval "echo CONST_WITHOUT_QUOTES;"`
+    When I run `wp eval "echo CONST_WITHOUT_QUOTES;"`
     Then STDOUT should be:
       """
       CONST_WITHOUT_QUOTES
       """
-    And STDERR should contain:
-      """
-      Use of undefined constant CONST_WITHOUT_QUOTES
-      """
+    And STDERR should be empty
     And the return code should be 0
 
     When I try `wp eval "echo CONST_WITHOUT_QUOTES;" --debug`
@@ -438,6 +435,39 @@ Feature: Global flags
       """
       Running SSH command: docker exec '--env MY_VAR=value' 'wordpress' sh -c
       """
+
+  @skip-windows @skip-macos
+  Scenario: SSH arguments with a trailing newline should be escaped
+    # A trailing newline used to satisfy the "safe characters" check because
+    # PCRE's $ anchor also matches just before a final newline, letting the
+    # argument reach the remote shell unquoted.
+    When I try `newline_arg="$(printf 'foo\nx')"; wp --debug --ssh=wordpress option get "${newline_arg%x}"`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'wordpress' 'wp --debug option get '\''foo
+      '\'''
+      """
+
+  Scenario: SSH connection string with leading hyphen in host should error
+    # The payload must not contain a slash, as that would be parsed as the path
+    # and thus separated from the host.
+    Given an empty directory
+
+    When I try `wp --ssh="-oProxyCommand=touch pwn.txt" cli info`
+    Then STDERR should contain:
+      """
+      Error: Invalid SSH host: value cannot start with a hyphen.
+      """
+    And the return code should be 1
+    And the pwn.txt file should not exist
+
+  Scenario: SSH connection string with leading hyphen in user should error
+    When I try `wp --ssh="-user@example.com" cli info`
+    Then STDERR should contain:
+      """
+      Error: Invalid SSH user: value cannot start with a hyphen.
+      """
+    And the return code should be 1
 
   Scenario: Customize config-spec with WP_CLI_CONFIG_SPEC_FILTER_CALLBACK
     Given a WP installation

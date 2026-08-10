@@ -338,3 +338,21 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
       """
       Would you like to run the command again
       """
+
+  Scenario: Pre-WordPress fatal error with display_errors disabled is handled safely without undefined function error
+    Given a pre-load-error.php file:
+      """
+      <?php
+      ini_set('display_errors', 0);
+      trigger_error('Pre-WordPress fatal error occurred', E_USER_ERROR);
+      """
+
+    When I try `wp --require=pre-load-error.php eval ""`
+    Then STDERR should contain:
+      """
+      There has been a critical error on this website.
+      """
+    And STDERR should contain:
+      """
+      Pre-WordPress fatal error occurred
+      """

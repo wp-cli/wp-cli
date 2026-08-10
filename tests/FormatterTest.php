@@ -317,4 +317,149 @@ class FormatterTest extends TestCase {
 		// Should match var_export output
 		$this->assertStringContainsString( "'nested' => 'value'", $result );
 	}
+
+	public function test_display_item_object_with_protected_properties(): void {
+		Formatter::register_builtin_formats();
+
+		$dummy = new class() {
+			/** @var string */
+			public $public_prop = 'public_val';
+
+			/** @var string */
+			protected $protected_prop = 'protected_val';
+
+			/** @var string */
+			private $private_prop = 'private_val';
+
+			public function get_private_prop(): string {
+				return $this->private_prop;
+			}
+		};
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'public_prop' ] );
+
+		ob_start();
+		$formatter->display_item( $dummy );
+		$output = ob_get_clean();
+
+		$this->assertSame( '{"public_prop":"public_val"}', $output );
+	}
+
+	public function test_display_item_object_inaccessible_protected_property_issues_warning(): void {
+		Formatter::register_builtin_formats();
+
+		$prev_logger = WP_CLI::get_logger();
+		$logger      = new WP_CLI\Loggers\Execution();
+		WP_CLI::set_logger( $logger );
+
+		$dummy = new class() {
+			/** @var string */
+			public $public_prop = 'public_val';
+
+			/** @var string */
+			protected $protected_prop = 'protected_val';
+		};
+
+		try {
+			$assoc_args = [ 'format' => 'json' ];
+			$formatter  = new Formatter( $assoc_args, [ 'public_prop', 'protected_prop' ] );
+
+			ob_start();
+			$formatter->display_item( $dummy );
+			$output = ob_get_clean();
+
+			$this->assertSame( '{"public_prop":"public_val"}', $output );
+			$this->assertStringContainsString( 'Field not found in item: protected_prop.', $logger->stderr );
+		} finally {
+			WP_CLI::set_logger( $prev_logger );
+		}
+	}
+
+	public function test_display_item_object_with_magic_getter(): void {
+		Formatter::register_builtin_formats();
+
+		$dummy = new class() {
+			/** @var string */
+			protected $protected_prop = 'protected_val';
+
+			/**
+			 * @param string $name
+			 * @return mixed
+			 */
+			public function __get( $name ) {
+				if ( 'protected_prop' === $name ) {
+					return $this->protected_prop;
+				}
+				return null;
+			}
+
+			/**
+			 * @param string $name
+			 * @return bool
+			 */
+			public function __isset( $name ) {
+				return 'protected_prop' === $name;
+			}
+		};
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'protected_prop' ] );
+
+		ob_start();
+		$formatter->display_item( $dummy );
+		$output = ob_get_clean();
+
+		$this->assertSame( '{"protected_prop":"protected_val"}', $output );
+	}
+
+	public function test_display_items_with_traversable(): void {
+		Formatter::register_builtin_formats();
+
+		$items = new \ArrayObject(
+			[
+				[
+					'name' => 'Alice',
+					'role' => 'admin',
+				],
+				[
+					'name' => 'Bob',
+					'role' => 'editor',
+				],
+			]
+		);
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name', 'role' ] );
+
+		ob_start();
+		$formatter->display_items( $items );
+		$output = ob_get_clean();
+
+		$this->assertSame( '[{"name":"Alice","role":"admin"},{"name":"Bob","role":"editor"}]', $output );
+	}
+
+	public function test_display_items_scalar_items_in_json_and_yaml(): void {
+		Formatter::register_builtin_formats();
+
+		$items = [ 1, 2, 3 ];
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args );
+
+		ob_start();
+		$formatter->display_items( $items );
+		$output = ob_get_clean();
+
+		$this->assertSame( '[1,2,3]', $output );
+
+		$assoc_args = [ 'format' => 'yaml' ];
+		$formatter  = new Formatter( $assoc_args );
+
+		ob_start();
+		$formatter->display_items( $items );
+		$output = ob_get_clean();
+
+		$this->assertSame( "---\n- 1\n- 2\n- 3", trim( (string) $output ) );
+	}
 }

@@ -16,9 +16,14 @@ name: Issue and PR Triage
 permissions:
   issues: write
   pull-requests: write
-  actions: write
   contents: read
   models: read
+  # A caller can only cap a reusable workflow's permissions, never raise them,
+  # so `actions: write` has to be granted here for the dispatch job downstream
+  # to work at all. The reusable workflow narrows it to that single job, so the
+  # `pull_request_target` job does not receive it. Removing it here breaks
+  # dispatching (see #271/#272); narrow it there instead.
+  actions: write
 
 jobs:
   issue-triage:
