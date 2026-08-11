@@ -734,6 +734,23 @@ class Runner {
 	}
 
 	/**
+	 * Append the hint for an unregistered command to an error message.
+	 *
+	 * @param string $error   Error message stating that the command is unavailable.
+	 * @param string $command Full name of the command that was not found.
+	 * @return string Error message, with the hint appended if there is one.
+	 */
+	private function add_command_hint( $error, $command ) {
+		$hint = CommandHints::get_hint( $command );
+
+		if ( '' === $hint ) {
+			return $error;
+		}
+
+		return $error . PHP_EOL . $hint;
+	}
+
+	/**
 	 * Given positional arguments, find the command to execute.
 	 *
 	 * @param array<int, string> $args
@@ -768,11 +785,14 @@ class Runner {
 						$suggestion = 'meta';
 					}
 
-					$error = sprintf(
-						"'%s' is not a registered subcommand of '%s'. See 'wp help %s' for available subcommands.",
-						$child,
-						$parent_name,
-						$parent_name
+					$error = $this->add_command_hint(
+						sprintf(
+							"'%s' is not a registered subcommand of '%s'. See 'wp help %s' for available subcommands.",
+							$child,
+							$parent_name,
+							$parent_name
+						),
+						$full_name
 					);
 
 					if ( ! empty( $suggestion ) ) {
@@ -813,8 +833,11 @@ class Runner {
 					}
 				}
 
-				$error = sprintf(
-					"'%s' is not a registered wp command. See 'wp help' for available commands.",
+				$error = $this->add_command_hint(
+					sprintf(
+						"'%s' is not a registered wp command. See 'wp help' for available commands.",
+						$full_name
+					),
 					$full_name
 				);
 
