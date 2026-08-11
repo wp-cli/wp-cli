@@ -987,8 +987,11 @@ class Runner {
 		}
 
 		$env_vars = '';
-		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
-			$env_vars .= 'WP_CLI_STRICT_ARGS_MODE=1 ';
+		if ( ! isset( $bits['scheme'] ) || 'docker-compose-run' !== $bits['scheme'] ) {
+			if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
+				$env_vars .= 'WP_CLI_STRICT_ARGS_MODE=1 ';
+			}
+			$env_vars .= 'WP_CLI_SSH_RUN=1 ';
 		}
 
 		$wp_binary = Utils\get_env_or_config( 'WP_CLI_SSH_BINARY' ) ?: 'wp';
@@ -1111,6 +1114,28 @@ class Runner {
 			}
 		}
 
+		// Set default values.
+		$scheme = isset( $bits['scheme'] ) ? $bits['scheme'] : null;
+		foreach ( [ 'scheme', 'user', 'host', 'port', 'path', 'key', 'proxyjump', 'ssh_config' ] as $bit ) {
+			if ( empty( $bits[ $bit ] ) ) {
+				// For 'path', only fall back to runner config for docker schemes which require --workdir.
+				// SSH schemes pass alias path via WP_CLI_RUNTIME_ALIAS to the remote WP-CLI instance.
+				$should_fallback = 'path' !== $bit || in_array( $scheme, [ 'docker', 'docker-compose', 'docker-compose-run' ], true );
+
+				if ( $should_fallback ) {
+					if ( ! empty( $this->config[ $bit ] ) && is_scalar( $this->config[ $bit ] ) ) {
+						$bits[ $bit ] = (string) $this->config[ $bit ];
+					} elseif ( ! empty( $this->extra_config[ $bit ] ) && is_scalar( $this->extra_config[ $bit ] ) ) {
+						$bits[ $bit ] = (string) $this->extra_config[ $bit ];
+					}
+				}
+			}
+
+			if ( ! isset( $bits[ $bit ] ) ) {
+				$bits[ $bit ] = null;
+			}
+		}
+
 		if ( ! empty( $this->alias ) ) {
 			$alias_config = isset( $this->aliases[ $this->alias ] ) ? $this->aliases[ $this->alias ] : false;
 
@@ -1173,7 +1198,12 @@ class Runner {
 		}
 
 		if ( 'docker-compose-run' === $bits['scheme'] ) {
-			$command = '%s run %s%s%s%s%s%s %s';
+			$command = '%s run %s%s%s%s%s%s%s %s';
+
+			$env_flags = '-e WP_CLI_SSH_RUN=1 ';
+			if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
+				$env_flags .= '-e WP_CLI_STRICT_ARGS_MODE=1 ';
+			}
 
 			$escaped_command = sprintf(
 				$command,
@@ -1183,6 +1213,7 @@ class Runner {
 				$bits['path'] ? '--workdir ' . escapeshellarg( $bits['path'] ) . ' ' : '',
 				$is_stdout_tty || Utils\get_env_or_config( 'WP_CLI_DOCKER_NO_TTY' ) ? '' : '-T ',
 				$is_stdin_tty || Utils\get_env_or_config( 'WP_CLI_DOCKER_NO_INTERACTIVE' ) ? '' : '-i ',
+				$env_flags,
 				escapeshellarg( $bits['host'] ),
 				$wp_command
 			);
@@ -2025,6 +2056,16 @@ class Runner {
 
 		if ( empty( $this->arguments ) ) {
 			$this->arguments[] = 'help';
+		}
+
+		if ( $this->config['ssh'] ) {
+			// Don't recurse if SSH came from config file and we're already in an SSH/container session.
+			// Still allow SSH if it was explicitly passed via --ssh= on the CLI (present in runtime_config).
+			$ssh_from_cli = isset( $this->runtime_config['ssh'] ) && '' !== $this->runtime_config['ssh'];
+			if ( getenv( 'WP_CLI_SSH_RUN' ) && ! $ssh_from_cli ) {
+				$this->config['ssh'] = false;
+				WP_CLI::debug( 'Skipping SSH from config file: already running inside an SSH/container session. Use the `--ssh` flag to override.', 'bootstrap' );
+			}
 		}
 
 		// Protect 'cli info' from most of the runtime,

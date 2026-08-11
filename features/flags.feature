@@ -393,7 +393,7 @@ Feature: Global flags
     When I try `WP_CLI_STRICT_ARGS_MODE=1 wp --debug --ssh=/ --ssh-args="-o BatchMode=yes" --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh '-o BatchMode=yes' -T -vvv '' 'WP_CLI_STRICT_ARGS_MODE=1 wp
+      Running SSH command: ssh '-o BatchMode=yes' -T -vvv '' 'WP_CLI_STRICT_ARGS_MODE=1 WP_CLI_SSH_RUN=1 wp
       """
 
   @skip-windows @skip-macos
@@ -401,7 +401,7 @@ Feature: Global flags
     When I try `wp --debug --ssh=wordpress:/my/path --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv 'wordpress' 'cd '\''/my/path'\''; wp
+      Running SSH command: ssh -T -vvv 'wordpress' 'cd '\''/my/path'\''; WP_CLI_SSH_RUN=1 wp
       """
 
   @skip-windows @skip-macos
@@ -413,11 +413,60 @@ Feature: Global flags
       """
 
   @skip-windows @skip-macos
+  Scenario: SSH flag should support Docker Compose Run
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp --debug --ssh=docker-compose-run:user@wordpress --version`
+    Then STDERR should match /Running SSH command: (docker compose|docker-compose) run --user 'user' (-T )?-e WP_CLI_SSH_RUN=1 'wordpress' wp/
+
+  @skip-windows @skip-macos
+  Scenario: Root-level ssh config should support Docker scheme
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: docker:user@wordpress
+      """
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: docker exec --user 'user' 'wordpress' sh -c
+      """
+
+  @skip-windows @skip-macos
+  Scenario: Root-level ssh config should support Docker scheme with an alias
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: docker:user@wordpress
+      @local:
+        path: /var/www/html
+      """
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp @local --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: docker exec --user 'user' --workdir '/var/www/html'
+      """
+
+  Scenario: wp cli info skips WordPress loading when already running inside container
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: docker:user@wordpress
+      """
+    When I try `WP_CLI_SSH_RUN=1 wp cli info --debug`
+    Then STDOUT should contain:
+      """
+      WP-CLI version:
+      """
+    And STDERR should contain:
+      """
+      Skipping SSH from config file: already running inside an SSH/container session.
+      """
+
+  @skip-windows @skip-macos
   Scenario: SSH args should be passed to SSH command
     When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh '-o ConnectTimeout=5' -T -vvv 'wordpress' 'wp
+      Running SSH command: ssh '-o ConnectTimeout=5' -T -vvv 'wordpress' 'WP_CLI_SSH_RUN=1 wp
       """
 
   @skip-windows @skip-macos
@@ -425,7 +474,7 @@ Feature: Global flags
     When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --ssh-args="-o ServerAliveInterval=10" --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh '-o ConnectTimeout=5' '-o ServerAliveInterval=10' -T -vvv 'wordpress' 'wp
+      Running SSH command: ssh '-o ConnectTimeout=5' '-o ServerAliveInterval=10' -T -vvv 'wordpress' 'WP_CLI_SSH_RUN=1 wp
       """
 
   @skip-windows @skip-macos
