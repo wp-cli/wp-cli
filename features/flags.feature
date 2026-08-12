@@ -493,7 +493,7 @@ Feature: Global flags
     When I try `newline_arg="$(printf 'foo\nx')"; wp --debug --ssh=wordpress option get "${newline_arg%x}"`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv 'wordpress' 'wp --debug option get '\''foo
+      Running SSH command: ssh -T -vvv 'wordpress' 'WP_CLI_SSH_RUN=1 wp --debug option get '\''foo
       '\'''
       """
 
