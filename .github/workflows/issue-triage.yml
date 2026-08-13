@@ -17,7 +17,10 @@ permissions:
   issues: write
   pull-requests: write
   contents: read
-  models: read
+  # A caller can only cap a reusable workflow's permissions, so the scope the
+  # Copilot CLI needs has to be granted here too. `models: read` was for the
+  # GitHub Models provider, which `actions/ai-inference` v3 removed.
+  copilot-requests: write
   # A caller can only cap a reusable workflow's permissions, never raise them,
   # so `actions: write` has to be granted here for the dispatch job downstream
   # to work at all. The reusable workflow narrows it to that single job, so the
