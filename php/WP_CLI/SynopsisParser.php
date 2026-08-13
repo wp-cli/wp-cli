@@ -173,7 +173,12 @@ class SynopsisParser {
 
 		list( $aliases, $token ) = self::extract_aliases( $token );
 
-		$p_name  = '([a-z-_0-9]+)';
+		// Uppercase is allowed in parameter names because some WordPress core
+		// fields are mixed-case, e.g. `comment_post_ID` and `comment_author_IP`.
+		// A lowercase-only pattern silently truncated such names at the first
+		// uppercase character, so `--comment_author_IP=<comment_author_IP>`
+		// registered a parameter named `comment_author_`.
+		$p_name  = '([a-zA-Z-_0-9]+)';
 		$p_value = '([a-zA-Z-_|,0-9]+)';
 
 		if ( preg_match( "/^<($p_value)>$/", $token, $matches ) ) {
