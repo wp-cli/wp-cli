@@ -598,12 +598,32 @@ class Subcommand extends CompositeCommand {
 		}
 
 		if ( 'help' !== $this->name ) {
-			foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
-				$suggestion    = Utils\get_suggestion(
+			// A `--<field>=<value>` token means the command accepts keys that cannot be
+			// enumerated up front, so an unrecognized parameter is reported only when it
+			// looks like a typo of a documented one. Anything further away is passed
+			// through untouched, which keeps custom fields and query filters working.
+			$has_generic = $validator->has_generic();
+
+			// Global parameters are left out of the candidate set for those commands. They
+			// are harmless as a hint on an error raised anyway, but a catch-all command's
+			// own arguments share their namespace: `wp post list --cat=5` and `--s=hello`
+			// are real query vars two edits away from `--path` and `--ssh`.
+			$parameters = $this->get_parameters( $synopsis_spec, ! $has_generic );
+
+			foreach ( $validator->unknown_assoc( $assoc_args, $has_generic ) as $key ) {
+				// The alias map in get_suggestion() is command vocabulary and ignores the
+				// threshold. That is fine when a suggestion merely decorates an error we
+				// already decided to raise, but here it would be the thing raising it.
+				$suggestion = Utils\get_suggestion(
 					$key,
-					$this->get_parameters( $synopsis_spec ),
-					$threshold = 2
+					$parameters,
+					2,
+					! $has_generic
 				);
+
+				if ( $has_generic && '' === $suggestion ) {
+					continue;
+				}
 
 				$errors['fatal'][] = sprintf(
 					'unknown --%s parameter%s',
@@ -889,13 +909,19 @@ class Subcommand extends CompositeCommand {
 	 * Get an array of parameter names, by merging the command-specific and the
 	 * global parameters.
 	 *
-	 * @param array<int, array<string, mixed>> $spec Optional. Specification of the current command.
+	 * @param array<int, array<string, mixed>> $spec           Optional. Specification of the current command.
+	 * @param bool                             $include_global Optional. Whether to include the global parameters.
 	 *
 	 * @return array<int, string> Array of parameter names
 	 */
-	private function get_parameters( $spec = [] ) {
+	private function get_parameters( $spec = [], $include_global = true ) {
 		/** @var list<string> $local_parameters */
 		$local_parameters = array_values( array_filter( array_column( $spec, 'name' ), 'is_string' ) );
+
+		if ( ! $include_global ) {
+			return array_values( array_unique( $local_parameters ) );
+		}
+
 		/** @var list<string> $global_parameters */
 		$global_parameters = array_values(
 			array_filter(

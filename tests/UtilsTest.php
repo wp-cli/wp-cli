@@ -1259,6 +1259,32 @@ class UtilsTest extends TestCase {
 		$this->assertSame( 'true', $process->stdout );
 	}
 
+	public function testGetSuggestionUsesDistance(): void {
+		$options = [ 'user_pass', 'user_email', 'first_name' ];
+
+		$this->assertSame( 'user_pass', Utils\get_suggestion( 'user-pass', $options ) );
+		$this->assertSame( '', Utils\get_suggestion( 'acme_crm_id', $options ) );
+	}
+
+	/**
+	 * The alias map is command vocabulary and is applied regardless of the
+	 * threshold, so callers matching parameter names can opt out of it.
+	 */
+	public function testGetSuggestionAliasMapCanBeDisabled(): void {
+		$options = [ 'locale', 'user_pass', 'role' ];
+
+		// 'language' is 6 edits from 'locale', but the alias map matches it.
+		$this->assertSame( 'locale', Utils\get_suggestion( 'language', $options ) );
+		$this->assertSame( 'locale', Utils\get_suggestion( 'language', $options, 2, true ) );
+		$this->assertSame( '', Utils\get_suggestion( 'language', $options, 2, false ) );
+	}
+
+	public function testGetSuggestionAliasMapDisabledKeepsCloseMatches(): void {
+		$options = [ 'locale', 'user_pass', 'role' ];
+
+		$this->assertSame( 'locale', Utils\get_suggestion( 'locail', $options, 2, false ) );
+	}
+
 	private function buildHasStdinCommand(): string {
 		$php      = Utils\get_php_binary();
 		$root     = WP_CLI_ROOT;

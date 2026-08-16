@@ -1672,12 +1672,18 @@ function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.C
  * If the "distance" to the closest term is higher than the threshold, an empty
  * string is returned.
  *
- * @param string        $target    Target term to get a suggestion for.
- * @param array<string> $options   Array with possible options.
- * @param int           $threshold Threshold above which to return an empty string.
+ * The built-in alias map below is command vocabulary ('add' => 'create' and
+ * friends) and is applied before, and independently of, the threshold. Callers
+ * matching something other than command names - parameter names, for instance -
+ * should pass false for $use_aliases so that only the distance decides.
+ *
+ * @param string        $target      Target term to get a suggestion for.
+ * @param array<string> $options     Array with possible options.
+ * @param int           $threshold   Threshold above which to return an empty string.
+ * @param bool          $use_aliases Whether to consult the built-in command alias map.
  * @return string
  */
-function get_suggestion( $target, array $options, $threshold = 2 ) {
+function get_suggestion( $target, array $options, $threshold = 2, $use_aliases = true ) {
 
 	$suggestion_map = [
 		'add'        => 'create',
@@ -1702,7 +1708,10 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
 		'v'          => 'version',
 	];
 
-	if ( array_key_exists( $target, $suggestion_map ) && in_array( $suggestion_map[ $target ], $options, true ) ) {
+	if ( $use_aliases
+		&& array_key_exists( $target, $suggestion_map )
+		&& in_array( $suggestion_map[ $target ], $options, true )
+	) {
 		return $suggestion_map[ $target ];
 	}
 
