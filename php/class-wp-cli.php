@@ -441,7 +441,7 @@ class WP_CLI {
 	 * @param int      $priority
 	 * @return string|false
 	 */
-	private static function wp_hook_build_unique_id( $tag, $function, $priority ) {
+	private static function wp_hook_build_unique_id( $tag, $function, $priority ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $priority retained to match core's _wp_filter_build_unique_id() signature.
 		if ( is_string( $function ) ) {
 			return $function;
 		}
