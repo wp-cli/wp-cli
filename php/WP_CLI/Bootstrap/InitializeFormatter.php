@@ -7,6 +7,9 @@ namespace WP_CLI\Bootstrap;
  *
  * Registers the built-in format handlers for the Formatter class.
  *
+ * The Formatter also registers them on demand, so this step only makes sure they
+ * are in place early on. Formatter::register_builtin_formats() is idempotent.
+ *
  * @package WP_CLI\Bootstrap
  */
 final class InitializeFormatter implements BootstrapStep {

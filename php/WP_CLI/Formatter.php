@@ -53,6 +53,13 @@ class Formatter {
 	private static $single_value_formatters = [];
 
 	/**
+	 * Whether the built-in format handlers have been registered yet.
+	 *
+	 * @var bool
+	 */
+	private static $builtin_formats_registered = false;
+
+	/**
 	 * How the items should be output.
 	 *
 	 * @var array{format: string, fields: string[], field: string|null, alignments: array<string, int>}
@@ -106,6 +113,8 @@ class Formatter {
 		/** @var array{format: string, fields: array<string>, field: string|null, alignments: array<string, int>} $format_args */
 		$this->args   = $format_args;
 		$this->prefix = $prefix;
+
+		self::register_builtin_formats();
 	}
 
 	/**
@@ -142,6 +151,11 @@ class Formatter {
 		if ( ! is_callable( $handler ) ) {
 			WP_CLI::error( 'Format handler must be callable.' );
 		}
+
+		// Make sure the built-ins are in place first, so that registering a
+		// handler for an existing format name always overrides the built-in one.
+		self::register_builtin_formats();
+
 		self::$custom_formatters[ $format_name ] = $handler;
 		self::$format_options[ $format_name ]    = $options;
 	}
@@ -174,6 +188,11 @@ class Formatter {
 		if ( ! is_callable( $handler ) ) {
 			WP_CLI::error( 'Single-value format handler must be callable.' );
 		}
+
+		// Make sure the built-ins are in place first, so that registering a
+		// handler for an existing format name always overrides the built-in one.
+		self::register_builtin_formats();
+
 		self::$single_value_formatters[ $format_name ] = $handler;
 	}
 
@@ -187,6 +206,8 @@ class Formatter {
 	 * @return string The formatted value (without trailing newline).
 	 */
 	public static function format_single_value( $value, $format ) {
+		self::register_builtin_formats();
+
 		if ( isset( self::$single_value_formatters[ $format ] ) ) {
 			return call_user_func( self::$single_value_formatters[ $format ], $value );
 		}
@@ -206,9 +227,25 @@ class Formatter {
 	 * This method registers the default format handlers (table, json, csv, yaml, count, ids)
 	 * using the add_format() API, allowing them to be overridden like custom formats.
 	 *
+	 * It is called during bootstrap, but is also self-triggered from every entry
+	 * point into the registry, so that the Formatter keeps working when it is used
+	 * without the WP-CLI bootstrap having run for this particular copy of the class
+	 * (as a Composer library, in unit tests, or when a second copy of WP-CLI on the
+	 * autoloader stack wins the class lookup).
+	 *
+	 * Repeat calls are a no-op, so registering built-ins never clobbers a handler
+	 * that an extension registered for the same format name.
+	 *
 	 * @return void
 	 */
 	public static function register_builtin_formats() {
+		if ( self::$builtin_formats_registered ) {
+			return;
+		}
+
+		// Set before registering, as add_format() calls back into this method.
+		self::$builtin_formats_registered = true;
+
 		// Register 'table' format
 		self::add_format(
 			'table',
@@ -354,6 +391,8 @@ class Formatter {
 	 * @return string[] Array of format names.
 	 */
 	public static function get_available_formats() {
+		self::register_builtin_formats();
+
 		$all_formats = array_keys( self::$custom_formatters );
 
 		/**
