@@ -5,9 +5,28 @@ use WP_CLI\Tests\TestCase;
 
 class FormatterTest extends TestCase {
 
-	public static function set_up_before_class(): void {
-		// Ensure built-in formats are registered for tests
-		Formatter::register_builtin_formats();
+	/**
+	 * Wipe the format registry, as if this copy of the class had just been autoloaded
+	 * and the `InitializeFormatter` bootstrap step had never run for it.
+	 *
+	 * @return void
+	 */
+	private function reset_format_registry(): void {
+		foreach (
+			[
+				'custom_formatters'          => [],
+				'format_options'             => [],
+				'single_value_formatters'    => [],
+				'builtin_formats_registered' => false,
+			] as $property => $value
+		) {
+			$reflection = new \ReflectionProperty( Formatter::class, $property );
+			if ( PHP_VERSION_ID < 80100 ) {
+				// @phpstan-ignore method.deprecated
+				$reflection->setAccessible( true );
+			}
+			$reflection->setValue( null, $value );
+		}
 	}
 
 	public function test_add_format(): void {
@@ -461,5 +480,69 @@ class FormatterTest extends TestCase {
 		$output = ob_get_clean();
 
 		$this->assertSame( "---\n- 1\n- 2\n- 3", trim( (string) $output ) );
+	}
+
+	/**
+	 * Built-in formats have to work without `InitializeFormatter` having run, because
+	 * the class can be loaded from a Composer install whose bootstrap never executes.
+	 *
+	 * @see https://github.com/wp-cli/wp-cli/issues/4632
+	 */
+	public function test_builtin_formats_self_register_without_bootstrap(): void {
+		$this->reset_format_registry();
+
+		$items      = [ [ 'name' => 'Alice' ] ];
+		$assoc_args = [ 'format' => 'table' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+
+		ob_start();
+		$formatter->display_items( $items );
+		$output = (string) ob_get_clean();
+
+		$this->assertStringContainsString( 'Alice', $output, 'Built-in table format should work without an explicit register_builtin_formats() call' );
+	}
+
+	/**
+	 * Without self-registration, `print_value()` silently fell through to var_export()
+	 * for `--format=json`, producing wrong output rather than an error.
+	 */
+	public function test_single_value_formats_self_register_without_bootstrap(): void {
+		$this->reset_format_registry();
+
+		$this->assertSame( '{"key":"value"}', Formatter::format_single_value( [ 'key' => 'value' ], 'json' ) );
+	}
+
+	public function test_get_available_formats_self_registers_without_bootstrap(): void {
+		$this->reset_format_registry();
+
+		$this->assertSame( [ 'table', 'json', 'csv', 'yaml', 'count', 'ids' ], Formatter::get_available_formats() );
+	}
+
+	/**
+	 * The built-in registration is idempotent, so a late `register_builtin_formats()`
+	 * call (e.g. from the bootstrap step) cannot clobber an extension's override.
+	 */
+	public function test_register_builtin_formats_does_not_clobber_overrides(): void {
+		$this->reset_format_registry();
+
+		Formatter::add_format(
+			'json',
+			static function () {
+				echo 'OVERRIDDEN';
+			}
+		);
+
+		Formatter::register_builtin_formats();
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+
+		ob_start();
+		$formatter->display_items( [ [ 'name' => 'Alice' ] ] );
+		$output = ob_get_clean();
+
+		$this->assertSame( 'OVERRIDDEN', $output );
+
+		$this->reset_format_registry();
 	}
 }
