@@ -5,6 +5,15 @@ use WP_CLI\Tests\TestCase;
 
 class FormatterTest extends TestCase {
 
+	public function tear_down(): void {
+		// Several tests register handlers that override the built-in formats. Wipe the
+		// registry so that they cannot leak into the next test; the built-ins are
+		// registered again on demand.
+		$this->reset_format_registry();
+
+		parent::tear_down();
+	}
+
 	/**
 	 * Wipe the format registry, as if this copy of the class had just been autoloaded
 	 * and the `InitializeFormatter` bootstrap step had never run for it.
@@ -338,8 +347,6 @@ class FormatterTest extends TestCase {
 	}
 
 	public function test_display_item_object_with_protected_properties(): void {
-		Formatter::register_builtin_formats();
-
 		$dummy = new class() {
 			/** @var string */
 			public $public_prop = 'public_val';
@@ -366,8 +373,6 @@ class FormatterTest extends TestCase {
 	}
 
 	public function test_display_item_object_inaccessible_protected_property_issues_warning(): void {
-		Formatter::register_builtin_formats();
-
 		$prev_logger = WP_CLI::get_logger();
 		$logger      = new WP_CLI\Loggers\Execution();
 		WP_CLI::set_logger( $logger );
@@ -396,8 +401,6 @@ class FormatterTest extends TestCase {
 	}
 
 	public function test_display_item_object_with_magic_getter(): void {
-		Formatter::register_builtin_formats();
-
 		$dummy = new class() {
 			/** @var string */
 			protected $protected_prop = 'protected_val';
@@ -433,8 +436,6 @@ class FormatterTest extends TestCase {
 	}
 
 	public function test_display_items_with_traversable(): void {
-		Formatter::register_builtin_formats();
-
 		$items = new \ArrayObject(
 			[
 				[
@@ -459,8 +460,6 @@ class FormatterTest extends TestCase {
 	}
 
 	public function test_display_items_scalar_items_in_json_and_yaml(): void {
-		Formatter::register_builtin_formats();
-
 		$items = [ 1, 2, 3 ];
 
 		$assoc_args = [ 'format' => 'json' ];
@@ -532,8 +531,6 @@ class FormatterTest extends TestCase {
 			}
 		);
 
-		Formatter::register_builtin_formats();
-
 		$assoc_args = [ 'format' => 'json' ];
 		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
 
@@ -542,7 +539,5 @@ class FormatterTest extends TestCase {
 		$output = ob_get_clean();
 
 		$this->assertSame( 'OVERRIDDEN', $output );
-
-		$this->reset_format_registry();
 	}
 }
