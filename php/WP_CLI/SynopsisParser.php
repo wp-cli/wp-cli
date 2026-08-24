@@ -18,7 +18,7 @@ class SynopsisParser {
 
 	/**
 	 * @param string $synopsis A synopsis
-	 * @return array List of parameters
+	 * @return array<int, array<string, mixed>> List of parameters
 	 */
 	public static function parse( $synopsis ) {
 		$tokens = array_filter( (array) preg_split( '/[\s\t]+/', $synopsis ) );
@@ -44,11 +44,9 @@ class SynopsisParser {
 	/**
 	 * Render the Synopsis into a format string.
 	 *
-	 * @param array $synopsis A structured synopsis. This might get reordered
-	 *                        to match the parsed output.
 	 * @return string Rendered synopsis.
 	 *
-	 * @phpstan-param CommandSynopsis[] $synopsis
+	 * @phpstan-param array<int, array<string, mixed>> $synopsis
 	 */
 	public static function render( &$synopsis ) {
 		if ( ! is_array( $synopsis ) ) {
@@ -175,7 +173,12 @@ class SynopsisParser {
 
 		list( $aliases, $token ) = self::extract_aliases( $token );
 
-		$p_name  = '([a-z-_0-9]+)';
+		// Uppercase is allowed in parameter names because some WordPress core
+		// fields are mixed-case, e.g. `comment_post_ID` and `comment_author_IP`.
+		// A lowercase-only pattern silently truncated such names at the first
+		// uppercase character, so `--comment_author_IP=<comment_author_IP>`
+		// registered a parameter named `comment_author_`.
+		$p_name  = '([a-zA-Z-_0-9]+)';
 		$p_value = '([a-zA-Z-_|,0-9]+)';
 
 		if ( preg_match( "/^<($p_value)>$/", $token, $matches ) ) {

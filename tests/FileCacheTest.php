@@ -6,11 +6,6 @@ use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
 class FileCacheTest extends TestCase {
-
-	public static function set_up_before_class() {
-		require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
-	}
-
 	/**
 	 * Test get_root() deals with backslashed directory.
 	 */

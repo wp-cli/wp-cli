@@ -44,6 +44,10 @@ class CLI_Command extends WP_CLI_Command {
 	 */
 	private const MEMORY_LIMIT_WARNING_THRESHOLD = 536870912;
 
+	/**
+	 * @param \WP_CLI\Dispatcher\CompositeCommand|\WP_CLI\Dispatcher\Subcommand $command
+	 * @return array<string, mixed>
+	 */
 	private function command_to_array( $command ) {
 		$dump = [
 			'name'        => $command->get_name(),
@@ -76,6 +80,8 @@ class CLI_Command extends WP_CLI_Command {
 	 *     # Display CLI version.
 	 *     $ wp cli version
 	 *     WP-CLI 0.24.1
+	 *
+	 * @return void
 	 */
 	public function version() {
 		WP_CLI::line( 'WP-CLI ' . WP_CLI_VERSION );
@@ -129,6 +135,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @param string[]              $args       Positional arguments. Unused.
 	 * @param array{format: string} $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function info( $args, $assoc_args ) {
 		$system_os = sprintf(
@@ -209,6 +216,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * Checks if the PHP memory limit is too low and emits a warning if needed.
 	 *
 	 * @param string $memory_limit The current memory limit value from ini_get().
+	 * @return void
 	 */
 	private function check_memory_limit( $memory_limit ) {
 		// If memory limit is -1 (unlimited), no warning needed.
@@ -337,6 +345,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @param string[] $args Positional arguments. Unused.
 	 * @param array{patch?: bool, minor?: bool, major?: bool, field?: string, fields?: string, format: string} $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function check_update( $args, $assoc_args ) {
 		$updates = $this->get_updates( $assoc_args );
@@ -431,6 +440,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @param string[] $args Positional arguments. Unused.
 	 * @param array{patch?: bool, minor?: bool, major?: bool, stable?: bool, nightly?: bool, yes?: bool, insecure?: bool} $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function update( $args, $assoc_args ) {
 		if ( ! Path::inside_phar() ) {
@@ -542,8 +552,9 @@ class CLI_Command extends WP_CLI_Command {
 	 * Checks if the manifest at the given URL specifies a PHP version requirement
 	 * higher than the currently running PHP version, and exits with an error if so.
 	 *
-	 * @param string $manifest_url URL of the manifest JSON file.
-	 * @param array  $assoc_args   Associative arguments passed to the update command.
+	 * @param string               $manifest_url URL of the manifest JSON file.
+	 * @param array<string, mixed> $assoc_args   Associative arguments passed to the update command.
+	 * @return void
 	 *
 	 * @throws \WP_CLI\ExitException
 	 */
@@ -574,7 +585,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @param string               $url     Manifest URL.
 	 * @param array<string,string> $headers Request headers.
-	 * @param array                $options Request options.
+	 * @param array<string, mixed> $options Request options.
 	 * @return object{requires_php?: string}|null Manifest data object, or null on failure.
 	 */
 	private function get_manifest_data( $url, array $headers = [], array $options = [] ) {
@@ -612,6 +623,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @param string $temp         Path to the newly downloaded Phar.
 	 * @param string $current_phar Path to the current Phar.
+	 * @return void
 	 */
 	private function replace_current_phar( $temp, $current_phar ) {
 		if ( Utils\is_windows() ) {
@@ -722,6 +734,7 @@ class CLI_Command extends WP_CLI_Command {
 	/**
 	 * Returns update information.
 	 *
+	 * @param array<string, mixed> $assoc_args
 	 * @return array<array-key, UpdateOffer>|false
 	 */
 	private function get_updates( $assoc_args ) {
@@ -744,7 +757,7 @@ class CLI_Command extends WP_CLI_Command {
 		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
 
 		if ( ! $response->success || 200 !== $response->status_code ) {
-			$error_message = sprintf( 'Failed to get latest version (HTTP code %d).', $response->status_code );
+			$error_message = sprintf( 'Failed to get latest version (HTTP code %d).', (int) $response->status_code );
 			if ( 403 === $response->status_code ) {
 				$error_message .= ' This is due to GitHub API rate limiting.';
 				if ( false === $github_token ) {
@@ -856,7 +869,7 @@ class CLI_Command extends WP_CLI_Command {
 			$version_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/NIGHTLY_VERSION';
 			$response    = Utils\http_request( 'GET', $version_url, null, [], $options );
 			if ( ! $response->success || 200 !== $response->status_code ) {
-				WP_CLI::error( sprintf( 'Failed to get current nightly version (HTTP code %d)', $response->status_code ) );
+				WP_CLI::error( sprintf( 'Failed to get current nightly version (HTTP code %d)', (int) $response->status_code ) );
 			}
 			$nightly_version = trim( $response->body );
 
@@ -947,8 +960,8 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * Polyfill for the `array_find()` function introduced in PHP 8.3.
 	 *
-	 * @param array    $arr      Array to search.
-	 * @param callable $callback The callback function for each element in the array.
+	 * @param array<mixed> $arr      Array to search.
+	 * @param callable     $callback The callback function for each element in the array.
 	 * @return mixed First array element for which the callback returns true, null otherwise.
 	 */
 	private function array_find( $arr, $callback ) {
@@ -1001,6 +1014,10 @@ class CLI_Command extends WP_CLI_Command {
 	 *       array (
 	 *
 	 * @subcommand param-dump
+	 *
+	 * @param array<int, string>   $_          Positional arguments.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function param_dump( $_, $assoc_args ) {
 		$spec = WP_CLI::get_configurator()->get_spec();
@@ -1034,6 +1051,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *     {"name":"wp","description":"Manage WordPress through the command-line.","longdesc":"\n\n## GLOBAL PARAMETERS\n\n  --path=<path>\n      Path to the WordPress files.\n\n  --ssh=<ssh>\n      Perform operation against a remote server over SSH (or a container using scheme of "docker" or "docker-compose").\n\n  --url=<url>\n      Pretend request came from given URL. In multisite, this argument is how the target site is specified. \n\n  --user=<id|login|email>\n
 	 *
 	 * @subcommand cmd-dump
+	 * @return void
 	 */
 	public function cmd_dump() {
 		echo json_encode( $this->command_to_array( WP_CLI::get_root_command() ) );
@@ -1056,15 +1074,22 @@ class CLI_Command extends WP_CLI_Command {
 	 *     $ wp cli completions --line='wp eva' --point=100
 	 *     eval
 	 *     eval-file
+	 *
+	 * @param array<int, string>                   $_          Positional arguments.
+	 * @param array{line: string, point: int|numeric-string} $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function completions( $_, $assoc_args ) {
-		$line  = substr( $assoc_args['line'], 0, $assoc_args['point'] );
+		$line  = substr( $assoc_args['line'], 0, (int) $assoc_args['point'] );
 		$compl = new Completions( $line );
 		$compl->render();
 	}
 
 	/**
 	 * Get a string representing the type of update being checked for.
+	 *
+	 * @param array<string, mixed> $assoc_args
+	 * @return string
 	 */
 	private function get_update_type_str( $assoc_args ) {
 		$update_type = ' ';
@@ -1111,6 +1136,10 @@ class CLI_Command extends WP_CLI_Command {
 	 * @subcommand has-command
 	 *
 	 * @when after_wp_load
+	 *
+	 * @param array<int, string>   $_          Positional arguments.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function has_command( $_, $assoc_args ) {
 

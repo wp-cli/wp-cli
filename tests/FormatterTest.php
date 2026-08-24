@@ -5,12 +5,40 @@ use WP_CLI\Tests\TestCase;
 
 class FormatterTest extends TestCase {
 
-	public static function set_up_before_class(): void {
-		// Ensure built-in formats are registered for tests
-		Formatter::register_builtin_formats();
+	public function tear_down(): void {
+		// Several tests register handlers that override the built-in formats. Wipe the
+		// registry so that they cannot leak into the next test; the built-ins are
+		// registered again on demand.
+		$this->reset_format_registry();
+
+		parent::tear_down();
 	}
 
-	public function test_add_format() {
+	/**
+	 * Wipe the format registry, as if this copy of the class had just been autoloaded
+	 * and the `InitializeFormatter` bootstrap step had never run for it.
+	 *
+	 * @return void
+	 */
+	private function reset_format_registry(): void {
+		foreach (
+			[
+				'custom_formatters'          => [],
+				'format_options'             => [],
+				'single_value_formatters'    => [],
+				'builtin_formats_registered' => false,
+			] as $property => $value
+		) {
+			$reflection = new \ReflectionProperty( Formatter::class, $property );
+			if ( PHP_VERSION_ID < 80100 ) {
+				// @phpstan-ignore method.deprecated
+				$reflection->setAccessible( true );
+			}
+			$reflection->setValue( null, $value );
+		}
+	}
+
+	public function test_add_format(): void {
 		$called             = false;
 		$received_items     = null;
 		$received_fields    = null;
@@ -59,7 +87,7 @@ class FormatterTest extends TestCase {
 		$this->assertIsArray( $received_args, 'Handler should receive args array' );
 	}
 
-	public function test_get_available_formats() {
+	public function test_get_available_formats(): void {
 		$formats = Formatter::get_available_formats();
 		$this->assertContains( 'table', $formats );
 		$this->assertContains( 'json', $formats );
@@ -80,7 +108,7 @@ class FormatterTest extends TestCase {
 		$this->assertContains( 'xml', $formats );
 	}
 
-	public function test_custom_format_with_single_item() {
+	public function test_custom_format_with_single_item(): void {
 		$output_collected = '';
 		$handler          = static function ( $items ) use ( &$output_collected ) {
 			foreach ( $items as $item ) {
@@ -107,7 +135,7 @@ class FormatterTest extends TestCase {
 		$this->assertStringContainsString( 'age:35', $output_collected );
 	}
 
-	public function test_custom_format_field_filtering() {
+	public function test_custom_format_field_filtering(): void {
 		$received_items = null;
 		$handler        = function ( $items ) use ( &$received_items ) {
 			$received_items = $items;
@@ -140,7 +168,7 @@ class FormatterTest extends TestCase {
 		$this->assertArrayNotHasKey( 'email', $received_items[0], 'Non-requested field should be filtered out' );
 	}
 
-	public function test_custom_format_with_prefix() {
+	public function test_custom_format_with_prefix(): void {
 		$received_items = null;
 		$handler        = function ( $items ) use ( &$received_items ) {
 			$received_items = $items;
@@ -174,7 +202,7 @@ class FormatterTest extends TestCase {
 		$this->assertSame( 'publish', $received_items[0]['post_status'] );
 	}
 
-	public function test_override_builtin_format() {
+	public function test_override_builtin_format(): void {
 		$called  = false;
 		$handler = function () use ( &$called ) {
 			$called = true;
@@ -199,7 +227,7 @@ class FormatterTest extends TestCase {
 		$this->assertSame( 'OVERRIDDEN', $output );
 	}
 
-	public function test_add_single_value_format() {
+	public function test_add_single_value_format(): void {
 		$called         = false;
 		$received_value = null;
 		$handler        = function ( $value ) use ( &$called, &$received_value ) {
@@ -217,25 +245,25 @@ class FormatterTest extends TestCase {
 		$this->assertSame( 'CUSTOM:test_value', $result, 'Handler should return formatted value' );
 	}
 
-	public function test_format_single_value_json() {
+	public function test_format_single_value_json(): void {
 		$value  = [ 'key' => 'value' ];
 		$result = Formatter::format_single_value( $value, 'json' );
 		$this->assertSame( '{"key":"value"}', $result );
 	}
 
-	public function test_format_single_value_yaml() {
+	public function test_format_single_value_yaml(): void {
 		$value  = [ 'key' => 'value' ];
 		$result = Formatter::format_single_value( $value, 'yaml' );
 		$this->assertStringContainsString( 'key: value', $result );
 	}
 
-	public function test_format_single_value_var_export() {
+	public function test_format_single_value_var_export(): void {
 		$value  = [ 'key' => 'value' ];
 		$result = Formatter::format_single_value( $value, 'var_export' );
 		$this->assertStringContainsString( "'key' => 'value'", $result );
 	}
 
-	public function test_format_single_value_fallback() {
+	public function test_format_single_value_fallback(): void {
 		// Test fallback for unregistered format
 		$value  = [ 'key' => 'value' ];
 		$result = Formatter::format_single_value( $value, 'unknown_format' );
@@ -246,7 +274,7 @@ class FormatterTest extends TestCase {
 		$this->assertSame( 'simple_string', $result, 'Should return string as-is for scalars' );
 	}
 
-	public function test_single_item_unsupported_formats() {
+	public function test_single_item_unsupported_formats(): void {
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		if ( PHP_VERSION_ID < 80100 ) {
 			// @phpstan-ignore method.deprecated
@@ -274,7 +302,7 @@ class FormatterTest extends TestCase {
 		}
 	}
 
-	public function test_custom_format_options() {
+	public function test_custom_format_options(): void {
 		$called  = false;
 		$handler = function () use ( &$called ) {
 			$called = true;
@@ -310,11 +338,206 @@ class FormatterTest extends TestCase {
 		}
 	}
 
-	public function test_plaintext_alias_print_value() {
+	public function test_plaintext_alias_print_value(): void {
 		$value  = [ 'nested' => 'value' ];
 		$result = Formatter::format_single_value( $value, 'plaintext' );
 
 		// Should match var_export output
 		$this->assertStringContainsString( "'nested' => 'value'", $result );
+	}
+
+	public function test_display_item_object_with_protected_properties(): void {
+		$dummy = new class() {
+			/** @var string */
+			public $public_prop = 'public_val';
+
+			/** @var string */
+			protected $protected_prop = 'protected_val';
+
+			/** @var string */
+			private $private_prop = 'private_val';
+
+			public function get_private_prop(): string {
+				return $this->private_prop;
+			}
+		};
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'public_prop' ] );
+
+		ob_start();
+		$formatter->display_item( $dummy );
+		$output = ob_get_clean();
+
+		$this->assertSame( '{"public_prop":"public_val"}', $output );
+	}
+
+	public function test_display_item_object_inaccessible_protected_property_issues_warning(): void {
+		$prev_logger = WP_CLI::get_logger();
+		$logger      = new WP_CLI\Loggers\Execution();
+		WP_CLI::set_logger( $logger );
+
+		$dummy = new class() {
+			/** @var string */
+			public $public_prop = 'public_val';
+
+			/** @var string */
+			protected $protected_prop = 'protected_val';
+		};
+
+		try {
+			$assoc_args = [ 'format' => 'json' ];
+			$formatter  = new Formatter( $assoc_args, [ 'public_prop', 'protected_prop' ] );
+
+			ob_start();
+			$formatter->display_item( $dummy );
+			$output = ob_get_clean();
+
+			$this->assertSame( '{"public_prop":"public_val"}', $output );
+			$this->assertStringContainsString( 'Field not found in item: protected_prop.', $logger->stderr );
+		} finally {
+			WP_CLI::set_logger( $prev_logger );
+		}
+	}
+
+	public function test_display_item_object_with_magic_getter(): void {
+		$dummy = new class() {
+			/** @var string */
+			protected $protected_prop = 'protected_val';
+
+			/**
+			 * @param string $name
+			 * @return mixed
+			 */
+			public function __get( $name ) {
+				if ( 'protected_prop' === $name ) {
+					return $this->protected_prop;
+				}
+				return null;
+			}
+
+			/**
+			 * @param string $name
+			 * @return bool
+			 */
+			public function __isset( $name ) {
+				return 'protected_prop' === $name;
+			}
+		};
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'protected_prop' ] );
+
+		ob_start();
+		$formatter->display_item( $dummy );
+		$output = ob_get_clean();
+
+		$this->assertSame( '{"protected_prop":"protected_val"}', $output );
+	}
+
+	public function test_display_items_with_traversable(): void {
+		$items = new \ArrayObject(
+			[
+				[
+					'name' => 'Alice',
+					'role' => 'admin',
+				],
+				[
+					'name' => 'Bob',
+					'role' => 'editor',
+				],
+			]
+		);
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name', 'role' ] );
+
+		ob_start();
+		$formatter->display_items( $items );
+		$output = ob_get_clean();
+
+		$this->assertSame( '[{"name":"Alice","role":"admin"},{"name":"Bob","role":"editor"}]', $output );
+	}
+
+	public function test_display_items_scalar_items_in_json_and_yaml(): void {
+		$items = [ 1, 2, 3 ];
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args );
+
+		ob_start();
+		$formatter->display_items( $items );
+		$output = ob_get_clean();
+
+		$this->assertSame( '[1,2,3]', $output );
+
+		$assoc_args = [ 'format' => 'yaml' ];
+		$formatter  = new Formatter( $assoc_args );
+
+		ob_start();
+		$formatter->display_items( $items );
+		$output = ob_get_clean();
+
+		$this->assertSame( "---\n- 1\n- 2\n- 3", trim( (string) $output ) );
+	}
+
+	/**
+	 * Built-in formats have to work without `InitializeFormatter` having run, because
+	 * the class can be loaded from a Composer install whose bootstrap never executes.
+	 *
+	 * @see https://github.com/wp-cli/wp-cli/issues/4632
+	 */
+	public function test_builtin_formats_self_register_without_bootstrap(): void {
+		$this->reset_format_registry();
+
+		$items      = [ [ 'name' => 'Alice' ] ];
+		$assoc_args = [ 'format' => 'table' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+
+		ob_start();
+		$formatter->display_items( $items );
+		$output = (string) ob_get_clean();
+
+		$this->assertStringContainsString( 'Alice', $output, 'Built-in table format should work without an explicit register_builtin_formats() call' );
+	}
+
+	/**
+	 * Without self-registration, `print_value()` silently fell through to var_export()
+	 * for `--format=json`, producing wrong output rather than an error.
+	 */
+	public function test_single_value_formats_self_register_without_bootstrap(): void {
+		$this->reset_format_registry();
+
+		$this->assertSame( '{"key":"value"}', Formatter::format_single_value( [ 'key' => 'value' ], 'json' ) );
+	}
+
+	public function test_get_available_formats_self_registers_without_bootstrap(): void {
+		$this->reset_format_registry();
+
+		$this->assertSame( [ 'table', 'json', 'csv', 'yaml', 'count', 'ids' ], Formatter::get_available_formats() );
+	}
+
+	/**
+	 * The built-in registration is idempotent, so a late `register_builtin_formats()`
+	 * call (e.g. from the bootstrap step) cannot clobber an extension's override.
+	 */
+	public function test_register_builtin_formats_does_not_clobber_overrides(): void {
+		$this->reset_format_registry();
+
+		Formatter::add_format(
+			'json',
+			static function () {
+				echo 'OVERRIDDEN';
+			}
+		);
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+
+		ob_start();
+		$formatter->display_items( [ [ 'name' => 'Alice' ] ] );
+		$output = ob_get_clean();
+
+		$this->assertSame( 'OVERRIDDEN', $output );
 	}
 }

@@ -140,6 +140,7 @@ final class RequestsLibrary {
 	 *
 	 * @param string $version The version to set.
 	 * @throws RuntimeException if the version is invalid.
+	 * @return void
 	 */
 	public static function set_version( $version ) {
 		if ( ! is_string( $version ) ) {
@@ -173,6 +174,7 @@ final class RequestsLibrary {
 	 * Set the class name for the library.
 	 *
 	 * @param string $class_name The class name to set.
+	 * @return void
 	 */
 	public static function set_class_name( $class_name ) {
 		if ( ! is_string( $class_name ) ) {
@@ -198,6 +200,7 @@ final class RequestsLibrary {
 	 *
 	 * @param string $source The source to set.
 	 * @throws RuntimeException if the source is invalid.
+	 * @return void
 	 */
 	public static function set_source( $source ) {
 		if ( ! is_string( $source ) ) {
@@ -240,6 +243,8 @@ final class RequestsLibrary {
 	 *
 	 * This checks for the detected setup and register the corresponding
 	 * autoloader if it is still needed.
+	 *
+	 * @return void
 	 */
 	public static function register_autoloader() {
 		$includes_path = defined( 'WPINC' ) ? WPINC : 'wp-includes';
@@ -265,6 +270,7 @@ final class RequestsLibrary {
 					require_once WP_CLI_VENDOR_DIR . '/rmccue/requests/src/Autoload.php';
 				}
 			}
+			// @phpstan-ignore staticMethod.internal
 			\WpOrg\Requests\Autoload::register();
 		}
 	}
@@ -291,6 +297,8 @@ final class RequestsLibrary {
 
 	/**
 	 * Define WP_CLI_ROOT if it is not already defined.
+	 *
+	 * @return void
 	 */
 	private static function maybe_define_wp_cli_root() {
 		if ( ! defined( 'WP_CLI_ROOT' ) ) {

@@ -5,12 +5,15 @@ Feature: Utilities that depend on WordPress code
     And a test.php file:
       """
       <?php
-      WP_CLI::add_hook( 'after_wp_load', function () {
-        global $wp_object_cache;
-        echo empty( $wp_object_cache->cache ) . ',' . isset( $wp_object_cache->group_ops ) . ',' . isset( $wp_object_cache->stats ) . ',' . isset( $wp_object_cache->memcache_debug ) . "\n";
-        WP_CLI\Utils\wp_clear_object_cache();
-        echo empty( $wp_object_cache->cache ) . ',' . isset( $wp_object_cache->group_ops ) . ',' . isset( $wp_object_cache->stats ) . ',' . isset( $wp_object_cache->memcache_debug ) . "\n";
-      } );
+      WP_CLI::add_hook(
+      	'after_wp_load',
+      	function () {
+      		global $wp_object_cache;
+      		echo empty( $wp_object_cache->cache ) . ',' . isset( $wp_object_cache->group_ops ) . ',' . isset( $wp_object_cache->stats ) . ',' . isset( $wp_object_cache->memcache_debug ) . "\n";
+      		WP_CLI\Utils\wp_clear_object_cache();
+      		echo empty( $wp_object_cache->cache ) . ',' . isset( $wp_object_cache->group_ops ) . ',' . isset( $wp_object_cache->stats ) . ',' . isset( $wp_object_cache->memcache_debug ) . "\n";
+      	} 
+      );
       """
 
     When I run `wp post create --post_title="Foo Bar" --porcelain`
@@ -61,9 +64,10 @@ Feature: Utilities that depend on WordPress code
        * : Restrict returned tables to those that are views.
        */
       function test_wp_get_table_names( $args, $assoc_args ) {
-        if ( $tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args ) ) {
-            echo implode( PHP_EOL, $tables ) . PHP_EOL;
-        }
+      	$tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
+      	if ( $tables ) {
+      		echo implode( PHP_EOL, $tables ) . PHP_EOL;
+      	}
       }
       WP_CLI::add_command( 'get_table_names', 'test_wp_get_table_names' );
       """
@@ -370,9 +374,10 @@ Feature: Utilities that depend on WordPress code
        * : List all tables in the database, regardless of the prefix, and even if not registered on $wpdb. Overrides --all-tables-with-prefix.
        */
       function test_wp_get_table_names( $args, $assoc_args ) {
-        if ( $tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args ) ) {
-            echo implode( PHP_EOL, $tables ) . PHP_EOL;
-        }
+      	$tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
+      	if ( $tables ) {
+      		echo implode( PHP_EOL, $tables ) . PHP_EOL;
+      	}
       }
       WP_CLI::add_command( 'get_table_names', 'test_wp_get_table_names' );
       """
@@ -789,18 +794,22 @@ Feature: Utilities that depend on WordPress code
        * : List all tables in the database, regardless of the prefix, and even if not registered on $wpdb. Overrides --all-tables-with-prefix.
        */
       function test_wp_get_table_names( $args, $assoc_args ) {
-        if ( $tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args ) ) {
-            echo implode( PHP_EOL, $tables ) . PHP_EOL;
-        }
+      	$tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
+      	if ( $tables ) {
+      		echo implode( PHP_EOL, $tables ) . PHP_EOL;
+      	}
       }
       WP_CLI::add_command( 'get_table_names', 'test_wp_get_table_names' );
       """
     And an enable_sitecategories.php file:
       """
       <?php
-      WP_CLI::add_hook( 'after_wp_load', function () {
-        add_filter( 'global_terms_enabled', '__return_true' );
-      } );
+      WP_CLI::add_hook(
+      	'after_wp_load',
+      	function () {
+      		add_filter( 'global_terms_enabled', '__return_true' );
+      	} 
+      );
       """
 
     When I run `wp --require=table_names.php --require=enable_sitecategories.php get_table_names`
@@ -837,9 +846,12 @@ Feature: Utilities that depend on WordPress code
     And a cache_type_test.php file:
       """
       <?php
-      WP_CLI::add_command( 'cache-type-test', function() {
-        echo WP_CLI\Utils\wp_get_cache_type();
-      } );
+      WP_CLI::add_command(
+      	'cache-type-test',
+      	function () {
+      		echo WP_CLI\Utils\wp_get_cache_type();
+      	} 
+      );
       """
 
     When I run `wp --require=cache_type_test.php cache-type-test`
@@ -854,9 +866,12 @@ Feature: Utilities that depend on WordPress code
     And a cache_type_test.php file:
       """
       <?php
-      WP_CLI::add_command( 'cache-type-test', function() {
-        echo WP_CLI\Utils\wp_get_cache_type();
-      } );
+      WP_CLI::add_command(
+      	'cache-type-test',
+      	function () {
+      		echo WP_CLI\Utils\wp_get_cache_type();
+      	} 
+      );
       """
 
     When I run `wp --require=cache_type_test.php cache-type-test`
@@ -874,39 +889,48 @@ Feature: Utilities that depend on WordPress code
       $_wp_using_ext_object_cache = true;
 
       class Custom_Object_Cache {
-        public $cache = [];
-        public function get( $key, $group = 'default', $force = false, &$found = null ) {
-          return false;
-        }
-        public function set( $key, $data, $group = 'default', $expire = 0 ) {
-          return true;
-        }
-        public function delete( $key, $group = 'default' ) {
-          return true;
-        }
-        public function flush() {
-          return true;
-        }
+      	public $cache = [];
+      	public function get( $key, $group = 'default', $force = false, &$found = null ) {
+      		return false;
+      	}
+      	public function set( $key, $data, $group = 'default', $expire = 0 ) {
+      		return true;
+      	}
+      	public function delete( $key, $group = 'default' ) {
+      		return true;
+      	}
+      	public function flush() {
+      		return true;
+      	}
       }
 
       function wp_cache_init() {
-        global $wp_object_cache;
-        $wp_object_cache = new Custom_Object_Cache();
+      	global $wp_object_cache;
+      	$wp_object_cache = new Custom_Object_Cache();
       }
 
-      function wp_cache_get() { return false; }
-      function wp_cache_add() { return false; }
-      function wp_cache_set() { return false; }
-      function wp_cache_delete() { return false; }
-      function wp_cache_add_non_persistent_groups() { return false; }
-      function wp_cache_close() { return true; }
+      function wp_cache_get() {
+      	return false; }
+      function wp_cache_add() {
+      	return false; }
+      function wp_cache_set() {
+      	return false; }
+      function wp_cache_delete() {
+      	return false; }
+      function wp_cache_add_non_persistent_groups() {
+      	return false; }
+      function wp_cache_close() {
+      	return true; }
       """
     And a cache_type_test.php file:
       """
       <?php
-      WP_CLI::add_command( 'cache-type-test', function() {
-        echo WP_CLI\Utils\wp_get_cache_type();
-      } );
+      WP_CLI::add_command(
+      	'cache-type-test',
+      	function () {
+      		echo WP_CLI\Utils\wp_get_cache_type();
+      	} 
+      );
       """
 
     When I run `wp --require=cache_type_test.php cache-type-test`
@@ -921,75 +945,84 @@ Feature: Utilities that depend on WordPress code
       """
       <?php
       namespace Inpsyde\WpStash {
-        class WpStash {
-          private static $instance;
-          private $driver;
+      	class WpStash {
+      		private static $instance;
+      		private $driver;
 
-          public static function instance() {
-            if ( ! self::$instance ) {
-              self::$instance = new self();
-            }
-            return self::$instance;
-          }
+      		public static function instance() {
+      			if ( ! self::$instance ) {
+      				self::$instance = new self();
+      			}
+      			return self::$instance;
+      		}
 
-          public function driver() {
-            if ( ! $this->driver ) {
-              $this->driver = new \Stash\Driver\FileSystem();
-            }
-            return $this->driver;
-          }
-        }
+      		public function driver() {
+      			if ( ! $this->driver ) {
+      				$this->driver = new \Stash\Driver\FileSystem();
+      			}
+      			return $this->driver;
+      		}
+      	}
       }
 
       namespace Stash\Driver {
-        class FileSystem {
-          public function get() {}
-          public function set() {}
-        }
+      	class FileSystem {
+      		public function get() {}
+      		public function set() {}
+      	}
       }
 
       namespace {
-        global $_wp_using_ext_object_cache;
-        $_wp_using_ext_object_cache = true;
+      	global $_wp_using_ext_object_cache;
+      	$_wp_using_ext_object_cache = true;
 
-        // Initialize WP-Stash
-        \Inpsyde\WpStash\WpStash::instance();
+      	// Initialize WP-Stash
+      	\Inpsyde\WpStash\WpStash::instance();
 
-        // WordPress object cache implementation
-        class WP_Object_Cache {
-          public function get( $key, $group = 'default', $force = false, &$found = null ) {
-            return false;
-          }
-          public function set( $key, $data, $group = 'default', $expire = 0 ) {
-            return true;
-          }
-          public function delete( $key, $group = 'default' ) {
-            return true;
-          }
-          public function flush() {
-            return true;
-          }
-        }
+      	// WordPress object cache implementation
+      	class WP_Object_Cache {
+      		public function get( $key, $group = 'default', $force = false, &$found = null ) {
+      			return false;
+      		}
+      		public function set( $key, $data, $group = 'default', $expire = 0 ) {
+      			return true;
+      		}
+      		public function delete( $key, $group = 'default' ) {
+      			return true;
+      		}
+      		public function flush() {
+      			return true;
+      		}
+      	}
 
-        function wp_cache_init() {
-          global $wp_object_cache;
-          $wp_object_cache = new WP_Object_Cache();
-        }
+      	function wp_cache_init() {
+      		global $wp_object_cache;
+      		$wp_object_cache = new WP_Object_Cache();
+      	}
 
-        function wp_cache_get() { return false; }
-        function wp_cache_add() { return false; }
-        function wp_cache_set() { return false; }
-        function wp_cache_delete() { return false; }
-        function wp_cache_add_non_persistent_groups() { return false; }
-        function wp_cache_close() { return true; }
+      	function wp_cache_get() {
+      		return false; }
+      	function wp_cache_add() {
+      		return false; }
+      	function wp_cache_set() {
+      		return false; }
+      	function wp_cache_delete() {
+      		return false; }
+      	function wp_cache_add_non_persistent_groups() {
+      		return false; }
+      	function wp_cache_close() {
+      		return true; }
       }
       """
     And a cache_type_test.php file:
       """
       <?php
-      WP_CLI::add_command( 'cache-type-test', function() {
-        echo WP_CLI\Utils\wp_get_cache_type();
-      } );
+      WP_CLI::add_command(
+      	'cache-type-test',
+      	function () {
+      		echo WP_CLI\Utils\wp_get_cache_type();
+      	} 
+      );
       """
 
     When I run `wp --require=cache_type_test.php cache-type-test`
@@ -999,6 +1032,121 @@ Feature: Utilities that depend on WordPress code
       """
 
   Scenario: WP_DEBUG_LOG with custom path
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      define( 'DB_NAME', '{DB_NAME}' );
+      define( 'DB_USER', '{DB_USER}' );
+      define( 'DB_PASSWORD', '{DB_PASSWORD}' );
+      define( 'DB_HOST', '{DB_HOST}' );
+      define( 'DB_CHARSET', 'utf8' );
+      define( 'DB_COLLATE', '' );
+      $table_prefix = 'wp_';
+
+      define( 'WP_DEBUG', true );
+      define( 'WP_DEBUG_DISPLAY', false );
+      define( 'WP_DEBUG_LOG', __DIR__ . '/custom_debug.log' );
+
+      require_once ABSPATH . 'wp-settings.php';
+      """
+    And a test-debug-log.php file:
+      """
+      <?php
+      WP_CLI::add_command(
+      	'test-debug-log',
+      	function () {
+      		error_log( 'Test error message' );
+      		echo 'Error logged';
+      	} 
+      );
+      """
+
+    When I run `rm -f custom_debug.log`
+    And I run `wp --require=test-debug-log.php test-debug-log`
+    Then STDOUT should contain:
+      """
+      Error logged
+      """
+    And the custom_debug.log file should exist
+    And the custom_debug.log file should contain:
+      """
+      Test error message
+      """
+
+  Scenario: WP_DEBUG=true displays errors on STDERR without --debug
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      define('WP_DEBUG', true);
+
+      require_once(ABSPATH . 'wp-settings.php');
+      """
+    And a test-notice.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-notice', function() {
+        trigger_error( 'Test notice message', E_USER_NOTICE );
+        echo 'Done';
+      } );
+      """
+
+    When I try `wp --require=test-notice.php test-notice`
+    Then STDOUT should contain:
+      """
+      Done
+      """
+    And STDERR should contain:
+      """
+      Test notice message
+      """
+
+  Scenario: WP_DEBUG=false does not display errors on STDERR without --debug
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      define('WP_DEBUG', false);
+
+      require_once(ABSPATH . 'wp-settings.php');
+      """
+    And a test-notice.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-notice', function() {
+        trigger_error( 'Test notice message', E_USER_NOTICE );
+        echo 'Done';
+      } );
+      """
+
+    When I run `wp --require=test-notice.php test-notice`
+    Then STDOUT should contain:
+      """
+      Done
+      """
+    And STDERR should not contain:
+      """
+      Test notice message
+      """
+
+  Scenario: WP_DEBUG=true with WP_DEBUG_DISPLAY=false does not display errors on STDERR
     Given a WP installation
     And a wp-config.php file:
       """
@@ -1013,27 +1161,60 @@ Feature: Utilities that depend on WordPress code
 
       define('WP_DEBUG', true);
       define('WP_DEBUG_DISPLAY', false);
-      define('WP_DEBUG_LOG', __DIR__ . '/custom_debug.log');
 
       require_once(ABSPATH . 'wp-settings.php');
       """
-    And a test-debug-log.php file:
+    And a test-notice.php file:
       """
       <?php
-      WP_CLI::add_command( 'test-debug-log', function() {
-        error_log('Test error message');
-        echo 'Error logged';
+      WP_CLI::add_command( 'test-notice', function() {
+        trigger_error( 'Test notice message', E_USER_NOTICE );
+        echo 'Done';
       } );
       """
 
-    When I run `rm -f custom_debug.log`
-    And I run `wp --require=test-debug-log.php test-debug-log`
+    When I try `wp --require=test-notice.php test-notice`
     Then STDOUT should contain:
       """
-      Error logged
+      Done
       """
-    And the custom_debug.log file should exist
-    And the custom_debug.log file should contain:
+    And STDERR should not contain:
       """
-      Test error message
+      Test notice message
+      """
+
+  Scenario: --debug flag always displays errors on STDERR regardless of WP_DEBUG
+    Given a WP installation
+    And a wp-config.php file:
+      """
+      <?php
+      define('DB_NAME', '{DB_NAME}');
+      define('DB_USER', '{DB_USER}');
+      define('DB_PASSWORD', '{DB_PASSWORD}');
+      define('DB_HOST', '{DB_HOST}');
+      define('DB_CHARSET', 'utf8');
+      define('DB_COLLATE', '');
+      $table_prefix = 'wp_';
+
+      define('WP_DEBUG', false);
+
+      require_once(ABSPATH . 'wp-settings.php');
+      """
+    And a test-notice.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-notice', function() {
+        trigger_error( 'Test notice message', E_USER_NOTICE );
+        echo 'Done';
+      } );
+      """
+
+    When I try `wp --debug --require=test-notice.php test-notice`
+    Then STDOUT should contain:
+      """
+      Done
+      """
+    And STDERR should contain:
+      """
+      Test notice message
       """

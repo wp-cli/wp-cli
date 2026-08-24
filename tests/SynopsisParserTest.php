@@ -87,7 +87,32 @@ class SynopsisParserTest extends TestCase {
 		$param = $r[2];
 		$this->assertEquals( 'assoc', $param['type'] );
 		$this->assertTrue( $param['optional'] );
-		$this->assertTrue( $param['value']['optional'] );
+		$this->assertTrue( is_array( $param['value'] ) && ! empty( $param['value']['optional'] ) );
+	}
+
+	public function testMixedCaseAssoc(): void {
+		// Some WordPress core fields are mixed-case, e.g. `comment_post_ID`
+		// and `comment_author_IP`. The parameter name must not be silently
+		// truncated at the first uppercase character.
+		$r = SynopsisParser::parse( '[--comment_author_IP=<comment_author_IP>] [--comment_post_ID=<comment_post_ID>]' );
+
+		$this->assertCount( 2, $r );
+
+		$param = $r[0];
+		$this->assertEquals( 'assoc', $param['type'] );
+		$this->assertEquals( 'comment_author_IP', $param['name'] );
+
+		$param = $r[1];
+		$this->assertEquals( 'assoc', $param['type'] );
+		$this->assertEquals( 'comment_post_ID', $param['name'] );
+	}
+
+	public function testParseThenRenderMixedCase(): void {
+		$o = '--comment_post_ID=<comment_post_ID> --<field>=<value> [--flag]';
+		$a = SynopsisParser::parse( $o );
+		$this->assertSame( 'comment_post_ID', $a[0]['name'] );
+		$r = SynopsisParser::render( $a );
+		$this->assertSame( $o, $r );
 	}
 
 	public function testInvalidAssoc(): void {
@@ -147,7 +172,7 @@ class SynopsisParserTest extends TestCase {
 
 	public function testRender(): void {
 		/**
-		 * @phpstan-var array{0: PositionalParameter, 1: PositionalParameter, 2: AssocParameter, 3: AssocParameter, 4: AssocParameter} $a
+		 * @var CommandSynopsis[] $a
 		 */
 		$a = [
 			[
@@ -183,23 +208,23 @@ class SynopsisParserTest extends TestCase {
 				],
 			],
 		];
-		$this->assertEquals( '<message> [<secrets>...] --meal=<meal> [--snack=<snack>] [--skip[=<skip>]]', SynopsisParser::render( $a ) );
+		$this->assertSame( '<message> [<secrets>...] --meal=<meal> [--snack=<snack>] [--skip[=<skip>]]', SynopsisParser::render( $a ) );
 	}
 
 	public function testParseThenRender(): void {
 		$o = '<positional> --assoc=<assoc> [--double[=<optional>]] --<field>=<value> [--flag]';
 		$a = SynopsisParser::parse( $o );
 		$r = SynopsisParser::render( $a );
-		$this->assertEquals( $o, $r );
+		$this->assertSame( $o, $r );
 	}
 
 	public function testParseThenRenderNumeric(): void {
 		$o = '<p1ositional> --a2ssoc=<assoc> --<field>=<value> [--f3lag]';
 		$a = SynopsisParser::parse( $o );
-		$this->assertEquals( 'p1ositional', $a[0]['name'] );
-		$this->assertEquals( 'a2ssoc', $a[1]['name'] );
-		$this->assertEquals( 'f3lag', $a[3]['name'] );
+		$this->assertSame( 'p1ositional', $a[0]['name'] );
+		$this->assertSame( 'a2ssoc', $a[1]['name'] );
+		$this->assertSame( 'f3lag', $a[3]['name'] );
 		$r = SynopsisParser::render( $a );
-		$this->assertEquals( $o, $r );
+		$this->assertSame( $o, $r );
 	}
 }
