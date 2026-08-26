@@ -328,25 +328,6 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-  Scenario Outline: Apply backwards compat conversions
-    Given a WP installation
-
-    When I try `wp <flag> run "term url category 1"`
-    Then STDOUT should be:
-      """
-      https://example.com/?cat=1
-      returned: NULL
-      """
-    And STDERR should contain:
-      """
-      The 'wp term url' syntax is deprecated and will be removed in WP-CLI 4.0. Use 'wp term list --field=url' instead.
-      """
-    And the return code should be 0
-
-    Examples:
-      | flag        |
-      | --no-launch |
-      | --launch    |
 
   @skip-windows
   Scenario Outline: Check that proc_open() and proc_close() aren't disabled for launch
