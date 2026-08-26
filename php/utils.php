@@ -1977,9 +1977,14 @@ function is_json( $argument, $ignore_scalars = true ) {
 /**
  * Parse known shell arrays included in the $assoc_args array.
  *
- * @param array<string, string> $assoc_args      Associative array of arguments.
- * @param array<string>         $array_arguments Array of argument keys that should receive an
- *                                               array through the shell.
+ * Values are not necessarily strings: a flag arrives as boolean true, and a
+ * key that was already parsed arrives as an array. Only the keys named in
+ * $array_arguments are considered, and only when they hold a JSON string -
+ * is_json() rejects everything else - so other values are returned untouched.
+ *
+ * @param array<string, mixed> $assoc_args      Associative array of arguments.
+ * @param array<string>        $array_arguments Array of argument keys that should receive an
+ *                                              array through the shell.
  * @return array<string, mixed>
  */
 function parse_shell_arrays( $assoc_args, $array_arguments ) {

@@ -4,8 +4,8 @@ namespace WP_CLI;
 
 use cli\Colors;
 use cli\Table;
-use Iterator;
 use Mustangostang\Spyc;
+use Traversable;
 use WP_CLI;
 
 /**
@@ -51,6 +51,13 @@ class Formatter {
 	 * @var array<string, callable>
 	 */
 	private static $single_value_formatters = [];
+
+	/**
+	 * Whether the built-in format handlers have been registered yet.
+	 *
+	 * @var bool
+	 */
+	private static $builtin_formats_registered = false;
 
 	/**
 	 * How the items should be output.
@@ -106,6 +113,8 @@ class Formatter {
 		/** @var array{format: string, fields: array<string>, field: string|null, alignments: array<string, int>} $format_args */
 		$this->args   = $format_args;
 		$this->prefix = $prefix;
+
+		self::register_builtin_formats();
 	}
 
 	/**
@@ -142,6 +151,11 @@ class Formatter {
 		if ( ! is_callable( $handler ) ) {
 			WP_CLI::error( 'Format handler must be callable.' );
 		}
+
+		// Make sure the built-ins are in place first, so that registering a
+		// handler for an existing format name always overrides the built-in one.
+		self::register_builtin_formats();
+
 		self::$custom_formatters[ $format_name ] = $handler;
 		self::$format_options[ $format_name ]    = $options;
 	}
@@ -174,6 +188,11 @@ class Formatter {
 		if ( ! is_callable( $handler ) ) {
 			WP_CLI::error( 'Single-value format handler must be callable.' );
 		}
+
+		// Make sure the built-ins are in place first, so that registering a
+		// handler for an existing format name always overrides the built-in one.
+		self::register_builtin_formats();
+
 		self::$single_value_formatters[ $format_name ] = $handler;
 	}
 
@@ -187,6 +206,8 @@ class Formatter {
 	 * @return string The formatted value (without trailing newline).
 	 */
 	public static function format_single_value( $value, $format ) {
+		self::register_builtin_formats();
+
 		if ( isset( self::$single_value_formatters[ $format ] ) ) {
 			return call_user_func( self::$single_value_formatters[ $format ], $value );
 		}
@@ -206,9 +227,25 @@ class Formatter {
 	 * This method registers the default format handlers (table, json, csv, yaml, count, ids)
 	 * using the add_format() API, allowing them to be overridden like custom formats.
 	 *
+	 * It is called during bootstrap, but is also self-triggered from every entry
+	 * point into the registry, so that the Formatter keeps working when it is used
+	 * without the WP-CLI bootstrap having run for this particular copy of the class
+	 * (as a Composer library, in unit tests, or when a second copy of WP-CLI on the
+	 * autoloader stack wins the class lookup).
+	 *
+	 * Repeat calls are a no-op, so registering built-ins never clobbers a handler
+	 * that an extension registered for the same format name.
+	 *
 	 * @return void
 	 */
 	public static function register_builtin_formats() {
+		if ( self::$builtin_formats_registered ) {
+			return;
+		}
+
+		// Set before registering, as add_format() calls back into this method.
+		self::$builtin_formats_registered = true;
+
 		// Register 'table' format
 		self::add_format(
 			'table',
@@ -354,6 +391,8 @@ class Formatter {
 	 * @return string[] Array of format names.
 	 */
 	public static function get_available_formats() {
+		self::register_builtin_formats();
+
 		$all_formats = array_keys( self::$custom_formatters );
 
 		/**
@@ -377,16 +416,16 @@ class Formatter {
 	/**
 	 * Display multiple items according to the output arguments.
 	 *
-	 * @param iterable<int, array<string, mixed>|object> $items The items to display.
-	 * @param bool|array<int, bool>                      $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `format()` if items in the table are pre-colorized. Default false.
+	 * @param iterable<mixed>       $items The items to display.
+	 * @param bool|array<int, bool> $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `format()` if items in the table are pre-colorized. Default false.
 	 * @return void
 	 */
 	public function display_items( $items, $ascii_pre_colorized = false ) {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
-			// Convert iterator to array early to avoid consumption issues and enable validation
-			if ( $items instanceof Iterator ) {
+			// Convert Traversable to array early to avoid consumption issues and enable validation
+			if ( $items instanceof Traversable ) {
 				$items = iterator_to_array( $items );
 			}
 
@@ -404,7 +443,7 @@ class Formatter {
 			}
 
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
-				/** @var array<int, array<string, mixed>|object> $transformed */
+				/** @var array<int, mixed> $transformed */
 				$transformed = array_map(
 					function ( $item ) {
 						return $this->transform_item_values_to_json( is_object( $item ) ? clone $item : $item );
@@ -455,8 +494,8 @@ class Formatter {
 	/**
 	 * Format items according to arguments.
 	 *
-	 * @param iterable<int, array<string, mixed>|object> $items Items.
-	 * @param bool|array<int, bool>                      $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if items in the table are pre-colorized. Default false.
+	 * @param iterable<mixed>       $items Items.
+	 * @param bool|array<int, bool> $ascii_pre_colorized Optional. A boolean or an array of booleans to pass to `show_table()` if items in the table are pre-colorized. Default false.
 	 */
 	private function format( $items, $ascii_pre_colorized = false ): void {
 		$fields = $this->args['fields'];
@@ -480,13 +519,16 @@ class Formatter {
 				if ( is_array( $item ) || is_object( $item ) ) {
 					$formatted_items[] = Utils\pick_fields( $item, $fields );
 				} else {
-					WP_CLI::debug( 'Skipping item that is neither array nor object in format handler.', 'formatter' );
+					$formatted_items[] = $item;
 				}
 			}
 
 			// Truncate cell values exactly once for table/CSV output
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
 				foreach ( $formatted_items as &$row ) {
+					if ( ! is_array( $row ) && ! is_object( $row ) ) {
+						continue;
+					}
 					foreach ( $row as $key => $value ) {
 						if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
 							$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
@@ -509,8 +551,8 @@ class Formatter {
 	/**
 	 * Show a single field from a list of items.
 	 *
-	 * @param iterable<int, array<string, mixed>|object> $items Array of objects to show fields from
-	 * @param string                                     $field The field to show
+	 * @param iterable<mixed> $items An iterable of items to show fields from.
+	 * @param string          $field The field to show
 	 */
 	private function show_single_field( $items, $field ): void {
 		$key         = null;
@@ -559,7 +601,7 @@ class Formatter {
 	 * Warns if a field doesn't exist in any item.
 	 * Also resolves field names to their actual keys (including prefixes).
 	 *
-	 * @param iterable<int, array<string, mixed>|object> $items Items to validate
+	 * @param iterable<mixed> $items Items to validate
 	 */
 	private function validate_fields( $items ): void {
 		// Track which fields have been found and their resolved keys
@@ -607,18 +649,41 @@ class Formatter {
 	}
 
 	/**
+	 * Check if an object property is accessible.
+	 *
+	 * @param object $item
+	 * @param string $key
+	 * @return bool
+	 */
+	private function is_object_property_accessible( $item, $key ): bool {
+		if ( ! is_object( $item ) ) {
+			return false;
+		}
+
+		if ( isset( $item->$key ) ) {
+			return true;
+		}
+
+		if ( property_exists( $item, $key ) ) {
+			return ( new \ReflectionProperty( $item, $key ) )->isPublic();
+		}
+
+		return false;
+	}
+
+	/**
 	 * Find an object's key.
 	 * If $prefix is set, a key with that prefix will be prioritized.
 	 *
-	 * @param array<string, mixed>|object $item
-	 * @param string                      $field
-	 * @param bool                        $lenient If true, return null instead of erroring when field is not found.
+	 * @param mixed  $item
+	 * @param string $field
+	 * @param bool   $lenient If true, return null instead of erroring when field is not found.
 	 * @return string|null
 	 */
 	private function find_item_key( $item, $field, $lenient = false ) {
 		foreach ( [ $field, $this->prefix . '_' . $field ] as $maybe_key ) {
 			if (
-				( is_object( $item ) && ( property_exists( $item, $maybe_key ) || isset( $item->$maybe_key ) ) ) ||
+				( is_object( $item ) && $this->is_object_property_accessible( $item, $maybe_key ) ) ||
 				( is_array( $item ) && array_key_exists( $maybe_key, $item ) )
 			) {
 				$key = $maybe_key;
@@ -656,20 +721,10 @@ class Formatter {
 			}
 		}
 
-		foreach ( array_keys( (array) $data ) as $key ) {
-			if ( ! in_array( $key, $true_fields, true ) ) {
-				if ( is_array( $data ) ) {
-					unset( $data[ $key ] );
-				} elseif ( is_object( $data ) ) {
-					unset( $data->$key );
-				}
-			}
-		}
-
 		$ordered_data = [];
 
 		foreach ( $true_fields as $field ) {
-			$ordered_data[ $field ] = ( ( (array) $data )[ $field ] );
+			$ordered_data[ $field ] = is_object( $data ) ? $data->$field : $data[ $field ];
 		}
 
 		// Check if a formatter is registered for this format
@@ -771,10 +826,14 @@ class Formatter {
 	 * - Objects and arrays are converted to JSON strings
 	 * - Booleans are converted to "true" or "false"
 	 *
-	 * @param array<string, mixed>|object $item
+	 * @param mixed $item
 	 * @return mixed
 	 */
 	public function transform_item_values_to_json( $item ) {
+		if ( ! is_object( $item ) && ! is_array( $item ) ) {
+			return $item;
+		}
+
 		foreach ( $this->args['fields'] as $field ) {
 			$true_field = $this->find_item_key( $item, $field, true );
 			if ( null === $true_field ) {

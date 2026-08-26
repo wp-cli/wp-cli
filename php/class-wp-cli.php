@@ -441,42 +441,25 @@ class WP_CLI {
 	 * @param int      $priority
 	 * @return string|false
 	 */
-	private static function wp_hook_build_unique_id( $tag, $function, $priority ) {
-		global $wp_filter;
-		static $filter_id_count = 0;
-
+	private static function wp_hook_build_unique_id( $tag, $function, $priority ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $priority retained to match core's _wp_filter_build_unique_id() signature.
 		if ( is_string( $function ) ) {
 			return $function;
 		}
 
 		if ( is_object( $function ) ) {
 			// Closures are currently implemented as objects.
-			$function = [ $function, '' ];
-		} else {
-			$function = (array) $function;
+			return (string) spl_object_id( $function );
+		}
+
+		$function = (array) $function;
+
+		if ( ! isset( $function[1] ) || ! is_string( $function[1] ) ) {
+			return false;
 		}
 
 		if ( is_object( $function[0] ) ) {
 			// Object Class Calling.
-			if ( function_exists( 'spl_object_hash' ) ) {
-				return spl_object_hash( $function[0] ) . $function[1];
-			}
-
-			$obj_idx = get_class( $function[0] ) . $function[1];
-			if ( ! isset( $function[0]->wp_filter_id ) ) {
-				if ( false === $priority ) {
-					return false;
-				}
-				$obj_idx .= isset( $wp_filter[ $tag ][ $priority ] ) ? count( (array) $wp_filter[ $tag ][ $priority ] ) : $filter_id_count;
-
-				// @phpstan-ignore property.notFound
-				$function[0]->wp_filter_id = $filter_id_count;
-				++$filter_id_count;
-			} else {
-				$obj_idx .= $function[0]->wp_filter_id;
-			}
-
-			return $obj_idx;
+			return ( (string) spl_object_id( $function[0] ) ) . $function[1];
 		}
 
 		if ( is_string( $function[0] ) ) {
@@ -1512,8 +1495,6 @@ class WP_CLI {
 	 * @param string $key Config parameter key to check.
 	 *
 	 * @return bool
-	 *
-	 * @phpstan-assert-if-true key-of<GlobalConfig> $key
 	 */
 	public static function has_config( $key ) {
 		return array_key_exists( $key, self::get_runner()->config );
