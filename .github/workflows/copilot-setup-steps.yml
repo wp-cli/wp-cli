@@ -19,6 +19,16 @@ jobs:
     permissions:
       contents: read
 
+    env:
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_TCP_PORT: 3306
+      WP_CLI_TEST_DBROOTUSER: root
+      WP_CLI_TEST_DBROOTPASS: root
+      WP_CLI_TEST_DBNAME: wp_cli_test
+      WP_CLI_TEST_DBUSER: wp_cli_test
+      WP_CLI_TEST_DBPASS: password1
+      WP_CLI_TEST_DBHOST: 127.0.0.1:3306
+
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -45,3 +55,28 @@ jobs:
         uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
         env:
           COMPOSER_ROOT_VERSION: dev-${{ github.event.repository.default_branch }}
+
+      # Without a database the Behat runner silently falls back to SQLite, so the
+      # agent's test runs are not the ones CI will do. Mirrors the setup in
+      # reusable-functional.yml.
+      - name: Check existence of behat.yml file
+        id: check_behat_file
+        run: echo "files_exists=$(test -f behat.yml && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup MySQL Server
+        if: steps.check_behat_file.outputs.files_exists == 'true'
+        uses: shogo82148/actions-setup-mysql@62da9377d83991fce27b6ed2a397d3306121e41d # v1
+        with:
+          mysql-version: '8.0' # Standard MySQL version for these tests
+          auto-start: true
+          root-password: ${{ env.WP_CLI_TEST_DBROOTPASS }}
+          user: ${{ env.WP_CLI_TEST_DBUSER }}
+          password: ${{ env.WP_CLI_TEST_DBPASS }}
+
+      - name: Remove system MySQL binary
+        if: steps.check_behat_file.outputs.files_exists == 'true'
+        run: sudo rm -f /usr/bin/mysql /usr/bin/mysqldump
+
+      - name: Prepare test database
+        if: steps.check_behat_file.outputs.files_exists == 'true'
+        run: composer prepare-tests
