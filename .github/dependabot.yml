@@ -9,6 +9,17 @@ updates:
       - scope:distribution
     cooldown:
       default-days: 7
+  # Only wp-cli-tests carries a package.json, holding the pinned version of the
+  # Gherkin linter. This is a no-op in every other repository.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - scope:distribution
+    cooldown:
+      default-days: 7
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
