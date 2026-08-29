@@ -996,7 +996,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataParseUrl
 	 * @param string $url
-	 * @param int $component
+	 * @param int<-1, 7> $component
 	 * @param bool $auto_add_scheme
 	 * @param array<string, mixed>|string|false $expected
 	 */
