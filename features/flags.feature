@@ -214,9 +214,9 @@ Feature: Global flags
       <?php
       class Dummy_Logger {
 
-      	public function __call( $method, $args ) {
-      		echo "log: called '$method' method";
-      	}
+          public function __call( $method, $args ) {
+              echo "log: called '$method' method";
+          }
       }
 
       WP_CLI::set_logger( new Dummy_Logger() );
@@ -240,9 +240,9 @@ Feature: Global flags
        */
       class Test_Command extends WP_CLI_Command {
 
-      	public function req( $args, $assoc_args ) {
-      		WP_CLI::line( $args[0] );
-      	}
+          public function req( $args, $assoc_args ) {
+              WP_CLI::line( $args[0] );
+          }
       }
 
       WP_CLI::add_command( 'test', 'Test_Command' );
@@ -345,10 +345,10 @@ Feature: Global flags
        * : URL passed to the callback.
        */
       $cmd_test = function ( $args, $assoc_args ) {
-      	$url = WP_CLI::get_runner()->config['url'] ? ' ' . WP_CLI::get_runner()->config['url'] : '';
-      	WP_CLI::log( 'global:' . $url );
-      	$url = isset( $assoc_args['url'] ) ? ' ' . $assoc_args['url'] : '';
-      	WP_CLI::log( 'local:' . $url );
+          $url = WP_CLI::get_runner()->config['url'] ? ' ' . WP_CLI::get_runner()->config['url'] : '';
+          WP_CLI::log( 'global:' . $url );
+          $url = isset( $assoc_args['url'] ) ? ' ' . $assoc_args['url'] : '';
+          WP_CLI::log( 'local:' . $url );
       };
       WP_CLI::add_command( 'cmd-test', $cmd_test );
       """
@@ -524,8 +524,8 @@ Feature: Global flags
       """
       <?php
       function wp_cli_remove_user_arg( $spec ) {
-      	unset( $spec['user'] );
-      	return $spec;
+          unset( $spec['user'] );
+          return $spec;
       }
       define( 'WP_CLI_CONFIG_SPEC_FILTER_CALLBACK', 'wp_cli_remove_user_arg' );
       """
@@ -553,8 +553,8 @@ Feature: Global flags
        * @when before_wp_load
        */
       $test_cmd = function ( $args, $assoc_args ) {
-      	WP_CLI::log( 'Positional args: ' . implode( ', ', $args ) );
-      	WP_CLI::log( 'Assoc args: ' . json_encode( $assoc_args ) );
+          WP_CLI::log( 'Positional args: ' . implode( ', ', $args ) );
+          WP_CLI::log( 'Assoc args: ' . json_encode( $assoc_args ) );
       };
       WP_CLI::add_command( 'test-args', $test_cmd );
       """
@@ -594,9 +594,9 @@ Feature: Global flags
        * @when before_wp_load
        */
       $test_cmd = function ( $args, $assoc_args ) {
-      	// If --require was parsed as a global option, this file would fail to load
-      	// because /nonexistent doesn't exist. If we get here, -- worked correctly.
-      	WP_CLI::log( 'Args: ' . implode( ', ', $args ) );
+          // If --require was parsed as a global option, this file would fail to load
+          // because /nonexistent doesn't exist. If we get here, -- worked correctly.
+          WP_CLI::log( 'Args: ' . implode( ', ', $args ) );
       };
       WP_CLI::add_command( 'test-global', $test_cmd );
       """
