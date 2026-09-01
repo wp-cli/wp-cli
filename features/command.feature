@@ -587,9 +587,9 @@ Feature: WP-CLI Commands
             list( $name ) = $args;
             $type         = $assoc_args['type'];
             WP_CLI::$type( "Hello, $name!" );
-          if ( isset( $assoc_args['honk'] ) ) {
-              WP_CLI::log( 'Honk!' );
-          }
+            if ( isset( $assoc_args['honk'] ) ) {
+                WP_CLI::log( 'Honk!' );
+            }
         };
           WP_CLI::add_command(
               'example hello',
