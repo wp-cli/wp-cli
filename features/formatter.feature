@@ -35,7 +35,7 @@ Feature: Format output
           }
           $formatter = new \WP_CLI\Formatter( $format_args );
           if ( 'all' === $args[0] ) {
-                $formatter->display_items( $items );
+              $formatter->display_items( $items );
           } elseif ( 'single' === $args[0] ) {
               $formatter->display_item( $items[0] );
           }
