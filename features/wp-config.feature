@@ -17,7 +17,7 @@ Feature: wp-config
       define( 'TEST_CONFIG_OVERRIDE', 'success' );
 
       if ( ! defined( 'ABSPATH' ) ) {
-      	define( 'ABSPATH', __DIR__ . '/' );
+          define( 'ABSPATH', __DIR__ . '/' );
       }
       require_once ABSPATH . 'wp-settings.php';
       """

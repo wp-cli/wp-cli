@@ -12,33 +12,33 @@ Feature: Multiple flag values support
        */
       class Test_Multi_Command extends WP_CLI_Command {
 
-      	/**
-      	 * List items with multiple status filters
-      	 *
-      	 * ## OPTIONS
-      	 *
-      	 * [--status=<status>...]
-      	 * : Filter by status
-      	 * ---
-      	 * options:
-      	 *   - active
-      	 *   - inactive
-      	 *   - pending
-      	 * ---
-      	 *
-      	 * @subcommand list
-      	 */
-      	public function list_( $args, $assoc_args ) {
-      		if ( isset( $assoc_args['status'] ) ) {
-      			if ( is_array( $assoc_args['status'] ) ) {
-      				WP_CLI::success( 'Status filter: ' . implode( ', ', $assoc_args['status'] ) );
-      			} else {
-      				WP_CLI::success( 'Status filter: ' . $assoc_args['status'] );
-      			}
-      		} else {
-      			WP_CLI::success( 'No status filter' );
-      		}
-      	}
+          /**
+           * List items with multiple status filters
+           *
+           * ## OPTIONS
+           *
+           * [--status=<status>...]
+           * : Filter by status
+           * ---
+           * options:
+           *   - active
+           *   - inactive
+           *   - pending
+           * ---
+           *
+           * @subcommand list
+           */
+          public function list_( $args, $assoc_args ) {
+              if ( isset( $assoc_args['status'] ) ) {
+                  if ( is_array( $assoc_args['status'] ) ) {
+                      WP_CLI::success( 'Status filter: ' . implode( ', ', $assoc_args['status'] ) );
+                  } else {
+                      WP_CLI::success( 'Status filter: ' . $assoc_args['status'] );
+                  }
+              } else {
+                  WP_CLI::success( 'No status filter' );
+              }
+          }
       }
       WP_CLI::add_command( 'testmulti', 'Test_Multi_Command' );
       """
@@ -79,29 +79,29 @@ Feature: Multiple flag values support
        */
       class Test_Single_Command extends WP_CLI_Command {
 
-      	/**
-      	 * List items with single status filter
-      	 *
-      	 * ## OPTIONS
-      	 *
-      	 * [--status=<status>]
-      	 * : Filter by status
-      	 * ---
-      	 * options:
-      	 *   - active
-      	 *   - inactive
-      	 *   - pending
-      	 * ---
-      	 *
-      	 * @subcommand list
-      	 */
-      	public function list_( $args, $assoc_args ) {
-      		if ( isset( $assoc_args['status'] ) ) {
-      			WP_CLI::success( 'Status filter: ' . $assoc_args['status'] );
-      		} else {
-      			WP_CLI::success( 'No status filter' );
-      		}
-      	}
+          /**
+           * List items with single status filter
+           *
+           * ## OPTIONS
+           *
+           * [--status=<status>]
+           * : Filter by status
+           * ---
+           * options:
+           *   - active
+           *   - inactive
+           *   - pending
+           * ---
+           *
+           * @subcommand list
+           */
+          public function list_( $args, $assoc_args ) {
+              if ( isset( $assoc_args['status'] ) ) {
+                  WP_CLI::success( 'Status filter: ' . $assoc_args['status'] );
+              } else {
+                  WP_CLI::success( 'No status filter' );
+              }
+          }
       }
       WP_CLI::add_command( 'testsingle', 'Test_Single_Command' );
       """
@@ -124,30 +124,30 @@ Feature: Multiple flag values support
        */
       class Test_Validation_Command extends WP_CLI_Command {
 
-      	/**
-      	 * List items with validated status filters
-      	 *
-      	 * ## OPTIONS
-      	 *
-      	 * [--status=<status>...]
-      	 * : Filter by status
-      	 * ---
-      	 * options:
-      	 *   - active
-      	 *   - inactive
-      	 * ---
-      	 *
-      	 * @subcommand list
-      	 */
-      	public function list_( $args, $assoc_args ) {
-      		if ( isset( $assoc_args['status'] ) ) {
-      			if ( is_array( $assoc_args['status'] ) ) {
-      				WP_CLI::success( 'Filters: ' . implode( ', ', $assoc_args['status'] ) );
-      			} else {
-      				WP_CLI::success( 'Filters: ' . $assoc_args['status'] );
-      			}
-      		}
-      	}
+          /**
+           * List items with validated status filters
+           *
+           * ## OPTIONS
+           *
+           * [--status=<status>...]
+           * : Filter by status
+           * ---
+           * options:
+           *   - active
+           *   - inactive
+           * ---
+           *
+           * @subcommand list
+           */
+          public function list_( $args, $assoc_args ) {
+              if ( isset( $assoc_args['status'] ) ) {
+                  if ( is_array( $assoc_args['status'] ) ) {
+                      WP_CLI::success( 'Filters: ' . implode( ', ', $assoc_args['status'] ) );
+                  } else {
+                      WP_CLI::success( 'Filters: ' . $assoc_args['status'] );
+                  }
+              }
+          }
       }
       WP_CLI::add_command( 'testval', 'Test_Validation_Command' );
       """
@@ -184,24 +184,24 @@ Feature: Multiple flag values support
        */
       class Test_Boolean_Command extends WP_CLI_Command {
 
-      	/**
-      	 * Test boolean flags
-      	 *
-      	 * ## OPTIONS
-      	 *
-      	 * [--verbose]
-      	 * : Enable verbose mode
-      	 *
-      	 * @subcommand test
-      	 */
-      	public function test( $args, $assoc_args ) {
-      		$verbose = isset( $assoc_args['verbose'] ) ? $assoc_args['verbose'] : 'not set';
-      		if ( is_bool( $verbose ) ) {
-      			WP_CLI::success( 'Verbose: ' . ( $verbose ? 'true' : 'false' ) );
-      		} else {
-      			WP_CLI::success( 'Verbose: ' . $verbose );
-      		}
-      	}
+          /**
+           * Test boolean flags
+           *
+           * ## OPTIONS
+           *
+           * [--verbose]
+           * : Enable verbose mode
+           *
+           * @subcommand test
+           */
+          public function test( $args, $assoc_args ) {
+              $verbose = isset( $assoc_args['verbose'] ) ? $assoc_args['verbose'] : 'not set';
+              if ( is_bool( $verbose ) ) {
+                  WP_CLI::success( 'Verbose: ' . ( $verbose ? 'true' : 'false' ) );
+              } else {
+                  WP_CLI::success( 'Verbose: ' . $verbose );
+              }
+          }
       }
       WP_CLI::add_command( 'testbool', 'Test_Boolean_Command' );
       """

@@ -7,15 +7,15 @@ Feature: Load WP-CLI
       """
       <?php
       add_action(
-      	'plugins_loaded',
-      	function () {
-      		wp_signon(
-      			array(
-      				'user_login'    => 'testuser',
-      				'user_password' => 'testuser',
-      			) 
-      		);
-      	}
+          'plugins_loaded',
+          function () {
+              wp_signon(
+                  array(
+                      'user_login'    => 'testuser',
+                      'user_password' => 'testuser',
+                  )
+              );
+          }
       );
       """
 
@@ -29,20 +29,20 @@ Feature: Load WP-CLI
       <?php
       class Load_WordPress_Command_Class extends WP_CLI_Command {
 
-      	/**
-      	 * @when before_wp_load
-      	 */
-      	public function __invoke() {
-      		if ( ! function_exists( 'update_option' ) ) {
-      			WP_CLI::log( 'WordPress not loaded.' );
-      		}
-      		WP_CLI::get_runner()->load_wordpress();
-      		if ( function_exists( 'update_option' ) ) {
-      			WP_CLI::log( 'WordPress loaded!' );
-      		}
-      		WP_CLI::get_runner()->load_wordpress();
-      		WP_CLI::log( 'load_wordpress() can safely be called twice.' );
-      	}
+          /**
+           * @when before_wp_load
+           */
+          public function __invoke() {
+              if ( ! function_exists( 'update_option' ) ) {
+                  WP_CLI::log( 'WordPress not loaded.' );
+              }
+              WP_CLI::get_runner()->load_wordpress();
+              if ( function_exists( 'update_option' ) ) {
+                  WP_CLI::log( 'WordPress loaded!' );
+              }
+              WP_CLI::get_runner()->load_wordpress();
+              WP_CLI::log( 'load_wordpress() can safely be called twice.' );
+          }
       }
       WP_CLI::add_command( 'load-wordpress', 'Load_WordPress_Command_Class' );
       """
@@ -62,20 +62,20 @@ Feature: Load WP-CLI
       <?php
       class Load_WordPress_Command_Class extends WP_CLI_Command {
 
-      	/**
-      	 * @when before_wp_load
-      	 */
-      	public function __invoke() {
-      		if ( ! function_exists( 'update_option' ) ) {
-      			WP_CLI::log( 'WordPress not loaded.' );
-      		}
-      		WP_CLI::get_runner()->load_wordpress();
-      		if ( function_exists( 'update_option' ) ) {
-      			WP_CLI::log( 'WordPress loaded!' );
-      		}
-      		WP_CLI::get_runner()->load_wordpress();
-      		WP_CLI::log( 'load_wordpress() can safely be called twice.' );
-      	}
+          /**
+           * @when before_wp_load
+           */
+          public function __invoke() {
+              if ( ! function_exists( 'update_option' ) ) {
+                  WP_CLI::log( 'WordPress not loaded.' );
+              }
+              WP_CLI::get_runner()->load_wordpress();
+              if ( function_exists( 'update_option' ) ) {
+                  WP_CLI::log( 'WordPress loaded!' );
+              }
+              WP_CLI::get_runner()->load_wordpress();
+              WP_CLI::log( 'load_wordpress() can safely be called twice.' );
+          }
       }
       WP_CLI::add_command( 'load-wordpress', 'Load_WordPress_Command_Class' );
       """
@@ -170,7 +170,7 @@ Feature: Load WP-CLI
       """
       <?php
       function my_custom_function() {
-      	WP_CLI::error( 'Test error message.' );
+          WP_CLI::error( 'Test error message.' );
       }
       my_custom_function();
       """
@@ -200,7 +200,7 @@ Feature: Load WP-CLI
       """
       <?php
       function trigger_halt() {
-      	WP_CLI::halt( 2 );
+          WP_CLI::halt( 2 );
       }
       trigger_halt();
       """
@@ -241,10 +241,10 @@ Feature: Load WP-CLI
       """
       <?php
       add_action(
-      	'init',
-      	function () {
-      		wp_redirect( 'http://apple.com' );
-      	}
+          'init',
+          function () {
+              wp_redirect( 'http://apple.com' );
+          }
       );
       """
 
@@ -260,10 +260,10 @@ Feature: Load WP-CLI
       """
       <?php
       add_action(
-      	'init',
-      	function () {
-      		wp_redirect( 'http://apple.com' );
-      	}
+          'init',
+          function () {
+              wp_redirect( 'http://apple.com' );
+          }
       );
       """
 
@@ -316,17 +316,17 @@ Feature: Load WP-CLI
       <?php
 
       WP_CLI::add_hook(
-      	'foo',
-      	function ( $bar ) {
-      		WP_CLI::log( $bar );
-      	}
+          'foo',
+          function ( $bar ) {
+              WP_CLI::log( $bar );
+          }
       );
       WP_CLI::add_command(
-      	'my-command',
-      	function ( $args ) {
-      		WP_CLI::do_hook( 'foo', $args[0] );
-      	},
-      	array( 'when' => 'before_wp_load' ) 
+          'my-command',
+          function ( $args ) {
+              WP_CLI::do_hook( 'foo', $args[0] );
+          },
+          array( 'when' => 'before_wp_load' )
       );
       """
 
@@ -524,10 +524,10 @@ Feature: Load WP-CLI
       <?php
       // Force ms_not_installed() to be triggered by returning empty network
       WP_CLI::add_wp_hook(
-      	'the_networks',
-      	static function () {
-      		return [];
-      	}
+          'the_networks',
+          static function () {
+              return [];
+          }
       );
       """
     And I run `wp config delete DOMAIN_CURRENT_SITE --type=constant`
@@ -554,13 +554,13 @@ Feature: Load WP-CLI
       <?php
       // Force ms_not_installed() to be triggered by returning empty network
       WP_CLI::add_wp_hook(
-      	'the_networks',
-      	static function () {
-      		return [
-      			new \WP_Network( new stdClass() ),
-      			new \WP_Network( new stdClass() ),
-      		];
-      	}
+          'the_networks',
+          static function () {
+              return [
+                  new \WP_Network( new stdClass() ),
+                  new \WP_Network( new stdClass() ),
+              ];
+          }
       );
       """
     And I run `wp config delete DOMAIN_CURRENT_SITE --type=constant`
@@ -595,13 +595,13 @@ Feature: Load WP-CLI
       <?php
       // Simulate a plugin that prepends its own autoloader.
       function wpcli_test_mu_autoload( $class ) {
-      	// This intentionally does nothing but exists to be prepended.
+          // This intentionally does nothing but exists to be prepended.
       }
 
       spl_autoload_register(
-      	'wpcli_test_mu_autoload',
-      	true,
-      	true
+          'wpcli_test_mu_autoload',
+          true,
+          true
       );
       """
 
