@@ -214,9 +214,9 @@ Feature: Global flags
       <?php
       class Dummy_Logger {
 
-      	public function __call( $method, $args ) {
-      		echo "log: called '$method' method";
-      	}
+          public function __call( $method, $args ) {
+              echo "log: called '$method' method";
+          }
       }
 
       WP_CLI::set_logger( new Dummy_Logger() );
@@ -240,9 +240,9 @@ Feature: Global flags
        */
       class Test_Command extends WP_CLI_Command {
 
-      	public function req( $args, $assoc_args ) {
-      		WP_CLI::line( $args[0] );
-      	}
+          public function req( $args, $assoc_args ) {
+              WP_CLI::line( $args[0] );
+          }
       }
 
       WP_CLI::add_command( 'test', 'Test_Command' );
@@ -345,10 +345,10 @@ Feature: Global flags
        * : URL passed to the callback.
        */
       $cmd_test = function ( $args, $assoc_args ) {
-      	$url = WP_CLI::get_runner()->config['url'] ? ' ' . WP_CLI::get_runner()->config['url'] : '';
-      	WP_CLI::log( 'global:' . $url );
-      	$url = isset( $assoc_args['url'] ) ? ' ' . $assoc_args['url'] : '';
-      	WP_CLI::log( 'local:' . $url );
+          $url = WP_CLI::get_runner()->config['url'] ? ' ' . WP_CLI::get_runner()->config['url'] : '';
+          WP_CLI::log( 'global:' . $url );
+          $url = isset( $assoc_args['url'] ) ? ' ' . $assoc_args['url'] : '';
+          WP_CLI::log( 'local:' . $url );
       };
       WP_CLI::add_command( 'cmd-test', $cmd_test );
       """
@@ -379,6 +379,80 @@ Feature: Global flags
       local: foo.dev
       """
 
+  Scenario: `WP_CLI_STRICT_ARGS_MODE` preserves unknown global flags like `--info` and `--version`
+    Given an empty directory
+
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp --info`
+    Then STDOUT should contain:
+      """
+      WP-CLI version:
+      """
+    And STDOUT should not contain:
+      """
+      wp <command>
+      """
+
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp --version`
+    Then STDOUT should contain:
+      """
+      WP-CLI
+      """
+    And STDOUT should not contain:
+      """
+      wp <command>
+      """
+
+  Scenario: Unknown global flags are forwarded in `WP_CLI_STRICT_ARGS_MODE`
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * @when before_wp_load
+       */
+      $cmd_test = function ( $args, $assoc_args ) {
+          if ( ! isset( $assoc_args['custom'] ) ) {
+              WP_CLI::log( 'custom:not-set' );
+          } elseif ( is_array( $assoc_args['custom'] ) ) {
+              WP_CLI::log( 'custom:' . implode( ',', $assoc_args['custom'] ) );
+          } elseif ( is_bool( $assoc_args['custom'] ) ) {
+              WP_CLI::log( 'custom:' . ( $assoc_args['custom'] ? 'true' : 'false' ) );
+          } else {
+              WP_CLI::log( 'custom:' . $assoc_args['custom'] );
+          }
+      };
+      WP_CLI::add_command( 'cmd-test', $cmd_test );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp --custom=val cmd-test`
+    Then STDOUT should be:
+      """
+      custom:val
+      """
+
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp --custom=one --custom=two cmd-test`
+    Then STDOUT should be:
+      """
+      custom:one,two
+      """
+
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp --custom cmd-test`
+    Then STDOUT should be:
+      """
+      custom:true
+      """
+
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp --custom --no-custom cmd-test`
+    Then STDOUT should be:
+      """
+      custom:false
+      """
+
   Scenario: Using --http=<url> requires wp-cli/restful
     Given an empty directory
 
@@ -393,7 +467,7 @@ Feature: Global flags
     When I try `WP_CLI_STRICT_ARGS_MODE=1 wp --debug --ssh=/ --ssh-args="-o BatchMode=yes" --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh '-o BatchMode=yes' -T -vvv '' 'WP_CLI_STRICT_ARGS_MODE=1 wp
+      Running SSH command: ssh '-o BatchMode=yes' -T -vvv '' 'WP_CLI_STRICT_ARGS_MODE=1 WP_CLI_SSH_RUN=1 wp
       """
 
   @skip-windows @skip-macos
@@ -401,7 +475,7 @@ Feature: Global flags
     When I try `wp --debug --ssh=wordpress:/my/path --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv 'wordpress' 'cd '\''/my/path'\''; wp
+      Running SSH command: ssh -T -vvv 'wordpress' 'cd '\''/my/path'\''; WP_CLI_SSH_RUN=1 wp
       """
 
   @skip-windows @skip-macos
@@ -413,11 +487,60 @@ Feature: Global flags
       """
 
   @skip-windows @skip-macos
+  Scenario: SSH flag should support Docker Compose Run
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp --debug --ssh=docker-compose-run:user@wordpress --version`
+    Then STDERR should match /Running SSH command: (docker compose|docker-compose) run --user 'user' (-T )?-e WP_CLI_SSH_RUN=1 'wordpress' wp/
+
+  @skip-windows @skip-macos
+  Scenario: Root-level ssh config should support Docker scheme
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: docker:user@wordpress
+      """
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: docker exec --user 'user' 'wordpress' sh -c
+      """
+
+  @skip-windows @skip-macos
+  Scenario: Root-level ssh config should support Docker scheme with an alias
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: docker:user@wordpress
+      @local:
+        path: /var/www/html
+      """
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp @local --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: docker exec --user 'user' --workdir '/var/www/html'
+      """
+
+  Scenario: wp cli info skips WordPress loading when already running inside container
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: docker:user@wordpress
+      """
+    When I try `WP_CLI_SSH_RUN=1 wp cli info --debug`
+    Then STDOUT should contain:
+      """
+      WP-CLI version:
+      """
+    And STDERR should contain:
+      """
+      Skipping SSH from config file: already running inside an SSH/container session.
+      """
+
+  @skip-windows @skip-macos
   Scenario: SSH args should be passed to SSH command
     When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh '-o ConnectTimeout=5' -T -vvv 'wordpress' 'wp
+      Running SSH command: ssh '-o ConnectTimeout=5' -T -vvv 'wordpress' 'WP_CLI_SSH_RUN=1 wp
       """
 
   @skip-windows @skip-macos
@@ -425,7 +548,7 @@ Feature: Global flags
     When I try `wp --debug --ssh=wordpress --ssh-args="-o ConnectTimeout=5" --ssh-args="-o ServerAliveInterval=10" --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh '-o ConnectTimeout=5' '-o ServerAliveInterval=10' -T -vvv 'wordpress' 'wp
+      Running SSH command: ssh '-o ConnectTimeout=5' '-o ServerAliveInterval=10' -T -vvv 'wordpress' 'WP_CLI_SSH_RUN=1 wp
       """
 
   @skip-windows @skip-macos
@@ -444,7 +567,7 @@ Feature: Global flags
     When I try `newline_arg="$(printf 'foo\nx')"; wp --debug --ssh=wordpress option get "${newline_arg%x}"`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv 'wordpress' 'wp --debug option get '\''foo
+      Running SSH command: ssh -T -vvv 'wordpress' 'WP_CLI_SSH_RUN=1 wp --debug option get '\''foo
       '\'''
       """
 
@@ -475,8 +598,8 @@ Feature: Global flags
       """
       <?php
       function wp_cli_remove_user_arg( $spec ) {
-      	unset( $spec['user'] );
-      	return $spec;
+          unset( $spec['user'] );
+          return $spec;
       }
       define( 'WP_CLI_CONFIG_SPEC_FILTER_CALLBACK', 'wp_cli_remove_user_arg' );
       """
@@ -504,8 +627,8 @@ Feature: Global flags
        * @when before_wp_load
        */
       $test_cmd = function ( $args, $assoc_args ) {
-      	WP_CLI::log( 'Positional args: ' . implode( ', ', $args ) );
-      	WP_CLI::log( 'Assoc args: ' . json_encode( $assoc_args ) );
+          WP_CLI::log( 'Positional args: ' . implode( ', ', $args ) );
+          WP_CLI::log( 'Assoc args: ' . json_encode( $assoc_args ) );
       };
       WP_CLI::add_command( 'test-args', $test_cmd );
       """
@@ -545,9 +668,9 @@ Feature: Global flags
        * @when before_wp_load
        */
       $test_cmd = function ( $args, $assoc_args ) {
-      	// If --require was parsed as a global option, this file would fail to load
-      	// because /nonexistent doesn't exist. If we get here, -- worked correctly.
-      	WP_CLI::log( 'Args: ' . implode( ', ', $args ) );
+          // If --require was parsed as a global option, this file would fail to load
+          // because /nonexistent doesn't exist. If we get here, -- worked correctly.
+          WP_CLI::log( 'Args: ' . implode( ', ', $args ) );
       };
       WP_CLI::add_command( 'test-global', $test_cmd );
       """

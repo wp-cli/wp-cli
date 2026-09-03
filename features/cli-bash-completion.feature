@@ -478,3 +478,30 @@ Feature: `wp cli completions` tasks
     Then STDOUT should be empty
     And STDERR should be empty
     And the return code should be 0
+
+  Scenario: Bash Completion for a mixed-case parameter name
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      class Mixed_Case_Command extends WP_CLI_Command {
+          /**
+           * Update a thing.
+           *
+           * ## OPTIONS
+           *
+           * [--comment_author_IP=<comment_author_IP>]
+           * : The IP address of the comment author.
+           *
+           * @when before_wp_load
+           */
+          public function update( $args, $assoc_args ) {}
+      }
+      WP_CLI::add_command( 'mixed', 'Mixed_Case_Command' );
+      """
+
+    When I run `wp --require=custom-cmd.php cli completions --line="wp mixed update --comment" --point=100`
+    Then STDOUT should contain:
+      """
+      --comment_author_IP=
+      """

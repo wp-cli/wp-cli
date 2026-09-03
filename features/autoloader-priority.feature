@@ -11,38 +11,38 @@ Feature: Framework autoloader takes priority over package autoloaders
        * @when before_wp_load
        */
       class Test_Autoloader_Command extends WP_CLI_Command {
-      	public function check() {
-      		$autoloaders = spl_autoload_functions();
-      		$count       = count( $autoloaders );
-      		WP_CLI::log( "Total autoloaders registered: {$count}" );
+          public function check() {
+              $autoloaders = spl_autoload_functions();
+              $count       = count( $autoloaders );
+              WP_CLI::log( "Total autoloaders registered: {$count}" );
 
-      		$first_wpcli_position = null;
+              $first_wpcli_position = null;
 
-      		foreach ( $autoloaders as $index => $loader ) {
-      			if ( is_array( $loader ) && isset( $loader[0] ) ) {
-      				$class  = is_object( $loader[0] ) ? get_class( $loader[0] ) : $loader[0];
-      				$method = isset( $loader[1] ) ? $loader[1] : '';
-      				WP_CLI::log( "Autoloader {$index}: {$class}::{$method}" );
+              foreach ( $autoloaders as $index => $loader ) {
+                  if ( is_array( $loader ) && isset( $loader[0] ) ) {
+                      $class  = is_object( $loader[0] ) ? get_class( $loader[0] ) : $loader[0];
+                      $method = isset( $loader[1] ) ? $loader[1] : '';
+                      WP_CLI::log( "Autoloader {$index}: {$class}::{$method}" );
 
-      				// Track first WP_CLI autoloader position
-      				if ( $first_wpcli_position === null && $class === 'WP_CLI\\Autoloader' ) {
-      					$first_wpcli_position = $index;
-      				}
-      			}
-      		}
+                      // Track first WP_CLI autoloader position
+                      if ( $first_wpcli_position === null && $class === 'WP_CLI\\Autoloader' ) {
+                          $first_wpcli_position = $index;
+                      }
+                  }
+              }
 
-      		if ( $first_wpcli_position === null ) {
-      			WP_CLI::error( 'WP_CLI\\Autoloader not found in registered autoloaders' );
-      		}
+              if ( $first_wpcli_position === null ) {
+                  WP_CLI::error( 'WP_CLI\\Autoloader not found in registered autoloaders' );
+              }
 
-      		// Verify the WP_CLI autoloader is in an early position (0, 1, or 2).
-      		// It's expected to be at or near the start of the autoloader queue to ensure it has priority.
-      		if ( $first_wpcli_position <= 2 ) {
-      			WP_CLI::success( "WP_CLI\\Autoloader is at position {$first_wpcli_position} (early in the queue)" );
-      		} else {
-      			WP_CLI::error( "WP_CLI\\Autoloader is at position {$first_wpcli_position}, should be in first 3 positions!" );
-      		}
-      	}
+              // Verify the WP_CLI autoloader is in an early position (0, 1, or 2).
+              // It's expected to be at or near the start of the autoloader queue to ensure it has priority.
+              if ( $first_wpcli_position <= 2 ) {
+                  WP_CLI::success( "WP_CLI\\Autoloader is at position {$first_wpcli_position} (early in the queue)" );
+              } else {
+                  WP_CLI::error( "WP_CLI\\Autoloader is at position {$first_wpcli_position}, should be in first 3 positions!" );
+              }
+          }
       }
       WP_CLI::add_command( 'test-autoloader', 'Test_Autoloader_Command' );
       """
@@ -66,9 +66,9 @@ Feature: Framework autoloader takes priority over package autoloaders
 
       // Old version without get_hook() - this should NOT be loaded
       class RootCommand {
-      	public function __construct() {
-      		throw new \Exception( 'OLD RootCommand loaded - autoloader priority failed!' );
-      	}
+          public function __construct() {
+              throw new \Exception( 'OLD RootCommand loaded - autoloader priority failed!' );
+          }
       }
       """
     And a composer.json file:

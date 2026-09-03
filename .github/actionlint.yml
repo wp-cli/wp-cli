@@ -1,0 +1,13 @@
+# Configuration for actionlint, run by the `actionlint` job in
+# `.github/workflows/reusable-code-quality.yml`.
+paths:
+  .github/workflows/**/*.{yml,yaml}:
+    ignore:
+      # `copilot-requests` is a real permission scope - it is what lets a
+      # workflow authenticate the Copilot CLI with the built-in `GITHUB_TOKEN`
+      # instead of a personal access token - but actionlint's hard-coded scope
+      # list has not caught up with it yet, so it reports every use as unknown.
+      # Drop this entry once actionlint ships the scope, and it will go back to
+      # catching genuine typos in permission names.
+      # See https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli-in-actions
+      - 'unknown permission scope "copilot-requests"'

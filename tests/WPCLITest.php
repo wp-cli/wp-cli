@@ -1,15 +1,9 @@
 <?php
 
-use WP_CLI\Formatter;
 use WP_CLI\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class WPCLITest extends TestCase {
-
-	public static function set_up_before_class(): void {
-		// Ensure built-in formats are registered for print_value tests
-		Formatter::register_builtin_formats();
-	}
 
 	public function test_get_php_binary(): void {
 		$this->assertSame( WP_CLI\Utils\get_php_binary(), WP_CLI::get_php_binary() );
