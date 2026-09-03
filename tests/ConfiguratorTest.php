@@ -225,6 +225,11 @@ class ConfiguratorTest extends TestCase {
 			$parsed_repeated = $configurator->parse_args( [ '--foo=1', '--foo=2' ] );
 			$this->assertArrayHasKey( 'foo', $parsed_repeated[1] );
 			$this->assertSame( [ '1', '2' ], $parsed_repeated[1]['foo'] );
+
+			// Repeated boolean global flags should use last-wins behavior.
+			$parsed_bool = $configurator->parse_args( [ '--bar', '--no-bar' ] );
+			$this->assertArrayHasKey( 'bar', $parsed_bool[1] );
+			$this->assertFalse( $parsed_bool[1]['bar'] );
 		} finally {
 			putenv( false === $original_value ? 'WP_CLI_STRICT_ARGS_MODE' : "WP_CLI_STRICT_ARGS_MODE={$original_value}" );
 		}
