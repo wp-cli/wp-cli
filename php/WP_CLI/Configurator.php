@@ -366,6 +366,10 @@ class Configurator {
 				[ $key, $value ] = $tmp;
 				if ( isset( $this->spec[ $key ] ) && false !== $this->spec[ $key ]['runtime'] ) {
 					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
+				} else {
+					// Not a known runtime config key (e.g. `--info`, `--version`); keep it as an assoc arg
+					// instead of silently dropping it, matching non-strict mode's behavior.
+					$assoc_args[ $key ] = $value;
 				}
 			}
 			foreach ( $local_assoc as $tmp ) {

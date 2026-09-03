@@ -197,6 +197,33 @@ class ConfiguratorTest extends TestCase {
 		$this->assertFalse( $assoc_args2['verbose'] );
 	}
 
+	public function testParseArgsStrictModeKeepsUnknownGlobalFlags(): void {
+		$original_value = getenv( 'WP_CLI_STRICT_ARGS_MODE' );
+		putenv( 'WP_CLI_STRICT_ARGS_MODE=1' );
+
+		try {
+			$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+
+			// `--info` and `--version` aren't part of the runtime config spec, but since
+			// there's no positional command argument, they're classified as "global" flags.
+			// They must still surface in $assoc_args so `Runner::back_compat_conversions()`
+			// can turn them into `cli info` / `cli version`, instead of being silently dropped.
+			$parsed = $configurator->parse_args( [ '--info' ] );
+			$this->assertSame( [], $parsed[0] );
+			$this->assertArrayHasKey( 'info', $parsed[1] );
+			$this->assertTrue( $parsed[1]['info'] );
+
+			// A known runtime config key (e.g. `--url`) should still be routed to
+			// runtime_config, not $assoc_args, preserving strict mode's original behavior.
+			$parsed_url = $configurator->parse_args( [ '--url=foo.dev', 'command' ] );
+			$this->assertArrayNotHasKey( 'url', $parsed_url[1] );
+			$this->assertArrayHasKey( 'url', $parsed_url[2] );
+			$this->assertSame( 'foo.dev', $parsed_url[2]['url'] );
+		} finally {
+			putenv( false === $original_value ? 'WP_CLI_STRICT_ARGS_MODE' : "WP_CLI_STRICT_ARGS_MODE={$original_value}" );
+		}
+	}
+
 	public function testMergeYmlSelfInheritRecursionGuard(): void {
 		$temp_dir = sys_get_temp_dir();
 		$file     = tempnam( $temp_dir, 'wp-cli-test-self-' );
