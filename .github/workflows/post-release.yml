@@ -133,20 +133,6 @@ jobs:
             exit 1
           fi
 
-      - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@cb9bde2e2525e6865904e392450c3401a753db76 # v6.2.0
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
-      - name: Verify the published GPG signatures
-        env:
-          VERSION: ${{ steps.vars.outputs.version }}
-        run: |
-          cd verify
-          gpg --verify "wp-cli-${VERSION}.phar.asc" "wp-cli-${VERSION}.phar"
-          gpg --verify "wp-cli-${VERSION}.phar.gpg"
-
       - name: Check out wp-cli/builds repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

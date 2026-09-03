@@ -1,10 +1,15 @@
 name: Release
 
-# Promotes the release Phar built by wp-cli/wp-cli-bundle to stable, signs it,
-# and creates draft releases on wp-cli/wp-cli and wp-cli/wp-cli-bundle.
+# Promotes the release Phar built by wp-cli/wp-cli-bundle to stable and creates
+# draft releases on wp-cli/wp-cli and wp-cli/wp-cli-bundle.
 #
 # Normally triggered by the tag push that the Prepare Release workflow performs.
 # Publishing the resulting draft release then kicks off Post-Release Automation.
+#
+# GPG signing is deliberately not part of this workflow: the releases@wp-cli.org
+# key is not available to Actions. Signing the stable Phar and attaching the
+# .gpg/.asc files to the draft releases stays a manual step, see the release
+# checklist issue template.
 
 on:
   push:
@@ -17,7 +22,7 @@ on:
         required: true
         type: string
       dry_run:
-        description: 'Build, sign and verify, but do not push to wp-cli/builds or create releases'
+        description: 'Build and verify, but do not push to wp-cli/builds or create releases'
         required: false
         default: false
         type: boolean
@@ -34,7 +39,7 @@ defaults:
     # Naming bash explicitly gets us `-o pipefail`, which the default shell
     # (`bash -e {0}`) does not set. Without it, a failing `sha512sum` in a
     # `sha512sum ... | cut ...` pipeline would silently produce an empty
-    # checksum file that then gets signed and published.
+    # checksum file that then gets published.
     shell: bash
 
 env:
@@ -88,9 +93,9 @@ jobs:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # This is the gate that keeps a stale or failed bundle build from being
-      # signed and published as the official stable release. wp-cli-release.phar
-      # is produced by a different workflow in a different repository, so
-      # nothing else guarantees it corresponds to the tag being released.
+      # published as the official stable release. wp-cli-release.phar is
+      # produced by a different workflow in a different repository, so nothing
+      # else guarantees it corresponds to the tag being released.
       - name: Verify the release Phar matches the tag
         env:
           VERSION: ${{ steps.vars.outputs.version }}
@@ -171,13 +176,7 @@ jobs:
           name: release-notes-${{ steps.vars.outputs.version }}
           path: release-assets/*.md
 
-      - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@cb9bde2e2525e6865904e392450c3401a753db76 # v6.2.0
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
-      - name: Promote release Phar to stable & generate signatures
+      - name: Promote release Phar to stable & generate checksums
         env:
           VERSION: ${{ steps.vars.outputs.version }}
         run: |
@@ -192,25 +191,16 @@ jobs:
           sha256sum wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha256
           sha512sum wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha512
 
-          # Sign stable Phar with GPG
-          gpg --batch --yes --output wp-cli.phar.gpg --default-key releases@wp-cli.org --sign wp-cli.phar
-          gpg --batch --yes --output wp-cli.phar.asc --default-key releases@wp-cli.org --detach-sig --armor wp-cli.phar
-
           # Prepare versioned files for GitHub release upload
           cp wp-cli.phar "../../release-assets/wp-cli-${VERSION}.phar"
-          cp wp-cli.phar.gpg "../../release-assets/wp-cli-${VERSION}.phar.gpg"
-          cp wp-cli.phar.asc "../../release-assets/wp-cli-${VERSION}.phar.asc"
           cp wp-cli.phar.md5 "../../release-assets/wp-cli-${VERSION}.phar.md5"
           cp wp-cli.phar.sha256 "../../release-assets/wp-cli-${VERSION}.phar.sha256"
           cp wp-cli.phar.sha512 "../../release-assets/wp-cli-${VERSION}.phar.sha512"
           cp wp-cli.manifest.json "../../release-assets/wp-cli-${VERSION}.manifest.json"
 
-      - name: Verify the generated signatures and checksums
+      - name: Verify the generated checksums
         run: |
           cd builds/phar
-
-          gpg --verify wp-cli.phar.asc wp-cli.phar
-          gpg --verify wp-cli.phar.gpg
 
           for ALGO in md5 sha256 sha512; do
             EXPECTED="$(cat "wp-cli.phar.${ALGO}")"
@@ -246,7 +236,11 @@ jobs:
           cd builds
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
-          git add phar/wp-cli.phar phar/wp-cli.phar.* phar/wp-cli.manifest.json
+          # Listed explicitly rather than globbed as phar/wp-cli.phar.*, so that
+          # the signature files, which are still produced by hand, are only ever
+          # committed by whoever signed them.
+          git add phar/wp-cli.phar phar/wp-cli.manifest.json
+          git add phar/wp-cli.phar.md5 phar/wp-cli.phar.sha256 phar/wp-cli.phar.sha512
           git add deb/php-wpcli_latest_all.deb
 
           if git diff --staged --quiet; then

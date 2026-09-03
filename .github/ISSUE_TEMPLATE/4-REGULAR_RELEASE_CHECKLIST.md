@@ -102,16 +102,41 @@ assignees: ''
     It tags [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/) first and then [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/), which in turn triggers the release workflow. That workflow:
     - Re-checks that the release Phar matches the tag, and refuses to continue if it is stale.
     - Generates the contributor list and changelog (also uploaded as a workflow artifact).
-    - Promotes the Phar and manifest in the `builds` repo to stable, generates checksums, and signs with GPG.
-    - Verifies its own signatures and checksums, and repoints `deb/php-wpcli_latest_all.deb`.
+    - Promotes the Phar and manifest in the `builds` repo to stable and generates the checksums.
+    - Verifies its own checksums, and repoints `deb/php-wpcli_latest_all.deb`.
     - Pushes the updated stable build back to `wp-cli/builds`.
-    - Creates draft releases with the changelog and all 7 attached assets on both [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/) and [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/).
+    - Creates draft releases with the changelog and 5 attached assets on both [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/) and [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/).
+
+- [ ] Sign the release with GPG (see <https://github.com/wp-cli/wp-cli/issues/2121>).
+
+    This is still done by hand, because the `releases@wp-cli.org` key is not available to GitHub Actions. Pull the stable Phar the workflow just pushed, sign it, and commit the signatures back:
+
+    ```
+    cd wp-cli/builds/phar
+    git pull
+    gpg --output wp-cli.phar.gpg --default-key releases@wp-cli.org --sign wp-cli.phar
+    gpg --output wp-cli.phar.asc --default-key releases@wp-cli.org --detach-sig --armor wp-cli.phar
+    gpg --verify wp-cli.phar.asc wp-cli.phar
+    git commit -m "Sign stable v2.x.0" wp-cli.phar.gpg wp-cli.phar.asc
+    git push
+    ```
+
+    Note: The GPG key for `releases@wp-cli.org` has to be shared amongst maintainers.
+
+- [ ] Attach the signatures to both draft releases, so that they carry all 7 assets.
+
+    ```
+    cp wp-cli.phar.gpg wp-cli-2.x.0.phar.gpg
+    cp wp-cli.phar.asc wp-cli-2.x.0.phar.asc
+    gh release upload v2.x.0 wp-cli-2.x.0.phar.gpg wp-cli-2.x.0.phar.asc --repo wp-cli/wp-cli
+    gh release upload v2.x.0 wp-cli-2.x.0.phar.gpg wp-cli-2.x.0.phar.asc --repo wp-cli/wp-cli-bundle
+    ```
 
 - [ ] Review and publish the draft releases:
     - Review draft on [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/releases) and publish.
     - Review draft on [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/releases) and publish.
 
-    Publishing the release on `wp-cli/wp-cli` automatically triggers post-release automation, which first verifies the published artifacts (checksums, GPG signatures, that the Phar runs and reports the right version, and that it is byte-identical to the stable build in `wp-cli/builds`). Only if that passes does it:
+    Publishing the release on `wp-cli/wp-cli` automatically triggers post-release automation, which first verifies the published artifacts (checksums, that the Phar runs and reports the right version, and that it is byte-identical to the stable build in `wp-cli/builds`). Only if that passes does it:
     - Bump the version to the next alpha in [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli) (`VERSION` file and `composer.json` branch alias).
     - Reset the framework dependency in [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle) back to `"dev-main"`.
     - Close the shipped milestones across all bundled repositories.
@@ -120,7 +145,7 @@ assignees: ''
 
 - [ ] Spot-check the upgrade path end to end
 
-    The artifacts themselves are verified automatically; this covers the parts that automation cannot reach.
+    The checksums and the Phar itself are verified automatically; this covers the parts that automation cannot reach.
 
     ```
     $ wp cli update
