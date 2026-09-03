@@ -487,6 +487,104 @@ class UtilsTest extends TestCase {
 		$this->assertTrue( '/' === substr( Utils\get_temp_dir(), -1 ) );
 	}
 
+	public function testMakeTempFile(): void {
+		$file = Utils\make_temp_file();
+		$this->assertFileExists( $file );
+		$this->assertFalse( is_link( $file ) );
+		if ( ! Utils\is_windows() ) {
+			$this->assertSame( '0600', substr( sprintf( '%o', (int) fileperms( $file ) ), -4 ) );
+		}
+		unlink( $file );
+
+		$file_with_suffix = Utils\make_temp_file( 'wp-test-', '.phar' );
+		$this->assertFileExists( $file_with_suffix );
+		$this->assertStringEndsWith( '.phar', $file_with_suffix );
+		unlink( $file_with_suffix );
+	}
+
+	public function testMakeTempFileInvalidPrefixOrSuffix(): void {
+		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$class_wp_cli_capture_exit->setAccessible( true );
+		}
+		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
+		$prev_logger       = WP_CLI::get_logger();
+
+		$class_wp_cli_capture_exit->setValue( null, true );
+		WP_CLI::set_logger( new Loggers\Execution() );
+
+		$invalid_inputs = [
+			[ '../prefix', '' ],
+			[ 'prefix/', '' ],
+			[ 'prefix\\', '' ],
+			[ "prefix\0", '' ],
+			[ 'prefix', '../suffix' ],
+			[ 'prefix', '/suffix' ],
+			[ 'prefix', '\\suffix' ],
+			[ 'prefix', "suffix\0" ],
+		];
+
+		try {
+			foreach ( $invalid_inputs as [ $prefix, $suffix ] ) {
+				try {
+					Utils\make_temp_file( $prefix, $suffix );
+					$this->fail( 'Expected ExitException for invalid prefix/suffix.' );
+				} catch ( ExitException $ex ) {
+					$this->assertSame( 1, $ex->getCode() );
+				}
+			}
+		} finally {
+			$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
+			WP_CLI::set_logger( $prev_logger );
+		}
+	}
+
+	public function testMakeTempDir(): void {
+		$dir = Utils\make_temp_dir();
+		$this->assertDirectoryExists( $dir );
+		$this->assertFalse( is_link( rtrim( $dir, '/\\' ) ) );
+		$this->assertTrue( '/' === substr( $dir, -1 ) );
+		if ( ! Utils\is_windows() ) {
+			$this->assertSame( '0700', substr( sprintf( '%o', (int) fileperms( $dir ) ), -4 ) );
+		}
+		rmdir( $dir );
+	}
+
+	public function testMakeTempDirInvalidPrefix(): void {
+		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$class_wp_cli_capture_exit->setAccessible( true );
+		}
+		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
+		$prev_logger       = WP_CLI::get_logger();
+
+		$class_wp_cli_capture_exit->setValue( null, true );
+		WP_CLI::set_logger( new Loggers\Execution() );
+
+		$invalid_prefixes = [
+			'../prefix',
+			'prefix/',
+			'prefix\\',
+			"prefix\0",
+		];
+
+		try {
+			foreach ( $invalid_prefixes as $prefix ) {
+				try {
+					Utils\make_temp_dir( $prefix );
+					$this->fail( 'Expected ExitException for invalid prefix.' );
+				} catch ( ExitException $ex ) {
+					$this->assertSame( 1, $ex->getCode() );
+				}
+			}
+		} finally {
+			$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
+			WP_CLI::set_logger( $prev_logger );
+		}
+	}
+
 	public function testHttpRequestBadAddress(): void {
 		// Save WP_CLI state.
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
