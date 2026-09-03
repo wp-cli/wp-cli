@@ -1143,6 +1143,54 @@ Feature: WP-CLI Commands
       Did you mean
       """
 
+  Scenario: WP-CLI shows a hint for a command that is not registered
+    Given a WP installation
+    And a hint.php file:
+      """
+      <?php
+      WP_CLI::add_hook(
+        'unregistered_command_hint',
+        function ( $hint, $command ) {
+          if ( 'ftp' === $command ) {
+            return "The 'ftp' command is provided by the wp-cli/ftp-command package.";
+          }
+
+          if ( 'cli ftp' === $command ) {
+            return "The 'cli ftp' subcommand is provided by the wp-cli/ftp-command package.";
+          }
+
+          return $hint;
+        }
+      );
+      """
+
+    When I try `wp --require=hint.php ftp`
+    Then STDERR should contain:
+      """
+      Error: 'ftp' is not a registered wp command. See 'wp help' for available commands.
+      The 'ftp' command is provided by the wp-cli/ftp-command package.
+      """
+    And the return code should be 1
+
+    When I try `wp --require=hint.php cli ftp`
+    Then STDERR should contain:
+      """
+      Error: 'ftp' is not a registered subcommand of 'cli'. See 'wp help cli' for available subcommands.
+      The 'cli ftp' subcommand is provided by the wp-cli/ftp-command package.
+      """
+    And the return code should be 1
+
+    When I try `wp --require=hint.php nonexistent`
+    Then STDERR should contain:
+      """
+      Error: 'nonexistent' is not a registered wp command. See 'wp help' for available commands.
+      """
+    And STDERR should not contain:
+      """
+      ftp-command
+      """
+    And the return code should be 1
+
   Scenario: WP-CLI suggests matching parameters when user entry contains typos
     Given an empty directory
 

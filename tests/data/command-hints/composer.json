@@ -1,0 +1,9 @@
+{
+    "name": "acme/root-package",
+    "extra": {
+        "command-hints": {
+            "overridden": "Hint coming from the root package.",
+            "root-only": "The 'root-only' command is declared by the root package."
+        }
+    }
+}
