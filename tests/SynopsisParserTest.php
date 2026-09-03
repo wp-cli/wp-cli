@@ -90,6 +90,31 @@ class SynopsisParserTest extends TestCase {
 		$this->assertTrue( is_array( $param['value'] ) && ! empty( $param['value']['optional'] ) );
 	}
 
+	public function testMixedCaseAssoc(): void {
+		// Some WordPress core fields are mixed-case, e.g. `comment_post_ID`
+		// and `comment_author_IP`. The parameter name must not be silently
+		// truncated at the first uppercase character.
+		$r = SynopsisParser::parse( '[--comment_author_IP=<comment_author_IP>] [--comment_post_ID=<comment_post_ID>]' );
+
+		$this->assertCount( 2, $r );
+
+		$param = $r[0];
+		$this->assertEquals( 'assoc', $param['type'] );
+		$this->assertEquals( 'comment_author_IP', $param['name'] );
+
+		$param = $r[1];
+		$this->assertEquals( 'assoc', $param['type'] );
+		$this->assertEquals( 'comment_post_ID', $param['name'] );
+	}
+
+	public function testParseThenRenderMixedCase(): void {
+		$o = '--comment_post_ID=<comment_post_ID> --<field>=<value> [--flag]';
+		$a = SynopsisParser::parse( $o );
+		$this->assertSame( 'comment_post_ID', $a[0]['name'] );
+		$r = SynopsisParser::render( $a );
+		$this->assertSame( $o, $r );
+	}
+
 	public function testInvalidAssoc(): void {
 		$r = SynopsisParser::parse( '--bar[=<value>] --bar=[<value>] --count=100' );
 

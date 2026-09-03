@@ -26,12 +26,12 @@ Feature: Run a WP-CLI command
        * : Parse returned output as a particular format.
        */
       WP_CLI::add_command(
-      	'run',
-      	function ( $args, $assoc_args ) {
-      		$ret = WP_CLI::runcommand( $args[0], $assoc_args );
-      		$ret = is_object( $ret ) ? (array) $ret : $ret;
-      		WP_CLI::log( 'returned: ' . var_export( $ret, true ) );
-      	}
+          'run',
+          function ( $args, $assoc_args ) {
+              $ret = WP_CLI::runcommand( $args[0], $assoc_args );
+              $ret = is_object( $ret ) ? (array) $ret : $ret;
+              WP_CLI::log( 'returned: ' . var_export( $ret, true ) );
+          }
       );
       """
     And a wp-cli.yml file:
@@ -372,26 +372,32 @@ Feature: Run a WP-CLI command
       """
       <?php
       WP_CLI::add_command(
-        'locked-cwd',
-        function () {
-          $dir = getcwd() . '/locked';
-          mkdir( $dir );
-          chdir( $dir );
+          'locked-cwd',
+          function () {
+              $dir = getcwd() . '/locked';
+              mkdir( $dir );
+              chdir( $dir );
 
-          // Make sure the test run directory can be cleaned up again.
-          register_shutdown_function(
-            static function () use ( $dir ) {
-              chmod( $dir, 0755 );
-            }
-          );
+              // Make sure the test run directory can be cleaned up again.
+              register_shutdown_function(
+                  static function () use ( $dir ) {
+                      chmod( $dir, 0755 );
+                  }
+              );
 
-          chmod( $dir, 0000 );
+              chmod( $dir, 0000 );
 
-          $version = WP_CLI::runcommand( 'cli version', array( 'launch' => true, 'return' => true ) );
+              $version = WP_CLI::runcommand(
+                  'cli version',
+                  array(
+                      'launch' => true,
+                      'return' => true,
+                  )
+              );
 
-          WP_CLI::log( 'returned: ' . $version );
-        },
-        array( 'when' => 'before_wp_load' )
+              WP_CLI::log( 'returned: ' . $version );
+          },
+          array( 'when' => 'before_wp_load' )
       );
       """
     And a wp-cli.yml file:
@@ -415,19 +421,19 @@ Feature: Run a WP-CLI command
       <?php
       class Custom_Command extends WP_CLI_Command {
 
-      	/**
-      	 * Custom command to test passing command_args via runcommand options
-      	 *
-      	 * @when after_wp_load
-      	 */
-      	public function echo_test( $args ) {
-      		$cli_opts = array( 'command_args' => array( '--exec="echo \'test\' . PHP_EOL;"' ) );
-      		WP_CLI::runcommand( 'option get home', $cli_opts );
-      	}
-      	public function bad_path( $args ) {
-      		$cli_opts = array( 'command_args' => array( '--path=/bad/path' ) );
-      		WP_CLI::runcommand( 'option get home', $cli_opts );
-      	}
+          /**
+           * Custom command to test passing command_args via runcommand options
+           *
+           * @when after_wp_load
+           */
+          public function echo_test( $args ) {
+              $cli_opts = array( 'command_args' => array( '--exec="echo \'test\' . PHP_EOL;"' ) );
+              WP_CLI::runcommand( 'option get home', $cli_opts );
+          }
+          public function bad_path( $args ) {
+              $cli_opts = array( 'command_args' => array( '--path=/bad/path' ) );
+              WP_CLI::runcommand( 'option get home', $cli_opts );
+          }
       }
       WP_CLI::add_command( 'custom-command', 'Custom_Command' );
       """
@@ -452,14 +458,14 @@ Feature: Run a WP-CLI command
       """
       <?php
       class Custom_Command extends WP_CLI_Command {
-      	/**
-      	 * Custom command to test passing command_args via runcommand options
-      	 *
-      	 * @when after_wp_load
-      	 */
-      	public function echo_test( $args ) {
-      		echo 'test' . PHP_EOL;
-      	}
+          /**
+           * Custom command to test passing command_args via runcommand options
+           *
+           * @when after_wp_load
+           */
+          public function echo_test( $args ) {
+              echo 'test' . PHP_EOL;
+          }
       }
       WP_CLI::add_command( 'custom-command', 'Custom_Command' );
       """
@@ -502,14 +508,14 @@ Feature: Run a WP-CLI command
       """
       <?php
       class Custom_Command extends WP_CLI_Command {
-      	/**
-      	 * Custom command to test passing command_args via runcommand options
-      	 *
-      	 * @when after_wp_load
-      	 */
-      	public function echo_test( $args ) {
-      		echo 'test' . PHP_EOL;
-      	}
+          /**
+           * Custom command to test passing command_args via runcommand options
+           *
+           * @when after_wp_load
+           */
+          public function echo_test( $args ) {
+              echo 'test' . PHP_EOL;
+          }
       }
       WP_CLI::add_command( 'custom-command', 'Custom_Command' );
       """

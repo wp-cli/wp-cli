@@ -1017,7 +1017,7 @@ class UtilsTest extends TestCase {
 
 	/**
 	 * @dataProvider dataParseShellArray
-	 * @param array<string, string> $assoc_args
+	 * @param array<string, mixed> $assoc_args
 	 * @param array<int, string> $array_arguments
 	 * @param array<string, mixed> $expected
 	 */
@@ -1031,6 +1031,21 @@ class UtilsTest extends TestCase {
 			[ [ 'alpha' => '{"key":"value"}' ], [], [ 'alpha' => '{"key":"value"}' ] ],
 			[ [ 'alpha' => '{"key":"value"}' ], [ 'alpha' ], [ 'alpha' => [ 'key' => 'value' ] ] ],
 			[ [ 'alpha' => '{"key":"value"}' ], [ 'beta' ], [ 'alpha' => '{"key":"value"}' ] ],
+			// Values are not necessarily strings, and anything is_json() rejects is left alone.
+			[ [ 'alpha' => true ], [ 'alpha' ], [ 'alpha' => true ] ],
+			[ [ 'alpha' => [ 'key' => 'value' ] ], [ 'alpha' ], [ 'alpha' => [ 'key' => 'value' ] ] ],
+			[ [ 'alpha' => 'not json' ], [ 'alpha' ], [ 'alpha' => 'not json' ] ],
+			[
+				[
+					'alpha' => '{"key":"value"}',
+					'beta'  => true,
+				],
+				[ 'alpha', 'beta' ],
+				[
+					'alpha' => [ 'key' => 'value' ],
+					'beta'  => true,
+				],
+			],
 		];
 	}
 
@@ -1079,7 +1094,7 @@ class UtilsTest extends TestCase {
 	/**
 	 * @dataProvider dataParseUrl
 	 * @param string $url
-	 * @param int $component
+	 * @param int<-1, 7> $component
 	 * @param bool $auto_add_scheme
 	 * @param array<string, mixed>|string|false $expected
 	 */

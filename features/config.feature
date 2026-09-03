@@ -67,14 +67,14 @@ Feature: Have a config file
 
     And an index.php file:
       """
-      require('./foo/wp-blog-header.php');
+      require './foo/wp-blog-header.php';
       """
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
     Given an index.php file:
       """
-      require dirname(__FILE__) . '/foo/wp-blog-header.php';
+      require __DIR__ . '/foo/wp-blog-header.php';
       """
     When I run `wp core is-installed`
     Then STDOUT should be empty
@@ -447,7 +447,7 @@ Feature: Have a config file
       """
       <?php
       $command = function ( $_, $assoc_args ) {
-      	echo json_encode( $assoc_args );
+          echo json_encode( $assoc_args );
       };
       WP_CLI::add_command( 'test-cmd', $command, array( 'when' => 'before_wp_load' ) );
       """
@@ -500,7 +500,7 @@ Feature: Have a config file
       """
       <?php
       $command = function ( $_, $assoc_args ) {
-      	echo json_encode( $assoc_args );
+          echo json_encode( $assoc_args );
       };
       WP_CLI::add_command( 'test-cmd', $command, array( 'when' => 'before_wp_load' ) );
       """
@@ -611,7 +611,7 @@ Feature: Have a config file
       """
       <?php
       if ( file_exists( __DIR__ . '/local-dev.php' ) ) {
-      	require_once __DIR__ . '/local-dev.php';
+          require_once __DIR__ . '/local-dev.php';
       }
 
       // ** MySQL settings ** //
@@ -640,7 +640,7 @@ Feature: Have a config file
       define( 'SUBDOMAIN_INSTALL', false );
       $base = '/';
       if ( ! defined( 'DOMAIN_CURRENT_SITE' ) ) {
-      	define( 'DOMAIN_CURRENT_SITE', 'example.com' );
+          define( 'DOMAIN_CURRENT_SITE', 'example.com' );
       }
       define( 'PATH_CURRENT_SITE', '/' );
       define( 'SITE_ID_CURRENT_SITE', 1 );
@@ -650,7 +650,7 @@ Feature: Have a config file
 
       /** Absolute path to the WordPress directory. */
       if ( ! defined( 'ABSPATH' ) ) {
-      	define( 'ABSPATH', __DIR__ . '/' );
+          define( 'ABSPATH', __DIR__ . '/' );
       }
 
       /** Sets up WordPress vars and included files. */
@@ -727,7 +727,7 @@ Feature: Have a config file
       """
       <?php
       if ( 1 === 1 ) {
-      	require_once ABSPATH . 'some-other-file.php';
+          require_once ABSPATH . 'some-other-file.php';
       }
 
       define( 'DB_NAME', '{DB_NAME}' );
@@ -756,7 +756,7 @@ Feature: Have a config file
       """
       <?php
       if ( 1 === 1 ) {
-      	require_once ABSPATH . 'some-other-file.php';
+          require_once ABSPATH . 'some-other-file.php';
       }
 
       define( 'DB_NAME', '{DB_NAME}' );
@@ -862,12 +862,12 @@ Feature: Have a config file
       """
       <?php
       WP_CLI::add_command(
-      	'test-cache-config',
-      	function () {
-      		$expiry = WP_CLI\Utils\get_env_or_config( 'WP_CLI_CACHE_EXPIRY' );
-      		WP_CLI::log( 'Cache expiry: ' . $expiry );
-      	},
-      	array( 'when' => 'before_wp_load' ) 
+          'test-cache-config',
+          function () {
+              $expiry = WP_CLI\Utils\get_env_or_config( 'WP_CLI_CACHE_EXPIRY' );
+              WP_CLI::log( 'Cache expiry: ' . $expiry );
+          },
+          array( 'when' => 'before_wp_load' )
       );
       """
     And a wp-cli.yml file:
@@ -888,12 +888,12 @@ Feature: Have a config file
       """
       <?php
       WP_CLI::add_command(
-      	'test-cache-config',
-      	function () {
-      		$max_size = WP_CLI\Utils\get_env_or_config( 'WP_CLI_CACHE_MAX_SIZE' );
-      		WP_CLI::log( 'Cache max size: ' . $max_size );
-      	},
-      	array( 'when' => 'before_wp_load' ) 
+          'test-cache-config',
+          function () {
+              $max_size = WP_CLI\Utils\get_env_or_config( 'WP_CLI_CACHE_MAX_SIZE' );
+              WP_CLI::log( 'Cache max size: ' . $max_size );
+          },
+          array( 'when' => 'before_wp_load' )
       );
       """
     And a wp-cli.yml file:
@@ -914,14 +914,14 @@ Feature: Have a config file
       """
       <?php
       WP_CLI::add_command(
-      	'test-cache-config',
-      	function () {
-      		$expiry   = WP_CLI\Utils\get_env_or_config( 'WP_CLI_CACHE_EXPIRY' );
-      		$max_size = WP_CLI\Utils\get_env_or_config( 'WP_CLI_CACHE_MAX_SIZE' );
-      		WP_CLI::log( 'Cache expiry: ' . $expiry );
-      		WP_CLI::log( 'Cache max size: ' . $max_size );
-      	},
-      	array( 'when' => 'before_wp_load' ) 
+          'test-cache-config',
+          function () {
+              $expiry   = WP_CLI\Utils\get_env_or_config( 'WP_CLI_CACHE_EXPIRY' );
+              $max_size = WP_CLI\Utils\get_env_or_config( 'WP_CLI_CACHE_MAX_SIZE' );
+              WP_CLI::log( 'Cache expiry: ' . $expiry );
+              WP_CLI::log( 'Cache max size: ' . $max_size );
+          },
+          array( 'when' => 'before_wp_load' )
       );
       """
     And a wp-cli.yml file:
@@ -947,12 +947,12 @@ Feature: Have a config file
       """
       <?php
       WP_CLI::add_command(
-      	'test-error-rerun',
-      	function () {
-      		$error_rerun = WP_CLI\Utils\get_env_or_config( 'WP_CLI_ERROR_RERUN' );
-      		WP_CLI::log( 'WP_CLI_ERROR_RERUN: ' . $error_rerun );
-      	},
-      	array( 'when' => 'before_wp_load' ) 
+          'test-error-rerun',
+          function () {
+              $error_rerun = WP_CLI\Utils\get_env_or_config( 'WP_CLI_ERROR_RERUN' );
+              WP_CLI::log( 'WP_CLI_ERROR_RERUN: ' . $error_rerun );
+          },
+          array( 'when' => 'before_wp_load' )
       );
       """
     And a wp-cli.yml file:
@@ -973,12 +973,12 @@ Feature: Have a config file
       """
       <?php
       WP_CLI::add_command(
-      	'test-auto-update',
-      	function () {
-      		$auto_update = WP_CLI\Utils\get_env_or_config( 'WP_CLI_AUTO_UPDATE_PROMPT' );
-      		WP_CLI::log( 'WP_CLI_AUTO_UPDATE_PROMPT: ' . $auto_update );
-      	},
-      	array( 'when' => 'before_wp_load' ) 
+          'test-auto-update',
+          function () {
+              $auto_update = WP_CLI\Utils\get_env_or_config( 'WP_CLI_AUTO_UPDATE_PROMPT' );
+              WP_CLI::log( 'WP_CLI_AUTO_UPDATE_PROMPT: ' . $auto_update );
+          },
+          array( 'when' => 'before_wp_load' )
       );
       """
     And a wp-cli.yml file:
@@ -999,12 +999,12 @@ Feature: Have a config file
       """
       <?php
       WP_CLI::add_command(
-      	'test-autocorrect',
-      	function () {
-      		$autocorrect = WP_CLI\Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' );
-      		WP_CLI::log( 'WP_CLI_AUTOCORRECT: ' . $autocorrect );
-      	},
-      	array( 'when' => 'before_wp_load' ) 
+          'test-autocorrect',
+          function () {
+              $autocorrect = WP_CLI\Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' );
+              WP_CLI::log( 'WP_CLI_AUTOCORRECT: ' . $autocorrect );
+          },
+          array( 'when' => 'before_wp_load' )
       );
       """
     And a wp-cli.yml file:
@@ -1082,7 +1082,7 @@ Feature: Have a config file
       """
       <?php
       $command = function ( $_, $assoc_args ) {
-      	echo json_encode( $assoc_args );
+          echo json_encode( $assoc_args );
       };
       WP_CLI::add_command( 'test-cmd', $command, array( 'when' => 'before_wp_load' ) );
       """

@@ -866,6 +866,7 @@ function make_progress_bar( $message, $count, $interval = 100 ) {
  *               case of PHP_URL_PORT - integer when it does. See parse_url()'s
  *               return values.
  *
+ * @phpstan-param int<-1, 7> $component
  * @phpstan-return ($component is non-negative-int ? string|null|int|false : array{scheme?: string, host?: string, port?: int, user?: string, pass?: string, query?: string, path?: string, fragment?: string})
  */
 function parse_url( $url, $component = - 1, $auto_add_scheme = true ) {
@@ -2057,9 +2058,14 @@ function is_json( $argument, $ignore_scalars = true ) {
 /**
  * Parse known shell arrays included in the $assoc_args array.
  *
- * @param array<string, string> $assoc_args      Associative array of arguments.
- * @param array<string>         $array_arguments Array of argument keys that should receive an
- *                                               array through the shell.
+ * Values are not necessarily strings: a flag arrives as boolean true, and a
+ * key that was already parsed arrives as an array. Only the keys named in
+ * $array_arguments are considered, and only when they hold a JSON string -
+ * is_json() rejects everything else - so other values are returned untouched.
+ *
+ * @param array<string, mixed> $assoc_args      Associative array of arguments.
+ * @param array<string>        $array_arguments Array of argument keys that should receive an
+ *                                              array through the shell.
  * @return array<string, mixed>
  */
 function parse_shell_arrays( $assoc_args, $array_arguments ) {

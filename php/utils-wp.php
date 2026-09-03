@@ -542,9 +542,14 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- uses esc_sql_ident() and $wpdb->_escape().
 		$tables = $wpdb->get_col( sprintf( "SHOW TABLES WHERE %s IN ('%s')", esc_sql_ident( 'Tables_in_' . $wpdb->dbname ), implode( "', '", $wpdb->_escape( $wp_tables ) ) ) );
 
-		// Filter tables after the query for improved SQLite compatibility.
+		// Filter tables after the query for improved SQLite compatibility: drop-ins
+		// older than the MySQL-on-SQLite driver ignore the `WHERE` clause above and
+		// return every table in the database.
 		// See https://github.com/WordPress/sqlite-database-integration/issues/319.
-		if ( 'sqlite' === get_db_type() ) {
+		$is_legacy_sqlite_dropin = 'sqlite' === get_db_type()
+			&& ( ! defined( 'SQLITE_DRIVER_VERSION' ) || version_compare( SQLITE_DRIVER_VERSION, '3.0.0', '<' ) );
+
+		if ( $is_legacy_sqlite_dropin ) {
 			$tables = array_values( array_intersect( $tables, $wp_tables ) );
 		}
 
