@@ -43,6 +43,21 @@ Feature: Review CLI information
       "php_memory_limit":
       """
 
+  Scenario: Display OS virtual memory limit
+    Given an empty directory
+
+    When I run `wp cli info`
+    Then STDOUT should contain:
+      """
+      OS virtual memory limit (ulimit -v):
+      """
+
+    When I run `wp cli info --format=json`
+    Then STDOUT should contain:
+      """
+      "os_virtual_memory_limit":
+      """
+
   Scenario: Warn about low memory limit
     Given an empty directory
 
