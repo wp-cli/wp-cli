@@ -219,6 +219,12 @@ class ConfiguratorTest extends TestCase {
 			$this->assertArrayNotHasKey( 'url', $parsed_url[1] );
 			$this->assertArrayHasKey( 'url', $parsed_url[2] );
 			$this->assertSame( 'foo.dev', $parsed_url[2]['url'] );
+
+			// Repeated unknown global flags should aggregate into an array, same as
+			// repeated local flags, instead of the last value silently overwriting the rest.
+			$parsed_repeated = $configurator->parse_args( [ '--foo=1', '--foo=2' ] );
+			$this->assertArrayHasKey( 'foo', $parsed_repeated[1] );
+			$this->assertSame( [ '1', '2' ], $parsed_repeated[1]['foo'] );
 		} finally {
 			putenv( false === $original_value ? 'WP_CLI_STRICT_ARGS_MODE' : "WP_CLI_STRICT_ARGS_MODE={$original_value}" );
 		}

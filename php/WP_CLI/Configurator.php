@@ -364,11 +364,22 @@ class Configurator {
 		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
 			foreach ( $global_assoc as $tmp ) {
 				[ $key, $value ] = $tmp;
+				// Not a known runtime config key (e.g. `--info`, `--version`); keep it as an assoc arg
+				// instead of silently dropping it, matching non-strict mode's behavior.
 				if ( isset( $this->spec[ $key ] ) && false !== $this->spec[ $key ]['runtime'] ) {
 					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
+				} elseif ( isset( $assoc_args[ $key ] ) ) {
+					// Collect multiple values for the same key into an array, except for boolean flags
+					// Boolean flags (--flag or --no-flag) use last-wins behavior
+					if ( is_bool( $value ) ) {
+						$assoc_args[ $key ] = $value;
+					} else {
+						if ( ! is_array( $assoc_args[ $key ] ) ) {
+							$assoc_args[ $key ] = [ $assoc_args[ $key ] ];
+						}
+						$assoc_args[ $key ][] = $value;
+					}
 				} else {
-					// Not a known runtime config key (e.g. `--info`, `--version`); keep it as an assoc arg
-					// instead of silently dropping it, matching non-strict mode's behavior.
 					$assoc_args[ $key ] = $value;
 				}
 			}
