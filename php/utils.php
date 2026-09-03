@@ -856,6 +856,7 @@ function make_progress_bar( $message, $count, $interval = 100 ) {
  *               case of PHP_URL_PORT - integer when it does. See parse_url()'s
  *               return values.
  *
+ * @phpstan-param int<-1, 7> $component
  * @phpstan-return ($component is non-negative-int ? string|null|int|false : array{scheme?: string, host?: string, port?: int, user?: string, pass?: string, query?: string, path?: string, fragment?: string})
  */
 function parse_url( $url, $component = - 1, $auto_add_scheme = true ) {

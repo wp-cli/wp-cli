@@ -13,9 +13,27 @@ When contributing to this package, please adhere to the following guidelines:
 
 ### Building and running
 
-Before submitting any changes, it is crucial to validate them by running the full suite of static code analysis and tests. To run the full suite of checks, execute the following command: `composer test`.
+Run the narrowest check that covers your change:
 
-This single command ensures that your changes meet all the quality gates of the project. While you can run the individual steps separately, it is highly recommended to use this single command to ensure a comprehensive validation.
+| You changed | Run |
+| --- | --- |
+| Any PHP file | `composer phpcs -- <file>` and `composer phpstan` |
+| Logic with unit test coverage | `composer phpunit -- --filter <TestName>` |
+| One feature file | `composer behat -- features/<name>.feature` |
+| One scenario | `composer behat -- features/<name>.feature:<line>` |
+
+After a failure, `composer behat-rerun` re-runs only the scenarios that failed, and `composer behat -- --stop-on-failure` bails out at the first one instead of working through the rest.
+
+`composer test` runs every suite, the whole Behat suite included. In most packages that means installing WordPress from scratch once per scenario, which takes tens of minutes and needs `jq`, a MySQL or MariaDB client with a prepared test database, and network access to WordPress.org. Run it before opening a pull request when you have touched something cross-cutting. Do not run it to check a two-line change.
+
+Set these first, so the tools report problems compactly instead of drawing progress bars and ANSI color into output you are going to read back:
+
+```bash
+export NO_COLOR=1
+export WP_CLI_TEST_QUIET=1
+```
+
+Note that a green `composer test` is not the same as a green CI. `actionlint` and `typos` also run on every pull request and are not part of it.
 
 ### Useful Composer Commands
 
@@ -24,6 +42,7 @@ The project uses Composer to manage dependencies and run scripts. The following 
 * `composer install`: Install dependencies.
 * `composer test`: Run the full test suite, including linting, code style checks, static analysis, and unit/behavior tests.
 * `composer lint`: Check for syntax errors.
+* `composer lint-gherkin`: Check the Behat feature files for style violations.
 * `composer phpcs`: Check for code style violations.
 * `composer phpcbf`: Automatically fix code style violations.
 * `composer phpstan`: Run static analysis.

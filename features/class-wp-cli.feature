@@ -29,12 +29,12 @@ Feature: Various utilities for WP-CLI commands
       <?php
       $launch_self_exit_code = WP_CLI::launch_self( 'cli', [ 'version' ], [], false );
       $runcommand_exit_code  = WP_CLI::runcommand(
-        'cli version',
-        [
-          'launch'     => true,
-          'exit_error' => false,
-          'return'     => 'return_code',
-        ]
+          'cli version',
+          [
+              'launch'     => true,
+              'exit_error' => false,
+              'return'     => 'return_code',
+          ]
       );
 
       WP_CLI::log( "{$launch_self_exit_code},{$runcommand_exit_code}" );

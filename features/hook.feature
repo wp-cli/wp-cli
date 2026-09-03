@@ -6,7 +6,7 @@ Feature: Tests `WP_CLI::add_hook()`
       """
       <?php
       $callback = function () {
-      	WP_CLI::log( '`add_hook()` to the `before_invoke` is working.' );
+          WP_CLI::log( '`add_hook()` to the `before_invoke` is working.' );
       };
 
       WP_CLI::add_hook( 'before_invoke:plugin list', $callback );
@@ -33,7 +33,7 @@ Feature: Tests `WP_CLI::add_hook()`
       """
       <?php
       $callback = function () {
-      	WP_CLI::log( '`add_hook()` to the `before_invoke` is working.' );
+          WP_CLI::log( '`add_hook()` to the `before_invoke` is working.' );
       };
 
       WP_CLI::add_hook( 'before_invoke:db check', $callback );
@@ -57,7 +57,7 @@ Feature: Tests `WP_CLI::add_hook()`
       """
       <?php
       $callback = function () {
-      	WP_CLI::log( '`add_hook()` to the `before_invoke` is working.' );
+          WP_CLI::log( '`add_hook()` to the `before_invoke` is working.' );
       };
 
       WP_CLI::add_hook( 'before_invoke:core version', $callback );
@@ -81,14 +81,14 @@ Feature: Tests `WP_CLI::add_hook()`
       """
       <?php
       $callback = function ( $args, $assoc_args, $options ) {
-      	WP_CLI::log( '`add_hook()` to the `before_run_command` is working.' );
-      	if ( 'version' !== $args[1] ) {
-      		WP_CLI::error( 'Arg context not being passed in to callback properly' );
-      	}
+          WP_CLI::log( '`add_hook()` to the `before_run_command` is working.' );
+          if ( 'version' !== $args[1] ) {
+              WP_CLI::error( 'Arg context not being passed in to callback properly' );
+          }
 
-      	if ( ! array_key_exists( 'extra', $assoc_args ) ) {
-      		WP_CLI::error( 'Assoc arg context not being passed in to callback properly' );
-      	}
+          if ( ! array_key_exists( 'extra', $assoc_args ) ) {
+              WP_CLI::error( 'Assoc arg context not being passed in to callback properly' );
+          }
       };
 
       WP_CLI::add_hook( 'before_run_command', $callback );
@@ -112,16 +112,16 @@ Feature: Tests `WP_CLI::add_hook()`
       """
       <?php
       $callback = function ( $first, $second ) {
-      	WP_CLI::log( '`add_hook()` to the `custom_hook` is working.' );
-      	if ( 'value1' !== $first ) {
-      		WP_CLI::error( 'First argument is not being passed in to callback properly' );
-      	}
+          WP_CLI::log( '`add_hook()` to the `custom_hook` is working.' );
+          if ( 'value1' !== $first ) {
+              WP_CLI::error( 'First argument is not being passed in to callback properly' );
+          }
 
-      	if ( 'value2' !== $second ) {
-      		WP_CLI::error( 'Second argument is not being passed in to callback properly' );
-      	}
+          if ( 'value2' !== $second ) {
+              WP_CLI::error( 'Second argument is not being passed in to callback properly' );
+          }
 
-      	return 'value3';
+          return 'value3';
       };
 
       WP_CLI::add_hook( 'custom_hook', $callback );
@@ -129,11 +129,11 @@ Feature: Tests `WP_CLI::add_hook()`
       $result = WP_CLI::do_hook( 'custom_hook', 'value1', 'value2' );
 
       if ( empty( $result ) ) {
-      	WP_CLI::error( 'First argument is not returned via do_hook()' );
+          WP_CLI::error( 'First argument is not returned via do_hook()' );
       }
 
       if ( 'value3' !== $result ) {
-      	WP_CLI::error( 'First argument is not mutable via do_hook()' );
+          WP_CLI::error( 'First argument is not mutable via do_hook()' );
       }
       """
     And a wp-cli.yml file:
@@ -171,14 +171,14 @@ Feature: Tests `WP_CLI::add_hook()`
       """
       <?php
       $callback = function ( $first, $second ) {
-      	WP_CLI::log( '`add_hook()` to the `custom_hook` is working.' );
-      	if ( 'value1' !== $first ) {
-      		WP_CLI::error( 'First argument is not being passed in to callback properly' );
-      	}
+          WP_CLI::log( '`add_hook()` to the `custom_hook` is working.' );
+          if ( 'value1' !== $first ) {
+              WP_CLI::error( 'First argument is not being passed in to callback properly' );
+          }
 
-      	if ( 'value2' !== $second ) {
-      		WP_CLI::error( 'Second argument is not being passed in to callback properly' );
-      	}
+          if ( 'value2' !== $second ) {
+              WP_CLI::error( 'Second argument is not being passed in to callback properly' );
+          }
       };
 
       WP_CLI::add_hook( 'custom_hook', $callback );
@@ -186,11 +186,11 @@ Feature: Tests `WP_CLI::add_hook()`
       $result = WP_CLI::do_hook( 'custom_hook', 'value1', 'value2' );
 
       if ( empty( $result ) ) {
-      	WP_CLI::error( 'First argument is not returned via do_hook()' );
+          WP_CLI::error( 'First argument is not returned via do_hook()' );
       }
 
       if ( 'value1' !== $result ) {
-      	WP_CLI::error( 'First argument is not correctly returned on bad callback missing return' );
+          WP_CLI::error( 'First argument is not correctly returned on bad callback missing return' );
       }
       """
     And a wp-cli.yml file:
