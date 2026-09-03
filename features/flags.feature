@@ -379,6 +379,80 @@ Feature: Global flags
       local: foo.dev
       """
 
+  Scenario: `WP_CLI_STRICT_ARGS_MODE` preserves unknown global flags like `--info` and `--version`
+    Given an empty directory
+
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp --info`
+    Then STDOUT should contain:
+      """
+      WP-CLI version:
+      """
+    And STDOUT should not contain:
+      """
+      wp <command>
+      """
+
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp --version`
+    Then STDOUT should contain:
+      """
+      WP-CLI
+      """
+    And STDOUT should not contain:
+      """
+      wp <command>
+      """
+
+  Scenario: Unknown global flags are forwarded in `WP_CLI_STRICT_ARGS_MODE`
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * @when before_wp_load
+       */
+      $cmd_test = function ( $args, $assoc_args ) {
+          if ( ! isset( $assoc_args['custom'] ) ) {
+              WP_CLI::log( 'custom:not-set' );
+          } elseif ( is_array( $assoc_args['custom'] ) ) {
+              WP_CLI::log( 'custom:' . implode( ',', $assoc_args['custom'] ) );
+          } elseif ( is_bool( $assoc_args['custom'] ) ) {
+              WP_CLI::log( 'custom:' . ( $assoc_args['custom'] ? 'true' : 'false' ) );
+          } else {
+              WP_CLI::log( 'custom:' . $assoc_args['custom'] );
+          }
+      };
+      WP_CLI::add_command( 'cmd-test', $cmd_test );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp --custom=val cmd-test`
+    Then STDOUT should be:
+      """
+      custom:val
+      """
+
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp --custom=one --custom=two cmd-test`
+    Then STDOUT should be:
+      """
+      custom:one,two
+      """
+
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp --custom cmd-test`
+    Then STDOUT should be:
+      """
+      custom:true
+      """
+
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp --custom --no-custom cmd-test`
+    Then STDOUT should be:
+      """
+      custom:false
+      """
+
   Scenario: Using --http=<url> requires wp-cli/restful
     Given an empty directory
 

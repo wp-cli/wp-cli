@@ -364,26 +364,17 @@ class Configurator {
 		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
 			foreach ( $global_assoc as $tmp ) {
 				[ $key, $value ] = $tmp;
+				// Not a known runtime config key (e.g. `--info`, `--version`); keep it as an assoc arg
+				// instead of silently dropping it, matching non-strict mode's behavior.
 				if ( isset( $this->spec[ $key ] ) && false !== $this->spec[ $key ]['runtime'] ) {
 					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
+				} else {
+					$this->add_assoc_arg( $assoc_args, $key, $value );
 				}
 			}
 			foreach ( $local_assoc as $tmp ) {
 				[ $key, $value ] = $tmp;
-				// Collect multiple values for the same key into an array, except for boolean flags
-				if ( isset( $assoc_args[ $key ] ) ) {
-					// Boolean flags (--flag or --no-flag) use last-wins behavior
-					if ( is_bool( $value ) ) {
-						$assoc_args[ $key ] = $value;
-					} else {
-						if ( ! is_array( $assoc_args[ $key ] ) ) {
-							$assoc_args[ $key ] = [ $assoc_args[ $key ] ];
-						}
-						$assoc_args[ $key ][] = $value;
-					}
-				} else {
-					$assoc_args[ $key ] = $value;
-				}
+				$this->add_assoc_arg( $assoc_args, $key, $value );
 			}
 		} else {
 			foreach ( $mixed_args as $tmp ) {
@@ -391,24 +382,37 @@ class Configurator {
 
 				if ( isset( $this->spec[ $key ] ) && false !== $this->spec[ $key ]['runtime'] ) {
 					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
-				} elseif ( isset( $assoc_args[ $key ] ) ) {
-					// Collect multiple values for the same key into an array, except for boolean flags
-					// Boolean flags (--flag or --no-flag) use last-wins behavior
-					if ( is_bool( $value ) ) {
-						$assoc_args[ $key ] = $value;
-					} else {
-						if ( ! is_array( $assoc_args[ $key ] ) ) {
-							$assoc_args[ $key ] = [ $assoc_args[ $key ] ];
-						}
-						$assoc_args[ $key ][] = $value;
-					}
 				} else {
-					$assoc_args[ $key ] = $value;
+					$this->add_assoc_arg( $assoc_args, $key, $value );
 				}
 			}
 		}
 
 		return [ $assoc_args, $runtime_config ];
+	}
+
+	/**
+	 * Add an associative argument, aggregating multiple values into an array (except for booleans).
+	 *
+	 * @param array<string, mixed> $assoc_args Associative arguments array passed by reference.
+	 * @param string               $key        Argument key.
+	 * @param mixed                $value      Argument value.
+	 * @return void
+	 */
+	private function add_assoc_arg( &$assoc_args, $key, $value ) {
+		if ( isset( $assoc_args[ $key ] ) ) {
+			// Boolean flags (--flag or --no-flag) use last-wins behavior
+			if ( is_bool( $value ) ) {
+				$assoc_args[ $key ] = $value;
+			} else {
+				if ( ! is_array( $assoc_args[ $key ] ) ) {
+					$assoc_args[ $key ] = [ $assoc_args[ $key ] ];
+				}
+				$assoc_args[ $key ][] = $value;
+			}
+		} else {
+			$assoc_args[ $key ] = $value;
+		}
 	}
 
 	/**
