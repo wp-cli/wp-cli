@@ -73,7 +73,7 @@ assignees: ''
 
 - [ ] Submit the PR and merge it once all checks are green.
 
-- [ ] Create a Git tag for the new version. **Do not create a GitHub _release_ just yet**. 
+    Do not tag anything by hand — the `Prepare Release` workflow creates both tags later on.
 
 #### In [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/)
 
@@ -89,63 +89,63 @@ assignees: ''
     composer require wp-cli/wp-cli:^2.1.0
     ```
 
-### Updating the Phar build
+### Updating the Phar build & Publishing GitHub Releases
 
 - [ ] Create a PR from the `release-x-x-x` branch in `wp-cli/wp-cli-bundle` and merge it. This will trigger the `wp-cli-release.*` builds.
 
-- [ ] Create a Git tag and push it. **Do not create a GitHub _release_ just yet**.
+- [ ] Optional: dry-run the [`Prepare Release`](https://github.com/wp-cli/wp-cli/actions/workflows/prepare-release.yml) workflow with **Dry run** ticked.
 
-- [ ] Create a stable [Phar build](https://github.com/wp-cli/builds/tree/gh-pages/phar):
+    This runs every validation — `VERSION` matches, the bundle locks the framework version, the release Phar was actually built for this version, neither tag exists yet — without pushing anything.
+
+- [ ] Run the [`Prepare Release`](https://github.com/wp-cli/wp-cli/actions/workflows/prepare-release.yml) workflow with the version to release (e.g. `2.13.0`).
+
+    It tags [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/) first and then [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/), which in turn triggers the release workflow. That workflow:
+    - Re-checks that the release Phar matches the tag, and refuses to continue if it is stale.
+    - Generates the contributor list and changelog (also uploaded as a workflow artifact).
+    - Promotes the Phar and manifest in the `builds` repo to stable and generates the checksums.
+    - Verifies its own checksums, and repoints `deb/php-wpcli_latest_all.deb`.
+    - Pushes the updated stable build back to `wp-cli/builds`.
+    - Creates draft releases with the changelog and 5 attached assets on both [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/) and [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/).
+
+- [ ] Sign the release with GPG (see <https://github.com/wp-cli/wp-cli/issues/2121>).
+
+    This is still done by hand, because the `releases@wp-cli.org` key is not available to GitHub Actions. Pull the stable Phar the workflow just pushed, sign it, and commit the signatures back:
 
     ```
     cd wp-cli/builds/phar
-    cp wp-cli-release.phar wp-cli.phar
-    cp wp-cli-release.manifest.json wp-cli.manifest.json
-    md5 -q wp-cli.phar > wp-cli.phar.md5
-    shasum -a 256 wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha256
-    shasum -a 512 wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha512
-    ```
-
-- [ ] Sign the release with GPG (see <https://github.com/wp-cli/wp-cli/issues/2121>):
-
-    ```
+    git pull
     gpg --output wp-cli.phar.gpg --default-key releases@wp-cli.org --sign wp-cli.phar
     gpg --output wp-cli.phar.asc --default-key releases@wp-cli.org --detach-sig --armor wp-cli.phar
+    gpg --verify wp-cli.phar.asc wp-cli.phar
+    git commit -m "Sign stable v2.x.0" wp-cli.phar.gpg wp-cli.phar.asc
+    git push
     ```
 
     Note: The GPG key for `releases@wp-cli.org` has to be shared amongst maintainers.
 
-- [ ] Verify the signature with `gpg --verify wp-cli.phar.asc wp-cli.phar`
-
-- [ ] Perform one last sanity check on the Phar by ensuring it displays its information
+- [ ] Attach the signatures to both draft releases, so that they carry all 7 assets.
 
     ```
-    php wp-cli.phar --info
-    ```
-
-- [ ] Commit the Phar and its hashes to the `builds` repo
-
-    ```
-    git status
-    git add .
-    git commit -m "Update stable to v2.x.0"
-    ```
-
-- [ ] Create actual releases on GitHub: Make sure to upload the previously generated Phar from the `builds` repo.
-
-    ```
-    cp wp-cli.phar wp-cli-2.x.0.phar
     cp wp-cli.phar.gpg wp-cli-2.x.0.phar.gpg
     cp wp-cli.phar.asc wp-cli-2.x.0.phar.asc
-    cp wp-cli.phar.md5 wp-cli-2.x.0.phar.md5
-    cp wp-cli.phar.sha512 wp-cli-2.x.0.phar.sha256
-    cp wp-cli.phar.sha512 wp-cli-2.x.0.phar.sha512
-    cp wp-cli.manifest.json wp-cli-2.x.0.manifest.json
+    gh release upload v2.x.0 wp-cli-2.x.0.phar.gpg wp-cli-2.x.0.phar.asc --repo wp-cli/wp-cli
+    gh release upload v2.x.0 wp-cli-2.x.0.phar.gpg wp-cli-2.x.0.phar.asc --repo wp-cli/wp-cli-bundle
     ```
 
-    Do this for both [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/) and [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/)
+- [ ] Review and publish the draft releases:
+    - Review draft on [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/releases) and publish.
+    - Review draft on [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/releases) and publish.
 
-- [ ] Verify Phar release artifact
+    Publishing the release on `wp-cli/wp-cli` automatically triggers post-release automation, which first verifies the published artifacts (checksums, that the Phar runs and reports the right version, and that it is byte-identical to the stable build in `wp-cli/builds`). Only if that passes does it:
+    - Bump the version to the next alpha in [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli) (`VERSION` file and `composer.json` branch alias).
+    - Reset the framework dependency in [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle) back to `"dev-main"`.
+    - Close the shipped milestones across all bundled repositories.
+
+    Handbook regeneration runs separately, from [`trigger-handbook-regeneration.yml`](https://github.com/wp-cli/wp-cli/blob/main/.github/workflows/trigger-handbook-regeneration.yml).
+
+- [ ] Spot-check the upgrade path end to end
+
+    The checksums and the Phar itself are verified automatically; this covers the parts that automation cannot reach.
 
     ```
     $ wp cli update
@@ -160,52 +160,20 @@ assignees: ''
     <PHP serialized string with version numbers>
     ```
 
-### Verify the Debian and RPM builds
+### Post-Release Manual Tasks
 
-- [ ] In the [`wp-cli/builds`](https://github.com/wp-cli/builds) repository, verify that the Debian and RPM builds exist
+- [ ] Verify the Homebrew formulae were bumped.
 
-    **Note:** Right now, they are actually already generated automatically before all the tagging happened.
+    This happens on its own. Homebrew autobumps every `homebrew-core` formula that has not opted out via `no_autobump!` or a `livecheck ... skip`, and neither [`wp-cli`](https://github.com/Homebrew/homebrew-core/blob/master/Formula/w/wp-cli.rb) nor [`wp-cli-completion`](https://github.com/Homebrew/homebrew-core/blob/master/Formula/w/wp-cli-completion.rb) does. BrewTestBot polls every 3 hours, so expect the bump PRs to show up **a few hours after the release is published** — there is nothing to do but confirm they landed.
 
-- [ ] Change symlink of `deb/php-wpcli_latest_all.deb` to point to the new stable version.
-
-### Updating the Homebrew formula (should happen automatically)
-
-- [ ] Follow this [example PR](https://github.com/Homebrew/homebrew-core/pull/152339) to update version numbers and sha256 for both `wp-cli` and `wp-cli-completion`
-
-### Updating the website
-
-- [ ] Verify <https://github.com/wp-cli/wp-cli.github.com#readme> is up-to-date
-
-- [ ] Update all version references on the homepage (and localized homepages).
-
-    Can be mostly done by using search and replace for the version number and the blog post URL.
-
-- [ ] Update the [roadmap](https://make.wordpress.org/cli/handbook/roadmap/) to mention the current stable version
-
-- [ ] Tag a release of the website
-
-### Announcing
-
-- [ ] Publish the blog post
-
-- [ ] Announce release on the [WP-CLI Twitter account](https://twitter.com/wpcli)
-
-- [ ] Optional: Announce using the `/announce` slash command in the [`#cli`](https://wordpress.slack.com/messages/C02RP4T41) Slack room.
-
-    This pings a lot of people, so it's not always desired. Plus, the blog post will pop up on Slack anyway.
-
-### Bumping WP-CLI version again
-
-- [ ] Bump [VERSION](https://github.com/wp-cli/wp-cli/blob/master/VERSION) in [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli) again.
-
-    For instance, if the release version was `2.8.0`, the version should be bumped to `2.9.0-alpha`. 
-
-    Doing so ensures `wp cli update --nightly` works as expected.
-
-- [ ] Change the version constraint on `"wp-cli/wp-cli"` in `wp-cli/wp-cli-bundle`'s [`composer.json`](https://github.com/wp-cli/wp-cli-bundle/blob/master/composer.json) file back to `"dev-main"`.
+    If nothing has appeared by the next day, check [BrewTestBot's pull requests](https://github.com/Homebrew/homebrew-core/pulls?q=is%3Apr+author%3Aapp%2Fbrewtestbot+wp-cli) and only then open one by hand:
 
     ```
-    composer require wp-cli/wp-cli:dev-main
+    brew bump-formula-pr --strict wp-cli --url=https://github.com/wp-cli/wp-cli/releases/download/v2.x.x/wp-cli-2.x.x.phar --sha256=$(wget -qO- https://github.com/wp-cli/wp-cli/releases/download/v2.x.x/wp-cli-2.x.x.phar | sha256sum | cut -d " " -f 1)
     ```
 
-- [ ] Adapt the branch alias in `wp-cli/wp-cli`'s [`composer.json`](https://github.com/wp-cli/wp-cli/blob/master/composer.json) file to match the new alpha version.
+    Note that `wp-cli-completion` tracks the Git tag tarball rather than the Phar, so it needs its own bump with a different `--url`.
+
+- [ ] Publish the release blog post on the [make.wordpress.org CLI blog](https://make.wordpress.org/cli/).
+
+- [ ] Announce release on Twitter / Slack.
