@@ -316,7 +316,7 @@ final class Curl implements Transport {
 					$options['hooks']->dispatch('multiple.request.complete', [&$responses[$key], $key]);
 				}
 
-				$completed++;
+				++$completed;
 			}
 		} while ($active || $completed < $subrequestcount);
 

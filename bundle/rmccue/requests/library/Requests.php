@@ -53,6 +53,8 @@ class Requests extends WpOrg\Requests\Requests {
 	 *
 	 * @codeCoverageIgnore
 	 *
+	 * @phpcs:disable Universal.NamingConventions.NoReservedKeywordParameterNames.classFound -- Deprecated, so not relevant to change.
+	 *
 	 * @param string $class Class name to load
 	 */
 	public static function autoloader($class) {
