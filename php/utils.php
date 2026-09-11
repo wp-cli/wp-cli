@@ -615,7 +615,8 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 
 		if ( $fp ) {
 			$created = true;
-			if ( false === fwrite( $fp, $input ) ) {
+			// A short write (e.g. on a full disk) must not leave a truncated file for the editor to open.
+			if ( strlen( $input ) !== fwrite( $fp, $input ) ) {
 				fclose( $fp );
 				@unlink( $tmpfile );
 				WP_CLI::error( 'Error writing to temporary file.' );
@@ -1352,6 +1353,12 @@ function get_temp_dir() {
  *
  * The file is only readable and writable by its owner on non-Windows systems.
  *
+ * The file is created in the directory returned by WP-CLI's `get_temp_dir()`
+ * (based on `sys_get_temp_dir()`), not WordPress's `get_temp_dir()`, and is
+ * not removed automatically; callers are responsible for cleaning it up.
+ *
+ * On failure, this function exits via `WP_CLI::error()` rather than throwing.
+ *
  * @access public
  * @category System
  *
@@ -1389,6 +1396,14 @@ function make_temp_file( $prefix = 'wp-cli-', $suffix = '' ) {
 
 /**
  * Create a unique temporary directory safely without following symlinks.
+ *
+ * The directory is only accessible by its owner on non-Windows systems.
+ *
+ * The directory is created in the directory returned by WP-CLI's `get_temp_dir()`
+ * (based on `sys_get_temp_dir()`), not WordPress's `get_temp_dir()`, and is
+ * not removed automatically; callers are responsible for cleaning it up.
+ *
+ * On failure, this function exits via `WP_CLI::error()` rather than throwing.
  *
  * @access public
  * @category System
