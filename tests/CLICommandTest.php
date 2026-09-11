@@ -60,6 +60,40 @@ class CLICommandTest extends TestCase {
 	}
 
 	/**
+	 * @param string     $memory_limit
+	 * @param int|string $os_virtual_memory_kb
+	 * @return void
+	 */
+	private function call_check_memory_limit( $memory_limit, $os_virtual_memory_kb = 'n/a' ) {
+		$cli_command = new CLI_Command();
+		$method      = new \ReflectionMethod( $cli_command, 'check_memory_limit' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$method->setAccessible( true );
+		}
+		$method->invoke( $cli_command, $memory_limit, $os_virtual_memory_kb );
+	}
+
+	/**
+	 * @param int $kilobytes
+	 * @return string
+	 */
+	private function call_format_kilobytes( $kilobytes ) {
+		$cli_command = new CLI_Command();
+		$method      = new \ReflectionMethod( $cli_command, 'format_kilobytes' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$method->setAccessible( true );
+		}
+		/**
+		 * @var string $result
+		 */
+		$result = $method->invoke( $cli_command, $kilobytes );
+
+		return $result;
+	}
+
+	/**
 	 * @param string $temp
 	 * @param string $current_phar
 	 * @return void
@@ -308,5 +342,68 @@ class CLICommandTest extends TestCase {
 
 			@unlink( $current_phar );
 		}
+	}
+
+	public function testFormatKilobytesFormatsWholeUnitsWithoutDecimals(): void {
+		$this->assertSame( '512K', $this->call_format_kilobytes( 512 ) );
+		$this->assertSame( '1M', $this->call_format_kilobytes( 1024 ) );
+		$this->assertSame( '768M', $this->call_format_kilobytes( 786432 ) );
+		$this->assertSame( '2G', $this->call_format_kilobytes( 2097152 ) );
+	}
+
+	public function testFormatKilobytesFormatsFractionalUnits(): void {
+		$this->assertSame( '1.5M', $this->call_format_kilobytes( 1536 ) );
+	}
+
+	public function testCheckMemoryLimitWarnsOnLowPhpMemoryLimitOnly(): void {
+		$this->call_check_memory_limit( '256M', 'n/a' );
+
+		$this->assertStringContainsString( 'PHP memory limit is set to 256M', $this->logger->stderr );
+		$this->assertStringNotContainsString( 'ulimit', $this->logger->stderr );
+	}
+
+	public function testCheckMemoryLimitDoesNotWarnWhenPhpMemoryLimitIsSufficient(): void {
+		$this->call_check_memory_limit( '1G', 'n/a' );
+
+		$this->assertSame( '', $this->logger->stderr );
+	}
+
+	public function testCheckMemoryLimitDoesNotWarnWhenOsUlimitIsUnknownOrUnlimited(): void {
+		$this->call_check_memory_limit( '748M', 'n/a' );
+		$this->assertSame( '', $this->logger->stderr );
+
+		$this->call_check_memory_limit( '748M', 'unlimited' );
+		$this->assertSame( '', $this->logger->stderr );
+	}
+
+	/**
+	 * Reproduces the scenario from https://github.com/wp-cli/wp-cli/issues/6326:
+	 * a generous PHP memory_limit, but a tighter OS-level `ulimit -v` that
+	 * causes "mmap() failed: Cannot allocate memory" regardless of memory_limit.
+	 */
+	public function testCheckMemoryLimitWarnsWhenOsUlimitIsMoreRestrictiveThanMemoryLimit(): void {
+		$this->call_check_memory_limit( '748M', 262144 ); // 262144 KB == 256M.
+
+		$this->assertStringContainsString( 'OS-level virtual memory limit (`ulimit -v`) is set to 256M', $this->logger->stderr );
+		$this->assertStringContainsString( "lower than PHP's memory limit (748M)", $this->logger->stderr );
+		$this->assertStringNotContainsString( 'PHP memory limit is set to 748M', $this->logger->stderr );
+	}
+
+	public function testCheckMemoryLimitDoesNotWarnWhenOsUlimitIsHigherThanMemoryLimit(): void {
+		$this->call_check_memory_limit( '512M', 1048576 ); // 1048576 KB == 1G.
+
+		$this->assertSame( '', $this->logger->stderr );
+	}
+
+	public function testCheckMemoryLimitWarnsWhenUnlimitedPhpMemoryLimitStillHitsRestrictiveOsUlimit(): void {
+		$this->call_check_memory_limit( '-1', 262144 ); // 262144 KB == 256M.
+
+		$this->assertStringContainsString( "lower than PHP's memory limit (unlimited)", $this->logger->stderr );
+	}
+
+	public function testCheckMemoryLimitDoesNotWarnWhenPhpMemoryLimitIsUnlimitedAndOsUlimitIsUnlimited(): void {
+		$this->call_check_memory_limit( '-1', 'unlimited' );
+
+		$this->assertSame( '', $this->logger->stderr );
 	}
 }
