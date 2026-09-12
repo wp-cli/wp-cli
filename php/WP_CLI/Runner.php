@@ -734,6 +734,23 @@ class Runner {
 	}
 
 	/**
+	 * Append the hint for an unregistered command to an error message.
+	 *
+	 * @param string $error   Error message stating that the command is unavailable.
+	 * @param string $command Full name of the command that was not found.
+	 * @return string Error message, with the hint appended if there is one.
+	 */
+	private function add_command_hint( $error, $command ) {
+		$hint = CommandHints::get_hint( $command );
+
+		if ( '' === $hint ) {
+			return $error;
+		}
+
+		return $error . PHP_EOL . $hint;
+	}
+
+	/**
 	 * Given positional arguments, find the command to execute.
 	 *
 	 * @param array<int, string> $args
@@ -795,10 +812,10 @@ class Runner {
 							}
 						}
 
-						return $error . PHP_EOL . $suggestion_text;
+						return $this->add_command_hint( $error . PHP_EOL . $suggestion_text, $full_name );
 					}
 
-					return $error;
+					return $this->add_command_hint( $error, $full_name );
 				}
 
 				$suggestion = $this->get_subcommand_suggestion( $full_name, $command );
@@ -860,10 +877,10 @@ class Runner {
 						}
 					}
 
-					return $error . PHP_EOL . $suggestion_text;
+					return $this->add_command_hint( $error . PHP_EOL . $suggestion_text, $full_name );
 				}
 
-				return $error;
+				return $this->add_command_hint( $error, $full_name );
 			}
 
 			if ( $this->is_command_disabled( $subcommand ) ) {

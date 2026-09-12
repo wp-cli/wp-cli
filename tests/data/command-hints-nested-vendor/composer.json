@@ -1,0 +1,12 @@
+{
+    "name": "acme/root-package",
+    "config": {
+        "vendor-dir": "build/vendor"
+    },
+    "extra": {
+        "command-hints": {
+            "overridden": "Hint coming from the root package.",
+            "root-only": "The 'root-only' command is declared by the root package."
+        }
+    }
+}

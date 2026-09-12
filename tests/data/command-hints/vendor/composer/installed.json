@@ -1,0 +1,34 @@
+{
+    "packages": [
+        {
+            "name": "acme/no-extra-package",
+            "version": "1.0.0"
+        },
+        {
+            "name": "acme/unrelated-extra-package",
+            "version": "1.0.0",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.0.x-dev"
+                }
+            }
+        },
+        {
+            "name": "acme/bundle-package",
+            "version": "1.0.0",
+            "extra": {
+                "command-hints": {
+                    "package": "The 'package' command ships with the Phar only.",
+                    "acme sync": "The 'acme sync' command needs the acme/sync-command package.",
+                    "overridden": "Hint coming from an installed package.",
+                    "": "Hints without a command name are ignored.",
+                    "empty-hint": "   ",
+                    "array-hint": [
+                        "Hints that are not strings are ignored."
+                    ]
+                }
+            }
+        }
+    ],
+    "dev": false
+}
