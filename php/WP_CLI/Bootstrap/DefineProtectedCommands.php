@@ -20,7 +20,7 @@ final class DefineProtectedCommands implements BootstrapStep {
 	 * @return BootstrapState Modified state to pass to the next step.
 	 */
 	public function process( BootstrapState $state ) {
-		$commands        = $this->get_protected_commands();
+		$commands        = self::get_protected_commands();
 		$current_command = $this->get_current_command();
 
 		foreach ( $commands as $command ) {
@@ -37,7 +37,7 @@ final class DefineProtectedCommands implements BootstrapStep {
 	 *
 	 * @return string[]
 	 */
-	private function get_protected_commands(): array {
+	public static function get_protected_commands(): array {
 		return [
 			'cli info',
 			'package',

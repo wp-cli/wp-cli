@@ -84,7 +84,7 @@ return [
 	'trust-project-config' => [
 		'runtime'  => '[=<bool|path>]',
 		'file'     => '<bool|path>',
-		'desc'     => 'Trust project-level wp-cli.yml files containing exec or require directives.',
+		'desc'     => 'Trust the project-level wp-cli.yml (or wp-cli.local.yml) file so that the require, exec, env, ssh-args and connection (ssh, http, ssh_config, proxyjump, key) settings and the aliases it introduces are acted upon. Accepts true, false, or a path (or list of paths) to a trusted wp-cli.yml file or project directory. Precedence: this parameter, then the global and system config files, then the trust store (trusted-configs.json next to the global config file), then the WP_CLI_TRUST_PROJECT_CONFIG environment variable, then an interactive prompt. Without a TTY an undecided project config is an error, so in CI prefer --trust-project-config=<path> over =true.',
 		'multiple' => true,
 		'default'  => [],
 	],
