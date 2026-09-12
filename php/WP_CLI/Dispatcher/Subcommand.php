@@ -599,16 +599,20 @@ class Subcommand extends CompositeCommand {
 
 		if ( 'help' !== $this->name ) {
 			// A `--<field>=<value>` token means the command accepts keys that cannot be
-			// enumerated up front, so an unrecognized parameter is reported only when it
-			// looks like a typo of a documented one. Anything further away is passed
-			// through untouched, which keeps custom fields and query filters working.
+			// enumerated up front, so an unrecognized parameter is not an error there. It
+			// is still worth a word when it looks like a typo of a documented one, because
+			// the command would otherwise accept it and silently do nothing with it.
 			$has_generic = $validator->has_generic();
 
-			// Global parameters are left out of the candidate set for those commands. They
-			// are harmless as a hint on an error raised anyway, but a catch-all command's
-			// own arguments share their namespace: `wp post list --cat=5` and `--s=hello`
-			// are real query vars two edits away from `--path` and `--ssh`.
-			$parameters = $this->get_parameters( $synopsis_spec, ! $has_generic );
+			// The candidate set for those commands is their own `--<name>` parameters.
+			// Global parameters are harmless as a hint on an error raised anyway, but a
+			// catch-all command's arguments share their namespace: `wp post list --cat=5`
+			// and `--s=hello` are real query vars two edits away from `--path` and `--ssh`.
+			// Positional names are left out for the same reason: `wp db query --xml` is a
+			// real mysql option two edits away from `<sql>`.
+			$parameters = $has_generic
+				? $this->get_parameters( $synopsis_spec, false, [ 'assoc', 'flag' ] )
+				: $this->get_parameters( $synopsis_spec );
 
 			foreach ( $validator->unknown_assoc( $assoc_args, $has_generic ) as $key ) {
 				// The alias map in get_suggestion() is command vocabulary and ignores the
@@ -621,7 +625,18 @@ class Subcommand extends CompositeCommand {
 					! $has_generic
 				);
 
-				if ( $has_generic && '' === $suggestion ) {
+				if ( $has_generic ) {
+					if ( '' === $suggestion || self::is_prefix_of_other( $key, $suggestion ) ) {
+						continue;
+					}
+
+					// The parameter is passed through untouched; the command decides what it
+					// means. So this is a warning, not an error, and the exit code is unaffected.
+					$errors['warning'][] = sprintf(
+						'--%s looks like a typo of --%s',
+						$key,
+						$suggestion
+					);
 					continue;
 				}
 
@@ -906,15 +921,47 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Check whether one of two parameter names is a strict prefix of the other.
+	 *
+	 * A documented family of parameters often nests this way (`page` and `paged`,
+	 * `tag` and `tag_id`), and one of the pair being undocumented is no reason to
+	 * doubt it. A typo, on the other hand, is not usually a clean truncation.
+	 *
+	 * @param string $a First parameter name.
+	 * @param string $b Second parameter name.
+	 *
+	 * @return bool
+	 */
+	private static function is_prefix_of_other( $a, $b ) {
+		if ( $a === $b ) {
+			return false;
+		}
+
+		return 0 === strpos( $a, $b ) || 0 === strpos( $b, $a );
+	}
+
+	/**
 	 * Get an array of parameter names, by merging the command-specific and the
 	 * global parameters.
 	 *
 	 * @param array<int, array<string, mixed>> $spec           Optional. Specification of the current command.
 	 * @param bool                             $include_global Optional. Whether to include the global parameters.
+	 * @param array<int, string>               $types          Optional. Restrict the command-specific parameters to
+	 *                                                         these synopsis types ('positional', 'assoc', 'flag').
+	 *                                                         Empty means no restriction.
 	 *
 	 * @return array<int, string> Array of parameter names
 	 */
-	private function get_parameters( $spec = [], $include_global = true ) {
+	private function get_parameters( $spec = [], $include_global = true, $types = [] ) {
+		if ( ! empty( $types ) ) {
+			$spec = array_filter(
+				$spec,
+				static function ( $param ) use ( $types ) {
+					return isset( $param['type'] ) && in_array( $param['type'], $types, true );
+				}
+			);
+		}
+
 		/** @var list<string> $local_parameters */
 		$local_parameters = array_values( array_filter( array_column( $spec, 'name' ), 'is_string' ) );
 
