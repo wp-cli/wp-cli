@@ -100,9 +100,54 @@ final class CommandHints {
 		}
 
 		// The root package is absent from `installed.json`, so it is read separately.
-		$root_package = self::read_json( dirname( $vendor_dir ) . '/composer.json' );
+		$root_package = self::read_json( self::get_root_dir( $vendor_dir ) . '/composer.json' );
 
 		return array_merge( $hints, self::extract_hints( $root_package ) );
+	}
+
+	/**
+	 * Locate the directory of the root package that owns a vendor directory.
+	 *
+	 * The vendor directory is not necessarily a direct child of the project
+	 * root, as Composer's `config.vendor-dir` setting can point anywhere.
+	 * Composer 2 records the actual location of the root package in
+	 * `vendor/composer/installed.php`, which is used when available.
+	 *
+	 * @param string $vendor_dir Path to the Composer vendor directory.
+	 * @return string Path to the directory of the root package.
+	 */
+	private static function get_root_dir( $vendor_dir ) {
+		$installed = self::read_installed_php( $vendor_dir . '/composer/installed.php' );
+		$root      = isset( $installed['root'] ) && is_array( $installed['root'] ) ? $installed['root'] : [];
+
+		if ( isset( $root['install_path'] ) && is_string( $root['install_path'] ) ) {
+			$root_dir = rtrim( $root['install_path'], '/\\' );
+
+			if ( '' !== $root_dir && is_dir( $root_dir ) ) {
+				return $root_dir;
+			}
+		}
+
+		return dirname( $vendor_dir );
+	}
+
+	/**
+	 * Read Composer's `installed.php`.
+	 *
+	 * Unlike `installed.json`, this file is PHP code that resolves paths
+	 * relative to its own location, so it has to be included to be read.
+	 *
+	 * @param string $path Path to the `installed.php` file.
+	 * @return array<mixed> Decoded data, or an empty array if it could not be read.
+	 */
+	private static function read_installed_php( $path ) {
+		if ( ! is_file( $path ) || ! is_readable( $path ) ) {
+			return [];
+		}
+
+		$data = include $path;
+
+		return is_array( $data ) ? $data : [];
 	}
 
 	/**

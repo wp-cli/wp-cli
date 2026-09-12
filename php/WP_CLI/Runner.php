@@ -785,14 +785,11 @@ class Runner {
 						$suggestion = 'meta';
 					}
 
-					$error = $this->add_command_hint(
-						sprintf(
-							"'%s' is not a registered subcommand of '%s'. See 'wp help %s' for available subcommands.",
-							$child,
-							$parent_name,
-							$parent_name
-						),
-						$full_name
+					$error = sprintf(
+						"'%s' is not a registered subcommand of '%s'. See 'wp help %s' for available subcommands.",
+						$child,
+						$parent_name,
+						$parent_name
 					);
 
 					if ( ! empty( $suggestion ) ) {
@@ -815,10 +812,10 @@ class Runner {
 							}
 						}
 
-						return $error . PHP_EOL . $suggestion_text;
+						return $this->add_command_hint( $error . PHP_EOL . $suggestion_text, $full_name );
 					}
 
-					return $error;
+					return $this->add_command_hint( $error, $full_name );
 				}
 
 				$suggestion = $this->get_subcommand_suggestion( $full_name, $command );
@@ -833,11 +830,8 @@ class Runner {
 					}
 				}
 
-				$error = $this->add_command_hint(
-					sprintf(
-						"'%s' is not a registered wp command. See 'wp help' for available commands.",
-						$full_name
-					),
+				$error = sprintf(
+					"'%s' is not a registered wp command. See 'wp help' for available commands.",
 					$full_name
 				);
 
@@ -883,10 +877,10 @@ class Runner {
 						}
 					}
 
-					return $error . PHP_EOL . $suggestion_text;
+					return $this->add_command_hint( $error . PHP_EOL . $suggestion_text, $full_name );
 				}
 
-				return $error;
+				return $this->add_command_hint( $error, $full_name );
 			}
 
 			if ( $this->is_command_disabled( $subcommand ) ) {

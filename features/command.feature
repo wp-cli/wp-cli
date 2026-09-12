@@ -1191,6 +1191,32 @@ Feature: WP-CLI Commands
       """
     And the return code should be 1
 
+  Scenario: WP-CLI shows the hint after the suggestion for a command that is not registered
+    Given a WP installation
+    And a hint.php file:
+      """
+      <?php
+      WP_CLI::add_hook(
+        'unregistered_command_hint',
+        function ( $hint, $command ) {
+          if ( 'category' === $command ) {
+            return "The 'category' command is provided by the acme/category-command package.";
+          }
+
+          return $hint;
+        }
+      );
+      """
+
+    When I try `wp --require=hint.php category list`
+    Then STDERR should contain:
+      """
+      Error: 'category' is not a registered wp command. See 'wp help' for available commands.
+      Did you mean 'wp term <command>'?
+      The 'category' command is provided by the acme/category-command package.
+      """
+    And the return code should be 1
+
   Scenario: WP-CLI suggests matching parameters when user entry contains typos
     Given an empty directory
 

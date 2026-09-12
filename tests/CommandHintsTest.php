@@ -16,7 +16,7 @@ final class CommandHintsTest extends TestCase {
 	 * @param string $fixture Name of the directory within `tests/data`.
 	 * @return array<string, string> Map of full command name to hint.
 	 */
-	private function get_hints_from_fixture( string $fixture ): array {
+	private function get_hints_from_fixture( string $fixture, string $vendor_dir = 'vendor' ): array {
 		$class  = new ReflectionClass( CommandHints::class );
 		$method = $class->getMethod( 'get_hints_from_vendor_dir' );
 		if ( PHP_VERSION_ID < 80100 ) {
@@ -27,7 +27,7 @@ final class CommandHintsTest extends TestCase {
 		/**
 		 * @var array<string, string> $hints
 		 */
-		$hints = $method->invoke( null, __DIR__ . '/data/' . $fixture . '/vendor' );
+		$hints = $method->invoke( null, __DIR__ . '/data/' . $fixture . '/' . $vendor_dir );
 
 		return $hints;
 	}
@@ -57,6 +57,14 @@ final class CommandHintsTest extends TestCase {
 		$this->assertArrayNotHasKey( '', $hints );
 		$this->assertArrayNotHasKey( 'empty-hint', $hints );
 		$this->assertArrayNotHasKey( 'array-hint', $hints );
+	}
+
+	public function testItLocatesTheRootPackageOfANestedVendorDirectory(): void {
+		$hints = $this->get_hints_from_fixture( 'command-hints-nested-vendor', 'build/vendor' );
+
+		$this->assertSame( "The 'package' command ships with the Phar only.", $hints['package'] );
+		$this->assertSame( "The 'root-only' command is declared by the root package.", $hints['root-only'] );
+		$this->assertSame( 'Hint coming from the root package.', $hints['overridden'] );
 	}
 
 	public function testItHandlesAMissingVendorDirectory(): void {
