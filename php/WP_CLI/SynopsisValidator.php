@@ -129,19 +129,37 @@ class SynopsisValidator {
 	}
 
 	/**
+	 * Check whether the synopsis accepts arbitrary parameters.
+	 *
+	 * A `--<field>=<value>` token means the command takes keys that cannot be
+	 * enumerated up front, so an unrecognized parameter is not automatically
+	 * an error.
+	 *
+	 * @return bool
+	 */
+	public function has_generic() {
+		return (bool) count(
+			$this->query_spec(
+				[
+					'type' => 'generic',
+				]
+			)
+		);
+	}
+
+	/**
 	 * Check whether there are unknown parameters supplied.
 	 *
-	 * @param array<string, mixed> $assoc_args Parameters passed to command.
+	 * @param array<string, mixed> $assoc_args     Parameters passed to command.
+	 * @param bool                 $ignore_generic Whether to report unknown parameters even
+	 *                                             when the synopsis has a generic token.
+	 *                                             Callers that pass true are responsible for
+	 *                                             deciding which of the returned parameters
+	 *                                             are actually errors.
 	 * @return array<int, string>
 	 */
-	public function unknown_assoc( $assoc_args ) {
-		$generic = $this->query_spec(
-			[
-				'type' => 'generic',
-			]
-		);
-
-		if ( count( $generic ) ) {
+	public function unknown_assoc( $assoc_args, $ignore_generic = false ) {
+		if ( ! $ignore_generic && $this->has_generic() ) {
 			return [];
 		}
 
