@@ -447,13 +447,17 @@ class Configurator {
 	 * @param string           $path Path to YAML file.
 	 * @param string|null      $current_alias Optional. Current alias name.
 	 * @param array<int, string> $visited Optional. List of visited realpaths.
-	 * @return void
+	 * @return array<int, string> Files that were loaded, in load order. Files pulled
+	 *                            in through `_: inherit` precede the file that
+	 *                            inherits from them.
 	 */
 	public function merge_yml( $path, $current_alias = null, array $visited = [] ) {
+		$loaded_files = [];
+
 		$realpath = $path ? ( ( new SplFileInfo( $path ) )->getRealPath() ?: $path ) : false;
 		if ( $realpath ) {
 			if ( in_array( $realpath, $visited, true ) ) {
-				return;
+				return $loaded_files;
 			}
 			$visited[] = $realpath;
 		}
@@ -464,7 +468,11 @@ class Configurator {
 				? $yaml['_']['inherit']
 				: ( new SplFileInfo( Path::normalize( dirname( $path ) . '/' . $yaml['_']['inherit'] ) ) )->getRealPath();
 
-			$this->merge_yml( $inherit_path, $current_alias, $visited );
+			$loaded_files = $this->merge_yml( (string) $inherit_path, $current_alias, $visited );
+		}
+
+		if ( $realpath && is_file( $realpath ) ) {
+			$loaded_files[] = $realpath;
 		}
 		// Prepare the base path for absolutized alias paths.
 		$yml_file_dir = $path ? dirname( $path ) : '';
@@ -502,6 +510,8 @@ class Configurator {
 				$this->config[ $key ] = $value;
 			}
 		}
+
+		return $loaded_files;
 	}
 
 	/**
@@ -563,6 +573,21 @@ class Configurator {
 			foreach ( $config['require'] as &$path ) {
 				self::absolutize( $path, $yml_file_dir );
 			}
+			unset( $path );
+		}
+
+		// Trusted project config paths are relative to the config file that lists
+		// them, not to the current working directory: `trust-project-config: [ . ]`
+		// in a global config file must mean "the directory of that file", not
+		// "wherever the command happens to run".
+		if ( isset( $config['trust-project-config'] ) ) {
+			self::arrayify( $config['trust-project-config'] );
+			foreach ( $config['trust-project-config'] as &$trusted_path ) {
+				if ( is_string( $trusted_path ) && '' !== trim( $trusted_path ) && null === Utils\parse_trust_setting_bool( $trusted_path ) ) {
+					self::absolutize( $trusted_path, $yml_file_dir );
+				}
+			}
+			unset( $trusted_path );
 		}
 
 		// Backwards compat
