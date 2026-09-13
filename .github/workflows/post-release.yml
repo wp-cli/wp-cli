@@ -23,8 +23,10 @@ on:
         default: false
         type: boolean
 
+# Every write in this workflow authenticates with ACTIONS_BOT; the only use of
+# the default token is the read-only fallback for `gh release download`.
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: wp-cli-post-release
@@ -139,6 +141,8 @@ jobs:
           repository: wp-cli/builds
           ref: gh-pages
           path: builds
+          # Read-only checkout; nothing here pushes to wp-cli/builds.
+          persist-credentials: false
 
       # `wp cli update` downloads from the release page while the website serves
       # the stable Phar out of wp-cli/builds. If those two ever diverge, users
@@ -192,7 +196,7 @@ jobs:
           # Only bump when the release actually came off the current main. A
           # patch release cut from a maintenance branch, or a re-run after the
           # bump already happened, is a no-op rather than a failed workflow --
-          # milestone closing and the website dispatch below still need to run.
+          # the bundle reset and milestone closing below still need to run.
           if [ "$CURRENT_BASE" = "$VERSION" ]; then
             SHOULD_BUMP=true
           elif [ "$CURRENT_VERSION" = "$NEXT_ALPHA" ]; then
@@ -250,14 +254,32 @@ jobs:
           token: ${{ secrets.ACTIONS_BOT }}
           path: wp-cli-bundle
 
+      # Decided from the bundle's own state rather than `should_bump`: once the
+      # wp-cli bump has landed, a rerun computes should_bump=false, and a run
+      # that failed between the two pushes could never finish the bundle reset.
       - name: Reset framework constraint, branch-alias and lockfile in wp-cli/wp-cli-bundle
-        if: ${{ steps.vars.outputs.should_bump == 'true' }}
         env:
           NEXT_ALIAS: ${{ steps.vars.outputs.next_alias }}
         run: |
           cd wp-cli-bundle
-          composer require "wp-cli/wp-cli:dev-main" --no-interaction --no-install
+          CONSTRAINT="$(jq -r '.require["wp-cli/wp-cli"]' composer.json)"
+
+          if [ "$CONSTRAINT" = "dev-main" ]; then
+            echo "::notice::wp-cli/wp-cli-bundle already requires 'wp-cli/wp-cli: dev-main'. Nothing to reset."
+            exit 0
+          fi
+
+          if [[ "$CONSTRAINT" != *"$VERSION"* ]]; then
+            echo "::notice::wp-cli/wp-cli-bundle requires 'wp-cli/wp-cli: $CONSTRAINT', which does not pin the $VERSION release. Leaving it alone."
+            exit 0
+          fi
+
+          # The branch alias is part of Composer's content hash, so it has to be
+          # set before `composer require` writes the lockfile; the other way
+          # round leaves a lock that `composer validate` rejects as stale.
           composer config extra.branch-alias.dev-main "$NEXT_ALIAS"
+          composer require "wp-cli/wp-cli:dev-main" --no-interaction --no-install
+          composer validate --no-check-all --no-check-publish
 
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
@@ -278,21 +300,26 @@ jobs:
         with:
           repository: wp-cli/wp-cli-dev
           path: wp-cli-dev
+          # Read-only checkout; nothing here pushes to wp-cli/wp-cli-dev.
+          persist-credentials: false
 
+      # Bounded because this job holds the post-release concurrency group: a
+      # stalled org-wide clone would otherwise sit there for six hours.
       - name: Close released milestones across bundle repos
+        timeout-minutes: 20
         env:
           GITHUB_TOKEN: ${{ secrets.ACTIONS_BOT }}
           # The wp-cli-dev composer install clones the whole WP-CLI org via its
           # pre-install-cmd hook, so let it use every core the runner has.
           CLONE_JOBS: 8
         run: |
-          cd wp-cli-dev
-          composer install --no-interaction
-
           if [ "$DRY_RUN" = "true" ]; then
             echo "[dry run] Would run: wp maintenance release close-released --bundle"
             exit 0
           fi
+
+          cd wp-cli-dev
+          composer install --no-interaction
 
           # Registered as `maintenance release` in wp-cli-dev's bootstrap.php,
           # with `close-released` as a subcommand of that.

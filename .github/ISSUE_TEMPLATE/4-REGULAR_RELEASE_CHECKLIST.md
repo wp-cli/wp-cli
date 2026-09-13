@@ -99,7 +99,8 @@ assignees: ''
 
 - [ ] Run the [`Prepare Release`](https://github.com/wp-cli/wp-cli/actions/workflows/prepare-release.yml) workflow with the version to release (e.g. `2.13.0`).
 
-    It tags [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/) first and then [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/), which in turn triggers the release workflow. That workflow:
+    It tags [`wp-cli/wp-cli-bundle`](https://github.com/wp-cli/wp-cli-bundle/) first and then [`wp-cli/wp-cli`](https://github.com/wp-cli/wp-cli/), which in turn triggers the release workflow. If the run fails after only one of the tags was pushed, simply re-run it: an existing tag that already points at the release commit is accepted and only the missing one gets pushed. Release tags are never moved. The release workflow then:
+    - Waits for the bundle deployment for this version to finish (the Debian package is built last, so `deb/php-wpcli_${VERSION}_all.deb` showing up in `wp-cli/builds` is the signal) and fails if it never does.
     - Re-checks that the release Phar matches the tag, and refuses to continue if it is stale.
     - Generates the contributor list and changelog (also uploaded as a workflow artifact).
     - Promotes the Phar and manifest in the `builds` repo to stable and generates the checksums.

@@ -82,6 +82,8 @@ jobs:
           repository: wp-cli/builds
           ref: gh-pages
           path: builds
+          # Read-only checkout; nothing here pushes to wp-cli/builds.
+          persist-credentials: false
 
       - name: Set up PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
@@ -138,22 +140,59 @@ jobs:
 
           echo "Release Phar reports $PHAR_VERSION."
 
-      - name: Verify the tags do not already exist
+      # Fails closed: a failed `git ls-remote` is an error, not "the tag does
+      # not exist", because a tag push is effectively irreversible.
+      #
+      # An existing tag is tolerated only when it already points at the commit
+      # being released. That is what a rerun after a partial push looks like
+      # (the bundle got tagged, the wp-cli push failed), and it lets the rerun
+      # finish by pushing only the missing tag. A tag that points anywhere else
+      # is fatal; release tags are never moved.
+      - name: Check whether the tags already exist
+        id: tags
         env:
           TAG: ${{ steps.vars.outputs.tag }}
         run: |
-          FOUND=0
+          MISMATCH=0
 
-          for REPO in wp-cli/wp-cli wp-cli/wp-cli-bundle; do
-            if git ls-remote --tags "https://github.com/${REPO}.git" "refs/tags/${TAG}" | grep -q .; then
-              echo "::error::Tag $TAG already exists in $REPO."
-              FOUND=1
+          for DIR in wp-cli-bundle wp-cli; do
+            EXPECTED="$(git -C "$DIR" rev-parse HEAD)"
+
+            # Asking for both refs makes ls-remote also print the peeled
+            # `^{}` line, i.e. the commit an annotated tag points at.
+            if ! REFS="$(git -C "$DIR" ls-remote --tags origin "refs/tags/${TAG}" "refs/tags/${TAG}^{}")"; then
+              echo "::error::Could not query tags in wp-cli/${DIR}. Refusing to continue."
+              exit 1
             fi
+
+            OUTPUT="${DIR//-/_}_tagged"
+
+            if [ -z "$REFS" ]; then
+              echo "Tag $TAG does not exist in wp-cli/${DIR} yet."
+              echo "${OUTPUT}=false" >> "$GITHUB_OUTPUT"
+              continue
+            fi
+
+            # Annotated tags have a peeled line; lightweight tags do not.
+            ACTUAL="$(printf '%s\n' "$REFS" | awk -v ref="refs/tags/${TAG}^{}" '$2 == ref { print $1 }')"
+            if [ -z "$ACTUAL" ]; then
+              ACTUAL="$(printf '%s\n' "$REFS" | awk -v ref="refs/tags/${TAG}" '$2 == ref { print $1 }')"
+            fi
+
+            if [ "$ACTUAL" != "$EXPECTED" ]; then
+              echo "::error::Tag $TAG already exists in wp-cli/${DIR} and points at ${ACTUAL}, not at the current main (${EXPECTED}). Release tags are never moved; this needs a human."
+              MISMATCH=1
+              continue
+            fi
+
+            echo "::notice::Tag $TAG already exists in wp-cli/${DIR} and points at the current main (${EXPECTED}). It will not be pushed again."
+            echo "${OUTPUT}=true" >> "$GITHUB_OUTPUT"
           done
 
-          exit "$FOUND"
+          exit "$MISMATCH"
 
       - name: Create tag in wp-cli/wp-cli-bundle
+        if: ${{ steps.tags.outputs.wp_cli_bundle_tagged != 'true' }}
         env:
           TAG: ${{ steps.vars.outputs.tag }}
           VERSION: ${{ steps.vars.outputs.version }}
@@ -170,6 +209,7 @@ jobs:
           fi
 
       - name: Create tag in wp-cli/wp-cli
+        if: ${{ steps.tags.outputs.wp_cli_tagged != 'true' }}
         env:
           TAG: ${{ steps.vars.outputs.tag }}
           VERSION: ${{ steps.vars.outputs.version }}

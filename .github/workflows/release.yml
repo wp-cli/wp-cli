@@ -27,8 +27,10 @@ on:
         default: false
         type: boolean
 
+# Every write in this workflow (the wp-cli/builds push, the draft releases)
+# authenticates with ACTIONS_BOT, so the default token only needs to read.
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: wp-cli-release
@@ -46,15 +48,25 @@ env:
   DRY_RUN: ${{ inputs.dry_run || false }}
 
 jobs:
-  prepare-draft-release:
-    name: Prepare Stable Build & Create Draft Releases
+  version:
+    name: Determine Version
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'wp-cli' }}
 
+    outputs:
+      tag: ${{ steps.vars.outputs.tag }}
+      version: ${{ steps.vars.outputs.version }}
+      stable: ${{ steps.vars.outputs.stable }}
+
     steps:
+      # A pushed pre-release tag such as v3.0.0-beta.1 is a legitimate thing to
+      # do that this workflow simply does not handle, so it is skipped rather
+      # than reported as a failed run. On workflow_dispatch a non-stable tag is
+      # an operator error and fails.
       - name: Determine version
         id: vars
         env:
+          EVENT_NAME: ${{ github.event_name }}
           INPUT_TAG: ${{ inputs.tag }}
           REF_NAME: ${{ github.ref_name }}
         run: |
@@ -62,13 +74,33 @@ jobs:
           VERSION="${TAG#v}"
 
           if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            if [ "$EVENT_NAME" = "push" ]; then
+              echo "::notice::'$TAG' is not a stable vX.Y.Z tag. The release automation only handles stable releases, so nothing to do."
+              echo "stable=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
             echo "::error::'$VERSION' is not a stable X.Y.Z version. The release automation only supports stable releases."
             exit 1
           fi
 
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          {
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+            echo "stable=true"
+          } >> "$GITHUB_OUTPUT"
 
+  prepare-draft-release:
+    name: Prepare Stable Build & Create Draft Releases
+    runs-on: ubuntu-latest
+    needs: [version]
+    if: ${{ needs.version.outputs.stable == 'true' }}
+
+    env:
+      TAG: ${{ needs.version.outputs.tag }}
+      VERSION: ${{ needs.version.outputs.version }}
+
+    steps:
       - name: Check out wp-cli/builds repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -82,6 +114,8 @@ jobs:
         with:
           repository: wp-cli/wp-cli-dev
           path: wp-cli-dev
+          # Read-only checkout; nothing here pushes to wp-cli/wp-cli-dev.
+          persist-credentials: false
 
       - name: Set up PHP and Composer
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
@@ -92,13 +126,45 @@ jobs:
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # The bundle Deployment workflow publishes the Phar first and the Debian
+      # package last, so the package is what tells us the deployment for this
+      # version has actually finished. apt users resolve php-wpcli_latest_all.deb,
+      # so it has to follow stable; promoting the Phar without it would leave
+      # them on the previous version.
+      - name: Wait for the bundle deployment to finish (Debian package)
+        run: |
+          cd builds
+          DEB_FILE="deb/php-wpcli_${VERSION}_all.deb"
+
+          # A dry run is there to tell you what is missing, not to wait for it.
+          ATTEMPTS=60
+          if [ "$DRY_RUN" = "true" ]; then
+            ATTEMPTS=1
+          fi
+
+          for _ in $(seq 1 "$ATTEMPTS"); do
+            git fetch --quiet origin gh-pages
+
+            if git cat-file -e "origin/gh-pages:${DEB_FILE}" 2>/dev/null; then
+              # Work from whatever gh-pages is now, not the checkout snapshot,
+              # so the Phar verified and promoted below is the latest one too.
+              git reset --hard --quiet origin/gh-pages
+              echo "$DEB_FILE found in wp-cli/builds."
+              exit 0
+            fi
+
+            echo "$DEB_FILE is not in wp-cli/builds yet, waiting..."
+            sleep 30
+          done
+
+          echo "::error::$DEB_FILE never appeared in wp-cli/builds. Has the bundle Deployment workflow for this version finished successfully?"
+          exit 1
+
       # This is the gate that keeps a stale or failed bundle build from being
       # published as the official stable release. wp-cli-release.phar is
       # produced by a different workflow in a different repository, so nothing
       # else guarantees it corresponds to the tag being released.
       - name: Verify the release Phar matches the tag
-        env:
-          VERSION: ${{ steps.vars.outputs.version }}
         run: |
           PHAR="builds/phar/wp-cli-release.phar"
 
@@ -122,7 +188,10 @@ jobs:
             exit 1
           fi
 
+      # Bounded because this job holds the release concurrency group: a stalled
+      # clone would otherwise block every later release run for six hours.
       - name: Install dependencies for maintenance tools
+        timeout-minutes: 20
         env:
           # The wp-cli-dev composer install clones the whole WP-CLI org via its
           # pre-install-cmd hook, so let it use every core the runner has.
@@ -173,12 +242,10 @@ jobs:
       - name: Upload generated release notes
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: release-notes-${{ steps.vars.outputs.version }}
+          name: release-notes-${{ needs.version.outputs.version }}
           path: release-assets/*.md
 
       - name: Promote release Phar to stable & generate checksums
-        env:
-          VERSION: ${{ steps.vars.outputs.version }}
         run: |
           cd builds/phar
 
@@ -214,24 +281,22 @@ jobs:
 
       # Previously a manual checklist item that this automation dropped: apt
       # users resolve php-wpcli_latest_all.deb, so it has to follow stable.
+      # The package was waited for above, so a miss here is a hard failure
+      # rather than a warning nobody reads on a green run.
       - name: Point the latest Debian package at the new stable version
-        env:
-          VERSION: ${{ steps.vars.outputs.version }}
         run: |
           cd builds/deb
           DEB_FILE="php-wpcli_${VERSION}_all.deb"
 
           if [ ! -f "$DEB_FILE" ]; then
-            echo "::warning::$DEB_FILE not found in wp-cli/builds; leaving php-wpcli_latest_all.deb untouched."
-            exit 0
+            echo "::error::$DEB_FILE not found in wp-cli/builds. php-wpcli_latest_all.deb would keep pointing at the previous release."
+            exit 1
           fi
 
           ln -sfn "$DEB_FILE" php-wpcli_latest_all.deb
           echo "php-wpcli_latest_all.deb -> $DEB_FILE"
 
       - name: Commit & push updated stable build to wp-cli/builds
-        env:
-          VERSION: ${{ steps.vars.outputs.version }}
         run: |
           cd builds
           git config user.name "GitHub Action"
@@ -269,8 +334,6 @@ jobs:
       # It is checked anyway to cover tags pushed by hand in the wrong order,
       # because `gh release create --verify-tag` fails outright without it.
       - name: Wait for the tag to exist in wp-cli/wp-cli-bundle
-        env:
-          TAG: ${{ steps.vars.outputs.tag }}
         run: |
           for _ in $(seq 1 30); do
             if git ls-remote --tags https://github.com/wp-cli/wp-cli-bundle.git "refs/tags/$TAG" | grep -q .; then
@@ -291,8 +354,6 @@ jobs:
       - name: Create or update Draft Release on wp-cli/wp-cli
         env:
           GH_TOKEN: ${{ secrets.ACTIONS_BOT }}
-          TAG: ${{ steps.vars.outputs.tag }}
-          VERSION: ${{ steps.vars.outputs.version }}
         run: |
           if [ "$DRY_RUN" = "true" ]; then
             echo "[dry run] Would create/update draft release $TAG on wp-cli/wp-cli with these assets:"
@@ -322,8 +383,6 @@ jobs:
       - name: Create or update Draft Release on wp-cli/wp-cli-bundle
         env:
           GH_TOKEN: ${{ secrets.ACTIONS_BOT }}
-          TAG: ${{ steps.vars.outputs.tag }}
-          VERSION: ${{ steps.vars.outputs.version }}
         run: |
           if [ "$DRY_RUN" = "true" ]; then
             echo "[dry run] Would create/update draft release $TAG on wp-cli/wp-cli-bundle with these assets:"
