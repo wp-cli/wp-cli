@@ -8,6 +8,8 @@ assignees: 'schlessera'
 ---
 # Patch Release Checklist - v2.x.x
 
+The release automation (`Prepare Release`, `Release`, `Post-Release Automation`) only handles `X.Y.0` releases cut from `main`. Patch releases are cut from a release branch and follow the manual process below; the workflows reject non-zero patch versions, and `Post-Release Automation` skips a published `vX.Y.Z` release with a notice.
+
 ### Preparation
 
 - [ ] Write release post on the [Make.org CLI blog](https://make.wordpress.org/cli/wp-admin/post-new.php)
@@ -88,6 +90,7 @@ assignees: 'schlessera'
     cp wp-cli-release.phar wp-cli.phar
     cp wp-cli-release.manifest.json wp-cli.manifest.json
     md5 -q wp-cli.phar > wp-cli.phar.md5
+    shasum -a 256 wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha256
     shasum -a 512 wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha512
     ```
 
@@ -121,6 +124,7 @@ assignees: 'schlessera'
     cp wp-cli.phar.gpg wp-cli-2.x.x.phar.gpg
     cp wp-cli.phar.asc wp-cli-2.x.x.phar.asc
     cp wp-cli.phar.md5 wp-cli-2.x.x.phar.md5
+    cp wp-cli.phar.sha256 wp-cli-2.x.x.phar.sha256
     cp wp-cli.phar.sha512 wp-cli-2.x.x.phar.sha512
     cp wp-cli.manifest.json wp-cli-2.x.x.manifest.json
     ```
