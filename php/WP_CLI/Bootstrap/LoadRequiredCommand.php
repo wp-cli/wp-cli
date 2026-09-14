@@ -3,6 +3,7 @@
 namespace WP_CLI\Bootstrap;
 
 use WP_CLI;
+use WP_CLI\Configurator;
 use WP_CLI\Path;
 use WP_CLI\Utils;
 
@@ -23,16 +24,23 @@ final class LoadRequiredCommand implements BootstrapStep {
 	 * @return BootstrapState Modified state to pass to the next step.
 	 */
 	public function process( BootstrapState $state ) {
-		if ( $state->getValue( BootstrapState::IS_PROTECTED_COMMAND, false ) ) {
-			return $state;
-		}
-
 		$runner = new RunnerInstance();
 		if ( ! isset( $runner()->config['require'] ) ) {
 			return $state;
 		}
 
-		foreach ( $runner()->config['require'] as $path ) {
+		$files_to_load = $runner()->config['require'];
+
+		if ( $state->getValue( BootstrapState::IS_PROTECTED_COMMAND, false ) ) {
+			// Protected commands must keep working even if a file required through
+			// a config file or `--require` is broken, so those are skipped. Files
+			// passed through the `WP_CLI_REQUIRE` environment variable are set by
+			// whoever invokes WP-CLI itself (e.g. a test runner collecting code
+			// coverage), so they are still loaded.
+			$files_to_load = array_intersect( $files_to_load, Configurator::get_env_require_files() );
+		}
+
+		foreach ( $files_to_load as $path ) {
 			if ( ! file_exists( $path ) ) {
 				$context        = '';
 				$required_files = $runner()->get_required_files();

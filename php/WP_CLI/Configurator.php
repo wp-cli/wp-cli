@@ -96,9 +96,7 @@ class Configurator {
 			$this->config[ $key ] = $details['default'];
 		}
 
-		$env_files = getenv( 'WP_CLI_REQUIRE' )
-		? array_filter( array_map( 'trim', explode( ',', (string) getenv( 'WP_CLI_REQUIRE' ) ) ) )
-		: [];
+		$env_files = self::get_env_require_files();
 
 		if ( ! empty( $env_files ) ) {
 			if ( ! isset( $this->config['require'] ) ) {
@@ -112,6 +110,22 @@ class Configurator {
 			) : [];
 			$this->config['require'] = array_unique( array_merge( $env_files, $require ) );
 		}
+	}
+
+	/**
+	 * Get the files to load that were passed through the `WP_CLI_REQUIRE`
+	 * environment variable.
+	 *
+	 * @return array<int, string> Paths as given in the environment variable.
+	 */
+	public static function get_env_require_files() {
+		$env_files = getenv( 'WP_CLI_REQUIRE' );
+
+		if ( ! $env_files ) {
+			return [];
+		}
+
+		return array_values( array_filter( array_map( 'trim', explode( ',', (string) $env_files ) ) ) );
 	}
 
 	/**
