@@ -41,6 +41,19 @@ Feature: `wp cli` tasks
     And STDERR should be empty
     And the return code should be 0
 
+  Scenario: Dump the list of global parameters in plaintext format
+    Given a WP installation
+
+    # `plaintext` is an accepted alias of `var_export` for this command (see #4774),
+    # so it must emit the var_export representation, not JSON.
+    When I run `wp cli param-dump --format=plaintext`
+    Then STDOUT should contain:
+      """
+      'path' =>
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
   Scenario: Checking whether a global configuration parameter exists or not
     Given a WP installation
     And a custom-cmd.php file:
