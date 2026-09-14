@@ -139,6 +139,7 @@ class LoadRequiredCommandTest extends TestCase {
 	private function get_config_property(): ReflectionProperty {
 		$property = new ReflectionProperty( 'WP_CLI\Runner', 'config' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$property->setAccessible( true );
 		}
 
