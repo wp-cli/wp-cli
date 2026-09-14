@@ -273,34 +273,38 @@ class ConfiguratorTest extends TestCase {
 	public function testGetEnvRequireFiles(): void {
 		$previous = getenv( 'WP_CLI_REQUIRE' );
 
-		putenv( 'WP_CLI_REQUIRE= /path/to/one.php,,/path/to/two.php ' );
-		$this->assertSame( [ '/path/to/one.php', '/path/to/two.php' ], Configurator::get_env_require_files() );
+		try {
+			putenv( 'WP_CLI_REQUIRE= /path/to/one.php,,/path/to/two.php ' );
+			$this->assertSame( [ '/path/to/one.php', '/path/to/two.php' ], Configurator::get_env_require_files() );
 
-		putenv( 'WP_CLI_REQUIRE=' );
-		$this->assertSame( [], Configurator::get_env_require_files() );
+			putenv( 'WP_CLI_REQUIRE=' );
+			$this->assertSame( [], Configurator::get_env_require_files() );
 
-		putenv( 'WP_CLI_REQUIRE' );
-		$this->assertSame( [], Configurator::get_env_require_files() );
-
-		putenv( false === $previous ? 'WP_CLI_REQUIRE' : "WP_CLI_REQUIRE={$previous}" );
+			putenv( 'WP_CLI_REQUIRE' );
+			$this->assertSame( [], Configurator::get_env_require_files() );
+		} finally {
+			putenv( false === $previous ? 'WP_CLI_REQUIRE' : "WP_CLI_REQUIRE={$previous}" );
+		}
 	}
 
 	public function testEnvRequireFilesAreMergedIntoConfig(): void {
 		$previous = getenv( 'WP_CLI_REQUIRE' );
-		$env_file = tempnam( sys_get_temp_dir(), 'wp-cli-test-env-' );
-		$cmd_file = tempnam( sys_get_temp_dir(), 'wp-cli-test-cmd-' );
+		$env_file = (string) tempnam( sys_get_temp_dir(), 'wp-cli-test-env-' );
+		$cmd_file = (string) tempnam( sys_get_temp_dir(), 'wp-cli-test-cmd-' );
 
-		putenv( "WP_CLI_REQUIRE={$env_file}" );
+		try {
+			putenv( "WP_CLI_REQUIRE={$env_file}" );
 
-		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
-		$configurator->merge_array( [ 'require' => [ $cmd_file ] ] );
+			$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+			$configurator->merge_array( [ 'require' => [ $cmd_file ] ] );
 
-		[ $config ] = $configurator->to_array();
+			[ $config ] = $configurator->to_array();
 
-		putenv( false === $previous ? 'WP_CLI_REQUIRE' : "WP_CLI_REQUIRE={$previous}" );
-		unlink( $env_file );
-		unlink( $cmd_file );
-
-		$this->assertSame( [ $env_file, $cmd_file ], $config['require'] );
+			$this->assertSame( [ $env_file, $cmd_file ], $config['require'] );
+		} finally {
+			putenv( false === $previous ? 'WP_CLI_REQUIRE' : "WP_CLI_REQUIRE={$previous}" );
+			unlink( $env_file );
+			unlink( $cmd_file );
+		}
 	}
 }
