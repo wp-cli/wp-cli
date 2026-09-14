@@ -1563,10 +1563,11 @@ class UtilsTest extends TestCase {
 	}
 
 	/**
+	 * @dataProvider dataNormaliseTrustSetting
 	 * @param mixed                    $setting
 	 * @param bool|array<int, string> $expected
 	 */
-	#[DataProvider( 'dataNormaliseTrustSetting' )]
+	#[DataProvider( 'dataNormaliseTrustSetting' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testNormaliseTrustSetting( $setting, $expected ): void {
 		$this->assertSame( $expected, Utils\normalise_trust_setting( $setting ) );
 	}
@@ -1642,7 +1643,10 @@ class UtilsTest extends TestCase {
 		];
 	}
 
-	#[DataProvider( 'dataPromptProjectConfigTrust' )]
+	/**
+	 * @dataProvider dataPromptProjectConfigTrust
+	 */
+	#[DataProvider( 'dataPromptProjectConfigTrust' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testPromptProjectConfigTrust( string $input, string $expected ): void {
 		$in  = fopen( 'php://memory', 'w+' );
 		$out = fopen( 'php://memory', 'w+' );
