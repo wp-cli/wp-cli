@@ -501,6 +501,70 @@ Feature: Run a WP-CLI command
       test
       """
 
+  @skip-windows
+  Scenario: Only required files from the WP_CLI_REQUIRE env var are loaded for protected commands (Unix)
+    Given an empty directory
+    And a env.php file:
+      """
+      <?php
+      echo 'ENVIRONMENT REQUIRE' . PHP_EOL;
+      """
+    And a cmd.php file:
+      """
+      <?php
+      echo 'COMMAND REQUIRE' . PHP_EOL;
+      """
+
+    # Files from `--require` and config files are skipped, so broken extension code can't break protected commands.
+    When I run `wp --require=cmd.php cli info`
+    Then STDOUT should not contain:
+      """
+      COMMAND REQUIRE
+      """
+
+    # Files from the environment are set by whoever invokes WP-CLI itself and still get loaded.
+    When I run `WP_CLI_REQUIRE=env.php wp --require=cmd.php cli info`
+    Then STDOUT should contain:
+      """
+      ENVIRONMENT REQUIRE
+      """
+    And STDOUT should not contain:
+      """
+      COMMAND REQUIRE
+      """
+
+  @require-windows
+  Scenario: Only required files from the WP_CLI_REQUIRE env var are loaded for protected commands (Windows)
+    Given an empty directory
+    And a env.php file:
+      """
+      <?php
+      echo 'ENVIRONMENT REQUIRE' . PHP_EOL;
+      """
+    And a cmd.php file:
+      """
+      <?php
+      echo 'COMMAND REQUIRE' . PHP_EOL;
+      """
+
+    # Files from `--require` and config files are skipped, so broken extension code can't break protected commands.
+    When I run `wp --require=cmd.php cli info`
+    Then STDOUT should not contain:
+      """
+      COMMAND REQUIRE
+      """
+
+    # Files from the environment are set by whoever invokes WP-CLI itself and still get loaded.
+    When I run `set WP_CLI_REQUIRE=env.php&& wp --require=cmd.php cli info`
+    Then STDOUT should contain:
+      """
+      ENVIRONMENT REQUIRE
+      """
+    And STDOUT should not contain:
+      """
+      COMMAND REQUIRE
+      """
+
   @require-windows
   Scenario: Check that required files are used from command arguments and ENV VAR (Windows)
     Given a WP installation
