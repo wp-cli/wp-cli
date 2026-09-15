@@ -169,6 +169,173 @@ final class PathTest extends TestCase {
 		$this->assertSame( $expected, $actual );
 	}
 
+	/**
+	 * @dataProvider dataReplacePathConstsSources
+	 * @param string $source
+	 * @param string $expected
+	 */
+	#[DataProvider( 'dataReplacePathConstsSources' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testReplacePathConstsSources( $source, $expected ): void {
+		$this->assertSame( $expected, Path::replace_path_consts( $source, '/path/to/file.php' ) );
+	}
+
+	/**
+	 * Sources the tokenizer and the regular expression fallback must agree on.
+	 */
+	public static function dataReplacePathConstsSources(): array {
+		return [
+			'bare snippet'             => [
+				"dirname( __FILE__ ) . '",
+				"dirname( '/path/to/file.php' ) . '",
+			],
+			'file and dir'             => [
+				"<?php\necho __FILE__ . __DIR__;",
+				"<?php\necho '/path/to/file.php' . '/path/to';",
+			],
+			'without constants'        => [
+				"<?php\necho 'unchanged';",
+				"<?php\necho 'unchanged';",
+			],
+			'single-quoted string'     => [
+				"<?php\necho '__FILE__' . __FILE__;",
+				"<?php\necho '__FILE__' . '/path/to/file.php';",
+			],
+			'double-quoted string'     => [
+				"<?php\necho \"__DIR__\" . __DIR__;",
+				"<?php\necho \"__DIR__\" . '/path/to';",
+			],
+			'escaped quotes in string' => [
+				"<?php\necho 'it\\'s __FILE__' . \"say \\\"__FILE__\\\"\" . __FILE__;",
+				"<?php\necho 'it\\'s __FILE__' . \"say \\\"__FILE__\\\"\" . '/path/to/file.php';",
+			],
+			'line comments'            => [
+				"<?php\n// __FILE__\n# __DIR__\necho __FILE__;",
+				"<?php\n// __FILE__\n# __DIR__\necho '/path/to/file.php';",
+			],
+			'block comment'            => [
+				"<?php\n/* __FILE__\n * __DIR__ */\necho __DIR__;",
+				"<?php\n/* __FILE__\n * __DIR__ */\necho '/path/to';",
+			],
+			'shebang before open tag'  => [
+				"#!/usr/bin/env wp\n<?php\necho __FILE__;",
+				"#!/usr/bin/env wp\n<?php\necho '/path/to/file.php';",
+			],
+			'windows line endings'     => [
+				"<?php\r\n// __FILE__\r\necho __FILE__;\r\n",
+				"<?php\r\n// __FILE__\r\necho '/path/to/file.php';\r\n",
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataReplacePathConstsTokenizerSources
+	 * @param string $source
+	 * @param string $expected
+	 */
+	#[DataProvider( 'dataReplacePathConstsTokenizerSources' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testReplacePathConstsWithTokenizer( $source, $expected ): void {
+		$this->assertSame( $expected, Path::replace_path_consts( $source, '/path/to/file.php' ) );
+	}
+
+	/**
+	 * Sources only the tokenizer handles correctly, or that are too large for the
+	 * regular expression fallback.
+	 */
+	public static function dataReplacePathConstsTokenizerSources(): array {
+		return [
+			'heredoc'                    => [
+				"<?php\necho <<<HTML\n<a href=\"__FILE__\">it's __DIR__</a>\nHTML;\necho __FILE__;",
+				"<?php\necho <<<HTML\n<a href=\"__FILE__\">it's __DIR__</a>\nHTML;\necho '/path/to/file.php';",
+			],
+			'nowdoc'                     => [
+				"<?php\necho <<<'TXT'\n__FILE__\nTXT;\necho __DIR__;",
+				"<?php\necho <<<'TXT'\n__FILE__\nTXT;\necho '/path/to';",
+			],
+			'inline html'                => [
+				"<p class=\"__FILE__\">it's</p>\n<?php echo __FILE__; ?>\n<p>__DIR__</p>",
+				"<p class=\"__FILE__\">it's</p>\n<?php echo '/path/to/file.php'; ?>\n<p>__DIR__</p>",
+			],
+			'case-insensitive'           => [
+				"<?php\necho __file__ . __Dir__;",
+				"<?php\necho '/path/to/file.php' . '/path/to';",
+			],
+			'unterminated string'        => [
+				"<?php\necho __FILE__; echo 'unterminated __FILE__",
+				"<?php\necho '/path/to/file.php'; echo 'unterminated __FILE__",
+			],
+			'unterminated comment'       => [
+				"<?php\necho __DIR__; /* __FILE__",
+				"<?php\necho '/path/to'; /* __FILE__",
+			],
+			'short echo tag'             => [
+				'<?= __FILE__ ?>',
+				"<?= '/path/to/file.php' ?>",
+			],
+			'not a magic constant'       => [
+				"<?php\necho \$obj->__FILE__, \$__FILE__, __FILE;",
+				"<?php\necho \$obj->__FILE__, \$__FILE__, __FILE;",
+			],
+			'binary content'             => [
+				"<?php\necho __FILE__; ?>\x00\xff\xfe",
+				"<?php\necho '/path/to/file.php'; ?>\x00\xff\xfe",
+			],
+			'empty'                      => [ '', '' ],
+			'large single-quoted string' => [
+				"<?php\n\$html = '" . str_repeat( 'a', 1024 * 1024 ) . "';\necho __FILE__;",
+				"<?php\n\$html = '" . str_repeat( 'a', 1024 * 1024 ) . "';\necho '/path/to/file.php';",
+			],
+			'large double-quoted string' => [
+				"<?php\n\$html = \"" . str_repeat( 'a', 1024 * 1024 ) . "\";\necho __FILE__;",
+				"<?php\n\$html = \"" . str_repeat( 'a', 1024 * 1024 ) . "\";\necho '/path/to/file.php';",
+			],
+			'many quoted strings'        => [
+				"<?php\n" . str_repeat( "\$html .= '<a href=\"https://example.com/\">it\\'s \"quoted\"</a>';\n", 5000 ) . 'echo __FILE__;',
+				"<?php\n" . str_repeat( "\$html .= '<a href=\"https://example.com/\">it\\'s \"quoted\"</a>';\n", 5000 ) . "echo '/path/to/file.php';",
+			],
+			'large block comment'        => [
+				"<?php\n/* " . str_repeat( 'a', 1024 * 1024 ) . " */\necho __FILE__;",
+				"<?php\n/* " . str_repeat( 'a', 1024 * 1024 ) . " */\necho '/path/to/file.php';",
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataReplacePathConstsSources
+	 * @param string $source
+	 * @param string $expected
+	 */
+	#[DataProvider( 'dataReplacePathConstsSources' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testReplacePathConstsWithRegex( $source, $expected ): void {
+		$this->assertSame( $expected, $this->replace_path_consts_with_regex( $source ) );
+	}
+
+	/**
+	 * The regular expression fallback needs to backtrack for every character of a
+	 * string, which exhausts the PCRE JIT stack on large strings. It must fail
+	 * loudly instead of silently returning nothing.
+	 */
+	public function testReplacePathConstsWithRegexThrowsOnPcreFailure(): void {
+		$source = "<?php\n\$html = \"" . str_repeat( 'a', 1024 * 1024 ) . "\";\necho __FILE__;";
+
+		$this->expectException( \RuntimeException::class );
+		$this->expectExceptionMessage( 'Failed to replace the __FILE__ and __DIR__ magic constants' );
+
+		$this->replace_path_consts_with_regex( $source );
+	}
+
+	/**
+	 * @return mixed
+	 */
+	private function replace_path_consts_with_regex( string $source ) {
+		$method = new \ReflectionMethod( Path::class, 'replace_path_consts_with_regex' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$method->setAccessible( true );
+		}
+
+		return $method->invoke( null, $source, '/path/to/file.php', '/path/to' );
+	}
+
 	public function testInsidePhar(): void {
 		$this->assertFalse( Path::inside_phar( '/regular/path/to/file.php' ) );
 		$this->assertTrue( Path::inside_phar( 'phar:///path/to/archive.phar/file.php' ) );
