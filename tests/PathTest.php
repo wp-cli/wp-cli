@@ -224,6 +224,10 @@ final class PathTest extends TestCase {
 				"<?php\r\n// __FILE__\r\necho __FILE__;\r\n",
 				"<?php\r\n// __FILE__\r\necho '/path/to/file.php';\r\n",
 			],
+			'case-insensitive'         => [
+				"<?php\necho __file__ . __Dir__;",
+				"<?php\necho '/path/to/file.php' . '/path/to';",
+			],
 		];
 	}
 
@@ -234,6 +238,10 @@ final class PathTest extends TestCase {
 	 */
 	#[DataProvider( 'dataReplacePathConstsTokenizerSources' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function testReplacePathConstsWithTokenizer( $source, $expected ): void {
+		if ( ! function_exists( 'token_get_all' ) ) {
+			$this->markTestSkipped( 'The tokenizer extension is not available.' );
+		}
+
 		$this->assertSame( $expected, Path::replace_path_consts( $source, '/path/to/file.php' ) );
 	}
 
@@ -254,10 +262,6 @@ final class PathTest extends TestCase {
 			'inline html'                => [
 				"<p class=\"__FILE__\">it's</p>\n<?php echo __FILE__; ?>\n<p>__DIR__</p>",
 				"<p class=\"__FILE__\">it's</p>\n<?php echo '/path/to/file.php'; ?>\n<p>__DIR__</p>",
-			],
-			'case-insensitive'           => [
-				"<?php\necho __file__ . __Dir__;",
-				"<?php\necho '/path/to/file.php' . '/path/to';",
 			],
 			'unterminated string'        => [
 				"<?php\necho __FILE__; echo 'unterminated __FILE__",
@@ -311,8 +315,8 @@ final class PathTest extends TestCase {
 
 	/**
 	 * The regular expression fallback needs to backtrack for every character of a
-	 * string, which exhausts the PCRE JIT stack on large strings. It must fail
-	 * loudly instead of silently returning nothing.
+	 * string, which exhausts the PCRE JIT stack or backtrack limit on large
+	 * strings. It must fail loudly instead of silently returning nothing.
 	 */
 	public function testReplacePathConstsWithRegexThrowsOnPcreFailure(): void {
 		$source = "<?php\n\$html = \"" . str_repeat( 'a', 1024 * 1024 ) . "\";\necho __FILE__;";
@@ -320,7 +324,17 @@ final class PathTest extends TestCase {
 		$this->expectException( \RuntimeException::class );
 		$this->expectExceptionMessage( 'Failed to replace the __FILE__ and __DIR__ magic constants' );
 
-		$this->replace_path_consts_with_regex( $source );
+		// The JIT ignores the backtrack limit and runs out of stack on its own,
+		// but lower the limit so the non-JIT engine fails deterministically too.
+		$backtrack_limit = ini_set( 'pcre.backtrack_limit', '1000' ); // phpcs:ignore WordPress.PHP.IniSet.Risky
+
+		try {
+			$this->replace_path_consts_with_regex( $source );
+		} finally {
+			if ( false !== $backtrack_limit ) {
+				ini_set( 'pcre.backtrack_limit', $backtrack_limit ); // phpcs:ignore WordPress.PHP.IniSet.Risky
+			}
+		}
 	}
 
 	/**

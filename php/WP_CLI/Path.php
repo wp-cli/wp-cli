@@ -32,7 +32,7 @@ class Path {
 	 *
 	 * @var string
 	 */
-	const FILE_DIR_PATTERN = '%(?>#.*?$)|(?>//.*?$)|(?>/\*.*?\*/)|(?>\'(?:(?=(\\\\?))\1.)*?\')|(?>"(?:(?=(\\\\?))\2.)*?")|(?<file>\b__FILE__\b)|(?<dir>\b__DIR__\b)%ms';
+	const FILE_DIR_PATTERN = '%(?>#.*?$)|(?>//.*?$)|(?>/\*.*?\*/)|(?>\'(?:(?=(\\\\?))\1.)*?\')|(?>"(?:(?=(\\\\?))\2.)*?")|(?<file>\b__FILE__\b)|(?<dir>\b__DIR__\b)%msi';
 
 	/**
 	 * Check if a certain path is within a Phar archive.
@@ -266,8 +266,10 @@ class Path {
 	 * Replace magic constants in some PHP source code.
 	 *
 	 * Replaces the __FILE__ and __DIR__ magic constants with the values they are
-	 * supposed to represent at runtime. Occurrences inside strings, heredocs and
-	 * comments are left untouched.
+	 * supposed to represent at runtime. Occurrences inside quoted strings and
+	 * comments are left untouched. When the tokenizer extension is available,
+	 * occurrences inside heredoc/nowdoc strings and inline HTML are left
+	 * untouched as well.
 	 *
 	 * The source is treated like a PHP file, i.e. the code needs to be wrapped in
 	 * PHP open tags. If the source does not contain an open tag at all, it is
