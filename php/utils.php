@@ -79,7 +79,7 @@ function extract_from_phar( $path ) {
 
 	$fname = Path::basename( $path );
 
-	$tmp_path = get_temp_dir() . uniqid( 'wp-cli-extract-from-phar-', true ) . "-$fname";
+	$tmp_path = make_temp_file( 'wp-cli-extract-from-phar-', "-$fname" );
 
 	copy( $path, $tmp_path );
 
@@ -599,27 +599,38 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 
 	$tmpdir = get_temp_dir();
 
+	$created  = false;
+	$attempts = 0;
+
 	do {
 		$tmpfile  = Path::basename( $title );
 		$tmpfile  = preg_replace( '|\.[^.]*$|', '', $tmpfile );
 		$tmpfile .= '-' . substr( md5( (string) mt_rand() ), 0, 6 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand -- no crypto and WP not loaded.
 		$tmpfile  = $tmpdir . $tmpfile . '.' . $ext;
-		$fp       = fopen( $tmpfile, 'xb' );
-		if ( ! $fp && is_writable( $tmpdir ) && file_exists( $tmpfile ) ) {
-			$tmpfile = '';
-			continue;
-		}
-		if ( $fp ) {
-			fclose( $fp );
-		}
-	} while ( ! $tmpfile );
 
-	// @phpstan-ignore booleanNot.alwaysFalse
-	if ( ! $tmpfile ) {
+		// Restrict the file to its owner, as it can hold sensitive input.
+		$old_umask = umask( 0177 );
+		$fp        = @fopen( $tmpfile, 'xb' );
+		umask( $old_umask );
+
+		if ( $fp ) {
+			$created = true;
+			// A short write (e.g. on a full disk) must not leave a truncated file for the editor to open.
+			if ( strlen( $input ) !== fwrite( $fp, $input ) ) {
+				fclose( $fp );
+				@unlink( $tmpfile );
+				WP_CLI::error( 'Error writing to temporary file.' );
+			}
+			fclose( $fp );
+			break;
+		}
+		$tmpfile = '';
+		++$attempts;
+	} while ( $attempts < 100 );
+
+	if ( ! $created ) {
 		WP_CLI::error( 'Error creating temporary file.' );
 	}
-
-	file_put_contents( $tmpfile, $input );
 
 	$editor = getenv( 'EDITOR' );
 	if ( ! $editor ) {
@@ -1338,6 +1349,90 @@ function get_temp_dir() {
 }
 
 /**
+ * Create a unique temporary file safely without following symlinks.
+ *
+ * The file is only readable and writable by its owner on non-Windows systems.
+ *
+ * The file is created in the directory returned by WP-CLI's `get_temp_dir()`
+ * (based on `sys_get_temp_dir()`), not WordPress's `get_temp_dir()`, and is
+ * not removed automatically; callers are responsible for cleaning it up.
+ *
+ * On failure, this function exits via `WP_CLI::error()` rather than throwing.
+ *
+ * @access public
+ * @category System
+ *
+ * @param string $prefix Optional. Prefix for the temporary file name. Default 'wp-cli-'.
+ * @param string $suffix Optional. Suffix for the temporary file name. Default ''.
+ * @return string Path to the created temporary file.
+ */
+function make_temp_file( $prefix = 'wp-cli-', $suffix = '' ) {
+	if ( false !== strpbrk( $prefix, "/\\\0" ) || false !== strpbrk( $suffix, "/\\\0" ) ) {
+		WP_CLI::error( 'Invalid temporary file prefix or suffix.' );
+	}
+
+	$temp_dir = get_temp_dir();
+	$attempts = 0;
+
+	do {
+		$path = $temp_dir . uniqid( $prefix, true ) . $suffix;
+
+		// Restrict the file to its owner, as callers may write sensitive data to it.
+		$old_umask = umask( 0177 );
+		$handle    = @fopen( $path, 'xb' );
+		umask( $old_umask );
+
+		++$attempts;
+	} while ( ! $handle && $attempts < 100 );
+
+	if ( ! $handle ) {
+		WP_CLI::error( 'Failed to create a temporary file.' );
+	}
+
+	fclose( $handle );
+
+	return $path;
+}
+
+/**
+ * Create a unique temporary directory safely without following symlinks.
+ *
+ * The directory is only accessible by its owner on non-Windows systems.
+ *
+ * The directory is created in the directory returned by WP-CLI's `get_temp_dir()`
+ * (based on `sys_get_temp_dir()`), not WordPress's `get_temp_dir()`, and is
+ * not removed automatically; callers are responsible for cleaning it up.
+ *
+ * On failure, this function exits via `WP_CLI::error()` rather than throwing.
+ *
+ * @access public
+ * @category System
+ *
+ * @param string $prefix Optional. Prefix for the temporary directory name. Default 'wp-cli-'.
+ * @return string Path to the created temporary directory with a trailing slash.
+ */
+function make_temp_dir( $prefix = 'wp-cli-' ) {
+	if ( false !== strpbrk( $prefix, "/\\\0" ) ) {
+		WP_CLI::error( 'Invalid temporary directory prefix.' );
+	}
+
+	$temp_dir = get_temp_dir();
+	$attempts = 0;
+
+	do {
+		$path    = $temp_dir . uniqid( $prefix, true );
+		$success = @mkdir( $path, 0700 );
+		++$attempts;
+	} while ( ! $success && $attempts < 100 );
+
+	if ( ! $success ) {
+		WP_CLI::error( 'Failed to create a temporary directory.' );
+	}
+
+	return Path::trailingslashit( $path );
+}
+
+/**
  * Parse a SSH url for its host, port, and path.
  *
  * Similar to parse_url(), but adds support for defined SSH aliases.
@@ -1673,12 +1768,18 @@ function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.C
  * If the "distance" to the closest term is higher than the threshold, an empty
  * string is returned.
  *
- * @param string        $target    Target term to get a suggestion for.
- * @param array<string> $options   Array with possible options.
- * @param int           $threshold Threshold above which to return an empty string.
+ * The built-in alias map below is command vocabulary ('add' => 'create' and
+ * friends) and is applied before, and independently of, the threshold. Callers
+ * matching something other than command names - parameter names, for instance -
+ * should pass false for $use_aliases so that only the distance decides.
+ *
+ * @param string        $target      Target term to get a suggestion for.
+ * @param array<string> $options     Array with possible options.
+ * @param int           $threshold   Threshold above which to return an empty string.
+ * @param bool          $use_aliases Whether to consult the built-in command alias map.
  * @return string
  */
-function get_suggestion( $target, array $options, $threshold = 2 ) {
+function get_suggestion( $target, array $options, $threshold = 2, $use_aliases = true ) {
 
 	$suggestion_map = [
 		'add'        => 'create',
@@ -1703,7 +1804,10 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
 		'v'          => 'version',
 	];
 
-	if ( array_key_exists( $target, $suggestion_map ) && in_array( $suggestion_map[ $target ], $options, true ) ) {
+	if ( $use_aliases
+		&& array_key_exists( $target, $suggestion_map )
+		&& in_array( $suggestion_map[ $target ], $options, true )
+	) {
 		return $suggestion_map[ $target ];
 	}
 

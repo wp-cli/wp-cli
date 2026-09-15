@@ -9,6 +9,7 @@
     "license": "MIT",
     "require": {
         "php": ">=7.2.24 || ^8.0",
+        "composer/semver": "^1.4 || ^2 || ^3",
         "mustache/mustache": "^3.0.0",
         "wp-cli/mustangostang-spyc": "^0.6.3",
         "wp-cli/php-cli-tools": "~0.13.0"

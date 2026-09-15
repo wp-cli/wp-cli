@@ -281,6 +281,8 @@ class WP_CLI {
 	 * * `before_invoke:<command>` (1) - Just before a command is invoked.
 	 * * `after_invoke:<command>` (1) - Just after a command is invoked.
 	 * * `find_command_to_run_pre` - Just before WP-CLI finds the command to run.
+	 * * `unregistered_command_hint` (2) - Filters the hint shown for a command
+	 *   that is not registered.
 	 * * `before_registering_contexts` (1) - Before the contexts are registered.
 	 * * `before_wp_load` - Just before the WP load process begins.
 	 * * `before_wp_config_load` - After wp-config.php has been located.

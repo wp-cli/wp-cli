@@ -1,0 +1,15 @@
+{
+    "packages": [
+        {
+            "name": "acme/bundle-package",
+            "version": "1.0.0",
+            "extra": {
+                "command-hints": {
+                    "package": "The 'package' command ships with the Phar only.",
+                    "overridden": "Hint coming from an installed package."
+                }
+            }
+        }
+    ],
+    "dev": false
+}

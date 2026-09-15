@@ -63,10 +63,7 @@ class Extractor {
 		$res = $zip->open( $zipfile );
 
 		if ( true === $res ) {
-			$name    = Path::basename( $zipfile );
-			$tempdir = Utils\get_temp_dir()
-						. uniqid( 'wp-cli-extract-zipfile-', true )
-						. "-{$name}";
+			$tempdir = Utils\make_temp_dir( 'wp-cli-extract-zipfile-' );
 
 			$zip->extractTo( $tempdir );
 			$zip->close();
@@ -147,10 +144,7 @@ class Extractor {
 		$phar_error = null;
 
 		if ( class_exists( 'PharData' ) ) {
-			$name    = Path::basename( $tarball );
-			$tempdir = Utils\get_temp_dir()
-						. uniqid( 'wp-cli-extract-tarball-', true )
-						. "-{$name}";
+			$tempdir = Utils\make_temp_dir( 'wp-cli-extract-tarball-' );
 
 			try {
 				$phar = new PharData( $tarball );
@@ -357,6 +351,7 @@ class Extractor {
 	 */
 	private static function get_first_subfolder( $path ) {
 		$iterator = new DirectoryIterator( $path );
+		$path     = rtrim( $path, '/\\' );
 
 		foreach ( $iterator as $fileinfo ) {
 			if ( $fileinfo->isDir() && ! $fileinfo->isDot() ) {
