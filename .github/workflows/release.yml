@@ -332,36 +332,39 @@ jobs:
           cd wp-cli-dev
           composer install --no-interaction
 
-      # NOTE: `contrib-list` and `release-notes` derive their content from the
-      # currently *open* milestone when invoked without arguments, which is the
-      # only mode that covers the whole bundle. That means this step must run
-      # before Post-Release Automation closes the milestones, and re-running it
-      # afterwards produces empty output. The guards below turn that into a hard
-      # failure rather than silently overwriting good release notes with nothing.
+      # Both commands take the release explicitly (wp-cli/wp-cli-dev): the
+      # milestone titled after it in wp-cli/wp-cli-bundle, wp-cli/wp-cli and
+      # wp-cli/handbook, and the packages from the bundle's composer.lock at
+      # the release tag, with the previous release's lock as the baseline.
+      # That keeps the output stable across reruns, also after Post-Release
+      # Automation has closed the milestones.
       #
       # The output is a starting point: it is attached to the draft release
       # for the maintainer to review and edit before publishing, and is never
-      # written back to an existing draft. Both commands read the lock of the
-      # last *closed* bundle milestone to find the bundled packages, so
-      # packages bundled since the previous release have to be added by hand
-      # until wp-cli-dev learns to take the milestone and lock explicitly.
+      # written back to an existing draft.
       - name: Generate changelog and contributor list
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.inspect.outputs.version }}
         run: |
           mkdir -p release-notes
           cd wp-cli-dev
 
-          vendor/bin/wp maintenance contrib-list --format=markdown > ../release-notes/contributors.md
-          vendor/bin/wp maintenance release-notes > ../release-notes/changelog.md
+          vendor/bin/wp maintenance contrib-list --release="$VERSION" --format=markdown > ../release-notes/contributors.md
+          vendor/bin/wp maintenance release-notes --release="$VERSION" > ../release-notes/changelog.md
 
-          if [ ! -s ../release-notes/contributors.md ]; then
-            echo "::error::The contributor list came back empty. Is the release milestone still open?"
+          # Informational lines go to stderr, so the files only hold the
+          # markdown; a missing milestone or an empty lock leaves them
+          # without a single contributor link or heading.
+          if ! grep -q '^\[@' ../release-notes/contributors.md; then
+            echo "::error::The contributor list came back without any contributors. Does the $VERSION milestone exist in wp-cli/wp-cli-bundle, wp-cli/wp-cli and wp-cli/handbook?"
+            cat ../release-notes/contributors.md
             exit 1
           fi
 
-          if [ ! -s ../release-notes/changelog.md ]; then
-            echo "::error::The changelog came back empty. Is the release milestone still open?"
+          if ! grep -q '^#' ../release-notes/changelog.md; then
+            echo "::error::The changelog came back without any sections. Does the $VERSION milestone exist in wp-cli/wp-cli-bundle, wp-cli/wp-cli and wp-cli/handbook?"
+            cat ../release-notes/changelog.md
             exit 1
           fi
 
