@@ -54,7 +54,7 @@ const FILE_DIR_PATTERN = '%(?>#.*?$)|(?>//.*?$)|(?>/\*.*?\*/)|(?>\'(?:(?=(\\\\?)
  * If no path is provided, the function checks whether the current WP_CLI instance is
  * running from within a Phar archive.
  *
- * @deprecated 2.13.0 Use Path::inside_phar() instead.
+ * @deprecated 3.0.0 Use Path::inside_phar() instead.
  *
  * @param string|null $path Optional. Path to check. Defaults to null, which checks WP_CLI_ROOT.
  * @return bool Whether path is within a Phar archive.
@@ -302,7 +302,7 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 /**
  * Determine whether a path is absolute.
  *
- * @deprecated 2.13.0 Use Path::is_absolute() instead.
+ * @deprecated 3.0.0 Use Path::is_absolute() instead.
  *
  * @param string $path
  * @return bool
@@ -317,7 +317,7 @@ function is_path_absolute( $path ) {
  * Expands paths that start with ~ to the current user's home directory.
  * Only handles the current user's home directory (not ~username patterns).
  *
- * @deprecated 2.13.0 Use Path::expand_tilde() instead.
+ * @deprecated 3.0.0 Use Path::expand_tilde() instead.
  *
  * @param string $path Path that may contain a tilde.
  * @return string Path with tilde expanded to home directory, or unchanged if tilde not at start or followed by username.
@@ -903,7 +903,7 @@ function is_windows() {
  * Replaces the __FILE__ and __DIR__ magic constants with the values they are
  * supposed to represent at runtime.
  *
- * @deprecated 2.13.0 Use Path::replace_path_consts() instead.
+ * @deprecated 3.0.0 Use Path::replace_path_consts() instead.
  *
  * @param string $source The PHP code to manipulate.
  * @param string $path The path to use instead of the magic constants.
@@ -1249,7 +1249,7 @@ function get_flag_value( $assoc_args, $flag, $default = null ) {
 /**
  * Get the home directory.
  *
- * @deprecated 2.13.0 Use Path::get_home_dir() instead.
+ * @deprecated 3.0.0 Use Path::get_home_dir() instead.
  *
  * @access public
  * @category System
@@ -1263,7 +1263,7 @@ function get_home_dir() {
 /**
  * Appends a trailing slash.
  *
- * @deprecated 2.13.0 Use Path::trailingslashit() instead.
+ * @deprecated 3.0.0 Use Path::trailingslashit() instead.
  *
  * @access public
  * @category System
@@ -1278,7 +1278,7 @@ function trailingslashit( $string ) {
 /**
  * Check if a path is a PHP stream URL.
  *
- * @deprecated 2.13.0 Use Path::is_stream() instead.
+ * @deprecated 3.0.0 Use Path::is_stream() instead.
  *
  * @access public
  * @category System
@@ -1300,7 +1300,7 @@ function is_stream( $path ) {
  * Ensures upper-case drive letters on Windows systems.
  * Allows for PHP file wrappers.
  *
- * @deprecated 2.13.0 Use Path::normalize() instead.
+ * @deprecated 3.0.0 Use Path::normalize() instead.
  *
  * @access public
  * @category System
@@ -1573,7 +1573,7 @@ function parse_str_to_argv( $arguments ) {
 /**
  * Locale-independent version of basename()
  *
- * @deprecated 2.13.0 Use Path::basename() instead.
+ * @deprecated 3.0.0 Use Path::basename() instead.
  *
  * @access public
  *
@@ -1843,7 +1843,7 @@ function get_suggestion( $target, array $options, $threshold = 2, $use_aliases =
  *
  * Use the __FILE__ or __DIR__ constants as a starting point.
  *
- * @deprecated 2.13.0 Use Path::phar_safe() instead.
+ * @deprecated 3.0.0 Use Path::phar_safe() instead.
  *
  * @param string $path An absolute path that might be within a Phar.
  * @return string A Phar-safe version of the path.
