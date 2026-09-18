@@ -29,6 +29,15 @@ class WpHttpCacheManagerPrefetchTest extends TestCase {
 	/** @var bool */
 	private static $hooked = false;
 
+	/** @var bool Whether the http_request_options hook should hand out the canned transport. */
+	private static $intercept = false;
+
+	/** @var ReflectionProperty */
+	private $runner_config;
+
+	/** @var mixed Runner config before the test replaced it. */
+	private $prev_config;
+
 	/** @var array<int, string> Prefetch temp files that existed before the test ran. */
 	private $stale_temp_files = [];
 
@@ -40,13 +49,14 @@ class WpHttpCacheManagerPrefetchTest extends TestCase {
 		WP_CLI::set_logger( $this->logger );
 
 		// The logger consults the runner's debug setting, which no test has configured.
-		$runner        = WP_CLI::get_runner();
-		$runner_config = new ReflectionProperty( $runner, 'config' );
+		$runner              = WP_CLI::get_runner();
+		$this->runner_config = new ReflectionProperty( $runner, 'config' );
 		if ( PHP_VERSION_ID < 80100 ) {
 			// @phpstan-ignore method.deprecated
-			$runner_config->setAccessible( true );
+			$this->runner_config->setAccessible( true );
 		}
-		$runner_config->setValue( $runner, [ 'debug' => false ] );
+		$this->prev_config = $this->runner_config->getValue( $runner );
+		$this->runner_config->setValue( $runner, [ 'debug' => false ] );
 
 		$this->cache_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-prefetch', true );
 		$this->cache     = new FileCache( $this->cache_dir, 600, 1024 * 1024 );
@@ -55,12 +65,16 @@ class WpHttpCacheManagerPrefetchTest extends TestCase {
 		Prefetch_Requests_Transport::$body    = null;
 		Prefetch_Requests_Transport::$batches = [];
 		$this->stale_temp_files               = $this->temp_files();
+		self::$intercept                      = true;
 
+		// Hooks cannot be removed, so the one registered here stays out of the way outside these tests.
 		if ( ! self::$hooked ) {
 			WP_CLI::add_hook(
 				'http_request_options',
 				static function ( $options ) {
-					$options['transport'] = new Prefetch_Requests_Transport();
+					if ( self::$intercept ) {
+						$options['transport'] = new Prefetch_Requests_Transport();
+					}
 					return $options;
 				}
 			);
@@ -69,7 +83,9 @@ class WpHttpCacheManagerPrefetchTest extends TestCase {
 	}
 
 	public function tear_down(): void {
+		self::$intercept = false;
 		$this->remove_dir( $this->cache_dir );
+		$this->runner_config->setValue( WP_CLI::get_runner(), $this->prev_config );
 		if ( $this->prev_logger ) {
 			WP_CLI::set_logger( $this->prev_logger );
 		}
@@ -131,6 +147,7 @@ class WpHttpCacheManagerPrefetchTest extends TestCase {
 
 		$this->assertSame( 0, $this->manager->prefetch( [ 'https://example.com/a.zip' ] ) );
 		$this->assertSame( [], Prefetch_Requests_Transport::$batches );
+		$this->assertSame( '', $this->logger->stdout );
 	}
 
 	public function test_prefetch_skips_urls_that_are_already_cached(): void {

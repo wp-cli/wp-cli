@@ -125,7 +125,11 @@ class WpHttpCacheManager {
 	 * upgrader's own download still runs for it. Fetching is skipped when the
 	 * cache is disabled or when WordPress is configured to block or proxy
 	 * outbound requests, because those settings are applied by the WordPress
-	 * HTTP API and this method does not go through it.
+	 * HTTP API and this method does not go through it. For the same reason
+	 * WordPress's request filters (http_request_args, pre_http_request) are
+	 * not applied here: a package that depends on them, such as one that
+	 * needs an authorization header, fails validation and is downloaded by
+	 * the upgrader as before.
 	 *
 	 * @param string[] $urls        URLs to fetch.
 	 * @param int      $concurrency Maximum number of downloads in flight at once.
