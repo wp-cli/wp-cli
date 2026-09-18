@@ -43,6 +43,21 @@ Feature: Review CLI information
       "php_memory_limit":
       """
 
+  Scenario: Display OS virtual memory limit
+    Given an empty directory
+
+    When I run `wp cli info`
+    Then STDOUT should contain:
+      """
+      OS virtual memory limit (ulimit -v):
+      """
+
+    When I run `wp cli info --format=json`
+    Then STDOUT should contain:
+      """
+      "os_virtual_memory_limit":
+      """
+
   Scenario: Warn about low memory limit
     Given an empty directory
 
@@ -76,6 +91,25 @@ Feature: Review CLI information
       PHP memory limit:	512M
       """
     And STDERR should be empty
+
+  @require-linux
+  Scenario: Warn about restrictive OS virtual memory limit (ulimit -v)
+    Given an empty directory
+
+    # `ulimit -v` cannot be lowered/raised on Windows or macOS, so this reproduces
+    # https://github.com/wp-cli/wp-cli/issues/6326 only where it can be simulated:
+    # a generous PHP memory_limit, but a much tighter OS-level virtual memory
+    # limit, which is a common cause of "mmap() failed: Cannot allocate memory"
+    # errors that increasing memory_limit does not fix.
+    When I try `ulimit -v 131072 && {INVOKE_WP_CLI_WITH_PHP_ARGS--dmemory_limit=748M} cli info`
+    Then STDOUT should contain:
+      """
+      OS virtual memory limit (ulimit -v):	128M
+      """
+    And STDERR should contain:
+      """
+      This shell's OS-level virtual memory limit (`ulimit -v`) is set to 128M, which is lower than PHP's memory limit (748M).
+      """
 
   @require-windows
   Scenario: wp cli info detects the MySQL binary on Windows
