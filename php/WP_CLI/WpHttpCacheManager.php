@@ -166,6 +166,13 @@ class WpHttpCacheManager {
 			? 'WordPress/' . get_bloginfo( 'version' ) . '; ' . home_url( '/' )
 			: 'WP-CLI/' . WP_CLI_VERSION;
 
+		// make_temp_file() exits the process when it cannot create a file; the
+		// upgrader can still download without a prefetch, so bow out instead.
+		if ( ! is_writable( $temp_dir ) ) {
+			WP_CLI::debug( 'Package prefetch skipped: the temp directory is not writable.', 'http' );
+			return 0;
+		}
+
 		WP_CLI::log( sprintf( 'Downloading %d packages...', count( $pending ) ) );
 
 		RequestsLibrary::register_autoloader();
@@ -177,58 +184,75 @@ class WpHttpCacheManager {
 			$requests      = [];
 			$files         = [];
 			$batch_options = [];
-			foreach ( $chunk as $url ) {
-				$files[ $url ] = $temp_dir . uniqid( 'wp-cli-prefetch-', true );
-				$options       = [
-					'filename'         => $files[ $url ],
-					'timeout'          => 300,
-					'connect_timeout'  => 10,
-					'follow_redirects' => true,
-					'useragent'        => $user_agent,
-					'verify'           => ! empty( ini_get( 'curl.cainfo' ) ) ? ini_get( 'curl.cainfo' ) : true,
-				];
-				/** This hook is documented in php/utils.php */
-				$options = WP_CLI::do_hook( 'http_request_options', $options, 'GET', $url, null, [] );
-
-				// Requests reads the transport from the batch options, not from a request's own.
-				if ( isset( $options['transport'] ) ) {
-					$batch_options['transport'] = $options['transport'];
-					unset( $options['transport'] );
-				}
-
-				$requests[ $url ] = [
-					'url'     => $url,
-					'type'    => 'GET',
-					'headers' => [],
-					'data'    => [],
-					'options' => $options,
-				];
-			}
+			$transport     = null;
 
 			try {
-				$responses = $requests_class::request_multiple( $requests, $batch_options );
-			} catch ( \Exception $exception ) {
-				WP_CLI::debug( 'Package prefetch failed: ' . $exception->getMessage(), 'http' );
-				$responses = [];
-			}
+				foreach ( $chunk as $url ) {
+					$options = $this->prefetch_request_options( $url, $user_agent );
 
-			foreach ( $chunk as $url ) {
-				$response = isset( $responses[ $url ] ) ? $responses[ $url ] : null;
-				$file     = $files[ $url ];
-				$success  = is_object( $response )
-					&& ! empty( $response->success )
-					&& isset( $response->status_code )
-					&& 200 === (int) $response->status_code
-					&& $this->validate_downloaded_file( $file, $url );
+					// Requests reads the transport from the batch options, not from a
+					// request's own, so every request in a batch has to share one. A
+					// URL handed a different transport is left to the upgrader.
+					$hooked_transport = isset( $options['transport'] ) ? $options['transport'] : null;
+					$transport_class  = '';
+					if ( is_object( $hooked_transport ) ) {
+						$transport_class = get_class( $hooked_transport );
+					} elseif ( is_string( $hooked_transport ) ) {
+						$transport_class = $hooked_transport;
+					}
+					if ( null === $transport ) {
+						$transport = $transport_class;
+						if ( '' !== $transport_class ) {
+							$batch_options['transport'] = $hooked_transport;
+						}
+					} elseif ( $transport !== $transport_class ) {
+						WP_CLI::debug( "Prefetch of {$url} skipped: its transport differs from the batch's; the upgrader will download it.", 'http' );
+						continue;
+					}
+					unset( $options['transport'] );
 
-				if ( $success && $this->cache->import( $this->whitelist[ $url ]['key'], $file ) ) {
-					++$cached;
-				} else {
-					WP_CLI::debug( "Prefetch of {$url} failed; the upgrader will download it.", 'http' );
+					$files[ $url ]       = Utils\make_temp_file( 'wp-cli-prefetch-' );
+					$options['filename'] = $files[ $url ];
+					$requests[ $url ]    = [
+						'url'     => $url,
+						'type'    => 'GET',
+						'headers' => [],
+						'data'    => [],
+						'options' => $options,
+					];
 				}
 
-				if ( file_exists( $file ) ) {
-					unlink( $file );
+				if ( empty( $requests ) ) {
+					continue;
+				}
+
+				try {
+					$responses = $requests_class::request_multiple( $requests, $batch_options );
+				} catch ( \Exception $exception ) {
+					WP_CLI::debug( 'Package prefetch failed: ' . $exception->getMessage(), 'http' );
+					$responses = [];
+				}
+
+				foreach ( $files as $url => $file ) {
+					$response = isset( $responses[ $url ] ) ? $responses[ $url ] : null;
+					$success  = is_object( $response )
+						&& ! empty( $response->success )
+						&& isset( $response->status_code )
+						&& 200 === (int) $response->status_code
+						&& $this->validate_downloaded_file( $file, $url );
+
+					if ( $success && $this->cache->import( $this->whitelist[ $url ]['key'], $file ) ) {
+						++$cached;
+						WP_CLI::debug( "Prefetched {$url}.", 'http' );
+					} else {
+						WP_CLI::debug( "Prefetch of {$url} failed; the upgrader will download it.", 'http' );
+					}
+				}
+			} finally {
+				foreach ( $files as $file ) {
+					if ( file_exists( $file ) ) {
+						unlink( $file );
+					}
 				}
 			}
 		}
@@ -244,6 +268,26 @@ class WpHttpCacheManager {
 		);
 
 		return $cached;
+	}
+
+	/**
+	 * Request options for one prefetch download, after the http_request_options hook.
+	 *
+	 * @param string $url        URL to download.
+	 * @param string $user_agent User agent to send.
+	 * @return array<string, mixed>
+	 */
+	private function prefetch_request_options( $url, $user_agent ) {
+		$options = [
+			'timeout'          => 300,
+			'connect_timeout'  => 10,
+			'follow_redirects' => true,
+			'useragent'        => $user_agent,
+			'verify'           => ! empty( ini_get( 'curl.cainfo' ) ) ? ini_get( 'curl.cainfo' ) : true,
+		];
+
+		/** This hook is documented in php/utils.php */
+		return WP_CLI::do_hook( 'http_request_options', $options, 'GET', $url, null, [] );
 	}
 
 	/**

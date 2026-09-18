@@ -32,6 +32,12 @@ class WpHttpCacheManagerPrefetchTest extends TestCase {
 	/** @var bool Whether the http_request_options hook should hand out the canned transport. */
 	private static $intercept = false;
 
+	/** @var array<int, string> URLs the hook hands a different transport than the canned one. */
+	private static $odd_transport_urls = [];
+
+	/** @var array<int, string> URLs the hook throws for. */
+	private static $throwing_urls = [];
+
 	/** @var ReflectionProperty */
 	private $runner_config;
 
@@ -66,15 +72,23 @@ class WpHttpCacheManagerPrefetchTest extends TestCase {
 		Prefetch_Requests_Transport::$batches = [];
 		$this->stale_temp_files               = $this->temp_files();
 		self::$intercept                      = true;
+		self::$odd_transport_urls             = [];
+		self::$throwing_urls                  = [];
 
 		// Hooks cannot be removed, so the one registered here stays out of the way outside these tests.
 		if ( ! self::$hooked ) {
 			WP_CLI::add_hook(
 				'http_request_options',
-				static function ( $options ) {
-					if ( self::$intercept ) {
-						$options['transport'] = new Prefetch_Requests_Transport();
+				static function ( $options, $method, $url ) {
+					if ( ! self::$intercept ) {
+						return $options;
 					}
+					if ( in_array( $url, self::$throwing_urls, true ) ) {
+						throw new RuntimeException( "Hook failure for {$url}." );
+					}
+					$options['transport'] = in_array( $url, self::$odd_transport_urls, true )
+						? 'Some_Other_Transport'
+						: new Prefetch_Requests_Transport();
 					return $options;
 				}
 			);
@@ -202,6 +216,39 @@ class WpHttpCacheManagerPrefetchTest extends TestCase {
 
 		$this->assertSame( 0, $this->manager->prefetch( [ 'https://example.com/a.zip', 'https://example.com/b.zip' ] ) );
 		$this->assertCount( 1, Prefetch_Requests_Transport::$batches );
+		$this->assertFalse( $this->cache->has( 'plugin/a-1.0.zip' ) );
+		$this->assert_no_temp_files_left();
+	}
+
+	public function test_prefetch_leaves_a_url_with_a_different_transport_to_the_upgrader(): void {
+		Prefetch_Requests_Transport::$body = $this->zip_bytes();
+		self::$odd_transport_urls          = [ 'https://example.com/b.zip' ];
+		$this->manager->whitelist_url( 'https://example.com/a.zip', 'plugin/a-1.0.zip' );
+		$this->manager->whitelist_url( 'https://example.com/b.zip', 'plugin/b-1.0.zip' );
+
+		// Requests takes one transport per batch, so b.zip is skipped rather than sent through a.zip's.
+		$this->assertSame( 1, $this->manager->prefetch( [ 'https://example.com/a.zip', 'https://example.com/b.zip' ] ) );
+		$this->assertSame( [ [ 'https://example.com/a.zip' ] ], Prefetch_Requests_Transport::$batches );
+		$this->assertNotFalse( $this->cache->has( 'plugin/a-1.0.zip' ) );
+		$this->assertFalse( $this->cache->has( 'plugin/b-1.0.zip' ) );
+		$this->assert_no_temp_files_left();
+	}
+
+	public function test_prefetch_removes_its_temp_files_when_the_options_hook_throws(): void {
+		Prefetch_Requests_Transport::$body = $this->zip_bytes();
+		self::$throwing_urls               = [ 'https://example.com/b.zip' ];
+		$this->manager->whitelist_url( 'https://example.com/a.zip', 'plugin/a-1.0.zip' );
+		$this->manager->whitelist_url( 'https://example.com/b.zip', 'plugin/b-1.0.zip' );
+
+		try {
+			$this->manager->prefetch( [ 'https://example.com/a.zip', 'https://example.com/b.zip' ] );
+			$this->fail( 'The hook exception should propagate.' );
+		} catch ( RuntimeException $exception ) {
+			$this->assertSame( 'Hook failure for https://example.com/b.zip.', $exception->getMessage() );
+		}
+
+		// a.zip's temp file was created before the hook threw for b.zip.
+		$this->assertSame( [], Prefetch_Requests_Transport::$batches );
 		$this->assertFalse( $this->cache->has( 'plugin/a-1.0.zip' ) );
 		$this->assert_no_temp_files_left();
 	}
