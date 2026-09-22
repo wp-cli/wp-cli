@@ -1151,12 +1151,12 @@ Feature: WP-CLI Commands
       WP_CLI::add_hook(
         'unregistered_command_hint',
         function ( $hint, $command ) {
-          if ( 'ftp' === $command ) {
-            return "The 'ftp' command is provided by the wp-cli/ftp-command package.";
+          if ( 'ftpdeploy' === $command ) {
+            return "The 'ftpdeploy' command is provided by the wp-cli/ftpdeploy-command package.";
           }
 
-          if ( 'cli ftp' === $command ) {
-            return "The 'cli ftp' subcommand is provided by the wp-cli/ftp-command package.";
+          if ( 'cli ftpdeploy' === $command ) {
+            return "The 'cli ftpdeploy' subcommand is provided by the wp-cli/ftpdeploy-command package.";
           }
 
           return $hint;
@@ -1164,19 +1164,19 @@ Feature: WP-CLI Commands
       );
       """
 
-    When I try `wp --require=hint.php ftp`
+    When I try `wp --require=hint.php ftpdeploy`
     Then STDERR should contain:
       """
-      Error: 'ftp' is not a registered wp command. See 'wp help' for available commands.
-      The 'ftp' command is provided by the wp-cli/ftp-command package.
+      Error: 'ftpdeploy' is not a registered wp command. See 'wp help' for available commands.
+      The 'ftpdeploy' command is provided by the wp-cli/ftpdeploy-command package.
       """
     And the return code should be 1
 
-    When I try `wp --require=hint.php cli ftp`
+    When I try `wp --require=hint.php cli ftpdeploy`
     Then STDERR should contain:
       """
-      Error: 'ftp' is not a registered subcommand of 'cli'. See 'wp help cli' for available subcommands.
-      The 'cli ftp' subcommand is provided by the wp-cli/ftp-command package.
+      Error: 'ftpdeploy' is not a registered subcommand of 'cli'. See 'wp help cli' for available subcommands.
+      The 'cli ftpdeploy' subcommand is provided by the wp-cli/ftpdeploy-command package.
       """
     And the return code should be 1
 
@@ -1187,7 +1187,7 @@ Feature: WP-CLI Commands
       """
     And STDERR should not contain:
       """
-      ftp-command
+      ftpdeploy-command
       """
     And the return code should be 1
 
