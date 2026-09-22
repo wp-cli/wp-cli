@@ -197,7 +197,7 @@ class DocParser {
 	 */
 	public function get_param_desc( $key ) {
 
-		if ( preg_match( "/\[?--{$key}=.+\n: (.+?)(\n|$)/", $this->doc_comment, $matches ) ) {
+		if ( preg_match( '/' . self::get_param_token_regex( $key ) . '.+\n: (.+?)(\n|$)/', $this->doc_comment, $matches ) ) {
 			return $matches[1];
 		}
 
@@ -211,7 +211,21 @@ class DocParser {
 	 * @return array<string, mixed>|null
 	 */
 	public function get_param_args( $key ) {
-		return $this->get_arg_or_param_args( "/^\[?--{$key}=.*/" );
+		return $this->get_arg_or_param_args( '/^' . self::get_param_token_regex( $key ) . '.*/' );
+	}
+
+	/**
+	 * Get the regex fragment that matches the synopsis token of a given parameter.
+	 *
+	 * Covers both `--<key>=<value>` and the optional-value form `--<key>[=<value>]`,
+	 * each of which may additionally be wrapped in brackets when the parameter itself
+	 * is optional.
+	 *
+	 * @param string $key Parameter's key.
+	 * @return string
+	 */
+	private static function get_param_token_regex( $key ) {
+		return "\[?--{$key}\[?=";
 	}
 
 	/**

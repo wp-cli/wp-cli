@@ -428,3 +428,63 @@ Feature: Argument validation
       """
       Did you mean '--create'?
       """
+
+  Scenario: A parameter whose value is optional honors its documented default and options
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * Plays some music.
+       *
+       * ## OPTIONS
+       *
+       * [--volume[=<level>]]
+       * : How loud to play it.
+       * ---
+       * default: quiet
+       * options:
+       *   - quiet
+       *   - loud
+       * ---
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command(
+      	'rock-on',
+      	function ( $args, $assoc_args ) {
+      		WP_CLI::success( var_export( $assoc_args['volume'], true ) );
+      	}
+      );
+      """
+
+    # The documented default is applied when the parameter is left out.
+    When I run `wp --require=custom-cmd.php rock-on`
+    Then STDOUT should be:
+      """
+      Success: 'quiet'
+      """
+    And STDERR should be empty
+
+    When I run `wp --require=custom-cmd.php rock-on --volume=loud`
+    Then STDOUT should be:
+      """
+      Success: 'loud'
+      """
+    And STDERR should be empty
+
+    # Passed as a flag, the value stays boolean and clears the options check.
+    When I run `wp --require=custom-cmd.php rock-on --volume`
+    Then STDOUT should be:
+      """
+      Success: true
+      """
+    And STDERR should be empty
+
+    # A value outside the documented list is rejected.
+    When I try `wp --require=custom-cmd.php rock-on --volume=deafening`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Invalid value specified for 'volume' (How loud to play it.)
+      """
