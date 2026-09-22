@@ -285,4 +285,88 @@ EOB
 		$this->assertEquals( [], DocParser::get_deprecated_assoc_args( '', $doc ) );
 		$this->assertEquals( [], DocParser::get_deprecated_assoc_args( $synopsis, null ) );
 	}
+
+	public function test_param_with_optional_value(): void {
+		$doc = new DocParser(
+			<<<'EOB'
+/**
+ * Rock and roll!
+ *
+ * ## OPTIONS
+ *
+ * [--volume[=<level>]]
+ * : How loud to play it.
+ * ---
+ * default: quiet
+ * options:
+ *   - quiet
+ *   - loud
+ * ---
+ *
+ * [--volume-boost=<db>]
+ * : Extra decibels.
+ * ---
+ * default: 0
+ * ---
+ */
+EOB
+		);
+
+		$this->assertSame( 'How loud to play it.', $doc->get_param_desc( 'volume' ) );
+
+		$expected = [
+			'default' => 'quiet',
+			'options' => [ 'quiet', 'loud' ],
+		];
+		$this->assertEquals( $expected, $doc->get_param_args( 'volume' ) );
+
+		// A parameter whose name merely starts with another one must not be picked up.
+		$this->assertSame( 'Extra decibels.', $doc->get_param_desc( 'volume-boost' ) );
+		$this->assertEquals( [ 'default' => 0 ], $doc->get_param_args( 'volume-boost' ) );
+	}
+
+	public function test_param_with_optional_value_is_never_confused_with_prefix(): void {
+		$doc = new DocParser(
+			<<<'EOB'
+/**
+ * Rock and roll!
+ *
+ * ## OPTIONS
+ *
+ * [--volume-boost[=<db>]]
+ * : Extra decibels.
+ * ---
+ * default: 3
+ * ---
+ */
+EOB
+		);
+
+		$this->assertNull( $doc->get_param_args( 'volume' ) );
+		$this->assertSame( '', $doc->get_param_desc( 'volume' ) );
+	}
+
+	public function test_get_deprecated_assoc_args_with_optional_value(): void {
+		$doc = new DocParser(
+			<<<'EOB'
+/**
+ * Command with a deprecated argument that takes an optional value.
+ *
+ * ## OPTIONS
+ *
+ * [--old[=<old>]]
+ * : Old parameter.
+ * ---
+ * deprecated: Use `--new` instead.
+ * ---
+ */
+EOB
+		);
+
+		$synopsis = '[--old[=<old>]]';
+		$expected = [ 'old' => 'Use `--new` instead.' ];
+
+		$this->assertEquals( $expected, DocParser::get_deprecated_assoc_args( $synopsis, $doc ) );
+		$this->assertEquals( $expected, DocParser::get_deprecated_assoc_args( SynopsisParser::parse( $synopsis ), $doc ) );
+	}
 }
