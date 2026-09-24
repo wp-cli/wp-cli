@@ -280,11 +280,8 @@ class Extractor {
 				);
 			}
 
-			if ( file_exists( $dest_path ) && is_writable( $dest_path ) ) {
-				copy( $item, $dest_path );
-			} elseif ( ! file_exists( $dest_path ) ) {
-				copy( $item, $dest_path );
-			} else {
+			$writable = ! file_exists( $dest_path ) || is_writable( $dest_path );
+			if ( ! $writable || ! copy( $item->getPathname(), $dest_path ) ) {
 				$error = 1;
 				WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathname() . "' to current directory." );
 			}
