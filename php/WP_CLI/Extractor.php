@@ -68,12 +68,14 @@ class Extractor {
 			$zip->extractTo( $tempdir );
 			$zip->close();
 
-			self::copy_overwrite_files(
-				self::get_first_subfolder( $tempdir ),
-				$dest
-			);
-
-			self::rmdir( $tempdir );
+			try {
+				self::copy_overwrite_files(
+					self::get_first_subfolder( $tempdir ),
+					$dest
+				);
+			} finally {
+				self::rmdir_quietly( $tempdir );
+			}
 		} else {
 			throw new Exception(
 				sprintf(
@@ -110,13 +112,16 @@ class Extractor {
 		}
 
 		$tar_error = null;
+		$tempdir   = Utils\make_temp_dir( 'wp-cli-extract-tarball-' );
 
 		try {
-			// Note: directory must exist for tar --directory to work.
+			// Extract into a temporary folder first, so that the archive
+			// contents (e.g. symbolic links) can be validated before anything
+			// is written to the destination.
 			$force_local = Utils\is_windows() ? ' --force-local' : '';
 			$cmd         = Utils\esc_cmd(
 				"tar xz{$force_local} --strip-components=1 --directory=%s -f %s",
-				Path::normalize( $dest ),
+				Path::normalize( $tempdir ),
 				Path::normalize( $tarball )
 			);
 
@@ -126,11 +131,9 @@ class Extractor {
 				true /*return_detailed*/
 			);
 
-			if ( 0 === $process_run->return_code ) {
-				return;
+			if ( 0 !== $process_run->return_code ) {
+				throw new Exception( (string) self::tar_error_msg( $process_run ) );
 			}
-
-			throw new Exception( (string) self::tar_error_msg( $process_run ) );
 		} catch ( Exception $e ) {
 			$tar_error = $e->getMessage();
 			if ( class_exists( 'PharData' ) ) {
@@ -141,6 +144,17 @@ class Extractor {
 			}
 		}
 
+		if ( null === $tar_error ) {
+			try {
+				self::copy_overwrite_files( $tempdir, $dest );
+				return;
+			} finally {
+				self::rmdir_quietly( $tempdir );
+			}
+		}
+
+		self::rmdir_quietly( $tempdir );
+
 		$phar_error = null;
 
 		if ( class_exists( 'PharData' ) ) {
@@ -149,24 +163,23 @@ class Extractor {
 			try {
 				$phar = new PharData( $tarball );
 				$phar->extractTo( $tempdir );
-
-				self::copy_overwrite_files(
-					self::get_first_subfolder( $tempdir ),
-					$dest
-				);
-				return;
 			} catch ( Exception $e ) {
 				$phar_error = $e->getMessage();
-			} finally {
-				if ( is_dir( $tempdir ) ) {
-					try {
-						self::rmdir( $tempdir );
-					} catch ( Exception $e ) {
-						// Ignore cleanup errors to avoid masking primary exceptions.
-						unset( $e );
-					}
+			}
+
+			if ( null === $phar_error ) {
+				try {
+					self::copy_overwrite_files(
+						self::get_first_subfolder( $tempdir ),
+						$dest
+					);
+					return;
+				} finally {
+					self::rmdir_quietly( $tempdir );
 				}
 			}
+
+			self::rmdir_quietly( $tempdir );
 		}
 
 		$errors = [];
@@ -188,6 +201,13 @@ class Extractor {
 	 * Copy files from source directory to destination directory. Source
 	 * directory must exist.
 	 *
+	 * Symbolic links are never copied, and existing symbolic links in the
+	 * destination are never written through: a symbolic link in the source
+	 * aborts the copy before anything is written, an existing symbolic link to
+	 * a file is replaced by the copied file, and an existing symbolic link to
+	 * a directory is only accepted when it resolves to a location inside the
+	 * destination directory.
+	 *
 	 * @param string $source
 	 * @param string $dest
 	 * @return void
@@ -201,10 +221,26 @@ class Extractor {
 			RecursiveIteratorIterator::SELF_FIRST
 		);
 
+		/**
+		 * @var \SplFileInfo $item
+		 */
+		foreach ( $iterator as $item ) {
+			if ( $item->isLink() ) {
+				throw new Exception(
+					"Refusing to extract symbolic link '" . $iterator->getSubPathname() . "'."
+				);
+			}
+		}
+
 		$error = 0;
 
 		if ( ! is_dir( $dest ) ) {
 			mkdir( $dest, 0755, true );
+		}
+
+		$dest_root = realpath( $dest );
+		if ( false === $dest_root ) {
+			throw new Exception( "Could not resolve destination folder '{$dest}'." );
 		}
 
 		/**
@@ -215,14 +251,37 @@ class Extractor {
 			$dest_path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathname();
 
 			if ( $item->isDir() ) {
-				if ( ! is_dir( $dest_path ) ) {
+				if ( is_link( $dest_path ) ) {
+					$real_path = realpath( $dest_path );
+					if ( false === $real_path || ! is_dir( $real_path ) || ! self::is_inside( $real_path, $dest_root ) ) {
+						throw new Exception(
+							"Refusing to write through symbolic link '" . $iterator->getSubPathname() . "' pointing outside of '{$dest}'."
+						);
+					}
+				} elseif ( ! is_dir( $dest_path ) ) {
 					mkdir( $dest_path, 0755 );
 				}
-			} elseif ( file_exists( $dest_path ) && is_writable( $dest_path ) ) {
-					copy( $item, $dest_path );
-			} elseif ( ! file_exists( $dest_path ) ) {
-				copy( $item, $dest_path );
-			} else {
+				continue;
+			}
+
+			if ( is_link( $dest_path ) ) {
+				// Replace the link itself rather than writing to its target.
+				if ( ! self::unlink_link( $dest_path ) ) {
+					$error = 1;
+					WP_CLI::warning( "Unable to replace symbolic link '" . $iterator->getSubPathname() . "'." );
+					continue;
+				}
+			}
+
+			$real_parent = realpath( dirname( $dest_path ) );
+			if ( false === $real_parent || ! self::is_inside( $real_parent, $dest_root ) ) {
+				throw new Exception(
+					"Refusing to write '" . $iterator->getSubPathname() . "' outside of '{$dest}'."
+				);
+			}
+
+			$writable = ! file_exists( $dest_path ) || is_writable( $dest_path );
+			if ( ! $writable || ! copy( $item->getPathname(), $dest_path ) ) {
 				$error = 1;
 				WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathname() . "' to current directory." );
 			}
@@ -230,6 +289,50 @@ class Extractor {
 
 		if ( $error ) {
 			throw new Exception( 'There was an error overwriting existing files.' );
+		}
+	}
+
+	/**
+	 * Check whether a canonicalized path is the given root or inside of it.
+	 *
+	 * @param string $path Canonicalized path to check.
+	 * @param string $root Canonicalized root directory.
+	 * @return bool
+	 */
+	private static function is_inside( $path, $root ) {
+		$root = rtrim( $root, '/\\' );
+		if ( $path === $root ) {
+			return true;
+		}
+		return 0 === strpos( $path, $root . DIRECTORY_SEPARATOR );
+	}
+
+	/**
+	 * Remove a symbolic link without touching its target.
+	 *
+	 * @param string $path
+	 * @return bool
+	 */
+	private static function unlink_link( $path ) {
+		// Directory links on Windows need rmdir().
+		return @unlink( $path ) || ( Utils\is_windows() && @rmdir( $path ) ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+	}
+
+	/**
+	 * Delete a temporary directory, ignoring errors so that they don't mask
+	 * a primary exception.
+	 *
+	 * @param string $dir
+	 * @return void
+	 */
+	private static function rmdir_quietly( $dir ) {
+		if ( ! is_dir( $dir ) ) {
+			return;
+		}
+		try {
+			self::rmdir( $dir );
+		} catch ( Exception $e ) {
+			unset( $e );
 		}
 	}
 
@@ -259,8 +362,15 @@ class Extractor {
 		 * @var \SplFileInfo $fileinfo
 		 */
 		foreach ( $files as $fileinfo ) {
+			$path = $fileinfo->getPathname();
+
+			// Remove symbolic links themselves; this never touches their target.
+			if ( $fileinfo->isLink() ) {
+				self::unlink_link( $path );
+				continue;
+			}
+
 			$todo      = $fileinfo->isDir() ? 'rmdir' : 'unlink';
-			$path      = $fileinfo->getPathname();
 			$real_path = $fileinfo->getRealPath();
 
 			if ( ! $real_path || 0 !== strpos( $real_path, $base_dir ) ) {
@@ -354,7 +464,7 @@ class Extractor {
 		$path     = rtrim( $path, '/\\' );
 
 		foreach ( $iterator as $fileinfo ) {
-			if ( $fileinfo->isDir() && ! $fileinfo->isDot() ) {
+			if ( $fileinfo->isDir() && ! $fileinfo->isDot() && ! $fileinfo->isLink() ) {
 				return "{$path}/{$fileinfo->getFilename()}";
 			}
 		}

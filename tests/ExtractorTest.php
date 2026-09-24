@@ -1,5 +1,6 @@
 <?php
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use WP_CLI\Extractor;
 use WP_CLI\Loggers;
 use WP_CLI\Tests\TestCase;
@@ -402,7 +403,180 @@ class ExtractorTest extends TestCase {
 	/**
 	 * @return array{0: string, 1: string, 2: string}
 	 */
-	private static function create_test_directory_structure() {
+	/**
+	 * @return array<string, array{bool}>
+	 */
+	public static function data_symlink_targets(): array {
+		return [
+			'relative target' => [ false ],
+			'absolute target' => [ true ],
+		];
+	}
+
+	/**
+	 * @dataProvider data_symlink_targets
+	 */
+	#[DataProvider( 'data_symlink_targets' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function test_extract_tarball_rejects_symlinks( bool $absolute ): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Creating symbolic links is not reliably supported on Windows.' );
+		}
+		if ( ! exec( 'tar --version' ) ) {
+			$this->markTestSkipped( 'tar not installed.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		$outside = $temp_dir . '/outside.txt';
+		file_put_contents( $outside, 'outside' );
+
+		$target = $absolute ? $outside : '../outside.txt';
+		$this->assertTrue( symlink( $target, $wp_dir . '/wp-settings.php' ) );
+
+		$tarball  = $temp_dir . '/test.tar.gz';
+		$dest_dir = $temp_dir . '/dest';
+
+		exec( Utils\esc_cmd( 'tar czf %s --directory=%s wordpress 2>&1', $tarball, $src_dir ), $output, $return_var );
+		$this->assertSame( 0, $return_var );
+
+		$msg = '';
+		try {
+			Extractor::extract( $tarball, $dest_dir );
+		} catch ( \Exception $e ) {
+			$msg = $e->getMessage();
+		}
+
+		$this->assertSame( "Refusing to extract symbolic link 'wp-settings.php'.", $msg );
+		$this->assertFalse( is_link( $dest_dir . '/wp-settings.php' ) );
+		$this->assertFalse( file_exists( $dest_dir . '/index1.php' ), 'Nothing should be written when the archive is rejected.' );
+		$this->assertSame( 'outside', file_get_contents( $outside ) );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
+	/**
+	 * @return array<string, array{bool, string}>
+	 */
+	public static function data_existing_symlinks(): array {
+		return [
+			'tar.gz, relative target' => [ false, 'tar.gz' ],
+			'tar.gz, absolute target' => [ true, 'tar.gz' ],
+			'zip, relative target'    => [ false, 'zip' ],
+			'zip, absolute target'    => [ true, 'zip' ],
+		];
+	}
+
+	/**
+	 * @dataProvider data_existing_symlinks
+	 */
+	#[DataProvider( 'data_existing_symlinks' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function test_extract_does_not_write_through_existing_symlink( bool $absolute, string $format ): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Creating symbolic links is not reliably supported on Windows.' );
+		}
+		if ( 'tar.gz' === $format && ! exec( 'tar --version' ) ) {
+			$this->markTestSkipped( 'tar not installed.' );
+		}
+		if ( 'zip' === $format && ! class_exists( 'ZipArchive' ) ) {
+			$this->markTestSkipped( 'ZipArchive not installed.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		file_put_contents( $wp_dir . '/wp-config6.php', 'legit' );
+
+		$archive  = $temp_dir . '/test.' . $format;
+		$dest_dir = $temp_dir . '/dest';
+
+		if ( 'zip' === $format ) {
+			$zip = new ZipArchive();
+			$this->assertTrue( $zip->open( $archive, ZipArchive::CREATE ) );
+			foreach ( self::recursive_scandir( $src_dir ) as $file ) {
+				if ( 0 === substr_compare( $file, '/', -1 ) ) {
+					$this->assertTrue( $zip->addEmptyDir( $file ) );
+				} else {
+					$this->assertTrue( $zip->addFile( $src_dir . '/' . $file, $file ) );
+				}
+			}
+			$this->assertTrue( $zip->close() );
+		} else {
+			exec( Utils\esc_cmd( 'tar czf %s --directory=%s wordpress 2>&1', $archive, $src_dir ), $output, $return_var );
+			$this->assertSame( 0, $return_var );
+		}
+
+		// A symbolic link planted in the destination by an earlier extraction.
+		$outside = $temp_dir . '/outside.txt';
+		file_put_contents( $outside, 'outside' );
+		mkdir( $dest_dir );
+		$this->assertTrue( symlink( $absolute ? $outside : '../outside.txt', $dest_dir . '/wp-config6.php' ) );
+
+		// A dangling symbolic link must not create its target either.
+		$dangling = $temp_dir . '/dangling.txt';
+		$this->assertTrue( symlink( $absolute ? $dangling : '../dangling.txt', $dest_dir . '/xmlrpc8.php' ) );
+
+		Extractor::extract( $archive, $dest_dir );
+
+		$this->assertSame( 'outside', file_get_contents( $outside ) );
+		$this->assertFalse( file_exists( $dangling ) );
+		$this->assertFalse( is_link( $dest_dir . '/wp-config6.php' ) );
+		$this->assertFalse( is_link( $dest_dir . '/xmlrpc8.php' ) );
+		$this->assertSame( 'legit', file_get_contents( $dest_dir . '/wp-config6.php' ) );
+		$this->assertSame( self::$expected_wp, self::recursive_scandir( $dest_dir ) );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
+	public function test_copy_overwrite_files_rejects_symlinked_dir_outside_dest(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Creating symbolic links is not reliably supported on Windows.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		$outside_dir = $temp_dir . '/outside';
+		mkdir( $outside_dir );
+
+		$dest_dir = $temp_dir . '/dest';
+		mkdir( $dest_dir );
+		$this->assertTrue( symlink( '../outside', $dest_dir . '/wp-includes' ) );
+
+		$msg = '';
+		try {
+			Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+		} catch ( \Exception $e ) {
+			$msg = $e->getMessage();
+		}
+
+		$this->assertStringContainsString( "Refusing to write through symbolic link 'wp-includes'", $msg );
+		$this->assertSame( [], self::recursive_scandir( $outside_dir ) );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
+	public function test_copy_overwrite_files_allows_symlinked_dir_inside_dest(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Creating symbolic links is not reliably supported on Windows.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		$dest_dir = $temp_dir . '/dest';
+		mkdir( $dest_dir . '/shared', 0755, true );
+		$this->assertTrue( symlink( 'shared', $dest_dir . '/wp-includes' ) );
+
+		Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+
+		$this->assertTrue( is_link( $dest_dir . '/wp-includes' ) );
+		$this->assertFileExists( $dest_dir . '/shared/file7.php' );
+		$this->assertEmpty( self::$logger->stderr );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
+	/**
+	 * @return array{string, string, string}
+	 */
+	private static function create_test_directory_structure(): array {
 		$temp_dir = Utils\get_temp_dir() . uniqid( self::$copy_overwrite_files_prefix, true );
 		mkdir( $temp_dir );
 
