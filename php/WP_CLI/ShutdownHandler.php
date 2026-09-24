@@ -91,7 +91,7 @@ class ShutdownHandler {
 	 * Filter the PHP error message to add plugin/theme skip suggestions.
 	 *
 	 * @param string $message Error message.
-	 * @param array{type: int, message: string, file: string, line: int} $error Error information from error_get_last().
+	 * @param array{type: int, message: string, file: string, line: int, ...} $error Error information from error_get_last().
 	 * @return string Filtered error message.
 	 */
 	public static function filter_error_message( $message, $error ) {
