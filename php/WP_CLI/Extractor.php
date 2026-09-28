@@ -206,8 +206,9 @@ class Extractor {
 	 * aborts the copy before anything is written, an existing symbolic link to
 	 * a file is replaced by the copied file, and an existing symbolic link to
 	 * a directory is only accepted when it resolves to a location inside the
-	 * destination directory. Existing files are removed before being copied
-	 * over, so that hard links to them elsewhere are left untouched.
+	 * destination directory. Existing files are replaced by renaming a fresh
+	 * copy over them, so that hard links to them elsewhere are left untouched
+	 * and their permissions are kept.
 	 *
 	 * @param string $source
 	 * @param string $dest
@@ -281,16 +282,27 @@ class Extractor {
 				);
 			}
 
+			$dest_mode = null;
 			if ( file_exists( $dest_path ) && ! is_dir( $dest_path ) ) {
-				// Replace the file rather than writing into it, as it may share its inode with a hard link elsewhere.
-				if ( ! is_writable( $dest_path ) || ! @unlink( $dest_path ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				if ( ! is_writable( $dest_path ) ) {
 					$error = 1;
-					WP_CLI::warning( "Unable to replace '" . $iterator->getSubPathname() . "'." );
+					WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathname() . "' to current directory." );
 					continue;
 				}
+				$dest_mode = fileperms( $dest_path ) & 07777;
 			}
 
-			if ( ! copy( $item->getPathname(), $dest_path ) ) {
+			// Copy to a new file and rename it into place rather than writing into
+			// the existing file, as it may share its inode with a hard link elsewhere.
+			$tmp_path = dirname( $dest_path ) . DIRECTORY_SEPARATOR . '.wp-cli-' . bin2hex( random_bytes( 8 ) ) . '.tmp';
+			if (
+				! self::copy_to_new_file( $item->getPathname(), $tmp_path )
+				|| ( null !== $dest_mode && ! chmod( $tmp_path, $dest_mode ) )
+				|| ! rename( $tmp_path, $dest_path )
+			) {
+				if ( file_exists( $tmp_path ) ) {
+					unlink( $tmp_path );
+				}
 				$error = 1;
 				WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathname() . "' to current directory." );
 			}
@@ -314,6 +326,31 @@ class Extractor {
 			return true;
 		}
 		return 0 === strpos( $path, $root . DIRECTORY_SEPARATOR );
+	}
+
+	/**
+	 * Copy a file to a path that must not exist yet.
+	 *
+	 * @param string $source
+	 * @param string $dest
+	 * @return bool
+	 */
+	private static function copy_to_new_file( $source, $dest ) {
+		// phpcs:disable WordPress.PHP.NoSilencedErrors.Discouraged
+		$in = @fopen( $source, 'rb' );
+		if ( false === $in ) {
+			return false;
+		}
+		$out = @fopen( $dest, 'xb' );
+		// phpcs:enable
+		if ( false === $out ) {
+			fclose( $in );
+			return false;
+		}
+		$copied = false !== stream_copy_to_stream( $in, $out );
+		$closed = fclose( $out );
+		fclose( $in );
+		return $copied && $closed;
 	}
 
 	/**
