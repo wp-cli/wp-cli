@@ -577,6 +577,55 @@ class ExtractorTest extends TestCase {
 		Extractor::rmdir( $temp_dir );
 	}
 
+	public function test_copy_overwrite_files_creates_new_files_with_umask_permissions(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'File permissions are not supported on Windows.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		$dest_dir = $temp_dir . '/dest';
+
+		$umask = umask( 0022 );
+		try {
+			Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+		} finally {
+			umask( $umask );
+		}
+
+		clearstatcache();
+		$this->assertSame( 0644, fileperms( $dest_dir . '/wp-config6.php' ) & 07777 );
+		$this->assertEmpty( self::$logger->stderr );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
+	public function test_copy_overwrite_files_keeps_owner_of_replaced_file(): void {
+		if ( ! function_exists( 'posix_geteuid' ) || 0 !== posix_geteuid() ) {
+			$this->markTestSkipped( 'Changing file ownership requires root.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		$dest_dir = $temp_dir . '/dest';
+		mkdir( $dest_dir );
+		file_put_contents( $dest_dir . '/wp-config6.php', 'old' );
+		$this->assertTrue( chown( $dest_dir . '/wp-config6.php', 65534 ) );
+		$this->assertTrue( chgrp( $dest_dir . '/wp-config6.php', 65534 ) );
+
+		file_put_contents( $wp_dir . '/wp-config6.php', 'legit' );
+
+		Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+
+		clearstatcache();
+		$this->assertSame( 'legit', file_get_contents( $dest_dir . '/wp-config6.php' ) );
+		$this->assertSame( 65534, fileowner( $dest_dir . '/wp-config6.php' ) );
+		$this->assertSame( 65534, filegroup( $dest_dir . '/wp-config6.php' ) );
+		$this->assertEmpty( self::$logger->stderr );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
 	public function test_copy_overwrite_files_rejects_symlinked_dir_outside_dest(): void {
 		if ( Utils\is_windows() ) {
 			$this->markTestSkipped( 'Creating symbolic links is not reliably supported on Windows.' );

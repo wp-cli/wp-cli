@@ -207,8 +207,7 @@ class Extractor {
 	 * a file is replaced by the copied file, and an existing symbolic link to
 	 * a directory is only accepted when it resolves to a location inside the
 	 * destination directory. Existing files are replaced by renaming a fresh
-	 * copy over them, so that hard links to them elsewhere are left untouched
-	 * and their permissions are kept.
+	 * copy over them, so that hard links to them elsewhere are left untouched.
 	 *
 	 * @param string $source
 	 * @param string $dest
@@ -282,27 +281,13 @@ class Extractor {
 				);
 			}
 
-			$dest_mode = null;
-			if ( file_exists( $dest_path ) && ! is_dir( $dest_path ) ) {
-				if ( ! is_writable( $dest_path ) ) {
-					$error = 1;
-					WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathname() . "' to current directory." );
-					continue;
-				}
-				$dest_mode = fileperms( $dest_path ) & 07777;
+			if ( file_exists( $dest_path ) && ! is_dir( $dest_path ) && ! is_writable( $dest_path ) ) {
+				$error = 1;
+				WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathname() . "' to current directory." );
+				continue;
 			}
 
-			// Copy to a new file and rename it into place rather than writing into
-			// the existing file, as it may share its inode with a hard link elsewhere.
-			$tmp_path = dirname( $dest_path ) . DIRECTORY_SEPARATOR . '.wp-cli-' . bin2hex( random_bytes( 8 ) ) . '.tmp';
-			if (
-				! self::copy_to_new_file( $item->getPathname(), $tmp_path )
-				|| ( null !== $dest_mode && ! chmod( $tmp_path, $dest_mode ) )
-				|| ! rename( $tmp_path, $dest_path )
-			) {
-				if ( file_exists( $tmp_path ) ) {
-					unlink( $tmp_path );
-				}
+			if ( ! self::replace_file( $item->getPathname(), $dest_path ) ) {
 				$error = 1;
 				WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathname() . "' to current directory." );
 			}
@@ -329,28 +314,76 @@ class Extractor {
 	}
 
 	/**
-	 * Copy a file to a path that must not exist yet.
+	 * Copy a file into place without writing into an existing destination file,
+	 * as it may share its inode with a hard link elsewhere.
+	 *
+	 * The file is copied to a private temporary file next to the destination,
+	 * given the mode, owner and group of the existing destination file, and
+	 * renamed into place. If the owner or group cannot be kept, the existing
+	 * file is written in place instead, but only when it has no other links.
 	 *
 	 * @param string $source
 	 * @param string $dest
 	 * @return bool
 	 */
-	private static function copy_to_new_file( $source, $dest ) {
+	private static function replace_file( $source, $dest ) {
+		$dest_stat = file_exists( $dest ) ? stat( $dest ) : false;
+
+		$tmp = dirname( $dest ) . DIRECTORY_SEPARATOR . '.wp-cli-' . bin2hex( random_bytes( 8 ) ) . '.tmp';
+
 		// phpcs:disable WordPress.PHP.NoSilencedErrors.Discouraged
 		$in = @fopen( $source, 'rb' );
 		if ( false === $in ) {
 			return false;
 		}
-		$out = @fopen( $dest, 'xb' );
-		// phpcs:enable
+		$umask = umask( 0077 );
+		$out   = @fopen( $tmp, 'xb' );
+		umask( $umask );
 		if ( false === $out ) {
 			fclose( $in );
 			return false;
 		}
+
 		$copied = false !== stream_copy_to_stream( $in, $out );
-		$closed = fclose( $out );
+		$copied = fclose( $out ) && $copied;
 		fclose( $in );
-		return $copied && $closed;
+
+		if ( $copied && false !== $dest_stat && ! self::copy_ownership( $dest_stat, $tmp ) ) {
+			@unlink( $tmp );
+			return 1 === $dest_stat['nlink'] && copy( $source, $dest );
+		}
+
+		$mode = false !== $dest_stat ? $dest_stat['mode'] & 07777 : 0666 & ~$umask;
+		if ( ! $copied || ! chmod( $tmp, $mode ) || ! rename( $tmp, $dest ) ) {
+			@unlink( $tmp );
+			return false;
+		}
+		// phpcs:enable
+
+		return true;
+	}
+
+	/**
+	 * Give a file the owner and group from the given stat() result.
+	 *
+	 * @param array<int|string, int> $stat
+	 * @param string                 $path
+	 * @return bool Whether the file now has that owner and group.
+	 */
+	private static function copy_ownership( $stat, $path ) {
+		$current = stat( $path );
+		if ( false === $current ) {
+			return false;
+		}
+		// phpcs:disable WordPress.PHP.NoSilencedErrors.Discouraged
+		if ( $current['uid'] !== $stat['uid'] && ( ! function_exists( 'chown' ) || ! @chown( $path, $stat['uid'] ) ) ) {
+			return false;
+		}
+		if ( $current['gid'] !== $stat['gid'] && ( ! function_exists( 'chgrp' ) || ! @chgrp( $path, $stat['gid'] ) ) ) {
+			return false;
+		}
+		// phpcs:enable
+		return true;
 	}
 
 	/**
