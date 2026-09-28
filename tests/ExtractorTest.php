@@ -526,6 +526,177 @@ class ExtractorTest extends TestCase {
 		Extractor::rmdir( $temp_dir );
 	}
 
+	public function test_copy_overwrite_files_does_not_write_through_existing_hard_link(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Creating hard links is not reliably supported on Windows.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		file_put_contents( $wp_dir . '/wp-config6.php', 'legit' );
+
+		$outside = $temp_dir . '/outside.txt';
+		file_put_contents( $outside, 'outside' );
+
+		$dest_dir = $temp_dir . '/dest';
+		mkdir( $dest_dir );
+		$this->assertTrue( link( $outside, $dest_dir . '/wp-config6.php' ) );
+		$this->assertTrue( chmod( $outside, 0600 ) );
+
+		Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+
+		clearstatcache();
+		$this->assertSame( 'outside', file_get_contents( $outside ) );
+		$this->assertSame( 'legit', file_get_contents( $dest_dir . '/wp-config6.php' ) );
+		$this->assertSame( 0600, fileperms( $dest_dir . '/wp-config6.php' ) & 07777 );
+		$this->assertSame( self::$expected_wp, self::recursive_scandir( $dest_dir ) );
+		$this->assertEmpty( self::$logger->stderr );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
+	public function test_copy_overwrite_files_keeps_permissions_of_replaced_file(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'File permissions are not supported on Windows.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		file_put_contents( $wp_dir . '/wp-config6.php', 'legit' );
+
+		$dest_dir = $temp_dir . '/dest';
+		mkdir( $dest_dir );
+		file_put_contents( $dest_dir . '/wp-config6.php', 'old' );
+		$this->assertTrue( chmod( $dest_dir . '/wp-config6.php', 0600 ) );
+
+		Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+
+		clearstatcache();
+		$this->assertSame( 'legit', file_get_contents( $dest_dir . '/wp-config6.php' ) );
+		$this->assertSame( 0600, fileperms( $dest_dir . '/wp-config6.php' ) & 07777 );
+		$this->assertSame( self::$expected_wp, self::recursive_scandir( $dest_dir ) );
+		$this->assertEmpty( self::$logger->stderr );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
+	public function test_copy_overwrite_files_creates_new_files_with_umask_permissions(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'File permissions are not supported on Windows.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		$dest_dir = $temp_dir . '/dest';
+
+		$umask = umask( 0022 );
+		try {
+			Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+		} finally {
+			umask( $umask );
+		}
+
+		clearstatcache();
+		$this->assertSame( 0644, fileperms( $dest_dir . '/wp-config6.php' ) & 07777 );
+		$this->assertEmpty( self::$logger->stderr );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
+	public function test_copy_overwrite_files_keeps_owner_of_replaced_file(): void {
+		if ( ! function_exists( 'posix_geteuid' ) || 0 !== posix_geteuid() ) {
+			$this->markTestSkipped( 'Changing file ownership requires root.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		$dest_dir = $temp_dir . '/dest';
+		mkdir( $dest_dir );
+		file_put_contents( $dest_dir . '/wp-config6.php', 'old' );
+		$this->assertTrue( chown( $dest_dir . '/wp-config6.php', 65534 ) );
+		$this->assertTrue( chgrp( $dest_dir . '/wp-config6.php', 65534 ) );
+		$this->assertTrue( link( $dest_dir . '/wp-config6.php', $temp_dir . '/other.php' ) );
+
+		file_put_contents( $wp_dir . '/wp-config6.php', 'legit' );
+
+		Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+
+		clearstatcache();
+		$this->assertSame( 'legit', file_get_contents( $dest_dir . '/wp-config6.php' ) );
+		$this->assertSame( 65534, fileowner( $dest_dir . '/wp-config6.php' ) );
+		$this->assertSame( 65534, filegroup( $dest_dir . '/wp-config6.php' ) );
+		$this->assertSame( 'old', file_get_contents( $temp_dir . '/other.php' ) );
+		$this->assertEmpty( self::$logger->stderr );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
+	public function test_copy_overwrite_files_replaces_file_in_read_only_dir(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'File permissions are not supported on Windows.' );
+		}
+		if ( function_exists( 'posix_geteuid' ) && 0 === posix_geteuid() ) {
+			$this->markTestSkipped( 'Directory permissions do not apply to root.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		file_put_contents( $wp_dir . '/wp-includes/file7.php', 'legit' );
+
+		$dest_dir = $temp_dir . '/dest';
+		Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+		$this->assertTrue( chmod( $dest_dir . '/wp-includes', 0555 ) );
+		file_put_contents( $wp_dir . '/wp-includes/file7.php', 'updated' );
+
+		try {
+			Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+		} finally {
+			chmod( $dest_dir . '/wp-includes', 0755 );
+		}
+
+		$this->assertSame( 'updated', file_get_contents( $dest_dir . '/wp-includes/file7.php' ) );
+		$this->assertSame( self::$expected_wp, self::recursive_scandir( $dest_dir ) );
+		$this->assertEmpty( self::$logger->stderr );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
+	public function test_copy_overwrite_files_leaves_hard_link_in_shared_dir_untouched(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'File permissions are not supported on Windows.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		file_put_contents( $wp_dir . '/wp-config6.php', 'legit' );
+
+		$outside = $temp_dir . '/outside.txt';
+		file_put_contents( $outside, 'outside' );
+		$this->assertTrue( chmod( $outside, 0755 ) );
+
+		$dest_dir = $temp_dir . '/dest';
+		mkdir( $dest_dir );
+		$this->assertTrue( chmod( $dest_dir, 0777 ) );
+		$this->assertTrue( link( $outside, $dest_dir . '/wp-config6.php' ) );
+
+		$msg = '';
+		try {
+			Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+		} catch ( \Exception $e ) {
+			$msg = $e->getMessage();
+		}
+
+		clearstatcache();
+		$this->assertSame( 'There was an error overwriting existing files.', $msg );
+		$this->assertStringContainsString( "Unable to copy 'wp-config6.php'", self::$logger->stderr );
+		$this->assertSame( 'outside', file_get_contents( $outside ) );
+		$this->assertSame( 'outside', file_get_contents( $dest_dir . '/wp-config6.php' ) );
+		$this->assertSame( 0755, fileperms( $outside ) & 07777 );
+		$this->assertSame( self::$expected_wp, self::recursive_scandir( $dest_dir ) );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
 	public function test_copy_overwrite_files_rejects_symlinked_dir_outside_dest(): void {
 		if ( Utils\is_windows() ) {
 			$this->markTestSkipped( 'Creating symbolic links is not reliably supported on Windows.' );

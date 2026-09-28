@@ -206,7 +206,9 @@ class Extractor {
 	 * aborts the copy before anything is written, an existing symbolic link to
 	 * a file is replaced by the copied file, and an existing symbolic link to
 	 * a directory is only accepted when it resolves to a location inside the
-	 * destination directory.
+	 * destination directory. Existing files that have other hard links are
+	 * replaced by renaming a fresh copy over them, so that those links are left
+	 * untouched.
 	 *
 	 * @param string $source
 	 * @param string $dest
@@ -280,8 +282,13 @@ class Extractor {
 				);
 			}
 
-			$writable = ! file_exists( $dest_path ) || is_writable( $dest_path );
-			if ( ! $writable || ! copy( $item->getPathname(), $dest_path ) ) {
+			if ( file_exists( $dest_path ) && ! is_dir( $dest_path ) && ! is_writable( $dest_path ) ) {
+				$error = 1;
+				WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathname() . "' to current directory." );
+				continue;
+			}
+
+			if ( ! self::replace_file( $item->getPathname(), $dest_path ) ) {
 				$error = 1;
 				WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathname() . "' to current directory." );
 			}
@@ -305,6 +312,101 @@ class Extractor {
 			return true;
 		}
 		return 0 === strpos( $path, $root . DIRECTORY_SEPARATOR );
+	}
+
+	/**
+	 * Copy a file into place without writing through a hard link.
+	 *
+	 * A destination that does not exist yet or has no other links is written
+	 * in place, which keeps all of its metadata. A destination that shares its
+	 * inode with other links is instead replaced by a temporary copy next to
+	 * it, created with its mode and given its owner and group, and renamed into
+	 * place; if that is not possible, it is left untouched.
+	 *
+	 * @param string $source
+	 * @param string $dest
+	 * @return bool
+	 */
+	private static function replace_file( $source, $dest ) {
+		$dest_stat = file_exists( $dest ) ? stat( $dest ) : false;
+		if ( false === $dest_stat || 1 === $dest_stat['nlink'] ) {
+			return copy( $source, $dest );
+		}
+
+		$mode = $dest_stat['mode'] & 07777;
+		$tmp  = dirname( $dest ) . DIRECTORY_SEPARATOR . '.wp-cli-' . bin2hex( random_bytes( 8 ) ) . '.tmp';
+
+		// phpcs:disable WordPress.PHP.NoSilencedErrors.Discouraged
+		$in = @fopen( $source, 'rb' );
+		if ( false === $in ) {
+			return false;
+		}
+		$umask = umask( ~$mode & 0777 );
+		$out   = @fopen( $tmp, 'xb' );
+		umask( $umask );
+		if ( false === $out ) {
+			fclose( $in );
+			return false;
+		}
+
+		$tmp_stat = fstat( $out );
+		$copied   = false !== stream_copy_to_stream( $in, $out );
+		$copied   = fclose( $out ) && $copied;
+		fclose( $in );
+
+		if (
+			! $copied
+			|| false === $tmp_stat
+			|| ! self::copy_metadata( $dest_stat, $tmp_stat, $tmp )
+			|| ! rename( $tmp, $dest )
+		) {
+			@unlink( $tmp );
+			return false;
+		}
+		// phpcs:enable
+
+		return true;
+	}
+
+	/**
+	 * Give a newly created file the mode, owner and group of the file it replaces.
+	 *
+	 * These changes are made by path, so they are only made when no one else
+	 * can write to the directory and swap the file for another one in between.
+	 *
+	 * @param array<int|string, int> $dest_stat stat() result of the replaced file.
+	 * @param array<int|string, int> $tmp_stat  fstat() result of the new file.
+	 * @param string                 $tmp       Path of the new file.
+	 * @return bool Whether the new file now has that mode, owner and group.
+	 */
+	private static function copy_metadata( $dest_stat, $tmp_stat, $tmp ) {
+		$mode        = $dest_stat['mode'] & 07777;
+		$needs_chmod = ( $tmp_stat['mode'] & 07777 ) !== $mode;
+		$needs_chown = $tmp_stat['uid'] !== $dest_stat['uid'];
+		$needs_chgrp = $tmp_stat['gid'] !== $dest_stat['gid'];
+
+		if ( ! $needs_chmod && ! $needs_chown && ! $needs_chgrp ) {
+			return true;
+		}
+
+		if ( ! function_exists( 'posix_geteuid' ) ) {
+			return false;
+		}
+		$dir_stat = stat( dirname( $tmp ) );
+		if (
+			false === $dir_stat
+			|| ! in_array( $dir_stat['uid'], [ 0, posix_geteuid() ], true )
+			|| 0 !== ( $dir_stat['mode'] & 0022 )
+		) {
+			return false;
+		}
+
+		// phpcs:disable WordPress.PHP.NoSilencedErrors.Discouraged
+		return ( ! $needs_chown || ( function_exists( 'lchown' ) && @lchown( $tmp, $dest_stat['uid'] ) ) )
+			&& ( ! $needs_chgrp || ( function_exists( 'lchgrp' ) && @lchgrp( $tmp, $dest_stat['gid'] ) ) )
+			// Changing the owner may clear the setuid and setgid bits, so the mode comes last.
+			&& ( ( ! $needs_chmod && 0 === ( $mode & 06000 ) ) || @chmod( $tmp, $mode ) );
+		// phpcs:enable
 	}
 
 	/**
