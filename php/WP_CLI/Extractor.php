@@ -319,8 +319,9 @@ class Extractor {
 	 *
 	 * The file is copied to a private temporary file next to the destination,
 	 * given the mode, owner and group of the existing destination file, and
-	 * renamed into place. If the owner or group cannot be kept, the existing
-	 * file is written in place instead, but only when it has no other links.
+	 * renamed into place. If the temporary file cannot be created or the owner
+	 * or group cannot be kept, the existing file is written in place instead,
+	 * but only when it has no other links.
 	 *
 	 * @param string $source
 	 * @param string $dest
@@ -341,7 +342,7 @@ class Extractor {
 		umask( $umask );
 		if ( false === $out ) {
 			fclose( $in );
-			return false;
+			return false !== $dest_stat && 1 === $dest_stat['nlink'] && copy( $source, $dest );
 		}
 
 		$copied = false !== stream_copy_to_stream( $in, $out );

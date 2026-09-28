@@ -626,6 +626,35 @@ class ExtractorTest extends TestCase {
 		Extractor::rmdir( $temp_dir );
 	}
 
+	public function test_copy_overwrite_files_replaces_file_in_read_only_dir(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'File permissions are not supported on Windows.' );
+		}
+		if ( function_exists( 'posix_geteuid' ) && 0 === posix_geteuid() ) {
+			$this->markTestSkipped( 'Directory permissions do not apply to root.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		file_put_contents( $wp_dir . '/wp-includes/file7.php', 'legit' );
+
+		$dest_dir = $temp_dir . '/dest';
+		Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+		$this->assertTrue( chmod( $dest_dir . '/wp-includes', 0555 ) );
+
+		try {
+			Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+		} finally {
+			chmod( $dest_dir . '/wp-includes', 0755 );
+		}
+
+		$this->assertSame( 'legit', file_get_contents( $dest_dir . '/wp-includes/file7.php' ) );
+		$this->assertSame( self::$expected_wp, self::recursive_scandir( $dest_dir ) );
+		$this->assertEmpty( self::$logger->stderr );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
 	public function test_copy_overwrite_files_rejects_symlinked_dir_outside_dest(): void {
 		if ( Utils\is_windows() ) {
 			$this->markTestSkipped( 'Creating symbolic links is not reliably supported on Windows.' );
