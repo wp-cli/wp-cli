@@ -319,9 +319,9 @@ class Extractor {
 	 *
 	 * A destination that does not exist yet or has no other links is written
 	 * in place, which keeps all of its metadata. A destination that shares its
-	 * inode with other links is instead replaced by a private temporary copy
-	 * next to it, given its mode, owner and group; if that is not possible, it
-	 * is left untouched.
+	 * inode with other links is instead replaced by a temporary copy next to
+	 * it, created with its mode and given its owner and group, and renamed into
+	 * place; if that is not possible, it is left untouched.
 	 *
 	 * @param string $source
 	 * @param string $dest
@@ -333,14 +333,15 @@ class Extractor {
 			return copy( $source, $dest );
 		}
 
-		$tmp = dirname( $dest ) . DIRECTORY_SEPARATOR . '.wp-cli-' . bin2hex( random_bytes( 8 ) ) . '.tmp';
+		$mode = $dest_stat['mode'] & 07777;
+		$tmp  = dirname( $dest ) . DIRECTORY_SEPARATOR . '.wp-cli-' . bin2hex( random_bytes( 8 ) ) . '.tmp';
 
 		// phpcs:disable WordPress.PHP.NoSilencedErrors.Discouraged
 		$in = @fopen( $source, 'rb' );
 		if ( false === $in ) {
 			return false;
 		}
-		$umask = umask( 0077 );
+		$umask = umask( ~$mode & 0777 );
 		$out   = @fopen( $tmp, 'xb' );
 		umask( $umask );
 		if ( false === $out ) {
@@ -348,14 +349,15 @@ class Extractor {
 			return false;
 		}
 
-		$copied = false !== stream_copy_to_stream( $in, $out );
-		$copied = fclose( $out ) && $copied;
+		$tmp_stat = fstat( $out );
+		$copied   = false !== stream_copy_to_stream( $in, $out );
+		$copied   = fclose( $out ) && $copied;
 		fclose( $in );
 
 		if (
 			! $copied
-			|| ! self::copy_ownership( $dest_stat, $tmp )
-			|| ! chmod( $tmp, $dest_stat['mode'] & 07777 )
+			|| false === $tmp_stat
+			|| ! self::copy_metadata( $dest_stat, $tmp_stat, $tmp )
 			|| ! rename( $tmp, $dest )
 		) {
 			@unlink( $tmp );
@@ -367,26 +369,44 @@ class Extractor {
 	}
 
 	/**
-	 * Give a file the owner and group from the given stat() result.
+	 * Give a newly created file the mode, owner and group of the file it replaces.
 	 *
-	 * @param array<int|string, int> $stat
-	 * @param string                 $path
-	 * @return bool Whether the file now has that owner and group.
+	 * These changes are made by path, so they are only made when no one else
+	 * can write to the directory and swap the file for another one in between.
+	 *
+	 * @param array<int|string, int> $dest_stat stat() result of the replaced file.
+	 * @param array<int|string, int> $tmp_stat  fstat() result of the new file.
+	 * @param string                 $tmp       Path of the new file.
+	 * @return bool Whether the new file now has that mode, owner and group.
 	 */
-	private static function copy_ownership( $stat, $path ) {
-		$current = stat( $path );
-		if ( false === $current ) {
+	private static function copy_metadata( $dest_stat, $tmp_stat, $tmp ) {
+		$mode        = $dest_stat['mode'] & 07777;
+		$needs_chmod = ( $tmp_stat['mode'] & 07777 ) !== $mode;
+		$needs_chown = $tmp_stat['uid'] !== $dest_stat['uid'];
+		$needs_chgrp = $tmp_stat['gid'] !== $dest_stat['gid'];
+
+		if ( ! $needs_chmod && ! $needs_chown && ! $needs_chgrp ) {
+			return true;
+		}
+
+		if ( ! function_exists( 'posix_geteuid' ) ) {
 			return false;
 		}
+		$dir_stat = stat( dirname( $tmp ) );
+		if (
+			false === $dir_stat
+			|| ! in_array( $dir_stat['uid'], [ 0, posix_geteuid() ], true )
+			|| 0 !== ( $dir_stat['mode'] & 0022 )
+		) {
+			return false;
+		}
+
 		// phpcs:disable WordPress.PHP.NoSilencedErrors.Discouraged
-		if ( $current['uid'] !== $stat['uid'] && ( ! function_exists( 'chown' ) || ! @chown( $path, $stat['uid'] ) ) ) {
-			return false;
-		}
-		if ( $current['gid'] !== $stat['gid'] && ( ! function_exists( 'chgrp' ) || ! @chgrp( $path, $stat['gid'] ) ) ) {
-			return false;
-		}
+		return ( ! $needs_chown || ( function_exists( 'lchown' ) && @lchown( $tmp, $dest_stat['uid'] ) ) )
+			&& ( ! $needs_chgrp || ( function_exists( 'lchgrp' ) && @lchgrp( $tmp, $dest_stat['gid'] ) ) )
+			// Changing the owner may clear the setuid and setgid bits, so the mode comes last.
+			&& ( ( ! $needs_chmod && 0 === ( $mode & 06000 ) ) || @chmod( $tmp, $mode ) );
 		// phpcs:enable
-		return true;
 	}
 
 	/**

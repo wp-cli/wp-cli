@@ -661,6 +661,42 @@ class ExtractorTest extends TestCase {
 		Extractor::rmdir( $temp_dir );
 	}
 
+	public function test_copy_overwrite_files_leaves_hard_link_in_shared_dir_untouched(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'File permissions are not supported on Windows.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		file_put_contents( $wp_dir . '/wp-config6.php', 'legit' );
+
+		$outside = $temp_dir . '/outside.txt';
+		file_put_contents( $outside, 'outside' );
+		$this->assertTrue( chmod( $outside, 0755 ) );
+
+		$dest_dir = $temp_dir . '/dest';
+		mkdir( $dest_dir );
+		$this->assertTrue( chmod( $dest_dir, 0777 ) );
+		$this->assertTrue( link( $outside, $dest_dir . '/wp-config6.php' ) );
+
+		$msg = '';
+		try {
+			Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+		} catch ( \Exception $e ) {
+			$msg = $e->getMessage();
+		}
+
+		clearstatcache();
+		$this->assertSame( 'There was an error overwriting existing files.', $msg );
+		$this->assertStringContainsString( "Unable to copy 'wp-config6.php'", self::$logger->stderr );
+		$this->assertSame( 'outside', file_get_contents( $outside ) );
+		$this->assertSame( 'outside', file_get_contents( $dest_dir . '/wp-config6.php' ) );
+		$this->assertSame( 0755, fileperms( $outside ) & 07777 );
+		$this->assertSame( self::$expected_wp, self::recursive_scandir( $dest_dir ) );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
 	public function test_copy_overwrite_files_rejects_symlinked_dir_outside_dest(): void {
 		if ( Utils\is_windows() ) {
 			$this->markTestSkipped( 'Creating symbolic links is not reliably supported on Windows.' );
