@@ -206,8 +206,9 @@ class Extractor {
 	 * aborts the copy before anything is written, an existing symbolic link to
 	 * a file is replaced by the copied file, and an existing symbolic link to
 	 * a directory is only accepted when it resolves to a location inside the
-	 * destination directory. Existing files are replaced by renaming a fresh
-	 * copy over them, so that hard links to them elsewhere are left untouched.
+	 * destination directory. Existing files that have other hard links are
+	 * replaced by renaming a fresh copy over them, so that those links are left
+	 * untouched.
 	 *
 	 * @param string $source
 	 * @param string $dest
@@ -314,14 +315,13 @@ class Extractor {
 	}
 
 	/**
-	 * Copy a file into place without writing into an existing destination file,
-	 * as it may share its inode with a hard link elsewhere.
+	 * Copy a file into place without writing through a hard link.
 	 *
-	 * The file is copied to a private temporary file next to the destination,
-	 * given the mode, owner and group of the existing destination file, and
-	 * renamed into place. If the temporary file cannot be created or the owner
-	 * or group cannot be kept, the existing file is written in place instead,
-	 * but only when it has no other links.
+	 * A destination that does not exist yet or has no other links is written
+	 * in place, which keeps all of its metadata. A destination that shares its
+	 * inode with other links is instead replaced by a private temporary copy
+	 * next to it, given its mode, owner and group; if that is not possible, it
+	 * is left untouched.
 	 *
 	 * @param string $source
 	 * @param string $dest
@@ -329,6 +329,9 @@ class Extractor {
 	 */
 	private static function replace_file( $source, $dest ) {
 		$dest_stat = file_exists( $dest ) ? stat( $dest ) : false;
+		if ( false === $dest_stat || 1 === $dest_stat['nlink'] ) {
+			return copy( $source, $dest );
+		}
 
 		$tmp = dirname( $dest ) . DIRECTORY_SEPARATOR . '.wp-cli-' . bin2hex( random_bytes( 8 ) ) . '.tmp';
 
@@ -342,20 +345,19 @@ class Extractor {
 		umask( $umask );
 		if ( false === $out ) {
 			fclose( $in );
-			return false !== $dest_stat && 1 === $dest_stat['nlink'] && copy( $source, $dest );
+			return false;
 		}
 
 		$copied = false !== stream_copy_to_stream( $in, $out );
 		$copied = fclose( $out ) && $copied;
 		fclose( $in );
 
-		if ( $copied && false !== $dest_stat && ! self::copy_ownership( $dest_stat, $tmp ) ) {
-			@unlink( $tmp );
-			return 1 === $dest_stat['nlink'] && copy( $source, $dest );
-		}
-
-		$mode = false !== $dest_stat ? $dest_stat['mode'] & 07777 : 0666 & ~$umask;
-		if ( ! $copied || ! chmod( $tmp, $mode ) || ! rename( $tmp, $dest ) ) {
+		if (
+			! $copied
+			|| ! self::copy_ownership( $dest_stat, $tmp )
+			|| ! chmod( $tmp, $dest_stat['mode'] & 07777 )
+			|| ! rename( $tmp, $dest )
+		) {
 			@unlink( $tmp );
 			return false;
 		}

@@ -541,11 +541,14 @@ class ExtractorTest extends TestCase {
 		$dest_dir = $temp_dir . '/dest';
 		mkdir( $dest_dir );
 		$this->assertTrue( link( $outside, $dest_dir . '/wp-config6.php' ) );
+		$this->assertTrue( chmod( $outside, 0600 ) );
 
 		Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
 
+		clearstatcache();
 		$this->assertSame( 'outside', file_get_contents( $outside ) );
 		$this->assertSame( 'legit', file_get_contents( $dest_dir . '/wp-config6.php' ) );
+		$this->assertSame( 0600, fileperms( $dest_dir . '/wp-config6.php' ) & 07777 );
 		$this->assertSame( self::$expected_wp, self::recursive_scandir( $dest_dir ) );
 		$this->assertEmpty( self::$logger->stderr );
 
@@ -612,6 +615,7 @@ class ExtractorTest extends TestCase {
 		file_put_contents( $dest_dir . '/wp-config6.php', 'old' );
 		$this->assertTrue( chown( $dest_dir . '/wp-config6.php', 65534 ) );
 		$this->assertTrue( chgrp( $dest_dir . '/wp-config6.php', 65534 ) );
+		$this->assertTrue( link( $dest_dir . '/wp-config6.php', $temp_dir . '/other.php' ) );
 
 		file_put_contents( $wp_dir . '/wp-config6.php', 'legit' );
 
@@ -621,6 +625,7 @@ class ExtractorTest extends TestCase {
 		$this->assertSame( 'legit', file_get_contents( $dest_dir . '/wp-config6.php' ) );
 		$this->assertSame( 65534, fileowner( $dest_dir . '/wp-config6.php' ) );
 		$this->assertSame( 65534, filegroup( $dest_dir . '/wp-config6.php' ) );
+		$this->assertSame( 'old', file_get_contents( $temp_dir . '/other.php' ) );
 		$this->assertEmpty( self::$logger->stderr );
 
 		Extractor::rmdir( $temp_dir );
@@ -641,6 +646,7 @@ class ExtractorTest extends TestCase {
 		$dest_dir = $temp_dir . '/dest';
 		Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
 		$this->assertTrue( chmod( $dest_dir . '/wp-includes', 0555 ) );
+		file_put_contents( $wp_dir . '/wp-includes/file7.php', 'updated' );
 
 		try {
 			Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
@@ -648,7 +654,7 @@ class ExtractorTest extends TestCase {
 			chmod( $dest_dir . '/wp-includes', 0755 );
 		}
 
-		$this->assertSame( 'legit', file_get_contents( $dest_dir . '/wp-includes/file7.php' ) );
+		$this->assertSame( 'updated', file_get_contents( $dest_dir . '/wp-includes/file7.php' ) );
 		$this->assertSame( self::$expected_wp, self::recursive_scandir( $dest_dir ) );
 		$this->assertEmpty( self::$logger->stderr );
 
