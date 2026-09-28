@@ -526,6 +526,32 @@ class ExtractorTest extends TestCase {
 		Extractor::rmdir( $temp_dir );
 	}
 
+	public function test_copy_overwrite_files_does_not_write_through_existing_hard_link(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Creating hard links is not reliably supported on Windows.' );
+		}
+
+		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+
+		file_put_contents( $wp_dir . '/wp-config6.php', 'legit' );
+
+		$outside = $temp_dir . '/outside.txt';
+		file_put_contents( $outside, 'outside' );
+
+		$dest_dir = $temp_dir . '/dest';
+		mkdir( $dest_dir );
+		$this->assertTrue( link( $outside, $dest_dir . '/wp-config6.php' ) );
+
+		Extractor::copy_overwrite_files( $wp_dir, $dest_dir );
+
+		$this->assertSame( 'outside', file_get_contents( $outside ) );
+		$this->assertSame( 'legit', file_get_contents( $dest_dir . '/wp-config6.php' ) );
+		$this->assertSame( self::$expected_wp, self::recursive_scandir( $dest_dir ) );
+		$this->assertEmpty( self::$logger->stderr );
+
+		Extractor::rmdir( $temp_dir );
+	}
+
 	public function test_copy_overwrite_files_rejects_symlinked_dir_outside_dest(): void {
 		if ( Utils\is_windows() ) {
 			$this->markTestSkipped( 'Creating symbolic links is not reliably supported on Windows.' );

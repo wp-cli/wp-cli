@@ -206,7 +206,8 @@ class Extractor {
 	 * aborts the copy before anything is written, an existing symbolic link to
 	 * a file is replaced by the copied file, and an existing symbolic link to
 	 * a directory is only accepted when it resolves to a location inside the
-	 * destination directory.
+	 * destination directory. Existing files are removed before being copied
+	 * over, so that hard links to them elsewhere are left untouched.
 	 *
 	 * @param string $source
 	 * @param string $dest
@@ -280,8 +281,16 @@ class Extractor {
 				);
 			}
 
-			$writable = ! file_exists( $dest_path ) || is_writable( $dest_path );
-			if ( ! $writable || ! copy( $item->getPathname(), $dest_path ) ) {
+			if ( file_exists( $dest_path ) && ! is_dir( $dest_path ) ) {
+				// Replace the file rather than writing into it, as it may share its inode with a hard link elsewhere.
+				if ( ! is_writable( $dest_path ) || ! @unlink( $dest_path ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+					$error = 1;
+					WP_CLI::warning( "Unable to replace '" . $iterator->getSubPathname() . "'." );
+					continue;
+				}
+			}
+
+			if ( ! copy( $item->getPathname(), $dest_path ) ) {
 				$error = 1;
 				WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathname() . "' to current directory." );
 			}
