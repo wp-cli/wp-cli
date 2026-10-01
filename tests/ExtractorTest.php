@@ -87,7 +87,7 @@ class ExtractorTest extends TestCase {
 		// Assert the type, not the message: PHP 8.6 dropped the path argument
 		// from the RecursiveDirectoryIterator::__construct() exception message.
 		$this->assertInstanceOf( \UnexpectedValueException::class, $caught );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 	}
 
 	public function test_copy_overwrite_files(): void {
@@ -100,7 +100,7 @@ class ExtractorTest extends TestCase {
 		$files = self::recursive_scandir( $dest_dir );
 
 		$this->assertSame( self::$expected_wp, $files );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 
 		// Clean up.
 		Extractor::rmdir( $temp_dir );
@@ -116,7 +116,7 @@ class ExtractorTest extends TestCase {
 		// Assert the type, not the message: PHP 8.6 dropped the path argument
 		// from the RecursiveDirectoryIterator::__construct() exception message.
 		$this->assertInstanceOf( \UnexpectedValueException::class, $caught );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 	}
 
 	public function test_extract_tarball(): void {
@@ -164,7 +164,7 @@ class ExtractorTest extends TestCase {
 
 		$files = self::recursive_scandir( $dest_dir );
 		$this->assertSame( self::$expected_wp, $files );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 
 		// Clean up.
 		Extractor::rmdir( $temp_dir );
@@ -217,7 +217,7 @@ class ExtractorTest extends TestCase {
 		Extractor::rmdir( $temp_dir );
 		$this->assertSame( self::$expected_wp, $files );
 		$this->assertStringStartsWith( 'Warning: tar xz failed, falling back to PharData', self::$logger->stderr );
-		$this->assertEmpty( $msg );
+		$this->assertSame( '', $msg );
 	}
 
 	public function test_err_extract_tarball(): void {
@@ -230,7 +230,7 @@ class ExtractorTest extends TestCase {
 		}
 
 		$this->assertStringContainsString( 'no-such-tar', $msg );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 
 		// Reset logger.
 		self::$logger->stderr = '';
@@ -248,7 +248,7 @@ class ExtractorTest extends TestCase {
 		unlink( $zero_tar );
 
 		$this->assertStringContainsString( 'zero-tar', $msg );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 	}
 
 	public function test_extract_tarball_both_failed(): void {
@@ -303,7 +303,7 @@ class ExtractorTest extends TestCase {
 
 		$files = self::recursive_scandir( $dest_dir );
 		$this->assertSame( self::$expected_wp, $files );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 
 		// Clean up.
 		Extractor::rmdir( $temp_dir );
@@ -322,7 +322,7 @@ class ExtractorTest extends TestCase {
 			$msg = $e->getMessage();
 		}
 		$this->assertStringContainsString( 'no-such-zip', $msg );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 
 		// Reset logger.
 		self::$logger->stderr = '';
@@ -339,7 +339,7 @@ class ExtractorTest extends TestCase {
 		}
 		unlink( $zero_zip );
 		$this->assertStringContainsString( 'zero-zip', $msg );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 	}
 
 	public function test_err_extract(): void {
@@ -350,7 +350,7 @@ class ExtractorTest extends TestCase {
 			$msg = $e->getMessage();
 		}
 		$this->assertSame( "Extraction only supported for '.zip' and '.tar.gz' file types.", $msg );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 	}
 
 	public function test_ensure_dir_exists(): void {
@@ -550,7 +550,7 @@ class ExtractorTest extends TestCase {
 		$this->assertSame( 'legit', file_get_contents( $dest_dir . '/wp-config6.php' ) );
 		$this->assertSame( 0600, fileperms( $dest_dir . '/wp-config6.php' ) & 07777 );
 		$this->assertSame( self::$expected_wp, self::recursive_scandir( $dest_dir ) );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 
 		Extractor::rmdir( $temp_dir );
 	}
@@ -575,7 +575,7 @@ class ExtractorTest extends TestCase {
 		$this->assertSame( 'legit', file_get_contents( $dest_dir . '/wp-config6.php' ) );
 		$this->assertSame( 0600, fileperms( $dest_dir . '/wp-config6.php' ) & 07777 );
 		$this->assertSame( self::$expected_wp, self::recursive_scandir( $dest_dir ) );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 
 		Extractor::rmdir( $temp_dir );
 	}
@@ -598,7 +598,7 @@ class ExtractorTest extends TestCase {
 
 		clearstatcache();
 		$this->assertSame( 0644, fileperms( $dest_dir . '/wp-config6.php' ) & 07777 );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 
 		Extractor::rmdir( $temp_dir );
 	}
@@ -626,7 +626,7 @@ class ExtractorTest extends TestCase {
 		$this->assertSame( 65534, fileowner( $dest_dir . '/wp-config6.php' ) );
 		$this->assertSame( 65534, filegroup( $dest_dir . '/wp-config6.php' ) );
 		$this->assertSame( 'old', file_get_contents( $temp_dir . '/other.php' ) );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 
 		Extractor::rmdir( $temp_dir );
 	}
@@ -656,7 +656,7 @@ class ExtractorTest extends TestCase {
 
 		$this->assertSame( 'updated', file_get_contents( $dest_dir . '/wp-includes/file7.php' ) );
 		$this->assertSame( self::$expected_wp, self::recursive_scandir( $dest_dir ) );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 
 		Extractor::rmdir( $temp_dir );
 	}
@@ -739,7 +739,7 @@ class ExtractorTest extends TestCase {
 
 		$this->assertTrue( is_link( $dest_dir . '/wp-includes' ) );
 		$this->assertFileExists( $dest_dir . '/shared/file7.php' );
-		$this->assertEmpty( self::$logger->stderr );
+		$this->assertSame( '', self::$logger->stderr );
 
 		Extractor::rmdir( $temp_dir );
 	}

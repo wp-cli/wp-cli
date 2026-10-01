@@ -22,7 +22,7 @@ class ArgValidationTest extends TestCase {
 		$this->assertTrue( $validator->enough_positionals( [ '1' ] ) );
 		$this->assertTrue( $validator->enough_positionals( [ '1', '2', '3' ] ) );
 
-		$this->assertEmpty( $validator->unknown_positionals( [ '1', '2', '3' ] ) );
+		$this->assertSame( [], $validator->unknown_positionals( [ '1', '2', '3' ] ) );
 	}
 
 	public function testUnknownAssocEmpty(): void {
@@ -43,7 +43,7 @@ class ArgValidationTest extends TestCase {
 			'brand' => true,
 			'flag'  => true,
 		];
-		$this->assertEmpty( $validator->unknown_assoc( $assoc_args ) );
+		$this->assertSame( [], $validator->unknown_assoc( $assoc_args ) );
 
 		$assoc_args['another'] = true;
 		$this->assertContains( 'another', $validator->unknown_assoc( $assoc_args ) );
