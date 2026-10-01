@@ -1,0 +1,751 @@
+name: Post-Release Automation
+
+# Runs once a release draft has been published.
+#
+# `released` rather than `published`: the `published` event also fires for
+# pre-releases, which would promote stable and close milestones off the back of
+# something like v3.0.0-beta.1. `released` only fires for stable releases, and
+# matches what trigger-handbook-regeneration.yml and check-branch-alias.yml
+# already listen for.
+#
+# This is where the stable build in wp-cli/builds gets updated, and it only
+# happens after the published Phar has been verified against the trusted
+# release signing key (.github/release-signing-key.asc). The Release workflow
+# never touches stable, so an unsigned or wrongly signed Phar never reaches
+# `wp cli update --stable`, the website, or apt.
+#
+# Jobs, in order:
+#
+# - `verify-release` holds no secrets. It downloads the published assets,
+#   checks the checksums and the GPG signatures, and only then runs the Phar.
+# - `promote-stable` holds ACTIONS_BOT and copies the verified assets into
+#   wp-cli/builds. It never executes anything.
+# - `prepare-bumps` holds no secrets and runs Composer to produce the version
+#   bump for wp-cli/wp-cli and the constraint reset for wp-cli/wp-cli-bundle.
+# - `open-pull-requests` holds ACTIONS_BOT and turns those into pull requests.
+#   Both `main` branches are protected and require a review, so nothing is
+#   pushed to `main` directly; a maintainer approves and merges the PRs.
+# - `close-milestones` closes the released milestones across the bundle.
+#
+# The Composer branch alias is deliberately not touched here: the org-wide
+# Check Branch Alias workflow (wp-cli/.github) runs on the same release event
+# in both repositories and moves the alias to `X.x-dev` after a major release.
+# Minor releases keep that alias, so there is nothing for this workflow to do.
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Published release tag (e.g. v3.0.0)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Verify the release and report what would change, but do not push anything'
+        required: false
+        default: false
+        type: boolean
+
+# Every write in this workflow authenticates with ACTIONS_BOT.
+permissions:
+  contents: read
+
+concurrency:
+  group: wp-cli-post-release
+  cancel-in-progress: false
+
+defaults:
+  run:
+    # Naming bash explicitly gets us `-o pipefail`, which the default shell
+    # (`bash -e {0}`) does not set.
+    shell: bash
+
+env:
+  DRY_RUN: ${{ inputs.dry_run || false }}
+  # Fingerprint of the `WP-CLI Releases <releases@wp-cli.org>` key, the same
+  # one the handbook tells users to verify against. The key file in the repo
+  # is only accepted if it carries this fingerprint.
+  RELEASE_KEY_FINGERPRINT: 63AF7AA15067C05616FDDD88A3A2E8F226F0BC06
+
+jobs:
+  verify-release:
+    name: Verify the published release
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'wp-cli' }}
+    permissions:
+      contents: read
+
+    outputs:
+      tag: ${{ steps.vars.outputs.tag }}
+      version: ${{ steps.vars.outputs.version }}
+      stable: ${{ steps.vars.outputs.stable }}
+      phar_sha512: ${{ steps.phar.outputs.sha512 }}
+
+    steps:
+      # A published patch release (v3.0.1) is a legitimate thing that the
+      # automation simply does not handle (it is cut from a release branch,
+      # see the patch release checklist), so on the release event it is
+      # skipped rather than reported as a failed run. On workflow_dispatch it
+      # is an operator error and fails.
+      - name: Determine version
+        id: vars
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          TAG="${INPUT_TAG:-$RELEASE_TAG}"
+          VERSION="${TAG#v}"
+
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.0$ ]]; then
+            if [ "$EVENT_NAME" = "release" ]; then
+              echo "::notice::'$TAG' is not a vX.Y.0 tag. Post-release automation only handles regular releases, so nothing to do."
+              echo "stable=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            echo "::error::'$TAG' is not a vX.Y.0 tag. Post-release automation only handles regular releases."
+            exit 1
+          fi
+
+          {
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+            echo "stable=true"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check out the trusted release signing key
+        if: ${{ steps.vars.outputs.stable == 'true' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          sparse-checkout: |
+            .github/release-signing-key.asc
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+          path: wp-cli
+
+      - name: Set up PHP
+        if: ${{ steps.vars.outputs.stable == 'true' }}
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: 'latest'
+          coverage: none
+
+      # The default token cannot see drafts, so this also fails closed when a
+      # manual dispatch names a release that is not actually published yet.
+      - name: Verify the release is published and not a pre-release
+        if: ${{ steps.vars.outputs.stable == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.vars.outputs.tag }}
+        run: |
+          if ! INFO="$(gh release view "$TAG" --repo wp-cli/wp-cli --json isDraft,isPrerelease,tagName)"; then
+            echo "::error::Release $TAG on wp-cli/wp-cli does not exist or is not published."
+            exit 1
+          fi
+
+          if [ "$(jq -r '.isDraft' <<< "$INFO")" != "false" ]; then
+            echo "::error::Release $TAG on wp-cli/wp-cli is still a draft."
+            exit 1
+          fi
+
+          if [ "$(jq -r '.isPrerelease' <<< "$INFO")" != "false" ]; then
+            echo "::error::Release $TAG on wp-cli/wp-cli is marked as a pre-release."
+            exit 1
+          fi
+
+          echo "Release $TAG is published."
+
+      - name: Download the published release assets
+        if: ${{ steps.vars.outputs.stable == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.vars.outputs.tag }}
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          mkdir -p verify
+          cd verify
+          gh release download "$TAG" \
+            --repo wp-cli/wp-cli \
+            --pattern "wp-cli-${VERSION}.*"
+          ls -l
+
+          for FILE in phar manifest.json phar.md5 phar.sha256 phar.sha512 phar.asc phar.gpg; do
+            if [ ! -s "wp-cli-${VERSION}.${FILE}" ]; then
+              echo "::error::wp-cli-${VERSION}.${FILE} is missing from the published release. A release carries 7 assets: the Phar, the manifest, three checksums and two signatures."
+              exit 1
+            fi
+          done
+
+      - name: Verify the published checksums
+        if: ${{ steps.vars.outputs.stable == 'true' }}
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          cd verify
+
+          for ALGO in md5 sha256 sha512; do
+            FILE="wp-cli-${VERSION}.phar.${ALGO}"
+            EXPECTED="$(cat "$FILE")"
+            ACTUAL="$("${ALGO}sum" "wp-cli-${VERSION}.phar" | cut -d ' ' -f 1)"
+
+            if [ -z "$EXPECTED" ] || [ "$EXPECTED" != "$ACTUAL" ]; then
+              echo "::error::Published $ALGO does not match the published Phar (expected '$EXPECTED', got '$ACTUAL')."
+              exit 1
+            fi
+
+            echo "$ALGO OK: $ACTUAL"
+          done
+
+      # Before the Phar is executed: a good signature from the release key is
+      # what establishes that these bytes are the ones a maintainer signed.
+      # Both the detached (.asc) and the wrapped (.gpg) signature are checked,
+      # and the wrapped one has to contain the very same Phar.
+      - name: Verify the GPG signatures against the trusted release key
+        if: ${{ steps.vars.outputs.stable == 'true' }}
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          export GNUPGHOME
+          GNUPGHOME="$(mktemp -d)"
+
+          gpg --batch --quiet --import wp-cli/.github/release-signing-key.asc
+
+          IMPORTED="$(gpg --batch --with-colons --list-keys | awk -F: '$1 == "fpr" { print $10; exit }')"
+          if [ "$IMPORTED" != "$RELEASE_KEY_FINGERPRINT" ]; then
+            echo "::error::.github/release-signing-key.asc has fingerprint '$IMPORTED', expected '$RELEASE_KEY_FINGERPRINT'."
+            exit 1
+          fi
+
+          # gpg exits 0 for any good signature, whoever made it, and prints
+          # trust warnings for keys it does not know. VALIDSIG on the status
+          # fd names the primary key the signature was made with, and that
+          # is the only thing that decides here.
+          require_valid_signature() {
+            if ! grep -Eq "^\[GNUPG:\] VALIDSIG .* ${RELEASE_KEY_FINGERPRINT}\$" "$1"; then
+              echo "::error::$2 was not made with the release key ${RELEASE_KEY_FINGERPRINT}."
+              cat "$1"
+              exit 1
+            fi
+          }
+
+          cd verify
+
+          if ! gpg --batch --status-file ../asc-status.txt --verify "wp-cli-${VERSION}.phar.asc" "wp-cli-${VERSION}.phar" 2> ../asc-stderr.txt; then
+            echo "::error::The detached signature wp-cli-${VERSION}.phar.asc does not verify."
+            cat ../asc-stderr.txt
+            exit 1
+          fi
+          require_valid_signature ../asc-status.txt "wp-cli-${VERSION}.phar.asc"
+
+          if ! gpg --batch --status-file ../gpg-status.txt --output ../unwrapped.phar --decrypt "wp-cli-${VERSION}.phar.gpg" 2> ../gpg-stderr.txt; then
+            echo "::error::The signed file wp-cli-${VERSION}.phar.gpg does not verify."
+            cat ../gpg-stderr.txt
+            exit 1
+          fi
+          require_valid_signature ../gpg-status.txt "wp-cli-${VERSION}.phar.gpg"
+
+          if ! cmp --silent ../unwrapped.phar "wp-cli-${VERSION}.phar"; then
+            echo "::error::wp-cli-${VERSION}.phar.gpg wraps a different Phar than wp-cli-${VERSION}.phar."
+            exit 1
+          fi
+
+          echo "Both signatures were made with ${RELEASE_KEY_FINGERPRINT} and cover the published Phar."
+
+      - name: Verify the published Phar runs and reports the right version
+        if: ${{ steps.vars.outputs.stable == 'true' }}
+        id: phar
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          cd verify
+
+          PHAR_VERSION="$(php "wp-cli-${VERSION}.phar" --version | awk '{print $2}')"
+
+          if [ "$PHAR_VERSION" != "$VERSION" ]; then
+            echo "::error::Published Phar reports '$PHAR_VERSION' but the release is '$VERSION'."
+            exit 1
+          fi
+
+          php "wp-cli-${VERSION}.phar" --info
+
+          if ! jq -e . "wp-cli-${VERSION}.manifest.json" > /dev/null; then
+            echo "::error::wp-cli-${VERSION}.manifest.json is not valid JSON."
+            exit 1
+          fi
+
+          echo "sha512=$(cat "wp-cli-${VERSION}.phar.sha512")" >> "$GITHUB_OUTPUT"
+
+      - name: Upload the verified release assets
+        if: ${{ steps.vars.outputs.stable == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: verified-release-${{ steps.vars.outputs.version }}
+          path: verify/
+          if-no-files-found: error
+
+  promote-stable:
+    name: Promote the verified release to stable
+    runs-on: ubuntu-latest
+    needs: [verify-release]
+    if: ${{ needs.verify-release.outputs.stable == 'true' }}
+    # Configure this environment with required reviewers; that is what gates
+    # every job holding ACTIONS_BOT. On the release event GITHUB_REF is the
+    # tag, so the environment's deployment rules have to allow `main` and
+    # `v*.*.0` tags, not just `main`.
+    environment: release
+    permissions:
+      contents: read
+
+    env:
+      VERSION: ${{ needs.verify-release.outputs.version }}
+
+    steps:
+      - name: Check out wp-cli/builds repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/builds
+          ref: gh-pages
+          sparse-checkout: |
+            phar
+            deb
+          token: ${{ secrets.ACTIONS_BOT }}
+          path: builds
+
+      - name: Download the verified release assets
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: verified-release-${{ needs.verify-release.outputs.version }}
+          path: verify
+
+      # The artifact store is a hand-off between jobs, so check what came
+      # back is what `verify-release` signed off on before it goes anywhere.
+      - name: Verify the downloaded assets
+        env:
+          EXPECTED_SHA512: ${{ needs.verify-release.outputs.phar_sha512 }}
+        run: |
+          cd verify
+          ACTUAL="$(sha512sum "wp-cli-${VERSION}.phar" | cut -d ' ' -f 1)"
+
+          if [ -z "$EXPECTED_SHA512" ] || [ "$ACTUAL" != "$EXPECTED_SHA512" ]; then
+            echo "::error::The downloaded Phar ($ACTUAL) is not the one that was verified ($EXPECTED_SHA512)."
+            exit 1
+          fi
+
+          for FILE in manifest.json phar.md5 phar.sha256 phar.sha512 phar.asc phar.gpg; do
+            if [ ! -s "wp-cli-${VERSION}.${FILE}" ]; then
+              echo "::error::wp-cli-${VERSION}.${FILE} is missing from the verified assets."
+              exit 1
+            fi
+          done
+
+      # `wp cli update` downloads from the release page while the website
+      # serves the stable Phar out of wp-cli/builds. Copying the published,
+      # verified asset (rather than re-promoting wp-cli-release.phar) is what
+      # keeps those two byte-identical.
+      - name: Promote the release to stable
+        run: |
+          cp "verify/wp-cli-${VERSION}.phar" builds/phar/wp-cli.phar
+          cp "verify/wp-cli-${VERSION}.manifest.json" builds/phar/wp-cli.manifest.json
+
+          for EXT in md5 sha256 sha512 asc gpg; do
+            cp "verify/wp-cli-${VERSION}.phar.${EXT}" "builds/phar/wp-cli.phar.${EXT}"
+          done
+
+          cd builds/phar
+          for ALGO in md5 sha256 sha512; do
+            if [ "$(cat "wp-cli.phar.${ALGO}")" != "$("${ALGO}sum" wp-cli.phar | cut -d ' ' -f 1)" ]; then
+              echo "::error::wp-cli.phar.${ALGO} does not match wp-cli.phar after promotion."
+              exit 1
+            fi
+          done
+
+          # apt users resolve php-wpcli_latest_all.deb, so it has to follow
+          # stable. The Release workflow waited for the package before the
+          # draft was created, so a miss here is a hard failure.
+          cd ../deb
+          DEB_FILE="php-wpcli_${VERSION}_all.deb"
+
+          if [ ! -f "$DEB_FILE" ]; then
+            echo "::error::$DEB_FILE not found in wp-cli/builds. php-wpcli_latest_all.deb would keep pointing at the previous release."
+            exit 1
+          fi
+
+          ln -sfn "$DEB_FILE" php-wpcli_latest_all.deb
+          echo "php-wpcli_latest_all.deb -> $DEB_FILE"
+
+      - name: Commit & push the stable build to wp-cli/builds
+        run: |
+          cd builds
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add phar/wp-cli.phar phar/wp-cli.manifest.json
+          git add phar/wp-cli.phar.md5 phar/wp-cli.phar.sha256 phar/wp-cli.phar.sha512
+          git add phar/wp-cli.phar.asc phar/wp-cli.phar.gpg
+          git add deb/php-wpcli_latest_all.deb
+
+          if git diff --staged --quiet; then
+            echo "Stable is already on v${VERSION}. Nothing to commit."
+          elif [ "$DRY_RUN" = "true" ]; then
+            echo "[dry run] Would commit and push the following to wp-cli/builds:"
+            git diff --staged --stat
+          else
+            git commit -m "Update stable to v${VERSION}"
+
+            # gh-pages also receives nightly and package builds, so a push can
+            # lose a race. Retry on top of whatever landed in the meantime.
+            for _ in 1 2 3; do
+              if git push origin gh-pages; then
+                exit 0
+              fi
+              echo "Push rejected, rebasing onto the latest gh-pages and retrying..."
+              git pull --rebase origin gh-pages
+            done
+
+            echo "::error::Could not push the stable build to wp-cli/builds."
+            exit 1
+          fi
+
+      # Read back from the remote: what wp-cli.org serves now has to be the
+      # published, signed Phar.
+      - name: Verify the stable build matches the published release
+        env:
+          EXPECTED_SHA512: ${{ needs.verify-release.outputs.phar_sha512 }}
+        run: |
+          cd builds
+          git fetch --quiet origin gh-pages
+          STABLE="$(git show origin/gh-pages:phar/wp-cli.phar | sha512sum | cut -d ' ' -f 1)"
+
+          if [ "$STABLE" != "$EXPECTED_SHA512" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "::notice::[dry run] Stable in wp-cli/builds ($STABLE) does not match the published release ($EXPECTED_SHA512) yet, as expected for a dry run."
+              exit 0
+            fi
+
+            echo "::error::phar/wp-cli.phar in wp-cli/builds ($STABLE) does not match the published release ($EXPECTED_SHA512)."
+            exit 1
+          fi
+
+          echo "Stable build and published release match."
+
+  prepare-bumps:
+    name: Prepare the version bump and constraint reset
+    runs-on: ubuntu-latest
+    needs: [verify-release, promote-stable]
+    permissions:
+      contents: read
+
+    outputs:
+      next_alpha: ${{ steps.vars.outputs.next_alpha }}
+      wp_cli_base: ${{ steps.vars.outputs.wp_cli_base }}
+      wp_cli_bump: ${{ steps.wp_cli.outputs.changed }}
+      bundle_base: ${{ steps.vars.outputs.bundle_base }}
+      bundle_reset: ${{ steps.bundle.outputs.changed }}
+
+    env:
+      VERSION: ${{ needs.verify-release.outputs.version }}
+
+    steps:
+      # No tokens: Composer runs here, and the result travels to the job that
+      # holds ACTIONS_BOT as plain files.
+      - name: Check out wp-cli/wp-cli
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+          path: wp-cli
+
+      - name: Check out wp-cli/wp-cli-bundle
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/wp-cli-bundle
+          ref: main
+          persist-credentials: false
+          path: wp-cli-bundle
+
+      - name: Set up PHP and Composer
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: 'latest'
+          coverage: none
+          tools: composer
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Work out the next development version
+        id: vars
+        run: |
+          # VERSION passed the X.Y.0 check in verify-release, so the arithmetic
+          # below only ever sees digits.
+          IFS='.' read -r MAJOR MINOR _PATCH <<< "$VERSION"
+          NEXT_ALPHA="${MAJOR}.$((MINOR + 1)).0-alpha"
+
+          {
+            echo "next_alpha=$NEXT_ALPHA"
+            echo "wp_cli_base=$(git -C wp-cli rev-parse HEAD)"
+            echo "bundle_base=$(git -C wp-cli-bundle rev-parse HEAD)"
+          } >> "$GITHUB_OUTPUT"
+
+      # Only bump when the release actually came off the current main. A
+      # rerun after the bump PR was merged, or a main that has already moved
+      # elsewhere, is a no-op rather than a failed workflow.
+      - name: Prepare the version bump in wp-cli/wp-cli
+        id: wp_cli
+        env:
+          NEXT_ALPHA: ${{ steps.vars.outputs.next_alpha }}
+        run: |
+          cd wp-cli
+          CURRENT_VERSION="$(tr -d '[:space:]' < VERSION)"
+
+          if [ "$CURRENT_VERSION" = "$NEXT_ALPHA" ]; then
+            echo "::notice::wp-cli/wp-cli is already on $NEXT_ALPHA. Skipping the version bump."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "$CURRENT_VERSION" != "$VERSION" ]; then
+            echo "::notice::wp-cli/wp-cli main is on $CURRENT_VERSION, which does not follow from the $VERSION release. Skipping the version bump."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "$NEXT_ALPHA" > VERSION
+          git diff
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare the framework constraint reset in wp-cli/wp-cli-bundle
+        id: bundle
+        run: |
+          cd wp-cli-bundle
+          CONSTRAINT="$(jq -r '.require["wp-cli/wp-cli"]' composer.json)"
+          MAJOR_MINOR="${VERSION%.*}"
+
+          if [ "$CONSTRAINT" = "dev-main" ]; then
+            echo "::notice::wp-cli/wp-cli-bundle already requires 'wp-cli/wp-cli: dev-main'. Nothing to reset."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ ! "$CONSTRAINT" =~ ^[~^]?${MAJOR_MINOR//./\\.}(\.0)?$ ]]; then
+            echo "::notice::wp-cli/wp-cli-bundle requires 'wp-cli/wp-cli: $CONSTRAINT', which does not pin the $VERSION release. Leaving it alone."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # No install, no scripts, no plugins: this only has to rewrite
+          # composer.json and re-lock the framework, not run anything.
+          composer require "wp-cli/wp-cli:dev-main" --no-interaction --no-install --no-scripts --no-plugins
+          composer validate --no-plugins --no-check-all --no-check-publish --strict
+
+          git diff --stat
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Upload the prepared changes
+        if: ${{ steps.wp_cli.outputs.changed == 'true' || steps.bundle.outputs.changed == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: post-release-bumps-${{ needs.verify-release.outputs.version }}
+          path: |
+            wp-cli/VERSION
+            wp-cli-bundle/composer.json
+            wp-cli-bundle/composer.lock
+          if-no-files-found: error
+
+  open-pull-requests:
+    name: Open the post-release pull requests
+    runs-on: ubuntu-latest
+    needs: [verify-release, prepare-bumps]
+    if: ${{ needs.prepare-bumps.outputs.wp_cli_bump == 'true' || needs.prepare-bumps.outputs.bundle_reset == 'true' }}
+    environment: release
+    permissions:
+      contents: read
+
+    env:
+      VERSION: ${{ needs.verify-release.outputs.version }}
+      TAG: ${{ needs.verify-release.outputs.tag }}
+      NEXT_ALPHA: ${{ needs.prepare-bumps.outputs.next_alpha }}
+      BRANCH: post-release-v${{ needs.verify-release.outputs.version }}
+      GH_TOKEN: ${{ secrets.ACTIONS_BOT }}
+
+    steps:
+      - name: Download the prepared changes
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: post-release-bumps-${{ needs.verify-release.outputs.version }}
+          path: bumps
+
+      # Checked out at the commit the changes were prepared against, with
+      # ACTIONS_BOT rather than GITHUB_TOKEN: pull requests opened with the
+      # default token get no CI runs, and CI is a required check on main.
+      - name: Check out wp-cli/wp-cli
+        if: ${{ needs.prepare-bumps.outputs.wp_cli_bump == 'true' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare-bumps.outputs.wp_cli_base }}
+          token: ${{ secrets.ACTIONS_BOT }}
+          path: wp-cli
+
+      - name: Open the version bump pull request on wp-cli/wp-cli
+        if: ${{ needs.prepare-bumps.outputs.wp_cli_bump == 'true' }}
+        env:
+          PR_BODY: |
+            Bumps the version to the next development alpha now that ${{ needs.verify-release.outputs.tag }} has been released, so that `wp cli update --nightly` keeps working as expected.
+
+            Opened by the Post-Release Automation workflow.
+        run: |
+          cp bumps/wp-cli/VERSION wp-cli/VERSION
+          cd wp-cli
+
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git checkout -b "$BRANCH"
+          git add VERSION
+
+          if git diff --staged --quiet; then
+            echo "No version bump needed in wp-cli/wp-cli."
+            exit 0
+          fi
+
+          git commit -m "Bump version to $NEXT_ALPHA"
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "[dry run] Would open a pull request on wp-cli/wp-cli from $BRANCH with:"
+            git show --stat HEAD
+            exit 0
+          fi
+
+          # The branch belongs to this workflow; a rerun replaces it.
+          git push --force origin "$BRANCH"
+
+          PR_NUMBER="$(gh pr list --repo wp-cli/wp-cli --head "$BRANCH" --state open --json number --jq '.[0].number // empty')"
+          if [ -z "$PR_NUMBER" ]; then
+            PR_URL="$(gh pr create --repo wp-cli/wp-cli --base main --head "$BRANCH" --title "Bump version to $NEXT_ALPHA" --body "$PR_BODY")"
+          else
+            PR_URL="$(gh pr view "$PR_NUMBER" --repo wp-cli/wp-cli --json url --jq '.url')"
+            echo "Pull request $PR_URL already exists; its branch was updated."
+          fi
+
+          # Merges on its own once a maintainer approves and CI is green.
+          # Not fatal: auto-merge is a repository setting.
+          gh pr merge "$PR_URL" --repo wp-cli/wp-cli --auto --squash \
+            || echo "::notice::Could not enable auto-merge for $PR_URL; merge it by hand once approved."
+
+          echo "### Version bump: $PR_URL" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check out wp-cli/wp-cli-bundle
+        if: ${{ needs.prepare-bumps.outputs.bundle_reset == 'true' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/wp-cli-bundle
+          ref: ${{ needs.prepare-bumps.outputs.bundle_base }}
+          token: ${{ secrets.ACTIONS_BOT }}
+          path: wp-cli-bundle
+
+      - name: Open the constraint reset pull request on wp-cli/wp-cli-bundle
+        if: ${{ needs.prepare-bumps.outputs.bundle_reset == 'true' }}
+        env:
+          PR_BODY: |
+            Resets the `wp-cli/wp-cli` framework requirement back to `dev-main` now that ${{ needs.verify-release.outputs.tag }} has been released.
+
+            Opened by the Post-Release Automation workflow in wp-cli/wp-cli.
+        run: |
+          cp bumps/wp-cli-bundle/composer.json wp-cli-bundle/composer.json
+          cp bumps/wp-cli-bundle/composer.lock wp-cli-bundle/composer.lock
+          cd wp-cli-bundle
+
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git checkout -b "$BRANCH"
+          git add composer.json composer.lock
+
+          if git diff --staged --quiet; then
+            echo "No changes needed in wp-cli/wp-cli-bundle."
+            exit 0
+          fi
+
+          git commit -m "Reset wp-cli framework dependency to dev-main"
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "[dry run] Would open a pull request on wp-cli/wp-cli-bundle from $BRANCH with:"
+            git show --stat HEAD
+            exit 0
+          fi
+
+          git push --force origin "$BRANCH"
+
+          PR_NUMBER="$(gh pr list --repo wp-cli/wp-cli-bundle --head "$BRANCH" --state open --json number --jq '.[0].number // empty')"
+          if [ -z "$PR_NUMBER" ]; then
+            PR_URL="$(gh pr create --repo wp-cli/wp-cli-bundle --base main --head "$BRANCH" --title "Reset wp-cli framework dependency to dev-main" --body "$PR_BODY")"
+          else
+            PR_URL="$(gh pr view "$PR_NUMBER" --repo wp-cli/wp-cli-bundle --json url --jq '.url')"
+            echo "Pull request $PR_URL already exists; its branch was updated."
+          fi
+
+          gh pr merge "$PR_URL" --repo wp-cli/wp-cli-bundle --auto --squash \
+            || echo "::notice::Could not enable auto-merge for $PR_URL; merge it by hand once approved."
+
+          echo "### Constraint reset: $PR_URL" >> "$GITHUB_STEP_SUMMARY"
+
+  close-milestones:
+    name: Close the released milestones
+    runs-on: ubuntu-latest
+    needs: [verify-release, promote-stable]
+    environment: release
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out wp-cli/wp-cli-dev for maintenance tools
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/wp-cli-dev
+          persist-credentials: false
+          path: wp-cli-dev
+
+      - name: Set up PHP and Composer
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: 'latest'
+          coverage: none
+          tools: composer
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Bounded because this job holds the post-release concurrency group: a
+      # stalled org-wide clone would otherwise sit there for six hours. Runs
+      # with the default token only; ACTIONS_BOT is handed to the one command
+      # below that needs it, never to Composer.
+      - name: Install dependencies for maintenance tools
+        if: ${{ env.DRY_RUN != 'true' }}
+        timeout-minutes: 20
+        env:
+          # The wp-cli-dev composer install clones the whole WP-CLI org via its
+          # pre-install-cmd hook, so let it use every core the runner has.
+          CLONE_JOBS: 8
+        run: |
+          cd wp-cli-dev
+          composer install --no-interaction
+
+      # `--bundle` takes the list from the `packages` section of the bundle's
+      # composer.lock, which never contains wp-cli/wp-cli-bundle itself, and
+      # `wp-cli/package-command` only appears under `packages-dev`.
+      # wp-cli/wp-cli is listed there, but is named anyway: it is the one
+      # repository this must not miss.
+      - name: Close released milestones across bundle repos
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_BOT }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "[dry run] Would run: wp maintenance release close-released wp-cli/wp-cli wp-cli/wp-cli-bundle wp-cli/package-command --bundle"
+            exit 0
+          fi
+
+          cd wp-cli-dev
+
+          # Registered as `maintenance release` in wp-cli-dev's bootstrap.php,
+          # with `close-released` as a subcommand of that.
+          vendor/bin/wp maintenance release close-released \
+            wp-cli/wp-cli wp-cli/wp-cli-bundle wp-cli/package-command \
+            --bundle
