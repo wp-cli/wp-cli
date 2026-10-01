@@ -30,7 +30,7 @@ class ConfiguratorTest extends TestCase {
 		$this->assertSame( 'foo', $args[0][0] );
 
 		$this->assertSame( 'bar', $args[1][0][0] );
-		$this->assertEmpty( $args[1][0][1] );
+		$this->assertSame( '', $args[1][0][1] );
 
 		$this->assertSame( 'baz', $args[1][1][0] );
 		$this->assertSame( 'text', $args[1][1][1] );

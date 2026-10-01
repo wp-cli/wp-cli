@@ -16,7 +16,7 @@ class SynopsisParserTest extends TestCase {
 	public function testEmpty(): void {
 		$r = SynopsisParser::parse( ' ' );
 
-		$this->assertEmpty( $r );
+		$this->assertSame( [], $r );
 	}
 
 	public function testPositional(): void {
