@@ -25,7 +25,7 @@ final class LoadRequiredCommand implements BootstrapStep {
 	 */
 	public function process( BootstrapState $state ) {
 		$runner = new RunnerInstance();
-		if ( ! isset( $runner()->config['require'] ) ) {
+		if ( ! isset( $runner()->config['require'] ) || empty( $runner()->config['require'] ) ) {
 			return $state;
 		}
 

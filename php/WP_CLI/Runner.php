@@ -139,6 +139,42 @@ class Runner {
 	private $required_files;
 
 	/**
+	 * List of exec commands.
+	 *
+	 * @var array<string, array<int, string>>
+	 */
+	private $exec_commands = [
+		'system'  => [],
+		'global'  => [],
+		'project' => [],
+		'runtime' => [],
+	];
+
+	/**
+	 * Values of the `trust-project-config` setting, keyed by the configuration
+	 * file that defines them, in order of precedence.
+	 *
+	 * Snapshotted before the project configuration is merged so that a project
+	 * configuration file cannot grant itself trust.
+	 *
+	 * @var array{global: array<int, mixed>, system: array<int, mixed>}
+	 */
+	private $trust_config_sources = [
+		'global' => [],
+		'system' => [],
+	];
+
+	/**
+	 * Configuration files that make up the project configuration, in load order.
+	 *
+	 * Contains the project configuration file itself and every file it pulls in
+	 * through `_: inherit`.
+	 *
+	 * @var array<int, string>
+	 */
+	private $project_config_files = [];
+
+	/**
 	 * @param string $key
 	 * @return mixed
 	 */
@@ -1042,7 +1078,11 @@ class Runner {
 		$alias_regex = '#' . Configurator::ALIAS_REGEX . '#';
 		/** @var string $v */
 		foreach ( $wp_args as $k => $v ) {
-			if ( preg_match( '#^--ssh(?:-args)?(?:=|$)|--alias=#', $v ) || preg_match( $alias_regex, $v ) ) {
+			// Strip the arguments that only make sense locally. `--trust-project-config`
+			// must never reach the remote instance: an older remote rejects it as an
+			// unknown parameter, and a remote at this version would take it as a
+			// blanket approval of whatever project config lives on the remote.
+			if ( preg_match( '#^--ssh(?:-args)?(?:=|$)|^--(?:no-)?trust-project-config(?:=|$)|--alias=#', $v ) || preg_match( $alias_regex, $v ) ) {
 				unset( $wp_args[ $k ] );
 			}
 		}
@@ -1715,6 +1755,32 @@ class Runner {
 	}
 
 	/**
+	 * @return array<string, array<int, string>>
+	 */
+	public function get_exec_commands() {
+		return $this->exec_commands;
+	}
+
+	/**
+	 * Get the `trust-project-config` values defined in the global and system
+	 * configuration files, keyed by source and ordered by precedence.
+	 *
+	 * @return array{global: array<int, mixed>, system: array<int, mixed>}
+	 */
+	public function get_trust_config_sources() {
+		return $this->trust_config_sources;
+	}
+
+	/**
+	 * Get the files that make up the project configuration, in load order.
+	 *
+	 * @return array<int, string>
+	 */
+	public function get_project_config_files() {
+		return $this->project_config_files;
+	}
+
+	/**
 	 * Do WordPress core files exist?
 	 */
 	private function wp_exists(): bool {
@@ -1786,6 +1852,24 @@ class Runner {
 			$this->alias = substr( array_shift( $argv ), 1 ); // Remove the @ prefix and shift from argv
 		}
 
+		// Project configuration directives that need to be trusted before being acted upon,
+		// along with the system/global configuration they are compared against.
+		$gated_directives  = [];
+		$gated_types       = [];
+		$global_env        = [];
+		$global_ssh_args   = [];
+		$global_aliases    = [];
+		$global_connection = [];
+		$config            = $configurator->to_array();
+
+		// Root-level connection keys. Each of them decides where a command runs or
+		// what the local `ssh` invocation looks like: `ssh_config` and `proxyjump`
+		// reach the SSH command builder and can execute a local `ProxyCommand`,
+		// `key` picks the identity that is handed to a remote host, and `ssh` /
+		// `http` redirect the whole command. `ssh` and `http` are declared in the
+		// config spec, the others only exist as extra config.
+		$root_connection_keys = [ 'ssh', 'http', 'ssh_config', 'proxyjump', 'key' ];
+
 		// File config
 		{
 			$this->system_config_path  = $this->get_system_config_path();
@@ -1795,13 +1879,153 @@ class Runner {
 			$configurator->merge_yml( (string) $this->system_config_path, $this->alias );
 			$config                         = $configurator->to_array();
 			$this->required_files['system'] = $config[0]['require'];
+			$this->exec_commands['system']  = isset( $config[0]['exec'] ) ? (array) $config[0]['exec'] : [];
+			$system_trust_values            = isset( $config[0]['trust-project-config'] ) ? (array) $config[0]['trust-project-config'] : [];
 			$configurator->merge_yml( (string) $this->global_config_path, $this->alias );
 			$config                         = $configurator->to_array();
 			$this->required_files['global'] = isset( $config[0]['require'] ) ? (array) $config[0]['require'] : [];
-			$configurator->merge_yml( (string) $this->project_config_path, $this->alias );
+			$this->exec_commands['global']  = isset( $config[0]['exec'] ) ? (array) $config[0]['exec'] : [];
+
+			// CRITICAL / LOAD-BEARING ORDERING:
+			// Snapshot the trust-project-config values from the system and global
+			// configurations ONLY, BEFORE merging the project configuration. This
+			// prevents a project configuration file from granting itself trust via
+			// 'trust-project-config: true'.
+			//
+			// The setting is a `multiple` key, so the configurator appends the global
+			// values to the system ones. Keep the two apart so that the global config
+			// can override a system-wide value (e.g. system `true`, global `false`).
+			$all_trust_values                     = isset( $config[0]['trust-project-config'] ) ? (array) $config[0]['trust-project-config'] : [];
+			$this->trust_config_sources['global'] = array_values( array_slice( $all_trust_values, count( $system_trust_values ) ) );
+			$this->trust_config_sources['system'] = array_values( $system_trust_values );
+
+			$global_env        = isset( $config[1]['env'] ) && is_array( $config[1]['env'] ) ? $config[1]['env'] : [];
+			$global_ssh_args   = isset( $config[0]['ssh-args'] ) ? (array) $config[0]['ssh-args'] : [];
+			$global_aliases    = $configurator->get_aliases();
+			$global_connection = self::get_connection_config( $config, $root_connection_keys );
+
+			$this->project_config_files      = $configurator->merge_yml( (string) $this->project_config_path, $this->alias );
 			$config                          = $configurator->to_array();
 			$this->required_files['project'] = isset( $config[0]['require'] ) ? (array) $config[0]['require'] : [];
+			$this->exec_commands['project']  = isset( $config[0]['exec'] ) ? (array) $config[0]['exec'] : [];
 			$this->required_files['runtime'] = [];
+			$this->exec_commands['runtime']  = [];
+		}
+
+		// Collect the directives that originate from the project configuration file and
+		// that need to be trusted before they are acted upon. The trust verification
+		// itself happens at the end of this method, once the runtime configuration has
+		// been parsed, so that `--trust-project-config` can be taken into account.
+		if ( $this->project_config_path ) {
+			$project_requires = array_diff( $this->required_files['project'], $this->required_files['global'] );
+			$project_exec     = array_diff( $this->exec_commands['project'], $this->exec_commands['global'] );
+			$project_env_all  = isset( $config[1]['env'] ) && is_array( $config[1]['env'] ) ? $config[1]['env'] : [];
+
+			// Gate env keys that are new or whose value differs from the trusted
+			// system/global configuration. Comparing values (rather than only key
+			// names) ensures a project config cannot silently override an env key
+			// the operator already set globally: the project `env` array replaces
+			// the global one wholesale, so an unchecked key name would still yield
+			// the project's value from `Utils\get_env_or_config()`.
+			$project_env_keys = [];
+			foreach ( $project_env_all as $env_key => $env_value ) {
+				if ( ! array_key_exists( $env_key, $global_env ) || $env_value !== $global_env[ $env_key ] ) {
+					$project_env_keys[] = $env_key;
+				}
+			}
+
+			$project_ssh_args = isset( $config[0]['ssh-args'] ) ? (array) $config[0]['ssh-args'] : [];
+			$new_ssh_args     = array_diff( $project_ssh_args, $global_ssh_args );
+
+			$project_aliases = $configurator->get_aliases();
+
+			// Protected commands (`cli info`, `package`) never load `require` or `exec`
+			// directives, see LoadRequiredCommand and LoadExecCommand, so there is
+			// nothing to trust for them. Other directives such as `env` still apply
+			// and remain gated.
+			$is_protected_command = self::is_protected_command( $argv );
+
+			if ( ! $is_protected_command ) {
+				foreach ( $project_requires as $req ) {
+					$gated_directives[] = 'require: ' . $req;
+					$gated_types[]      = 'require';
+				}
+				foreach ( $project_exec as $ex ) {
+					$gated_directives[] = 'exec: ' . $ex;
+					$gated_types[]      = 'exec';
+				}
+			}
+
+			// Allowlist of safe env keys that do not affect code execution
+			$safe_env_keys = [ 'WP_ENV', 'WP_DEBUG', 'WP_DEBUG_LOG', 'WP_DEBUG_DISPLAY' ];
+			foreach ( $project_env_keys as $env_key ) {
+				if ( ! in_array( strtoupper( $env_key ), $safe_env_keys, true ) ) {
+					$env_val            = $project_env_all[ $env_key ];
+					$gated_directives[] = 'env: ' . $env_key . '=' . ( is_scalar( $env_val ) ? $env_val : json_encode( $env_val ) );
+					$gated_types[]      = 'env';
+				}
+			}
+
+			foreach ( $new_ssh_args as $ssh_arg ) {
+				$gated_directives[] = 'ssh-args: ' . $ssh_arg;
+				$gated_types[]      = 'ssh-args';
+			}
+
+			// Gate root-level connection keys that the project config introduces or
+			// changes, the same way the connection fields of aliases are gated below.
+			foreach ( self::get_connection_config( $config, $root_connection_keys ) as $connection_key => $project_value ) {
+				if ( null === $project_value || '' === $project_value || false === $project_value ) {
+					continue;
+				}
+				$global_value = $global_connection[ $connection_key ] ?? null;
+				if ( $global_value === $project_value ) {
+					continue;
+				}
+				$gated_directives[] = $connection_key . ': ' . ( is_scalar( $project_value ) ? $project_value : json_encode( $project_value ) );
+				$gated_types[]      = $connection_key;
+			}
+
+			// Connection-related alias fields, each of which can redirect where a
+			// command runs or inject options into the local `ssh` invocation.
+			// `ssh_config` is as powerful as `ssh-args`, as an attacker-supplied SSH
+			// configuration file can carry a `ProxyCommand` that `ssh` executes
+			// locally. `path`, `url` and `user` are deliberately not gated here, as
+			// pointing a project at a given install is the documented purpose of a
+			// project configuration file.
+			$gated_alias_fields = [ 'ssh', 'ssh-args', 'ssh_config', 'proxyjump', 'key', 'http' ];
+
+			// Gate any project alias whose connection fields are new or differ from
+			// the same-named alias in the trusted system/global config. Comparing per
+			// alias and per field (rather than only flagging aliases with brand-new
+			// names) ensures a project config can neither introduce an alias that
+			// redirects a command nor silently redefine an existing one such as
+			// @prod. An alias that repeats the trusted values is not gated, so no
+			// additional prompts appear for already-trusted configurations.
+			foreach ( $project_aliases as $alias_name => $alias_def ) {
+				if ( ! is_array( $alias_def ) ) {
+					continue;
+				}
+
+				$global_alias_def = isset( $global_aliases[ $alias_name ] ) && is_array( $global_aliases[ $alias_name ] )
+					? $global_aliases[ $alias_name ]
+					: [];
+
+				foreach ( $gated_alias_fields as $alias_field ) {
+					if ( ! isset( $alias_def[ $alias_field ] ) || '' === $alias_def[ $alias_field ] ) {
+						continue;
+					}
+
+					$global_field_value = isset( $global_alias_def[ $alias_field ] ) ? $global_alias_def[ $alias_field ] : null;
+
+					if ( $alias_def[ $alias_field ] === $global_field_value ) {
+						continue;
+					}
+
+					$alias_field_value  = $alias_def[ $alias_field ];
+					$gated_directives[] = 'alias @' . $alias_name . ': ' . $alias_field . '=' . ( is_scalar( $alias_field_value ) ? $alias_field_value : json_encode( $alias_field_value ) );
+					$gated_types[]      = 'alias';
+				}
+			}
 		}
 
 		// Runtime config and args
@@ -1833,6 +2057,95 @@ class Runner {
 		/** @var array<int, string> $runtime_requires */
 		$runtime_requires                = is_array( $this->config['require'] ) ? $this->config['require'] : ( is_scalar( $this->config['require'] ) ? [ (string) $this->config['require'] ] : [] );
 		$this->required_files['runtime'] = $runtime_requires;
+		/** @var array<int, string> $runtime_execs */
+		$runtime_execs                  = is_array( $this->config['exec'] ) ? $this->config['exec'] : ( is_scalar( $this->config['exec'] ) ? [ (string) $this->config['exec'] ] : [] );
+		$this->exec_commands['runtime'] = $runtime_execs;
+
+		// Verify that the project configuration is trusted before any of its directives is
+		// acted upon. This deliberately runs after the runtime configuration has been parsed
+		// so that an explicit `--trust-project-config` on the command line is honored.
+		if ( ! empty( $gated_directives ) ) {
+			Utils\check_project_config_trust(
+				(string) $this->project_config_path,
+				$gated_directives,
+				self::get_gated_directive_label( $gated_types ),
+				$this->project_config_files
+			);
+		}
+	}
+
+	/**
+	 * Read a configuration key from the declared or the extra configuration.
+	 *
+	 * @param array{0: array<string, mixed>, 1: array<string, mixed>} $config Configurator output.
+	 * @param string                                                  $key    Configuration key.
+	 * @return mixed|null Value, or null when the key is not set.
+	 */
+	private static function get_config_value( array $config, $key ) {
+		if ( array_key_exists( $key, $config[0] ) && null !== $config[0][ $key ] ) {
+			return $config[0][ $key ];
+		}
+		if ( array_key_exists( $key, $config[1] ) ) {
+			return $config[1][ $key ];
+		}
+		return null;
+	}
+
+	/**
+	 * Read the root-level connection settings from the configurator output.
+	 *
+	 * @param array{0: array<string, mixed>, 1: array<string, mixed>} $config Configurator output.
+	 * @param array<int, string>                                      $keys   Connection keys to read.
+	 * @return array<string, mixed> Values keyed by connection key, null for keys that are not set.
+	 */
+	private static function get_connection_config( array $config, array $keys ) {
+		$values = [];
+		foreach ( $keys as $key ) {
+			$values[ $key ] = self::get_config_value( $config, $key );
+		}
+
+		return $values;
+	}
+
+	/**
+	 * Whether the command line runs one of the protected commands.
+	 *
+	 * Protected commands (`cli info`, `package`) do not load `require` or `exec`
+	 * directives, see Bootstrap\DefineProtectedCommands.
+	 *
+	 * @param array<int, string> $argv Command line arguments, without the script name and alias.
+	 * @return bool
+	 */
+	private static function is_protected_command( array $argv ) {
+		list( $positional_args ) = Configurator::extract_assoc( $argv );
+		$command                 = implode( ' ', $positional_args );
+
+		foreach ( Bootstrap\DefineProtectedCommands::get_protected_commands() as $protected_command ) {
+			if ( 0 === strpos( $command, $protected_command ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Derive a human-readable label for a set of gated project configuration directives.
+	 *
+	 * Directives of a single type are reported as such, a mix of types is reported
+	 * using the generic "project configuration" label.
+	 *
+	 * @param array<int, string> $types Types of the gated directives.
+	 * @return string
+	 */
+	private static function get_gated_directive_label( array $types ) {
+		$unique = array_values( array_unique( $types ) );
+
+		if ( 1 === count( $unique ) && in_array( $unique[0], [ 'exec', 'require' ], true ) ) {
+			return $unique[0];
+		}
+
+		return 'project configuration';
 	}
 
 	/**

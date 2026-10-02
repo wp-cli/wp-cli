@@ -26,7 +26,7 @@ final class LoadExecCommand implements BootstrapStep {
 		}
 
 		$runner = new RunnerInstance();
-		if ( ! isset( $runner()->config['exec'] ) ) {
+		if ( ! isset( $runner()->config['exec'] ) || empty( $runner()->config['exec'] ) ) {
 			return $state;
 		}
 
