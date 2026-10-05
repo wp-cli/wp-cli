@@ -2,7 +2,6 @@
 
 namespace WP_CLI\Dispatcher;
 
-use WP_CLI;
 use WP_CLI\Utils;
 
 /**
@@ -60,7 +59,7 @@ class RootCommand extends CompositeCommand {
 		Utils\load_command( $command );
 
 		if ( ! isset( $this->subcommands[ $command ] ) ) {
-			WP_CLI::run_command_loaders( $this, $command );
+			$this->run_command_loaders( $command );
 		}
 
 		if ( ! isset( $this->subcommands[ $command ] ) ) {

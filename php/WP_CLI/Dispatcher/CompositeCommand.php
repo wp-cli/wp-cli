@@ -133,7 +133,7 @@ class CompositeCommand {
 	 * @return array<string, Subcommand|CompositeCommand>
 	 */
 	public function get_subcommands() {
-		WP_CLI::run_command_loaders( $this );
+		$this->run_command_loaders();
 
 		foreach ( $this->subcommands as $name => $subcommand ) {
 			if ( $subcommand instanceof LazyCommand ) {
@@ -299,7 +299,7 @@ class CompositeCommand {
 		}
 
 		if ( isset( $this->subcommands[ $name ] )
-			|| ( WP_CLI::run_command_loaders( $this, $name ) && isset( $this->subcommands[ $name ] ) ) ) {
+			|| ( $this->run_command_loaders( $name ) && isset( $this->subcommands[ $name ] ) ) ) {
 			return $this->materialize_subcommand( $name );
 		}
 
@@ -328,6 +328,19 @@ class CompositeCommand {
 	 */
 	public function get_registered_subcommand( $name ) {
 		return isset( $this->subcommands[ $name ] ) ? $this->subcommands[ $name ] : false;
+	}
+
+	/**
+	 * Run the pending command loaders relevant to a lookup of this command's subcommands.
+	 *
+	 * The dispatcher classes can end up loaded next to an older copy of the WP_CLI class,
+	 * e.g. when collecting code coverage for a project that also requires wp-cli/wp-cli.
+	 *
+	 * @param string|null $child Name of the subcommand being looked up, or null when listing all subcommands.
+	 * @return bool Whether any loader ran.
+	 */
+	protected function run_command_loaders( $child = null ) {
+		return method_exists( WP_CLI::class, 'run_command_loaders' ) && WP_CLI::run_command_loaders( $this, $child );
 	}
 
 	/**
