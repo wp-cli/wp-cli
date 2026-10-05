@@ -2,6 +2,7 @@
 
 namespace WP_CLI\Dispatcher;
 
+use WP_CLI;
 use WP_CLI\Utils;
 
 /**
@@ -32,6 +33,18 @@ class RootCommand extends CompositeCommand {
 	}
 
 	/**
+	 * Get a directly registered subcommand without materializing it.
+	 *
+	 * @param string $name Subcommand name.
+	 * @return Subcommand|CompositeCommand|false
+	 */
+	public function get_registered_subcommand( $name ) {
+		Utils\load_command( $name );
+
+		return parent::get_registered_subcommand( $name );
+	}
+
+	/**
 	 * Find a subcommand registered on the root
 	 * command.
 	 *
@@ -47,9 +60,13 @@ class RootCommand extends CompositeCommand {
 		Utils\load_command( $command );
 
 		if ( ! isset( $this->subcommands[ $command ] ) ) {
+			WP_CLI::run_command_loaders( $this, $command );
+		}
+
+		if ( ! isset( $this->subcommands[ $command ] ) ) {
 			return false;
 		}
 
-		return $this->subcommands[ $command ];
+		return $this->materialize_subcommand( $command );
 	}
 }

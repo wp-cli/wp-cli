@@ -2294,3 +2294,88 @@ Feature: WP-CLI Commands
       """
       Warning: The `--old` argument for `deprecated-cmd` is deprecated. Use `--new` instead.
       """
+
+  Scenario: Commands registered by class name are only materialized when needed
+    Given an empty directory
+    And a lazy-cmd.php file:
+      """
+      <?php
+      /**
+       * My lazy command.
+       */
+      class My_Lazy_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from lazy command.' );
+          }
+      }
+
+      WP_CLI::add_command( 'my-lazy', 'My_Lazy_Command' );
+      """
+
+    When I run `wp --require=lazy-cmd.php --debug=commands cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Registering lazy command: my-lazy
+      """
+    And STDOUT should not contain:
+      """
+      Adding command: my-lazy
+      """
+
+    When I run `wp --require=lazy-cmd.php my-lazy hello`
+    Then STDOUT should be:
+      """
+      Success: Hello from lazy command.
+      """
+
+    When I run `wp --require=lazy-cmd.php help my-lazy`
+    Then STDOUT should contain:
+      """
+      My lazy command.
+      """
+    And STDOUT should match /hello\s+Says hello\./
+
+  Scenario: Command loaders only run when their commands are needed
+    Given an empty directory
+    And a loader-cmd.php file:
+      """
+      <?php
+      WP_CLI::add_command_loader(
+          'my-loaded',
+          function () {
+              WP_CLI::warning( 'Loader ran.' );
+              WP_CLI::add_command( 'my-loaded greet', function () {
+                  WP_CLI::success( 'Greetings.' );
+              }, [ 'shortdesc' => 'Greets.', 'when' => 'before_wp_load' ] );
+          }
+      );
+      """
+
+    When I run `wp --require=loader-cmd.php cli version`
+    Then STDERR should be empty
+
+    When I try `wp --require=loader-cmd.php my-loaded greet`
+    Then the return code should be 0
+    And STDOUT should be:
+      """
+      Success: Greetings.
+      """
+    And STDERR should be:
+      """
+      Warning: Loader ran.
+      """
+
+    When I try `wp --require=loader-cmd.php help my-loaded`
+    Then STDOUT should match /greet\s+Greets\./
+
+    When I try `wp --require=loader-cmd.php my-loaded nope`
+    Then STDERR should contain:
+      """
+      'nope' is not a registered subcommand of 'my-loaded'.
+      """
+    And the return code should be 1
