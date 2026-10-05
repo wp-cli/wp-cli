@@ -709,6 +709,35 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Get the parsed synopsis of the global parameters.
+	 *
+	 * Built from the configurator spec directly instead of rendering and re-parsing
+	 * the help text, as this runs on every command invocation.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function get_global_params_spec() {
+		static $spec = null;
+
+		if ( null === $spec ) {
+			$synopsis = [];
+			foreach ( WP_CLI::get_configurator()->get_spec() as $key => $details ) {
+				if ( false === $details['runtime'] || isset( $details['deprecated'] ) || isset( $details['hidden'] ) ) {
+					continue;
+				}
+
+				$synopsis[] = true === $details['runtime']
+					? "--[no-]$key"
+					: "--$key" . ( is_string( $details['runtime'] ) ? $details['runtime'] : '' );
+			}
+
+			$spec = SynopsisParser::parse( implode( ' ', $synopsis ) );
+		}
+
+		return $spec;
+	}
+
+	/**
 	 * Invoke the subcommand with the supplied arguments.
 	 * Given a --prompt argument, interactively request input
 	 * from the end user.
@@ -740,7 +769,7 @@ class Subcommand extends CompositeCommand {
 				$repeating_params[ $param['name'] ] = true;
 			}
 		}
-		foreach ( SynopsisParser::parse( $this->get_global_params() ) as $param ) {
+		foreach ( self::get_global_params_spec() as $param ) {
 			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) && isset( $param['name'] ) && is_string( $param['name'] ) ) {
 				$assoc_flag_names[] = $param['name'];
 			}
@@ -973,7 +1002,7 @@ class Subcommand extends CompositeCommand {
 		$global_parameters = array_values(
 			array_filter(
 				array_column(
-					SynopsisParser::parse( $this->get_global_params() ),
+					self::get_global_params_spec(),
 					'name'
 				),
 				'is_string'
