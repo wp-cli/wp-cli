@@ -5,6 +5,7 @@ namespace WP_CLI;
 use cli\Colors;
 use cli\Table;
 use Mustangostang\Spyc;
+use Iterator;
 use Traversable;
 use WP_CLI;
 
@@ -58,6 +59,13 @@ class Formatter {
 	 * @var bool
 	 */
 	private static $builtin_formats_registered = false;
+
+	/**
+	 * Built-in handlers of the formats that can be streamed from an iterator.
+	 *
+	 * @var array<string, callable>
+	 */
+	private static $streamable_handlers = [];
 
 	/**
 	 * How the items should be output.
@@ -300,6 +308,11 @@ class Formatter {
 			}
 		);
 
+		self::$streamable_handlers = [
+			'csv'  => self::$custom_formatters['csv'],
+			'json' => self::$custom_formatters['json'],
+		];
+
 		// Register 'yaml' format
 		self::add_format(
 			'yaml',
@@ -424,6 +437,10 @@ class Formatter {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
+			if ( $items instanceof Iterator && $this->stream_items( $items ) ) {
+				return;
+			}
+
 			// Convert Traversable to array early to avoid consumption issues and enable validation
 			if ( $items instanceof Traversable ) {
 				$items = iterator_to_array( $items );
@@ -455,6 +472,81 @@ class Formatter {
 				$this->format( $items, $ascii_pre_colorized );
 			}
 		}
+	}
+
+	/**
+	 * Output items from an iterator one by one, without holding them all in memory.
+	 *
+	 * Only the built-in CSV and JSON formats are streamed, as they need no information
+	 * about the whole set of items. The output is the same as when passing an array.
+	 *
+	 * @param Iterator<mixed> $items Items.
+	 * @return bool Whether the items were streamed. If not, the iterator has not been advanced.
+	 */
+	private function stream_items( Iterator $items ): bool {
+		$format = $this->args['format'];
+
+		if ( ! isset( self::$streamable_handlers[ $format ] )
+			|| self::$custom_formatters[ $format ] !== self::$streamable_handlers[ $format ] ) {
+			return false;
+		}
+
+		$items->rewind();
+
+		$fields = $this->args['fields'];
+		if ( $items->valid() ) {
+			// Resolve the fields like validate_fields() does. If any of them is missing from
+			// the first item, fall back to the regular path, which checks the other items.
+			$first = $items->current();
+			if ( ! is_array( $first ) && ! is_object( $first ) ) {
+				return false;
+			}
+
+			foreach ( $fields as $i => $field ) {
+				$key = $this->find_item_key( $first, $field, true );
+				if ( null === $key ) {
+					return false;
+				}
+				$fields[ $i ] = $key;
+			}
+			$this->args['fields'] = $fields;
+		}
+
+		if ( 'csv' === $format ) {
+			Utils\write_csv( STDOUT, [], $fields );
+		} else {
+			echo '[';
+		}
+
+		$flags     = defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ? JSON_PARTIAL_OUTPUT_ON_ERROR : 0; // phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
+		$separator = '';
+		while ( $items->valid() ) {
+			$item = $items->current();
+
+			if ( 'csv' === $format ) {
+				/** @var array<int|string, mixed>|object $transformed */
+				$transformed = $this->transform_item_values_to_json( is_object( $item ) ? clone $item : $item );
+				$row         = Utils\pick_fields( $transformed, $fields );
+				foreach ( $row as $key => $value ) {
+					if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
+						$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
+					}
+				}
+				Utils\write_csv( STDOUT, [ $row ] );
+			} else {
+				$row = is_array( $item ) || is_object( $item ) ? Utils\pick_fields( $item, $fields ) : $item;
+				echo $separator, json_encode( $row, $flags );
+				$separator = ',';
+			}
+
+			$items->next();
+		}
+
+		if ( 'json' === $format ) {
+			echo ']';
+		}
+
+		return true;
 	}
 
 	/**

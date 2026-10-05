@@ -27,6 +27,7 @@ class FormatterTest extends TestCase {
 				'format_options'             => [],
 				'single_value_formatters'    => [],
 				'builtin_formats_registered' => false,
+				'streamable_handlers'        => [],
 			] as $property => $value
 		) {
 			$reflection = new \ReflectionProperty( Formatter::class, $property );
@@ -225,6 +226,70 @@ class FormatterTest extends TestCase {
 
 		$this->assertTrue( $called, 'Custom handler should override built-in format' );
 		$this->assertSame( 'OVERRIDDEN', $output );
+	}
+
+	public function test_json_from_iterator_matches_array(): void {
+		$items = [
+			[
+				'post_title' => 'First',
+				'post_meta'  => [ 'a' => 1 ],
+				'unused'     => 'x',
+			],
+			(object) [
+				'post_title' => 'Second "quoted"',
+				'post_meta'  => null,
+				'unused'     => 'y',
+			],
+		];
+
+		$generator = ( static function () use ( $items ) {
+			yield from $items;
+		} )();
+
+		$outputs = [];
+		foreach ( [ $items, new ArrayIterator( $items ), $generator ] as $input ) {
+			$assoc_args = [
+				'format' => 'json',
+				'fields' => 'title,meta',
+			];
+			$formatter  = new Formatter( $assoc_args, null, 'post' );
+
+			ob_start();
+			$formatter->display_items( $input );
+			$outputs[] = ob_get_clean();
+		}
+
+		$this->assertSame( '[{"post_title":"First","post_meta":{"a":1}},{"post_title":"Second \\"quoted\\"","post_meta":null}]', $outputs[0] );
+		$this->assertSame( $outputs[0], $outputs[1] );
+		$this->assertSame( $outputs[0], $outputs[2] );
+	}
+
+	public function test_json_from_empty_iterator(): void {
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+
+		ob_start();
+		$formatter->display_items( new ArrayIterator( [] ) );
+		$this->assertSame( '[]', ob_get_clean() );
+	}
+
+	public function test_overridden_builtin_format_receives_all_items_from_iterator(): void {
+		$received = null;
+		Formatter::add_format(
+			'json',
+			function ( $items ) use ( &$received ) {
+				$received = $items;
+			}
+		);
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+
+		ob_start();
+		$formatter->display_items( new ArrayIterator( [ [ 'name' => 'a' ], [ 'name' => 'b' ] ] ) );
+		ob_end_clean();
+
+		$this->assertSame( [ [ 'name' => 'a' ], [ 'name' => 'b' ] ], $received );
 	}
 
 	public function test_add_single_value_format(): void {
