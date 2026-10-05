@@ -532,6 +532,7 @@ class Formatter {
 						$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
 					}
 				}
+				/** @var array<string, mixed> $row */
 				Utils\write_csv( STDOUT, [ $row ] );
 			} else {
 				$row = is_array( $item ) || is_object( $item ) ? Utils\pick_fields( $item, $fields ) : $item;

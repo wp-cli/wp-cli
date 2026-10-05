@@ -536,8 +536,8 @@ function format_items( $format, $items, $fields ) {
  */
 function write_csv( $fd, $rows, $headers = [] ) {
 	if ( ! empty( $headers ) ) {
-		$headers = array_map( __NAMESPACE__ . '\escape_csv_value', $headers );
-		fputcsv( $fd, $headers, ',', '"', '\\' );
+		// Escape the header cells only; rows are looked up by the original field names.
+		fputcsv( $fd, array_map( __NAMESPACE__ . '\escape_csv_value', $headers ), ',', '"', '\\' );
 	}
 
 	/**
