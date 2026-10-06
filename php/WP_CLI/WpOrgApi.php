@@ -126,7 +126,7 @@ final class WpOrgApi {
 		if ( $cache ) {
 			$cached    = $cache->read( $cache_key );
 			$checksums = false !== $cached ? json_decode( $cached, true ) : null;
-			if ( is_array( $checksums ) && ! empty( $checksums ) ) {
+			if ( self::is_checksum_map( $checksums ) ) {
 				\WP_CLI::debug( "Using cached checksums for WordPress {$version} ({$locale}).", 'wporgapi' );
 				return $checksums;
 			}
@@ -153,7 +153,9 @@ final class WpOrgApi {
 			return false;
 		}
 
-		if ( $cache && ! empty( $response['checksums'] ) ) {
+		// With `insecure`, the response may come from a retry without certificate
+		// verification, so it must not be trusted by later runs.
+		if ( $cache && empty( $this->options['insecure'] ) && self::is_checksum_map( $response['checksums'] ) ) {
 			$cache->write( $cache_key, (string) json_encode( $response['checksums'] ) );
 		}
 
@@ -317,6 +319,27 @@ final class WpOrgApi {
 	 */
 	public function get_salts() {
 		return $this->get_request( self::SALT_ENDPOINT );
+	}
+
+	/**
+	 * Whether the given value is a non-empty map of file names to checksums.
+	 *
+	 * @param mixed $checksums Value to check.
+	 * @return bool
+	 * @phpstan-assert-if-true array<string, string> $checksums
+	 */
+	private static function is_checksum_map( $checksums ) {
+		if ( ! is_array( $checksums ) || empty( $checksums ) ) {
+			return false;
+		}
+
+		foreach ( $checksums as $file => $checksum ) {
+			if ( ! is_string( $file ) || ! is_string( $checksum ) ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**

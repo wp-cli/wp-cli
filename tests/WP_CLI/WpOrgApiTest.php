@@ -263,4 +263,22 @@ class WpOrgApiTest extends TestCase {
 		( new WpOrgApi( [ 'transport' => $transport ], false ) )->get_core_checksums( '7.1.2' );
 		$this->assertSame( 2, $transport->requests );
 	}
+
+	public function test_does_not_cache_core_checksums_fetched_with_insecure(): void {
+		$transport = $this->get_json_transport( '{"checksums":{"wp-load.php":"abc"}}' );
+		$cache     = $this->get_temp_cache();
+
+		( new WpOrgApi( [ 'transport' => $transport, 'insecure' => true ], $cache ) )->get_core_checksums( '7.1.2' );
+		( new WpOrgApi( [ 'transport' => $transport ], $cache ) )->get_core_checksums( '7.1.2' );
+		$this->assertSame( 2, $transport->requests );
+	}
+
+	public function test_ignores_cached_core_checksums_with_an_unexpected_structure(): void {
+		$transport = $this->get_json_transport( '{"checksums":{"wp-load.php":"abc"}}' );
+		$cache     = $this->get_temp_cache();
+		$cache->write( 'core/checksums-7.1.2-en_US.json', '{"checksums":{"wp-load.php":"abc"}}' );
+
+		$this->assertSame( [ 'wp-load.php' => 'abc' ], ( new WpOrgApi( [ 'transport' => $transport ], $cache ) )->get_core_checksums( '7.1.2' ) );
+		$this->assertSame( 1, $transport->requests );
+	}
 }
