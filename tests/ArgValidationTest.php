@@ -52,11 +52,11 @@ class ArgValidationTest extends TestCase {
 	public function testMissingAssoc(): void {
 		$validator = new SynopsisValidator( '--type=<type> [--brand=<brand>] [--flag]' );
 
-		$assoc_args                = [
+		$assoc_args     = [
 			'brand' => true,
 			'flag'  => true,
 		];
-		list( $errors, $to_unset ) = $validator->validate_assoc( $assoc_args );
+		list( $errors ) = $validator->validate_assoc( $assoc_args );
 
 		$this->assertCount( 1, $errors['fatal'] );
 		$this->assertCount( 1, $errors['warning'] );
@@ -65,8 +65,8 @@ class ArgValidationTest extends TestCase {
 	public function testAssocWithOptionalValue(): void {
 		$validator = new SynopsisValidator( '[--network[=<id>]]' );
 
-		$assoc_args                = [ 'network' => true ];
-		list( $errors, $to_unset ) = $validator->validate_assoc( $assoc_args );
+		$assoc_args     = [ 'network' => true ];
+		list( $errors ) = $validator->validate_assoc( $assoc_args );
 
 		$this->assertCount( 0, $errors['fatal'] );
 		$this->assertCount( 0, $errors['warning'] );
