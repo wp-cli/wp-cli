@@ -198,7 +198,7 @@ class Runner {
 		$real_when = '';
 		$r         = $this->find_command_to_run( $this->arguments, 'none' );
 		if ( is_array( $r ) ) {
-			list( $command, $final_args, $cmd_path ) = $r;
+			list( , , $cmd_path ) = $r;
 
 			foreach ( $this->early_invoke as $_when => $_path ) {
 				foreach ( $_path as $cmd ) {
@@ -1381,7 +1381,7 @@ class Runner {
 	 */
 	public function get_wp_config_code( $wp_config_path = '' ) {
 		if ( empty( $wp_config_path ) ) {
-			$wp_config_path = Utils\locate_wp_config();
+			$wp_config_path = (string) Utils\locate_wp_config();
 		}
 
 		$wp_config_code = (string) file_get_contents( $wp_config_path );
@@ -2039,7 +2039,7 @@ class Runner {
 
 			if ( ! array_key_exists( $this->alias, $this->aliases ) ) {
 				$error_msg  = "Alias '{$this->alias}' not found.";
-				$suggestion = Utils\get_suggestion( (string) $this->alias, array_keys( $this->aliases ), $threshold = 2 );
+				$suggestion = Utils\get_suggestion( (string) $this->alias, array_keys( $this->aliases ), 2 );
 				if ( $suggestion ) {
 					$error_msg .= PHP_EOL . "Did you mean '{$suggestion}'?";
 				}
@@ -2652,11 +2652,10 @@ class Runner {
 			WP_CLI::add_wp_hook(
 				'ms_site_not_found',
 				static function ( $current_site, $domain, $path ) {
-					$url         = $domain . $path;
-					$message     = $url ? "Site '{$url}' not found." : 'Site not found.';
-					$has_param   = isset( WP_CLI::get_runner()->config['url'] );
-					$has_const   = defined( 'DOMAIN_CURRENT_SITE' );
-					$explanation = '';
+					$url       = $domain . $path;
+					$message   = $url ? "Site '{$url}' not found." : 'Site not found.';
+					$has_param = isset( WP_CLI::get_runner()->config['url'] );
+					$has_const = defined( 'DOMAIN_CURRENT_SITE' );
 					if ( $has_param ) {
 						$explanation = 'Verify `--url=<url>` matches an existing site.';
 					} else {
@@ -3075,7 +3074,7 @@ class Runner {
 		}
 		$this->enumerate_commands( $root_command, $commands );
 
-		return Utils\get_suggestion( $entry, $commands, $threshold = 2 );
+		return Utils\get_suggestion( $entry, $commands, 2 );
 	}
 
 	/**

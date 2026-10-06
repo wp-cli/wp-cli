@@ -27,6 +27,13 @@ parameters:
     - utils/phpstan/scan-files.php
     - php/boot-fs.php
   treatPhpDocTypesAsCertain: false
+  ignoreErrors:
+    # Unused parameters kept for backward compatibility of public functions.
+    -
+      identifier: function.unusedParameter
+      message: '#^Function WP_CLI\\Utils\\(run_mysql_command|glob_brace)\(\) has an unused parameter#'
+      path: php/utils.php
+      reportUnmatched: false
   dynamicConstantNames:
     - WP_CLI_ROOT
     - WP_DEBUG

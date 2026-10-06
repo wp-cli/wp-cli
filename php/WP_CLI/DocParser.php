@@ -257,7 +257,6 @@ class DocParser {
 			}
 
 			if ( $within_arg && '' === $bit ) {
-				$within_arg = false;
 				break;
 			}
 		}

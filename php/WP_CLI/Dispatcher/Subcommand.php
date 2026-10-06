@@ -132,10 +132,9 @@ class Subcommand extends CompositeCommand {
 	 * Wrapper for CLI Tools' prompt() method.
 	 *
 	 * @param string $question
-	 * @param mixed $default
 	 * @return string|false
 	 */
-	private function prompt( $question, $default = null ) {
+	private function prompt( $question ) {
 
 		$question .= ': ';
 		if ( function_exists( 'readline' ) ) {
@@ -203,9 +202,6 @@ class Subcommand extends CompositeCommand {
 		if ( ! $synopsis ) {
 			return [ $args, $assoc_args ];
 		}
-
-		// Create a docparser to get default values and descriptions
-		$docparser = $this->create_mock_docparser();
 
 		// To skip the already provided positional arguments, we need to count
 		// how many we had already received.

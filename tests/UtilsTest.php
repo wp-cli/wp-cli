@@ -142,10 +142,6 @@ class UtilsTest extends TestCase {
 
 		// Host and path, no port, with scp notation.
 		$testcase = 'foo.com:~/path/to/dir';
-		$expected = [
-			'host' => 'foo.com',
-			'path' => '~/path/to/dir',
-		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -844,12 +840,11 @@ class UtilsTest extends TestCase {
 		$logger = new Loggers\Execution();
 		WP_CLI::set_logger( $logger );
 
-		$exception = null;
-
 		try {
 			Utils\report_batch_operation_results( $noun, $verb, $total, $successes, $failures, $skips );
+		// phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 		} catch ( ExitException $ex ) {
-			$exception = $ex;
+			// Expected when the batch operation reports an error.
 		}
 		$this->assertSame( $stdout, $logger->stdout );
 		$this->assertSame( $stderr, $logger->stderr );
