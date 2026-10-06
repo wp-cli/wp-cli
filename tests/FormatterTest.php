@@ -1,5 +1,6 @@
 <?php
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use WP_CLI\Formatter;
 use WP_CLI\Tests\TestCase;
 
@@ -262,6 +263,86 @@ class FormatterTest extends TestCase {
 		$this->assertSame( '[{"post_title":"First","post_meta":{"a":1}},{"post_title":"Second \\"quoted\\"","post_meta":null}]', $outputs[0] );
 		$this->assertSame( $outputs[0], $outputs[1] );
 		$this->assertSame( $outputs[0], $outputs[2] );
+	}
+
+	/**
+	 * Rows with repeated keys, e.g. from `yield from`, are all output, whether the items
+	 * are streamed or not.
+	 *
+	 * @dataProvider data_iterator_fields
+	 */
+	#[DataProvider( 'data_iterator_fields' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function test_iterator_with_repeated_keys_outputs_all_rows( string $fields ): void {
+		$generator = ( static function () {
+			yield from [ [ 'name' => 'a' ], [ 'name' => 'b' ] ];
+			yield from [
+				[
+					'name'   => 'c',
+					'custom' => 'x',
+				],
+				[
+					'name'   => 'd',
+					'custom' => 'y',
+				],
+			];
+		} )();
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, explode( ',', $fields ) );
+
+		ob_start();
+		$formatter->display_items( $generator );
+		/** @var array<int, array<string, mixed>> $rows */
+		$rows = json_decode( (string) ob_get_clean(), true );
+
+		$this->assertSame( [ 'a', 'b', 'c', 'd' ], array_column( $rows, 'name' ) );
+	}
+
+	/**
+	 * Transformations of an iterator run once per item, whether the items are streamed or not.
+	 *
+	 * @dataProvider data_iterator_fields
+	 */
+	#[DataProvider( 'data_iterator_fields' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function test_iterator_transformations_run_once_per_item( string $fields ): void {
+		$calls = 0;
+		$items = WP_CLI\Utils\iterator_map(
+			[
+				[ 'name' => 'a' ],
+				[
+					'name'   => 'b',
+					'custom' => 'x',
+				],
+			],
+			static function ( $item ) use ( &$calls ) {
+				$item['number'] = ++$calls;
+				return $item;
+			}
+		);
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, explode( ',', $fields . ',number' ) );
+
+		ob_start();
+		$formatter->display_items( $items );
+		/** @var array<int, array<string, mixed>> $rows */
+		$rows = json_decode( (string) ob_get_clean(), true );
+
+		$this->assertSame( [ 1, 2 ], array_column( $rows, 'number' ) );
+		$this->assertSame( 2, $calls );
+	}
+
+	/**
+	 * Fields that are all in the first item, so the items are streamed, and fields that
+	 * are not, so they are not.
+	 *
+	 * @return array<string, array{string}>
+	 */
+	public static function data_iterator_fields(): array {
+		return [
+			'streamed'     => [ 'name' ],
+			'not streamed' => [ 'name,custom' ],
+		];
 	}
 
 	public function test_json_from_empty_iterator(): void {

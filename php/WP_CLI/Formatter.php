@@ -437,13 +437,20 @@ class Formatter {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
-			if ( $items instanceof Iterator && $this->stream_items( $items ) ) {
-				return;
+			if ( $items instanceof Iterator ) {
+				$streamed = $this->stream_items( $items );
+				if ( true === $streamed ) {
+					return;
+				}
+				if ( is_array( $streamed ) ) {
+					$items = $streamed;
+				}
 			}
 
-			// Convert Traversable to array early to avoid consumption issues and enable validation
+			// Convert Traversable to array early to avoid consumption issues and enable validation.
+			// The keys are not used for the output, so don't let repeated keys overwrite items.
 			if ( $items instanceof Traversable ) {
-				$items = iterator_to_array( $items );
+				$items = iterator_to_array( $items, false );
 			}
 
 			// Check if this is a custom formatter or a built-in format that needs field validation
@@ -480,10 +487,15 @@ class Formatter {
 	 * Only the built-in CSV and JSON formats are streamed, as they need no information
 	 * about the whole set of items. The output is the same as when passing an array.
 	 *
+	 * Each item is read from the iterator only once, as reading an item can run callbacks,
+	 * for example those of an `Iterators\Transform`.
+	 *
 	 * @param Iterator<mixed> $items Items.
-	 * @return bool Whether the items were streamed. If not, the iterator has not been advanced.
+	 * @return true|array<int, mixed>|false True if the items were streamed. If they cannot be
+	 *                                      streamed, the items read from the iterator, or false
+	 *                                      if it was not read.
 	 */
-	private function stream_items( Iterator $items ): bool {
+	private function stream_items( Iterator $items ) {
 		$format = $this->args['format'];
 
 		if ( ! isset( self::$streamable_handlers[ $format ] )
@@ -499,13 +511,13 @@ class Formatter {
 			// the first item, fall back to the regular path, which checks the other items.
 			$first = $items->current();
 			if ( ! is_array( $first ) && ! is_object( $first ) ) {
-				return false;
+				return $this->read_remaining_items( $items, $first );
 			}
 
 			foreach ( $fields as $i => $field ) {
 				$key = $this->find_item_key( $first, $field, true );
 				if ( null === $key ) {
-					return false;
+					return $this->read_remaining_items( $items, $first );
 				}
 				$fields[ $i ] = $key;
 			}
@@ -520,8 +532,8 @@ class Formatter {
 
 		$flags     = defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ? JSON_PARTIAL_OUTPUT_ON_ERROR : 0; // phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
 		$separator = '';
+		$item      = isset( $first ) ? $first : null;
 		while ( $items->valid() ) {
-			$item = $items->current();
 
 			if ( 'csv' === $format ) {
 				/** @var array<int|string, mixed>|object $transformed */
@@ -541,6 +553,9 @@ class Formatter {
 			}
 
 			$items->next();
+			if ( $items->valid() ) {
+				$item = $items->current();
+			}
 		}
 
 		if ( 'json' === $format ) {
@@ -548,6 +563,23 @@ class Formatter {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Read the remaining items of an iterator whose current item was already read.
+	 *
+	 * @param Iterator<mixed> $items   Items.
+	 * @param mixed           $current The current item.
+	 * @return array<int, mixed>
+	 */
+	private function read_remaining_items( Iterator $items, $current ): array {
+		$all = [ $current ];
+		$items->next();
+		while ( $items->valid() ) {
+			$all[] = $items->current();
+			$items->next();
+		}
+		return $all;
 	}
 
 	/**
@@ -595,7 +627,7 @@ class Formatter {
 
 		// Convert iterator to array if needed
 		if ( ! is_array( $items ) ) {
-			$items = iterator_to_array( $items );
+			$items = iterator_to_array( $items, false );
 		}
 
 		// Check if a formatter is registered for this format
