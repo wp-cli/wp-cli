@@ -753,6 +753,7 @@ class UtilsTest extends TestCase {
 			[ 'spam', 'spammed' ],
 			[ 'toggle', 'toggled' ],
 			[ 'uninstall', 'uninstalled' ],
+			[ 'unspam', 'unspammed' ],
 			[ 'update', 'updated' ],
 			// Some others.
 			[ 'call', 'called' ],
@@ -765,6 +766,9 @@ class UtilsTest extends TestCase {
 			[ 'slay', 'slayed' ], // One vowel + final "y" excluded (nearly all irregular anyway).
 			[ 'submit', 'submited' ], // BUG: multi-voweled verbs that double not catered for - should be "submitted".
 			[ 'try', 'tried' ],
+			[ 'unpin', 'unpinned' ], // "un" prefix + one vowel + final consonant.
+			[ 'unlock', 'unlocked' ],
+			[ 'untrash', 'untrashed' ],
 		];
 	}
 
