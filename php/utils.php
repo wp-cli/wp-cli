@@ -713,7 +713,7 @@ function mysql_host_to_cli_args( $raw_host ) {
  * }
  * @phpstan-return array{0: string, 1: string, 2: int}
  */
-function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true, $interactive = false ) { // @phpstan-ignore function.unusedParameter
+function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true, $interactive = false ) {
 	check_proc_available( 'run_mysql_command' );
 
 	/**
