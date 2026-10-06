@@ -420,7 +420,7 @@ class WP_CLI {
 		if ( function_exists( 'add_filter' ) ) {
 			add_filter( $tag, $function_to_add, $priority, $accepted_args );
 		} else {
-			$idx = self::wp_hook_build_unique_id( $tag, $function_to_add, $priority );
+			$idx = self::wp_hook_build_unique_id( $function_to_add );
 
 			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- This is intentional & the purpose of this function.
 			$wp_filter[ $tag ][ $priority ][ $idx ] = [
@@ -438,12 +438,10 @@ class WP_CLI {
 	 *
 	 * Essentially _wp_filter_build_unique_id() without needing access to _wp_filter_build_unique_id()
 	 *
-	 * @param string   $tag
 	 * @param callable $function
-	 * @param int      $priority
 	 * @return string|false
 	 */
-	private static function wp_hook_build_unique_id( $tag, $function, $priority ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $priority retained to match core's _wp_filter_build_unique_id() signature.
+	private static function wp_hook_build_unique_id( $function ) {
 		if ( is_string( $function ) ) {
 			return $function;
 		}
@@ -1256,7 +1254,7 @@ class WP_CLI {
 				return json_encode( $data );
 			}
 
-			return '"' . $data . '"';
+			return '"' . ( is_scalar( $data ) ? $data : '' ) . '"';
 		};
 
 		if ( $errors instanceof WP_Error ) {
@@ -1630,7 +1628,7 @@ class WP_CLI {
 			$configurator = self::get_configurator();
 			$argv         = array_slice( $argv, 1 );
 
-			list( $ignore1, $ignore2, $runtime_config ) = $configurator->parse_args( $argv );
+			list( , , $runtime_config ) = $configurator->parse_args( $argv );
 			foreach ( $runtime_config as $k => $v ) {
 				if ( preg_match( "|^--{$k}=?$|", $command ) ) {
 					unset( $runtime_config[ $k ] );
@@ -1689,9 +1687,9 @@ class WP_CLI {
 				];
 			}
 		} else {
-			$configurator                               = self::get_configurator();
-			$argv                                       = Utils\parse_str_to_argv( $command );
-			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
+			$configurator              = self::get_configurator();
+			$argv                      = Utils\parse_str_to_argv( $command );
+			list( $args, $assoc_args ) = $configurator->parse_args( $argv );
 			if ( $return ) {
 				$existing_logger = self::$logger;
 				self::$logger    = new Execution();

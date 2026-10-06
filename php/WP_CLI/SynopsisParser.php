@@ -166,9 +166,8 @@ class SynopsisParser {
 			$value_optional = true;
 			$token          = str_replace( $matches[0], '', $token );
 		} elseif ( preg_match( '/=<([a-zA-Z-_|,0-9]+)>/', $token, $matches ) ) {
-			$value_name     = $matches[1];
-			$value_optional = false;
-			$token          = str_replace( $matches[0], '', $token );
+			$value_name = $matches[1];
+			$token      = str_replace( $matches[0], '', $token );
 		}
 
 		list( $aliases, $token ) = self::extract_aliases( $token );
