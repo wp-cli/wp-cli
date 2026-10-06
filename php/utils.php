@@ -427,7 +427,7 @@ function esc_cmd( $cmd, ...$args ) {
 /**
  * Gets path to WordPress configuration.
  *
- * @return string
+ * @return string|false
  */
 function locate_wp_config() {
 	static $path;
@@ -1703,16 +1703,15 @@ function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.C
 
 	$length = strlen( $pattern );
 
-	$begin = 0;
-
 	// Find first opening brace.
-	// @phpstan-ignore for.variableOverwrite
-	for ( $begin = 0; $begin < $length; $begin++ ) {
+	$begin = 0;
+	while ( $begin < $length ) {
 		if ( '\\' === $pattern[ $begin ] ) {
 			++$begin;
 		} elseif ( '{' === $pattern[ $begin ] ) {
 			break;
 		}
+		++$begin;
 	}
 
 	// Find comma or matching closing brace.
@@ -1912,8 +1911,9 @@ function past_tense_verb( $verb ) {
 		$verb = substr( $verb, 0, -1 );
 	} elseif ( 'y' === $last && ! preg_match( '/[aeiou]y$/', $verb ) ) {
 		$verb = substr( $verb, 0, -1 ) . 'i';
-	} elseif ( preg_match( '/^[^aeiou]*[aeiou][^aeiouhwxy]$/', $verb ) ) {
+	} elseif ( preg_match( '/^(un)?[^aeiou]*[aeiou][^aeiouhwxy]$/', $verb ) ) {
 		// Rule of thumb that most (all?) one-voweled regular verbs ending in vowel + consonant (excluding "h", "w", "x", "y") double their final consonant - misses many cases (eg "submit").
+		// Also applies to such verbs prefixed with "un" (eg "unspam" => "unspammed").
 		$verb .= $last;
 	}
 	return $verb . 'ed';
@@ -2074,7 +2074,7 @@ function is_json( $argument, $ignore_scalars = true ) {
 		return false;
 	}
 
-	json_decode( $argument, $assoc = true );
+	json_decode( $argument, true );
 
 	return json_last_error() === JSON_ERROR_NONE;
 }
@@ -2100,7 +2100,7 @@ function parse_shell_arrays( $assoc_args, $array_arguments ) {
 	foreach ( $array_arguments as $key ) {
 		if ( array_key_exists( $key, $assoc_args ) && is_json( $assoc_args[ $key ] ) ) {
 			// @phpstan-ignore cast.useless
-			$assoc_args[ $key ] = json_decode( (string) $assoc_args[ $key ], $assoc = true );
+			$assoc_args[ $key ] = json_decode( (string) $assoc_args[ $key ], true );
 		}
 	}
 

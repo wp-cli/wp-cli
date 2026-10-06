@@ -243,7 +243,7 @@ class ConfiguratorTest extends TestCase {
 		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
 		$configurator->merge_yml( $file );
 
-		[ $config, $extra_config ] = $configurator->to_array();
+		[ , $extra_config ] = $configurator->to_array();
 
 		unlink( $file );
 
@@ -261,7 +261,7 @@ class ConfiguratorTest extends TestCase {
 		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
 		$configurator->merge_yml( $file1 );
 
-		[ $config, $extra_config ] = $configurator->to_array();
+		[ , $extra_config ] = $configurator->to_array();
 
 		unlink( $file1 );
 		unlink( $file2 );

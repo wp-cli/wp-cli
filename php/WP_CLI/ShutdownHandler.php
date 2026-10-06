@@ -112,7 +112,6 @@ class ShutdownHandler {
 
 		$plugin = self::identify_plugin( $file );
 		$theme  = self::identify_theme( $file );
-		$skip   = '--skip-plugins --skip-themes';
 		if ( $plugin ) {
 			$message .= "\n\nThis error may have been caused by the plugin {$plugin}.";
 			$message .= "\nTo skip this plugin, run the command again with:";

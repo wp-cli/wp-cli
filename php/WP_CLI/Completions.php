@@ -89,7 +89,7 @@ class Completions {
 			return;
 		}
 
-		list( $command, $args, $assoc_args ) = $r;
+		list( $command, , $assoc_args ) = $r;
 
 		$spec = SynopsisParser::parse( $command->get_synopsis() );
 
