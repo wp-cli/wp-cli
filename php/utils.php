@@ -713,7 +713,7 @@ function mysql_host_to_cli_args( $raw_host ) {
  * }
  * @phpstan-return array{0: string, 1: string, 2: int}
  */
-function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true, $interactive = false ) {
+function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true, $interactive = false ) { // @phpstan-ignore function.unusedParameter
 	check_proc_available( 'run_mysql_command' );
 
 	/**
@@ -1704,12 +1704,14 @@ function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.C
 	$length = strlen( $pattern );
 
 	// Find first opening brace.
-	for ( $begin = 0; $begin < $length; $begin++ ) {
+	$begin = 0;
+	while ( $begin < $length ) {
 		if ( '\\' === $pattern[ $begin ] ) {
 			++$begin;
 		} elseif ( '{' === $pattern[ $begin ] ) {
 			break;
 		}
+		++$begin;
 	}
 
 	// Find comma or matching closing brace.

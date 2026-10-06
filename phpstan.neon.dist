@@ -28,10 +28,10 @@ parameters:
     - php/boot-fs.php
   treatPhpDocTypesAsCertain: false
   ignoreErrors:
-    # Unused parameters kept for backward compatibility of public functions.
+    # Unused parameter kept for backward compatibility.
     -
       identifier: function.unusedParameter
-      message: '#^Function WP_CLI\\Utils\\(run_mysql_command|glob_brace)\(\) has an unused parameter#'
+      message: '#^Function WP_CLI\\Utils\\glob_brace\(\) has an unused parameter#'
       path: php/utils.php
       reportUnmatched: false
   dynamicConstantNames:
