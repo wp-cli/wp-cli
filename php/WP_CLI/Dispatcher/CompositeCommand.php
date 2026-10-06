@@ -340,7 +340,9 @@ class CompositeCommand {
 	 * @return bool Whether any loader ran.
 	 */
 	protected function run_command_loaders( $child = null ) {
-		return method_exists( WP_CLI::class, 'run_command_loaders' ) && WP_CLI::run_command_loaders( $this, $child );
+		// An older WP_CLI class can be loaded alongside this one, for example in code coverage runs.
+		return method_exists( WP_CLI::class, 'run_command_loaders' ) // @phpstan-ignore function.alreadyNarrowedType
+			&& WP_CLI::run_command_loaders( $this, $child );
 	}
 
 	/**
