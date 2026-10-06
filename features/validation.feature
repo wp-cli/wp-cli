@@ -249,6 +249,14 @@ Feature: Argument validation
       Did you mean '--path'?
       """
 
+    # Hiding the global parameters from help output does not stop them from being suggested.
+    When I try `WP_CLI_SUPPRESS_GLOBAL_PARAMS=true wp --require=custom-cmd.php entity create --cat=5`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Did you mean '--path'?
+      """
+
   Scenario: A catch-all command does not measure its parameters against positional ones
     Given an empty directory
     And a custom-cmd.php file:

@@ -142,10 +142,6 @@ class UtilsTest extends TestCase {
 
 		// Host and path, no port, with scp notation.
 		$testcase = 'foo.com:~/path/to/dir';
-		$expected = [
-			'host' => 'foo.com',
-			'path' => '~/path/to/dir',
-		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -844,12 +840,11 @@ class UtilsTest extends TestCase {
 		$logger = new Loggers\Execution();
 		WP_CLI::set_logger( $logger );
 
-		$exception = null;
-
 		try {
 			Utils\report_batch_operation_results( $noun, $verb, $total, $successes, $failures, $skips );
+		// phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 		} catch ( ExitException $ex ) {
-			$exception = $ex;
+			// Expected when the batch operation reports an error.
 		}
 		$this->assertSame( $stdout, $logger->stdout );
 		$this->assertSame( $stderr, $logger->stderr );
@@ -1433,5 +1428,59 @@ class UtilsTest extends TestCase {
 		);
 
 		return escapeshellarg( $php ) . ' -r ' . escapeshellarg( $code );
+	}
+
+	public function testFindExecutable(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'PATH lookup of executables is only used on Unix-like systems.' );
+		}
+
+		$base = sys_get_temp_dir() . '/wp-cli-find-executable-' . uniqid();
+		mkdir( "$base/not-executable", 0777, true );
+		mkdir( "$base/executable" );
+		file_put_contents( "$base/not-executable/wp-cli-test-binary", '' );
+		file_put_contents( "$base/executable/wp-cli-test-binary", "#!/bin/sh\n" );
+		chmod( "$base/not-executable/wp-cli-test-binary", 0644 );
+		chmod( "$base/executable/wp-cli-test-binary", 0755 );
+
+		$path = getenv( 'PATH' );
+		// Includes an empty entry, which must be skipped rather than resolved to the current directory.
+		putenv( "PATH=$base/not-executable::$base/executable" );
+
+		try {
+			$this->assertSame( "$base/executable/wp-cli-test-binary", Utils\find_executable( 'wp-cli-test-binary' ) );
+			$this->assertSame( '', Utils\find_executable( 'wp-cli-test-binary-that-does-not-exist' ) );
+		} finally {
+			putenv( false === $path ? 'PATH' : "PATH=$path" );
+			unlink( "$base/not-executable/wp-cli-test-binary" );
+			unlink( "$base/executable/wp-cli-test-binary" );
+			rmdir( "$base/not-executable" );
+			rmdir( "$base/executable" );
+			rmdir( $base );
+		}
+	}
+
+	public function testGetBinaryVersionOutputRunsBinaryOnce(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Uses a shell script as a fake binary.' );
+		}
+
+		$base    = sys_get_temp_dir() . '/wp-cli-binary-version-' . uniqid();
+		$counter = "$base/calls";
+		mkdir( $base );
+		file_put_contents( "$base/fake-mysql", "#!/bin/sh\necho call >> " . escapeshellarg( $counter ) . "\necho 'fake-mysql  Ver 1.0'\n" );
+		file_put_contents( "$base/failing-mysql", "#!/bin/sh\nexit 1\n" );
+		chmod( "$base/fake-mysql", 0755 );
+		chmod( "$base/failing-mysql", 0755 );
+
+		try {
+			$this->assertSame( "fake-mysql  Ver 1.0\n", Utils\get_binary_version_output( "$base/fake-mysql" ) );
+			$this->assertSame( "fake-mysql  Ver 1.0\n", Utils\get_binary_version_output( "$base/fake-mysql" ) );
+			$this->assertSame( "call\n", file_get_contents( $counter ) );
+			$this->assertNull( Utils\get_binary_version_output( "$base/failing-mysql" ) );
+		} finally {
+			array_map( 'unlink', glob( "$base/*" ) ?: [] );
+			rmdir( $base );
+		}
 	}
 }

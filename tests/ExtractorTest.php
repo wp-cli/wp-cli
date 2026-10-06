@@ -66,7 +66,7 @@ class ExtractorTest extends TestCase {
 	}
 
 	public function test_rmdir(): void {
-		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+		list( $temp_dir, , $wp_dir ) = self::create_test_directory_structure();
 
 		$this->assertTrue( is_dir( $wp_dir ) );
 		Extractor::rmdir( $wp_dir );
@@ -91,7 +91,7 @@ class ExtractorTest extends TestCase {
 	}
 
 	public function test_copy_overwrite_files(): void {
-		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+		list( $temp_dir, , $wp_dir ) = self::create_test_directory_structure();
 
 		$dest_dir = $temp_dir . '/dest';
 
@@ -124,7 +124,7 @@ class ExtractorTest extends TestCase {
 			$this->markTestSkipped( 'tar not installed.' );
 		}
 
-		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+		list( $temp_dir, $src_dir ) = self::create_test_directory_structure();
 
 		$tarball  = $temp_dir . '/test.tar.gz';
 		$dest_dir = $temp_dir . '/dest';
@@ -181,7 +181,7 @@ class ExtractorTest extends TestCase {
 
 		$msg = '';
 
-		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+		list( $temp_dir, $src_dir ) = self::create_test_directory_structure();
 
 		$tarball  = $temp_dir . '/test.tar.gz';
 		$dest_dir = $temp_dir . '/dest';
@@ -277,7 +277,7 @@ class ExtractorTest extends TestCase {
 			$this->markTestSkipped( 'ZipArchive not installed.' );
 		}
 
-		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+		list( $temp_dir, $src_dir ) = self::create_test_directory_structure();
 
 		$zipfile  = $temp_dir . '/test.zip';
 		$dest_dir = $temp_dir . '/dest';
@@ -531,7 +531,7 @@ class ExtractorTest extends TestCase {
 			$this->markTestSkipped( 'Creating hard links is not reliably supported on Windows.' );
 		}
 
-		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+		list( $temp_dir, , $wp_dir ) = self::create_test_directory_structure();
 
 		file_put_contents( $wp_dir . '/wp-config6.php', 'legit' );
 
@@ -560,7 +560,7 @@ class ExtractorTest extends TestCase {
 			$this->markTestSkipped( 'File permissions are not supported on Windows.' );
 		}
 
-		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+		list( $temp_dir, , $wp_dir ) = self::create_test_directory_structure();
 
 		file_put_contents( $wp_dir . '/wp-config6.php', 'legit' );
 
@@ -585,7 +585,7 @@ class ExtractorTest extends TestCase {
 			$this->markTestSkipped( 'File permissions are not supported on Windows.' );
 		}
 
-		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+		list( $temp_dir, , $wp_dir ) = self::create_test_directory_structure();
 
 		$dest_dir = $temp_dir . '/dest';
 
@@ -608,7 +608,7 @@ class ExtractorTest extends TestCase {
 			$this->markTestSkipped( 'Changing file ownership requires root.' );
 		}
 
-		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+		list( $temp_dir, , $wp_dir ) = self::create_test_directory_structure();
 
 		$dest_dir = $temp_dir . '/dest';
 		mkdir( $dest_dir );
@@ -639,7 +639,7 @@ class ExtractorTest extends TestCase {
 			$this->markTestSkipped( 'Directory permissions do not apply to root.' );
 		}
 
-		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+		list( $temp_dir, , $wp_dir ) = self::create_test_directory_structure();
 
 		file_put_contents( $wp_dir . '/wp-includes/file7.php', 'legit' );
 
@@ -666,7 +666,7 @@ class ExtractorTest extends TestCase {
 			$this->markTestSkipped( 'File permissions are not supported on Windows.' );
 		}
 
-		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+		list( $temp_dir, , $wp_dir ) = self::create_test_directory_structure();
 
 		file_put_contents( $wp_dir . '/wp-config6.php', 'legit' );
 
@@ -702,7 +702,7 @@ class ExtractorTest extends TestCase {
 			$this->markTestSkipped( 'Creating symbolic links is not reliably supported on Windows.' );
 		}
 
-		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+		list( $temp_dir, , $wp_dir ) = self::create_test_directory_structure();
 
 		$outside_dir = $temp_dir . '/outside';
 		mkdir( $outside_dir );
@@ -729,7 +729,7 @@ class ExtractorTest extends TestCase {
 			$this->markTestSkipped( 'Creating symbolic links is not reliably supported on Windows.' );
 		}
 
-		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
+		list( $temp_dir, , $wp_dir ) = self::create_test_directory_structure();
 
 		$dest_dir = $temp_dir . '/dest';
 		mkdir( $dest_dir . '/shared', 0755, true );
