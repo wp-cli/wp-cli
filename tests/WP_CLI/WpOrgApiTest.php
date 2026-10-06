@@ -268,7 +268,12 @@ class WpOrgApiTest extends TestCase {
 		$transport = $this->get_json_transport( '{"checksums":{"wp-load.php":"abc"}}' );
 		$cache     = $this->get_temp_cache();
 
-		( new WpOrgApi( [ 'transport' => $transport, 'insecure' => true ], $cache ) )->get_core_checksums( '7.1.2' );
+		$insecure_options = [
+			'transport' => $transport,
+			'insecure'  => true,
+		];
+
+		( new WpOrgApi( $insecure_options, $cache ) )->get_core_checksums( '7.1.2' );
 		( new WpOrgApi( [ 'transport' => $transport ], $cache ) )->get_core_checksums( '7.1.2' );
 		$this->assertSame( 2, $transport->requests );
 	}
