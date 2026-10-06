@@ -2211,14 +2211,54 @@ function get_db_type() {
 	$binary = get_mysql_binary_path();
 
 	if ( '' !== $binary ) {
-		$result = Process::create( escapeshellarg( $binary ) . ' --version', null, null )->run();
+		$version_output = get_binary_version_output( $binary );
 
-		if ( 0 === $result->return_code ) {
-			$db_type = ( false !== strpos( $result->stdout, 'MariaDB' ) ) ? 'mariadb' : 'mysql';
+		if ( null !== $version_output ) {
+			$db_type = ( false !== strpos( $version_output, 'MariaDB' ) ) ? 'mariadb' : 'mysql';
 		}
 	}
 
 	return $db_type;
+}
+
+/**
+ * Get the output of `<binary> --version`, running it at most once per binary.
+ *
+ * @param string $binary Path to the binary.
+ * @return string|null Output, or null if the command failed.
+ */
+function get_binary_version_output( $binary ) {
+	static $outputs = [];
+
+	if ( ! array_key_exists( $binary, $outputs ) ) {
+		$result             = Process::create( escapeshellarg( $binary ) . ' --version', null, null )->run();
+		$outputs[ $binary ] = 0 === $result->return_code ? $result->stdout : null;
+	}
+
+	return $outputs[ $binary ];
+}
+
+/**
+ * Find an executable in the directories listed in the PATH environment variable.
+ *
+ * Equivalent to `which <name>`, without spawning a process.
+ *
+ * @param string $name Executable name.
+ * @return string Path to the executable, or an empty string if not found.
+ */
+function find_executable( $name ) {
+	foreach ( explode( PATH_SEPARATOR, (string) getenv( 'PATH' ) ) as $dir ) {
+		if ( '' === $dir ) {
+			continue;
+		}
+
+		$candidate = rtrim( $dir, '/' ) . '/' . $name;
+		if ( is_file( $candidate ) && is_executable( $candidate ) ) {
+			return $candidate;
+		}
+	}
+
+	return '';
 }
 
 /**
@@ -2241,35 +2281,28 @@ function get_mysql_binary_path() {
 	$path = '';
 
 	if ( is_windows() ) {
-		$mysql   = Process::create( 'where mysql', null, null )->run();
-		$mariadb = Process::create( 'where mariadb', null, null )->run();
+		$mysql          = Process::create( 'where mysql', null, null )->run();
+		$mariadb        = Process::create( 'where mariadb', null, null )->run();
+		$mysql_binary   = 0 === $mysql->return_code ? trim( explode( "\n", $mysql->stdout )[0] ) : '';
+		$mariadb_binary = 0 === $mariadb->return_code ? trim( explode( "\n", $mariadb->stdout )[0] ) : '';
 	} else {
-		$mysql   = Process::create( '/usr/bin/env which mysql', null, null )->run();
-		$mariadb = Process::create( '/usr/bin/env which mariadb', null, null )->run();
+		$mysql_binary   = find_executable( 'mysql' );
+		$mariadb_binary = find_executable( 'mariadb' );
 	}
 
-	$mysql_binary   = trim( explode( "\n", $mysql->stdout )[0] );
-	$mariadb_binary = trim( explode( "\n", $mariadb->stdout )[0] );
-
-	if ( 0 === $mysql->return_code && '' !== $mysql_binary ) {
-		$result = Process::create( escapeshellarg( $mysql_binary ) . ' --version', null, null )->run();
-		if ( 0 === $result->return_code ) {
+	if ( '' !== $mysql_binary ) {
+		$version_output = get_binary_version_output( $mysql_binary );
+		if ( null !== $version_output ) {
 			$path = $mysql_binary;
 			// It's actually MariaDB disguised as MySQL.
-			if ( false !== strpos( $result->stdout, 'MariaDB' ) && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
-				$mariadb_result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
-				if ( 0 === $mariadb_result->return_code ) {
-					$path = $mariadb_binary;
-				}
+			if ( false !== strpos( $version_output, 'MariaDB' ) && '' !== $mariadb_binary && null !== get_binary_version_output( $mariadb_binary ) ) {
+				$path = $mariadb_binary;
 			}
 		}
 	}
 
-	if ( '' === $path && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
-		$result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
-		if ( 0 === $result->return_code ) {
-			$path = $mariadb_binary;
-		}
+	if ( '' === $path && '' !== $mariadb_binary && null !== get_binary_version_output( $mariadb_binary ) ) {
+		$path = $mariadb_binary;
 	}
 
 	return $path;
