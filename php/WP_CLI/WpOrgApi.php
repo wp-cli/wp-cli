@@ -85,12 +85,23 @@ final class WpOrgApi {
 	private $options;
 
 	/**
+	 * Cache for responses that never change, or null to use WP_CLI::get_cache().
+	 *
+	 * @var FileCache|false|null
+	 */
+	private $cache;
+
+	/**
 	 * WpOrgApi constructor.
 	 *
 	 * @param array<string, mixed> $options Associative array of options to pass to the API abstraction.
+	 * @param FileCache|false|null $cache   Optional. Cache for responses that never change, like the
+	 *                                      checksums of a WordPress release. False to disable caching.
+	 *                                      Defaults to WP_CLI::get_cache().
 	 */
-	public function __construct( $options = [] ) {
+	public function __construct( $options = [], $cache = null ) {
 		$this->options = $options;
+		$this->cache   = $cache;
 	}
 
 	/**
@@ -102,6 +113,25 @@ final class WpOrgApi {
 	 * @throws RuntimeException If the remote request fails.
 	 */
 	public function get_core_checksums( $version, $locale = 'en_US' ) {
+		// The checksums of a release never change, unlike those of nightly builds.
+		$cache     = false;
+		$cache_key = "core/checksums-{$version}-{$locale}.json";
+		if (
+			preg_match( '/^\d+\.\d+(\.\d+)?(-(beta|RC)\d+)?$/i', $version )
+			&& preg_match( '/^[A-Za-z0-9_]+$/', $locale )
+		) {
+			$cache = $this->get_cache();
+		}
+
+		if ( $cache ) {
+			$cached    = $cache->read( $cache_key );
+			$checksums = false !== $cached ? json_decode( $cached, true ) : null;
+			if ( is_array( $checksums ) && ! empty( $checksums ) ) {
+				\WP_CLI::debug( "Using cached checksums for WordPress {$version} ({$locale}).", 'wporgapi' );
+				return $checksums;
+			}
+		}
+
 		$data = [
 			'version' => $version,
 			'locale'  => $locale,
@@ -121,6 +151,10 @@ final class WpOrgApi {
 			|| ! is_array( $response['checksums'] )
 		) {
 			return false;
+		}
+
+		if ( $cache && ! empty( $response['checksums'] ) ) {
+			$cache->write( $cache_key, (string) json_encode( $response['checksums'] ) );
 		}
 
 		return $response['checksums'];
@@ -283,6 +317,19 @@ final class WpOrgApi {
 	 */
 	public function get_salts() {
 		return $this->get_request( self::SALT_ENDPOINT );
+	}
+
+	/**
+	 * Gets the cache for responses that never change.
+	 *
+	 * @return FileCache|false
+	 */
+	private function get_cache() {
+		if ( null === $this->cache ) {
+			return \WP_CLI::get_cache();
+		}
+
+		return $this->cache;
 	}
 
 	/**
