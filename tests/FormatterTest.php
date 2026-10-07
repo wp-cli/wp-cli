@@ -344,6 +344,71 @@ class FormatterTest extends TestCase {
 		];
 	}
 
+	public function test_yaml_from_iterator_matches_array(): void {
+		$items = [
+			[
+				'ID'    => 1,
+				'title' => 'Hello: world',
+				'tags'  => [ 'a', 'b' ],
+				'meta'  => [ 'k' => [ 'x' => 1 ] ],
+				'multi' => "line1\nline2",
+				'flag'  => true,
+				'none'  => null,
+			],
+			[
+				'ID'    => 2,
+				'title' => '- dash',
+				'tags'  => [],
+				'meta'  => [],
+				'multi' => '#hash',
+				'flag'  => false,
+				'none'  => 'null',
+			],
+		];
+
+		$outputs = [];
+		$inputs  = [
+			'array'          => $items,
+			'iterator'       => new ArrayIterator( $items ),
+			'empty array'    => [],
+			'empty iterator' => new ArrayIterator( [] ),
+		];
+
+		foreach ( $inputs as $type => $input ) {
+			$assoc_args = [ 'format' => 'yaml' ];
+			$formatter  = new Formatter( $assoc_args, [ 'ID', 'title', 'tags', 'meta', 'multi', 'flag', 'none' ] );
+
+			ob_start();
+			$formatter->display_items( $input );
+			$outputs[ $type ] = ob_get_clean();
+		}
+
+		$this->assertSame( $outputs['array'], $outputs['iterator'] );
+		$this->assertSame( $outputs['empty array'], $outputs['empty iterator'] );
+		$this->assertStringContainsString( "title: 'Hello: world'", (string) $outputs['iterator'] );
+	}
+
+	public function test_yaml_is_streamed_from_iterator(): void {
+		/** @var string[] $read */
+		$read      = [];
+		$generator = ( function () use ( &$read ) {
+			foreach ( [ 'a', 'b' ] as $name ) {
+				$read[] = $name . ' at ' . ob_get_length();
+				yield [ 'name' => $name ];
+			}
+		} )();
+
+		$assoc_args = [ 'format' => 'yaml' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+
+		ob_start();
+		$formatter->display_items( $generator );
+		$output = (string) ob_get_clean();
+
+		// The second item is only read after the first one was written.
+		$this->assertSame( [ 'a at 0', 'b at ' . strpos( $output, '- ', 6 ) ], $read );
+	}
+
 	public function test_json_from_empty_iterator(): void {
 		$assoc_args = [ 'format' => 'json' ];
 		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
