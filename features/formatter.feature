@@ -1102,6 +1102,38 @@ Feature: Format output
       Warning: Field not found in any item: missing.
       """
 
+  Scenario: Iterators and arrays produce the same table output
+    Given an empty directory
+    And a compare-table.php file:
+      """
+      <?php
+      $items = array(
+          array( 'post_title' => 'First', 'post_status' => 'publish', 'meta' => array( 'a' => 1 ), 'sticky' => true ),
+          (object) array( 'post_title' => "Second\nline", 'post_status' => 'draft', 'meta' => null, 'sticky' => false ),
+          array( 'post_title' => str_repeat( 'x', 3000 ), 'post_status' => "tab\there", 'meta' => array(), 'sticky' => false ),
+      );
+      $assoc_args = array( 'format' => 'table', 'fields' => 'title,status,meta,sticky' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, null, 'post' );
+      if ( 'generator' === $args[0] ) {
+          $formatter->display_items( ( function () use ( $items ) {
+              yield from $items;
+          } )() );
+      } else {
+          $formatter->display_items( $items );
+      }
+      """
+
+    When I run `wp eval-file compare-table.php array --skip-wordpress`
+    Then save STDOUT as {TABLE_ARRAY}
+
+    When I run `wp eval-file compare-table.php generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {TABLE_ARRAY}
+      """
+    And STDOUT should match /^post_title\tpost_status\tmeta\tsticky$/m
+    And STDERR should be empty
+
   Scenario: Iterators whose first item lacks a requested field are not streamed
     Given an empty directory
     And a missing-field.php file:

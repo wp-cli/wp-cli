@@ -138,8 +138,10 @@ class Formatter {
 	 * and must not use functions that need an array, like count() or reset(). When
 	 * the items are an array, it receives an array as usual.
 	 *
-	 * The built-in `csv`, `json` and `yaml` formats are registered with `streaming`. A handler
-	 * that overrides one of them without the option receives all items as an array.
+	 * The built-in `csv`, `json`, `table` and `yaml` formats are registered with `streaming`.
+	 * A handler that overrides one of them without the option receives all items as an array.
+	 * Tables are only written row by row when STDOUT is piped, as the bordered table shown
+	 * on a terminal needs the width of every column first.
 	 *
 	 * ## EXAMPLE
 	 *
@@ -281,14 +283,12 @@ class Formatter {
 					// Fallback if no formatter instance provided
 					$table = new Table();
 					$table->setHeaders( $fields );
-					foreach ( $items as $item ) {
-						$table->addRow( array_values( (array) $item ) );
-					}
-					foreach ( $table->getDisplayLines() as $line ) {
+					foreach ( self::get_table_lines( $table, $items ) as $line ) {
 						WP_CLI::line( $line );
 					}
 				}
-			}
+			},
+			[ 'streaming' => true ]
 		);
 
 		// Register 'json' format
@@ -1026,23 +1026,44 @@ class Formatter {
 			Colors::disable( true );
 		}
 
-		$table->setAsciiPreColorized( $ascii_pre_colorized );
-		$table->setHeaders( $fields );
-		$table->setAlignments(
-			$this->args['alignments']
-		);
+		try {
+			$table->setAsciiPreColorized( $ascii_pre_colorized );
+			$table->setHeaders( $fields );
+			$table->setAlignments(
+				$this->args['alignments']
+			);
 
-		foreach ( $items as $item ) {
-			$table->addRow( array_values( (array) $item ) );
+			// Items from an iterator are read while the lines are written, which can throw.
+			foreach ( self::get_table_lines( $table, $items ) as $line ) {
+				WP_CLI::line( $line );
+			}
+		} finally {
+			if ( $enabled ) {
+				Colors::enable( true );
+			}
 		}
+	}
 
-		foreach ( $table->getDisplayLines() as $line ) {
-			WP_CLI::line( $line );
-		}
+	/**
+	 * Get the lines of a table with the given items as rows.
+	 *
+	 * If the table can render each row as it is read, which is the case when STDOUT is piped,
+	 * the items are not all held in memory.
+	 *
+	 * @param Table                                        $table Table with the headers set.
+	 * @param iterable<int, array<string, mixed>|object|mixed> $items Items.
+	 * @return iterable<int, string>
+	 */
+	private static function get_table_lines( Table $table, iterable $items ) {
+		$rows = ( static function () use ( $items ) {
+			foreach ( $items as $item ) {
+				/** @var array<int, string> $row */
+				$row = array_values( (array) $item );
+				yield $row;
+			}
+		} )();
 
-		if ( $enabled ) {
-			Colors::enable( true );
-		}
+		return $table->getDisplayLinesFromRows( $rows );
 	}
 
 	/**

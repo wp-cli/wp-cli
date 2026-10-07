@@ -586,6 +586,75 @@ class FormatterTest extends TestCase {
 		);
 	}
 
+	public function test_table_rows_from_iterator_are_written_as_they_are_read_when_piped(): void {
+		$previous_pipe = getenv( 'SHELL_PIPE' );
+		putenv( 'SHELL_PIPE=1' );
+
+		/** @var string[] $read */
+		$read      = [];
+		$generator = ( function () use ( &$read ) {
+			foreach ( [ 'a', 'b' ] as $name ) {
+				$read[] = $name . ' after ' . str_replace( "\n", '|', (string) ob_get_contents() );
+				yield [ 'name' => $name ];
+			}
+		} )();
+
+		ob_start();
+		try {
+			$assoc_args = [ 'format' => 'table' ];
+			$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+			$formatter->display_items( $generator );
+		} finally {
+			$output = ob_get_clean();
+			putenv( false === $previous_pipe ? 'SHELL_PIPE' : "SHELL_PIPE=$previous_pipe" );
+		}
+
+		// The first item is read to resolve the fields before anything is written. After that,
+		// each row is written before the next one is read.
+		$this->assertSame( [ 'a after ', 'b after name|a|' ], $read );
+		$this->assertSame( "name\na\nb\n", $output );
+	}
+
+	public function test_table_restores_colors_when_reading_items_throws(): void {
+		$runner         = WP_CLI::get_runner();
+		$colorize       = new \ReflectionProperty( $runner, 'colorize' );
+		$colors_enabled = new \ReflectionProperty( \cli\Colors::class, '_enabled' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$colorize->setAccessible( true );
+			// @phpstan-ignore method.deprecated
+			$colors_enabled->setAccessible( true );
+		}
+		$previous_colorize = $colorize->getValue( $runner );
+		$previous_enabled  = $colors_enabled->getValue();
+
+		$colorize->setValue( $runner, true );
+		\cli\Colors::enable( true );
+
+		$generator = ( function () {
+			yield [ 'name' => 'a' ];
+			throw new \RuntimeException( 'Failed to read item' );
+		} )();
+
+		$caught = null;
+		ob_start();
+		try {
+			$assoc_args = [ 'format' => 'table' ];
+			$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+			$formatter->display_items( $generator );
+		} catch ( \RuntimeException $e ) {
+			$caught = $e;
+		} finally {
+			ob_end_clean();
+			$colors_after = \cli\Colors::shouldColorize();
+			$colorize->setValue( $runner, $previous_colorize );
+			$colors_enabled->setValue( null, $previous_enabled );
+		}
+
+		$this->assertInstanceOf( \RuntimeException::class, $caught );
+		$this->assertTrue( $colors_after );
+	}
+
 	public function test_non_streamed_iterator_items_are_read_while_they_are_current(): void {
 		$received = null;
 		Formatter::add_format(
