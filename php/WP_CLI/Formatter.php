@@ -474,8 +474,14 @@ class Formatter {
 
 			// Convert Traversable to array early to avoid consumption issues and enable validation.
 			// The keys are not used for the output, so don't let repeated keys overwrite items.
+			// Only keep the requested fields of each item, so that large items, like posts, don't
+			// all have to be held in memory.
 			if ( $items instanceof Traversable ) {
-				$items = iterator_to_array( $items, false );
+				$all = [];
+				foreach ( $items as $item ) {
+					$all[] = $this->reduce_item( $item );
+				}
+				$items = $all;
 			}
 
 			// Check if this is a custom formatter or a built-in format that needs field validation
@@ -627,18 +633,56 @@ class Formatter {
 	/**
 	 * Read the remaining items of an iterator whose current item was already read.
 	 *
+	 * Like display_items() does for other iterators, only the requested fields are kept.
+	 *
 	 * @param Iterator<mixed> $items   Items.
 	 * @param mixed           $current The current item.
 	 * @return array<int, mixed>
 	 */
 	private function read_remaining_items( Iterator $items, $current ): array {
-		$all = [ $current ];
+		$all = [ $this->reduce_item( $current ) ];
 		$items->next();
 		while ( $items->valid() ) {
-			$all[] = $items->current();
+			$all[] = $this->reduce_item( $items->current() );
 			$items->next();
 		}
 		return $all;
+	}
+
+	/**
+	 * Reduce an item from an iterator to the keys that the requested fields can resolve to.
+	 *
+	 * For each field, the item keeps the key with and without the prefix, if accessible, with
+	 * its current value. Field resolution, the warnings about missing fields and the output are
+	 * therefore the same as for the full item. Items are kept as they are for the `ids` and
+	 * `count` formats, which use the whole items, and when no fields are requested.
+	 *
+	 * @param mixed $item Item.
+	 * @return mixed
+	 */
+	private function reduce_item( $item ) {
+		if (
+			empty( $this->args['fields'] )
+			|| ( ! is_array( $item ) && ! is_object( $item ) )
+			|| in_array( $this->args['format'], [ 'ids', 'count' ], true )
+		) {
+			return $item;
+		}
+
+		$reduced = [];
+		foreach ( $this->args['fields'] as $field ) {
+			foreach ( [ $field, $this->prefix . '_' . $field ] as $key ) {
+				if ( is_object( $item ) ) {
+					if ( $this->is_object_property_accessible( $item, $key ) ) {
+						$reduced[ $key ] = $item->$key;
+					}
+				} elseif ( array_key_exists( $key, $item ) ) {
+					$reduced[ $key ] = $item[ $key ];
+				}
+			}
+		}
+
+		return $reduced;
 	}
 
 	/**

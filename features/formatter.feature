@@ -1016,6 +1016,47 @@ Feature: Format output
       """
     And STDERR should be empty
 
+  Scenario: Iterators and arrays produce the same table output and warnings
+    Given an empty directory
+    And a compare-table.php file:
+      """
+      <?php
+      $items = array(
+          (object) array( 'post_title' => 'First', 'post_name' => 'first', 'name' => 'unprefixed', 'meta' => array( 'a' => 1 ) ),
+          array( 'post_title' => 'Second', 'post_status' => 'draft', 'sticky' => true ),
+      );
+      $assoc_args = array( 'format' => 'table', 'fields' => 'title,name,status,meta,sticky,missing' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, null, 'post' );
+      if ( 'generator' === $args[0] ) {
+          $formatter->display_items( ( function () use ( $items ) {
+              yield from $items;
+          } )() );
+      } else {
+          $formatter->display_items( $items );
+      }
+      """
+
+    When I try `wp eval-file compare-table.php array --skip-wordpress`
+    Then save STDOUT as {TABLE_ARRAY}
+    And STDERR should be:
+      """
+      Warning: Field not found in any item: missing.
+      """
+
+    When I try `wp eval-file compare-table.php generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {TABLE_ARRAY}
+      """
+    And STDOUT should contain:
+      """
+      unprefixed
+      """
+    And STDERR should be:
+      """
+      Warning: Field not found in any item: missing.
+      """
+
   Scenario: Iterators whose first item lacks a requested field are not streamed
     Given an empty directory
     And a missing-field.php file:
