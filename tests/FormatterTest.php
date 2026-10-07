@@ -554,6 +554,46 @@ class FormatterTest extends TestCase {
 		$this->assertSame( "name\na\nb\n", $output );
 	}
 
+	public function test_table_restores_colors_when_reading_items_throws(): void {
+		$runner         = WP_CLI::get_runner();
+		$colorize       = new \ReflectionProperty( $runner, 'colorize' );
+		$colors_enabled = new \ReflectionProperty( \cli\Colors::class, '_enabled' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$colorize->setAccessible( true );
+			// @phpstan-ignore method.deprecated
+			$colors_enabled->setAccessible( true );
+		}
+		$previous_colorize = $colorize->getValue( $runner );
+		$previous_enabled  = $colors_enabled->getValue();
+
+		$colorize->setValue( $runner, true );
+		\cli\Colors::enable( true );
+
+		$generator = ( function () {
+			yield [ 'name' => 'a' ];
+			throw new \RuntimeException( 'Failed to read item' );
+		} )();
+
+		$caught = null;
+		ob_start();
+		try {
+			$assoc_args = [ 'format' => 'table' ];
+			$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+			$formatter->display_items( $generator );
+		} catch ( \RuntimeException $e ) {
+			$caught = $e;
+		} finally {
+			ob_end_clean();
+			$colors_after = \cli\Colors::shouldColorize();
+			$colorize->setValue( $runner, $previous_colorize );
+			$colors_enabled->setValue( null, $previous_enabled );
+		}
+
+		$this->assertInstanceOf( \RuntimeException::class, $caught );
+		$this->assertTrue( $colors_after );
+	}
+
 	public function test_add_single_value_format(): void {
 		$called         = false;
 		$received_value = null;

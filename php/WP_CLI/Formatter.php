@@ -950,18 +950,21 @@ class Formatter {
 			Colors::disable( true );
 		}
 
-		$table->setAsciiPreColorized( $ascii_pre_colorized );
-		$table->setHeaders( $fields );
-		$table->setAlignments(
-			$this->args['alignments']
-		);
+		try {
+			$table->setAsciiPreColorized( $ascii_pre_colorized );
+			$table->setHeaders( $fields );
+			$table->setAlignments(
+				$this->args['alignments']
+			);
 
-		foreach ( self::get_table_lines( $table, $items ) as $line ) {
-			WP_CLI::line( $line );
-		}
-
-		if ( $enabled ) {
-			Colors::enable( true );
+			// Items from an iterator are read while the lines are written, which can throw.
+			foreach ( self::get_table_lines( $table, $items ) as $line ) {
+				WP_CLI::line( $line );
+			}
+		} finally {
+			if ( $enabled ) {
+				Colors::enable( true );
+			}
 		}
 	}
 
