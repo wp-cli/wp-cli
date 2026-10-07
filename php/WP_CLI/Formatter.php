@@ -691,7 +691,7 @@ class Formatter {
 		foreach ( $this->args['fields'] as $field ) {
 			if ( isset( $resolved_fields[ $field ] ) ) {
 				$key = $resolved_fields[ $field ];
-				if ( is_object( $item ) ? ! $this->is_object_property_accessible( $item, $key ) : ! array_key_exists( $key, $item ) ) {
+				if ( ! $this->item_has_key( $item, $key ) ) {
 					continue;
 				}
 			} else {
@@ -918,6 +918,18 @@ class Formatter {
 	}
 
 	/**
+	 * Check if an item has a key, as an accessible object property or an array key.
+	 *
+	 * @param mixed  $item
+	 * @param string $key
+	 * @return bool
+	 */
+	private function item_has_key( $item, $key ): bool {
+		return ( is_object( $item ) && $this->is_object_property_accessible( $item, $key ) )
+			|| ( is_array( $item ) && array_key_exists( $key, $item ) );
+	}
+
+	/**
 	 * Find an object's key.
 	 * If $prefix is set, a key with that prefix will be prioritized.
 	 *
@@ -928,10 +940,7 @@ class Formatter {
 	 */
 	private function find_item_key( $item, $field, $lenient = false ) {
 		foreach ( [ $field, $this->prefix . '_' . $field ] as $maybe_key ) {
-			if (
-				( is_object( $item ) && $this->is_object_property_accessible( $item, $maybe_key ) ) ||
-				( is_array( $item ) && array_key_exists( $maybe_key, $item ) )
-			) {
+			if ( $this->item_has_key( $item, $maybe_key ) ) {
 				$key = $maybe_key;
 				break;
 			}
