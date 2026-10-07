@@ -42,7 +42,7 @@ class Formatter {
 	/**
 	 * Options for custom format handlers.
 	 *
-	 * @var array<string, array{single_item?: bool}>
+	 * @var array<string, array{single_item?: bool, streaming?: bool}>
 	 */
 	private static $format_options = [];
 
@@ -59,13 +59,6 @@ class Formatter {
 	 * @var bool
 	 */
 	private static $builtin_formats_registered = false;
-
-	/**
-	 * Built-in handlers of the formats that can be streamed from an iterator.
-	 *
-	 * @var array<string, callable>
-	 */
-	private static $streamable_handlers = [];
 
 	/**
 	 * How the items should be output.
@@ -135,6 +128,19 @@ class Formatter {
 	 *
 	 * Built-in formats can be overridden by registering a handler with the same name.
 	 *
+	 * ## STREAMING
+	 *
+	 * A handler that writes each item on its own, without needing the whole set of
+	 * items first, can be registered with the `streaming` option. When a command then
+	 * passes its items as an iterator, the handler receives them as an iterable that
+	 * yields the items one by one, so they don't all have to be held in memory, and
+	 * `$args['streaming']` is true. Such a handler must loop over the items only once
+	 * and must not use functions that need an array, like count() or reset(). When
+	 * the items are an array, it receives an array as usual.
+	 *
+	 * The built-in `csv` and `json` formats are registered with `streaming`. A handler
+	 * that overrides one of them without the option receives all items as an array.
+	 *
 	 * ## EXAMPLE
 	 *
 	 *     // Register a custom XML format
@@ -150,9 +156,18 @@ class Formatter {
 	 *         echo "</items>\n";
 	 *     });
 	 *
-	 * @param string                    $format_name Name of the format (e.g. 'xml', 'nagios').
-	 * @param callable                  $handler     Callback to handle formatting. Receives ($items, $fields, $formatter, $args) and should output directly.
-	 * @param array{single_item?: bool} $options     Optional metadata/options.
+	 *     // Register a format that writes one JSON object per line, streaming the items
+	 *     WP_CLI\Formatter::add_format( 'jsonl', function( $items, $fields, $formatter, $args ) {
+	 *         foreach ( $items as $item ) {
+	 *             echo json_encode( $item ) . "\n";
+	 *         }
+	 *     }, [ 'streaming' => true ] );
+	 *
+	 * @param string                                     $format_name Name of the format (e.g. 'xml', 'nagios').
+	 * @param callable                                   $handler     Callback to handle formatting. Receives ($items, $fields, $formatter, $args) and should output directly.
+	 * @param array{single_item?: bool, streaming?: bool} $options    Optional metadata/options. `single_item`: whether
+	 *                                                                display_item() passes a single item. `streaming`: whether
+	 *                                                                the handler accepts the items as an iterable (see above).
 	 * @return void
 	 */
 	public static function add_format( $format_name, $handler, $options = [] ) {
@@ -281,6 +296,19 @@ class Formatter {
 			'json',
 			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $formatter required for API consistency
 			static function ( $items, $fields, $formatter = null, $args = [] ) {
+				if ( ! is_array( $items ) ) {
+					// Streamed items: write them one by one.
+					$flags     = defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ? JSON_PARTIAL_OUTPUT_ON_ERROR : 0; // phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
+					$separator = '';
+					echo '[';
+					foreach ( $items as $item ) {
+						echo $separator, json_encode( $item, $flags );
+						$separator = ',';
+					}
+					echo ']';
+					return;
+				}
+
 				// For single-item display, output the item directly without array wrapper
 				if ( ! empty( $args['single_item'] ) && count( $items ) === 1 ) {
 					$item = reset( $items );
@@ -296,7 +324,8 @@ class Formatter {
 				} else {
 					echo json_encode( $items );
 				}
-			}
+			},
+			[ 'streaming' => true ]
 		);
 
 		// Register 'csv' format
@@ -305,13 +334,9 @@ class Formatter {
 			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $formatter, $args required for API consistency
 			static function ( $items, $fields, $formatter = null, $args = [] ) {
 				Utils\write_csv( STDOUT, $items, $fields );
-			}
+			},
+			[ 'streaming' => true ]
 		);
-
-		self::$streamable_handlers = [
-			'csv'  => self::$custom_formatters['csv'],
-			'json' => self::$custom_formatters['json'],
-		];
 
 		// Register 'yaml' format
 		self::add_format(
@@ -438,7 +463,7 @@ class Formatter {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
 			if ( $items instanceof Iterator ) {
-				$streamed = $this->stream_items( $items );
+				$streamed = $this->stream_items( $items, $ascii_pre_colorized );
 				if ( true === $streamed ) {
 					return;
 				}
@@ -482,34 +507,41 @@ class Formatter {
 	}
 
 	/**
-	 * Output items from an iterator one by one, without holding them all in memory.
+	 * Pass items from an iterator to a format handler one by one, without holding them all in memory.
 	 *
-	 * Only the built-in CSV and JSON formats are streamed, as they need no information
-	 * about the whole set of items. The output is the same as when passing an array.
+	 * Only formats registered with the `streaming` option are streamed. The handler receives the
+	 * same rows as when passing an array, prepared one at a time.
 	 *
 	 * Each item is read from the iterator only once, as reading an item can run callbacks,
 	 * for example those of an `Iterators\Transform`.
 	 *
-	 * @param Iterator<mixed> $items Items.
+	 * @param Iterator<mixed>       $items               Items.
+	 * @param bool|array<int, bool> $ascii_pre_colorized Passed on to the handler.
 	 * @return true|array<int, mixed>|false True if the items were streamed. If they cannot be
 	 *                                      streamed, the items read from the iterator, or false
 	 *                                      if it was not read.
 	 */
-	private function stream_items( Iterator $items ) {
+	private function stream_items( Iterator $items, $ascii_pre_colorized = false ) {
 		$format = $this->args['format'];
 
-		if ( ! isset( self::$streamable_handlers[ $format ] )
-			|| self::$custom_formatters[ $format ] !== self::$streamable_handlers[ $format ] ) {
+		if ( ! isset( self::$custom_formatters[ $format ] ) || empty( self::$format_options[ $format ]['streaming'] ) ) {
 			return false;
 		}
 
 		$items->rewind();
 
+		// Like in format(), these formats get the items as they are.
+		$raw_items = in_array( $format, [ 'ids', 'count' ], true );
+
 		$fields = $this->args['fields'];
+		$first  = null;
 		if ( $items->valid() ) {
+			$first = $items->current();
+		}
+
+		if ( $items->valid() && ! $raw_items ) {
 			// Resolve the fields like validate_fields() does. If any of them is missing from
 			// the first item, fall back to the regular path, which checks the other items.
-			$first = $items->current();
 			if ( ! is_array( $first ) && ! is_object( $first ) ) {
 				return $this->read_remaining_items( $items, $first );
 			}
@@ -524,45 +556,72 @@ class Formatter {
 			$this->args['fields'] = $fields;
 		}
 
-		if ( 'csv' === $format ) {
-			Utils\write_csv( STDOUT, [], $fields );
-		} else {
-			echo '[';
-		}
+		$args = [
+			'ascii_pre_colorized' => $ascii_pre_colorized,
+			'streaming'           => true,
+		];
+		call_user_func( self::$custom_formatters[ $format ], $this->generate_rows( $items, $first, $fields, $raw_items ), $fields, $this, $args );
 
-		$flags     = defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ? JSON_PARTIAL_OUTPUT_ON_ERROR : 0; // phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
-		$separator = '';
-		$item      = isset( $first ) ? $first : null;
+		return true;
+	}
+
+	/**
+	 * Yield the rows to output for the items of an iterator.
+	 *
+	 * @param Iterator<mixed> $items     Items, positioned at the first one.
+	 * @param mixed           $first     The first item, already read from the iterator.
+	 * @param string[]        $fields    Resolved field names.
+	 * @param bool            $raw_items Whether to yield the items as they are.
+	 * @return \Generator<int, mixed>
+	 */
+	private function generate_rows( Iterator $items, $first, $fields, $raw_items ) {
+		$item = $first;
 		while ( $items->valid() ) {
-
-			if ( 'csv' === $format ) {
-				/** @var array<int|string, mixed>|object $transformed */
-				$transformed = $this->transform_item_values_to_json( is_object( $item ) ? clone $item : $item );
-				$row         = Utils\pick_fields( $transformed, $fields );
-				foreach ( $row as $key => $value ) {
-					if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
-						$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
-					}
-				}
-				/** @var array<string, mixed> $row */
-				Utils\write_csv( STDOUT, [ $row ] );
-			} else {
-				$row = is_array( $item ) || is_object( $item ) ? Utils\pick_fields( $item, $fields ) : $item;
-				echo $separator, json_encode( $row, $flags );
-				$separator = ',';
-			}
+			yield $raw_items ? $item : $this->prepare_row( $item, $fields );
 
 			$items->next();
 			if ( $items->valid() ) {
 				$item = $items->current();
 			}
 		}
+	}
 
-		if ( 'json' === $format ) {
-			echo ']';
+	/**
+	 * Prepare an item for output the same way as display_items() and format() do for an array of items.
+	 *
+	 * @param mixed    $item   Item.
+	 * @param string[] $fields Resolved field names.
+	 * @return mixed
+	 */
+	private function prepare_row( $item, $fields ) {
+		if ( ! is_array( $item ) && ! is_object( $item ) ) {
+			return $item;
 		}
 
-		return true;
+		$is_tabular = in_array( $this->args['format'], [ 'table', 'csv' ], true );
+		if ( $is_tabular ) {
+			/** @var array<int|string, mixed>|object $item */
+			$item = $this->transform_item_values_to_json( is_object( $item ) ? clone $item : $item );
+		}
+
+		$row = Utils\pick_fields( $item, $fields );
+
+		return $is_tabular ? self::truncate_cell_values( $row ) : $row;
+	}
+
+	/**
+	 * Truncate the values of a row that are longer than MAX_CELL_WIDTH.
+	 *
+	 * @param array<int|string, mixed> $row Row.
+	 * @return array<int|string, mixed>
+	 */
+	private static function truncate_cell_values( $row ) {
+		foreach ( $row as $key => $value ) {
+			if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
+				$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
+			}
+		}
+		return $row;
 	}
 
 	/**
@@ -651,13 +710,8 @@ class Formatter {
 			// Truncate cell values exactly once for table/CSV output
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
 				foreach ( $formatted_items as &$row ) {
-					if ( ! is_array( $row ) && ! is_object( $row ) ) {
-						continue;
-					}
-					foreach ( $row as $key => $value ) {
-						if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
-							$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
-						}
+					if ( is_array( $row ) ) {
+						$row = self::truncate_cell_values( $row );
 					}
 				}
 				unset( $row );

@@ -28,7 +28,6 @@ class FormatterTest extends TestCase {
 				'format_options'             => [],
 				'single_value_formatters'    => [],
 				'builtin_formats_registered' => false,
-				'streamable_handlers'        => [],
 			] as $property => $value
 		) {
 			$reflection = new \ReflectionProperty( Formatter::class, $property );
@@ -371,6 +370,124 @@ class FormatterTest extends TestCase {
 		ob_end_clean();
 
 		$this->assertSame( [ [ 'name' => 'a' ], [ 'name' => 'b' ] ], $received );
+	}
+
+	public function test_streaming_custom_format_receives_items_one_by_one(): void {
+		$log      = [];
+		$is_array = null;
+		$args     = null;
+		Formatter::add_format(
+			'test_stream',
+			function ( $items, $fields, $formatter, $handler_args ) use ( &$log, &$is_array, &$args ) {
+				$is_array = is_array( $items );
+				$args     = $handler_args;
+				foreach ( $items as $item ) {
+					$log[] = [ 'output', $item ];
+				}
+			},
+			[ 'streaming' => true ]
+		);
+
+		$assoc_args = [
+			'format' => 'test_stream',
+			'fields' => 'name,ID',
+		];
+		$formatter  = new Formatter( $assoc_args, null, 'post' );
+
+		$generator = ( function () use ( &$log ) {
+			foreach ( [ [ 1, 'a' ], [ 2, 'b' ] ] as list( $id, $name ) ) {
+				$log[] = [ 'read', $id ];
+				yield (object) [
+					'ID'        => $id,
+					'post_name' => $name,
+					'extra'     => 'x',
+				];
+			}
+		} )();
+
+		$formatter->display_items( $generator );
+
+		$this->assertFalse( $is_array );
+		$this->assertIsArray( $args );
+		$this->assertTrue( $args['streaming'] );
+		// Each item is passed on before the next one is read, with only the requested fields.
+		$this->assertSame(
+			[
+				[ 'read', 1 ],
+				[
+					'output',
+					[
+						'post_name' => 'a',
+						'ID'        => 1,
+					],
+				],
+				[ 'read', 2 ],
+				[
+					'output',
+					[
+						'post_name' => 'b',
+						'ID'        => 2,
+					],
+				],
+			],
+			$log
+		);
+	}
+
+	public function test_streaming_custom_format_receives_array_items_as_array(): void {
+		$received = null;
+		$args     = null;
+		Formatter::add_format(
+			'test_stream',
+			function ( $items, $fields, $formatter, $handler_args ) use ( &$received, &$args ) {
+				$received = $items;
+				$args     = $handler_args;
+			},
+			[ 'streaming' => true ]
+		);
+
+		$assoc_args = [ 'format' => 'test_stream' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+		$formatter->display_items( [ [ 'name' => 'a' ], [ 'name' => 'b' ] ] );
+
+		$this->assertSame( [ [ 'name' => 'a' ], [ 'name' => 'b' ] ], $received );
+		$this->assertIsArray( $args );
+		$this->assertArrayNotHasKey( 'streaming', $args );
+	}
+
+	public function test_overriding_builtin_format_with_streaming_receives_items_one_by_one(): void {
+		$received = null;
+		Formatter::add_format(
+			'csv',
+			function ( $items ) use ( &$received ) {
+				$received = is_array( $items ) ? 'array' : iterator_to_array( $items, false );
+			},
+			[ 'streaming' => true ]
+		);
+
+		$assoc_args = [ 'format' => 'csv' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name', 'tags' ] );
+		$formatter->display_items(
+			new ArrayIterator(
+				[
+					[
+						'name' => 'a',
+						'tags' => [ 'x' ],
+					],
+				]
+			)
+		);
+
+		// Like for an array of items, CSV values are JSON-encoded.
+		$this->assertSame(
+			[
+				[
+					'name' => 'a',
+					'tags' => '["x"]',
+				],
+			],
+			$received
+		);
 	}
 
 	public function test_add_single_value_format(): void {
