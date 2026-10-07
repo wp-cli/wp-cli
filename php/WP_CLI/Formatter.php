@@ -991,7 +991,7 @@ class Formatter {
 	 * @param iterable<int, array<string, mixed>|object|mixed> $items Items.
 	 * @return iterable<int, string>
 	 */
-	private static function get_table_lines( Table $table, $items ) {
+	private static function get_table_lines( Table $table, iterable $items ) {
 		$rows = ( static function () use ( $items ) {
 			foreach ( $items as $item ) {
 				/** @var array<int, string> $row */
