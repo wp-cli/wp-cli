@@ -655,6 +655,184 @@ class FormatterTest extends TestCase {
 		$this->assertTrue( $colors_after );
 	}
 
+	public function test_non_streamed_iterator_items_are_read_while_they_are_current(): void {
+		$received = null;
+		Formatter::add_format(
+			'test_collect',
+			function ( $items ) use ( &$received ) {
+				$received = $items;
+			}
+		);
+
+		// Like the meta of a post whose chunk was cleared from the object cache, the magic
+		// property of each item is only available until the next item is generated.
+		$available = [];
+		$generator = ( function () use ( &$available ) {
+			foreach ( [ 1, 2 ] as $id ) {
+				$available = [ $id => "meta $id" ];
+				yield new class( $id, $available ) {
+					/** @var int */
+					public $ID;
+
+					/** @var array<int, string> */
+					private $available;
+
+					/**
+					 * @param int                $id
+					 * @param array<int, string> $available
+					 */
+					public function __construct( $id, &$available ) {
+						$this->ID        = $id;
+						$this->available = &$available;
+					}
+
+					/**
+					 * @param string $name
+					 * @return bool
+					 */
+					public function __isset( $name ) {
+						return 'meta' === $name;
+					}
+
+					/**
+					 * @param string $name
+					 * @return string|null
+					 */
+					public function __get( $name ) {
+						return $this->available[ $this->ID ] ?? null;
+					}
+				};
+			}
+		} )();
+
+		$assoc_args = [ 'format' => 'test_collect' ];
+		$formatter  = new Formatter( $assoc_args, [ 'ID', 'meta' ] );
+		$formatter->display_items( $generator );
+
+		$this->assertSame(
+			[
+				[
+					'ID'   => 1,
+					'meta' => 'meta 1',
+				],
+				[
+					'ID'   => 2,
+					'meta' => 'meta 2',
+				],
+			],
+			$received
+		);
+	}
+
+	public function test_non_streamed_iterator_items_only_read_the_resolved_key(): void {
+		$received = null;
+		Formatter::add_format(
+			'test_collect',
+			function ( $items ) use ( &$received ) {
+				$received = $items;
+			}
+		);
+		$get_received = function () use ( &$received ) {
+			return $received;
+		};
+
+		$reads = 0;
+		$make  = function ( $title ) use ( &$reads ) {
+			return new class( $title, $reads ) {
+				/** @var string */
+				public $title;
+
+				/** @var int */
+				private $reads;
+
+				/**
+				 * @param string $title
+				 * @param int    $reads
+				 */
+				public function __construct( $title, &$reads ) {
+					$this->title = $title;
+					$this->reads = &$reads;
+				}
+
+				/**
+				 * @param string $name
+				 * @return bool
+				 */
+				public function __isset( $name ) {
+					return 'post_title' === $name;
+				}
+
+				/**
+				 * @param string $name
+				 * @return string
+				 */
+				public function __get( $name ) {
+					++$this->reads;
+					return 'unused';
+				}
+			};
+		};
+
+		$assoc_args = [ 'format' => 'test_collect' ];
+		$formatter  = new Formatter( $assoc_args, [ 'title' ], 'post' );
+		$formatter->display_items( new ArrayIterator( [ $make( 'a' ), $make( 'b' ) ] ) );
+
+		$this->assertSame( [ [ 'title' => 'a' ], [ 'title' => 'b' ] ], $get_received() );
+		$this->assertSame( 0, $reads );
+
+		// A field resolved to the prefixed key by an earlier item uses that key for later items.
+		$items = [
+			[ 'post_title' => 'prefixed' ],
+			[
+				'title'      => 'unprefixed',
+				'post_title' => 'second',
+			],
+		];
+		foreach ( [ $items, new ArrayIterator( $items ) ] as $input ) {
+			$assoc_args = [ 'format' => 'test_collect' ];
+			$formatter  = new Formatter( $assoc_args, [ 'title' ], 'post' );
+			$formatter->display_items( $input );
+			$this->assertSame( [ [ 'post_title' => 'prefixed' ], [ 'post_title' => 'second' ] ], $get_received() );
+		}
+	}
+
+	public function test_non_streamed_iterator_matches_array(): void {
+		$outputs = [];
+		Formatter::add_format(
+			'test_collect',
+			function ( $items, $fields ) use ( &$outputs ) {
+				$outputs[] = [ $items, $fields ];
+			}
+		);
+
+		$items = [
+			(object) [
+				'ID'         => 1,
+				'post_title' => 'First',
+				'post_name'  => 'first',
+				'name'       => 'unprefixed',
+			],
+			[
+				'ID'          => 2,
+				'post_title'  => 'Second',
+				'post_status' => 'draft',
+			],
+		];
+
+		foreach ( [ $items, new ArrayIterator( $items ) ] as $input ) {
+			$assoc_args = [
+				'format' => 'test_collect',
+				'fields' => 'ID,title,name,status',
+			];
+			$formatter  = new Formatter( $assoc_args, null, 'post' );
+			$formatter->display_items( $input );
+		}
+
+		$this->assertCount( 2, $outputs );
+		$this->assertSame( $outputs[0], $outputs[1] );
+		$this->assertSame( [ 'ID', 'post_title', 'name', 'post_status' ], $outputs[1][1] );
+	}
+
 	public function test_add_single_value_format(): void {
 		$called         = false;
 		$received_value = null;
