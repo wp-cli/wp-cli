@@ -972,8 +972,7 @@ class Formatter {
 	 * Get the lines of a table with the given items as rows.
 	 *
 	 * If the table can render each row as it is read, which is the case when STDOUT is piped,
-	 * the items are not all held in memory. This needs a version of php-cli-tools with
-	 * `Table::getDisplayLinesFromRows()`; with older ones, the rows are added first.
+	 * the items are not all held in memory.
 	 *
 	 * @param Table                                        $table Table with the headers set.
 	 * @param iterable<int, array<string, mixed>|object|mixed> $items Items.
@@ -988,14 +987,7 @@ class Formatter {
 			}
 		} )();
 
-		if ( method_exists( $table, 'getDisplayLinesFromRows' ) ) {
-			return $table->getDisplayLinesFromRows( $rows );
-		}
-
-		foreach ( $rows as $row ) {
-			$table->addRow( $row );
-		}
-		return $table->getDisplayLines();
+		return $table->getDisplayLinesFromRows( $rows );
 	}
 
 	/**

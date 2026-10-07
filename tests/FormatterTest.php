@@ -522,10 +522,6 @@ class FormatterTest extends TestCase {
 	}
 
 	public function test_table_rows_from_iterator_are_written_as_they_are_read_when_piped(): void {
-		if ( ! method_exists( \cli\Table::class, 'getDisplayLinesFromRows' ) ) {
-			$this->markTestSkipped( 'Needs a php-cli-tools version with Table::getDisplayLinesFromRows().' );
-		}
-
 		$previous_pipe = getenv( 'SHELL_PIPE' );
 		putenv( 'SHELL_PIPE=1' );
 
