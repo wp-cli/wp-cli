@@ -1187,6 +1187,28 @@ class UtilsTest extends TestCase {
 		$this->assertStringContainsString( '\'-123,45', $csv_content );
 	}
 
+	public function testWriteCsvWithHeadersThatNeedEscaping(): void {
+		$temp_file = tmpfile();
+
+		Utils\write_csv(
+			$temp_file,
+			[
+				[
+					'@amount' => '42',
+					'=total'  => '100',
+					'name'    => 'Order',
+				],
+			],
+			[ '@amount', '=total', 'name' ]
+		);
+
+		rewind( $temp_file );
+		$csv_content = str_replace( "\r\n", "\n", (string) stream_get_contents( $temp_file ) );
+
+		// The header cells are escaped, but the values are still looked up by the original names.
+		$this->assertSame( "'@amount,'=total,name\n42,100,Order\n", $csv_content );
+	}
+
 	public function testWriteCsvWithoutHeaders(): void {
 		// Create a temporary file
 		$temp_file = tmpfile();

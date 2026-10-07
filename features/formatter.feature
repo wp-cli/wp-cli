@@ -942,3 +942,97 @@ Feature: Format output
       """
     And the return code should be 0
 
+
+  Scenario: Items from an iterator are written as they are produced
+    Given an empty directory
+    And a stream.php file:
+      """
+      <?php
+      $generate = function () {
+          foreach ( array( 'a', 'b' ) as $name ) {
+              echo "<produce $name>";
+              yield array( 'name' => $name, 'unused' => 'x' );
+          }
+      };
+      foreach ( array( 'json', 'csv' ) as $format ) {
+          $assoc_args = array( 'format' => $format );
+          $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'name' ) );
+          $formatter->display_items( $generate() );
+          echo "\n";
+      }
+      """
+
+    When I run `wp eval-file stream.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      <produce a>[{"name":"a"}<produce b>,{"name":"b"}]
+      <produce a>name
+      a
+      <produce b>b
+      """
+
+  Scenario: Iterators and arrays produce the same CSV and JSON output
+    Given an empty directory
+    And a compare.php file:
+      """
+      <?php
+      $items = array(
+          array( 'post_title' => 'First', 'post_status' => 'publish', 'meta' => array( 'a' => 1 ), 'sticky' => true ),
+          (object) array( 'post_title' => 'Second, with "quotes"', 'post_status' => 'draft', 'meta' => null, 'sticky' => false ),
+          array( 'post_title' => str_repeat( 'x', 3000 ), 'post_status' => '=formula', 'meta' => array(), 'sticky' => false ),
+      );
+      $assoc_args = array( 'format' => $args[0], 'fields' => 'title,status,meta,sticky' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, null, 'post' );
+      if ( 'generator' === $args[1] ) {
+          $formatter->display_items( ( function () use ( $items ) {
+              yield from $items;
+          } )() );
+      } else {
+          $formatter->display_items( $items );
+      }
+      """
+
+    When I run `wp eval-file compare.php csv array --skip-wordpress`
+    Then save STDOUT as {CSV_ARRAY}
+
+    When I run `wp eval-file compare.php csv generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {CSV_ARRAY}
+      """
+    And STDOUT should contain:
+      """
+      post_title,post_status,meta,sticky
+      """
+    And STDERR should be empty
+
+    When I run `wp eval-file compare.php json array --skip-wordpress`
+    Then save STDOUT as {JSON_ARRAY}
+
+    When I run `wp eval-file compare.php json generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {JSON_ARRAY}
+      """
+    And STDERR should be empty
+
+  Scenario: Iterators whose first item lacks a requested field are not streamed
+    Given an empty directory
+    And a missing-field.php file:
+      """
+      <?php
+      $generate = function () {
+          yield array( 'name' => 'Session 1' );
+          yield array( 'name' => 'Session 2', 'custom' => 456 );
+      };
+      $assoc_args = array( 'format' => 'csv', 'fields' => 'name,custom' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args );
+      $formatter->display_items( $generate() );
+      """
+
+    When I run `wp eval-file missing-field.php --skip-wordpress`
+    Then STDOUT should be CSV containing:
+      | name      | custom |
+      | Session 1 |        |
+      | Session 2 | 456    |
+    And STDERR should be empty
