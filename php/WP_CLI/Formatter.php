@@ -477,9 +477,10 @@ class Formatter {
 			// Only keep the requested fields of each item, so that large items, like posts, don't
 			// all have to be held in memory.
 			if ( $items instanceof Traversable ) {
-				$all = [];
+				$all             = [];
+				$resolved_fields = [];
 				foreach ( $items as $item ) {
-					$all[] = $this->reduce_item( $item );
+					$all[] = $this->reduce_item( $item, $resolved_fields );
 				}
 				$items = $all;
 			}
@@ -640,27 +641,31 @@ class Formatter {
 	 * @return array<int, mixed>
 	 */
 	private function read_remaining_items( Iterator $items, $current ): array {
-		$all = [ $this->reduce_item( $current ) ];
+		$resolved_fields = [];
+		$all             = [ $this->reduce_item( $current, $resolved_fields ) ];
 		$items->next();
 		while ( $items->valid() ) {
-			$all[] = $this->reduce_item( $items->current() );
+			$all[] = $this->reduce_item( $items->current(), $resolved_fields );
 			$items->next();
 		}
 		return $all;
 	}
 
 	/**
-	 * Reduce an item from an iterator to the keys that the requested fields can resolve to.
+	 * Reduce an item from an iterator to the keys of the requested fields.
 	 *
-	 * For each field, the item keeps the key with and without the prefix, if accessible, with
-	 * its current value. Field resolution, the warnings about missing fields and the output are
-	 * therefore the same as for the full item. Items are kept as they are for the `ids` and
-	 * `count` formats, which use the whole items, and when no fields are requested.
+	 * Each field is resolved like validate_fields() does: by the first item that has it,
+	 * preferring the key without the prefix. Later items only keep the resolved key, with
+	 * its current value. Field resolution, the warnings about missing fields and the output
+	 * are therefore the same as for the full items. Items are kept as they are for the `ids`
+	 * and `count` formats, which use the whole items, and when no fields are requested.
 	 *
-	 * @param mixed $item Item.
+	 * @param mixed                 $item            Item.
+	 * @param array<string, string> $resolved_fields Keys of the fields resolved so far, updated
+	 *                                               while reducing the items of an iterator.
 	 * @return mixed
 	 */
-	private function reduce_item( $item ) {
+	private function reduce_item( $item, array &$resolved_fields ) {
 		if (
 			empty( $this->args['fields'] )
 			|| ( ! is_array( $item ) && ! is_object( $item ) )
@@ -671,15 +676,20 @@ class Formatter {
 
 		$reduced = [];
 		foreach ( $this->args['fields'] as $field ) {
-			foreach ( [ $field, $this->prefix . '_' . $field ] as $key ) {
-				if ( is_object( $item ) ) {
-					if ( $this->is_object_property_accessible( $item, $key ) ) {
-						$reduced[ $key ] = $item->$key;
-					}
-				} elseif ( array_key_exists( $key, $item ) ) {
-					$reduced[ $key ] = $item[ $key ];
+			if ( isset( $resolved_fields[ $field ] ) ) {
+				$key = $resolved_fields[ $field ];
+				if ( is_object( $item ) ? ! $this->is_object_property_accessible( $item, $key ) : ! array_key_exists( $key, $item ) ) {
+					continue;
 				}
+			} else {
+				$key = $this->find_item_key( $item, $field, true );
+				if ( null === $key ) {
+					continue;
+				}
+				$resolved_fields[ $field ] = $key;
 			}
+
+			$reduced[ $key ] = is_object( $item ) ? $item->$key : $item[ $key ];
 		}
 
 		return $reduced;
