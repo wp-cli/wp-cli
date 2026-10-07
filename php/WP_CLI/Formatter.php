@@ -138,7 +138,7 @@ class Formatter {
 	 * and must not use functions that need an array, like count() or reset(). When
 	 * the items are an array, it receives an array as usual.
 	 *
-	 * The built-in `csv` and `json` formats are registered with `streaming`. A handler
+	 * The built-in `csv`, `json` and `yaml` formats are registered with `streaming`. A handler
 	 * that overrides one of them without the option receives all items as an array.
 	 *
 	 * ## EXAMPLE
@@ -343,14 +343,27 @@ class Formatter {
 			'yaml',
 			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $formatter required for API consistency
 			static function ( $items, $fields, $formatter = null, $args = [] ) {
+				if ( ! is_array( $items ) ) {
+					// Streamed items: dump each one as a single-item list. Without the document
+					// header that each dump starts with, this is the same as dumping all at once.
+					$header = "---\n";
+					echo $header;
+					foreach ( $items as $item ) {
+						echo substr( Spyc::YAMLDump( [ $item ], 2, 0 ), strlen( $header ) );
+					}
+					return;
+				}
+
 				// For single-item display, output the item directly without array wrapper
 				if ( ! empty( $args['single_item'] ) && count( $items ) === 1 ) {
+					/** @var array<mixed>|\stdClass $item */
 					$item = reset( $items );
 					echo Spyc::YAMLDump( $item, 2, 0 );
 				} else {
 					echo Spyc::YAMLDump( $items, 2, 0 );
 				}
-			}
+			},
+			[ 'streaming' => true ]
 		);
 
 		// Register 'count' format
