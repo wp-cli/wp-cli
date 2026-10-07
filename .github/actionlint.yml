@@ -11,3 +11,12 @@ paths:
       # catching genuine typos in permission names.
       # See https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli-in-actions
       - 'unknown permission scope "copilot-requests"'
+      # Steps can run in parallel through the `background`, `wait`, `wait-all`,
+      # `cancel` and `parallel` keywords, but actionlint does not know them yet:
+      # it rejects `background` as an unexpected key, and a `wait-all` or
+      # `parallel` step as one that has neither `run` nor `uses`. Drop these
+      # entries once actionlint supports the keywords. Until then, a step that is
+      # genuinely missing both `run` and `uses` is no longer reported.
+      # See https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsparallel
+      - 'unexpected key "background" for step'
+      - 'step must run script with "run" section or run action with "uses" section'
