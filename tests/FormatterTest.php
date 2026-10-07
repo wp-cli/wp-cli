@@ -521,6 +521,39 @@ class FormatterTest extends TestCase {
 		);
 	}
 
+	public function test_table_rows_from_iterator_are_written_as_they_are_read_when_piped(): void {
+		if ( ! method_exists( \cli\Table::class, 'getDisplayLinesFromRows' ) ) {
+			$this->markTestSkipped( 'Needs a php-cli-tools version with Table::getDisplayLinesFromRows().' );
+		}
+
+		$previous_pipe = getenv( 'SHELL_PIPE' );
+		putenv( 'SHELL_PIPE=1' );
+
+		/** @var string[] $read */
+		$read      = [];
+		$generator = ( function () use ( &$read ) {
+			foreach ( [ 'a', 'b' ] as $name ) {
+				$read[] = $name . ' after ' . str_replace( "\n", '|', (string) ob_get_contents() );
+				yield [ 'name' => $name ];
+			}
+		} )();
+
+		ob_start();
+		try {
+			$assoc_args = [ 'format' => 'table' ];
+			$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+			$formatter->display_items( $generator );
+		} finally {
+			$output = ob_get_clean();
+			putenv( false === $previous_pipe ? 'SHELL_PIPE' : "SHELL_PIPE=$previous_pipe" );
+		}
+
+		// The first item is read to resolve the fields before anything is written. After that,
+		// each row is written before the next one is read.
+		$this->assertSame( [ 'a after ', 'b after name|a|' ], $read );
+		$this->assertSame( "name\na\nb\n", $output );
+	}
+
 	public function test_add_single_value_format(): void {
 		$called         = false;
 		$received_value = null;
