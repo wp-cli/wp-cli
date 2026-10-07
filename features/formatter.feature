@@ -971,7 +971,38 @@ Feature: Format output
       <produce b>b
       """
 
-  Scenario: Iterators and arrays produce the same CSV and JSON output
+  Scenario: YAML items from an iterator are written as they are produced
+    Given an empty directory
+    And a stream.php file:
+      """
+      <?php
+      $generate = function () {
+          foreach ( array( 'a', 'b' ) as $name ) {
+              echo "<produce $name>";
+              yield array( 'name' => $name, 'unused' => 'x' );
+          }
+      };
+      $assoc_args = array( 'format' => 'yaml' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'name' ) );
+      $formatter->display_items( $generate() );
+      """
+
+    When I run `wp eval-file stream.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      <produce a>---
+      """
+    And STDOUT should contain:
+      """
+        name: a
+      <produce b>-
+      """
+    And STDOUT should not contain:
+      """
+      unused
+      """
+
+  Scenario: Iterators and arrays produce the same CSV, JSON and YAML output
     Given an empty directory
     And a compare.php file:
       """
@@ -1013,6 +1044,20 @@ Feature: Format output
     Then STDOUT should be:
       """
       {JSON_ARRAY}
+      """
+    And STDERR should be empty
+
+    When I run `wp eval-file compare.php yaml array --skip-wordpress`
+    Then save STDOUT as {YAML_ARRAY}
+
+    When I run `wp eval-file compare.php yaml generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {YAML_ARRAY}
+      """
+    And STDOUT should contain:
+      """
+      post_title: First
       """
     And STDERR should be empty
 
