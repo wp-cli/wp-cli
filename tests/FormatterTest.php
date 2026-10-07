@@ -455,6 +455,37 @@ class FormatterTest extends TestCase {
 		$this->assertArrayNotHasKey( 'streaming', $args );
 	}
 
+	public function test_streaming_scalar_items_without_fields(): void {
+		$is_array = null;
+		Formatter::add_format(
+			'test_stream',
+			function ( $items ) use ( &$is_array ) {
+				$is_array = is_array( $items );
+				echo implode( ',', iterator_to_array( $items, false ) );
+			},
+			[ 'streaming' => true ]
+		);
+
+		$assoc_args = [ 'format' => 'test_stream' ];
+		$formatter  = new Formatter( $assoc_args );
+
+		ob_start();
+		$formatter->display_items( new ArrayIterator( [ 1, 2, 3 ] ) );
+		$output = ob_get_clean();
+
+		$this->assertFalse( $is_array );
+		$this->assertSame( '1,2,3', $output );
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args );
+
+		ob_start();
+		$formatter->display_items( new ArrayIterator( [ 1, 2, 3 ] ) );
+		$output = ob_get_clean();
+
+		$this->assertSame( '[1,2,3]', $output );
+	}
+
 	public function test_overriding_builtin_format_with_streaming_receives_items_one_by_one(): void {
 		$received = null;
 		Formatter::add_format(

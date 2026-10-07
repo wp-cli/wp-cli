@@ -539,7 +539,7 @@ class Formatter {
 			$first = $items->current();
 		}
 
-		if ( $items->valid() && ! $raw_items ) {
+		if ( $items->valid() && ! $raw_items && ! empty( $fields ) ) {
 			// Resolve the fields like validate_fields() does. If any of them is missing from
 			// the first item, fall back to the regular path, which checks the other items.
 			if ( ! is_array( $first ) && ! is_object( $first ) ) {
