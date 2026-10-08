@@ -1,0 +1,428 @@
+name: Prepare Release
+
+# Creates the release tags in wp-cli/wp-cli-bundle and wp-cli/wp-cli, then
+# dispatches the Release workflow.
+#
+# Two jobs on purpose:
+#
+# - `validate` holds no secrets. It is the job that runs the release Phar and
+#   Composer, reads the bundle lockfile and decides which commits get tagged.
+# - `tag` holds ACTIONS_BOT and does nothing but push tags at exactly the
+#   commits `validate` chose. It runs in the `release` environment, so that
+#   the environment's protection rules (required reviewers, `main` only) gate
+#   every use of the bot token.
+#
+# The Release workflow is dispatched from `main` rather than triggered by the
+# tag push, so it always runs the reviewed workflow file and never whatever a
+# tagged commit happens to carry. (workflow_dispatch is one of the two events
+# that GITHUB_TOKEN is allowed to trigger.)
+#
+# What gets tagged:
+#
+# - wp-cli/wp-cli is tagged at the commit the bundle's composer.lock locks,
+#   which must be on `main` and carry the version in its VERSION file. This is
+#   what the release Phar was built from, so it is the only commit the tag can
+#   truthfully point at, even if `main` has moved on since.
+# - wp-cli/wp-cli-bundle is tagged at the tip of `main`, which must have the
+#   same tree as the commit wp-cli/builds records the release Phar was built
+#   from (the bundle Deployment workflow commits "phar build: <repo>@<sha>").
+#
+# Only X.Y.0 versions are accepted: everything here is cut from `main`, and
+# patch releases follow the manual patch release checklist instead.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release, without the leading "v" (e.g. 3.0.0)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Run every validation but do not create or push any tags'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wp-cli-release
+  cancel-in-progress: false
+
+defaults:
+  run:
+    # Naming bash explicitly gets us `-o pipefail`, which the default shell
+    # (`bash -e {0}`) does not set.
+    shell: bash
+
+env:
+  DRY_RUN: ${{ inputs.dry_run || false }}
+
+jobs:
+  validate:
+    name: Validate the release
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'wp-cli' }}
+    permissions:
+      contents: read
+
+    outputs:
+      tag: ${{ steps.vars.outputs.tag }}
+      version: ${{ steps.vars.outputs.version }}
+      framework_sha: ${{ steps.framework.outputs.sha }}
+      bundle_sha: ${{ steps.bundle.outputs.sha }}
+      framework_tagged: ${{ steps.tags.outputs.wp_cli_tagged }}
+      bundle_tagged: ${{ steps.tags.outputs.wp_cli_bundle_tagged }}
+
+    steps:
+      - name: Determine version
+        id: vars
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          VERSION="${INPUT_VERSION#v}"
+
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.0$ ]]; then
+            echo "::error::'$VERSION' is not an X.Y.0 version. The release automation only cuts regular releases from main; patch releases follow the patch release checklist."
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      # No tokens anywhere in this job: it executes the release Phar and
+      # Composer, and neither should ever run next to a credential.
+      - name: Check out wp-cli/wp-cli
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+          path: wp-cli
+
+      - name: Check out wp-cli/wp-cli-bundle
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/wp-cli-bundle
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+          path: wp-cli-bundle
+
+      # Full history (without blobs) because the commit that last touched the
+      # release Phar is what tells us which bundle commit it was built from.
+      - name: Check out wp-cli/builds repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/builds
+          ref: gh-pages
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            phar
+          persist-credentials: false
+          path: builds
+
+      - name: Set up PHP and Composer
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: 'latest'
+          coverage: none
+          tools: composer
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify the VERSION file in wp-cli/wp-cli matches
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          CURRENT_VERSION="$(tr -d '[:space:]' < wp-cli/VERSION)"
+
+          if [ "$CURRENT_VERSION" != "$VERSION" ]; then
+            echo "::error::wp-cli/wp-cli main is on '$CURRENT_VERSION' but you asked to release '$VERSION'. Merge the version bump PR first."
+            exit 1
+          fi
+
+      # The lockfile, not composer.json, is what the Phar was built from.
+      - name: Verify wp-cli/wp-cli-bundle locks the framework for this release
+        id: framework
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          cd wp-cli-bundle
+
+          CONSTRAINT="$(jq -r '.require["wp-cli/wp-cli"]' composer.json)"
+          MAJOR_MINOR="${VERSION%.*}"
+
+          if [ "$CONSTRAINT" = "dev-main" ] || [ "$CONSTRAINT" = "null" ]; then
+            echo "::error::wp-cli/wp-cli-bundle still requires 'wp-cli/wp-cli: $CONSTRAINT'. Merge the release-x-x-x PR that locks it to ^$MAJOR_MINOR first."
+            exit 1
+          fi
+
+          if [[ ! "$CONSTRAINT" =~ ^[~^]?${MAJOR_MINOR//./\\.}(\.0)?$ ]]; then
+            echo "::error::wp-cli/wp-cli-bundle requires 'wp-cli/wp-cli: $CONSTRAINT', which does not lock the $VERSION release (expected ^$MAJOR_MINOR)."
+            exit 1
+          fi
+
+          # --strict turns "lock file is not up to date with composer.json"
+          # from a warning into a failure.
+          composer validate --no-plugins --no-check-all --no-check-publish --strict
+
+          LOCKED_REF="$(jq -r '.packages[] | select(.name == "wp-cli/wp-cli") | .source.reference' composer.lock)"
+          LOCKED_VERSION="$(jq -r '.packages[] | select(.name == "wp-cli/wp-cli") | .version' composer.lock)"
+
+          if [[ ! "$LOCKED_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::Could not read the locked wp-cli/wp-cli commit from composer.lock (got '$LOCKED_REF')."
+            exit 1
+          fi
+
+          echo "composer.lock locks wp-cli/wp-cli $LOCKED_VERSION at $LOCKED_REF."
+          echo "sha=$LOCKED_REF" >> "$GITHUB_OUTPUT"
+
+      # The framework tag goes on the locked commit, not on whatever main is
+      # right now. It has to be on main and carry the version being released.
+      - name: Verify the locked framework commit is releasable
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+          LOCKED_REF: ${{ steps.framework.outputs.sha }}
+        run: |
+          cd wp-cli
+
+          if ! git cat-file -e "${LOCKED_REF}^{commit}" 2>/dev/null; then
+            echo "::error::The locked wp-cli/wp-cli commit $LOCKED_REF does not exist in wp-cli/wp-cli."
+            exit 1
+          fi
+
+          if ! git merge-base --is-ancestor "$LOCKED_REF" HEAD; then
+            echo "::error::The locked wp-cli/wp-cli commit $LOCKED_REF is not on main. Only reviewed commits on main get released."
+            exit 1
+          fi
+
+          LOCKED_FILE_VERSION="$(git show "${LOCKED_REF}:VERSION" | tr -d '[:space:]')"
+
+          if [ "$LOCKED_FILE_VERSION" != "$VERSION" ]; then
+            echo "::error::The locked wp-cli/wp-cli commit $LOCKED_REF has VERSION '$LOCKED_FILE_VERSION', not '$VERSION'. Re-lock the bundle against the version bump commit."
+            exit 1
+          fi
+
+          if [ "$(git rev-parse HEAD)" != "$LOCKED_REF" ]; then
+            echo "::notice::wp-cli/wp-cli main has moved on to $(git rev-parse --short HEAD) since the bundle locked $(git rev-parse --short "$LOCKED_REF"). The tag goes on the locked commit, which is what the release Phar contains."
+          fi
+
+      # Binds the Phar in wp-cli/builds to the bundle commit that gets tagged.
+      # The bundle Deployment workflow builds wp-cli-release.phar on every push
+      # to a release-** branch and records the commit in its commit message.
+      # After the release PR is merged, main has to have the same tree as that
+      # commit; otherwise the Phar was not built from what is being tagged.
+      - name: Verify the release Phar was built from the bundle commit being tagged
+        id: bundle
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          SUBJECT="$(git -C builds log -1 --format=%s -- phar/wp-cli-release.phar)"
+
+          if [[ ! "$SUBJECT" =~ ^phar\ build:\ wp-cli/wp-cli-bundle@([0-9a-f]{40})$ ]]; then
+            echo "::error::Could not tell which bundle commit phar/wp-cli-release.phar was built from (last commit: '$SUBJECT')."
+            exit 1
+          fi
+          BUILD_SHA="${BASH_REMATCH[1]}"
+
+          cd wp-cli-bundle
+          BUNDLE_SHA="$(git rev-parse HEAD)"
+
+          if [ "$BUILD_SHA" != "$BUNDLE_SHA" ]; then
+            # Typically a squash or merge commit of the release-x-x-x branch.
+            # Same tree is fine; anything else means the build is stale.
+            if ! git cat-file -e "${BUILD_SHA}^{commit}" 2>/dev/null; then
+              if ! git fetch --quiet origin "$BUILD_SHA"; then
+                echo "::error::Could not fetch bundle commit $BUILD_SHA, which the release Phar was built from."
+                exit 1
+              fi
+            fi
+
+            if [ "$(git rev-parse "${BUILD_SHA}^{tree}")" != "$(git rev-parse "${BUNDLE_SHA}^{tree}")" ]; then
+              echo "::error::phar/wp-cli-release.phar was built from wp-cli/wp-cli-bundle@${BUILD_SHA}, whose tree differs from main (${BUNDLE_SHA}). Rebase and push the release-x-x-x branch again so the Phar gets rebuilt from what is being tagged."
+              exit 1
+            fi
+
+            echo "Release Phar was built from ${BUILD_SHA}, which has the same tree as main (${BUNDLE_SHA})."
+          else
+            echo "Release Phar was built from main (${BUNDLE_SHA})."
+          fi
+
+          echo "sha=$BUNDLE_SHA" >> "$GITHUB_OUTPUT"
+
+          cd ..
+          PHAR="builds/phar/wp-cli-release.phar"
+          PHAR_VERSION="$(php "$PHAR" --version | awk '{print $2}')"
+
+          if [ "$PHAR_VERSION" != "$VERSION" ]; then
+            echo "::error::$PHAR reports version '$PHAR_VERSION' but '$VERSION' is being released. The release build is stale or failed."
+            exit 1
+          fi
+
+          echo "Release Phar reports $PHAR_VERSION."
+
+      # Fails closed: a failed `git ls-remote` is an error, not "the tag does
+      # not exist", because a tag push is effectively irreversible.
+      #
+      # An existing tag is tolerated only when it already points at the commit
+      # being released. That is what a rerun after a partial push looks like
+      # (the bundle got tagged, the wp-cli push failed), and it lets the rerun
+      # finish by pushing only the missing tag. A tag that points anywhere else
+      # is fatal; release tags are never moved.
+      - name: Check whether the tags already exist
+        id: tags
+        env:
+          TAG: ${{ steps.vars.outputs.tag }}
+          FRAMEWORK_SHA: ${{ steps.framework.outputs.sha }}
+          BUNDLE_SHA: ${{ steps.bundle.outputs.sha }}
+        run: |
+          MISMATCH=0
+
+          for DIR in wp-cli-bundle wp-cli; do
+            if [ "$DIR" = "wp-cli" ]; then
+              EXPECTED="$FRAMEWORK_SHA"
+            else
+              EXPECTED="$BUNDLE_SHA"
+            fi
+
+            # Asking for both refs makes ls-remote also print the peeled
+            # `^{}` line, i.e. the commit an annotated tag points at.
+            if ! REFS="$(git -C "$DIR" ls-remote --tags origin "refs/tags/${TAG}" "refs/tags/${TAG}^{}")"; then
+              echo "::error::Could not query tags in wp-cli/${DIR}. Refusing to continue."
+              exit 1
+            fi
+
+            OUTPUT="${DIR//-/_}_tagged"
+
+            if [ -z "$REFS" ]; then
+              echo "Tag $TAG does not exist in wp-cli/${DIR} yet."
+              echo "${OUTPUT}=false" >> "$GITHUB_OUTPUT"
+              continue
+            fi
+
+            # Annotated tags have a peeled line; lightweight tags do not.
+            ACTUAL="$(printf '%s\n' "$REFS" | awk -v ref="refs/tags/${TAG}^{}" '$2 == ref { print $1 }')"
+            if [ -z "$ACTUAL" ]; then
+              ACTUAL="$(printf '%s\n' "$REFS" | awk -v ref="refs/tags/${TAG}" '$2 == ref { print $1 }')"
+            fi
+
+            if [ "$ACTUAL" != "$EXPECTED" ]; then
+              echo "::error::Tag $TAG already exists in wp-cli/${DIR} and points at ${ACTUAL}, not at the release commit (${EXPECTED}). Release tags are never moved; this needs a human."
+              MISMATCH=1
+              continue
+            fi
+
+            echo "::notice::Tag $TAG already exists in wp-cli/${DIR} and points at the release commit (${EXPECTED}). It will not be pushed again."
+            echo "${OUTPUT}=true" >> "$GITHUB_OUTPUT"
+          done
+
+          exit "$MISMATCH"
+
+  tag:
+    name: Create the release tags
+    runs-on: ubuntu-latest
+    needs: [validate]
+    # Configure this environment with required reviewers and restrict its
+    # deployment branches to `main` (plus `v*.*.0` tags, for Post-Release
+    # Automation); that is what gates every job holding ACTIONS_BOT.
+    environment: release
+    permissions:
+      contents: read
+      # For dispatching the Release workflow with GITHUB_TOKEN.
+      actions: write
+
+    env:
+      TAG: ${{ needs.validate.outputs.tag }}
+      VERSION: ${{ needs.validate.outputs.version }}
+
+    steps:
+      # Checked out at the exact commits `validate` chose. Nothing in this job
+      # executes anything from either checkout.
+      - name: Check out wp-cli/wp-cli at the release commit
+        if: ${{ needs.validate.outputs.framework_tagged != 'true' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.validate.outputs.framework_sha }}
+          token: ${{ secrets.ACTIONS_BOT }}
+          path: wp-cli
+
+      - name: Check out wp-cli/wp-cli-bundle at the release commit
+        if: ${{ needs.validate.outputs.bundle_tagged != 'true' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wp-cli/wp-cli-bundle
+          ref: ${{ needs.validate.outputs.bundle_sha }}
+          token: ${{ secrets.ACTIONS_BOT }}
+          path: wp-cli-bundle
+
+      - name: Create tag in wp-cli/wp-cli-bundle
+        if: ${{ needs.validate.outputs.bundle_tagged != 'true' }}
+        env:
+          EXPECTED_SHA: ${{ needs.validate.outputs.bundle_sha }}
+        run: |
+          cd wp-cli-bundle
+
+          if [ "$(git rev-parse HEAD)" != "$EXPECTED_SHA" ]; then
+            echo "::error::Checkout is at $(git rev-parse HEAD), expected $EXPECTED_SHA."
+            exit 1
+          fi
+
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git tag -a "$TAG" -m "Version $VERSION"
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "[dry run] Would push tag $TAG to wp-cli/wp-cli-bundle ($(git rev-parse --short HEAD))."
+          else
+            git push origin "refs/tags/$TAG"
+          fi
+
+      - name: Create tag in wp-cli/wp-cli
+        if: ${{ needs.validate.outputs.framework_tagged != 'true' }}
+        env:
+          EXPECTED_SHA: ${{ needs.validate.outputs.framework_sha }}
+        run: |
+          cd wp-cli
+
+          if [ "$(git rev-parse HEAD)" != "$EXPECTED_SHA" ]; then
+            echo "::error::Checkout is at $(git rev-parse HEAD), expected $EXPECTED_SHA."
+            exit 1
+          fi
+
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git tag -a "$TAG" -m "Version $VERSION"
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "[dry run] Would push tag $TAG to wp-cli/wp-cli ($(git rev-parse --short HEAD))."
+          else
+            git push origin "refs/tags/$TAG"
+          fi
+
+      # Always from main, so the Release workflow runs the reviewed file. A dry
+      # run dispatches a dry run, which builds and verifies without publishing.
+      - name: Dispatch the Release workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh workflow run release.yml --ref main -f "tag=$TAG" -f "dry_run=$DRY_RUN"
+
+      - name: Summary
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            {
+              echo "### Dry run complete for $TAG"
+              echo ""
+              echo "All validations passed. No tags were pushed. A dry run of the Release workflow was dispatched."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "### Tagged $TAG"
+              echo ""
+              echo "The Release workflow was dispatched and should now be building the draft releases."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
