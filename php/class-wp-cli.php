@@ -63,20 +63,6 @@ class WP_CLI {
 	private static $deferred_additions = [];
 
 	/**
-	 * Callbacks that register commands on demand, keyed by command path.
-	 *
-	 * @var array<string, array<int, callable>>
-	 */
-	private static $command_loaders = [];
-
-	/**
-	 * Whether command loaders are temporarily suspended.
-	 *
-	 * @var bool
-	 */
-	private static $command_loaders_suspended = false;
-
-	/**
 	 * Cached list of global argument names.
 	 *
 	 * @var array<string>|null
@@ -486,77 +472,6 @@ class WP_CLI {
 	}
 
 	/**
-	 * Register a callback that adds commands under the given path only when they are needed.
-	 *
-	 * Use this for commands that are expensive to register, e.g. because they are generated
-	 * from REST routes or another schema. The loader runs at most once, when a command under
-	 * `$name` is looked up but not found, or when the commands under it are listed (for
-	 * example by `wp help $name`). It should register its commands with `WP_CLI::add_command()`.
-	 *
-	 * ```
-	 * WP_CLI::add_command_loader( 'shop', function () {
-	 *     foreach ( get_shop_routes() as $route ) {
-	 *         WP_CLI::add_command( "shop {$route['name']}", new Shop_Route_Command( $route ) );
-	 *     }
-	 * } );
-	 * ```
-	 *
-	 * @access public
-	 * @category Registration
-	 *
-	 * @param string   $name   Command path the loader provides commands for, e.g. 'shop' or 'shop product'.
-	 * @param callable $loader Callback that registers the commands.
-	 * @return void
-	 */
-	public static function add_command_loader( $name, $loader ) {
-		$name = trim( (string) preg_replace( '/\s+/', ' ', $name ) );
-
-		self::$command_loaders[ $name ][] = $loader;
-	}
-
-	/**
-	 * Run the pending command loaders relevant to a command lookup.
-	 *
-	 * @param CompositeCommand $command Command whose subcommands are being looked up.
-	 * @param string|null      $child   Name of the subcommand being looked up, or null when listing all subcommands.
-	 * @return bool Whether any loader ran.
-	 */
-	public static function run_command_loaders( $command, $child = null ) {
-		if ( empty( self::$command_loaders ) || self::$command_loaders_suspended ) {
-			return false;
-		}
-
-		$path   = implode( ' ', array_slice( Dispatcher\get_path( $command ), 1 ) );
-		$prefix = null === $child ? $path : trim( "{$path} {$child}" );
-		$ran    = false;
-
-		foreach ( self::$command_loaders as $loader_path => $loaders ) {
-			$loader_path = (string) $loader_path;
-			if ( $loader_path !== $path
-				&& '' !== $prefix
-				&& $loader_path !== $prefix
-				&& 0 !== strpos( $loader_path, "{$prefix} " ) ) {
-				continue;
-			}
-
-			// Remove before running, so loaders looking up commands themselves cannot recurse.
-			unset( self::$command_loaders[ $loader_path ] );
-
-			foreach ( $loaders as $loader ) {
-				self::debug( "Running command loader for: {$loader_path}", 'commands' );
-				call_user_func( $loader );
-				$ran = true;
-			}
-
-			// Commands whose parent does not exist yet get deferred, and deferred
-			// additions are only resolved once before the main command runs.
-			self::add_deferred_commands_under( $loader_path );
-		}
-
-		return $ran;
-	}
-
-	/**
 	 * Check whether a class is loaded, or can be located by a Composer autoloader, without loading it.
 	 *
 	 * @param string $class_name Class name.
@@ -575,30 +490,6 @@ class WP_CLI {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Add the deferred commands under a given command path, creating empty parents as needed.
-	 *
-	 * @param string $path Command path.
-	 * @return void
-	 */
-	private static function add_deferred_commands_under( $path ) {
-		do {
-			$added = false;
-			foreach ( self::$deferred_additions as $name => $addition ) {
-				$name = (string) $name;
-				if ( '' !== $path && $name !== $path && 0 !== strpos( $name, "{$path} " ) ) {
-					continue;
-				}
-
-				self::remove_deferred_addition( $name );
-				/** @var array{callable: callable, args: array<string, mixed>} $addition */
-				self::add_command( $name, $addition['callable'], $addition['args'] );
-				$added = true;
-				break;
-			}
-		} while ( $added );
 	}
 
 	/**
@@ -722,11 +613,7 @@ class WP_CLI {
 			if ( $subcommand ) {
 				array_shift( $path );
 			} else {
-				// Registering a command must not trigger the loaders of its parent.
-				$suspended                       = self::$command_loaders_suspended;
-				self::$command_loaders_suspended = true;
-				$subcommand                      = $command->find_subcommand( $path );
-				self::$command_loaders_suspended = $suspended;
+				$subcommand = $command->find_subcommand( $path );
 			}
 
 			// Parent not found. Defer addition or create an empty container as

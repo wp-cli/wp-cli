@@ -59,10 +59,6 @@ class RootCommand extends CompositeCommand {
 		Utils\load_command( $command );
 
 		if ( ! isset( $this->subcommands[ $command ] ) ) {
-			$this->run_command_loaders( $command );
-		}
-
-		if ( ! isset( $this->subcommands[ $command ] ) ) {
 			return false;
 		}
 
