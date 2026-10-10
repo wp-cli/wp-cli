@@ -58,7 +58,7 @@ class LazyCommand extends CompositeCommand {
 
 		foreach ( $this->classes as $class_name ) {
 			if ( ! class_exists( $class_name ) ) {
-				WP_CLI::error( sprintf( 'Callable %s does not exist, and cannot be registered as `wp %s`.', (string) json_encode( $class_name ), $this->name ) );
+				WP_CLI::error( sprintf( 'Callable %s does not exist, and cannot be registered as `wp %s`.', (string) json_encode( $class_name ), implode( ' ', array_slice( get_path( $this ), 1 ) ) ) );
 			}
 
 			$command = CommandFactory::create( $this->name, $class_name, $parent );
