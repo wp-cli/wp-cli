@@ -188,9 +188,9 @@ class Runner {
 	 */
 	private function do_early_invoke( $when ): void {
 		WP_CLI::debug( "Executing hook: {$when}", 'hooks' );
-		if ( ! isset( $this->early_invoke[ $when ] ) ) {
-			return;
-		}
+
+		// Lazily registered commands only attach their @when hook once they are
+		// materialized, which finding the command to run takes care of.
 
 		// Search the value of @when from the command method.
 		// Use 'none' for autocorrect to avoid suggesting wrong alternatives
@@ -207,6 +207,10 @@ class Runner {
 					}
 				}
 			}
+		}
+
+		if ( ! isset( $this->early_invoke[ $when ] ) ) {
+			return;
 		}
 
 		/** @var array<array<string>> $invoke_cmds */

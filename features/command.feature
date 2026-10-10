@@ -2294,3 +2294,48 @@ Feature: WP-CLI Commands
       """
       Warning: The `--old` argument for `deprecated-cmd` is deprecated. Use `--new` instead.
       """
+
+  Scenario: Commands registered by class name are only materialized when needed
+    Given an empty directory
+    And a lazy-cmd.php file:
+      """
+      <?php
+      /**
+       * My lazy command.
+       */
+      class My_Lazy_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from lazy command.' );
+          }
+      }
+
+      WP_CLI::add_command( 'my-lazy', 'My_Lazy_Command' );
+      """
+
+    When I run `wp --require=lazy-cmd.php --debug=commands cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Registering lazy command: my-lazy
+      """
+    And STDOUT should not contain:
+      """
+      Adding command: my-lazy
+      """
+
+    When I run `wp --require=lazy-cmd.php my-lazy hello`
+    Then STDOUT should be:
+      """
+      Success: Hello from lazy command.
+      """
+
+    When I run `wp --require=lazy-cmd.php help my-lazy`
+    Then STDOUT should contain:
+      """
+      My lazy command.
+      """
+    And STDOUT should match /hello\s+Says hello\./

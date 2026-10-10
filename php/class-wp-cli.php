@@ -7,6 +7,7 @@ use WP_CLI\Dispatcher;
 use WP_CLI\Dispatcher\CommandAddition;
 use WP_CLI\Dispatcher\CommandFactory;
 use WP_CLI\Dispatcher\DisabledCommand;
+use WP_CLI\Dispatcher\LazyCommand;
 use WP_CLI\Dispatcher\CommandNamespace;
 use WP_CLI\Dispatcher\CompositeCommand;
 use WP_CLI\Dispatcher\RootCommand;
@@ -471,6 +472,27 @@ class WP_CLI {
 	}
 
 	/**
+	 * Check whether a class is loaded, or can be located by a Composer autoloader, without loading it.
+	 *
+	 * @param string $class_name Class name.
+	 * @return bool
+	 */
+	private static function is_class_loadable_without_autoloading( $class_name ) {
+		if ( class_exists( $class_name, false ) ) {
+			return true;
+		}
+
+		foreach ( spl_autoload_functions() ?: [] as $autoloader ) {
+			if ( is_array( $autoloader ) && $autoloader[0] instanceof \Composer\Autoload\ClassLoader
+				&& $autoloader[0]->findFile( ltrim( $class_name, '\\' ) ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Register a command to WP-CLI.
 	 *
 	 * WP-CLI supports using any callable class, function, or closure as a
@@ -529,8 +551,20 @@ class WP_CLI {
 			return false;
 		}
 
+		// Commands registered by class name are only loaded once they are actually needed,
+		// unless arguments are passed that require inspecting the command right away.
+		$is_lazy = is_string( $callable )
+			&& false === strpos( $callable, '::' )
+			&& ! function_exists( $callable )
+			&& self::is_class_loadable_without_autoloading( $callable )
+			&& ! array_intersect( [ 'shortdesc', 'longdesc', 'synopsis', 'when' ], array_keys( $args ) )
+			&& ! getenv( 'WP_CLI_DISABLE_LAZY_COMMANDS' );
+
 		$valid = false;
-		if ( is_callable( $callable ) ) {
+		if ( $is_lazy ) {
+			// Validated once the command is materialized.
+			$valid = true;
+		} elseif ( is_callable( $callable ) ) {
 			$valid = true;
 		} elseif ( is_string( $callable ) && class_exists( $callable ) ) {
 			$valid = true;
@@ -575,7 +609,12 @@ class WP_CLI {
 		while ( ! empty( $path ) ) {
 			$subcommand_name = $path[0];
 			$parent          = implode( ' ', $path );
-			$subcommand      = $command->find_subcommand( $path );
+			$subcommand      = $command->get_registered_subcommand( $subcommand_name );
+			if ( $subcommand ) {
+				array_shift( $path );
+			} else {
+				$subcommand = $command->find_subcommand( $path );
+			}
 
 			// Parent not found. Defer addition or create an empty container as
 			// needed.
@@ -614,6 +653,29 @@ class WP_CLI {
 			$command = $subcommand;
 		}
 
+		$existing_command = $command->get_registered_subcommand( $leaf_name );
+
+		if ( $is_lazy && ! $addition->was_aborted() && ( ! $existing_command || $existing_command instanceof LazyCommand ) ) {
+			/** @var class-string $callable */
+			if ( $existing_command instanceof LazyCommand ) {
+				$existing_command->add_class( $callable );
+			} else {
+				$command->add_subcommand( $leaf_name, new LazyCommand( $command, $leaf_name, $callable ) );
+			}
+
+			self::debug( "Registering lazy command: {$name}", 'commands' );
+
+			/**
+			 * Action triggered after a command has been added to WP-CLI.
+			 */
+			self::do_hook( "after_add_command:{$name}" );
+			return true;
+		}
+
+		if ( $is_lazy && ! class_exists( $callable ) ) {
+			self::error( sprintf( 'Callable %s does not exist, and cannot be registered as `wp %s`.', (string) json_encode( $callable ), $name ) );
+		}
+
 		$leaf_command = CommandFactory::create( $leaf_name, $callable, $command );
 
 		if ( $addition->was_aborted() ) {
@@ -622,13 +684,16 @@ class WP_CLI {
 
 		// Only add a command namespace if the command itself does not exist yet.
 		if ( $leaf_command instanceof CommandNamespace
-			&& array_key_exists( $leaf_name, $command->get_subcommands() ) ) {
+			&& false !== $command->get_registered_subcommand( $leaf_name ) ) {
 			return false;
 		}
 
 		// Reattach commands attached to namespace to real command.
 		$subcommand_name  = (array) $leaf_name;
-		$existing_command = $command->find_subcommand( $subcommand_name );
+		$existing_command = $command->get_registered_subcommand( $leaf_name );
+		if ( $existing_command instanceof LazyCommand ) {
+			$existing_command = $command->find_subcommand( $subcommand_name );
+		}
 		if ( $existing_command instanceof CompositeCommand && $existing_command->can_have_subcommands() ) {
 			if ( $leaf_command instanceof CommandNamespace || ! $leaf_command->can_have_subcommands() ) {
 				$command_to_keep = $existing_command;
