@@ -942,3 +942,215 @@ Feature: Format output
       """
     And the return code should be 0
 
+
+  Scenario: Items from an iterator are written as they are produced
+    Given an empty directory
+    And a stream.php file:
+      """
+      <?php
+      $generate = function () {
+          foreach ( array( 'a', 'b' ) as $name ) {
+              echo "<produce $name>";
+              yield array( 'name' => $name, 'unused' => 'x' );
+          }
+      };
+      foreach ( array( 'json', 'csv' ) as $format ) {
+          $assoc_args = array( 'format' => $format );
+          $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'name' ) );
+          $formatter->display_items( $generate() );
+          echo "\n";
+      }
+      """
+
+    When I run `wp eval-file stream.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      <produce a>[{"name":"a"}<produce b>,{"name":"b"}]
+      <produce a>name
+      a
+      <produce b>b
+      """
+
+  Scenario: YAML items from an iterator are written as they are produced
+    Given an empty directory
+    And a stream.php file:
+      """
+      <?php
+      $generate = function () {
+          foreach ( array( 'a', 'b' ) as $name ) {
+              echo "<produce $name>";
+              yield array( 'name' => $name, 'unused' => 'x' );
+          }
+      };
+      $assoc_args = array( 'format' => 'yaml' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'name' ) );
+      $formatter->display_items( $generate() );
+      """
+
+    When I run `wp eval-file stream.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      <produce a>---
+      """
+    And STDOUT should contain:
+      """
+        name: a
+      <produce b>-
+      """
+    And STDOUT should not contain:
+      """
+      unused
+      """
+
+  Scenario: Iterators and arrays produce the same CSV, JSON and YAML output
+    Given an empty directory
+    And a compare.php file:
+      """
+      <?php
+      $items = array(
+          array( 'post_title' => 'First', 'post_status' => 'publish', 'meta' => array( 'a' => 1 ), 'sticky' => true ),
+          (object) array( 'post_title' => 'Second, with "quotes"', 'post_status' => 'draft', 'meta' => null, 'sticky' => false ),
+          array( 'post_title' => str_repeat( 'x', 3000 ), 'post_status' => '=formula', 'meta' => array(), 'sticky' => false ),
+      );
+      $assoc_args = array( 'format' => $args[0], 'fields' => 'title,status,meta,sticky' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, null, 'post' );
+      if ( 'generator' === $args[1] ) {
+          $formatter->display_items( ( function () use ( $items ) {
+              yield from $items;
+          } )() );
+      } else {
+          $formatter->display_items( $items );
+      }
+      """
+
+    When I run `wp eval-file compare.php csv array --skip-wordpress`
+    Then save STDOUT as {CSV_ARRAY}
+
+    When I run `wp eval-file compare.php csv generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {CSV_ARRAY}
+      """
+    And STDOUT should contain:
+      """
+      post_title,post_status,meta,sticky
+      """
+    And STDERR should be empty
+
+    When I run `wp eval-file compare.php json array --skip-wordpress`
+    Then save STDOUT as {JSON_ARRAY}
+
+    When I run `wp eval-file compare.php json generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {JSON_ARRAY}
+      """
+    And STDERR should be empty
+
+    When I run `wp eval-file compare.php yaml array --skip-wordpress`
+    Then save STDOUT as {YAML_ARRAY}
+
+    When I run `wp eval-file compare.php yaml generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {YAML_ARRAY}
+      """
+    And STDOUT should contain:
+      """
+      post_title: First
+      """
+    And STDERR should be empty
+
+  Scenario: Iterators and arrays produce the same table output and warnings
+    Given an empty directory
+    And a compare-table.php file:
+      """
+      <?php
+      $items = array(
+          (object) array( 'post_title' => 'First', 'post_name' => 'first', 'name' => 'unprefixed', 'meta' => array( 'a' => 1 ) ),
+          array( 'post_title' => 'Second', 'post_status' => 'draft', 'sticky' => true ),
+      );
+      $assoc_args = array( 'format' => 'table', 'fields' => 'title,name,status,meta,sticky,missing' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, null, 'post' );
+      if ( 'generator' === $args[0] ) {
+          $formatter->display_items( ( function () use ( $items ) {
+              yield from $items;
+          } )() );
+      } else {
+          $formatter->display_items( $items );
+      }
+      """
+
+    When I try `wp eval-file compare-table.php array --skip-wordpress`
+    Then save STDOUT as {TABLE_ARRAY}
+    And STDERR should be:
+      """
+      Warning: Field not found in any item: missing.
+      """
+
+    When I try `wp eval-file compare-table.php generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {TABLE_ARRAY}
+      """
+    And STDOUT should contain:
+      """
+      unprefixed
+      """
+    And STDERR should be:
+      """
+      Warning: Field not found in any item: missing.
+      """
+
+  Scenario: Iterators and arrays produce the same table output
+    Given an empty directory
+    And a compare-table.php file:
+      """
+      <?php
+      $items = array(
+          array( 'post_title' => 'First', 'post_status' => 'publish', 'meta' => array( 'a' => 1 ), 'sticky' => true ),
+          (object) array( 'post_title' => "Second\nline", 'post_status' => 'draft', 'meta' => null, 'sticky' => false ),
+          array( 'post_title' => str_repeat( 'x', 3000 ), 'post_status' => "tab\there", 'meta' => array(), 'sticky' => false ),
+      );
+      $assoc_args = array( 'format' => 'table', 'fields' => 'title,status,meta,sticky' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, null, 'post' );
+      if ( 'generator' === $args[0] ) {
+          $formatter->display_items( ( function () use ( $items ) {
+              yield from $items;
+          } )() );
+      } else {
+          $formatter->display_items( $items );
+      }
+      """
+
+    When I run `wp eval-file compare-table.php array --skip-wordpress`
+    Then save STDOUT as {TABLE_ARRAY}
+
+    When I run `wp eval-file compare-table.php generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {TABLE_ARRAY}
+      """
+    And STDOUT should match /^post_title\tpost_status\tmeta\tsticky$/m
+    And STDERR should be empty
+
+  Scenario: Iterators whose first item lacks a requested field are not streamed
+    Given an empty directory
+    And a missing-field.php file:
+      """
+      <?php
+      $generate = function () {
+          yield array( 'name' => 'Session 1' );
+          yield array( 'name' => 'Session 2', 'custom' => 456 );
+      };
+      $assoc_args = array( 'format' => 'csv', 'fields' => 'name,custom' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args );
+      $formatter->display_items( $generate() );
+      """
+
+    When I run `wp eval-file missing-field.php --skip-wordpress`
+    Then STDOUT should be CSV containing:
+      | name      | custom |
+      | Session 1 |        |
+      | Session 2 | 456    |
+    And STDERR should be empty
