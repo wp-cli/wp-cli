@@ -52,6 +52,13 @@ class WP_CLI {
 	private static $hooks_passed = [];
 
 	/**
+	 * Hooks whose callbacks all receive the original arguments, as their return values are not used.
+	 *
+	 * @var array<int, string>
+	 */
+	private static $action_hooks = [ 'find_command_to_run_pre' ];
+
+	/**
 	 * @var bool
 	 */
 	private static $capture_exit = false;
@@ -383,7 +390,7 @@ class WP_CLI {
 
 			if ( $has_args ) {
 				$return_value = $callback( ...$args );
-				if ( isset( $return_value ) ) {
+				if ( isset( $return_value ) && ! in_array( $when, self::$action_hooks, true ) ) {
 					$args[0] = $return_value;
 				}
 			} else {

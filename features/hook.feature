@@ -227,6 +227,14 @@ Feature: Tests `WP_CLI::add_hook()`
     And a register-on-demand.php file:
       """
       <?php
+      // A callback written before the hook passed arguments, which returns a value.
+      WP_CLI::add_hook(
+          'find_command_to_run_pre',
+          function () {
+              return true;
+          }
+      );
+
       WP_CLI::add_hook(
           'find_command_to_run_pre',
           function ( $args ) {

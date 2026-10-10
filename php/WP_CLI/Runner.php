@@ -768,7 +768,8 @@ class Runner {
 		 * Callbacks receive the positional arguments the command is looked up from, for
 		 * example `[ 'help', 'post' ]` or, while `wp help post` finds its topic, `[ 'post' ]`.
 		 * This lets commands that are expensive to register be added only when needed.
-		 * The action can fire more than once per run, and its return value is ignored.
+		 * The action can fire more than once per run, including before WordPress is loaded.
+		 * Return values are ignored, so every callback receives the same arguments.
 		 *
 		 * @param array<int, string> $args Positional arguments.
 		 */
