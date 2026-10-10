@@ -764,8 +764,16 @@ class Runner {
 
 		/**
 		 * Action triggered before WP-CLI attempts to find the command to run.
+		 *
+		 * Callbacks receive the positional arguments the command is looked up from, for
+		 * example `[ 'help', 'post' ]` or, while `wp help post` finds its topic, `[ 'post' ]`.
+		 * This lets commands that are expensive to register be added only when needed.
+		 * The action can fire more than once per run, including before WordPress is loaded.
+		 * Return values are ignored, so every callback receives the same arguments.
+		 *
+		 * @param array<int, string> $args Positional arguments.
 		 */
-		WP_CLI::do_hook( 'find_command_to_run_pre' );
+		WP_CLI::do_hook( 'find_command_to_run_pre', $args );
 
 		$cmd_path = [];
 

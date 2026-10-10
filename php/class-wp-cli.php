@@ -52,6 +52,13 @@ class WP_CLI {
 	private static $hooks_passed = [];
 
 	/**
+	 * Hooks whose callbacks all receive the original arguments, as their return values are not used.
+	 *
+	 * @var array<int, string>
+	 */
+	private static $action_hooks = [ 'find_command_to_run_pre' ];
+
+	/**
 	 * @var bool
 	 */
 	private static $capture_exit = false;
@@ -280,7 +287,7 @@ class WP_CLI {
 	 * * `after_add_command:<command>` - After the command was added.
 	 * * `before_invoke:<command>` (1) - Just before a command is invoked.
 	 * * `after_invoke:<command>` (1) - Just after a command is invoked.
-	 * * `find_command_to_run_pre` - Just before WP-CLI finds the command to run.
+	 * * `find_command_to_run_pre` (1) - Just before WP-CLI finds the command to run.
 	 * * `unregistered_command_hint` (2) - Filters the hint shown for a command
 	 *   that is not registered.
 	 * * `before_registering_contexts` (1) - Before the contexts are registered.
@@ -383,7 +390,7 @@ class WP_CLI {
 
 			if ( $has_args ) {
 				$return_value = $callback( ...$args );
-				if ( isset( $return_value ) ) {
+				if ( isset( $return_value ) && ! in_array( $when, self::$action_hooks, true ) ) {
 					$args[0] = $return_value;
 				}
 			} else {

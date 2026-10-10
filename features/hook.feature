@@ -221,3 +221,60 @@ Feature: Tests `WP_CLI::add_hook()`
       First argument is not correctly returned on bad callback missing return
       """
     And the return code should be 0
+
+  Scenario: Register a command only when `find_command_to_run_pre` looks it up
+    Given an empty directory
+    And a register-on-demand.php file:
+      """
+      <?php
+      // A callback written before the hook passed arguments, which returns a value.
+      WP_CLI::add_hook(
+          'find_command_to_run_pre',
+          function () {
+              return true;
+          }
+      );
+
+      WP_CLI::add_hook(
+          'find_command_to_run_pre',
+          function ( $args ) {
+              static $registered = false;
+              if ( $registered || ! in_array( 'on-demand', $args, true ) ) {
+                  return;
+              }
+              $registered = true;
+              WP_CLI::warning( 'Registering on-demand.' );
+              WP_CLI::add_command(
+                  'on-demand',
+                  function () {
+                      WP_CLI::success( 'On demand.' );
+                  },
+                  [
+                      'shortdesc' => 'Runs on demand.',
+                      'when'      => 'before_wp_load',
+                  ]
+              );
+          }
+      );
+      """
+
+    When I run `wp --require=register-on-demand.php cli version`
+    Then STDERR should be empty
+
+    When I try `wp --require=register-on-demand.php on-demand`
+    Then STDOUT should be:
+      """
+      Success: On demand.
+      """
+    And STDERR should be:
+      """
+      Warning: Registering on-demand.
+      """
+    And the return code should be 0
+
+    When I try `wp --require=register-on-demand.php help on-demand`
+    Then STDOUT should contain:
+      """
+      Runs on demand.
+      """
+    And the return code should be 0
