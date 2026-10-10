@@ -235,7 +235,7 @@ Feature: Tests `WP_CLI::add_hook()`
                   return;
               }
               $registered = true;
-              WP_CLI::log( 'Registering on-demand.' );
+              WP_CLI::warning( 'Registering on-demand.' );
               WP_CLI::add_command(
                   'on-demand',
                   function () {
@@ -251,20 +251,22 @@ Feature: Tests `WP_CLI::add_hook()`
       """
 
     When I run `wp --require=register-on-demand.php cli version`
-    Then STDOUT should not contain:
-      """
-      Registering on-demand.
-      """
+    Then STDERR should be empty
 
-    When I run `wp --require=register-on-demand.php on-demand`
+    When I try `wp --require=register-on-demand.php on-demand`
     Then STDOUT should be:
       """
-      Registering on-demand.
       Success: On demand.
       """
+    And STDERR should be:
+      """
+      Warning: Registering on-demand.
+      """
+    And the return code should be 0
 
-    When I run `wp --require=register-on-demand.php help on-demand`
+    When I try `wp --require=register-on-demand.php help on-demand`
     Then STDOUT should contain:
       """
       Runs on demand.
       """
+    And the return code should be 0
