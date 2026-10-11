@@ -235,6 +235,14 @@ Feature: Tests `WP_CLI::add_hook()`
           }
       );
 
+      // A callback that changes its arguments through a by-reference parameter.
+      WP_CLI::add_hook(
+          'find_command_to_run_pre',
+          function ( &$args ) {
+              $args = [];
+          }
+      );
+
       WP_CLI::add_hook(
           'find_command_to_run_pre',
           function ( $args ) {

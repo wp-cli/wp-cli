@@ -52,11 +52,15 @@ class WP_CLI {
 	private static $hooks_passed = [];
 
 	/**
-	 * Hooks whose callbacks all receive the original arguments, as their return values are not used.
+	 * Hooks with arguments that work like actions rather than filters.
 	 *
-	 * @var array<int, string>
+	 * Every callback receives the original arguments: return values are ignored, and changes
+	 * made through by-reference parameters don't reach the next callback. Add any new hook
+	 * that passes arguments without using the callbacks' return values here.
+	 *
+	 * @var array<string, true>
 	 */
-	private static $action_hooks = [ 'find_command_to_run_pre' ];
+	private static $action_hooks = [ 'find_command_to_run_pre' => true ];
 
 	/**
 	 * @var bool
@@ -300,7 +304,9 @@ class WP_CLI {
 	 *
 	 * The parentheses behind the hook name denote the number of arguments
 	 * being passed into the hook. For such hooks, the callback should return
-	 * the first argument again, making them work like a WP filter.
+	 * the first argument again, making them work like a WP filter. The exception
+	 * is `find_command_to_run_pre`, which works like a WP action: every callback
+	 * receives the same arguments, and return values are ignored.
 	 *
 	 * WP-CLI commands can create their own hooks with `WP_CLI::do_hook()`.
 	 *
@@ -388,9 +394,13 @@ class WP_CLI {
 				'hooks'
 			);
 
-			if ( $has_args ) {
+			if ( $has_args && isset( self::$action_hooks[ $when ] ) ) {
+				// A copy for each callback, so by-reference parameters can't change the next one's arguments.
+				$callback_args = $args;
+				$callback( ...$callback_args );
+			} elseif ( $has_args ) {
 				$return_value = $callback( ...$args );
-				if ( isset( $return_value ) && ! in_array( $when, self::$action_hooks, true ) ) {
+				if ( isset( $return_value ) ) {
 					$args[0] = $return_value;
 				}
 			} else {
