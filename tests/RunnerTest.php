@@ -293,7 +293,7 @@ final class RunnerTest extends TestCase {
 			if ( false === $prev_env ) {
 				putenv( 'WP_CLI_SSH_BINARY' );
 			} else {
-				putenv( "WP_CLI_SSH_BINARY={$prev_env}" );
+				putenv( 'WP_CLI_SSH_BINARY=' . $prev_env );
 			}
 		}
 	}
