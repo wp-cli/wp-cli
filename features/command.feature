@@ -587,9 +587,9 @@ Feature: WP-CLI Commands
             list( $name ) = $args;
             $type         = $assoc_args['type'];
             WP_CLI::$type( "Hello, $name!" );
-            if ( isset( $assoc_args['honk'] ) ) {
-                WP_CLI::log( 'Honk!' );
-            }
+          if ( isset( $assoc_args['honk'] ) ) {
+              WP_CLI::log( 'Honk!' );
+          }
         };
           WP_CLI::add_command(
               'example hello',
@@ -1149,18 +1149,18 @@ Feature: WP-CLI Commands
       """
       <?php
       WP_CLI::add_hook(
-        'unregistered_command_hint',
-        function ( $hint, $command ) {
-          if ( 'ftpdeploy' === $command ) {
-            return "The 'ftpdeploy' command is provided by the wp-cli/ftpdeploy-command package.";
-          }
+          'unregistered_command_hint',
+          function ( $hint, $command ) {
+              if ( 'ftpdeploy' === $command ) {
+                  return "The 'ftpdeploy' command is provided by the wp-cli/ftpdeploy-command package.";
+              }
 
-          if ( 'cli ftpdeploy' === $command ) {
-            return "The 'cli ftpdeploy' subcommand is provided by the wp-cli/ftpdeploy-command package.";
-          }
+              if ( 'cli ftpdeploy' === $command ) {
+                  return "The 'cli ftpdeploy' subcommand is provided by the wp-cli/ftpdeploy-command package.";
+              }
 
-          return $hint;
-        }
+              return $hint;
+          }
       );
       """
 
@@ -1197,14 +1197,14 @@ Feature: WP-CLI Commands
       """
       <?php
       WP_CLI::add_hook(
-        'unregistered_command_hint',
-        function ( $hint, $command ) {
-          if ( 'category' === $command ) {
-            return "The 'category' command is provided by the acme/category-command package.";
-          }
+          'unregistered_command_hint',
+          function ( $hint, $command ) {
+              if ( 'category' === $command ) {
+                  return "The 'category' command is provided by the acme/category-command package.";
+              }
 
-          return $hint;
-        }
+              return $hint;
+          }
       );
       """
 
