@@ -465,6 +465,38 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
   @skip-windows @skip-macos
+  Scenario: SSH command uses custom binary specified in alias
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        ssh-binary: /home/bin/wp
+      """
+
+    When I try `wp @foo plugin list --debug`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; WP_CLI_SSH_RUN=1 /home/bin/wp plugin list --debug'
+      """
+
+  @skip-windows @skip-macos
+  Scenario: SSH command uses wp-cli full command prefix in alias
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        wp-cli: php /home/wp-cli.phar
+      """
+
+    When I try `wp @foo plugin list --debug`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; WP_CLI_SSH_RUN=1 php /home/wp-cli.phar plugin list --debug'
+      """
+
+  @skip-windows @skip-macos
   Scenario: Uses env command for runtime alias with separate path line
     Given a WP installation in 'foo'
     And a wp-cli.yml file:

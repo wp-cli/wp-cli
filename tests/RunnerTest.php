@@ -273,4 +273,122 @@ final class RunnerTest extends TestCase {
 		$this->assertStringContainsString( sprintf( '-i %s', escapeshellarg( '/custom/alias/key' ) ), $command );
 		$this->assertStringNotContainsString( '/default/vagrant/identityfile', $command );
 	}
+
+	public function testGetSshBinaryDefault(): void {
+		$runner_class = new ReflectionClass( Runner::class );
+		$runner       = $runner_class->newInstanceWithoutConstructor();
+
+		$this->assertSame( 'wp', $runner->get_ssh_binary() );
+	}
+
+	public function testGetSshBinaryFromEnv(): void {
+		$runner_class = new ReflectionClass( Runner::class );
+		$runner       = $runner_class->newInstanceWithoutConstructor();
+
+		$prev_env = getenv( 'WP_CLI_SSH_BINARY' );
+		putenv( 'WP_CLI_SSH_BINARY=/custom/env/wp' );
+		try {
+			$this->assertSame( '/custom/env/wp', $runner->get_ssh_binary() );
+		} finally {
+			if ( false === $prev_env ) {
+				putenv( 'WP_CLI_SSH_BINARY' );
+			} else {
+				putenv( "WP_CLI_SSH_BINARY={$prev_env}" );
+			}
+		}
+	}
+
+	public function testGetSshBinaryFromAlias(): void {
+		$runner_class = new ReflectionClass( Runner::class );
+		$runner       = $runner_class->newInstanceWithoutConstructor();
+
+		$prop_alias   = $runner_class->getProperty( 'alias' );
+		$prop_aliases = $runner_class->getProperty( 'aliases' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$prop_alias->setAccessible( true );
+			// @phpstan-ignore method.deprecated
+			$prop_aliases->setAccessible( true );
+		}
+
+		$prop_alias->setValue( $runner, 'myalias' );
+
+		// Test ssh-binary
+		$prop_aliases->setValue( $runner, [ 'myalias' => [ 'ssh-binary' => '/home/bin/wp' ] ] );
+		$this->assertSame( '/home/bin/wp', $runner->get_ssh_binary() );
+
+		// Test ssh_binary
+		$prop_aliases->setValue( $runner, [ 'myalias' => [ 'ssh_binary' => 'php /home/wp-cli.phar' ] ] );
+		$this->assertSame( 'php /home/wp-cli.phar', $runner->get_ssh_binary() );
+
+		// Test wp-cli
+		$prop_aliases->setValue( $runner, [ 'myalias' => [ 'wp-cli' => '/usr/bin/wp' ] ] );
+		$this->assertSame( '/usr/bin/wp', $runner->get_ssh_binary() );
+
+		// Test wp-cli-path
+		$prop_aliases->setValue( $runner, [ 'myalias' => [ 'wp-cli-path' => '/opt/wp' ] ] );
+		$this->assertSame( '/opt/wp', $runner->get_ssh_binary() );
+	}
+
+	public function testGetSshBinaryRuntimeOverride(): void {
+		$runner_class = new ReflectionClass( Runner::class );
+		$runner       = $runner_class->newInstanceWithoutConstructor();
+
+		$prop_alias          = $runner_class->getProperty( 'alias' );
+		$prop_aliases        = $runner_class->getProperty( 'aliases' );
+		$prop_runtime_config = $runner_class->getProperty( 'runtime_config' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$prop_alias->setAccessible( true );
+			// @phpstan-ignore method.deprecated
+			$prop_aliases->setAccessible( true );
+			// @phpstan-ignore method.deprecated
+			$prop_runtime_config->setAccessible( true );
+		}
+
+		$prop_alias->setValue( $runner, 'myalias' );
+		$prop_aliases->setValue( $runner, [ 'myalias' => [ 'ssh-binary' => '/alias/bin/wp' ] ] );
+		$prop_runtime_config->setValue( $runner, [ 'ssh-binary' => '/cli/bin/wp' ] );
+
+		$this->assertSame( '/cli/bin/wp', $runner->get_ssh_binary() );
+	}
+
+	public function testGetSshBinaryInvalidAliasType(): void {
+		$class_wp_cli_capture_exit = new ReflectionProperty( 'WP_CLI', 'capture_exit' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$class_wp_cli_capture_exit->setAccessible( true );
+		}
+		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
+		$class_wp_cli_capture_exit->setValue( null, true );
+
+		$prev_logger = \WP_CLI::get_logger();
+		$logger      = new \WP_CLI\Loggers\Execution();
+		\WP_CLI::set_logger( $logger );
+
+		try {
+			$runner_class = new ReflectionClass( Runner::class );
+			$runner       = $runner_class->newInstanceWithoutConstructor();
+
+			$prop_alias   = $runner_class->getProperty( 'alias' );
+			$prop_aliases = $runner_class->getProperty( 'aliases' );
+			if ( PHP_VERSION_ID < 80100 ) {
+				// @phpstan-ignore method.deprecated
+				$prop_alias->setAccessible( true );
+				// @phpstan-ignore method.deprecated
+				$prop_aliases->setAccessible( true );
+			}
+
+			$prop_alias->setValue( $runner, 'myalias' );
+			$prop_aliases->setValue( $runner, [ 'myalias' => [ 'ssh-binary' => [ '/invalid/array' ] ] ] );
+
+			$runner->get_ssh_binary();
+			$this->fail( 'Should have thrown ExitException' );
+		} catch ( \WP_CLI\ExitException $e ) {
+			$this->assertStringContainsString( 'Invalid SSH ssh-binary: value must be a string.', $logger->stderr );
+		} finally {
+			$class_wp_cli_capture_exit->setValue( null, $prev_capture_exit );
+			\WP_CLI::set_logger( $prev_logger );
+		}
+	}
 }
