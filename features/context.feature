@@ -350,3 +350,21 @@ Feature: Context handling via --context global flag
       """
       Error: Invalid user ID, email or login: 'non_existent_user'
       """
+
+  Scenario: Admin context does not leave persistent session tokens behind
+    Given a WP install
+
+    When I run `wp --context=admin eval "echo count( WP_Session_Tokens::get_instance( 1 )->get_all() ) . ' ' . ( wp_validate_auth_cookie( \$_COOKIE[ AUTH_COOKIE ], 'auth' ) ?: 'invalid' );"`
+    Then STDOUT should be:
+      """
+      1 1
+      """
+
+    When I run `wp plugin list`
+    And I run `wp theme list`
+    And I run `wp --context=admin eval ''`
+    And I run `wp eval "echo count( WP_Session_Tokens::get_instance( 1 )->get_all() );"`
+    Then STDOUT should be:
+      """
+      0
+      """

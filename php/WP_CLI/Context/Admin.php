@@ -5,6 +5,7 @@ namespace WP_CLI\Context;
 use WP_CLI;
 use WP_CLI\Context;
 use WP_CLI\Fetchers\User;
+use WP_Session_Tokens;
 use WP_User;
 
 /**
@@ -141,6 +142,10 @@ final class Admin implements Context {
 	 * A lot of premium plugins/themes have their custom update routines locked
 	 * behind an is_admin() call.
 	 *
+	 * A single session token is shared by both auth cookies and destroyed
+	 * again on shutdown, so that running commands in the admin context does
+	 * not leave stale sessions behind for the admin user.
+	 *
 	 * @param int<1, max> $admin_user_id to log in as
 	 *
 	 * @return void
@@ -150,16 +155,28 @@ final class Admin implements Context {
 
 		$expiration = time() + DAY_IN_SECONDS;
 
+		$manager = WP_Session_Tokens::get_instance( $admin_user_id );
+		$token   = $manager->create( $expiration );
+
+		WP_CLI::add_wp_hook(
+			'shutdown',
+			static function () use ( $manager, $token ) {
+				$manager->destroy( $token );
+			}
+		);
+
 		$_COOKIE[ AUTH_COOKIE ] = wp_generate_auth_cookie(
 			$admin_user_id,
 			$expiration,
-			'auth'
+			'auth',
+			$token
 		);
 
 		$_COOKIE[ SECURE_AUTH_COOKIE ] = wp_generate_auth_cookie(
 			$admin_user_id,
 			$expiration,
-			'secure_auth'
+			'secure_auth',
+			$token
 		);
 	}
 
