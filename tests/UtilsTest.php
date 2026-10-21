@@ -968,7 +968,7 @@ class UtilsTest extends TestCase {
 	public function test_esc_like_with_wpdb( string $input, string $expected ): void {
 		global $wpdb;
 
-		$wpdb = $this->createMock( WP_CLI_Mock_WPDB::class );
+		$wpdb = $this->createStub( WP_CLI_Mock_WPDB::class );
 		$wpdb->method( 'esc_like' )
 			->willReturn( addcslashes( $input, '_%\\' ) );
 
