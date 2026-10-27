@@ -10,8 +10,9 @@ use WP_CLI\Utils;
 /**
  * Class RestartWithOpcache.
  *
- * Restarts PHP with OPcache's file cache enabled when the `WP_CLI_OPCACHE`
- * environment variable is set, so compiled code is reused between runs.
+ * Restarts PHP with OPcache's file cache enabled when `WP_CLI_OPCACHE` is set,
+ * as an environment variable or in the `env` section of a config file, so
+ * compiled code is reused between runs.
  *
  * This runs before any `--require` files or packages are loaded, so that they
  * only run in the restarted process.
@@ -28,7 +29,7 @@ final class RestartWithOpcache implements BootstrapStep {
 	 * @return BootstrapState Modified state to pass to the next step.
 	 */
 	public function process( BootstrapState $state ) {
-		if ( ! getenv( 'WP_CLI_OPCACHE' ) || ! extension_loaded( 'Zend OPcache' ) ) {
+		if ( ! Utils\get_env_or_config( 'WP_CLI_OPCACHE' ) || ! extension_loaded( 'Zend OPcache' ) ) {
 			return $state;
 		}
 

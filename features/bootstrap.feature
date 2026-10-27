@@ -605,3 +605,16 @@ Feature: Bootstrap WP-CLI
       """
       no file cache
       """
+
+    Given a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_OPCACHE: 1
+      """
+
+    When I try `echo hello | WP_CLI_CACHE_DIR={RUN_DIR}/cache wp eval-file check-opcache.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      OPcache: ok
+      """
+    And the return code should be 3
