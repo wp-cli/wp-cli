@@ -7,9 +7,10 @@ use Composer\XdebugHandler\XdebugHandler;
 /**
  * Restarts the PHP process with OPcache's file cache enabled.
  *
- * OPcache is disabled for the CLI by default, and its shared memory only lasts for a
- * single process anyway. With the file cache, compiled code is stored on disk and reused
- * by the next run, so WP-CLI, WordPress and plugins don't have to be compiled every time.
+ * Even when OPcache is enabled for the CLI, it keeps compiled code in shared memory,
+ * which only lasts for a single process. With the file cache, compiled code is stored on
+ * disk and reused by the next run, so WP-CLI, WordPress and plugins don't have to be
+ * compiled every time.
  *
  * The restart itself is done by composer/xdebug-handler, which keeps the PHP settings
  * of the current process, including `-d` options, and passes STDIN and STDOUT through.
