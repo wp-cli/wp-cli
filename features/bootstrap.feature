@@ -606,6 +606,18 @@ Feature: Bootstrap WP-CLI
       no file cache
       """
 
+    When I run `WP_CLI_OPCACHE=1 WP_CLI_CACHE_DIR={RUN_DIR}/cache WP_CLI_PHP_ARGS='-d opcache.save_comments=0 -d opcache.validate_timestamps=0' wp eval 'echo ( ! extension_loaded( "Zend OPcache" ) || ( ini_get( "opcache.save_comments" ) && ini_get( "opcache.validate_timestamps" ) ) ) ? "ok" : "not ok";' --skip-wordpress`
+    Then STDOUT should be:
+      """
+      ok
+      """
+
+    When I run `WP_CLI_OPCACHE=1 WP_CLI_CACHE_DIR={RUN_DIR}/cache WP_CLI_PHP_ARGS='-d opcache.enable=0' wp eval 'echo ini_get( "opcache.file_cache" ) ? "file cache" : "no file cache";' --skip-wordpress`
+    Then STDOUT should be:
+      """
+      no file cache
+      """
+
     Given a wp-cli.yml file:
       """
       env:

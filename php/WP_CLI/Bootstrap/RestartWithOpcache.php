@@ -33,6 +33,13 @@ final class RestartWithOpcache implements BootstrapStep {
 			return $state;
 		}
 
+		// `opcache.enable` is on by default, so this was turned off on purpose. OPcache
+		// wouldn't cache anything in the restarted process either.
+		if ( ! ini_get( 'opcache.enable' ) ) {
+			WP_CLI::debug( 'Not restarting with OPcache: opcache.enable is off.', 'bootstrap' );
+			return $state;
+		}
+
 		// The Composer autoloader is only loaded by a later step. Loading it now would also
 		// run the files it includes, like command registrations, in a process that is about
 		// to be replaced. So only register the namespaces the restart needs.

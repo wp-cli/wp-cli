@@ -54,6 +54,16 @@ final class OpcacheRestarter extends XdebugHandler {
 	/**
 	 * Add the OPcache settings to the restart command.
 	 *
+	 * The restarted process keeps the other settings of the current one, including OPcache
+	 * settings from `php.ini` that had no effect while OPcache was off for the CLI. These
+	 * settings are therefore always set:
+	 *
+	 * - `opcache.file_cache_only`: Only the file cache is used, without shared memory. It's
+	 *   faster for a single short-lived process, and a preload script configured for the web
+	 *   server (`opcache.preload`) isn't run. JIT needs shared memory, so it's not used.
+	 * - `opcache.save_comments`: Commands are defined by their doc comments.
+	 * - `opcache.validate_timestamps`: Edited files have to be compiled again.
+	 *
 	 * @param non-empty-list<string> $command PHP binary, its options, the script and its arguments.
 	 * @return void
 	 */
@@ -70,6 +80,10 @@ final class OpcacheRestarter extends XdebugHandler {
 				'opcache.file_cache=' . $this->cache_dir,
 				'-d',
 				'opcache.file_cache_only=1',
+				'-d',
+				'opcache.save_comments=1',
+				'-d',
+				'opcache.validate_timestamps=1',
 			]
 		);
 
