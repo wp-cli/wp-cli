@@ -2618,7 +2618,7 @@ function format_bytes_string( $bytes, $decimals = 0, $unit = '' ) {
 	if ( is_string( $bytes ) ) {
 		$bytes = (float) $bytes;
 	}
-	if ( 0 === (int) $bytes ) {
+	if ( 0.0 === (float) $bytes ) {
 		return '0 B';
 	}
 

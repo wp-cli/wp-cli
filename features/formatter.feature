@@ -951,7 +951,10 @@ Feature: Format output
       $generate = function () {
           foreach ( array( 'a', 'b' ) as $name ) {
               echo "<produce $name>";
-              yield array( 'name' => $name, 'unused' => 'x' );
+              yield array(
+                  'name' => $name,
+                  'unused' => 'x',
+              );
           }
       };
       foreach ( array( 'json', 'csv' ) as $format ) {
@@ -979,7 +982,10 @@ Feature: Format output
       $generate = function () {
           foreach ( array( 'a', 'b' ) as $name ) {
               echo "<produce $name>";
-              yield array( 'name' => $name, 'unused' => 'x' );
+              yield array(
+                  'name' => $name,
+                  'unused' => 'x',
+              );
           }
       };
       $assoc_args = array( 'format' => 'yaml' );
@@ -1008,16 +1014,36 @@ Feature: Format output
       """
       <?php
       $items = array(
-          array( 'post_title' => 'First', 'post_status' => 'publish', 'meta' => array( 'a' => 1 ), 'sticky' => true ),
-          (object) array( 'post_title' => 'Second, with "quotes"', 'post_status' => 'draft', 'meta' => null, 'sticky' => false ),
-          array( 'post_title' => str_repeat( 'x', 3000 ), 'post_status' => '=formula', 'meta' => array(), 'sticky' => false ),
+          array(
+              'post_title' => 'First',
+              'post_status' => 'publish',
+              'meta' => array( 'a' => 1 ),
+              'sticky' => true,
+          ),
+          (object) array(
+              'post_title' => 'Second, with "quotes"',
+              'post_status' => 'draft',
+              'meta' => null,
+              'sticky' => false,
+          ),
+          array(
+              'post_title' => str_repeat( 'x', 3000 ),
+              'post_status' => '=formula',
+              'meta' => array(),
+              'sticky' => false,
+          ),
       );
-      $assoc_args = array( 'format' => $args[0], 'fields' => 'title,status,meta,sticky' );
+      $assoc_args = array(
+          'format' => $args[0],
+          'fields' => 'title,status,meta,sticky',
+      );
       $formatter  = new WP_CLI\Formatter( $assoc_args, null, 'post' );
       if ( 'generator' === $args[1] ) {
-          $formatter->display_items( ( function () use ( $items ) {
-              yield from $items;
-          } )() );
+          $formatter->display_items(
+              ( function () use ( $items ) {
+                  yield from $items;
+              } )()
+          );
       } else {
           $formatter->display_items( $items );
       }
@@ -1067,15 +1093,29 @@ Feature: Format output
       """
       <?php
       $items = array(
-          (object) array( 'post_title' => 'First', 'post_name' => 'first', 'name' => 'unprefixed', 'meta' => array( 'a' => 1 ) ),
-          array( 'post_title' => 'Second', 'post_status' => 'draft', 'sticky' => true ),
+          (object) array(
+              'post_title' => 'First',
+              'post_name' => 'first',
+              'name' => 'unprefixed',
+              'meta' => array( 'a' => 1 ),
+          ),
+          array(
+              'post_title' => 'Second',
+              'post_status' => 'draft',
+              'sticky' => true,
+          ),
       );
-      $assoc_args = array( 'format' => 'table', 'fields' => 'title,name,status,meta,sticky,missing' );
+      $assoc_args = array(
+          'format' => 'table',
+          'fields' => 'title,name,status,meta,sticky,missing',
+      );
       $formatter  = new WP_CLI\Formatter( $assoc_args, null, 'post' );
       if ( 'generator' === $args[0] ) {
-          $formatter->display_items( ( function () use ( $items ) {
-              yield from $items;
-          } )() );
+          $formatter->display_items(
+              ( function () use ( $items ) {
+                  yield from $items;
+              } )()
+          );
       } else {
           $formatter->display_items( $items );
       }
@@ -1108,16 +1148,36 @@ Feature: Format output
       """
       <?php
       $items = array(
-          array( 'post_title' => 'First', 'post_status' => 'publish', 'meta' => array( 'a' => 1 ), 'sticky' => true ),
-          (object) array( 'post_title' => "Second\nline", 'post_status' => 'draft', 'meta' => null, 'sticky' => false ),
-          array( 'post_title' => str_repeat( 'x', 3000 ), 'post_status' => "tab\there", 'meta' => array(), 'sticky' => false ),
+          array(
+              'post_title' => 'First',
+              'post_status' => 'publish',
+              'meta' => array( 'a' => 1 ),
+              'sticky' => true,
+          ),
+          (object) array(
+              'post_title' => "Second\nline",
+              'post_status' => 'draft',
+              'meta' => null,
+              'sticky' => false,
+          ),
+          array(
+              'post_title' => str_repeat( 'x', 3000 ),
+              'post_status' => "tab\there",
+              'meta' => array(),
+              'sticky' => false,
+          ),
       );
-      $assoc_args = array( 'format' => 'table', 'fields' => 'title,status,meta,sticky' );
+      $assoc_args = array(
+          'format' => 'table',
+          'fields' => 'title,status,meta,sticky',
+      );
       $formatter  = new WP_CLI\Formatter( $assoc_args, null, 'post' );
       if ( 'generator' === $args[0] ) {
-          $formatter->display_items( ( function () use ( $items ) {
-              yield from $items;
-          } )() );
+          $formatter->display_items(
+              ( function () use ( $items ) {
+                  yield from $items;
+              } )()
+          );
       } else {
           $formatter->display_items( $items );
       }
@@ -1141,9 +1201,15 @@ Feature: Format output
       <?php
       $generate = function () {
           yield array( 'name' => 'Session 1' );
-          yield array( 'name' => 'Session 2', 'custom' => 456 );
+          yield array(
+              'name' => 'Session 2',
+              'custom' => 456,
+          );
       };
-      $assoc_args = array( 'format' => 'csv', 'fields' => 'name,custom' );
+      $assoc_args = array(
+          'format' => 'csv',
+          'fields' => 'name,custom',
+      );
       $formatter  = new WP_CLI\Formatter( $assoc_args );
       $formatter->display_items( $generate() );
       """
