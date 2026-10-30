@@ -16,6 +16,7 @@ use WpOrg\Requests\Exception\Transport\Curl as CurlException;
 use WpOrg\Requests\Requests;
 use WpOrg\Requests\Transport;
 use WpOrg\Requests\Utility\InputValidator;
+use WpOrg\Requests\Utility\Trim;
 
 /**
  * cURL HTTP transport
@@ -480,7 +481,7 @@ final class Curl implements Transport {
 
 		if ($options['filename'] !== false && $this->stream_handle) {
 			fclose($this->stream_handle);
-			$this->headers = trim($this->headers);
+			$this->headers = trim($this->headers, Trim::WHITESPACE_CHARS_NO_FF);
 		} else {
 			$this->headers .= $response;
 		}
