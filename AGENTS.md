@@ -2,6 +2,8 @@
 
 This package is part of WP-CLI, the official command line interface for WordPress. For a detailed explanation of the project structure and development workflow, please refer to the main @README.md file.
 
+If the repository contains an @AGENTS.local.md file, read it as well. It holds instructions specific to this repository and takes precedence over this file where the two disagree.
+
 ## Best Practices for Code Contributions
 
 When contributing to this package, please adhere to the following guidelines:
