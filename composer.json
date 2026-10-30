@@ -22,7 +22,7 @@
         "wp-cli/extension-command": "^2 || ^3",
         "wp-cli/language-command": "^2 || ^3",
         "wp-cli/package-command": "^2 || ^3",
-        "wp-cli/wp-cli-tests": "^5"
+        "wp-cli/wp-cli-tests": "dev-create-sites-step as 5.3.99"
     },
     "suggest": {
         "ext-curl": "For better performance when making HTTP requests",

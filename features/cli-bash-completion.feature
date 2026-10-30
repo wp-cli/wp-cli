@@ -340,12 +340,14 @@ Feature: `wp cli completions` tasks
 
   Scenario: Bash Completion for global --url parameter in subdirectory installation
     Given a WP multisite subdirectory installation
-    And I run `wp site create --slug=foo`
-    And I run `wp site create --slug=foot`
-    And I run `wp site create --slug=football`
-    And I run `wp site create --slug=bar`
-    And I run `wp site create --slug=baz`
-    And I run `wp site create --slug=waldo`
+    And these sites:
+      | slug     |
+      | foo      |
+      | foot     |
+      | football |
+      | bar      |
+      | baz      |
+      | waldo    |
 
     # show all matches
     When I run `wp cli completions --line="wp plugin list --url=fo" --point=100`
@@ -370,12 +372,14 @@ Feature: `wp cli completions` tasks
 
   Scenario: Bash Completion for global --url parameter in subdomain installation
     Given a WP multisite subdomain installation
-    And I run `wp site create --slug=foo`
-    And I run `wp site create --slug=foot`
-    And I run `wp site create --slug=football`
-    And I run `wp site create --slug=bar`
-    And I run `wp site create --slug=baz`
-    And I run `wp site create --slug=waldo`
+    And these sites:
+      | slug     |
+      | foo      |
+      | foot     |
+      | football |
+      | bar      |
+      | baz      |
+      | waldo    |
 
     # show all matches
     When I run `wp cli completions --line="wp plugin list --url=fo" --point=100`
