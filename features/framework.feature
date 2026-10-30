@@ -380,8 +380,10 @@ Feature: Load WP-CLI
   Scenario: Use --assume-https to preserve HTTPS scheme in URL functions
     Given a WP multisite installation
     And I run `wp option update siteurl https://example.com`
-    And I run `wp site option update siteurl https://example.com`
-    And I run `wp site option update home https://example.com`
+    And these setup commands:
+      | command                                           |
+      | wp site option update siteurl https://example.com |
+      | wp site option update home https://example.com    |
 
     When I run `wp option get siteurl`
     Then STDOUT should be:
