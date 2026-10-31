@@ -3106,10 +3106,9 @@ class Runner {
 	 * Enables (almost) full PHP error reporting to stderr.
 	 */
 	private function enable_error_reporting(): void {
-		if ( E_ALL !== error_reporting() ) {
-			// Don't enable E_DEPRECATED as old versions of WP use PHP 4 style constructors and the mysql extension.
-			error_reporting( E_ALL & ~E_DEPRECATED );
-		}
+		// Don't enable E_DEPRECATED, as old versions of WP trigger deprecation notices on newer versions of PHP.
+		// This applies however reporting all errors is configured, so that `-1` and `E_ALL` behave the same.
+		error_reporting( E_ALL & ~E_DEPRECATED );
 		ini_set( 'display_errors', 'stderr' ); // phpcs:ignore WordPress.PHP.IniSet.display_errors_Disallowed
 	}
 }

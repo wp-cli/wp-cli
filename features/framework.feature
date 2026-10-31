@@ -309,6 +309,29 @@ Feature: Load WP-CLI
       Error: Error establishing a database connection.
       """
 
+  @require-php-8.0
+  Scenario Outline: Leave out deprecation notices while testing, however reporting all errors is configured
+    Given an empty directory
+    # Declaring an optional parameter before a required one is deprecated as of PHP 8.0.
+    And a deprecated.php file:
+      """
+      <?php
+      function wp_cli_test_optional_before_required( $optional = null, $required ) {}
+      echo 'done';
+      """
+
+    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--derror_reporting=<error_reporting>} eval-file deprecated.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      done
+      """
+    And STDERR should be empty
+
+    Examples:
+      | error_reporting |
+      | E_ALL           |
+      | -1              |
+
   Scenario: Allow WP_CLI hooks to pass arguments to callbacks
     Given an empty directory
     And a my-command.php file:
