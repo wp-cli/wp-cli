@@ -21,7 +21,7 @@
         "wp-cli/extension-command": "^2 || ^3",
         "wp-cli/language-command": "^2 || ^3",
         "wp-cli/package-command": "^2 || ^3",
-        "wp-cli/wp-cli-tests": "dev-perf/parallel-scenarios#79d8ddadac6616da7b326634c4275aa37de708e2 as 5.1.99"
+        "wp-cli/wp-cli-tests": "dev-ci/parallel-integration#97797bbc5dd40d88842afa901f4cd66bc102ddaa as 5.1.99"
     },
     "suggest": {
         "ext-curl": "For better performance when making HTTP requests",
