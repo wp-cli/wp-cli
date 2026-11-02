@@ -311,7 +311,7 @@ Feature: Context handling via --context global flag
   Scenario: Admin context emits error when no suitable admin user is found on multisite
     Given a WP multisite install
     And I run `wp eval "update_site_option( 'site_admins', array() );"`
-    And I try `wp --context=admin eval ''`
+    And I try `wp --context=admin eval "return;"`
     Then the return code should be 1
     And STDERR should contain:
       """
@@ -321,7 +321,7 @@ Feature: Context handling via --context global flag
   Scenario: Admin context emits error when no administrator is found on single site
     Given a WP install
     When I run `wp user update 1 --role=subscriber`
-    And I try `wp --context=admin eval ''`
+    And I try `wp --context=admin eval "return;"`
     Then the return code should be 1
     And STDERR should contain:
       """
@@ -369,7 +369,7 @@ Feature: Context handling via --context global flag
 
     When I run `wp plugin list`
     And I run `wp theme list`
-    And I run `wp --context=admin eval ''`
+    And I run `wp --context=admin eval "return;"`
     And I run `wp eval "echo count( WP_Session_Tokens::get_instance( 1 )->get_all() );"`
     Then STDOUT should be:
       """
