@@ -84,7 +84,10 @@ Feature: Requests integration with both v1 and v2
     Given a WP installation
     # Switch themes because twentytwentyfive requires a version newer than 6.2
     # and it would otherwise cause a fatal error further down.
-    And I try `wp theme install twentyten`
+    And these installed themes:
+      """
+      twentyten
+      """
     And I try `wp theme activate twentyten`
     And I run `wp core update --version=6.2 --force`
 
