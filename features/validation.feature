@@ -291,7 +291,7 @@ Feature: Argument validation
     # '--xml' is two edits from the positional '<sql>', and a real option of the
     # client the command hands its parameters to. A positional argument cannot
     # be spelled `--sql` in the first place, so it is not a candidate.
-    When I run `wp --require=custom-cmd.php entity query 'SELECT 1' --xml=1`
+    When I run `wp --require=custom-cmd.php entity query "SELECT 1" --xml=1`
     Then STDOUT should contain:
       """
       xml=1
@@ -303,7 +303,7 @@ Feature: Argument validation
     And STDERR should be empty
 
     # The documented parameters of the command remain candidates.
-    When I try `wp --require=custom-cmd.php entity query 'SELECT 1' --fomat=json`
+    When I try `wp --require=custom-cmd.php entity query "SELECT 1" --fomat=json`
     Then the return code should be 0
     And STDERR should contain:
       """
