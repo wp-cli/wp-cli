@@ -33,10 +33,15 @@ fi
 
 # Build the path to the root PHP file
 SCRIPT_PATH="$(dirname "$SELF_PATH")/../php/boot-fs.php"
-case $("$php" -r "echo PHP_OS;") in
-	WINNT*)
-		SCRIPT_PATH="$(cygpath -w -a -- "$SCRIPT_PATH")" ;;
-esac
+
+# A Windows PHP run from Cygwin or MSYS needs a Windows path to the script.
+# Only ask PHP for its OS where that can happen, as it costs a PHP process.
+if command -v cygpath > /dev/null 2>&1; then
+	case $("$php" -r "echo PHP_OS;") in
+		WINNT*)
+			SCRIPT_PATH="$(cygpath -w -a -- "$SCRIPT_PATH")" ;;
+	esac
+fi
 
 # Pass in the path to php so that wp-cli knows which one
 # to use if it re-launches itself to run other commands.
