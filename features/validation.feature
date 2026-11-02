@@ -303,7 +303,7 @@ Feature: Argument validation
     And STDERR should be empty
 
     # The documented parameters of the command remain candidates.
-    When I try `wp --require=custom-cmd.php entity query 'SELECT 1' --fomat=json`
+    When I try `wp --require=custom-cmd.php entity query "SELECT 1" --fomat=json`
     Then the return code should be 0
     And STDERR should contain:
       """
