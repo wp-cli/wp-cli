@@ -132,3 +132,49 @@ Feature: CLI Cache
       """
       loginizer-1.4.8.zip
       """
+
+  Scenario: Install a plugin from the cache when it was downloaded before
+    Given a WP install
+    And an empty cache
+
+    When I run `wp plugin install hello-dolly --version=1.7.2`
+    Then STDOUT should not contain:
+      """
+      Using cached file
+      """
+    And the {SUITE_CACHE_DIR}/plugin/hello-dolly-1.7.2.zip file should exist
+
+    When I run `wp plugin delete hello-dolly`
+    And I run `wp plugin install hello-dolly --version=1.7.2`
+    Then STDOUT should contain:
+      """
+      Using cached file '{SUITE_CACHE_DIR}/plugin/hello-dolly-1.7.2.zip'...
+      """
+    And STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+
+  Scenario: Clean the cache on shutdown when the random check picks this run
+    Given an empty directory
+    And an empty cache
+    And a file-a-12345.tmp cache file:
+      """
+      -empty-
+      """
+    And a pick-cache-clean.php file:
+      """
+      <?php
+      // Seed mt_rand() so that the 1 in 51 check in WP_CLI::get_cache() schedules the cleanup.
+      for ( $seed = 0; ; $seed++ ) {
+        mt_srand( $seed );
+        if ( 0 === mt_rand( 0, 50 ) ) {
+          break;
+        }
+      }
+      mt_srand( $seed );
+      WP_CLI::get_cache();
+      """
+
+    When I run `WP_CLI_CACHE_MAX_SIZE=1 wp --require=pick-cache-clean.php cli version`
+    Then the {SUITE_CACHE_DIR}/file-a-12345.tmp file should not exist
