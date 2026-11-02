@@ -355,8 +355,13 @@ Feature: Context handling via --context global flag
 
   Scenario: Admin context does not leave persistent session tokens behind
     Given a WP install
+    And a session-tokens.php file:
+      """
+      <?php
+      echo count( WP_Session_Tokens::get_instance( 1 )->get_all() ) . ' ' . ( wp_validate_auth_cookie( $_COOKIE[ AUTH_COOKIE ], 'auth' ) ?: 'invalid' );
+      """
 
-    When I run `wp --context=admin eval "echo count( WP_Session_Tokens::get_instance( 1 )->get_all() ) . ' ' . ( wp_validate_auth_cookie( \$_COOKIE[ AUTH_COOKIE ], 'auth' ) ?: 'invalid' );"`
+    When I run `wp --context=admin eval-file session-tokens.php`
     Then STDOUT should be:
       """
       1 1
