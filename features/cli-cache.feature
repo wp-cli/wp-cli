@@ -137,18 +137,18 @@ Feature: CLI Cache
     Given a WP install
     And an empty cache
 
-    When I run `wp plugin install hello-dolly --version=1.7.2`
+    When I run `wp plugin install debug-bar --version=1.1.6`
     Then STDOUT should not contain:
       """
       Using cached file
       """
-    And the {SUITE_CACHE_DIR}/plugin/hello-dolly-1.7.2.zip file should exist
+    And the {SUITE_CACHE_DIR}/plugin/debug-bar-1.1.6.zip file should exist
 
-    When I run `wp plugin delete hello-dolly`
-    And I run `wp plugin install hello-dolly --version=1.7.2`
+    When I run `wp plugin delete debug-bar`
+    And I run `wp plugin install debug-bar --version=1.1.6`
     Then STDOUT should contain:
       """
-      Using cached file '{SUITE_CACHE_DIR}/plugin/hello-dolly-1.7.2.zip'...
+      Using cached file '{SUITE_CACHE_DIR}/plugin/debug-bar-1.1.6.zip'...
       """
     And STDOUT should contain:
       """
