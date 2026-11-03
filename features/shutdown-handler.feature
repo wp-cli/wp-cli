@@ -343,6 +343,7 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     Given a pre-load-error.php file:
       """
       <?php
+      // phpcs:ignore WordPress.PHP.IniSet.display_errors_Disallowed
       ini_set( 'display_errors', 0 );
       trigger_error( 'Pre-WordPress fatal error occurred', E_USER_ERROR );
       """
