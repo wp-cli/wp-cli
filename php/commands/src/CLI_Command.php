@@ -160,7 +160,11 @@ class CLI_Command extends WP_CLI_Command {
 			$packages_dir = null;
 		}
 
-		$memory_limit = ini_get( 'memory_limit' );
+		$memory_limit              = ini_get( 'memory_limit' );
+		$os_virtual_memory         = $this->get_virtual_memory_ulimit();
+		$os_virtual_memory_display = is_int( $os_virtual_memory )
+			? $this->format_kilobytes( $os_virtual_memory )
+			: $os_virtual_memory;
 
 		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$info = [
@@ -169,6 +173,7 @@ class CLI_Command extends WP_CLI_Command {
 				'php_binary_path'          => $php_bin,
 				'php_version'              => PHP_VERSION,
 				'php_memory_limit'         => $memory_limit,
+				'os_virtual_memory_limit'  => $os_virtual_memory_display,
 				'php_ini_used'             => get_cfg_var( 'cfg_file_path' ),
 				'mysql_binary_path'        => Utils\get_mysql_binary_path(),
 				'mysql_version'            => Utils\get_mysql_version(),
@@ -194,6 +199,7 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::line( "PHP binary:\t" . $php_bin );
 			WP_CLI::line( "PHP version:\t" . PHP_VERSION );
 			WP_CLI::line( "PHP memory limit:\t" . $memory_limit );
+			WP_CLI::line( "OS virtual memory limit (ulimit -v):\t" . $os_virtual_memory_display );
 			WP_CLI::line( "php.ini used:\t" . $cfg_file_path );
 			WP_CLI::line( "MySQL binary:\t" . Utils\get_mysql_binary_path() );
 			WP_CLI::line( "MySQL version:\t" . Utils\get_mysql_version() );
@@ -209,27 +215,28 @@ class CLI_Command extends WP_CLI_Command {
 		}
 
 		// Emit a warning if the memory limit is set to a low value.
-		$this->check_memory_limit( $memory_limit );
+		$this->check_memory_limit( $memory_limit, $os_virtual_memory );
 	}
 
 	/**
 	 * Checks if the PHP memory limit is too low and emits a warning if needed.
 	 *
-	 * @param string $memory_limit The current memory limit value from ini_get().
+	 * Also checks for a restrictive OS-level virtual memory limit (`ulimit -v`),
+	 * which is a separate constraint from PHP's `memory_limit` and a common
+	 * cause of "mmap() failed: Cannot allocate memory" errors on shared hosting
+	 * even when `memory_limit` itself looks sufficient.
+	 *
+	 * @param string     $memory_limit         The current memory limit value from ini_get().
+	 * @param int|string $os_virtual_memory_kb The `ulimit -v` value in kilobytes, or 'unlimited'/'n/a'.
 	 * @return void
 	 */
-	private function check_memory_limit( $memory_limit ) {
-		// If memory limit is -1 (unlimited), no warning needed.
-		if ( '-1' === $memory_limit ) {
-			return;
-		}
-
-		// Convert memory limit string (e.g., "256M", "1G") to bytes.
-		$limit_bytes = $this->convert_to_bytes( $memory_limit );
+	private function check_memory_limit( $memory_limit, $os_virtual_memory_kb = 'n/a' ) {
+		// Convert memory limit string (e.g., "256M", "1G") to bytes. Returns -1 if unlimited.
+		$php_limit_bytes = ( '-1' === $memory_limit ) ? -1 : $this->convert_to_bytes( $memory_limit );
 
 		// Warn if limit is below 512M.
 		// This is a reasonable threshold for CLI operations.
-		if ( $limit_bytes > 0 && $limit_bytes < self::MEMORY_LIMIT_WARNING_THRESHOLD ) {
+		if ( $php_limit_bytes > 0 && $php_limit_bytes < self::MEMORY_LIMIT_WARNING_THRESHOLD ) {
 			WP_CLI::warning(
 				sprintf(
 					'PHP memory limit is set to %s. This may be too low for some WP-CLI operations. Consider increasing it to at least 512M or setting it to -1 (unlimited) for CLI usage.',
@@ -237,6 +244,87 @@ class CLI_Command extends WP_CLI_Command {
 				)
 			);
 		}
+
+		if ( ! is_int( $os_virtual_memory_kb ) ) {
+			return;
+		}
+
+		// When PHP's own memory_limit is unlimited, fall back to the same
+		// threshold used above as a reasonable reference point.
+		$reference_bytes = ( -1 === $php_limit_bytes ) ? self::MEMORY_LIMIT_WARNING_THRESHOLD : $php_limit_bytes;
+		$os_limit_bytes  = $os_virtual_memory_kb * 1024;
+
+		if ( $reference_bytes > 0 && $os_limit_bytes < $reference_bytes ) {
+			$php_limit_description = ( -1 === $php_limit_bytes )
+				? 'unlimited'
+				: $memory_limit;
+
+			WP_CLI::warning(
+				sprintf(
+					"This shell's OS-level virtual memory limit (`ulimit -v`) is set to %s, which is lower than PHP's memory limit (%s). This is a common cause of \"mmap() failed: Cannot allocate memory\" errors even though memory_limit itself looks sufficient. Increasing memory_limit will not help; ask your hosting provider to raise the OS-level limit instead.",
+					$this->format_kilobytes( $os_virtual_memory_kb ),
+					$php_limit_description
+				)
+			);
+		}
+	}
+
+	/**
+	 * Gets the OS-level virtual memory limit (`ulimit -v`) currently in effect for this process, in kilobytes.
+	 *
+	 * `ulimit -v` maps to the POSIX `RLIMIT_AS` resource limit, which caps the
+	 * total virtual address space a process may map. It is inherited by child
+	 * processes, so shelling out to a fresh `sh` reports the limit already in
+	 * effect for the running PHP process. This is distinct from PHP's own
+	 * `memory_limit` setting, and some hosting environments (e.g. restrictive
+	 * SSH jails) constrain it independently, and often more tightly.
+	 *
+	 * @return int|string The limit in kilobytes, 'unlimited', or 'n/a' if it could not be determined.
+	 */
+	private function get_virtual_memory_ulimit() {
+		if ( Utils\is_windows() || ! function_exists( 'shell_exec' ) ) {
+			return 'n/a';
+		}
+
+		$output = @shell_exec( 'ulimit -v 2>/dev/null' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+
+		if ( ! is_string( $output ) || '' === trim( $output ) ) {
+			return 'n/a';
+		}
+
+		$output = trim( $output );
+
+		if ( ! is_numeric( $output ) ) {
+			return 'unlimited';
+		}
+
+		return (int) $output;
+	}
+
+	/**
+	 * Formats a kilobyte value as a human-readable string (e.g. "512M").
+	 *
+	 * @param int $kilobytes The value in kilobytes.
+	 * @return string
+	 */
+	private function format_kilobytes( $kilobytes ) {
+		$units      = [ 'K', 'M', 'G', 'T' ];
+		$last_index = count( $units ) - 1;
+		$value      = (float) $kilobytes;
+		$index      = 0;
+
+		while ( $value >= 1024 && $index < $last_index ) {
+			$value /= 1024;
+			++$index;
+		}
+
+		$value = floor( $value * 100 ) / 100;
+
+		if ( floor( $value ) === $value ) {
+			$value = (int) $value;
+		}
+
+		return $value . $units[ $index ];
 	}
 
 	/**
