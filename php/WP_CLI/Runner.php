@@ -1015,7 +1015,7 @@ class Runner {
 			$env_vars .= 'WP_CLI_SSH_RUN=1 ';
 		}
 
-		$wp_binary = Utils\get_env_or_config( 'WP_CLI_SSH_BINARY' ) ?: 'wp';
+		$wp_binary = $this->get_ssh_binary();
 		$wp_args   = array_slice( (array) $GLOBALS['argv'], 1 );
 
 		if ( $this->alias && ! empty( $wp_args[0] ) && ( '@' . $this->alias === $wp_args[0] || "--alias={$this->alias}" === $wp_args[0] ) ) {
@@ -1025,7 +1025,7 @@ class Runner {
 			if ( is_array( $alias_config ) ) {
 				foreach ( $alias_config as $key => $value ) {
 					// Skip connection-specific keys as they are not relevant to the remote WP-CLI instance.
-					if ( in_array( $key, [ 'ssh', 'http', 'proxyjump', 'key', 'ssh_config' ], true ) ) {
+					if ( in_array( $key, [ 'ssh', 'http', 'proxyjump', 'key', 'ssh_config', 'ssh-binary', 'ssh_binary', 'wp-cli', 'wp-cli-path' ], true ) ) {
 						continue;
 					}
 					$runtime_alias[ $key ] = $value;
@@ -1046,7 +1046,7 @@ class Runner {
 		$alias_regex = '#' . Configurator::ALIAS_REGEX . '#';
 		/** @var string $v */
 		foreach ( $wp_args as $k => $v ) {
-			if ( preg_match( '#^--ssh(?:-args)?(?:=|$)|--alias=#', $v ) || preg_match( $alias_regex, $v ) ) {
+			if ( preg_match( '#^--ssh(?:-args|-binary)?(?:=|$)|--alias=#', $v ) || preg_match( $alias_regex, $v ) ) {
 				unset( $wp_args[ $k ] );
 			}
 		}
@@ -1341,6 +1341,47 @@ class Runner {
 		}
 
 		return $validated;
+	}
+
+	/**
+	 * Get the binary command to execute remotely over SSH.
+	 *
+	 * Checks the runtime CLI config first, then the alias-level configuration,
+	 * then global config, then WP_CLI_SSH_BINARY environment variable / config,
+	 * falling back to 'wp'.
+	 *
+	 * @return string
+	 */
+	public function get_ssh_binary(): string {
+		if ( isset( $this->runtime_config['ssh-binary'] ) && is_string( $this->runtime_config['ssh-binary'] ) && '' !== trim( $this->runtime_config['ssh-binary'] ) ) {
+			return trim( $this->runtime_config['ssh-binary'] );
+		}
+
+		if ( $this->alias && isset( $this->aliases[ $this->alias ] ) && is_array( $this->aliases[ $this->alias ] ) ) {
+			$alias_config = $this->aliases[ $this->alias ];
+			foreach ( [ 'ssh-binary', 'ssh_binary', 'wp-cli', 'wp-cli-path' ] as $bin_key ) {
+				if ( isset( $alias_config[ $bin_key ] ) ) {
+					if ( ! is_string( $alias_config[ $bin_key ] ) ) {
+						WP_CLI::error( sprintf( 'Invalid SSH %s: value must be a string.', $bin_key ) );
+					}
+					if ( '' !== trim( $alias_config[ $bin_key ] ) ) {
+						return trim( $alias_config[ $bin_key ] );
+					}
+				}
+			}
+		}
+
+		$config_binary = WP_CLI::get_config( 'ssh-binary' );
+		if ( is_string( $config_binary ) && '' !== trim( $config_binary ) ) {
+			return trim( $config_binary );
+		}
+
+		$env_binary = Utils\get_env_or_config( 'WP_CLI_SSH_BINARY' );
+		if ( is_string( $env_binary ) && '' !== trim( $env_binary ) ) {
+			return trim( $env_binary );
+		}
+
+		return 'wp';
 	}
 
 	/**
