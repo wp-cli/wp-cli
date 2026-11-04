@@ -137,10 +137,14 @@ class WP_CLI {
 
 		if ( ! $cache ) {
 			$dir      = Utils\get_cache_dir();
-			$ttl      = (int) Utils\get_env_or_config( 'WP_CLI_CACHE_EXPIRY' ) ? : 15552000;
-			$max_size = (int) Utils\get_env_or_config( 'WP_CLI_CACHE_MAX_SIZE' ) ? : 314572800;
-			// 6 months, 300mb
-			$cache = new FileCache( $dir, $ttl, $max_size );
+			$ttl      = Utils\get_env_or_config( 'WP_CLI_CACHE_EXPIRY' );
+			$max_size = Utils\get_env_or_config( 'WP_CLI_CACHE_MAX_SIZE' );
+			// 6 months, 300mb. A value of 0 turns that limit off.
+			$cache = new FileCache(
+				$dir,
+				( (int) $ttl || is_numeric( $ttl ) ) ? (int) $ttl : 15552000,
+				( (int) $max_size || is_numeric( $max_size ) ) ? (int) $max_size : 314572800
+			);
 
 			// Clean older files on shutdown with 1/50 probability.
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand -- no crypto and WP not loaded.
