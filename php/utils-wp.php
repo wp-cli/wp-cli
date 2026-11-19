@@ -507,12 +507,26 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 		if ( empty( $tables_sql ) ) {
 			$tables_sql = $wpdb->prepare( 'SHOW TABLES LIKE %s', esc_like( $wpdb->get_blog_prefix() ) . '%' );
 		} else {
-			$tables_sql .= sprintf( " AND %s LIKE '%s'", esc_sql_ident( 'Tables_in_' . $wpdb->dbname ), esc_like( $wpdb->get_blog_prefix() ) . '%' );
+			$dbname = ! empty( $wpdb->dbname ) ? $wpdb->dbname : (string) $wpdb->get_var( 'SELECT DATABASE()' );
+			if ( ! empty( $dbname ) ) {
+				$tables_sql .= sprintf( " AND %s LIKE '%s'", esc_sql_ident( 'Tables_in_' . $dbname ), esc_like( $wpdb->get_blog_prefix() ) . '%' );
+			}
 		}
 
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared, see above.
 		$tables = $wpdb->get_col( $tables_sql, 0 );
 
+		if ( ! empty( $tables_sql ) && empty( $dbname ) ) {
+			$blog_prefix = $wpdb->get_blog_prefix();
+			$tables      = array_values(
+				array_filter(
+					$tables,
+					function ( $table ) use ( $blog_prefix ) {
+						return 0 === strpos( $table, $blog_prefix );
+					}
+				)
+			);
+		}
 	} else {
 		$scope = get_flag_value( $assoc_args, 'scope', 'all' );
 
@@ -538,9 +552,18 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 			$wp_tables = array_values( array_diff( $wp_tables, [ $wpdb->sitecategories ] ) );
 		}
 
-		// Note: BC change 1.5.0, tables are sorted (via TABLES view).
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- uses esc_sql_ident() and $wpdb->_escape().
-		$tables = $wpdb->get_col( sprintf( "SHOW TABLES WHERE %s IN ('%s')", esc_sql_ident( 'Tables_in_' . $wpdb->dbname ), implode( "', '", $wpdb->_escape( $wp_tables ) ) ) );
+		$dbname = ! empty( $wpdb->dbname ) ? $wpdb->dbname : (string) $wpdb->get_var( 'SELECT DATABASE()' );
+
+		if ( empty( $dbname ) ) {
+			// Fallback when database name cannot be determined (e.g. drop-ins like HyperDB or LudicrousDB).
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is safe.
+			$all_tables = (array) $wpdb->get_col( 'SHOW TABLES', 0 );
+			$tables     = array_values( array_intersect( $wp_tables, $all_tables ) );
+		} else {
+			// Note: BC change 1.5.0, tables are sorted (via TABLES view).
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- uses esc_sql_ident() and $wpdb->_escape().
+			$tables = $wpdb->get_col( sprintf( "SHOW TABLES WHERE %s IN ('%s')", esc_sql_ident( 'Tables_in_' . $dbname ), implode( "', '", $wpdb->_escape( $wp_tables ) ) ) );
+		}
 
 		// Filter tables after the query for improved SQLite compatibility: drop-ins
 		// older than the MySQL-on-SQLite driver ignore the `WHERE` clause above and
