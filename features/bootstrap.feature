@@ -574,3 +574,66 @@ Feature: Bootstrap WP-CLI
     And the executed_index.txt file should not exist
     And the executed_requests.txt file should not exist
 
+
+  Scenario: Restart with OPcache's file cache when WP_CLI_OPCACHE is set
+    Given an empty directory
+    And a check-opcache.php file:
+      """
+      <?php
+      $expected = getenv( 'WP_CLI_CACHE_DIR' ) . '/opcache';
+      // Without OPcache, WP-CLI runs as usual.
+      if ( ! extension_loaded( 'Zend OPcache' ) || ( ini_get( 'opcache.enable_cli' ) && ini_get( 'opcache.file_cache' ) === $expected ) ) {
+          echo "OPcache: ok\n";
+      }
+      echo 'STDIN: ', trim( (string) fgets( STDIN ) ), "\n";
+      echo 'memory_limit: ', ini_get( 'memory_limit' ), "\n";
+      exit( 3 );
+      """
+    # The tests may launch WP-CLI with a file cache of their own, which these settings turn off again.
+    And a wp-without-opcache file:
+      """
+      #!/bin/sh
+      WP_CLI_PHP_ARGS="-d opcache.enable_cli=0 -d opcache.file_cache= -d opcache.file_cache_only=0 $EXTRA_PHP_ARGS" WP_CLI_CACHE_DIR="$PWD/cache" exec wp "$@"
+      """
+    And I run `chmod +x wp-without-opcache`
+
+    When I try `echo hello | WP_CLI_OPCACHE=1 EXTRA_PHP_ARGS='-d memory_limit=321M' ./wp-without-opcache eval-file check-opcache.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      OPcache: ok
+      STDIN: hello
+      memory_limit: 321M
+      """
+    And STDERR should be empty
+    And the return code should be 3
+
+    When I run `./wp-without-opcache eval 'echo ini_get( "opcache.file_cache" ) ? "file cache" : "no file cache";' --skip-wordpress`
+    Then STDOUT should be:
+      """
+      no file cache
+      """
+
+    When I run `WP_CLI_OPCACHE=1 EXTRA_PHP_ARGS='-d opcache.save_comments=0 -d opcache.validate_timestamps=0' ./wp-without-opcache eval 'echo ( ! extension_loaded( "Zend OPcache" ) || ( ini_get( "opcache.save_comments" ) && ini_get( "opcache.validate_timestamps" ) ) ) ? "ok" : "not ok";' --skip-wordpress`
+    Then STDOUT should be:
+      """
+      ok
+      """
+
+    When I run `WP_CLI_OPCACHE=1 EXTRA_PHP_ARGS='-d opcache.enable=0' ./wp-without-opcache eval 'echo ini_get( "opcache.file_cache" ) ? "file cache" : "no file cache";' --skip-wordpress`
+    Then STDOUT should be:
+      """
+      no file cache
+      """
+
+    Given a wp-cli.yml file:
+      """
+      env:
+        WP_CLI_OPCACHE: 1
+      """
+
+    When I try `echo hello | ./wp-without-opcache eval-file check-opcache.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      OPcache: ok
+      """
+    And the return code should be 3
