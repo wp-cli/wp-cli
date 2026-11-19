@@ -3,6 +3,7 @@
 namespace WP_CLI;
 
 use Exception;
+use ReflectionClass;
 use RuntimeException;
 use WP_CLI;
 
@@ -257,6 +258,94 @@ final class RequestsLibrary {
 	}
 
 	/**
+	 * Determine whether an already-loaded Requests class originated from WordPress Core.
+	 *
+	 * @param class-string $class_name Class name to inspect.
+	 * @param string|null  $wp_root    Optional WordPress root path to compare against.
+	 * @return string Either `self::SOURCE_WP_CORE` or `self::SOURCE_WP_CLI`.
+	 */
+	private static function detect_class_source( string $class_name, ?string $wp_root = null ): string {
+		$root = $wp_root;
+		if ( null === $root && defined( 'ABSPATH' ) ) {
+			$root = ABSPATH;
+		}
+
+		if ( null === $root || '' === $root ) {
+			return self::SOURCE_WP_CLI;
+		}
+
+		$includes_path     = defined( 'WPINC' ) ? WPINC : 'wp-includes';
+		$core_includes_dir = rtrim( $root, '/\\' ) . '/' . trim( $includes_path, '/\\' );
+		if ( null === $wp_root && ! file_exists( $core_includes_dir . '/version.php' ) ) {
+			return self::SOURCE_WP_CLI;
+		}
+
+		$reflection = new ReflectionClass( $class_name );
+		$file       = $reflection->getFileName();
+		if ( false === $file ) {
+			return self::SOURCE_WP_CLI;
+		}
+
+		$normalized_file     = Path::normalize( realpath( $file ) ?: $file );
+		$normalized_includes = Path::trailingslashit( Path::normalize( realpath( $core_includes_dir ) ?: $core_includes_dir ) );
+
+		if ( 0 === strpos( $normalized_file, $normalized_includes ) ) {
+			return self::SOURCE_WP_CORE;
+		}
+
+		return self::SOURCE_WP_CLI;
+	}
+
+	/**
+	 * Synchronize metadata with an already-loaded Requests implementation.
+	 *
+	 * Ensures that when Requests (for example Core's v1 `\Requests`) was loaded
+	 * before WP-CLI registered an autoloader, `RequestsLibrary` reflects the
+	 * active version, source, and class name instead of keeping v2 defaults.
+	 *
+	 * @param string|null $wp_root Optional WordPress root path to determine source.
+	 * @return void
+	 */
+	private static function sync_loaded_meta( ?string $wp_root = null ): void {
+		if (
+			class_exists( self::CLASS_NAME_V1, false )
+			&& ! class_exists( self::CLASS_NAME_V2, false )
+			&& ! class_exists( '\\WpOrg\\Requests\\Autoload', false )
+		) {
+			$source = self::detect_class_source( self::CLASS_NAME_V1, $wp_root );
+			if ( self::VERSION_V1 !== self::$version ) {
+				self::set_version( self::VERSION_V1 );
+			}
+			if ( $source !== self::$source ) {
+				self::set_source( $source );
+			}
+			if ( self::CLASS_NAME_V1 !== self::$class_name ) {
+				self::set_class_name( self::CLASS_NAME_V1 );
+			}
+			return;
+		}
+
+		if ( class_exists( '\\WpOrg\\Requests\\Autoload', false ) ) {
+			$v2_class = '\\WpOrg\\Requests\\Autoload';
+		} elseif ( class_exists( self::CLASS_NAME_V2, false ) ) {
+			$v2_class = self::CLASS_NAME_V2;
+		} else {
+			return;
+		}
+
+		$source = self::detect_class_source( $v2_class, $wp_root );
+		if ( self::VERSION_V2 !== self::$version ) {
+			self::set_version( self::VERSION_V2 );
+		}
+		if ( $source !== self::$source ) {
+			self::set_source( $source );
+		}
+		if ( self::CLASS_NAME_V2 !== self::$class_name ) {
+			self::set_class_name( self::CLASS_NAME_V2 );
+		}
+	}
+
+	/**
 	 * Register a deferred SPL autoloader that loads WP-CLI's bundled Requests
 	 * library on demand if a `WpOrg\Requests\*` class is referenced before
 	 * WordPress loads.
@@ -264,7 +353,12 @@ final class RequestsLibrary {
 	 * @return void
 	 */
 	public static function register_deferred_autoloader(): void {
-		if ( self::is_loaded() || null !== self::$deferred_autoloader ) {
+		if ( self::is_loaded() ) {
+			self::sync_loaded_meta();
+			return;
+		}
+
+		if ( null !== self::$deferred_autoloader ) {
 			return;
 		}
 
@@ -304,6 +398,7 @@ final class RequestsLibrary {
 		self::unregister_deferred_autoloader();
 
 		if ( self::is_loaded() ) {
+			self::sync_loaded_meta();
 			return;
 		}
 
@@ -336,7 +431,8 @@ final class RequestsLibrary {
 		self::unregister_deferred_autoloader();
 
 		if ( self::is_loaded() ) {
-			return false;
+			self::sync_loaded_meta( $wp_root );
+			return self::is_core();
 		}
 
 		$wp_root       = rtrim( $wp_root, '/\\' );
@@ -383,6 +479,10 @@ final class RequestsLibrary {
 	 */
 	public static function register_autoloader() {
 		self::unregister_deferred_autoloader();
+
+		if ( self::is_loaded() ) {
+			self::sync_loaded_meta();
+		}
 
 		$includes_path = defined( 'WPINC' ) ? WPINC : 'wp-includes';
 
