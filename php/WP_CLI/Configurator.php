@@ -74,6 +74,10 @@ class Configurator {
 		'proxyjump',
 		'key',
 		'ssh_config',
+		'ssh-binary',
+		'ssh_binary',
+		'wp-cli',
+		'wp-cli-path',
 	];
 
 	/**
@@ -510,7 +514,7 @@ class Configurator {
 				self::arrayify( $value );
 				$this->config[ $key ] = array_merge( (array) $this->config[ $key ], $value );
 			} else {
-				if ( $current_alias && in_array( $key, self::$alias_spec, true ) && ! in_array( $key, [ 'ssh', 'ssh-args', 'proxyjump', 'key', 'ssh_config' ], true ) ) {
+				if ( $current_alias && in_array( $key, self::$alias_spec, true ) && ! in_array( $key, [ 'ssh', 'ssh-args', 'proxyjump', 'key', 'ssh_config', 'ssh-binary', 'ssh_binary', 'wp-cli', 'wp-cli-path' ], true ) ) {
 					continue;
 				}
 				$this->config[ $key ] = $value;

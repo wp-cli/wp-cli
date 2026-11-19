@@ -27,6 +27,12 @@ return [
 		'default'  => [],
 	],
 
+	'ssh-binary'        => [
+		'runtime' => '=<binary>',
+		'file'    => '<binary>',
+		'desc'    => 'Path to or command for the remote WP-CLI executable (defaults to "wp" or WP_CLI_SSH_BINARY).',
+	],
+
 	'http'              => [
 		'runtime' => '=<http>',
 		'file'    => '<http>',
