@@ -2367,6 +2367,12 @@ class Runner {
 			);
 		}
 
+		// Load WordPress Core's Requests autoloader (or fall back to the bundled
+		// version) now that WordPress is actually being loaded.
+		if ( ! RequestsLibrary::register_wp_core_autoloader( ABSPATH ) ) {
+			RequestsLibrary::register_bundled_autoloader();
+		}
+
 		// Save the current autoloaders so they can be restored after WordPress
 		// loads. This ensures that WP-CLI and package autoloaders take
 		// precedence over autoloaders registered by plugins.
