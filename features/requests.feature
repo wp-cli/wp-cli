@@ -283,31 +283,62 @@ Feature: Requests integration with both v1 and v2
       }
       """
 
-  Scenario: Syncs RequestsLibrary metadata when a v1 Requests implementation is already loaded
+  Scenario: Syncs RequestsLibrary metadata and registers loader when a v1 Requests implementation is already loaded
     Given an empty directory
+    And a Requests/Hooks.php file:
+      """
+      <?php
+      class Requests_Hooks {}
+      """
     And a custom-requests-v1.php file:
       """
       <?php
       class Requests {
-          public static function register_autoloader() {}
+          public static $register_calls = 0;
+          public static function register_autoloader() {
+              ++self::$register_calls;
+              spl_autoload_register( array( 'Requests', 'autoloader' ) );
+          }
+          public static function autoloader( $class_name ) {
+              if ( 'Requests_Hooks' === $class_name ) {
+                  require_once __DIR__ . '/Requests/Hooks.php';
+              }
+          }
       }
+      """
+    And a core-v1/wp-includes/Requests/Hooks.php file:
+      """
+      <?php
+      class Requests_Hooks {}
       """
     And a core-v1/wp-includes/class-requests.php file:
       """
       <?php
       class Requests {
-          public static function register_autoloader() {}
+          public static $register_calls = 0;
+          public static function register_autoloader() {
+              ++self::$register_calls;
+              spl_autoload_register( array( 'Requests', 'autoloader' ) );
+          }
+          public static function autoloader( $class_name ) {
+              if ( 'Requests_Hooks' === $class_name ) {
+                  require_once __DIR__ . '/Requests/Hooks.php';
+              }
+          }
       }
       """
     And a check-preloaded-cli.php file:
       """
       <?php
       WP_CLI\RequestsLibrary::register_autoloader();
+      WP_CLI\RequestsLibrary::register_autoloader();
       echo (string) json_encode(
           array(
-              'version'    => WP_CLI\RequestsLibrary::get_version(),
-              'source'     => WP_CLI\RequestsLibrary::get_source(),
-              'class_name' => WP_CLI\RequestsLibrary::get_class_name(),
+              'version'        => WP_CLI\RequestsLibrary::get_version(),
+              'source'         => WP_CLI\RequestsLibrary::get_source(),
+              'class_name'     => WP_CLI\RequestsLibrary::get_class_name(),
+              'register_calls' => \Requests::$register_calls,
+              'has_hooks'      => class_exists( 'Requests_Hooks' ),
           )
       );
       """
@@ -315,13 +346,16 @@ Feature: Requests integration with both v1 and v2
       """
       <?php
       $loaded = WP_CLI\RequestsLibrary::register_wp_core_autoloader( getcwd() . '/core-v1' );
+      WP_CLI\RequestsLibrary::register_autoloader();
       echo (string) json_encode(
           array(
-              'loaded'       => $loaded,
-              'version'      => WP_CLI\RequestsLibrary::get_version(),
-              'source'       => WP_CLI\RequestsLibrary::get_source(),
-              'class_name'   => WP_CLI\RequestsLibrary::get_class_name(),
-              'v2_transport' => interface_exists( '\WpOrg\Requests\Transport' ),
+              'loaded'         => $loaded,
+              'version'        => WP_CLI\RequestsLibrary::get_version(),
+              'source'         => WP_CLI\RequestsLibrary::get_source(),
+              'class_name'     => WP_CLI\RequestsLibrary::get_class_name(),
+              'register_calls' => \Requests::$register_calls,
+              'has_hooks'      => class_exists( 'Requests_Hooks' ),
+              'v2_transport'   => interface_exists( '\WpOrg\Requests\Transport' ),
           )
       );
       """
@@ -332,7 +366,9 @@ Feature: Requests integration with both v1 and v2
       {
         "version": "v1",
         "source": "wp-cli",
-        "class_name": "\\Requests"
+        "class_name": "\\Requests",
+        "register_calls": 1,
+        "has_hooks": true
       }
       """
 
@@ -344,6 +380,8 @@ Feature: Requests integration with both v1 and v2
         "version": "v1",
         "source": "wp-core",
         "class_name": "\\Requests",
+        "register_calls": 1,
+        "has_hooks": true,
         "v2_transport": false
       }
       """

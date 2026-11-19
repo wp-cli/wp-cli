@@ -312,11 +312,12 @@ final class RequestsLibrary {
 			&& ! class_exists( self::CLASS_NAME_V2, false )
 			&& ! class_exists( '\\WpOrg\\Requests\\Autoload', false )
 		) {
-			$source = self::detect_class_source( self::CLASS_NAME_V1, $wp_root );
-			if ( self::VERSION_V1 !== self::$version ) {
+			$source          = self::detect_class_source( self::CLASS_NAME_V1, $wp_root );
+			$version_changed = self::VERSION_V1 !== self::$version;
+			if ( $version_changed ) {
 				self::set_version( self::VERSION_V1 );
 			}
-			if ( $source !== self::$source ) {
+			if ( ( $version_changed || null !== $wp_root || self::SOURCE_WP_CORE === $source ) && $source !== self::$source ) {
 				self::set_source( $source );
 			}
 			if ( self::CLASS_NAME_V1 !== self::$class_name ) {
@@ -333,11 +334,12 @@ final class RequestsLibrary {
 			return;
 		}
 
-		$source = self::detect_class_source( $v2_class, $wp_root );
-		if ( self::VERSION_V2 !== self::$version ) {
+		$source          = self::detect_class_source( $v2_class, $wp_root );
+		$version_changed = self::VERSION_V2 !== self::$version;
+		if ( $version_changed ) {
 			self::set_version( self::VERSION_V2 );
 		}
-		if ( $source !== self::$source ) {
+		if ( ( $version_changed || null !== $wp_root || self::SOURCE_WP_CORE === $source ) && $source !== self::$source ) {
 			self::set_source( $source );
 		}
 		if ( self::CLASS_NAME_V2 !== self::$class_name ) {
@@ -419,6 +421,32 @@ final class RequestsLibrary {
 	}
 
 	/**
+	 * Ensure the Requests v1 autoloader is registered without adding duplicates.
+	 *
+	 * @return void
+	 */
+	private static function ensure_v1_autoloader_registered(): void {
+		if ( ! class_exists( self::CLASS_NAME_V1, false ) ) {
+			return;
+		}
+
+		foreach ( spl_autoload_functions() ?: [] as $autoloader ) {
+			if (
+				is_array( $autoloader )
+				&& 2 === count( $autoloader )
+				&& is_string( $autoloader[0] )
+				&& 'requests' === strtolower( ltrim( $autoloader[0], '\\' ) )
+				&& 'autoloader' === strtolower( $autoloader[1] )
+			) {
+				return;
+			}
+		}
+
+		// @phpstan-ignore staticMethod.deprecatedClass
+		\Requests::register_autoloader();
+	}
+
+	/**
 	 * Load and register the Requests autoloader from a WordPress Core installation.
 	 *
 	 * Should only be called once WP-CLI has committed to loading WordPress from
@@ -432,6 +460,12 @@ final class RequestsLibrary {
 
 		if ( self::is_loaded() ) {
 			self::sync_loaded_meta( $wp_root );
+			if ( self::is_v1() ) {
+				self::ensure_v1_autoloader_registered();
+			} elseif ( class_exists( '\\WpOrg\\Requests\\Autoload', false ) ) {
+				// @phpstan-ignore staticMethod.internal
+				\WpOrg\Requests\Autoload::register();
+			}
 			return self::is_core();
 		}
 
@@ -457,8 +491,7 @@ final class RequestsLibrary {
 			require_once $wp_root . '/' . $includes_path . '/class-requests.php';
 
 			if ( class_exists( '\\Requests', false ) ) {
-				// @phpstan-ignore staticMethod.deprecatedClass
-				\Requests::register_autoloader();
+				self::ensure_v1_autoloader_registered();
 				self::set_version( self::VERSION_V1 );
 				self::set_source( self::SOURCE_WP_CORE );
 				self::set_class_name( self::CLASS_NAME_V1 );
@@ -486,14 +519,15 @@ final class RequestsLibrary {
 
 		$includes_path = defined( 'WPINC' ) ? WPINC : 'wp-includes';
 
-		if ( self::is_v1() && ! class_exists( self::CLASS_NAME_V1 ) ) {
-			if ( self::is_core() ) {
-				require_once ABSPATH . $includes_path . '/class-requests.php';
-			} else {
-				require_once WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests.php';
+		if ( self::is_v1() ) {
+			if ( ! class_exists( self::CLASS_NAME_V1, false ) ) {
+				if ( self::is_core() ) {
+					require_once ABSPATH . $includes_path . '/class-requests.php';
+				} else {
+					require_once WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests.php';
+				}
 			}
-			// @phpstan-ignore staticMethod.deprecatedClass
-			\Requests::register_autoloader();
+			self::ensure_v1_autoloader_registered();
 		}
 
 		if ( self::is_v2() && ! class_exists( self::CLASS_NAME_V2 ) ) {
