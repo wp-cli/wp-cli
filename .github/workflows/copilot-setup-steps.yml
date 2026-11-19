@@ -52,7 +52,7 @@ jobs:
       - name: Setup MySQL Server
         if: steps.check_behat_file.outputs.files_exists == 'true'
         background: true
-        uses: shogo82148/actions-setup-mysql@1d4ebc60ba1227dd13fc7e6ba845bd3997928d75 # v1
+        uses: shogo82148/actions-setup-mysql@13a38f2af408e58a0c80168fc620a63a15357339 # v1
         with:
           mysql-version: '8.0' # Standard MySQL version for these tests
           auto-start: true

@@ -1966,8 +1966,25 @@ function get_php_binary() {
  */
 function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = null, $other_options = null ) {
 	if ( is_windows() ) {
+		// proc_open() passes the current environment on when given an empty one.
+		$inherit = empty( $env );
+
 		// @phpstan-ignore no.private.function
 		$cmd = _proc_open_compat_win_env( $cmd, $env );
+
+		if ( ! empty( $env ) ) {
+			// The variables set in front of the command add to the environment it would get otherwise,
+			// as they do in a POSIX shell.
+			if ( $inherit ) {
+				$env = array_merge( getenv(), $env );
+			}
+
+			// Windows processes cannot do much without SystemRoot, PHP for one fails to start up.
+			$system_root = getenv( 'SystemRoot' );
+			if ( false !== $system_root && ! isset( array_change_key_case( $env, CASE_UPPER )['SYSTEMROOT'] ) ) {
+				$env['SystemRoot'] = $system_root;
+			}
+		}
 
 		// Normalize forward slashes in the executable name for Windows cmd.exe
 		if ( false !== strpos( $cmd, '/' ) ) {
