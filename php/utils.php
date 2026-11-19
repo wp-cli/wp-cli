@@ -964,6 +964,8 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		$options['verify'] = ! empty( ini_get( 'curl.cainfo' ) ) ? ini_get( 'curl.cainfo' ) : true;
 	}
 
+	RequestsLibrary::register_autoloader();
+
 	/**
 	 * Filter HTTP request options used by WP-CLI.
 	 *
@@ -974,8 +976,6 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 	 * @param array $headers Request headers.
 	 */
 	$options = WP_CLI::do_hook( 'http_request_options', $options, $method, $url, $data, $headers );
-
-	RequestsLibrary::register_autoloader();
 
 	/**
 	 * @var callable $request_method

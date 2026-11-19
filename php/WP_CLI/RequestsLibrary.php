@@ -91,6 +91,13 @@ final class RequestsLibrary {
 	private static $class_name = self::CLASS_NAME_V2;
 
 	/**
+	 * Deferred SPL autoloader callback for loading bundled Requests on demand.
+	 *
+	 * @var callable|null
+	 */
+	private static $deferred_autoloader = null;
+
+	/**
 	 * Check if the current version is v1.
 	 *
 	 * @return bool Whether the current version is v1.
@@ -239,6 +246,134 @@ final class RequestsLibrary {
 	}
 
 	/**
+	 * Check whether a Requests library implementation has already been loaded.
+	 *
+	 * @return bool
+	 */
+	private static function is_loaded(): bool {
+		return class_exists( self::CLASS_NAME_V2, false )
+			|| class_exists( self::CLASS_NAME_V1, false )
+			|| class_exists( '\\WpOrg\\Requests\\Autoload', false );
+	}
+
+	/**
+	 * Register a deferred SPL autoloader that loads WP-CLI's bundled Requests
+	 * library on demand if a `WpOrg\Requests\*` class is referenced before
+	 * WordPress loads.
+	 *
+	 * @return void
+	 */
+	public static function register_deferred_autoloader(): void {
+		if ( self::is_loaded() || null !== self::$deferred_autoloader ) {
+			return;
+		}
+
+		self::$deferred_autoloader = static function ( $class_name ) {
+			if ( 0 !== strpos( $class_name, 'WpOrg\\Requests\\' ) ) {
+				return;
+			}
+
+			self::register_bundled_autoloader();
+
+			if ( class_exists( '\\WpOrg\\Requests\\Autoload', false ) ) {
+				\WpOrg\Requests\Autoload::load( $class_name );
+			}
+		};
+
+		spl_autoload_register( self::$deferred_autoloader );
+	}
+
+	/**
+	 * Unregister the deferred SPL autoloader if it is currently registered.
+	 *
+	 * @return void
+	 */
+	public static function unregister_deferred_autoloader(): void {
+		if ( null !== self::$deferred_autoloader ) {
+			spl_autoload_unregister( self::$deferred_autoloader );
+			self::$deferred_autoloader = null;
+		}
+	}
+
+	/**
+	 * Load and register the Requests autoloader bundled with WP-CLI.
+	 *
+	 * @return void
+	 */
+	public static function register_bundled_autoloader(): void {
+		self::unregister_deferred_autoloader();
+
+		if ( self::is_loaded() ) {
+			return;
+		}
+
+		self::maybe_define_wp_cli_root();
+
+		if ( file_exists( WP_CLI_ROOT . '/bundle/rmccue/requests/src/Autoload.php' ) ) {
+			require_once WP_CLI_ROOT . '/bundle/rmccue/requests/src/Autoload.php';
+		} else {
+			require_once WP_CLI_VENDOR_DIR . '/rmccue/requests/src/Autoload.php';
+		}
+
+		// @phpstan-ignore staticMethod.internal
+		\WpOrg\Requests\Autoload::register();
+
+		self::set_version( self::VERSION_V2 );
+		self::set_source( self::SOURCE_WP_CLI );
+		self::set_class_name( self::CLASS_NAME_V2 );
+	}
+
+	/**
+	 * Load and register the Requests autoloader from a WordPress Core installation.
+	 *
+	 * Should only be called once WP-CLI has committed to loading WordPress from
+	 * the given directory.
+	 *
+	 * @param string $wp_root Absolute path to the WordPress root directory.
+	 * @return bool Whether a WordPress Core Requests library was loaded.
+	 */
+	public static function register_wp_core_autoloader( string $wp_root ): bool {
+		self::unregister_deferred_autoloader();
+
+		if ( self::is_loaded() ) {
+			return false;
+		}
+
+		$wp_root       = rtrim( $wp_root, '/\\' );
+		$includes_path = defined( 'WPINC' ) ? WPINC : 'wp-includes';
+
+		// First try to detect a newer Requests version bundled with WordPress.
+		if ( file_exists( $wp_root . '/' . $includes_path . '/Requests/src/Autoload.php' ) ) {
+			require_once $wp_root . '/' . $includes_path . '/Requests/src/Autoload.php';
+
+			if ( class_exists( '\\WpOrg\\Requests\\Autoload', false ) ) {
+				// @phpstan-ignore staticMethod.internal
+				\WpOrg\Requests\Autoload::register();
+				self::set_version( self::VERSION_V2 );
+				self::set_source( self::SOURCE_WP_CORE );
+				self::set_class_name( self::CLASS_NAME_V2 );
+				return true;
+			}
+		}
+
+		// Then see if we can detect the older version bundled with WordPress.
+		if ( file_exists( $wp_root . '/' . $includes_path . '/class-requests.php' ) ) {
+			require_once $wp_root . '/' . $includes_path . '/class-requests.php';
+
+			if ( class_exists( '\\Requests', false ) ) {
+				// @phpstan-ignore staticMethod.deprecatedClass
+				\Requests::register_autoloader();
+				self::set_version( self::VERSION_V1 );
+				self::set_source( self::SOURCE_WP_CORE );
+				self::set_class_name( self::CLASS_NAME_V1 );
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Register the autoloader for the Requests library.
 	 *
 	 * This checks for the detected setup and register the corresponding
@@ -247,6 +382,8 @@ final class RequestsLibrary {
 	 * @return void
 	 */
 	public static function register_autoloader() {
+		self::unregister_deferred_autoloader();
+
 		$includes_path = defined( 'WPINC' ) ? WPINC : 'wp-includes';
 
 		if ( self::is_v1() && ! class_exists( self::CLASS_NAME_V1 ) ) {
@@ -261,17 +398,18 @@ final class RequestsLibrary {
 
 		if ( self::is_v2() && ! class_exists( self::CLASS_NAME_V2 ) ) {
 			if ( self::is_core() ) {
-				require_once ABSPATH . $includes_path . '/Requests/Autoload.php';
+				if ( ! class_exists( '\\WpOrg\\Requests\\Autoload', false ) ) {
+					require_once ABSPATH . $includes_path . '/Requests/src/Autoload.php';
+				}
+				// @phpstan-ignore staticMethod.internal
+				\WpOrg\Requests\Autoload::register();
 			} else {
-				self::maybe_define_wp_cli_root();
-				if ( file_exists( WP_CLI_ROOT . '/bundle/rmccue/requests/src/Autoload.php' ) ) {
-					require_once WP_CLI_ROOT . '/bundle/rmccue/requests/src/Autoload.php';
-				} else {
-					require_once WP_CLI_VENDOR_DIR . '/rmccue/requests/src/Autoload.php';
+				self::register_bundled_autoloader();
+				if ( class_exists( '\\WpOrg\\Requests\\Autoload', false ) ) {
+					// @phpstan-ignore staticMethod.internal
+					\WpOrg\Requests\Autoload::register();
 				}
 			}
-			// @phpstan-ignore staticMethod.internal
-			\WpOrg\Requests\Autoload::register();
 		}
 	}
 
