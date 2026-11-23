@@ -575,6 +575,7 @@ Feature: Bootstrap WP-CLI
     And the executed_requests.txt file should not exist
 
 
+  @skip-windows
   Scenario: Restart with OPcache's file cache when WP_CLI_OPCACHE is set
     Given an empty directory
     And a check-opcache.php file:
@@ -590,10 +591,11 @@ Feature: Bootstrap WP-CLI
       exit( 3 );
       """
     # The tests may launch WP-CLI with a file cache of their own, which these settings turn off again.
+    # WP-CLI doesn't restart while Xdebug is active, so that is turned off as well.
     And a wp-without-opcache file:
       """
       #!/bin/sh
-      WP_CLI_PHP_ARGS="-d opcache.enable_cli=0 -d opcache.file_cache= -d opcache.file_cache_only=0 $EXTRA_PHP_ARGS" WP_CLI_CACHE_DIR="$PWD/cache" exec wp "$@"
+      XDEBUG_MODE=off WP_CLI_PHP_ARGS="-d opcache.enable_cli=0 -d opcache.file_cache= -d opcache.file_cache_only=0 $EXTRA_PHP_ARGS" WP_CLI_CACHE_DIR="$PWD/cache" exec wp "$@"
       """
     And I run `chmod +x wp-without-opcache`
 
