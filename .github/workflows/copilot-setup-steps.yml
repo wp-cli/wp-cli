@@ -46,12 +46,12 @@ jobs:
         id: check_behat_file
         run: echo "files_exists=$(test -f behat.yml && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
-      # Downloading and starting the database server is the slowest part of the
-      # setup and it is independent of PHP and Composer, so it runs in the
-      # background and is waited for right before the test database is prepared.
+      # Not run in the background: Copilot code review builds its workflow from
+      # these steps and failed validation while they used `background` and
+      # `wait-all`. Also, the action unpacks its binaries with the system `tar`,
+      # which fails to load libpcre2 while setup-php upgrades it with apt.
       - name: Setup MySQL Server
         if: steps.check_behat_file.outputs.files_exists == 'true'
-        background: true
         uses: shogo82148/actions-setup-mysql@13a38f2af408e58a0c80168fc620a63a15357339 # v1
         with:
           mysql-version: '8.0' # Standard MySQL version for these tests
@@ -76,9 +76,6 @@ jobs:
         uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
         env:
           COMPOSER_ROOT_VERSION: dev-${{ github.event.repository.default_branch }}
-
-      - name: Wait for the MySQL server
-        wait-all:
 
       - name: Remove system MySQL binary
         if: steps.check_behat_file.outputs.files_exists == 'true'
