@@ -44,11 +44,17 @@ final class OpcacheRestarter extends XdebugHandler {
 	 * @return bool
 	 */
 	protected function requiresRestart( bool $xdebug_active ): bool {
-		if ( $xdebug_active ) {
+		if ( self::is_file_cache_active() ) {
 			return false;
 		}
 
-		return ! self::is_file_cache_active();
+		if ( $xdebug_active ) {
+			\WP_CLI::debug( 'Not restarting with OPcache: Xdebug is active.', 'bootstrap' );
+			return false;
+		}
+
+		\WP_CLI::debug( "Restarting with OPcache's file cache in {$this->cache_dir}", 'bootstrap' );
+		return true;
 	}
 
 	/**

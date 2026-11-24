@@ -68,8 +68,6 @@ final class RestartWithOpcache implements BootstrapStep {
 
 		if ( OpcacheRestarter::is_file_cache_active() ) {
 			WP_CLI::debug( 'Using OPcache\'s file cache in ' . ini_get( 'opcache.file_cache' ), 'bootstrap' );
-		} else {
-			WP_CLI::debug( "Restarting with OPcache's file cache in {$cache_dir}", 'bootstrap' );
 		}
 
 		// Restarts PHP and exits with the restarted process's exit code if the file cache
