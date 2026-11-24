@@ -508,7 +508,8 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 		if ( empty( $tables_sql ) ) {
 			$tables_sql = $wpdb->prepare( 'SHOW TABLES LIKE %s', esc_like( $wpdb->get_blog_prefix() ) . '%' );
 		} else {
-			$dbname = ! empty( $wpdb->dbname ) ? $wpdb->dbname : (string) $wpdb->get_var( 'SELECT DATABASE()' );
+			// SQLite drop-ins do not implement DATABASE(), so only probe on MySQL/MariaDB.
+			$dbname = ( ! empty( $wpdb->dbname ) || 'sqlite' === get_db_type() ) ? (string) $wpdb->dbname : (string) $wpdb->get_var( 'SELECT DATABASE()' );
 			if ( ! empty( $dbname ) ) {
 				$tables_sql .= sprintf( " AND %s LIKE '%s'", esc_sql_ident( 'Tables_in_' . $dbname ), esc_like( $wpdb->get_blog_prefix() ) . '%' );
 			} else {
@@ -556,10 +557,12 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 			$wp_tables = array_values( array_diff( $wp_tables, [ $wpdb->sitecategories ] ) );
 		}
 
-		$dbname = ! empty( $wpdb->dbname ) ? $wpdb->dbname : (string) $wpdb->get_var( 'SELECT DATABASE()' );
+		// SQLite drop-ins do not implement DATABASE(), so only probe on MySQL/MariaDB.
+		$dbname = ( ! empty( $wpdb->dbname ) || 'sqlite' === get_db_type() ) ? (string) $wpdb->dbname : (string) $wpdb->get_var( 'SELECT DATABASE()' );
 
 		if ( empty( $dbname ) ) {
-			// Fallback when database name cannot be determined (e.g. drop-ins like HyperDB or LudicrousDB).
+			// Fallback when database name cannot be determined (e.g. drop-ins like HyperDB or LudicrousDB,
+			// or SQLite drop-ins that leave it empty).
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is safe.
 			$all_tables = (array) $wpdb->get_col( 'SHOW TABLES', 0 );
 			$tables     = array_values( array_intersect( $all_tables, $wp_tables ) );

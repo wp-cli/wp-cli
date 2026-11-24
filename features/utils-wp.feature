@@ -401,6 +401,32 @@ Feature: Utilities that depend on WordPress code
       """
     And STDERR should be empty
 
+  # SQLite drop-ins may leave $wpdb->dbname empty and do not implement DATABASE().
+  @require-sqlite
+  Scenario: Get WP table names on SQLite when $wpdb->dbname is empty
+    Given a WP installation
+    And a table_names.php file:
+      """
+      <?php
+      function test_wp_get_table_names( $args, $assoc_args ) {
+          global $wpdb;
+          $wpdb->dbname = '';
+          $tables       = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
+          if ( $tables ) {
+              echo implode( PHP_EOL, $tables ) . PHP_EOL;
+          }
+      }
+      WP_CLI::add_command( 'get_table_names', 'test_wp_get_table_names' );
+      """
+
+    When I run `wp --require=table_names.php get_table_names 'wp_post*'`
+    Then STDOUT should be:
+      """
+      wp_postmeta
+      wp_posts
+      """
+    And STDERR should be empty
+
   # `wp db query` does not yet work on SQLite,
   # See https://github.com/wp-cli/db-command/issues/234
   @require-mysql
