@@ -179,10 +179,6 @@ Feature: Prompt user for input
     Given a WP installation
     And a value-file file:
       """
-      post_type
-      post
-
-
       post_title,post_name,post_status
       csv
       """
@@ -192,7 +188,7 @@ Feature: Prompt user for input
     When I run `wp post create --post_title="Publish post 2" --post_content="Publish post content" --post_status="publish"`
     Then STDOUT should not be empty
 
-    When I run `wp post list --prompt < value-file`
+    When I run `wp post list --post_type=post --prompt=fields,format < value-file`
     Then STDOUT should match #wp post list --post_type='post' --fields='post_title,post_name,post_status' --format='csv'|wp post list --post_type="post" --fields="post_title,post_name,post_status" --format="csv"#
     And STDOUT should contain:
       """

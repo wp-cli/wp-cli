@@ -1,6 +1,18 @@
 Changelog
 =========
 
+2.0.21
+------
+
+### Overview of changes
+- Update bundled certificates as of 2026-10-20. [#1088]
+    **Note**: this is a security update for the certificate bundle and Requests users using the bundled certificates bundle are advised to update as soon as possible!
+- Fixed: PHP cross-version consistent trimming of strings in light of a change in the upcoming PHP 8.6 release [#1083]
+- General housekeeping.
+
+[#1083]: https://github.com/WordPress/Requests/pull/1083
+[#1088]: https://github.com/WordPress/Requests/pull/1088
+
 2.0.20
 ------
 
