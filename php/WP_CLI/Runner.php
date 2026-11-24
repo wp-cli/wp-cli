@@ -768,8 +768,16 @@ class Runner {
 
 		/**
 		 * Action triggered before WP-CLI attempts to find the command to run.
+		 *
+		 * Callbacks receive the positional arguments the command is looked up from, for
+		 * example `[ 'help', 'post' ]` or, while `wp help post` finds its topic, `[ 'post' ]`.
+		 * This lets commands that are expensive to register be added only when needed.
+		 * The action can fire more than once per run, including before WordPress is loaded.
+		 * Return values are ignored, so every callback receives the same arguments.
+		 *
+		 * @param array<int, string> $args Positional arguments.
 		 */
-		WP_CLI::do_hook( 'find_command_to_run_pre' );
+		WP_CLI::do_hook( 'find_command_to_run_pre', $args );
 
 		$cmd_path = [];
 
@@ -2400,6 +2408,12 @@ class Runner {
 			);
 		}
 
+		// Load WordPress Core's Requests autoloader (or fall back to the bundled
+		// version) now that WordPress is actually being loaded.
+		if ( ! RequestsLibrary::register_wp_core_autoloader( ABSPATH ) ) {
+			RequestsLibrary::register_bundled_autoloader();
+		}
+
 		// Save the current autoloaders so they can be restored after WordPress
 		// loads. This ensures that WP-CLI and package autoloaders take
 		// precedence over autoloaders registered by plugins.
@@ -3147,10 +3161,9 @@ class Runner {
 	 * Enables (almost) full PHP error reporting to stderr.
 	 */
 	private function enable_error_reporting(): void {
-		if ( E_ALL !== error_reporting() ) {
-			// Don't enable E_DEPRECATED as old versions of WP use PHP 4 style constructors and the mysql extension.
-			error_reporting( E_ALL & ~E_DEPRECATED );
-		}
+		// Don't enable E_DEPRECATED, as old versions of WP trigger deprecation notices on newer versions of PHP.
+		// This applies however reporting all errors is configured, so that `-1` and `E_ALL` behave the same.
+		error_reporting( E_ALL & ~E_DEPRECATED );
 		ini_set( 'display_errors', 'stderr' ); // phpcs:ignore WordPress.PHP.IniSet.display_errors_Disallowed
 	}
 }
