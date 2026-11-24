@@ -493,12 +493,13 @@ class WP_CLI {
 	}
 
 	/**
-	 * Check whether a class is loaded, or can be located by a Composer autoloader, without loading it.
+	 * Find out whether a class is loaded, or which Composer autoloader can locate it, without loading it.
 	 *
 	 * @param string $class_name Class name.
-	 * @return bool
+	 * @return bool|\Composer\Autoload\ClassLoader True if the class is loaded already, the autoloader
+	 *                                                that would load it, or false if none can.
 	 */
-	private static function is_class_loadable_without_autoloading( $class_name ) {
+	private static function find_class_loader( $class_name ) {
 		if ( class_exists( $class_name, false ) ) {
 			return true;
 		}
@@ -506,7 +507,7 @@ class WP_CLI {
 		foreach ( spl_autoload_functions() ?: [] as $autoloader ) {
 			if ( is_array( $autoloader ) && $autoloader[0] instanceof \Composer\Autoload\ClassLoader
 				&& $autoloader[0]->findFile( ltrim( $class_name, '\\' ) ) ) {
-				return true;
+				return $autoloader[0];
 			}
 		}
 
@@ -574,12 +575,21 @@ class WP_CLI {
 
 		// Commands registered by class name are only loaded once they are actually needed,
 		// unless arguments are passed that require inspecting the command right away.
-		$is_lazy = is_string( $callable )
+		$class_loader = is_string( $callable )
 			&& false === strpos( $callable, '::' )
 			&& ! function_exists( $callable )
-			&& self::is_class_loadable_without_autoloading( $callable )
+			? self::find_class_loader( $callable )
+			: false;
+		$is_lazy      = is_string( $callable )
+			&& false !== $class_loader
 			&& ! array_intersect( [ 'shortdesc', 'longdesc', 'synopsis', 'when' ], array_keys( $args ) )
 			&& ! getenv( 'WP_CLI_DISABLE_LAZY_COMMANDS' );
+
+		// Autoloaders registered later, such as the one of the Phar when a project
+		// requires its own copy of a bundled command, may provide a different
+		// definition of the same class. Remember which one an eager registration
+		// would have loaded.
+		$class_loader = $class_loader instanceof \Composer\Autoload\ClassLoader ? $class_loader : null;
 
 		$valid = false;
 		if ( $is_lazy ) {
@@ -679,9 +689,9 @@ class WP_CLI {
 		if ( $is_lazy && ! $addition->was_aborted() && ( ! $existing_command || $existing_command instanceof LazyCommand ) ) {
 			/** @var class-string $callable */
 			if ( $existing_command instanceof LazyCommand ) {
-				$existing_command->add_class( $callable );
+				$existing_command->add_class( $callable, $class_loader );
 			} else {
-				$command->add_subcommand( $leaf_name, new LazyCommand( $command, $leaf_name, $callable ) );
+				$command->add_subcommand( $leaf_name, new LazyCommand( $command, $leaf_name, $callable, $class_loader ) );
 			}
 
 			self::debug( "Registering lazy command: {$name}", 'commands' );

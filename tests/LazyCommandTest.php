@@ -1,5 +1,6 @@
 <?php
 
+use Composer\Autoload\ClassLoader;
 use WP_CLI\Dispatcher\CompositeCommand;
 use WP_CLI\Dispatcher\LazyCommand;
 use WP_CLI\DocParser;
@@ -66,6 +67,53 @@ class LazyCommandTest extends TestCase {
 				'Callable "WP_CLI_Missing_Lazy_Command_Class" does not exist, and cannot be registered as `wp lazy-parent child`.',
 				$this->logger->stderr
 			);
+		}
+	}
+
+	public function test_class_is_loaded_by_the_autoloader_that_located_it_on_registration(): void {
+		$dir = sys_get_temp_dir() . '/wp-cli-lazy-command-' . uniqid();
+		mkdir( $dir . '/registered', 0777, true );
+		mkdir( $dir . '/later', 0777, true );
+
+		$class_name = 'WP_CLI_Lazy_Command_Loader_Test_' . uniqid();
+		foreach ( [ 'registered', 'later' ] as $source ) {
+			file_put_contents(
+				"{$dir}/{$source}/{$class_name}.php",
+				"<?php class {$class_name} extends WP_CLI_Command { const SOURCE = '{$source}'; /** Does nothing. */ public function noop() {} }"
+			);
+		}
+
+		$registered_loader = new ClassLoader();
+		$registered_loader->addClassMap( [ $class_name => "{$dir}/registered/{$class_name}.php" ] );
+
+		$later_loader = new ClassLoader();
+		$later_loader->addClassMap( [ $class_name => "{$dir}/later/{$class_name}.php" ] );
+		$later_loader->register( true );
+
+		$runner        = WP_CLI::get_runner();
+		$runner_config = new \ReflectionProperty( $runner, 'config' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$runner_config->setAccessible( true );
+		}
+		$prev_config = $runner_config->getValue( $runner );
+		$runner_config->setValue( $runner, [ 'debug' => false ] );
+
+		try {
+			$parent = new CompositeCommand( WP_CLI::get_root_command(), 'lazy-parent', new DocParser( '' ) );
+			// @phpstan-ignore argument.type
+			$command = new LazyCommand( $parent, 'child', $class_name, $registered_loader );
+			$command->materialize();
+
+			$this->assertSame( 'registered', constant( "{$class_name}::SOURCE" ) );
+		} finally {
+			$runner_config->setValue( $runner, $prev_config );
+			$later_loader->unregister();
+			foreach ( [ 'registered', 'later' ] as $source ) {
+				unlink( "{$dir}/{$source}/{$class_name}.php" );
+				rmdir( "{$dir}/{$source}" );
+			}
+			rmdir( $dir );
 		}
 	}
 }

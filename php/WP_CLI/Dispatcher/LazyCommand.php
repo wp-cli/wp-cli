@@ -2,6 +2,7 @@
 
 namespace WP_CLI\Dispatcher;
 
+use Composer\Autoload\ClassLoader;
 use WP_CLI;
 use WP_CLI\DocParser;
 
@@ -26,24 +27,37 @@ class LazyCommand extends CompositeCommand {
 	private $classes = [];
 
 	/**
+	 * Autoloaders that located each class when it was registered, keyed like `$classes`.
+	 *
+	 * @var array<int, ClassLoader>
+	 */
+	private $class_loaders = [];
+
+	/**
 	 * @param RootCommand|CompositeCommand $parent_command Parent command.
 	 * @param string                       $name           Command name.
 	 * @param class-string                 $class_name     Command class.
+	 * @param ClassLoader|null             $class_loader   Autoloader that located the class when it was registered.
 	 */
-	public function __construct( $parent_command, $name, $class_name ) {
+	public function __construct( $parent_command, $name, $class_name, $class_loader = null ) {
 		parent::__construct( $parent_command, $name, new DocParser( '' ) );
 
-		$this->classes[] = $class_name;
+		$this->add_class( $class_name, $class_loader );
 	}
 
 	/**
 	 * Register another class for the same command name.
 	 *
-	 * @param class-string $class_name Command class.
+	 * @param class-string     $class_name   Command class.
+	 * @param ClassLoader|null $class_loader Autoloader that located the class when it was registered.
 	 * @return void
 	 */
-	public function add_class( $class_name ) {
+	public function add_class( $class_name, $class_loader = null ) {
 		$this->classes[] = $class_name;
+
+		if ( null !== $class_loader ) {
+			$this->class_loaders[ count( $this->classes ) - 1 ] = $class_loader;
+		}
 	}
 
 	/**
@@ -56,7 +70,14 @@ class LazyCommand extends CompositeCommand {
 		$parent  = $this->parent;
 		$current = null;
 
-		foreach ( $this->classes as $class_name ) {
+		foreach ( $this->classes as $index => $class_name ) {
+			// Load the class from where an eager registration would have, so
+			// that an autoloader registered in the meantime cannot provide a
+			// different definition of it.
+			if ( isset( $this->class_loaders[ $index ] ) && ! class_exists( $class_name, false ) ) {
+				$this->class_loaders[ $index ]->loadClass( $class_name );
+			}
+
 			if ( ! class_exists( $class_name ) ) {
 				WP_CLI::error( sprintf( 'Callable %s does not exist, and cannot be registered as `wp %s`.', (string) json_encode( $class_name ), implode( ' ', array_slice( get_path( $this ), 1 ) ) ) );
 			}

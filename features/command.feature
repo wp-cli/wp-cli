@@ -2339,3 +2339,61 @@ Feature: WP-CLI Commands
       My lazy command.
       """
     And STDOUT should match /hello\s+Says hello\./
+
+  Scenario: A lazily registered command keeps the class definition that was available when it was first registered
+    Given an empty directory
+    And a project/Shadowed_Command.php file:
+      """
+      <?php
+      class Shadowed_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the project.' );
+          }
+      }
+      """
+    And a bundled/Shadowed_Command.php file:
+      """
+      <?php
+      class Shadowed_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the bundle.' );
+          }
+      }
+      """
+    And a shadowed-cmd.php file:
+      """
+      <?php
+      if ( ! class_exists( 'Composer\Autoload\ClassLoader', false ) ) {
+          require WP_CLI_VENDOR_DIR . '/composer/ClassLoader.php';
+      }
+
+      $project_loader = new Composer\Autoload\ClassLoader();
+      $project_loader->addClassMap( [ 'Shadowed_Command' => __DIR__ . '/project/Shadowed_Command.php' ] );
+      $project_loader->register( true );
+
+      WP_CLI::add_command( 'shadowed', 'Shadowed_Command' );
+
+      // A loader registered later, like the one of a Phar that bundles an
+      // older copy of the same command, is consulted first.
+      $bundled_loader = new Composer\Autoload\ClassLoader();
+      $bundled_loader->addClassMap( [ 'Shadowed_Command' => __DIR__ . '/bundled/Shadowed_Command.php' ] );
+      $bundled_loader->register( true );
+
+      WP_CLI::add_command( 'shadowed', 'Shadowed_Command' );
+      """
+
+    When I run `wp --require=shadowed-cmd.php shadowed hello`
+    Then STDOUT should be:
+      """
+      Success: Hello from the project.
+      """
