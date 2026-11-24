@@ -53,6 +53,17 @@ class WP_CLI {
 	private static $hooks_passed = [];
 
 	/**
+	 * Hooks with arguments that work like actions rather than filters.
+	 *
+	 * Every callback receives the original arguments: return values are ignored, and changes
+	 * made through by-reference parameters don't reach the next callback. Add any new hook
+	 * that passes arguments without using the callbacks' return values here.
+	 *
+	 * @var array<string, true>
+	 */
+	private static $action_hooks = [ 'find_command_to_run_pre' => true ];
+
+	/**
 	 * @var bool
 	 */
 	private static $capture_exit = false;
@@ -137,10 +148,14 @@ class WP_CLI {
 
 		if ( ! $cache ) {
 			$dir      = Utils\get_cache_dir();
-			$ttl      = (int) Utils\get_env_or_config( 'WP_CLI_CACHE_EXPIRY' ) ? : 15552000;
-			$max_size = (int) Utils\get_env_or_config( 'WP_CLI_CACHE_MAX_SIZE' ) ? : 314572800;
-			// 6 months, 300mb
-			$cache = new FileCache( $dir, $ttl, $max_size );
+			$ttl      = Utils\get_env_or_config( 'WP_CLI_CACHE_EXPIRY' );
+			$max_size = Utils\get_env_or_config( 'WP_CLI_CACHE_MAX_SIZE' );
+			// 6 months, 300mb. A value of 0 turns that limit off.
+			$cache = new FileCache(
+				$dir,
+				( (int) $ttl || is_numeric( $ttl ) ) ? (int) $ttl : 15552000,
+				( (int) $max_size || is_numeric( $max_size ) ) ? (int) $max_size : 314572800
+			);
 
 			// Clean older files on shutdown with 1/50 probability.
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand -- no crypto and WP not loaded.
@@ -281,7 +296,7 @@ class WP_CLI {
 	 * * `after_add_command:<command>` - After the command was added.
 	 * * `before_invoke:<command>` (1) - Just before a command is invoked.
 	 * * `after_invoke:<command>` (1) - Just after a command is invoked.
-	 * * `find_command_to_run_pre` - Just before WP-CLI finds the command to run.
+	 * * `find_command_to_run_pre` (1) - Just before WP-CLI finds the command to run.
 	 * * `unregistered_command_hint` (2) - Filters the hint shown for a command
 	 *   that is not registered.
 	 * * `before_registering_contexts` (1) - Before the contexts are registered.
@@ -294,7 +309,9 @@ class WP_CLI {
 	 *
 	 * The parentheses behind the hook name denote the number of arguments
 	 * being passed into the hook. For such hooks, the callback should return
-	 * the first argument again, making them work like a WP filter.
+	 * the first argument again, making them work like a WP filter. The exception
+	 * is `find_command_to_run_pre`, which works like a WP action: every callback
+	 * receives the same arguments, and return values are ignored.
 	 *
 	 * WP-CLI commands can create their own hooks with `WP_CLI::do_hook()`.
 	 *
@@ -382,7 +399,11 @@ class WP_CLI {
 				'hooks'
 			);
 
-			if ( $has_args ) {
+			if ( $has_args && isset( self::$action_hooks[ $when ] ) ) {
+				// A copy for each callback, so by-reference parameters can't change the next one's arguments.
+				$callback_args = $args;
+				$callback( ...$callback_args );
+			} elseif ( $has_args ) {
 				$return_value = $callback( ...$args );
 				if ( isset( $return_value ) ) {
 					$args[0] = $return_value;

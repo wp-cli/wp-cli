@@ -5,7 +5,7 @@ Feature: wp-config
     And a wp-config-override.php file:
       """
       <?php
-      define( 'DB_NAME', 'wp_cli_test' );
+      define( 'DB_NAME', '{DB_NAME}' );
       define( 'DB_USER', '{DB_USER}' );
       define( 'DB_PASSWORD', '{DB_PASSWORD}' );
       define( 'DB_HOST', '{DB_HOST}' );
