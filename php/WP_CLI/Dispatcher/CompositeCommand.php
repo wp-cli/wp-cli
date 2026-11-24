@@ -133,6 +133,12 @@ class CompositeCommand {
 	 * @return array<string, Subcommand|CompositeCommand>
 	 */
 	public function get_subcommands() {
+		foreach ( $this->subcommands as $name => $subcommand ) {
+			if ( $subcommand instanceof LazyCommand ) {
+				$this->materialize_subcommand( $name );
+			}
+		}
+
 		ksort( $this->subcommands );
 
 		return $this->subcommands;
@@ -290,6 +296,10 @@ class CompositeCommand {
 			return false;
 		}
 
+		if ( isset( $this->subcommands[ $name ] ) ) {
+			return $this->materialize_subcommand( $name );
+		}
+
 		$subcommands = $this->get_subcommands();
 
 		if ( ! isset( $subcommands[ $name ] ) ) {
@@ -305,6 +315,33 @@ class CompositeCommand {
 		}
 
 		return $subcommands[ $name ];
+	}
+
+	/**
+	 * Get a directly registered subcommand without materializing it.
+	 *
+	 * @param string $name Subcommand name.
+	 * @return Subcommand|CompositeCommand|false
+	 */
+	public function get_registered_subcommand( $name ) {
+		return isset( $this->subcommands[ $name ] ) ? $this->subcommands[ $name ] : false;
+	}
+
+	/**
+	 * Replace a lazy subcommand with the real command it stands for.
+	 *
+	 * @param string $name Subcommand name.
+	 * @return Subcommand|CompositeCommand
+	 */
+	protected function materialize_subcommand( $name ) {
+		$subcommand = $this->subcommands[ $name ];
+
+		if ( $subcommand instanceof LazyCommand ) {
+			$subcommand                 = $subcommand->materialize();
+			$this->subcommands[ $name ] = $subcommand;
+		}
+
+		return $subcommand;
 	}
 
 	/**

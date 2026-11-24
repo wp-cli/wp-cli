@@ -7,15 +7,15 @@ Feature: Load WP-CLI
       """
       <?php
       add_action(
-      	'plugins_loaded',
-      	function () {
-      		wp_signon(
-      			array(
-      				'user_login'    => 'testuser',
-      				'user_password' => 'testuser',
-      			) 
-      		);
-      	}
+          'plugins_loaded',
+          function () {
+              wp_signon(
+                  array(
+                      'user_login'    => 'testuser',
+                      'user_password' => 'testuser',
+                  )
+              );
+          }
       );
       """
 
@@ -29,20 +29,20 @@ Feature: Load WP-CLI
       <?php
       class Load_WordPress_Command_Class extends WP_CLI_Command {
 
-      	/**
-      	 * @when before_wp_load
-      	 */
-      	public function __invoke() {
-      		if ( ! function_exists( 'update_option' ) ) {
-      			WP_CLI::log( 'WordPress not loaded.' );
-      		}
-      		WP_CLI::get_runner()->load_wordpress();
-      		if ( function_exists( 'update_option' ) ) {
-      			WP_CLI::log( 'WordPress loaded!' );
-      		}
-      		WP_CLI::get_runner()->load_wordpress();
-      		WP_CLI::log( 'load_wordpress() can safely be called twice.' );
-      	}
+          /**
+           * @when before_wp_load
+           */
+          public function __invoke() {
+              if ( ! function_exists( 'update_option' ) ) {
+                  WP_CLI::log( 'WordPress not loaded.' );
+              }
+              WP_CLI::get_runner()->load_wordpress();
+              if ( function_exists( 'update_option' ) ) {
+                  WP_CLI::log( 'WordPress loaded!' );
+              }
+              WP_CLI::get_runner()->load_wordpress();
+              WP_CLI::log( 'load_wordpress() can safely be called twice.' );
+          }
       }
       WP_CLI::add_command( 'load-wordpress', 'Load_WordPress_Command_Class' );
       """
@@ -62,20 +62,20 @@ Feature: Load WP-CLI
       <?php
       class Load_WordPress_Command_Class extends WP_CLI_Command {
 
-      	/**
-      	 * @when before_wp_load
-      	 */
-      	public function __invoke() {
-      		if ( ! function_exists( 'update_option' ) ) {
-      			WP_CLI::log( 'WordPress not loaded.' );
-      		}
-      		WP_CLI::get_runner()->load_wordpress();
-      		if ( function_exists( 'update_option' ) ) {
-      			WP_CLI::log( 'WordPress loaded!' );
-      		}
-      		WP_CLI::get_runner()->load_wordpress();
-      		WP_CLI::log( 'load_wordpress() can safely be called twice.' );
-      	}
+          /**
+           * @when before_wp_load
+           */
+          public function __invoke() {
+              if ( ! function_exists( 'update_option' ) ) {
+                  WP_CLI::log( 'WordPress not loaded.' );
+              }
+              WP_CLI::get_runner()->load_wordpress();
+              if ( function_exists( 'update_option' ) ) {
+                  WP_CLI::log( 'WordPress loaded!' );
+              }
+              WP_CLI::get_runner()->load_wordpress();
+              WP_CLI::log( 'load_wordpress() can safely be called twice.' );
+          }
       }
       WP_CLI::add_command( 'load-wordpress', 'Load_WordPress_Command_Class' );
       """
@@ -170,7 +170,7 @@ Feature: Load WP-CLI
       """
       <?php
       function my_custom_function() {
-      	WP_CLI::error( 'Test error message.' );
+          WP_CLI::error( 'Test error message.' );
       }
       my_custom_function();
       """
@@ -200,7 +200,7 @@ Feature: Load WP-CLI
       """
       <?php
       function trigger_halt() {
-      	WP_CLI::halt( 2 );
+          WP_CLI::halt( 2 );
       }
       trigger_halt();
       """
@@ -241,10 +241,10 @@ Feature: Load WP-CLI
       """
       <?php
       add_action(
-      	'init',
-      	function () {
-      		wp_redirect( 'http://apple.com' );
-      	}
+          'init',
+          function () {
+              wp_redirect( 'http://apple.com' );
+          }
       );
       """
 
@@ -260,10 +260,10 @@ Feature: Load WP-CLI
       """
       <?php
       add_action(
-      	'init',
-      	function () {
-      		wp_redirect( 'http://apple.com' );
-      	}
+          'init',
+          function () {
+              wp_redirect( 'http://apple.com' );
+          }
       );
       """
 
@@ -309,6 +309,29 @@ Feature: Load WP-CLI
       Error: Error establishing a database connection.
       """
 
+  @require-php-8.0
+  Scenario Outline: Leave out deprecation notices while testing, however reporting all errors is configured
+    Given an empty directory
+    # Declaring an optional parameter before a required one is deprecated as of PHP 8.0.
+    And a deprecated.php file:
+      """
+      <?php
+      function wp_cli_test_optional_before_required( $optional = null, $required ) {}
+      echo 'done';
+      """
+
+    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--derror_reporting=<error_reporting>} eval-file deprecated.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      done
+      """
+    And STDERR should be empty
+
+    Examples:
+      | error_reporting |
+      | E_ALL           |
+      | -1              |
+
   Scenario: Allow WP_CLI hooks to pass arguments to callbacks
     Given an empty directory
     And a my-command.php file:
@@ -316,17 +339,17 @@ Feature: Load WP-CLI
       <?php
 
       WP_CLI::add_hook(
-      	'foo',
-      	function ( $bar ) {
-      		WP_CLI::log( $bar );
-      	}
+          'foo',
+          function ( $bar ) {
+              WP_CLI::log( $bar );
+          }
       );
       WP_CLI::add_command(
-      	'my-command',
-      	function ( $args ) {
-      		WP_CLI::do_hook( 'foo', $args[0] );
-      	},
-      	array( 'when' => 'before_wp_load' ) 
+          'my-command',
+          function ( $args ) {
+              WP_CLI::do_hook( 'foo', $args[0] );
+          },
+          array( 'when' => 'before_wp_load' )
       );
       """
 
@@ -380,8 +403,10 @@ Feature: Load WP-CLI
   Scenario: Use --assume-https to preserve HTTPS scheme in URL functions
     Given a WP multisite installation
     And I run `wp option update siteurl https://example.com`
-    And I run `wp site option update siteurl https://example.com`
-    And I run `wp site option update home https://example.com`
+    And these setup commands:
+      | command                                           |
+      | wp site option update siteurl https://example.com |
+      | wp site option update home https://example.com    |
 
     When I run `wp option get siteurl`
     Then STDOUT should be:
@@ -524,10 +549,10 @@ Feature: Load WP-CLI
       <?php
       // Force ms_not_installed() to be triggered by returning empty network
       WP_CLI::add_wp_hook(
-      	'the_networks',
-      	static function () {
-      		return [];
-      	}
+          'the_networks',
+          static function () {
+              return [];
+          }
       );
       """
     And I run `wp config delete DOMAIN_CURRENT_SITE --type=constant`
@@ -554,13 +579,13 @@ Feature: Load WP-CLI
       <?php
       // Force ms_not_installed() to be triggered by returning empty network
       WP_CLI::add_wp_hook(
-      	'the_networks',
-      	static function () {
-      		return [
-      			new \WP_Network( new stdClass() ),
-      			new \WP_Network( new stdClass() ),
-      		];
-      	}
+          'the_networks',
+          static function () {
+              return [
+                  new \WP_Network( new stdClass() ),
+                  new \WP_Network( new stdClass() ),
+              ];
+          }
       );
       """
     And I run `wp config delete DOMAIN_CURRENT_SITE --type=constant`
@@ -595,13 +620,13 @@ Feature: Load WP-CLI
       <?php
       // Simulate a plugin that prepends its own autoloader.
       function wpcli_test_mu_autoload( $class ) {
-      	// This intentionally does nothing but exists to be prepended.
+          // This intentionally does nothing but exists to be prepended.
       }
 
       spl_autoload_register(
-      	'wpcli_test_mu_autoload',
-      	true,
-      	true
+          'wpcli_test_mu_autoload',
+          true,
+          true
       );
       """
 

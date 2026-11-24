@@ -343,8 +343,8 @@ Feature: Shutdown handler suggests workarounds for plugin/theme errors
     Given a pre-load-error.php file:
       """
       <?php
-      ini_set('display_errors', 0);
-      trigger_error('Pre-WordPress fatal error occurred', E_USER_ERROR);
+      ini_set( 'display_errors', 0 );
+      trigger_error( 'Pre-WordPress fatal error occurred', E_USER_ERROR );
       """
 
     When I try `wp --require=pre-load-error.php eval ""`

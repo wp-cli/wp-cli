@@ -1,0 +1,17 @@
+---
+name: Milestone Merged Pull Requests
+
+'on':
+  pull_request_target:
+    types: [closed]
+    branches:
+      - main
+      - master
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  milestone:
+    uses: wp-cli/.github/.github/workflows/reusable-milestone-merged-prs.yml@main

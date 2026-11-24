@@ -65,7 +65,6 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 		$traverser = new RecursiveDataStructureTraverser( $array );
 		$traverser->update( array( 'foo', 'bar' ), 'new' );
 
-		// @phpstan-ignore method.impossibleType
 		$this->assertSame( 'new', $array['foo']['bar'] );
 	}
 
@@ -144,7 +143,6 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 		try {
 			$traverser->insert( array( 'key' ), 'value' );
 		} catch ( \Exception $e ) {
-			// @phpstan-ignore method.alreadyNarrowedType
 			$this->assertSame( 'a string', $data );
 			return;
 		}

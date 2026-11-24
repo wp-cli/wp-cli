@@ -188,9 +188,9 @@ class Runner {
 	 */
 	private function do_early_invoke( $when ): void {
 		WP_CLI::debug( "Executing hook: {$when}", 'hooks' );
-		if ( ! isset( $this->early_invoke[ $when ] ) ) {
-			return;
-		}
+
+		// Lazily registered commands only attach their @when hook once they are
+		// materialized, which finding the command to run takes care of.
 
 		// Search the value of @when from the command method.
 		// Use 'none' for autocorrect to avoid suggesting wrong alternatives
@@ -198,7 +198,7 @@ class Runner {
 		$real_when = '';
 		$r         = $this->find_command_to_run( $this->arguments, 'none' );
 		if ( is_array( $r ) ) {
-			list( $command, $final_args, $cmd_path ) = $r;
+			list( , , $cmd_path ) = $r;
 
 			foreach ( $this->early_invoke as $_when => $_path ) {
 				foreach ( $_path as $cmd ) {
@@ -207,6 +207,10 @@ class Runner {
 					}
 				}
 			}
+		}
+
+		if ( ! isset( $this->early_invoke[ $when ] ) ) {
+			return;
 		}
 
 		/** @var array<array<string>> $invoke_cmds */
@@ -734,6 +738,23 @@ class Runner {
 	}
 
 	/**
+	 * Append the hint for an unregistered command to an error message.
+	 *
+	 * @param string $error   Error message stating that the command is unavailable.
+	 * @param string $command Full name of the command that was not found.
+	 * @return string Error message, with the hint appended if there is one.
+	 */
+	private function add_command_hint( $error, $command ) {
+		$hint = CommandHints::get_hint( $command );
+
+		if ( '' === $hint ) {
+			return $error;
+		}
+
+		return $error . PHP_EOL . $hint;
+	}
+
+	/**
 	 * Given positional arguments, find the command to execute.
 	 *
 	 * @param array<int, string> $args
@@ -747,8 +768,16 @@ class Runner {
 
 		/**
 		 * Action triggered before WP-CLI attempts to find the command to run.
+		 *
+		 * Callbacks receive the positional arguments the command is looked up from, for
+		 * example `[ 'help', 'post' ]` or, while `wp help post` finds its topic, `[ 'post' ]`.
+		 * This lets commands that are expensive to register be added only when needed.
+		 * The action can fire more than once per run, including before WordPress is loaded.
+		 * Return values are ignored, so every callback receives the same arguments.
+		 *
+		 * @param array<int, string> $args Positional arguments.
 		 */
-		WP_CLI::do_hook( 'find_command_to_run_pre' );
+		WP_CLI::do_hook( 'find_command_to_run_pre', $args );
 
 		$cmd_path = [];
 
@@ -795,10 +824,10 @@ class Runner {
 							}
 						}
 
-						return $error . PHP_EOL . $suggestion_text;
+						return $this->add_command_hint( $error . PHP_EOL . $suggestion_text, $full_name );
 					}
 
-					return $error;
+					return $this->add_command_hint( $error, $full_name );
 				}
 
 				$suggestion = $this->get_subcommand_suggestion( $full_name, $command );
@@ -860,10 +889,10 @@ class Runner {
 						}
 					}
 
-					return $error . PHP_EOL . $suggestion_text;
+					return $this->add_command_hint( $error . PHP_EOL . $suggestion_text, $full_name );
 				}
 
-				return $error;
+				return $this->add_command_hint( $error, $full_name );
 			}
 
 			if ( $this->is_command_disabled( $subcommand ) ) {
@@ -1364,7 +1393,7 @@ class Runner {
 	 */
 	public function get_wp_config_code( $wp_config_path = '' ) {
 		if ( empty( $wp_config_path ) ) {
-			$wp_config_path = Utils\locate_wp_config();
+			$wp_config_path = (string) Utils\locate_wp_config();
 		}
 
 		$wp_config_code = (string) file_get_contents( $wp_config_path );
@@ -2022,7 +2051,7 @@ class Runner {
 
 			if ( ! array_key_exists( $this->alias, $this->aliases ) ) {
 				$error_msg  = "Alias '{$this->alias}' not found.";
-				$suggestion = Utils\get_suggestion( (string) $this->alias, array_keys( $this->aliases ), $threshold = 2 );
+				$suggestion = Utils\get_suggestion( (string) $this->alias, array_keys( $this->aliases ), 2 );
 				if ( $suggestion ) {
 					$error_msg .= PHP_EOL . "Did you mean '{$suggestion}'?";
 				}
@@ -2338,6 +2367,12 @@ class Runner {
 			);
 		}
 
+		// Load WordPress Core's Requests autoloader (or fall back to the bundled
+		// version) now that WordPress is actually being loaded.
+		if ( ! RequestsLibrary::register_wp_core_autoloader( ABSPATH ) ) {
+			RequestsLibrary::register_bundled_autoloader();
+		}
+
 		// Save the current autoloaders so they can be restored after WordPress
 		// loads. This ensures that WP-CLI and package autoloaders take
 		// precedence over autoloaders registered by plugins.
@@ -2635,11 +2670,10 @@ class Runner {
 			WP_CLI::add_wp_hook(
 				'ms_site_not_found',
 				static function ( $current_site, $domain, $path ) {
-					$url         = $domain . $path;
-					$message     = $url ? "Site '{$url}' not found." : 'Site not found.';
-					$has_param   = isset( WP_CLI::get_runner()->config['url'] );
-					$has_const   = defined( 'DOMAIN_CURRENT_SITE' );
-					$explanation = '';
+					$url       = $domain . $path;
+					$message   = $url ? "Site '{$url}' not found." : 'Site not found.';
+					$has_param = isset( WP_CLI::get_runner()->config['url'] );
+					$has_const = defined( 'DOMAIN_CURRENT_SITE' );
 					if ( $has_param ) {
 						$explanation = 'Verify `--url=<url>` matches an existing site.';
 					} else {
@@ -3058,7 +3092,7 @@ class Runner {
 		}
 		$this->enumerate_commands( $root_command, $commands );
 
-		return Utils\get_suggestion( $entry, $commands, $threshold = 2 );
+		return Utils\get_suggestion( $entry, $commands, 2 );
 	}
 
 	/**
@@ -3086,10 +3120,9 @@ class Runner {
 	 * Enables (almost) full PHP error reporting to stderr.
 	 */
 	private function enable_error_reporting(): void {
-		if ( E_ALL !== error_reporting() ) {
-			// Don't enable E_DEPRECATED as old versions of WP use PHP 4 style constructors and the mysql extension.
-			error_reporting( E_ALL & ~E_DEPRECATED );
-		}
+		// Don't enable E_DEPRECATED, as old versions of WP trigger deprecation notices on newer versions of PHP.
+		// This applies however reporting all errors is configured, so that `-1` and `E_ALL` behave the same.
+		error_reporting( E_ALL & ~E_DEPRECATED );
 		ini_set( 'display_errors', 'stderr' ); // phpcs:ignore WordPress.PHP.IniSet.display_errors_Disallowed
 	}
 }

@@ -30,7 +30,7 @@ class ConfiguratorTest extends TestCase {
 		$this->assertSame( 'foo', $args[0][0] );
 
 		$this->assertSame( 'bar', $args[1][0][0] );
-		$this->assertEmpty( $args[1][0][1] );
+		$this->assertSame( '', $args[1][0][1] );
 
 		$this->assertSame( 'baz', $args[1][1][0] );
 		$this->assertSame( 'text', $args[1][1][1] );
@@ -197,6 +197,44 @@ class ConfiguratorTest extends TestCase {
 		$this->assertFalse( $assoc_args2['verbose'] );
 	}
 
+	public function testParseArgsStrictModeKeepsUnknownGlobalFlags(): void {
+		$original_value = getenv( 'WP_CLI_STRICT_ARGS_MODE' );
+		putenv( 'WP_CLI_STRICT_ARGS_MODE=1' );
+
+		try {
+			$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+
+			// `--info` and `--version` aren't part of the runtime config spec, but since
+			// there's no positional command argument, they're classified as "global" flags.
+			// They must still surface in $assoc_args so `Runner::back_compat_conversions()`
+			// can turn them into `cli info` / `cli version`, instead of being silently dropped.
+			$parsed = $configurator->parse_args( [ '--info' ] );
+			$this->assertSame( [], $parsed[0] );
+			$this->assertArrayHasKey( 'info', $parsed[1] );
+			$this->assertTrue( $parsed[1]['info'] );
+
+			// A known runtime config key (e.g. `--url`) should still be routed to
+			// runtime_config, not $assoc_args, preserving strict mode's original behavior.
+			$parsed_url = $configurator->parse_args( [ '--url=foo.dev', 'command' ] );
+			$this->assertArrayNotHasKey( 'url', $parsed_url[1] );
+			$this->assertArrayHasKey( 'url', $parsed_url[2] );
+			$this->assertSame( 'foo.dev', $parsed_url[2]['url'] );
+
+			// Repeated unknown global flags should aggregate into an array, same as
+			// repeated local flags, instead of the last value silently overwriting the rest.
+			$parsed_repeated = $configurator->parse_args( [ '--foo=1', '--foo=2' ] );
+			$this->assertArrayHasKey( 'foo', $parsed_repeated[1] );
+			$this->assertSame( [ '1', '2' ], $parsed_repeated[1]['foo'] );
+
+			// Repeated boolean global flags should use last-wins behavior.
+			$parsed_bool = $configurator->parse_args( [ '--bar', '--no-bar' ] );
+			$this->assertArrayHasKey( 'bar', $parsed_bool[1] );
+			$this->assertFalse( $parsed_bool[1]['bar'] );
+		} finally {
+			putenv( false === $original_value ? 'WP_CLI_STRICT_ARGS_MODE' : "WP_CLI_STRICT_ARGS_MODE={$original_value}" );
+		}
+	}
+
 	public function testMergeYmlSelfInheritRecursionGuard(): void {
 		$temp_dir = sys_get_temp_dir();
 		$file     = tempnam( $temp_dir, 'wp-cli-test-self-' );
@@ -205,7 +243,7 @@ class ConfiguratorTest extends TestCase {
 		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
 		$configurator->merge_yml( $file );
 
-		[ $config, $extra_config ] = $configurator->to_array();
+		[ , $extra_config ] = $configurator->to_array();
 
 		unlink( $file );
 
@@ -223,12 +261,50 @@ class ConfiguratorTest extends TestCase {
 		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
 		$configurator->merge_yml( $file1 );
 
-		[ $config, $extra_config ] = $configurator->to_array();
+		[ , $extra_config ] = $configurator->to_array();
 
 		unlink( $file1 );
 		unlink( $file2 );
 
 		$this->assertEquals( 'bar', $extra_config['foo'] );
 		$this->assertEquals( 'qux', $extra_config['baz'] );
+	}
+
+	public function testGetEnvRequireFiles(): void {
+		$previous = getenv( 'WP_CLI_REQUIRE' );
+
+		try {
+			putenv( 'WP_CLI_REQUIRE= /path/to/one.php,,/path/to/two.php ' );
+			$this->assertSame( [ '/path/to/one.php', '/path/to/two.php' ], Configurator::get_env_require_files() );
+
+			putenv( 'WP_CLI_REQUIRE=' );
+			$this->assertSame( [], Configurator::get_env_require_files() );
+
+			putenv( 'WP_CLI_REQUIRE' );
+			$this->assertSame( [], Configurator::get_env_require_files() );
+		} finally {
+			putenv( false === $previous ? 'WP_CLI_REQUIRE' : "WP_CLI_REQUIRE={$previous}" );
+		}
+	}
+
+	public function testEnvRequireFilesAreMergedIntoConfig(): void {
+		$previous = getenv( 'WP_CLI_REQUIRE' );
+		$env_file = (string) tempnam( sys_get_temp_dir(), 'wp-cli-test-env-' );
+		$cmd_file = (string) tempnam( sys_get_temp_dir(), 'wp-cli-test-cmd-' );
+
+		try {
+			putenv( "WP_CLI_REQUIRE={$env_file}" );
+
+			$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+			$configurator->merge_array( [ 'require' => [ $cmd_file ] ] );
+
+			[ $config ] = $configurator->to_array();
+
+			$this->assertSame( [ $env_file, $cmd_file ], $config['require'] );
+		} finally {
+			putenv( false === $previous ? 'WP_CLI_REQUIRE' : "WP_CLI_REQUIRE={$previous}" );
+			unlink( $env_file );
+			unlink( $cmd_file );
+		}
 	}
 }
