@@ -72,7 +72,7 @@ class FileCacheTest extends TestCase {
 			// It should be failed because permission denied.
 			$logger->stderr = '';
 			chmod( $cache_dir . '/test1', 0000 );
-			$result   = $method->invokeArgs( $cache, [ $cache_dir . '/test1/error' ] );
+			$method->invokeArgs( $cache, [ $cache_dir . '/test1/error' ] );
 			$expected = "/^Warning: Failed to create directory '.+': mkdir\(\): Permission denied\.$/";
 			$this->assertMatchesRegularExpression( $expected, $logger->stderr );
 		}
@@ -80,7 +80,7 @@ class FileCacheTest extends TestCase {
 		// It should be failed because file exists.
 		$logger->stderr = '';
 		file_put_contents( $cache_dir . '/test2', '' );
-		$result   = $method->invokeArgs( $cache, [ $cache_dir . '/test2' ] );
+		$method->invokeArgs( $cache, [ $cache_dir . '/test2' ] );
 		$expected = "/^Warning: Failed to create directory '.+': mkdir\(\): File exists\.$/";
 		$this->assertMatchesRegularExpression( $expected, $logger->stderr );
 

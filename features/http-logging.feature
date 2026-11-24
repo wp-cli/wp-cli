@@ -15,16 +15,16 @@ Feature: HTTP request logging
       """
       <?php
       WP_CLI::add_command(
-      	'http-test',
-      	function () {
-      		// Make a test HTTP request using WP-CLI's http_request
-      		try {
-      			WP_CLI\Utils\http_request( 'GET', 'https://api.wordpress.org/core/version-check/1.7/', null, [], [ 'timeout' => 5 ] );
-      			WP_CLI::success( 'HTTP request completed' );
-      		} catch ( Exception $e ) {
-      			WP_CLI::error( 'HTTP request failed: ' . $e->getMessage() );
-      		}
-      	}
+          'http-test',
+          function () {
+              // Make a test HTTP request using WP-CLI's http_request
+              try {
+                  WP_CLI\Utils\http_request( 'GET', 'https://api.wordpress.org/core/version-check/1.7/', null, [], [ 'timeout' => 5 ] );
+                  WP_CLI::success( 'HTTP request completed' );
+              } catch ( Exception $e ) {
+                  WP_CLI::error( 'HTTP request failed: ' . $e->getMessage() );
+              }
+          }
       );
       """
     And a wp-cli.yml file:
@@ -46,16 +46,16 @@ Feature: HTTP request logging
       """
       <?php
       WP_CLI::add_command(
-      	'http-test',
-      	function () {
-      		// Make a test HTTP request
-      		try {
-      			WP_CLI\Utils\http_request( 'GET', 'https://api.wordpress.org/core/version-check/1.7/', null, [], [ 'timeout' => 5 ] );
-      			WP_CLI::success( 'HTTP request completed' );
-      		} catch ( Exception $e ) {
-      			WP_CLI::error( 'HTTP request failed: ' . $e->getMessage() );
-      		}
-      	}
+          'http-test',
+          function () {
+              // Make a test HTTP request
+              try {
+                  WP_CLI\Utils\http_request( 'GET', 'https://api.wordpress.org/core/version-check/1.7/', null, [], [ 'timeout' => 5 ] );
+                  WP_CLI::success( 'HTTP request completed' );
+              } catch ( Exception $e ) {
+                  WP_CLI::error( 'HTTP request failed: ' . $e->getMessage() );
+              }
+          }
       );
       """
     And a wp-cli.yml file:
@@ -91,27 +91,27 @@ Feature: HTTP request logging
       """
       <?php
       WP_CLI::add_command(
-      	'http-methods-test',
-      	function () {
-      		// Test different HTTP methods
-      		$test_url = 'https://httpbin.org/';
+          'http-methods-test',
+          function () {
+              // Test different HTTP methods
+              $test_url = 'https://httpbin.org/';
 
-      		// GET request
-      		try {
-      			WP_CLI\Utils\http_request( 'GET', $test_url . 'get', null, [], [ 'timeout' => 5 ] );
-      		} catch ( Exception $e ) {
-      			// Ignore errors for this test
-      		}
+              // GET request
+              try {
+                  WP_CLI\Utils\http_request( 'GET', $test_url . 'get', null, [], [ 'timeout' => 5 ] );
+              } catch ( Exception $e ) {
+                  // Ignore errors for this test
+              }
 
-      		// POST request
-      		try {
-      			WP_CLI\Utils\http_request( 'POST', $test_url . 'post', [ 'test' => 'data' ], [], [ 'timeout' => 5 ] );
-      		} catch ( Exception $e ) {
-      			// Ignore errors for this test
-      		}
+              // POST request
+              try {
+                  WP_CLI\Utils\http_request( 'POST', $test_url . 'post', [ 'test' => 'data' ], [], [ 'timeout' => 5 ] );
+              } catch ( Exception $e ) {
+                  // Ignore errors for this test
+              }
 
-      		WP_CLI::success( 'Test completed' );
-      	}
+              WP_CLI::success( 'Test completed' );
+          }
       );
       """
     And a wp-cli.yml file:

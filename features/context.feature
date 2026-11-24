@@ -6,11 +6,11 @@ Feature: Context handling via --context global flag
       """
       <?php
       WP_CLI::add_hook(
-      	'before_run_command',
-      	static function () {
-      		$context = WP_CLI::get_runner()->context_manager->get_context();
-      		WP_CLI::log( "Current context: {$context}" );
-      	} 
+          'before_run_command',
+          static function () {
+              $context = WP_CLI::get_runner()->context_manager->get_context();
+              WP_CLI::log( "Current context: {$context}" );
+          }
       );
       """
 
@@ -118,11 +118,11 @@ Feature: Context handling via --context global flag
       """
       <?php
       WP_CLI::add_hook(
-      	'before_run_command',
-      	static function () {
-      		$context = WP_CLI::get_runner()->context_manager->get_context();
-      		WP_CLI::log( "Current context: {$context}" );
-      	} 
+          'before_run_command',
+          static function () {
+              $context = WP_CLI::get_runner()->context_manager->get_context();
+              WP_CLI::log( "Current context: {$context}" );
+          }
       );
       """
 
@@ -146,11 +146,11 @@ Feature: Context handling via --context global flag
       """
       <?php
       WP_CLI::add_wp_hook(
-      	'admin_init',
-      	static function () {
-      		global $pagenow;
-      		WP_CLI::log( "pagenow: {$pagenow}" );
-      	} 
+          'admin_init',
+          static function () {
+              global $pagenow;
+              WP_CLI::log( "pagenow: {$pagenow}" );
+          }
       );
       """
 
@@ -193,25 +193,25 @@ Feature: Context handling via --context global flag
       <?php
 
       final class OverriddenAdminContext implements \WP_CLI\Context {
-      	public function process( $config ) {
-      		\WP_CLI::log( 'admin context was overridden' );
-      	}
+          public function process( $config ) {
+              \WP_CLI::log( 'admin context was overridden' );
+          }
       }
 
       final class CustomContext implements \WP_CLI\Context {
-      	public function process( $config ) {
-      		\WP_CLI::log( 'custom context was added' );
-      	}
+          public function process( $config ) {
+              \WP_CLI::log( 'custom context was added' );
+          }
       }
 
       WP_CLI::add_hook(
-      	'before_registering_contexts',
-      	static function ( $contexts ) {
-      		unset( $contexts['frontend'] );
-      		$contexts['admin']          = new OverriddenAdminContext();
-      		$contexts['custom_context'] = new CustomContext();
-      		return $contexts;
-      	} 
+          'before_registering_contexts',
+          static function ( $contexts ) {
+              unset( $contexts['frontend'] );
+              $contexts['admin']          = new OverriddenAdminContext();
+              $contexts['custom_context'] = new CustomContext();
+              return $contexts;
+          }
       );
       """
 
@@ -266,14 +266,14 @@ Feature: Context handling via --context global flag
       """
       <?php
       function init_cb() {
-      	echo 'User ID in init: ';
-      	echo get_current_user_id() . "\n";
+          echo 'User ID in init: ';
+          echo get_current_user_id() . "\n";
       }
       WP_CLI::add_wp_hook( 'init', 'init_cb' );
 
       function admin_init_cb() {
-      	echo 'User ID in admin_init: ';
-      	echo get_current_user_id() . "\n";
+          echo 'User ID in admin_init: ';
+          echo get_current_user_id() . "\n";
       }
       WP_CLI::add_wp_hook( 'admin_init', 'admin_init_cb' );
       """
@@ -290,8 +290,10 @@ Feature: Context handling via --context global flag
 
   Scenario: Admin context resolves a super admin on multisite when no user is specified
     Given a WP multisite install
-    And I run `wp user create anotheradmin anotheradmin@example.com --role=administrator`
-    And I run `wp eval "update_site_option( 'site_admins', array( 'anotheradmin' ) );"`
+    And these setup commands:
+      | command                                                                   |
+      | wp user create anotheradmin anotheradmin@example.com --role=administrator |
+      | wp eval "update_site_option( 'site_admins', array( 'anotheradmin' ) );"   |
     And I run `wp --context=admin eval "echo 'Current user: ' . wp_get_current_user()->user_login;"`
     Then STDOUT should contain:
       """
@@ -309,7 +311,7 @@ Feature: Context handling via --context global flag
   Scenario: Admin context emits error when no suitable admin user is found on multisite
     Given a WP multisite install
     And I run `wp eval "update_site_option( 'site_admins', array() );"`
-    And I try `wp --context=admin eval ''`
+    And I try `wp --context=admin eval "return;"`
     Then the return code should be 1
     And STDERR should contain:
       """
@@ -319,7 +321,7 @@ Feature: Context handling via --context global flag
   Scenario: Admin context emits error when no administrator is found on single site
     Given a WP install
     When I run `wp user update 1 --role=subscriber`
-    And I try `wp --context=admin eval ''`
+    And I try `wp --context=admin eval "return;"`
     Then the return code should be 1
     And STDERR should contain:
       """
@@ -336,7 +338,7 @@ Feature: Context handling via --context global flag
       """
       <?php
       function plugins_loaded_cb() {
-      	echo 'Before init';
+          echo 'Before init';
       }
       WP_CLI::add_wp_hook( 'plugins_loaded', 'plugins_loaded_cb', PHP_INT_MAX );
       """
@@ -349,4 +351,27 @@ Feature: Context handling via --context global flag
     And STDERR should contain:
       """
       Error: Invalid user ID, email or login: 'non_existent_user'
+      """
+
+  Scenario: Admin context does not leave persistent session tokens behind
+    Given a WP install
+    And a session-tokens.php file:
+      """
+      <?php
+      echo count( WP_Session_Tokens::get_instance( 1 )->get_all() ) . ' ' . ( wp_validate_auth_cookie( $_COOKIE[ AUTH_COOKIE ], 'auth' ) ?: 'invalid' );
+      """
+
+    When I run `wp --context=admin eval-file session-tokens.php`
+    Then STDOUT should be:
+      """
+      1 1
+      """
+
+    When I run `wp plugin list`
+    And I run `wp theme list`
+    And I run `wp --context=admin eval "return;"`
+    And I run `wp eval "echo count( WP_Session_Tokens::get_instance( 1 )->get_all() );"`
+    Then STDOUT should be:
+      """
+      0
       """

@@ -132,10 +132,9 @@ class Subcommand extends CompositeCommand {
 	 * Wrapper for CLI Tools' prompt() method.
 	 *
 	 * @param string $question
-	 * @param mixed $default
 	 * @return string|false
 	 */
-	private function prompt( $question, $default = null ) {
+	private function prompt( $question ) {
 
 		$question .= ': ';
 		if ( function_exists( 'readline' ) ) {
@@ -203,9 +202,6 @@ class Subcommand extends CompositeCommand {
 		if ( ! $synopsis ) {
 			return [ $args, $assoc_args ];
 		}
-
-		// Create a docparser to get default values and descriptions
-		$docparser = $this->create_mock_docparser();
 
 		// To skip the already provided positional arguments, we need to count
 		// how many we had already received.
@@ -598,12 +594,47 @@ class Subcommand extends CompositeCommand {
 		}
 
 		if ( 'help' !== $this->name ) {
-			foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
-				$suggestion    = Utils\get_suggestion(
+			// A `--<field>=<value>` token means the command accepts keys that cannot be
+			// enumerated up front, so an unrecognized parameter is not an error there. It
+			// is still worth a word when it looks like a typo of a documented one, because
+			// the command would otherwise accept it and silently do nothing with it.
+			$has_generic = $validator->has_generic();
+
+			// The candidate set for those commands is their own `--<name>` parameters.
+			// Global parameters are harmless as a hint on an error raised anyway, but a
+			// catch-all command's arguments share their namespace: `wp post list --cat=5`
+			// and `--s=hello` are real query vars two edits away from `--path` and `--ssh`.
+			// Positional names are left out for the same reason: `wp db query --xml` is a
+			// real mysql option two edits away from `<sql>`.
+			$parameters = $has_generic
+				? $this->get_parameters( $synopsis_spec, false, [ 'assoc', 'flag' ] )
+				: $this->get_parameters( $synopsis_spec );
+
+			foreach ( $validator->unknown_assoc( $assoc_args, $has_generic ) as $key ) {
+				// The alias map in get_suggestion() is command vocabulary and ignores the
+				// threshold. That is fine when a suggestion merely decorates an error we
+				// already decided to raise, but here it would be the thing raising it.
+				$suggestion = Utils\get_suggestion(
 					$key,
-					$this->get_parameters( $synopsis_spec ),
-					$threshold = 2
+					$parameters,
+					2,
+					! $has_generic
 				);
+
+				if ( $has_generic ) {
+					if ( '' === $suggestion || self::is_prefix_of_other( $key, $suggestion ) ) {
+						continue;
+					}
+
+					// The parameter is passed through untouched; the command decides what it
+					// means. So this is a warning, not an error, and the exit code is unaffected.
+					$errors['warning'][] = sprintf(
+						'--%s looks like a typo of --%s',
+						$key,
+						$suggestion
+					);
+					continue;
+				}
 
 				$errors['fatal'][] = sprintf(
 					'unknown --%s parameter%s',
@@ -674,6 +705,35 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Get the parsed synopsis of the global parameters.
+	 *
+	 * Built from the configurator spec directly instead of rendering and re-parsing
+	 * the help text, as this runs on every command invocation.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function get_global_params_spec() {
+		static $spec = null;
+
+		if ( null === $spec ) {
+			$synopsis = [];
+			foreach ( WP_CLI::get_configurator()->get_spec() as $key => $details ) {
+				if ( false === $details['runtime'] || isset( $details['deprecated'] ) || isset( $details['hidden'] ) ) {
+					continue;
+				}
+
+				$synopsis[] = true === $details['runtime']
+					? "--[no-]$key"
+					: "--$key" . ( is_string( $details['runtime'] ) ? $details['runtime'] : '' );
+			}
+
+			$spec = SynopsisParser::parse( implode( ' ', $synopsis ) );
+		}
+
+		return $spec;
+	}
+
+	/**
 	 * Invoke the subcommand with the supplied arguments.
 	 * Given a --prompt argument, interactively request input
 	 * from the end user.
@@ -705,7 +765,7 @@ class Subcommand extends CompositeCommand {
 				$repeating_params[ $param['name'] ] = true;
 			}
 		}
-		foreach ( SynopsisParser::parse( $this->get_global_params() ) as $param ) {
+		foreach ( self::get_global_params_spec() as $param ) {
 			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) && isset( $param['name'] ) && is_string( $param['name'] ) ) {
 				$assoc_flag_names[] = $param['name'];
 			}
@@ -886,21 +946,59 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Check whether one of two parameter names is a strict prefix of the other.
+	 *
+	 * A documented family of parameters often nests this way (`page` and `paged`,
+	 * `tag` and `tag_id`), and one of the pair being undocumented is no reason to
+	 * doubt it. A typo, on the other hand, is not usually a clean truncation.
+	 *
+	 * @param string $a First parameter name.
+	 * @param string $b Second parameter name.
+	 *
+	 * @return bool
+	 */
+	private static function is_prefix_of_other( $a, $b ) {
+		if ( $a === $b ) {
+			return false;
+		}
+
+		return 0 === strpos( $a, $b ) || 0 === strpos( $b, $a );
+	}
+
+	/**
 	 * Get an array of parameter names, by merging the command-specific and the
 	 * global parameters.
 	 *
-	 * @param array<int, array<string, mixed>> $spec Optional. Specification of the current command.
+	 * @param array<int, array<string, mixed>> $spec           Optional. Specification of the current command.
+	 * @param bool                             $include_global Optional. Whether to include the global parameters.
+	 * @param array<int, string>               $types          Optional. Restrict the command-specific parameters to
+	 *                                                         these synopsis types ('positional', 'assoc', 'flag').
+	 *                                                         Empty means no restriction.
 	 *
 	 * @return array<int, string> Array of parameter names
 	 */
-	private function get_parameters( $spec = [] ) {
+	private function get_parameters( $spec = [], $include_global = true, $types = [] ) {
+		if ( ! empty( $types ) ) {
+			$spec = array_filter(
+				$spec,
+				static function ( $param ) use ( $types ) {
+					return isset( $param['type'] ) && in_array( $param['type'], $types, true );
+				}
+			);
+		}
+
 		/** @var list<string> $local_parameters */
 		$local_parameters = array_values( array_filter( array_column( $spec, 'name' ), 'is_string' ) );
+
+		if ( ! $include_global ) {
+			return array_values( array_unique( $local_parameters ) );
+		}
+
 		/** @var list<string> $global_parameters */
 		$global_parameters = array_values(
 			array_filter(
 				array_column(
-					SynopsisParser::parse( $this->get_global_params() ),
+					self::get_global_params_spec(),
 					'name'
 				),
 				'is_string'

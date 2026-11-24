@@ -5,6 +5,7 @@ namespace WP_CLI;
 use cli\Colors;
 use cli\Table;
 use Mustangostang\Spyc;
+use Iterator;
 use Traversable;
 use WP_CLI;
 
@@ -41,7 +42,7 @@ class Formatter {
 	/**
 	 * Options for custom format handlers.
 	 *
-	 * @var array<string, array{single_item?: bool}>
+	 * @var array<string, array{single_item?: bool, streaming?: bool}>
 	 */
 	private static $format_options = [];
 
@@ -127,6 +128,21 @@ class Formatter {
 	 *
 	 * Built-in formats can be overridden by registering a handler with the same name.
 	 *
+	 * ## STREAMING
+	 *
+	 * A handler that writes each item on its own, without needing the whole set of
+	 * items first, can be registered with the `streaming` option. When a command then
+	 * passes its items as an iterator, the handler receives them as an iterable that
+	 * yields the items one by one, so they don't all have to be held in memory, and
+	 * `$args['streaming']` is true. Such a handler must loop over the items only once
+	 * and must not use functions that need an array, like count() or reset(). When
+	 * the items are an array, it receives an array as usual.
+	 *
+	 * The built-in `csv`, `json`, `table` and `yaml` formats are registered with `streaming`.
+	 * A handler that overrides one of them without the option receives all items as an array.
+	 * Tables are only written row by row when STDOUT is piped, as the bordered table shown
+	 * on a terminal needs the width of every column first.
+	 *
 	 * ## EXAMPLE
 	 *
 	 *     // Register a custom XML format
@@ -142,9 +158,18 @@ class Formatter {
 	 *         echo "</items>\n";
 	 *     });
 	 *
-	 * @param string                    $format_name Name of the format (e.g. 'xml', 'nagios').
-	 * @param callable                  $handler     Callback to handle formatting. Receives ($items, $fields, $formatter, $args) and should output directly.
-	 * @param array{single_item?: bool} $options     Optional metadata/options.
+	 *     // Register a format that writes one JSON object per line, streaming the items
+	 *     WP_CLI\Formatter::add_format( 'jsonl', function( $items, $fields, $formatter, $args ) {
+	 *         foreach ( $items as $item ) {
+	 *             echo json_encode( $item ) . "\n";
+	 *         }
+	 *     }, [ 'streaming' => true ] );
+	 *
+	 * @param string                                     $format_name Name of the format (e.g. 'xml', 'nagios').
+	 * @param callable                                   $handler     Callback to handle formatting. Receives ($items, $fields, $formatter, $args) and should output directly.
+	 * @param array{single_item?: bool, streaming?: bool} $options    Optional metadata/options. `single_item`: whether
+	 *                                                                display_item() passes a single item. `streaming`: whether
+	 *                                                                the handler accepts the items as an iterable (see above).
 	 * @return void
 	 */
 	public static function add_format( $format_name, $handler, $options = [] ) {
@@ -258,14 +283,12 @@ class Formatter {
 					// Fallback if no formatter instance provided
 					$table = new Table();
 					$table->setHeaders( $fields );
-					foreach ( $items as $item ) {
-						$table->addRow( array_values( (array) $item ) );
-					}
-					foreach ( $table->getDisplayLines() as $line ) {
+					foreach ( self::get_table_lines( $table, $items ) as $line ) {
 						WP_CLI::line( $line );
 					}
 				}
-			}
+			},
+			[ 'streaming' => true ]
 		);
 
 		// Register 'json' format
@@ -273,6 +296,19 @@ class Formatter {
 			'json',
 			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $formatter required for API consistency
 			static function ( $items, $fields, $formatter = null, $args = [] ) {
+				if ( ! is_array( $items ) ) {
+					// Streamed items: write them one by one.
+					$flags     = defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ? JSON_PARTIAL_OUTPUT_ON_ERROR : 0; // phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
+					$separator = '';
+					echo '[';
+					foreach ( $items as $item ) {
+						echo $separator, json_encode( $item, $flags );
+						$separator = ',';
+					}
+					echo ']';
+					return;
+				}
+
 				// For single-item display, output the item directly without array wrapper
 				if ( ! empty( $args['single_item'] ) && count( $items ) === 1 ) {
 					$item = reset( $items );
@@ -288,7 +324,8 @@ class Formatter {
 				} else {
 					echo json_encode( $items );
 				}
-			}
+			},
+			[ 'streaming' => true ]
 		);
 
 		// Register 'csv' format
@@ -297,7 +334,8 @@ class Formatter {
 			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $formatter, $args required for API consistency
 			static function ( $items, $fields, $formatter = null, $args = [] ) {
 				Utils\write_csv( STDOUT, $items, $fields );
-			}
+			},
+			[ 'streaming' => true ]
 		);
 
 		// Register 'yaml' format
@@ -305,14 +343,27 @@ class Formatter {
 			'yaml',
 			// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $formatter required for API consistency
 			static function ( $items, $fields, $formatter = null, $args = [] ) {
+				if ( ! is_array( $items ) ) {
+					// Streamed items: dump each one as a single-item list. Without the document
+					// header that each dump starts with, this is the same as dumping all at once.
+					$header = "---\n";
+					echo $header;
+					foreach ( $items as $item ) {
+						echo substr( Spyc::YAMLDump( [ $item ], 2, 0 ), strlen( $header ) );
+					}
+					return;
+				}
+
 				// For single-item display, output the item directly without array wrapper
 				if ( ! empty( $args['single_item'] ) && count( $items ) === 1 ) {
+					/** @var array<mixed>|\stdClass $item */
 					$item = reset( $items );
 					echo Spyc::YAMLDump( $item, 2, 0 );
 				} else {
 					echo Spyc::YAMLDump( $items, 2, 0 );
 				}
-			}
+			},
+			[ 'streaming' => true ]
 		);
 
 		// Register 'count' format
@@ -424,9 +475,27 @@ class Formatter {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
-			// Convert Traversable to array early to avoid consumption issues and enable validation
+			if ( $items instanceof Iterator ) {
+				$streamed = $this->stream_items( $items, $ascii_pre_colorized );
+				if ( true === $streamed ) {
+					return;
+				}
+				if ( is_array( $streamed ) ) {
+					$items = $streamed;
+				}
+			}
+
+			// Convert Traversable to array early to avoid consumption issues and enable validation.
+			// The keys are not used for the output, so don't let repeated keys overwrite items.
+			// Only keep the requested fields of each item, so that large items, like posts, don't
+			// all have to be held in memory.
 			if ( $items instanceof Traversable ) {
-				$items = iterator_to_array( $items );
+				$all             = [];
+				$resolved_fields = [];
+				foreach ( $items as $item ) {
+					$all[] = $this->reduce_item( $item, $resolved_fields );
+				}
+				$items = $all;
 			}
 
 			// Check if this is a custom formatter or a built-in format that needs field validation
@@ -455,6 +524,188 @@ class Formatter {
 				$this->format( $items, $ascii_pre_colorized );
 			}
 		}
+	}
+
+	/**
+	 * Pass items from an iterator to a format handler one by one, without holding them all in memory.
+	 *
+	 * Only formats registered with the `streaming` option are streamed. The handler receives the
+	 * same rows as when passing an array, prepared one at a time.
+	 *
+	 * Each item is read from the iterator only once, as reading an item can run callbacks,
+	 * for example those of an `Iterators\Transform`.
+	 *
+	 * @param Iterator<mixed>       $items               Items.
+	 * @param bool|array<int, bool> $ascii_pre_colorized Passed on to the handler.
+	 * @return true|array<int, mixed>|false True if the items were streamed. If they cannot be
+	 *                                      streamed, the items read from the iterator, or false
+	 *                                      if it was not read.
+	 */
+	private function stream_items( Iterator $items, $ascii_pre_colorized = false ) {
+		$format = $this->args['format'];
+
+		if ( ! isset( self::$custom_formatters[ $format ] ) || empty( self::$format_options[ $format ]['streaming'] ) ) {
+			return false;
+		}
+
+		$items->rewind();
+
+		// Like in format(), these formats get the items as they are.
+		$raw_items = in_array( $format, [ 'ids', 'count' ], true );
+
+		$fields = $this->args['fields'];
+		$first  = null;
+		if ( $items->valid() ) {
+			$first = $items->current();
+		}
+
+		if ( $items->valid() && ! $raw_items && ! empty( $fields ) ) {
+			// Resolve the fields like validate_fields() does. If any of them is missing from
+			// the first item, fall back to the regular path, which checks the other items.
+			if ( ! is_array( $first ) && ! is_object( $first ) ) {
+				return $this->read_remaining_items( $items, $first );
+			}
+
+			foreach ( $fields as $i => $field ) {
+				$key = $this->find_item_key( $first, $field, true );
+				if ( null === $key ) {
+					return $this->read_remaining_items( $items, $first );
+				}
+				$fields[ $i ] = $key;
+			}
+			$this->args['fields'] = $fields;
+		}
+
+		$args = [
+			'ascii_pre_colorized' => $ascii_pre_colorized,
+			'streaming'           => true,
+		];
+		call_user_func( self::$custom_formatters[ $format ], $this->generate_rows( $items, $first, $fields, $raw_items ), $fields, $this, $args );
+
+		return true;
+	}
+
+	/**
+	 * Yield the rows to output for the items of an iterator.
+	 *
+	 * @param Iterator<mixed> $items     Items, positioned at the first one.
+	 * @param mixed           $first     The first item, already read from the iterator.
+	 * @param string[]        $fields    Resolved field names.
+	 * @param bool            $raw_items Whether to yield the items as they are.
+	 * @return \Generator<int, mixed>
+	 */
+	private function generate_rows( Iterator $items, $first, $fields, $raw_items ) {
+		$item = $first;
+		while ( $items->valid() ) {
+			yield $raw_items ? $item : $this->prepare_row( $item, $fields );
+
+			$items->next();
+			if ( $items->valid() ) {
+				$item = $items->current();
+			}
+		}
+	}
+
+	/**
+	 * Prepare an item for output the same way as display_items() and format() do for an array of items.
+	 *
+	 * @param mixed    $item   Item.
+	 * @param string[] $fields Resolved field names.
+	 * @return mixed
+	 */
+	private function prepare_row( $item, $fields ) {
+		if ( ! is_array( $item ) && ! is_object( $item ) ) {
+			return $item;
+		}
+
+		$is_tabular = in_array( $this->args['format'], [ 'table', 'csv' ], true );
+		if ( $is_tabular ) {
+			/** @var array<int|string, mixed>|object $item */
+			$item = $this->transform_item_values_to_json( is_object( $item ) ? clone $item : $item );
+		}
+
+		$row = Utils\pick_fields( $item, $fields );
+
+		return $is_tabular ? self::truncate_cell_values( $row ) : $row;
+	}
+
+	/**
+	 * Truncate the values of a row that are longer than MAX_CELL_WIDTH.
+	 *
+	 * @param array<int|string, mixed> $row Row.
+	 * @return array<int|string, mixed>
+	 */
+	private static function truncate_cell_values( $row ) {
+		foreach ( $row as $key => $value ) {
+			if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
+				$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
+			}
+		}
+		return $row;
+	}
+
+	/**
+	 * Read the remaining items of an iterator whose current item was already read.
+	 *
+	 * Like display_items() does for other iterators, only the requested fields are kept.
+	 *
+	 * @param Iterator<mixed> $items   Items.
+	 * @param mixed           $current The current item.
+	 * @return array<int, mixed>
+	 */
+	private function read_remaining_items( Iterator $items, $current ): array {
+		$resolved_fields = [];
+		$all             = [ $this->reduce_item( $current, $resolved_fields ) ];
+		$items->next();
+		while ( $items->valid() ) {
+			$all[] = $this->reduce_item( $items->current(), $resolved_fields );
+			$items->next();
+		}
+		return $all;
+	}
+
+	/**
+	 * Reduce an item from an iterator to the keys of the requested fields.
+	 *
+	 * Each field is resolved like validate_fields() does: by the first item that has it,
+	 * preferring the key without the prefix. Later items only keep the resolved key, with
+	 * its current value. Field resolution, the warnings about missing fields and the output
+	 * are therefore the same as for the full items. Items are kept as they are for the `ids`
+	 * and `count` formats, which use the whole items, and when no fields are requested.
+	 *
+	 * @param mixed                 $item            Item.
+	 * @param array<string, string> $resolved_fields Keys of the fields resolved so far, updated
+	 *                                               while reducing the items of an iterator.
+	 * @return mixed
+	 */
+	private function reduce_item( $item, array &$resolved_fields ) {
+		if (
+			empty( $this->args['fields'] )
+			|| ( ! is_array( $item ) && ! is_object( $item ) )
+			|| in_array( $this->args['format'], [ 'ids', 'count' ], true )
+		) {
+			return $item;
+		}
+
+		$reduced = [];
+		foreach ( $this->args['fields'] as $field ) {
+			if ( isset( $resolved_fields[ $field ] ) ) {
+				$key = $resolved_fields[ $field ];
+				if ( ! $this->item_has_key( $item, $key ) ) {
+					continue;
+				}
+			} else {
+				$key = $this->find_item_key( $item, $field, true );
+				if ( null === $key ) {
+					continue;
+				}
+				$resolved_fields[ $field ] = $key;
+			}
+
+			$reduced[ $key ] = is_object( $item ) ? $item->$key : $item[ $key ];
+		}
+
+		return $reduced;
 	}
 
 	/**
@@ -502,7 +753,7 @@ class Formatter {
 
 		// Convert iterator to array if needed
 		if ( ! is_array( $items ) ) {
-			$items = iterator_to_array( $items );
+			$items = iterator_to_array( $items, false );
 		}
 
 		// Check if a formatter is registered for this format
@@ -526,13 +777,8 @@ class Formatter {
 			// Truncate cell values exactly once for table/CSV output
 			if ( in_array( $this->args['format'], [ 'table', 'csv' ], true ) ) {
 				foreach ( $formatted_items as &$row ) {
-					if ( ! is_array( $row ) && ! is_object( $row ) ) {
-						continue;
-					}
-					foreach ( $row as $key => $value ) {
-						if ( is_string( $value ) && strlen( $value ) > self::MAX_CELL_WIDTH ) {
-							$row[ $key ] = substr( $value, 0, self::MAX_CELL_WIDTH ) . '...';
-						}
+					if ( is_array( $row ) ) {
+						$row = self::truncate_cell_values( $row );
 					}
 				}
 				unset( $row );
@@ -672,6 +918,18 @@ class Formatter {
 	}
 
 	/**
+	 * Check if an item has a key, as an accessible object property or an array key.
+	 *
+	 * @param mixed  $item
+	 * @param string $key
+	 * @return bool
+	 */
+	private function item_has_key( $item, $key ): bool {
+		return ( is_object( $item ) && $this->is_object_property_accessible( $item, $key ) )
+			|| ( is_array( $item ) && array_key_exists( $key, $item ) );
+	}
+
+	/**
 	 * Find an object's key.
 	 * If $prefix is set, a key with that prefix will be prioritized.
 	 *
@@ -682,10 +940,7 @@ class Formatter {
 	 */
 	private function find_item_key( $item, $field, $lenient = false ) {
 		foreach ( [ $field, $this->prefix . '_' . $field ] as $maybe_key ) {
-			if (
-				( is_object( $item ) && $this->is_object_property_accessible( $item, $maybe_key ) ) ||
-				( is_array( $item ) && array_key_exists( $maybe_key, $item ) )
-			) {
+			if ( $this->item_has_key( $item, $maybe_key ) ) {
 				$key = $maybe_key;
 				break;
 			}
@@ -771,23 +1026,44 @@ class Formatter {
 			Colors::disable( true );
 		}
 
-		$table->setAsciiPreColorized( $ascii_pre_colorized );
-		$table->setHeaders( $fields );
-		$table->setAlignments(
-			$this->args['alignments']
-		);
+		try {
+			$table->setAsciiPreColorized( $ascii_pre_colorized );
+			$table->setHeaders( $fields );
+			$table->setAlignments(
+				$this->args['alignments']
+			);
 
-		foreach ( $items as $item ) {
-			$table->addRow( array_values( (array) $item ) );
+			// Items from an iterator are read while the lines are written, which can throw.
+			foreach ( self::get_table_lines( $table, $items ) as $line ) {
+				WP_CLI::line( $line );
+			}
+		} finally {
+			if ( $enabled ) {
+				Colors::enable( true );
+			}
 		}
+	}
 
-		foreach ( $table->getDisplayLines() as $line ) {
-			WP_CLI::line( $line );
-		}
+	/**
+	 * Get the lines of a table with the given items as rows.
+	 *
+	 * If the table can render each row as it is read, which is the case when STDOUT is piped,
+	 * the items are not all held in memory.
+	 *
+	 * @param Table                                        $table Table with the headers set.
+	 * @param iterable<int, array<string, mixed>|object|mixed> $items Items.
+	 * @return iterable<int, string>
+	 */
+	private static function get_table_lines( Table $table, iterable $items ) {
+		$rows = ( static function () use ( $items ) {
+			foreach ( $items as $item ) {
+				/** @var array<int, string> $row */
+				$row = array_values( (array) $item );
+				yield $row;
+			}
+		} )();
 
-		if ( $enabled ) {
-			Colors::enable( true );
-		}
+		return $table->getDisplayLinesFromRows( $rows );
 	}
 
 	/**

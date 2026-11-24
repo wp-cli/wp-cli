@@ -25,12 +25,14 @@ class Path {
 	 * We try to be smart and only replace the constants when they are not within quotes.
 	 * Regular expressions being stateless, this is probably not 100% correct for edge cases.
 	 *
+	 * Only used as a fallback when the tokenizer extension is not available.
+	 *
 	 * @see https://regex101.com/r/9hXp5d/11
 	 * @see https://stackoverflow.com/a/171499/933065
 	 *
 	 * @var string
 	 */
-	const FILE_DIR_PATTERN = '%(?>#.*?$)|(?>//.*?$)|(?>/\*.*?\*/)|(?>\'(?:(?=(\\\\?))\1.)*?\')|(?>"(?:(?=(\\\\?))\2.)*?")|(?<file>\b__FILE__\b)|(?<dir>\b__DIR__\b)%ms';
+	const FILE_DIR_PATTERN = '%(?>#.*?$)|(?>//.*?$)|(?>/\*.*?\*/)|(?>\'(?:(?=(\\\\?))\1.)*?\')|(?>"(?:(?=(\\\\?))\2.)*?")|(?<file>\b__FILE__\b)|(?<dir>\b__DIR__\b)%msi';
 
 	/**
 	 * Check if a certain path is within a Phar archive.
@@ -264,13 +266,25 @@ class Path {
 	 * Replace magic constants in some PHP source code.
 	 *
 	 * Replaces the __FILE__ and __DIR__ magic constants with the values they are
-	 * supposed to represent at runtime.
+	 * supposed to represent at runtime. Occurrences inside quoted strings and
+	 * comments are left untouched. When the tokenizer extension is available,
+	 * occurrences inside heredoc/nowdoc strings and inline HTML are left
+	 * untouched as well.
+	 *
+	 * The source is treated like a PHP file, i.e. the code needs to be wrapped in
+	 * PHP open tags. If the source does not contain an open tag at all, it is
+	 * treated as a bare PHP snippet instead.
 	 *
 	 * @param string $source The PHP code to manipulate.
 	 * @param string $path The path to use instead of the magic constants.
 	 * @return string Adapted PHP code.
+	 * @throws \RuntimeException If the magic constants could not be replaced.
 	 */
 	public static function replace_path_consts( $source, $path ) {
+		if ( false === stripos( $source, '__FILE__' ) && false === stripos( $source, '__DIR__' ) ) {
+			return $source;
+		}
+
 		// Solve issue with Windows allowing single quotes in account names.
 		$file = addslashes( $path );
 
@@ -280,8 +294,66 @@ class Path {
 
 		$dir = dirname( $file );
 
-		// Replace __FILE__ and __DIR__ constants with value of $file or $dir.
-		return (string) preg_replace_callback(
+		if ( function_exists( 'token_get_all' ) ) {
+			return self::replace_path_consts_with_tokenizer( $source, $file, $dir );
+		}
+
+		return self::replace_path_consts_with_regex( $source, $file, $dir );
+	}
+
+	/**
+	 * Replace the __FILE__ and __DIR__ magic constants using the PHP tokenizer.
+	 *
+	 * Tokenizing is linear in the size of the source and lossless, so the source
+	 * can be reassembled verbatim with only the magic constant tokens swapped out.
+	 *
+	 * @param string $source The PHP code to manipulate.
+	 * @param string $file The value to use instead of __FILE__.
+	 * @param string $dir The value to use instead of __DIR__.
+	 * @return string Adapted PHP code.
+	 */
+	private static function replace_path_consts_with_tokenizer( $source, $file, $dir ) {
+		$tokens = token_get_all( $source );
+
+		// Without an open tag the whole source is a single T_INLINE_HTML token, so
+		// treat it as a bare PHP snippet instead.
+		if ( 1 === count( $tokens ) && is_array( $tokens[0] ) && T_INLINE_HTML === $tokens[0][0] ) {
+			$tokens = token_get_all( '<?php ' . $source );
+			array_shift( $tokens );
+		}
+
+		$result = '';
+
+		foreach ( $tokens as $token ) {
+			if ( ! is_array( $token ) ) {
+				$result .= $token;
+			} elseif ( T_FILE === $token[0] ) {
+				$result .= "'{$file}'";
+			} elseif ( T_DIR === $token[0] ) {
+				$result .= "'{$dir}'";
+			} else {
+				$result .= $token[1];
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Replace the __FILE__ and __DIR__ magic constants using a regular expression.
+	 *
+	 * Only used when the tokenizer extension is not available. The pattern needs
+	 * to backtrack for every character inside a string or comment, so it can
+	 * exhaust the PCRE JIT stack or backtrack limit on large sources.
+	 *
+	 * @param string $source The PHP code to manipulate.
+	 * @param string $file The value to use instead of __FILE__.
+	 * @param string $dir The value to use instead of __DIR__.
+	 * @return string Adapted PHP code.
+	 * @throws \RuntimeException If the regular expression failed to run.
+	 */
+	private static function replace_path_consts_with_regex( $source, $file, $dir ) {
+		$result = preg_replace_callback(
 			self::FILE_DIR_PATTERN,
 			static function ( $matches ) use ( $file, $dir ) {
 				if ( ! empty( $matches['file'] ) ) {
@@ -296,5 +368,17 @@ class Path {
 			},
 			$source
 		);
+
+		if ( null === $result ) {
+			$error = function_exists( 'preg_last_error_msg' )
+				? preg_last_error_msg() // phpcs:ignore PHPCompatibility.FunctionUse.NewFunctions.preg_last_error_msgFound
+				: 'PCRE error ' . preg_last_error();
+
+			throw new \RuntimeException(
+				"Failed to replace the __FILE__ and __DIR__ magic constants in the PHP source: {$error}."
+			);
+		}
+
+		return $result;
 	}
 }

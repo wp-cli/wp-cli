@@ -39,9 +39,30 @@ jobs:
         id: check_composer_file
         run: echo "files_exists=$(test -f composer.json && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
+      # Without a database the Behat runner silently falls back to SQLite, so the
+      # agent's test runs are not the ones CI will do. Mirrors the setup in
+      # reusable-functional.yml.
+      - name: Check existence of behat.yml file
+        id: check_behat_file
+        run: echo "files_exists=$(test -f behat.yml && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      # Not run in the background: Copilot code review builds its workflow from
+      # these steps and failed validation while they used `background` and
+      # `wait-all`. Also, the action unpacks its binaries with the system `tar`,
+      # which fails to load libpcre2 while setup-php upgrades it with apt.
+      - name: Setup MySQL Server
+        if: steps.check_behat_file.outputs.files_exists == 'true'
+        uses: shogo82148/actions-setup-mysql@13a38f2af408e58a0c80168fc620a63a15357339 # v1
+        with:
+          mysql-version: '8.0' # Standard MySQL version for these tests
+          auto-start: true
+          root-password: ${{ env.WP_CLI_TEST_DBROOTPASS }}
+          user: ${{ env.WP_CLI_TEST_DBUSER }}
+          password: ${{ env.WP_CLI_TEST_DBPASS }}
+
       - name: Set up PHP environment
         if: steps.check_composer_file.outputs.files_exists == 'true'
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: 'latest'
           ini-values: zend.assertions=1, error_reporting=-1, display_errors=On
@@ -55,23 +76,6 @@ jobs:
         uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
         env:
           COMPOSER_ROOT_VERSION: dev-${{ github.event.repository.default_branch }}
-
-      # Without a database the Behat runner silently falls back to SQLite, so the
-      # agent's test runs are not the ones CI will do. Mirrors the setup in
-      # reusable-functional.yml.
-      - name: Check existence of behat.yml file
-        id: check_behat_file
-        run: echo "files_exists=$(test -f behat.yml && echo true || echo false)" >> "$GITHUB_OUTPUT"
-
-      - name: Setup MySQL Server
-        if: steps.check_behat_file.outputs.files_exists == 'true'
-        uses: shogo82148/actions-setup-mysql@62da9377d83991fce27b6ed2a397d3306121e41d # v1
-        with:
-          mysql-version: '8.0' # Standard MySQL version for these tests
-          auto-start: true
-          root-password: ${{ env.WP_CLI_TEST_DBROOTPASS }}
-          user: ${{ env.WP_CLI_TEST_DBUSER }}
-          password: ${{ env.WP_CLI_TEST_DBPASS }}
 
       - name: Remove system MySQL binary
         if: steps.check_behat_file.outputs.files_exists == 'true'

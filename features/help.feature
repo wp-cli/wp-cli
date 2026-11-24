@@ -639,10 +639,10 @@ Feature: Get help about WP-CLI commands
       """
       <?php
       WP_CLI::add_hook(
-      	'before_add_command:test-disabled',
-      	function ( $addition ) {
-      		$addition->abort( 'This command is for testing only.' );
-      	} 
+          'before_add_command:test-disabled',
+          function ( $addition ) {
+              $addition->abort( 'This command is for testing only.' );
+          }
       );
       /**
        * A test command.
@@ -677,10 +677,10 @@ Feature: Get help about WP-CLI commands
       // Plugin Name: Test CLI Help
 
       class Test_Help extends WP_CLI_Command {
-      	/**
-      	 * A dummy command.
-      	 */
-      	public function __invoke() {}
+          /**
+           * A dummy command.
+           */
+          public function __invoke() {}
       }
 
       WP_CLI::add_command( 'test-help', 'Test_Help' );
@@ -718,29 +718,29 @@ Feature: Get help about WP-CLI commands
       // Plugin Name: Test CLI Help
 
       class Test_Magic_Methods extends WP_CLI_Command {
-      	/**
-      	 * A dummy command.
-      	 *
-      	 * @subcommand my-command
-      	 */
-      	public function my_command() {}
+          /**
+           * A dummy command.
+           *
+           * @subcommand my-command
+           */
+          public function my_command() {}
 
-      	/**
-      	 * Magic methods should not appear as commands
-      	 */
-      	public function __construct() {}
-      	public function __destruct() {}
-      	public function __call( $name, $arguments ) {}
-      	public function __get( $key ) {}
-      	public function __set( $key, $value ) {}
-      	public function __isset( $key ) {}
-      	public function __unset( $key ) {}
-      	public function __sleep() {}
-      	public function __wakeup() {}
-      	public function __toString() {}
-      	public static function __set_state( $properties ) {}
-      	public function __clone() {}
-      	public function __debugInfo() {}
+          /**
+           * Magic methods should not appear as commands
+           */
+          public function __construct() {}
+          public function __destruct() {}
+          public function __call( $name, $arguments ) {}
+          public function __get( $key ) {}
+          public function __set( $key, $value ) {}
+          public function __isset( $key ) {}
+          public function __unset( $key ) {}
+          public function __sleep() {}
+          public function __wakeup() {}
+          public function __toString() {}
+          public static function __set_state( $properties ) {}
+          public function __clone() {}
+          public function __debugInfo() {}
       }
 
       WP_CLI::add_command( 'test-magic-methods', 'Test_Magic_Methods' );
@@ -766,12 +766,12 @@ Feature: Get help about WP-CLI commands
 
       class Test_CLI_Extra_Site_Command extends WP_CLI_Command {
 
-      	/**
-      	 * A dummy command.
-      	 *
-      	 * @subcommand my-command
-      	 */
-      	public function my_command() {}
+          /**
+           * A dummy command.
+           *
+           * @subcommand my-command
+           */
+          public function my_command() {}
       }
 
       WP_CLI::add_command( 'site test-extra', 'Test_CLI_Extra_Site_Command' );
@@ -792,12 +792,12 @@ Feature: Get help about WP-CLI commands
 
       class Test_CLI_Extra_Command extends WP_CLI_Command {
 
-      	/**
-      	 * A dummy command.
-      	 *
-      	 * @subcommand my-command
-      	 */
-      	public function my_command() {}
+          /**
+           * A dummy command.
+           *
+           * @subcommand my-command
+           */
+          public function my_command() {}
       }
 
       WP_CLI::add_command( 'config test-extra-config', 'Test_CLI_Extra_Command' );
@@ -889,47 +889,47 @@ Feature: Get help about WP-CLI commands
       // Plugin Name: Test CLI Help
 
       class Test_Wordwrap extends WP_CLI_Command {
-      	/**
-      	 * 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12345678
-      	 *
-      	 * ## OPTIONS
-      	 *
-      	 * [--skip-delete]
-      	 * : Skip deletion of the original thumbnails. If your thumbnails are linked from sources outside your control, it's likely best to leave them around. Defaults to false.
-      	 *
-      	 * [--eighty=<four initial spaces>]
-      	 * : 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456
-      	 *
-      	 * [--eighty-one=<four initial spaces>]
-      	 * : 123456789 123456789 123456789 123456789 123456789 123456789 123456789 1234567
-      	 *
-      	 * [--forty=<four initial spaces>]
-      	 * : 123456789 123456789 123456789 123456
-      	 *
-      	 * [--forty-one=<four initial spaces>]
-      	 * : 123456789 123456789 123456789 1234567
-      	 *
-      	 * ## EXAMPLES
-      	 *
-      	 *     # Re-generate only the thumbnails of "large" image size for all images.
-      	 *     $ wp media regenerate --image_size=large
-      	 *     Do you really want to regenerate the "large" image size for all images? [y/n] y
-      	 *     Found 3 images to regenerate.
-      	 *     1/3 Regenerated "large" thumbnail for "Yoogest Image Ever, Really" (ID 9999).
-      	 *     2/3 No "large" thumbnail regeneration needed for "Snowflake" (ID 9998).
-      	 *     3/3 Regenerated "large" thumbnail for "Even Yooger than the Yoogest Image Ever, Really" (ID 9997).
-      	 *     Success: Regenerated 3 of 3 images.
-      	 *
-      	 *     # 6 initial spaces + 74 = 80; 6 + 75 = 81
-      	 *     # 123456789 123456789 123456789 123456789 123456789 123456789 123456789 1234
-      	 *     # 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12345
-      	 *
-      	 *     # 6 initial spaces + 34 = 40; 6 + 35 = 41
-      	 *     # 123456789 123456789 123456789 1234
-      	 *     # 123456789 123456789 123456789 12345
-      	 *
-      	 */
-      	public function my_command() {}
+          /**
+           * 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12345678
+           *
+           * ## OPTIONS
+           *
+           * [--skip-delete]
+           * : Skip deletion of the original thumbnails. If your thumbnails are linked from sources outside your control, it's likely best to leave them around. Defaults to false.
+           *
+           * [--eighty=<four initial spaces>]
+           * : 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456
+           *
+           * [--eighty-one=<four initial spaces>]
+           * : 123456789 123456789 123456789 123456789 123456789 123456789 123456789 1234567
+           *
+           * [--forty=<four initial spaces>]
+           * : 123456789 123456789 123456789 123456
+           *
+           * [--forty-one=<four initial spaces>]
+           * : 123456789 123456789 123456789 1234567
+           *
+           * ## EXAMPLES
+           *
+           *     # Re-generate only the thumbnails of "large" image size for all images.
+           *     $ wp media regenerate --image_size=large
+           *     Do you really want to regenerate the "large" image size for all images? [y/n] y
+           *     Found 3 images to regenerate.
+           *     1/3 Regenerated "large" thumbnail for "Yoogest Image Ever, Really" (ID 9999).
+           *     2/3 No "large" thumbnail regeneration needed for "Snowflake" (ID 9998).
+           *     3/3 Regenerated "large" thumbnail for "Even Yooger than the Yoogest Image Ever, Really" (ID 9997).
+           *     Success: Regenerated 3 of 3 images.
+           *
+           *     # 6 initial spaces + 74 = 80; 6 + 75 = 81
+           *     # 123456789 123456789 123456789 123456789 123456789 123456789 123456789 1234
+           *     # 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12345
+           *
+           *     # 6 initial spaces + 34 = 40; 6 + 35 = 41
+           *     # 123456789 123456789 123456789 1234
+           *     # 123456789 123456789 123456789 12345
+           *
+           */
+          public function my_command() {}
       }
 
       WP_CLI::add_command( 'test-wordwrap', 'Test_Wordwrap' );
@@ -1114,72 +1114,72 @@ Feature: Get help about WP-CLI commands
       // Plugin Name: Test CLI Help
 
       class Test_Wordwrap extends WP_CLI_Command {
-      	/**
-      	 * Generate PHP code for registering a custom post type.
-      	 *
-      	 * @subcommand post-type
-      	 *
-      	 * @alias      cpt
-      	 */
-      	public function post_type( $args, $assoc_args ) {}
+          /**
+           * Generate PHP code for registering a custom post type.
+           *
+           * @subcommand post-type
+           *
+           * @alias      cpt
+           */
+          public function post_type( $args, $assoc_args ) {}
 
-      	/**
-      	 * Generate starter code for a theme based on _s.
-      	 *
-      	 * See the [Underscores website](http://underscores.me/) for more details.
-      	 */
-      	public function _s( $args, $assoc_args ) {}
+          /**
+           * Generate starter code for a theme based on _s.
+           *
+           * See the [Underscores website](http://underscores.me/) for more details.
+           */
+          public function _s( $args, $assoc_args ) {}
 
-      	/**
-      	 * Generate GitHub configuration files for your command.
-      	 *
-      	 * @when       before_wp_load
-      	 * @subcommand package-github
-      	 */
-      	public function package_github( $args, $assoc_args ) {}
+          /**
+           * Generate GitHub configuration files for your command.
+           *
+           * @when       before_wp_load
+           * @subcommand package-github
+           */
+          public function package_github( $args, $assoc_args ) {}
 
-      	/**
-      	 * Generate files needed for writing Behat tests for your command.
-      	 *
-      	 * @when       before_wp_load
-      	 * @subcommand package-tests
-      	 */
-      	public function package_tests( $args, $assoc_args ) {}
+          /**
+           * Generate files needed for writing Behat tests for your command.
+           *
+           * @when       before_wp_load
+           * @subcommand package-tests
+           */
+          public function package_tests( $args, $assoc_args ) {}
 
-      	/**
-      	 * Generate files needed for running PHPUnit tests in a plugin.
-      	 *
-      	 * @subcommand plugin-tests
-      	 */
-      	public function plugin_tests( $args, $assoc_args ) {}
+          /**
+           * Generate files needed for running PHPUnit tests in a plugin.
+           *
+           * @subcommand plugin-tests
+           */
+          public function plugin_tests( $args, $assoc_args ) {}
 
-      	/**
-      	 * Generate files needed for running PHPUnit tests in a theme.
-      	 *
-      	 * @subcommand theme-tests
-      	 */
-      	public function theme_tests( $args, $assoc_args ) {}
+          /**
+           * Generate files needed for running PHPUnit tests in a theme.
+           *
+           * @subcommand theme-tests
+           */
+          public function theme_tests( $args, $assoc_args ) {}
 
-      	/**
-      	 * 2 chars initial + 20 padded command + 58 these = 80 chars.
-      	 *
-      	 * @subcommand eighty
-      	 */
-      	public function eighty( $args, $assoc_args ) {}
+          /**
+           * 2 chars initial + 20 padded command + 58 these = 80 chars.
+           *
+           * @subcommand eighty
+           */
+          public function eighty( $args, $assoc_args ) {}
 
-      	/**
-      	 * 2 chars initial + 20 padded command + 59 these = 81 chars..
-      	 *
-      	 * @subcommand eighty-one
-      	 */
-      	public function eighty_one( $args, $assoc_args ) {}
+          /**
+           * 2 chars initial + 20 padded command + 59 these = 81 chars..
+           *
+           * @subcommand eighty-one
+           */
+          public function eighty_one( $args, $assoc_args ) {}
 
-      	/**
-      	 * A very long description a very longgggggggggg description a very longgggg description a very long description a very longgggggggggggggggg description a very long description a very long description a very long description a very longgg description.
-      	 *
-      	 * @subcommand very-long
-      	 */
-      	public function very_long( $args, $assoc_args ) {}
+          /**
+           * A very long description a very longgggggggggg description a very longgggg description a very long description a very longgggggggggggggggg description a very long description a very long description a very long description a very longgg description.
+           *
+           * @subcommand very-long
+           */
+          public function very_long( $args, $assoc_args ) {}
       }
 
       WP_CLI::add_command( 'test-wordwrap', 'Test_Wordwrap' );
@@ -1228,20 +1228,20 @@ Feature: Get help about WP-CLI commands
       <?php
 
       if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
-      	return;
+          return;
       }
 
       class WP_CLI_Foo_Bar_Command extends WP_CLI_Command {
-      	/**
-      	 * A command that has a link in its long description.
-      	 *
-      	 * This is a [reference link](https://wordpress.org/).
-      	 * Also, there is a [second link](http://example.com/).
-      	 * They should be displayed nicely!
-      	 *
-      	 * @synopsis <constant-name>
-      	 */
-      	public function __invoke( $args, $assoc_args ) {}
+          /**
+           * A command that has a link in its long description.
+           *
+           * This is a [reference link](https://wordpress.org/).
+           * Also, there is a [second link](http://example.com/).
+           * They should be displayed nicely!
+           *
+           * @synopsis <constant-name>
+           */
+          public function __invoke( $args, $assoc_args ) {}
       }
 
       WP_CLI::add_command( 'reference-link', 'WP_CLI_Foo_Bar_Command' );
@@ -1274,18 +1274,18 @@ Feature: Get help about WP-CLI commands
       <?php
 
       if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
-      	return;
+          return;
       }
 
       class WP_CLI_Foo_Bar_Command extends WP_CLI_Command {
-      	/**
-      	 * A command that has a link in its long description.
-      	 *
-      	 * This is a [reference link](https://wordpress.org/). Also, there is a [second link](http://example.com/). They should be displayed nicely! Wow! This is a very, very long description.
-      	 *
-      	 * @synopsis <constant-name>
-      	 */
-      	public function __invoke( $args, $assoc_args ) {}
+          /**
+           * A command that has a link in its long description.
+           *
+           * This is a [reference link](https://wordpress.org/). Also, there is a [second link](http://example.com/). They should be displayed nicely! Wow! This is a very, very long description.
+           *
+           * @synopsis <constant-name>
+           */
+          public function __invoke( $args, $assoc_args ) {}
       }
 
       WP_CLI::add_command( 'reference-link', 'WP_CLI_Foo_Bar_Command' );
@@ -1345,26 +1345,26 @@ Feature: Get help about WP-CLI commands
       // Plugin Name: Test CLI Multi-line Description
 
       class Test_Multiline_Description extends WP_CLI_Command {
-      	/**
-      	 * Clear the Cloudflare cache. Default: purge everything. Uses $CLOUDFLARE_API_KEY environment variable.
-      	 *
-      	 * API documentation: https://developers.cloudflare.com/api/resources/cache/
-      	 *
-      	 * ## OPTIONS
-      	 *
-      	 * <zone_id>
-      	 * : Cloudflare zone ID.
-      	 *
-      	 * ## EXAMPLES
-      	 *
-      	 *     # Clear the cloudflare cache for a domain.
-      	 *     wp test-multiline clear-cloudflare-cache 12345
-      	 *     Success: The Cloudflare cache has been cleared.
-      	 *
-      	 * @subcommand clear-cloudflare-cache
-      	 * @alias clear_cloudflare_cache
-      	 */
-      	public function clear_cloudflare_cache( $args ) {}
+          /**
+           * Clear the Cloudflare cache. Default: purge everything. Uses $CLOUDFLARE_API_KEY environment variable.
+           *
+           * API documentation: https://developers.cloudflare.com/api/resources/cache/
+           *
+           * ## OPTIONS
+           *
+           * <zone_id>
+           * : Cloudflare zone ID.
+           *
+           * ## EXAMPLES
+           *
+           *     # Clear the cloudflare cache for a domain.
+           *     wp test-multiline clear-cloudflare-cache 12345
+           *     Success: The Cloudflare cache has been cleared.
+           *
+           * @subcommand clear-cloudflare-cache
+           * @alias clear_cloudflare_cache
+           */
+          public function clear_cloudflare_cache( $args ) {}
       }
 
       WP_CLI::add_command( 'test-multiline', 'Test_Multiline_Description' );
@@ -1400,23 +1400,23 @@ Feature: Get help about WP-CLI commands
       // Plugin Name: Test CLI Multi-line Description
 
       class Test_Multiline_No_Alias extends WP_CLI_Command {
-      	/**
-      	 * Clear the Cloudflare cache. Default: purge everything. Uses $CLOUDFLARE_API_KEY environment variable.
-      	 *
-      	 * API documentation: https://developers.cloudflare.com/api/resources/cache/
-      	 *
-      	 * ## OPTIONS
-      	 *
-      	 * <zone_id>
-      	 * : Cloudflare zone ID.
-      	 *
-      	 * ## EXAMPLES
-      	 *
-      	 *     # Clear the cloudflare cache for a domain.
-      	 *     wp test-multiline noalias 12345
-      	 *     Success: The Cloudflare cache has been cleared.
-      	 */
-      	public function noalias( $args ) {}
+          /**
+           * Clear the Cloudflare cache. Default: purge everything. Uses $CLOUDFLARE_API_KEY environment variable.
+           *
+           * API documentation: https://developers.cloudflare.com/api/resources/cache/
+           *
+           * ## OPTIONS
+           *
+           * <zone_id>
+           * : Cloudflare zone ID.
+           *
+           * ## EXAMPLES
+           *
+           *     # Clear the cloudflare cache for a domain.
+           *     wp test-multiline noalias 12345
+           *     Success: The Cloudflare cache has been cleared.
+           */
+          public function noalias( $args ) {}
       }
 
       WP_CLI::add_command( 'test-multiline', 'Test_Multiline_No_Alias' );

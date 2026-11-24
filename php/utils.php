@@ -79,7 +79,7 @@ function extract_from_phar( $path ) {
 
 	$fname = Path::basename( $path );
 
-	$tmp_path = get_temp_dir() . uniqid( 'wp-cli-extract-from-phar-', true ) . "-$fname";
+	$tmp_path = make_temp_file( 'wp-cli-extract-from-phar-', "-$fname" );
 
 	copy( $path, $tmp_path );
 
@@ -427,7 +427,7 @@ function esc_cmd( $cmd, ...$args ) {
 /**
  * Gets path to WordPress configuration.
  *
- * @return string
+ * @return string|false
  */
 function locate_wp_config() {
 	static $path;
@@ -536,8 +536,8 @@ function format_items( $format, $items, $fields ) {
  */
 function write_csv( $fd, $rows, $headers = [] ) {
 	if ( ! empty( $headers ) ) {
-		$headers = array_map( __NAMESPACE__ . '\escape_csv_value', $headers );
-		fputcsv( $fd, $headers, ',', '"', '\\' );
+		// Escape the header cells only; rows are looked up by the original field names.
+		fputcsv( $fd, array_map( __NAMESPACE__ . '\escape_csv_value', $headers ), ',', '"', '\\' );
 	}
 
 	/**
@@ -599,27 +599,38 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 
 	$tmpdir = get_temp_dir();
 
+	$created  = false;
+	$attempts = 0;
+
 	do {
 		$tmpfile  = Path::basename( $title );
 		$tmpfile  = preg_replace( '|\.[^.]*$|', '', $tmpfile );
 		$tmpfile .= '-' . substr( md5( (string) mt_rand() ), 0, 6 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand -- no crypto and WP not loaded.
 		$tmpfile  = $tmpdir . $tmpfile . '.' . $ext;
-		$fp       = fopen( $tmpfile, 'xb' );
-		if ( ! $fp && is_writable( $tmpdir ) && file_exists( $tmpfile ) ) {
-			$tmpfile = '';
-			continue;
-		}
-		if ( $fp ) {
-			fclose( $fp );
-		}
-	} while ( ! $tmpfile );
 
-	// @phpstan-ignore booleanNot.alwaysFalse
-	if ( ! $tmpfile ) {
+		// Restrict the file to its owner, as it can hold sensitive input.
+		$old_umask = umask( 0177 );
+		$fp        = @fopen( $tmpfile, 'xb' );
+		umask( $old_umask );
+
+		if ( $fp ) {
+			$created = true;
+			// A short write (e.g. on a full disk) must not leave a truncated file for the editor to open.
+			if ( strlen( $input ) !== fwrite( $fp, $input ) ) {
+				fclose( $fp );
+				@unlink( $tmpfile );
+				WP_CLI::error( 'Error writing to temporary file.' );
+			}
+			fclose( $fp );
+			break;
+		}
+		$tmpfile = '';
+		++$attempts;
+	} while ( $attempts < 100 );
+
+	if ( ! $created ) {
 		WP_CLI::error( 'Error creating temporary file.' );
 	}
-
-	file_put_contents( $tmpfile, $input );
 
 	$editor = getenv( 'EDITOR' );
 	if ( ! $editor ) {
@@ -856,6 +867,7 @@ function make_progress_bar( $message, $count, $interval = 100 ) {
  *               case of PHP_URL_PORT - integer when it does. See parse_url()'s
  *               return values.
  *
+ * @phpstan-param int<-1, 7> $component
  * @phpstan-return ($component is non-negative-int ? string|null|int|false : array{scheme?: string, host?: string, port?: int, user?: string, pass?: string, query?: string, path?: string, fragment?: string})
  */
 function parse_url( $url, $component = - 1, $auto_add_scheme = true ) {
@@ -952,6 +964,8 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		$options['verify'] = ! empty( ini_get( 'curl.cainfo' ) ) ? ini_get( 'curl.cainfo' ) : true;
 	}
 
+	RequestsLibrary::register_autoloader();
+
 	/**
 	 * Filter HTTP request options used by WP-CLI.
 	 *
@@ -962,8 +976,6 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 	 * @param array $headers Request headers.
 	 */
 	$options = WP_CLI::do_hook( 'http_request_options', $options, $method, $url, $data, $headers );
-
-	RequestsLibrary::register_autoloader();
 
 	/**
 	 * @var callable $request_method
@@ -1337,6 +1349,90 @@ function get_temp_dir() {
 }
 
 /**
+ * Create a unique temporary file safely without following symlinks.
+ *
+ * The file is only readable and writable by its owner on non-Windows systems.
+ *
+ * The file is created in the directory returned by WP-CLI's `get_temp_dir()`
+ * (based on `sys_get_temp_dir()`), not WordPress's `get_temp_dir()`, and is
+ * not removed automatically; callers are responsible for cleaning it up.
+ *
+ * On failure, this function exits via `WP_CLI::error()` rather than throwing.
+ *
+ * @access public
+ * @category System
+ *
+ * @param string $prefix Optional. Prefix for the temporary file name. Default 'wp-cli-'.
+ * @param string $suffix Optional. Suffix for the temporary file name. Default ''.
+ * @return string Path to the created temporary file.
+ */
+function make_temp_file( $prefix = 'wp-cli-', $suffix = '' ) {
+	if ( false !== strpbrk( $prefix, "/\\\0" ) || false !== strpbrk( $suffix, "/\\\0" ) ) {
+		WP_CLI::error( 'Invalid temporary file prefix or suffix.' );
+	}
+
+	$temp_dir = get_temp_dir();
+	$attempts = 0;
+
+	do {
+		$path = $temp_dir . uniqid( $prefix, true ) . $suffix;
+
+		// Restrict the file to its owner, as callers may write sensitive data to it.
+		$old_umask = umask( 0177 );
+		$handle    = @fopen( $path, 'xb' );
+		umask( $old_umask );
+
+		++$attempts;
+	} while ( ! $handle && $attempts < 100 );
+
+	if ( ! $handle ) {
+		WP_CLI::error( 'Failed to create a temporary file.' );
+	}
+
+	fclose( $handle );
+
+	return $path;
+}
+
+/**
+ * Create a unique temporary directory safely without following symlinks.
+ *
+ * The directory is only accessible by its owner on non-Windows systems.
+ *
+ * The directory is created in the directory returned by WP-CLI's `get_temp_dir()`
+ * (based on `sys_get_temp_dir()`), not WordPress's `get_temp_dir()`, and is
+ * not removed automatically; callers are responsible for cleaning it up.
+ *
+ * On failure, this function exits via `WP_CLI::error()` rather than throwing.
+ *
+ * @access public
+ * @category System
+ *
+ * @param string $prefix Optional. Prefix for the temporary directory name. Default 'wp-cli-'.
+ * @return string Path to the created temporary directory with a trailing slash.
+ */
+function make_temp_dir( $prefix = 'wp-cli-' ) {
+	if ( false !== strpbrk( $prefix, "/\\\0" ) ) {
+		WP_CLI::error( 'Invalid temporary directory prefix.' );
+	}
+
+	$temp_dir = get_temp_dir();
+	$attempts = 0;
+
+	do {
+		$path    = $temp_dir . uniqid( $prefix, true );
+		$success = @mkdir( $path, 0700 );
+		++$attempts;
+	} while ( ! $success && $attempts < 100 );
+
+	if ( ! $success ) {
+		WP_CLI::error( 'Failed to create a temporary directory.' );
+	}
+
+	return Path::trailingslashit( $path );
+}
+
+/**
  * Parse a SSH url for its host, port, and path.
  *
  * Similar to parse_url(), but adds support for defined SSH aliases.
@@ -1607,16 +1703,15 @@ function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.C
 
 	$length = strlen( $pattern );
 
-	$begin = 0;
-
 	// Find first opening brace.
-	// @phpstan-ignore for.variableOverwrite
-	for ( $begin = 0; $begin < $length; $begin++ ) {
+	$begin = 0;
+	while ( $begin < $length ) {
 		if ( '\\' === $pattern[ $begin ] ) {
 			++$begin;
 		} elseif ( '{' === $pattern[ $begin ] ) {
 			break;
 		}
+		++$begin;
 	}
 
 	// Find comma or matching closing brace.
@@ -1672,12 +1767,18 @@ function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.C
  * If the "distance" to the closest term is higher than the threshold, an empty
  * string is returned.
  *
- * @param string        $target    Target term to get a suggestion for.
- * @param array<string> $options   Array with possible options.
- * @param int           $threshold Threshold above which to return an empty string.
+ * The built-in alias map below is command vocabulary ('add' => 'create' and
+ * friends) and is applied before, and independently of, the threshold. Callers
+ * matching something other than command names - parameter names, for instance -
+ * should pass false for $use_aliases so that only the distance decides.
+ *
+ * @param string        $target      Target term to get a suggestion for.
+ * @param array<string> $options     Array with possible options.
+ * @param int           $threshold   Threshold above which to return an empty string.
+ * @param bool          $use_aliases Whether to consult the built-in command alias map.
  * @return string
  */
-function get_suggestion( $target, array $options, $threshold = 2 ) {
+function get_suggestion( $target, array $options, $threshold = 2, $use_aliases = true ) {
 
 	$suggestion_map = [
 		'add'        => 'create',
@@ -1702,7 +1803,10 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
 		'v'          => 'version',
 	];
 
-	if ( array_key_exists( $target, $suggestion_map ) && in_array( $suggestion_map[ $target ], $options, true ) ) {
+	if ( $use_aliases
+		&& array_key_exists( $target, $suggestion_map )
+		&& in_array( $suggestion_map[ $target ], $options, true )
+	) {
 		return $suggestion_map[ $target ];
 	}
 
@@ -1807,8 +1911,9 @@ function past_tense_verb( $verb ) {
 		$verb = substr( $verb, 0, -1 );
 	} elseif ( 'y' === $last && ! preg_match( '/[aeiou]y$/', $verb ) ) {
 		$verb = substr( $verb, 0, -1 ) . 'i';
-	} elseif ( preg_match( '/^[^aeiou]*[aeiou][^aeiouhwxy]$/', $verb ) ) {
+	} elseif ( preg_match( '/^(un)?[^aeiou]*[aeiou][^aeiouhwxy]$/', $verb ) ) {
 		// Rule of thumb that most (all?) one-voweled regular verbs ending in vowel + consonant (excluding "h", "w", "x", "y") double their final consonant - misses many cases (eg "submit").
+		// Also applies to such verbs prefixed with "un" (eg "unspam" => "unspammed").
 		$verb .= $last;
 	}
 	return $verb . 'ed';
@@ -1861,8 +1966,25 @@ function get_php_binary() {
  */
 function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = null, $other_options = null ) {
 	if ( is_windows() ) {
+		// proc_open() passes the current environment on when given an empty one.
+		$inherit = empty( $env );
+
 		// @phpstan-ignore no.private.function
 		$cmd = _proc_open_compat_win_env( $cmd, $env );
+
+		if ( ! empty( $env ) ) {
+			// The variables set in front of the command add to the environment it would get otherwise,
+			// as they do in a POSIX shell.
+			if ( $inherit ) {
+				$env = array_merge( getenv(), $env );
+			}
+
+			// Windows processes cannot do much without SystemRoot, PHP for one fails to start up.
+			$system_root = getenv( 'SystemRoot' );
+			if ( false !== $system_root && ! isset( array_change_key_case( $env, CASE_UPPER )['SYSTEMROOT'] ) ) {
+				$env['SystemRoot'] = $system_root;
+			}
+		}
 
 		// Normalize forward slashes in the executable name for Windows cmd.exe
 		if ( false !== strpos( $cmd, '/' ) ) {
@@ -1969,7 +2091,7 @@ function is_json( $argument, $ignore_scalars = true ) {
 		return false;
 	}
 
-	json_decode( $argument, $assoc = true );
+	json_decode( $argument, true );
 
 	return json_last_error() === JSON_ERROR_NONE;
 }
@@ -1995,7 +2117,7 @@ function parse_shell_arrays( $assoc_args, $array_arguments ) {
 	foreach ( $array_arguments as $key ) {
 		if ( array_key_exists( $key, $assoc_args ) && is_json( $assoc_args[ $key ] ) ) {
 			// @phpstan-ignore cast.useless
-			$assoc_args[ $key ] = json_decode( (string) $assoc_args[ $key ], $assoc = true );
+			$assoc_args[ $key ] = json_decode( (string) $assoc_args[ $key ], true );
 		}
 	}
 
@@ -2106,14 +2228,54 @@ function get_db_type() {
 	$binary = get_mysql_binary_path();
 
 	if ( '' !== $binary ) {
-		$result = Process::create( escapeshellarg( $binary ) . ' --version', null, null )->run();
+		$version_output = get_binary_version_output( $binary );
 
-		if ( 0 === $result->return_code ) {
-			$db_type = ( false !== strpos( $result->stdout, 'MariaDB' ) ) ? 'mariadb' : 'mysql';
+		if ( null !== $version_output ) {
+			$db_type = ( false !== strpos( $version_output, 'MariaDB' ) ) ? 'mariadb' : 'mysql';
 		}
 	}
 
 	return $db_type;
+}
+
+/**
+ * Get the output of `<binary> --version`, running it at most once per binary.
+ *
+ * @param string $binary Path to the binary.
+ * @return string|null Output, or null if the command failed.
+ */
+function get_binary_version_output( $binary ) {
+	static $outputs = [];
+
+	if ( ! array_key_exists( $binary, $outputs ) ) {
+		$result             = Process::create( escapeshellarg( $binary ) . ' --version', null, null )->run();
+		$outputs[ $binary ] = 0 === $result->return_code ? $result->stdout : null;
+	}
+
+	return $outputs[ $binary ];
+}
+
+/**
+ * Find an executable in the directories listed in the PATH environment variable.
+ *
+ * Equivalent to `which <name>`, without spawning a process.
+ *
+ * @param string $name Executable name.
+ * @return string Path to the executable, or an empty string if not found.
+ */
+function find_executable( $name ) {
+	foreach ( explode( PATH_SEPARATOR, (string) getenv( 'PATH' ) ) as $dir ) {
+		if ( '' === $dir ) {
+			continue;
+		}
+
+		$candidate = rtrim( $dir, '/' ) . '/' . $name;
+		if ( is_file( $candidate ) && is_executable( $candidate ) ) {
+			return $candidate;
+		}
+	}
+
+	return '';
 }
 
 /**
@@ -2136,35 +2298,28 @@ function get_mysql_binary_path() {
 	$path = '';
 
 	if ( is_windows() ) {
-		$mysql   = Process::create( 'where mysql', null, null )->run();
-		$mariadb = Process::create( 'where mariadb', null, null )->run();
+		$mysql          = Process::create( 'where mysql', null, null )->run();
+		$mariadb        = Process::create( 'where mariadb', null, null )->run();
+		$mysql_binary   = 0 === $mysql->return_code ? trim( explode( "\n", $mysql->stdout )[0] ) : '';
+		$mariadb_binary = 0 === $mariadb->return_code ? trim( explode( "\n", $mariadb->stdout )[0] ) : '';
 	} else {
-		$mysql   = Process::create( '/usr/bin/env which mysql', null, null )->run();
-		$mariadb = Process::create( '/usr/bin/env which mariadb', null, null )->run();
+		$mysql_binary   = find_executable( 'mysql' );
+		$mariadb_binary = find_executable( 'mariadb' );
 	}
 
-	$mysql_binary   = trim( explode( "\n", $mysql->stdout )[0] );
-	$mariadb_binary = trim( explode( "\n", $mariadb->stdout )[0] );
-
-	if ( 0 === $mysql->return_code && '' !== $mysql_binary ) {
-		$result = Process::create( escapeshellarg( $mysql_binary ) . ' --version', null, null )->run();
-		if ( 0 === $result->return_code ) {
+	if ( '' !== $mysql_binary ) {
+		$version_output = get_binary_version_output( $mysql_binary );
+		if ( null !== $version_output ) {
 			$path = $mysql_binary;
 			// It's actually MariaDB disguised as MySQL.
-			if ( false !== strpos( $result->stdout, 'MariaDB' ) && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
-				$mariadb_result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
-				if ( 0 === $mariadb_result->return_code ) {
-					$path = $mariadb_binary;
-				}
+			if ( false !== strpos( $version_output, 'MariaDB' ) && '' !== $mariadb_binary && null !== get_binary_version_output( $mariadb_binary ) ) {
+				$path = $mariadb_binary;
 			}
 		}
 	}
 
-	if ( '' === $path && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
-		$result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
-		if ( 0 === $result->return_code ) {
-			$path = $mariadb_binary;
-		}
+	if ( '' === $path && '' !== $mariadb_binary && null !== get_binary_version_output( $mariadb_binary ) ) {
+		$path = $mariadb_binary;
 	}
 
 	return $path;
