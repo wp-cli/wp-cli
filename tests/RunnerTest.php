@@ -278,7 +278,15 @@ final class RunnerTest extends TestCase {
 		$runner_class = new ReflectionClass( Runner::class );
 		$runner       = $runner_class->newInstanceWithoutConstructor();
 
-		$this->assertSame( 'wp', $runner->get_ssh_binary() );
+		$prev_env = getenv( 'WP_CLI_SSH_BINARY' );
+		putenv( 'WP_CLI_SSH_BINARY' );
+		try {
+			$this->assertSame( 'wp', $runner->get_ssh_binary() );
+		} finally {
+			if ( false !== $prev_env ) {
+				putenv( 'WP_CLI_SSH_BINARY=' . $prev_env );
+			}
+		}
 	}
 
 	public function testGetSshBinaryFromEnv(): void {
