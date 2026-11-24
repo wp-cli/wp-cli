@@ -2397,3 +2397,125 @@ Feature: WP-CLI Commands
       """
       Success: Hello from the project.
       """
+
+  Scenario: A deferred lazily registered command keeps the class definition that was available when it was first registered
+    Given an empty directory
+    And a project/Shadowed_Child_Command.php file:
+      """
+      <?php
+      class Shadowed_Child_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the project.' );
+          }
+      }
+      """
+    And a bundled/Shadowed_Child_Command.php file:
+      """
+      <?php
+      class Shadowed_Child_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the bundle.' );
+          }
+      }
+      """
+    And a shadowed-cmd.php file:
+      """
+      <?php
+      if ( ! class_exists( 'Composer\Autoload\ClassLoader', false ) ) {
+          require WP_CLI_VENDOR_DIR . '/composer/ClassLoader.php';
+      }
+
+      $project_loader = new Composer\Autoload\ClassLoader();
+      $project_loader->addClassMap( [ 'Shadowed_Child_Command' => __DIR__ . '/project/Shadowed_Child_Command.php' ] );
+      $project_loader->register( true );
+
+      // Deferred until its parent command exists, and given with a leading backslash.
+      WP_CLI::add_command( 'shadowed-parent child', '\Shadowed_Child_Command' );
+
+      $bundled_loader = new Composer\Autoload\ClassLoader();
+      $bundled_loader->addClassMap( [ 'Shadowed_Child_Command' => __DIR__ . '/bundled/Shadowed_Child_Command.php' ] );
+      $bundled_loader->register( true );
+
+      /**
+       * Parent command.
+       */
+      class Shadowed_Parent_Command extends WP_CLI\Dispatcher\CommandNamespace {}
+
+      WP_CLI::add_command( 'shadowed-parent', 'Shadowed_Parent_Command' );
+      """
+
+    When I run `wp --require=shadowed-cmd.php shadowed-parent child hello`
+    Then STDOUT should be:
+      """
+      Success: Hello from the project.
+      """
+
+  Scenario: A lazily registered command respects an autoloader that comes before the Composer one
+    Given an empty directory
+    And a project/Preceded_Command.php file:
+      """
+      <?php
+      class Preceded_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the project.' );
+          }
+      }
+      """
+    And a bundled/Preceded_Command.php file:
+      """
+      <?php
+      class Preceded_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the bundle.' );
+          }
+      }
+      """
+    And a preceded-cmd.php file:
+      """
+      <?php
+      if ( ! class_exists( 'Composer\Autoload\ClassLoader', false ) ) {
+          require WP_CLI_VENDOR_DIR . '/composer/ClassLoader.php';
+      }
+
+      spl_autoload_register(
+          static function ( $class_name ) {
+              if ( 'Preceded_Command' === $class_name ) {
+                  require __DIR__ . '/project/Preceded_Command.php';
+              }
+          },
+          true,
+          true
+      );
+
+      $bundled_loader = new Composer\Autoload\ClassLoader();
+      $bundled_loader->addClassMap( [ 'Preceded_Command' => __DIR__ . '/bundled/Preceded_Command.php' ] );
+      $bundled_loader->register();
+
+      WP_CLI::add_command( 'preceded', 'Preceded_Command' );
+      """
+
+    When I run `wp --require=preceded-cmd.php preceded hello`
+    Then STDOUT should be:
+      """
+      Success: Hello from the project.
+      """

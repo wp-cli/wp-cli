@@ -75,7 +75,7 @@ class LazyCommand extends CompositeCommand {
 			// that an autoloader registered in the meantime cannot provide a
 			// different definition of it.
 			if ( isset( $this->class_loaders[ $index ] ) && ! class_exists( $class_name, false ) ) {
-				$this->class_loaders[ $index ]->loadClass( $class_name );
+				$this->class_loaders[ $index ]->loadClass( ltrim( $class_name, '\\' ) );
 			}
 
 			if ( ! class_exists( $class_name ) ) {

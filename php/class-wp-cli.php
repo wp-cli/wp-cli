@@ -74,6 +74,13 @@ class WP_CLI {
 	private static $deferred_additions = [];
 
 	/**
+	 * Composer autoloaders that located the classes of deferred lazy commands, keyed by command name.
+	 *
+	 * @var array<string, \Composer\Autoload\ClassLoader|null>
+	 */
+	private static $deferred_class_loaders = [];
+
+	/**
 	 * Cached list of global argument names.
 	 *
 	 * @var array<string>|null
@@ -493,21 +500,28 @@ class WP_CLI {
 	}
 
 	/**
-	 * Find out whether a class is loaded, or which Composer autoloader can locate it, without loading it.
+	 * Find out whether a class can be loaded, and which Composer autoloader would load it, without loading it.
 	 *
 	 * @param string $class_name Class name.
-	 * @return bool|\Composer\Autoload\ClassLoader True if the class is loaded already, the autoloader
-	 *                                                that would load it, or false if none can.
+	 * @return bool|\Composer\Autoload\ClassLoader The Composer autoloader that would load the class, true if
+	 *                                                the class is loaded already or another autoloader comes
+	 *                                                before that one, or false if no Composer autoloader can.
 	 */
 	private static function find_class_loader( $class_name ) {
 		if ( class_exists( $class_name, false ) ) {
 			return true;
 		}
 
+		$after_other_autoloader = false;
 		foreach ( spl_autoload_functions() ?: [] as $autoloader ) {
-			if ( is_array( $autoloader ) && $autoloader[0] instanceof \Composer\Autoload\ClassLoader
-				&& $autoloader[0]->findFile( ltrim( $class_name, '\\' ) ) ) {
-				return $autoloader[0];
+			if ( ! is_array( $autoloader ) || ! $autoloader[0] instanceof \Composer\Autoload\ClassLoader ) {
+				// There is no telling whether this one would load the class first.
+				$after_other_autoloader = true;
+				continue;
+			}
+
+			if ( $autoloader[0]->findFile( ltrim( $class_name, '\\' ) ) ) {
+				return $after_other_autoloader ? true : $autoloader[0];
 			}
 		}
 
@@ -591,6 +605,13 @@ class WP_CLI {
 		// would have loaded.
 		$class_loader = $class_loader instanceof \Composer\Autoload\ClassLoader ? $class_loader : null;
 
+		if ( ! empty( $args['is_deferred'] ) && array_key_exists( $name, self::$deferred_class_loaders ) ) {
+			if ( $is_lazy ) {
+				$class_loader = self::$deferred_class_loaders[ $name ];
+			}
+			unset( self::$deferred_class_loaders[ $name ] );
+		}
+
 		$valid = false;
 		if ( $is_lazy ) {
 			// Validated once the command is materialized.
@@ -665,6 +686,10 @@ class WP_CLI {
 					$command->add_subcommand( $subcommand_name, $subcommand );
 				} else {
 					self::debug( "Deferring command: {$name}", 'commands' );
+
+					if ( $is_lazy ) {
+						self::$deferred_class_loaders[ $name ] = $class_loader;
+					}
 
 					/**
 					 * @var callable $callable
