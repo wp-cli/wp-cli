@@ -12,6 +12,7 @@ use Closure;
 use Composer\Semver\Comparator;
 use Composer\Semver\Semver;
 use Exception;
+use InvalidArgumentException;
 use Iterator;
 use Mustache\Engine as Mustache_Engine;
 use ReflectionFunction;
@@ -78,7 +79,7 @@ function extract_from_phar( $path ) {
 
 	$fname = Path::basename( $path );
 
-	$tmp_path = get_temp_dir() . uniqid( 'wp-cli-extract-from-phar-', true ) . "-$fname";
+	$tmp_path = make_temp_file( 'wp-cli-extract-from-phar-', "-$fname" );
 
 	copy( $path, $tmp_path );
 
@@ -189,9 +190,9 @@ function load_command( $name ) {
  *       var_dump($val);
  *     }
  *
- * @param array|Iterator $it     Either a plain array or another iterator.
- * @param callable       ...$fns The function to apply to an element.
- * @return Iterator An iterator that applies the given callback(s).
+ * @param array<mixed>|Iterator<int|string, mixed> $it     Either a plain array or another iterator.
+ * @param callable                                ...$fns The function to apply to an element.
+ * @return Iterator<int|string, mixed> An iterator that applies the given callback(s).
  */
 function iterator_map( $it, ...$fns ) {
 	if ( is_array( $it ) ) {
@@ -204,7 +205,7 @@ function iterator_map( $it, ...$fns ) {
 
 	foreach ( $fns as $fn ) {
 		/**
-		 * @var Transform $it
+		 * @var Transform<int, mixed, mixed> $it
 		 */
 		$it->add_transform( $fn );
 	}
@@ -354,7 +355,7 @@ function escapeshellarg_preserve_tilde( $arg ) {
 /**
  * Composes positional arguments into a command string.
  *
- * @param array<string> $args Positional arguments to compose.
+ * @param array<scalar|null> $args Positional arguments to compose.
  * @return string
  */
 function args_to_str( $args ) {
@@ -367,11 +368,21 @@ function args_to_str( $args ) {
  * @param array<string, mixed> $assoc_args Associative arguments to compose.
  * @param array<string> $sensitive_args Optional. Array of argument keys that should be masked.
  * @return string
+ * @throws InvalidArgumentException If an argument key contains invalid characters.
  */
 function assoc_args_to_str( $assoc_args, $sensitive_args = [] ) {
 	$str = '';
 
 	foreach ( $assoc_args as $key => $value ) {
+		if ( ! preg_match( '/\A[a-zA-Z0-9_:\.-]+\z/', (string) $key ) ) {
+			throw new InvalidArgumentException(
+				sprintf(
+					"Invalid associative argument key '%s'.",
+					$key
+				)
+			);
+		}
+
 		if ( true === $value ) {
 			$str .= " --$key";
 		} elseif ( is_array( $value ) ) {
@@ -403,6 +414,7 @@ function assoc_args_to_str( $assoc_args, $sensitive_args = [] ) {
  *
  * @param string $cmd
  * @param string ...$args
+ * @return string
  */
 function esc_cmd( $cmd, ...$args ) {
 	if ( func_num_args() < 2 ) {
@@ -415,7 +427,7 @@ function esc_cmd( $cmd, ...$args ) {
 /**
  * Gets path to WordPress configuration.
  *
- * @return string
+ * @return string|false
  */
 function locate_wp_config() {
 	static $path;
@@ -498,9 +510,10 @@ function wp_version_compare( $since, $operator ) {
  * @access public
  * @category Output
  *
- * @param string       $format Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count'.
- * @param array<mixed> $items  An array of items to output.
- * @param array<string>|string $fields Named fields for each item of data. Can be array or comma-separated list.
+ * @param string                                                                   $format Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count'.
+ * @param array<int, array<string, mixed>|object>|iterable<int, array<string, mixed>|object> $items  An array of items to output.
+ * @param array<string>|string                                                     $fields Named fields for each item of data. Can be array or comma-separated list.
+ * @return void
  */
 function format_items( $format, $items, $fields ) {
 	$assoc_args = [
@@ -516,14 +529,15 @@ function format_items( $format, $items, $fields ) {
  *
  * @access public
  *
- * @param resource                 $fd      File descriptor.
- * @param array<string[]>|iterable $rows    Array of rows to output.
- * @param array<string>            $headers List of CSV columns (optional).
+ * @param resource                           $fd      File descriptor.
+ * @param array<string[]>|iterable<array<string, mixed>> $rows    Array of rows to output.
+ * @param array<string>                      $headers List of CSV columns (optional).
+ * @return void
  */
 function write_csv( $fd, $rows, $headers = [] ) {
 	if ( ! empty( $headers ) ) {
-		$headers = array_map( __NAMESPACE__ . '\escape_csv_value', $headers );
-		fputcsv( $fd, $headers, ',', '"', '\\' );
+		// Escape the header cells only; rows are looked up by the original field names.
+		fputcsv( $fd, array_map( __NAMESPACE__ . '\escape_csv_value', $headers ), ',', '"', '\\' );
 	}
 
 	/**
@@ -548,9 +562,9 @@ function write_csv( $fd, $rows, $headers = [] ) {
 /**
  * Pick fields from an associative array or object.
  *
- * @param array<string, mixed>|object $item   Associative array or object to pick fields from.
- * @param array<string>               $fields List of fields to pick.
- * @return array<string, mixed>
+ * @param array<string|int, mixed>|object $item   Associative array or object to pick fields from.
+ * @param array<int, string|int>          $fields List of fields to pick.
+ * @return array<string|int, mixed>
  */
 function pick_fields( $item, $fields ) {
 	$values = [];
@@ -585,27 +599,38 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 
 	$tmpdir = get_temp_dir();
 
+	$created  = false;
+	$attempts = 0;
+
 	do {
 		$tmpfile  = Path::basename( $title );
 		$tmpfile  = preg_replace( '|\.[^.]*$|', '', $tmpfile );
 		$tmpfile .= '-' . substr( md5( (string) mt_rand() ), 0, 6 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand -- no crypto and WP not loaded.
 		$tmpfile  = $tmpdir . $tmpfile . '.' . $ext;
-		$fp       = fopen( $tmpfile, 'xb' );
-		if ( ! $fp && is_writable( $tmpdir ) && file_exists( $tmpfile ) ) {
-			$tmpfile = '';
-			continue;
-		}
-		if ( $fp ) {
-			fclose( $fp );
-		}
-	} while ( ! $tmpfile );
 
-	// @phpstan-ignore booleanNot.alwaysFalse
-	if ( ! $tmpfile ) {
+		// Restrict the file to its owner, as it can hold sensitive input.
+		$old_umask = umask( 0177 );
+		$fp        = @fopen( $tmpfile, 'xb' );
+		umask( $old_umask );
+
+		if ( $fp ) {
+			$created = true;
+			// A short write (e.g. on a full disk) must not leave a truncated file for the editor to open.
+			if ( strlen( $input ) !== fwrite( $fp, $input ) ) {
+				fclose( $fp );
+				@unlink( $tmpfile );
+				WP_CLI::error( 'Error writing to temporary file.' );
+			}
+			fclose( $fp );
+			break;
+		}
+		$tmpfile = '';
+		++$attempts;
+	} while ( $attempts < 100 );
+
+	if ( ! $created ) {
 		WP_CLI::error( 'Error creating temporary file.' );
 	}
-
-	file_put_contents( $tmpfile, $input );
 
 	$editor = getenv( 'EDITOR' );
 	if ( ! $editor ) {
@@ -686,6 +711,7 @@ function mysql_host_to_cli_args( $raw_host ) {
  *     @type string $stderr    Output that was sent to STDERR.
  *     @type int    $exit_code Exit code of the process.
  * }
+ * @phpstan-return array{0: string, 1: string, 2: int}
  */
 function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true, $interactive = false ) {
 	check_proc_available( 'run_mysql_command' );
@@ -766,6 +792,7 @@ function run_mysql_command( $cmd, $assoc_args, $_ = null, $send_to_shell = true,
  *
  * @param string               $template_name
  * @param array<string, mixed> $data
+ * @return string
  */
 function mustache_render( $template_name, $data = [] ) {
 	if ( ! file_exists( $template_name ) ) {
@@ -840,6 +867,7 @@ function make_progress_bar( $message, $count, $interval = 100 ) {
  *               case of PHP_URL_PORT - integer when it does. See parse_url()'s
  *               return values.
  *
+ * @phpstan-param int<-1, 7> $component
  * @phpstan-return ($component is non-negative-int ? string|null|int|false : array{scheme?: string, host?: string, port?: int, user?: string, pass?: string, query?: string, path?: string, fragment?: string})
  */
 function parse_url( $url, $component = - 1, $auto_add_scheme = true ) {
@@ -916,16 +944,19 @@ function replace_path_consts( $source, $path ) {
  *     @type bool $insecure      Whether to retry automatically without certificate validation.
  *     @type int  $max_retries   Maximum number of retries of failed requests. Default 3.
  * }
+ * @param string               $method  HTTP method.
+ * @param string               $url     URL to request.
+ * @param array<string, mixed>|string|null $data Array of data to send or string.
+ * @param array<string, string> $headers Array of headers to send.
+ * @param array<string, mixed> $options Array of options for the request.
  * @return \Requests_Response|Response
  * @throws RuntimeException If the request failed.
  * @throws ExitException If the request failed and $halt_on_error is true.
- *
- * @phpstan-param array{halt_on_error?: bool, verify?: bool|string, insecure?: bool} $options
  */
 function http_request( $method, $url, $data = null, $headers = [], $options = [] ) {
 	$insecure      = isset( $options['insecure'] ) && (bool) $options['insecure'];
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
-	$max_retries   = isset( $options['max_retries'] ) ? (int) $options['max_retries'] : 3;
+	$max_retries   = isset( $options['max_retries'] ) && is_numeric( $options['max_retries'] ) ? (int) $options['max_retries'] : 3;
 	unset( $options['halt_on_error'] );
 
 	if ( ! isset( $options['verify'] ) ) {
@@ -933,12 +964,18 @@ function http_request( $method, $url, $data = null, $headers = [], $options = []
 		$options['verify'] = ! empty( ini_get( 'curl.cainfo' ) ) ? ini_get( 'curl.cainfo' ) : true;
 	}
 
+	RequestsLibrary::register_autoloader();
+
 	/**
-	 * @var array{halt_on_error?: bool, verify: bool|string, insecure?: bool} $options
+	 * Filter HTTP request options used by WP-CLI.
+	 *
+	 * @param array{verify: bool|string, insecure?: bool, max_retries?: int} $options Request options.
+	 * @param string $method HTTP method (GET, POST, etc.).
+	 * @param string $url Target URL.
+	 * @param array|string|null $data Request body data.
+	 * @param array $headers Request headers.
 	 */
 	$options = WP_CLI::do_hook( 'http_request_options', $options, $method, $url, $data, $headers );
-
-	RequestsLibrary::register_autoloader();
 
 	/**
 	 * @var callable $request_method
@@ -1200,10 +1237,10 @@ function get_named_sem_ver( $new_version, $original_version ) {
  * @access public
  * @category Input
  *
- * @param array<string|int,string|bool> $assoc_args Arguments array.
- * @param string|int                    $flag       Flag to get the value.
- * @param string|bool|int|null          $default    Default value for the flag. Default: NULL.
- * @return string|bool|int|null
+ * @param array<string|int, mixed> $assoc_args Arguments array.
+ * @param string|int               $flag       Flag to get the value.
+ * @param mixed                    $default    Default value for the flag. Default: NULL.
+ * @return mixed
  */
 function get_flag_value( $assoc_args, $flag, $default = null ) {
 	return isset( $assoc_args[ $flag ] ) ? $assoc_args[ $flag ] : $default;
@@ -1309,6 +1346,90 @@ function get_temp_dir() {
 	}
 
 	return $temp;
+}
+
+/**
+ * Create a unique temporary file safely without following symlinks.
+ *
+ * The file is only readable and writable by its owner on non-Windows systems.
+ *
+ * The file is created in the directory returned by WP-CLI's `get_temp_dir()`
+ * (based on `sys_get_temp_dir()`), not WordPress's `get_temp_dir()`, and is
+ * not removed automatically; callers are responsible for cleaning it up.
+ *
+ * On failure, this function exits via `WP_CLI::error()` rather than throwing.
+ *
+ * @access public
+ * @category System
+ *
+ * @param string $prefix Optional. Prefix for the temporary file name. Default 'wp-cli-'.
+ * @param string $suffix Optional. Suffix for the temporary file name. Default ''.
+ * @return string Path to the created temporary file.
+ */
+function make_temp_file( $prefix = 'wp-cli-', $suffix = '' ) {
+	if ( false !== strpbrk( $prefix, "/\\\0" ) || false !== strpbrk( $suffix, "/\\\0" ) ) {
+		WP_CLI::error( 'Invalid temporary file prefix or suffix.' );
+	}
+
+	$temp_dir = get_temp_dir();
+	$attempts = 0;
+
+	do {
+		$path = $temp_dir . uniqid( $prefix, true ) . $suffix;
+
+		// Restrict the file to its owner, as callers may write sensitive data to it.
+		$old_umask = umask( 0177 );
+		$handle    = @fopen( $path, 'xb' );
+		umask( $old_umask );
+
+		++$attempts;
+	} while ( ! $handle && $attempts < 100 );
+
+	if ( ! $handle ) {
+		WP_CLI::error( 'Failed to create a temporary file.' );
+	}
+
+	fclose( $handle );
+
+	return $path;
+}
+
+/**
+ * Create a unique temporary directory safely without following symlinks.
+ *
+ * The directory is only accessible by its owner on non-Windows systems.
+ *
+ * The directory is created in the directory returned by WP-CLI's `get_temp_dir()`
+ * (based on `sys_get_temp_dir()`), not WordPress's `get_temp_dir()`, and is
+ * not removed automatically; callers are responsible for cleaning it up.
+ *
+ * On failure, this function exits via `WP_CLI::error()` rather than throwing.
+ *
+ * @access public
+ * @category System
+ *
+ * @param string $prefix Optional. Prefix for the temporary directory name. Default 'wp-cli-'.
+ * @return string Path to the created temporary directory with a trailing slash.
+ */
+function make_temp_dir( $prefix = 'wp-cli-' ) {
+	if ( false !== strpbrk( $prefix, "/\\\0" ) ) {
+		WP_CLI::error( 'Invalid temporary directory prefix.' );
+	}
+
+	$temp_dir = get_temp_dir();
+	$attempts = 0;
+
+	do {
+		$path    = $temp_dir . uniqid( $prefix, true );
+		$success = @mkdir( $path, 0700 );
+		++$attempts;
+	} while ( ! $success && $attempts < 100 );
+
+	if ( ! $success ) {
+		WP_CLI::error( 'Failed to create a temporary directory.' );
+	}
+
+	return Path::trailingslashit( $path );
 }
 
 /**
@@ -1582,16 +1703,15 @@ function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.C
 
 	$length = strlen( $pattern );
 
-	$begin = 0;
-
 	// Find first opening brace.
-	// @phpstan-ignore for.variableOverwrite
-	for ( $begin = 0; $begin < $length; $begin++ ) {
+	$begin = 0;
+	while ( $begin < $length ) {
 		if ( '\\' === $pattern[ $begin ] ) {
 			++$begin;
 		} elseif ( '{' === $pattern[ $begin ] ) {
 			break;
 		}
+		++$begin;
 	}
 
 	// Find comma or matching closing brace.
@@ -1647,12 +1767,18 @@ function glob_brace( $pattern, $dummy_flags = null ) { // phpcs:ignore Generic.C
  * If the "distance" to the closest term is higher than the threshold, an empty
  * string is returned.
  *
- * @param string        $target    Target term to get a suggestion for.
- * @param array<string> $options   Array with possible options.
- * @param int           $threshold Threshold above which to return an empty string.
+ * The built-in alias map below is command vocabulary ('add' => 'create' and
+ * friends) and is applied before, and independently of, the threshold. Callers
+ * matching something other than command names - parameter names, for instance -
+ * should pass false for $use_aliases so that only the distance decides.
+ *
+ * @param string        $target      Target term to get a suggestion for.
+ * @param array<string> $options     Array with possible options.
+ * @param int           $threshold   Threshold above which to return an empty string.
+ * @param bool          $use_aliases Whether to consult the built-in command alias map.
  * @return string
  */
-function get_suggestion( $target, array $options, $threshold = 2 ) {
+function get_suggestion( $target, array $options, $threshold = 2, $use_aliases = true ) {
 
 	$suggestion_map = [
 		'add'        => 'create',
@@ -1677,7 +1803,10 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
 		'v'          => 'version',
 	];
 
-	if ( array_key_exists( $target, $suggestion_map ) && in_array( $suggestion_map[ $target ], $options, true ) ) {
+	if ( $use_aliases
+		&& array_key_exists( $target, $suggestion_map )
+		&& in_array( $suggestion_map[ $target ], $options, true )
+	) {
 		return $suggestion_map[ $target ];
 	}
 
@@ -1782,8 +1911,9 @@ function past_tense_verb( $verb ) {
 		$verb = substr( $verb, 0, -1 );
 	} elseif ( 'y' === $last && ! preg_match( '/[aeiou]y$/', $verb ) ) {
 		$verb = substr( $verb, 0, -1 ) . 'i';
-	} elseif ( preg_match( '/^[^aeiou]*[aeiou][^aeiouhwxy]$/', $verb ) ) {
+	} elseif ( preg_match( '/^(un)?[^aeiou]*[aeiou][^aeiouhwxy]$/', $verb ) ) {
 		// Rule of thumb that most (all?) one-voweled regular verbs ending in vowel + consonant (excluding "h", "w", "x", "y") double their final consonant - misses many cases (eg "submit").
+		// Also applies to such verbs prefixed with "un" (eg "unspam" => "unspammed").
 		$verb .= $last;
 	}
 	return $verb . 'ed';
@@ -1836,8 +1966,25 @@ function get_php_binary() {
  */
 function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = null, $other_options = null ) {
 	if ( is_windows() ) {
+		// proc_open() passes the current environment on when given an empty one.
+		$inherit = empty( $env );
+
 		// @phpstan-ignore no.private.function
 		$cmd = _proc_open_compat_win_env( $cmd, $env );
+
+		if ( ! empty( $env ) ) {
+			// The variables set in front of the command add to the environment it would get otherwise,
+			// as they do in a POSIX shell.
+			if ( $inherit ) {
+				$env = array_merge( getenv(), $env );
+			}
+
+			// Windows processes cannot do much without SystemRoot, PHP for one fails to start up.
+			$system_root = getenv( 'SystemRoot' );
+			if ( false !== $system_root && ! isset( array_change_key_case( $env, CASE_UPPER )['SYSTEMROOT'] ) ) {
+				$env['SystemRoot'] = $system_root;
+			}
+		}
 
 		// Normalize forward slashes in the executable name for Windows cmd.exe
 		if ( false !== strpos( $cmd, '/' ) ) {
@@ -1944,7 +2091,7 @@ function is_json( $argument, $ignore_scalars = true ) {
 		return false;
 	}
 
-	json_decode( $argument, $assoc = true );
+	json_decode( $argument, true );
 
 	return json_last_error() === JSON_ERROR_NONE;
 }
@@ -1952,9 +2099,14 @@ function is_json( $argument, $ignore_scalars = true ) {
 /**
  * Parse known shell arrays included in the $assoc_args array.
  *
- * @param array<string, string> $assoc_args      Associative array of arguments.
- * @param array<string>         $array_arguments Array of argument keys that should receive an
- *                                               array through the shell.
+ * Values are not necessarily strings: a flag arrives as boolean true, and a
+ * key that was already parsed arrives as an array. Only the keys named in
+ * $array_arguments are considered, and only when they hold a JSON string -
+ * is_json() rejects everything else - so other values are returned untouched.
+ *
+ * @param array<string, mixed> $assoc_args      Associative array of arguments.
+ * @param array<string>        $array_arguments Array of argument keys that should receive an
+ *                                              array through the shell.
  * @return array<string, mixed>
  */
 function parse_shell_arrays( $assoc_args, $array_arguments ) {
@@ -1965,7 +2117,7 @@ function parse_shell_arrays( $assoc_args, $array_arguments ) {
 	foreach ( $array_arguments as $key ) {
 		if ( array_key_exists( $key, $assoc_args ) && is_json( $assoc_args[ $key ] ) ) {
 			// @phpstan-ignore cast.useless
-			$assoc_args[ $key ] = json_decode( (string) $assoc_args[ $key ], $assoc = true );
+			$assoc_args[ $key ] = json_decode( (string) $assoc_args[ $key ], true );
 		}
 	}
 
@@ -2010,8 +2162,10 @@ function describe_callable( $callable ) {
  * This accommodates changes to `is_callable()` in PHP 8 that mean an array of a
  * classname and instance method is no longer callable.
  *
- * @param array $pair The class and method pair to check.
+ * @param mixed $pair The class and method pair to check.
  * @return bool
+ *
+ * @phpstan-assert-if-true array{0: class-string|object, 1: string} $pair
  */
 function is_valid_class_and_method_pair( $pair ) {
 	if ( ! is_array( $pair ) || 2 !== count( $pair ) ) {
@@ -2074,14 +2228,54 @@ function get_db_type() {
 	$binary = get_mysql_binary_path();
 
 	if ( '' !== $binary ) {
-		$result = Process::create( "$binary --version", null, null )->run();
+		$version_output = get_binary_version_output( $binary );
 
-		if ( 0 === $result->return_code ) {
-			$db_type = ( false !== strpos( $result->stdout, 'MariaDB' ) ) ? 'mariadb' : 'mysql';
+		if ( null !== $version_output ) {
+			$db_type = ( false !== strpos( $version_output, 'MariaDB' ) ) ? 'mariadb' : 'mysql';
 		}
 	}
 
 	return $db_type;
+}
+
+/**
+ * Get the output of `<binary> --version`, running it at most once per binary.
+ *
+ * @param string $binary Path to the binary.
+ * @return string|null Output, or null if the command failed.
+ */
+function get_binary_version_output( $binary ) {
+	static $outputs = [];
+
+	if ( ! array_key_exists( $binary, $outputs ) ) {
+		$result             = Process::create( escapeshellarg( $binary ) . ' --version', null, null )->run();
+		$outputs[ $binary ] = 0 === $result->return_code ? $result->stdout : null;
+	}
+
+	return $outputs[ $binary ];
+}
+
+/**
+ * Find an executable in the directories listed in the PATH environment variable.
+ *
+ * Equivalent to `which <name>`, without spawning a process.
+ *
+ * @param string $name Executable name.
+ * @return string Path to the executable, or an empty string if not found.
+ */
+function find_executable( $name ) {
+	foreach ( explode( PATH_SEPARATOR, (string) getenv( 'PATH' ) ) as $dir ) {
+		if ( '' === $dir ) {
+			continue;
+		}
+
+		$candidate = rtrim( $dir, '/' ) . '/' . $name;
+		if ( is_file( $candidate ) && is_executable( $candidate ) ) {
+			return $candidate;
+		}
+	}
+
+	return '';
 }
 
 /**
@@ -2101,24 +2295,30 @@ function get_mysql_binary_path() {
 		return $path;
 	}
 
-	$path    = '';
-	$mysql   = Process::create( '/usr/bin/env which mysql', null, null )->run();
-	$mariadb = Process::create( '/usr/bin/env which mariadb', null, null )->run();
+	$path = '';
 
-	$mysql_binary   = trim( $mysql->stdout );
-	$mariadb_binary = trim( $mariadb->stdout );
+	if ( is_windows() ) {
+		$mysql          = Process::create( 'where mysql', null, null )->run();
+		$mariadb        = Process::create( 'where mariadb', null, null )->run();
+		$mysql_binary   = 0 === $mysql->return_code ? trim( explode( "\n", $mysql->stdout )[0] ) : '';
+		$mariadb_binary = 0 === $mariadb->return_code ? trim( explode( "\n", $mariadb->stdout )[0] ) : '';
+	} else {
+		$mysql_binary   = find_executable( 'mysql' );
+		$mariadb_binary = find_executable( 'mariadb' );
+	}
 
-	if ( 0 === $mysql->return_code ) {
-		if ( '' !== $mysql_binary ) {
-			$path   = $mysql_binary;
-			$result = Process::create( "$mysql_binary --version", null, null )->run();
-
+	if ( '' !== $mysql_binary ) {
+		$version_output = get_binary_version_output( $mysql_binary );
+		if ( null !== $version_output ) {
+			$path = $mysql_binary;
 			// It's actually MariaDB disguised as MySQL.
-			if ( 0 === $result->return_code && false !== strpos( $result->stdout, 'MariaDB' ) && 0 === $mariadb->return_code ) {
+			if ( false !== strpos( $version_output, 'MariaDB' ) && '' !== $mariadb_binary && null !== get_binary_version_output( $mariadb_binary ) ) {
 				$path = $mariadb_binary;
 			}
 		}
-	} elseif ( 0 === $mariadb->return_code ) {
+	}
+
+	if ( '' === $path && '' !== $mariadb_binary && null !== get_binary_version_output( $mariadb_binary ) ) {
 		$path = $mariadb_binary;
 	}
 
@@ -2145,7 +2345,7 @@ function get_mysql_version() {
 	$db_type = get_db_type();
 
 	if ( 'sqlite' !== $db_type ) {
-		$result = Process::create( "/usr/bin/env $db_type --version", null, null )->run();
+		$result = Process::create( force_env_on_nix_systems( "$db_type --version" ), null, null )->run();
 
 		if ( 0 === $result->return_code ) {
 			$version = trim( $result->stdout );
@@ -2161,7 +2361,7 @@ function get_mysql_version() {
  * For MariaDB, prefers `mariadb-dump` (available since MariaDB 10.5) but falls
  * back to `mysqldump` if the command is not found on the system.
  *
- * @return string The appropriate dump command.
+ * @return string The appropriate dump command, or an empty string if not found.
  */
 function get_sql_dump_command() {
 	static $command = null;
@@ -2170,13 +2370,37 @@ function get_sql_dump_command() {
 		return $command;
 	}
 
-	$command = 'mysqldump';
+	$command = '';
 
-	if ( 'mariadb' === get_db_type() ) {
-		$result = Process::create( '/usr/bin/env which mariadb-dump', null, null )->run();
+	if ( is_windows() ) {
+		$mariadb = Process::create( 'where mariadb-dump', null, null )->run();
+		$mysql   = Process::create( 'where mysqldump', null, null )->run();
+	} else {
+		$mariadb = Process::create( '/usr/bin/env which mariadb-dump', null, null )->run();
+		$mysql   = Process::create( '/usr/bin/env which mysqldump', null, null )->run();
+	}
 
-		if ( 0 === $result->return_code && '' !== trim( $result->stdout ) ) {
-			$command = 'mariadb-dump';
+	$mariadb_binary = trim( explode( "\n", $mariadb->stdout )[0] );
+	$mysql_binary   = trim( explode( "\n", $mysql->stdout )[0] );
+
+	if ( 'mariadb' === get_db_type() && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
+		$result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mariadb_binary;
+		}
+	}
+
+	if ( '' === $command && 0 === $mysql->return_code && '' !== $mysql_binary ) {
+		$result = Process::create( escapeshellarg( $mysql_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mysql_binary;
+		}
+	}
+
+	if ( '' === $command && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
+		$result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mariadb_binary;
 		}
 	}
 
@@ -2189,7 +2413,7 @@ function get_sql_dump_command() {
  * For MariaDB, prefers `mariadb-check` (available since MariaDB 10.5) but falls
  * back to `mysqlcheck` if the command is not found on the system.
  *
- * @return string The appropriate check command.
+ * @return string The appropriate check command, or an empty string if not found.
  */
 function get_sql_check_command() {
 	static $command = null;
@@ -2198,13 +2422,37 @@ function get_sql_check_command() {
 		return $command;
 	}
 
-	$command = 'mysqlcheck';
+	$command = '';
 
-	if ( 'mariadb' === get_db_type() ) {
-		$result = Process::create( '/usr/bin/env which mariadb-check', null, null )->run();
+	if ( is_windows() ) {
+		$mariadb = Process::create( 'where mariadb-check', null, null )->run();
+		$mysql   = Process::create( 'where mysqlcheck', null, null )->run();
+	} else {
+		$mariadb = Process::create( '/usr/bin/env which mariadb-check', null, null )->run();
+		$mysql   = Process::create( '/usr/bin/env which mysqlcheck', null, null )->run();
+	}
 
-		if ( 0 === $result->return_code && '' !== trim( $result->stdout ) ) {
-			$command = 'mariadb-check';
+	$mariadb_binary = trim( explode( "\n", $mariadb->stdout )[0] );
+	$mysql_binary   = trim( explode( "\n", $mysql->stdout )[0] );
+
+	if ( 'mariadb' === get_db_type() && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
+		$result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mariadb_binary;
+		}
+	}
+
+	if ( '' === $command && 0 === $mysql->return_code && '' !== $mysql_binary ) {
+		$result = Process::create( escapeshellarg( $mysql_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mysql_binary;
+		}
+	}
+
+	if ( '' === $command && 0 === $mariadb->return_code && '' !== $mariadb_binary ) {
+		$result = Process::create( escapeshellarg( $mariadb_binary ) . ' --version', null, null )->run();
+		if ( 0 === $result->return_code ) {
+			$command = $mariadb_binary;
 		}
 	}
 
@@ -2229,7 +2477,7 @@ function get_sql_modes() {
 	if ( '' === $binary ) {
 		$sql_modes = [];
 	} else {
-		$result = Process::create( "$binary --no-auto-rehash --batch --skip-column-names --execute=\"SELECT @@SESSION.sql_mode\"", null, null )->run();
+		$result = Process::create( escapeshellarg( $binary ) . ' --no-auto-rehash --batch --skip-column-names --execute="SELECT @@SESSION.sql_mode"', null, null )->run();
 
 		if ( 0 !== $result->return_code ) {
 			$sql_modes = [];
@@ -2378,12 +2626,15 @@ function escape_csv_value( $value ) {
 /**
  * Convert a size in bytes to a human-readable format.
  *
- * @param int|float $bytes    Size in bytes.
+ * @param int|float|string $bytes    Size in bytes.
  * @param int       $decimals Optional. Number of decimal places to round to. Default 0.
  * @param string    $unit     Optional. Specific unit to use. Default is auto-detect.
  * @return string Human-readable size.
  */
 function format_bytes_string( $bytes, $decimals = 0, $unit = '' ) {
+	if ( is_string( $bytes ) ) {
+		$bytes = (float) $bytes;
+	}
 	if ( 0 === (int) $bytes ) {
 		return '0 B';
 	}

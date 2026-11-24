@@ -11,10 +11,20 @@ namespace WP_CLI;
  */
 final class NoOp {
 
+	/**
+	 * @param string $key
+	 * @param mixed $value
+	 * @return void
+	 */
 	public function __set( $key, $value ) {
 		// do nothing
 	}
 
+	/**
+	 * @param string $method
+	 * @param array<mixed> $args
+	 * @return void
+	 */
 	public function __call( $method, $args ) {
 		// do nothing
 	}

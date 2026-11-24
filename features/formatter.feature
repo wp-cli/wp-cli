@@ -16,15 +16,15 @@ Feature: Format output
        *
        * @when before_wp_load
        */
-      $output_yaml = function( $args, $assoc_args ) {
-          $items = array(
+      $output_yaml = function ( $args, $assoc_args ) {
+          $items       = array(
               array(
-                  'label'    => 'Foo',
-                  'slug'     => 'foo',
+                  'label' => 'Foo',
+                  'slug'  => 'foo',
               ),
               array(
-                  'label'    => 'Bar',
-                  'slug'     => 'bar',
+                  'label' => 'Bar',
+                  'slug'  => 'bar',
               ),
           );
           $format_args = array( 'format' => 'yaml' );
@@ -35,8 +35,8 @@ Feature: Format output
           }
           $formatter = new \WP_CLI\Formatter( $format_args );
           if ( 'all' === $args[0] ) {
-          	  $formatter->display_items( $items );
-          } else if ( 'single' === $args[0] ) {
+              $formatter->display_items( $items );
+          } elseif ( 'single' === $args[0] ) {
               $formatter->display_item( $items[0] );
           }
       };
@@ -82,25 +82,25 @@ Feature: Format output
     And a file.php file:
       """
       <?php
-      $items = array(
-        array(
-          'id' => 1,
-          'language' => 'Afrikaans',
-          'is_rtl' => 0,
-        ),
-        array(
-          'id' => 2,
-          'language' => 'العَرَبِيَّة‎‎',
-          'is_rtl' => 1,
-        ),
-        array(
-          'id' => 3,
-          'language' => 'English',
-          'is_rtl' => 0,
-        ),
+      $items      = array(
+          array(
+              'id'       => 1,
+              'language' => 'Afrikaans',
+              'is_rtl'   => 0,
+          ),
+          array(
+              'id'       => 2,
+              'language' => 'العَرَبِيَّة‎‎',
+              'is_rtl'   => 1,
+          ),
+          array(
+              'id'       => 3,
+              'language' => 'English',
+              'is_rtl'   => 0,
+          ),
       );
       $assoc_args = array( 'format' => 'csv' );
-      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'id', 'language', 'is_rtl' ) );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'id', 'language', 'is_rtl' ) );
       $formatter->display_items( $items );
       """
 
@@ -132,13 +132,29 @@ Feature: Format output
        *
        * @when before_wp_load
        */
-      $fake_command = function( $args, $assoc_args ) {
+      $fake_command = function ( $args, $assoc_args ) {
           Colors::enable( true );
-          $items = array(
-              array( 'package' => Colors::colorize( '%ygaa/gaa-kabes%n' ), 'version' => 'dev-master', 'result' => Colors::colorize( "%r\xf0\x9f\x9b\x87%n" ) ),
-              array( 'package' => Colors::colorize( '%ygaa/gaa-log%n' ), 'version' => '*', 'result' => Colors::colorize( "%g\xe2\x9c\x94%n" ) ),
-              array( 'package' => Colors::colorize( '%ygaa/gaa-nonsense%n' ), 'version' => 'v3.0.11', 'result' => Colors::colorize( "%r\xf0\x9f\x9b\x87%n" ) ),
-              array( 'package' => Colors::colorize( '%ygaa/gaa-100%%new%n' ), 'version' => 'v100%new', 'result' => Colors::colorize( "%g\xe2\x9c\x94%n" ) ),
+          $items     = array(
+              array(
+                  'package' => Colors::colorize( '%ygaa/gaa-kabes%n' ),
+                  'version' => 'dev-master',
+                  'result'  => Colors::colorize( "%r\xf0\x9f\x9b\x87%n" ),
+              ),
+              array(
+                  'package' => Colors::colorize( '%ygaa/gaa-log%n' ),
+                  'version' => '*',
+                  'result'  => Colors::colorize( "%g\xe2\x9c\x94%n" ),
+              ),
+              array(
+                  'package' => Colors::colorize( '%ygaa/gaa-nonsense%n' ),
+                  'version' => 'v3.0.11',
+                  'result'  => Colors::colorize( "%r\xf0\x9f\x9b\x87%n" ),
+              ),
+              array(
+                  'package' => Colors::colorize( '%ygaa/gaa-100%%new%n' ),
+                  'version' => 'v100%new',
+                  'result'  => Colors::colorize( "%g\xe2\x9c\x94%n" ),
+              ),
           );
           $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'package', 'version', 'result' ) );
           $formatter->display_items( $items, array( true, false, true ) );
@@ -160,21 +176,21 @@ Feature: Format output
       """
       <?php
       $items      = array(
-        (object) array(
-          'post_id'    => 1,
-          'meta_key'   => 'foo',
-          'meta_value' => 'foo',
-        ),
-        (object) array(
-          'post_id'    => 1,
-          'meta_key'   => 'fruits',
-          'meta_value' => "apple\nbanana\nmango",
-        ),
-        (object) array(
-          'post_id'    => 1,
-          'meta_key'   => 'bar',
-          'meta_value' => 'br',
-        ),
+          (object) array(
+              'post_id'    => 1,
+              'meta_key'   => 'foo',
+              'meta_value' => 'foo',
+          ),
+          (object) array(
+              'post_id'    => 1,
+              'meta_key'   => 'fruits',
+              'meta_value' => "apple\nbanana\nmango",
+          ),
+          (object) array(
+              'post_id'    => 1,
+              'meta_key'   => 'bar',
+              'meta_value' => 'br',
+          ),
       );
       $assoc_args = array();
       $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'post_id', 'meta_key', 'meta_value' ) );
@@ -195,18 +211,18 @@ Feature: Format output
     And a file.php file:
       """
       <?php
-      $items = array(
-        array(
-          'id' => 1,
-          'status' => true,
-        ),
-        array(
-          'id' => 2,
-          'status' => false,
-        ),
+      $items      = array(
+          array(
+              'id'     => 1,
+              'status' => true,
+          ),
+          array(
+              'id'     => 2,
+              'status' => false,
+          ),
       );
       $assoc_args = array();
-      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'id', 'status' ) );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'id', 'status' ) );
       $formatter->display_items( $items );
       """
 
@@ -221,18 +237,18 @@ Feature: Format output
     And a file.php file:
       """
       <?php
-      $items = array(
-        array(
-          'id' => 1,
-          'status' => true,
-        ),
-        array(
-          'id' => 2,
-          'status' => false,
-        ),
+      $items      = array(
+          array(
+              'id'     => 1,
+              'status' => true,
+          ),
+          array(
+              'id'     => 2,
+              'status' => false,
+          ),
       );
       $assoc_args = array( 'format' => 'json' );
-      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'id', 'status' ) );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'id', 'status' ) );
       $formatter->display_items( $items );
       """
 
@@ -247,24 +263,27 @@ Feature: Format output
     And a custom-fields.php file:
       """
       <?php
-      $items = array(
-        array(
-          'name'   => 'Session 1',
-          'custom' => 123,
-          'login'  => '2018-09-15',
-        ),
-        array(
-          'name'   => 'Session 2',
-          'login'  => '2018-09-16',
-        ),
-        array(
-          'name'   => 'Session 3',
-          'custom' => 456,
-          'login'  => '2018-09-17',
-        ),
+      $items      = array(
+          array(
+              'name'   => 'Session 1',
+              'custom' => 123,
+              'login'  => '2018-09-15',
+          ),
+          array(
+              'name'  => 'Session 2',
+              'login' => '2018-09-16',
+          ),
+          array(
+              'name'   => 'Session 3',
+              'custom' => 456,
+              'login'  => '2018-09-17',
+          ),
       );
-      $assoc_args = array( 'format' => 'table', 'fields' => 'name,custom,login' );
-      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom', 'login' ) );
+      $assoc_args = array(
+          'format' => 'table',
+          'fields' => 'name,custom,login',
+      );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom', 'login' ) );
       $formatter->display_items( $items );
       """
 
@@ -280,21 +299,24 @@ Feature: Format output
     And a custom-fields-csv.php file:
       """
       <?php
-      $items = array(
-        array(
-          'name'   => 'Session 1',
-          'custom' => 123,
-        ),
-        array(
-          'name'   => 'Session 2',
-        ),
-        array(
-          'name'   => 'Session 3',
-          'custom' => 456,
-        ),
+      $items      = array(
+          array(
+              'name'   => 'Session 1',
+              'custom' => 123,
+          ),
+          array(
+              'name' => 'Session 2',
+          ),
+          array(
+              'name'   => 'Session 3',
+              'custom' => 456,
+          ),
       );
-      $assoc_args = array( 'format' => 'csv', 'fields' => 'name,custom' );
-      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom' ) );
+      $assoc_args = array(
+          'format' => 'csv',
+          'fields' => 'name,custom',
+      );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom' ) );
       $formatter->display_items( $items );
       """
 
@@ -310,21 +332,24 @@ Feature: Format output
     And a custom-fields-json.php file:
       """
       <?php
-      $items = array(
-        array(
-          'name'   => 'Session 1',
-          'custom' => 123,
-        ),
-        array(
-          'name'   => 'Session 2',
-        ),
-        array(
-          'name'   => 'Session 3',
-          'custom' => 456,
-        ),
+      $items      = array(
+          array(
+              'name'   => 'Session 1',
+              'custom' => 123,
+          ),
+          array(
+              'name' => 'Session 2',
+          ),
+          array(
+              'name'   => 'Session 3',
+              'custom' => 456,
+          ),
       );
-      $assoc_args = array( 'format' => 'json', 'fields' => 'name,custom' );
-      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom' ) );
+      $assoc_args = array(
+          'format' => 'json',
+          'fields' => 'name,custom',
+      );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom' ) );
       $formatter->display_items( $items );
       """
 
@@ -339,21 +364,24 @@ Feature: Format output
     And a custom-fields-yaml.php file:
       """
       <?php
-      $items = array(
-        array(
-          'name'   => 'Session 1',
-          'custom' => 123,
-        ),
-        array(
-          'name'   => 'Session 2',
-        ),
-        array(
-          'name'   => 'Session 3',
-          'custom' => 456,
-        ),
+      $items      = array(
+          array(
+              'name'   => 'Session 1',
+              'custom' => 123,
+          ),
+          array(
+              'name' => 'Session 2',
+          ),
+          array(
+              'name'   => 'Session 3',
+              'custom' => 456,
+          ),
       );
-      $assoc_args = array( 'format' => 'yaml', 'fields' => 'name,custom' );
-      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom' ) );
+      $assoc_args = array(
+          'format' => 'yaml',
+          'fields' => 'name,custom',
+      );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'name', 'custom' ) );
       $formatter->display_items( $items );
       """
 
@@ -377,18 +405,21 @@ Feature: Format output
     And a no-field.php file:
       """
       <?php
-      $items = array(
-        array(
-          'name'   => 'Session 1',
-          'login'  => '2018-09-15',
-        ),
-        array(
-          'name'   => 'Session 2',
-          'login'  => '2018-09-16',
-        ),
+      $items      = array(
+          array(
+              'name'  => 'Session 1',
+              'login' => '2018-09-15',
+          ),
+          array(
+              'name'  => 'Session 2',
+              'login' => '2018-09-16',
+          ),
       );
-      $assoc_args = array( 'format' => 'table', 'fields' => 'name,nonexistent,login' );
-      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'nonexistent', 'login' ) );
+      $assoc_args = array(
+          'format' => 'table',
+          'fields' => 'name,nonexistent,login',
+      );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'name', 'nonexistent', 'login' ) );
       $formatter->display_items( $items );
       """
 
@@ -407,9 +438,12 @@ Feature: Format output
     And an empty-list-field.php file:
       """
       <?php
-      $items = array();
-      $assoc_args = array( 'format' => 'json', 'field' => 'name' );
-      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name' ) );
+      $items      = array();
+      $assoc_args = array(
+          'format' => 'json',
+          'field'  => 'name',
+      );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'name' ) );
       $formatter->display_items( $items );
       """
 
@@ -425,9 +459,12 @@ Feature: Format output
     And an empty-list-fields.php file:
       """
       <?php
-      $items = array();
-      $assoc_args = array( 'format' => 'json', 'fields' => 'name,login' );
-      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'name', 'login' ) );
+      $items      = array();
+      $assoc_args = array(
+          'format' => 'json',
+          'fields' => 'name,login',
+      );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'name', 'login' ) );
       $formatter->display_items( $items );
       """
 
@@ -444,14 +481,14 @@ Feature: Format output
       """
       <?php
       $custom_obj = (object) [
-        'name'    => 'Custom Name',
-        'author'  => 'John Doe',
-        'version' => '1.0'
+          'name'    => 'Custom Name',
+          'author'  => 'John Doe',
+          'version' => '1.0',
       ];
 
       $assoc_args = [
-        'format' => 'csv',
-        'fields' => [ 'version', 'author', 'name' ],
+          'format' => 'csv',
+          'fields' => [ 'version', 'author', 'name' ],
       ];
 
       $formatter = new WP_CLI\Formatter( $assoc_args );
@@ -472,14 +509,14 @@ Feature: Format output
       """
       <?php
       $custom_obj = [
-        'name'    => 'Custom Name',
-        'author'  => 'John Doe',
-        'version' => '1.0'
+          'name'    => 'Custom Name',
+          'author'  => 'John Doe',
+          'version' => '1.0',
       ];
 
       $assoc_args = [
-        'format' => 'csv',
-        'fields' => [ 'version', 'author', 'name' ],
+          'format' => 'csv',
+          'fields' => [ 'version', 'author', 'name' ],
       ];
 
       $formatter = new WP_CLI\Formatter( $assoc_args );
@@ -515,10 +552,13 @@ Feature: Format output
       );
       // 0 = right, 1 = left
       $assoc_args = array(
-          'format' => 'table',
-          'alignments' => array( 'key' => 0, 'value' => 1 ),
+          'format'     => 'table',
+          'alignments' => array(
+              'key'   => 0,
+              'value' => 1,
+          ),
       );
-      $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'key', 'value' ) );
+      $formatter  = new \WP_CLI\Formatter( $assoc_args, array( 'key', 'value' ) );
       $formatter->display_items( $items );
       """
 
@@ -551,10 +591,13 @@ Feature: Format output
       );
       // 2 = center
       $assoc_args = array(
-          'format' => 'table',
-          'alignments' => array( 'key' => 2, 'value' => 2 ),
+          'format'     => 'table',
+          'alignments' => array(
+              'key'   => 2,
+              'value' => 2,
+          ),
       );
-      $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'key', 'value' ) );
+      $formatter  = new \WP_CLI\Formatter( $assoc_args, array( 'key', 'value' ) );
       $formatter->display_items( $items );
       """
 
@@ -575,22 +618,22 @@ Feature: Format output
       """
       <?php
       $large_value = str_repeat( 'x', 3000 ); // Create a 3000 character string
-      $items = array(
-        (object) array(
-          'id'    => 1,
-          'value' => 'short',
-        ),
-        (object) array(
-          'id'    => 2,
-          'value' => $large_value,
-        ),
-        (object) array(
-          'id'    => 3,
-          'value' => 'another short',
-        ),
+      $items       = array(
+          (object) array(
+              'id'    => 1,
+              'value' => 'short',
+          ),
+          (object) array(
+              'id'    => 2,
+              'value' => $large_value,
+          ),
+          (object) array(
+              'id'    => 3,
+              'value' => 'another short',
+          ),
       );
-      $assoc_args = array();
-      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'id', 'value' ) );
+      $assoc_args  = array();
+      $formatter   = new WP_CLI\Formatter( $assoc_args, array( 'id', 'value' ) );
       $formatter->display_items( $items );
       """
 
@@ -617,7 +660,7 @@ Feature: Format output
     And a file.php file:
       """
       <?php
-      $items = array(
+      $items      = array(
           array(
               'post_type' => 'page',
               'post_name' => 'sample-page',
@@ -644,17 +687,20 @@ Feature: Format output
       """
       <?php
       // Register a custom XML format
-      WP_CLI\Formatter::add_format( 'xml', function( $items, $fields ) {
-          echo "<?xml version=\"1.0\"?>\n<items>\n";
-          foreach ( $items as $item ) {
-              echo "  <item>\n";
-              foreach ( $item as $key => $value ) {
-                  echo "    <{$key}>" . htmlspecialchars( $value ) . "</{$key}>\n";
+      WP_CLI\Formatter::add_format(
+          'xml',
+          function ( $items, $fields ) {
+              echo "<?xml version=\"1.0\"?>\n<items>\n";
+              foreach ( $items as $item ) {
+                  echo "  <item>\n";
+                  foreach ( $item as $key => $value ) {
+                      echo "    <{$key}>" . htmlspecialchars( $value ) . "</{$key}>\n";
+                  }
+                  echo "  </item>\n";
               }
-              echo "  </item>\n";
+              echo "</items>\n";
           }
-          echo "</items>\n";
-      });
+      );
 
       /**
        * Test command with custom format
@@ -671,10 +717,16 @@ Feature: Format output
        *
        * @when before_wp_load
        */
-      $test_command = function( $args, $assoc_args ) {
-          $items = array(
-              array( 'name' => 'Alice', 'age' => '30' ),
-              array( 'name' => 'Bob', 'age' => '25' ),
+      $test_command = function ( $args, $assoc_args ) {
+          $items     = array(
+              array(
+                  'name' => 'Alice',
+                  'age'  => '30',
+              ),
+              array(
+                  'name' => 'Bob',
+                  'age'  => '25',
+              ),
           );
           $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'name', 'age' ) );
           $formatter->display_items( $items );
@@ -705,15 +757,21 @@ Feature: Format output
       """
       <?php
       // Add a custom format
-      WP_CLI\Formatter::add_format( 'custom1', function( $items, $fields ) {
-          echo "CUSTOM1\n";
-      });
+      WP_CLI\Formatter::add_format(
+          'custom1',
+          function ( $items, $fields ) {
+              echo "CUSTOM1\n";
+          }
+      );
 
       // Filter to add another format to the list
-      WP_CLI::add_hook( 'formatter_available_formats', function( $formats ) {
-          $formats[] = 'custom2';
-          return $formats;
-      });
+      WP_CLI::add_hook(
+          'formatter_available_formats',
+          function ( $formats ) {
+              $formats[] = 'custom2';
+              return $formats;
+          }
+      );
 
       // Get available formats
       $formats = WP_CLI\Formatter::get_available_formats();
@@ -737,8 +795,8 @@ Feature: Format output
        *
        * @when before_wp_load
        */
-      $test_command = function( $args, $assoc_args ) {
-          $items = array(
+      $test_command = function ( $args, $assoc_args ) {
+          $items     = array(
               array( 'name' => 'Test' ),
           );
           $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'name' ) );
@@ -764,8 +822,8 @@ Feature: Format output
        *
        * @when before_wp_load
        */
-      $test_command = function( $args, $assoc_args ) {
-          $item = array( 'name' => 'Alice' );
+      $test_command = function ( $args, $assoc_args ) {
+          $item      = array( 'name' => 'Alice' );
           $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'name' ) );
           $formatter->display_item( $item );
       };
@@ -792,17 +850,21 @@ Feature: Format output
       """
       <?php
       // Register custom format that does not support single_item
-      WP_CLI\Formatter::add_format( 'no_single', function( $items, $fields ) {
-          echo "NO_SINGLE\n";
-      }, array( 'single_item' => false ) );
+      WP_CLI\Formatter::add_format(
+          'no_single',
+          function ( $items, $fields ) {
+              echo "NO_SINGLE\n";
+          },
+          array( 'single_item' => false )
+      );
 
       /**
        * Test command
        *
        * @when before_wp_load
        */
-      $test_command = function( $args, $assoc_args ) {
-          $item = array( 'name' => 'Bob' );
+      $test_command = function ( $args, $assoc_args ) {
+          $item      = array( 'name' => 'Bob' );
           $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'name' ) );
           $formatter->display_item( $item );
       };
@@ -826,7 +888,7 @@ Feature: Format output
        *
        * @when before_wp_load
        */
-      $test_command = function( $args, $assoc_args ) {
+      $test_command = function ( $args, $assoc_args ) {
           $value = array( 'nested' => 'value' );
           WP_CLI::print_value( $value, $assoc_args );
       };
@@ -840,3 +902,255 @@ Feature: Format output
       """
     And the return code should be 0
 
+  Scenario: Format an object containing protected and private properties
+    Given an empty directory
+    And a test-object-properties.php file:
+      """
+      <?php
+      class TestObjectWithProperties {
+          public $public_prop       = 'public_value';
+          protected $protected_prop = 'protected_value';
+          private $private_prop     = 'private_value';
+      }
+
+      /**
+       * Test command for object properties formatting
+       *
+       * @when before_wp_load
+       */
+      $test_command = function ( $args, $assoc_args ) {
+          $item      = new TestObjectWithProperties();
+          $fields    = array( 'public_prop', 'protected_prop', 'private_prop' );
+          $formatter = new \WP_CLI\Formatter( $assoc_args, $fields );
+          $formatter->display_item( $item );
+      };
+      WP_CLI::add_command( 'test-object-properties', $test_command );
+      """
+
+    When I try `wp --require=test-object-properties.php test-object-properties --format=json`
+    Then STDOUT should be:
+      """
+      {"public_prop":"public_value"}
+      """
+    And STDERR should contain:
+      """
+      Warning: Field not found in item: protected_prop.
+      """
+    And STDERR should contain:
+      """
+      Warning: Field not found in item: private_prop.
+      """
+    And the return code should be 0
+
+
+  Scenario: Items from an iterator are written as they are produced
+    Given an empty directory
+    And a stream.php file:
+      """
+      <?php
+      $generate = function () {
+          foreach ( array( 'a', 'b' ) as $name ) {
+              echo "<produce $name>";
+              yield array( 'name' => $name, 'unused' => 'x' );
+          }
+      };
+      foreach ( array( 'json', 'csv' ) as $format ) {
+          $assoc_args = array( 'format' => $format );
+          $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'name' ) );
+          $formatter->display_items( $generate() );
+          echo "\n";
+      }
+      """
+
+    When I run `wp eval-file stream.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      <produce a>[{"name":"a"}<produce b>,{"name":"b"}]
+      <produce a>name
+      a
+      <produce b>b
+      """
+
+  Scenario: YAML items from an iterator are written as they are produced
+    Given an empty directory
+    And a stream.php file:
+      """
+      <?php
+      $generate = function () {
+          foreach ( array( 'a', 'b' ) as $name ) {
+              echo "<produce $name>";
+              yield array( 'name' => $name, 'unused' => 'x' );
+          }
+      };
+      $assoc_args = array( 'format' => 'yaml' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, array( 'name' ) );
+      $formatter->display_items( $generate() );
+      """
+
+    When I run `wp eval-file stream.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      <produce a>---
+      """
+    And STDOUT should contain:
+      """
+        name: a
+      <produce b>-
+      """
+    And STDOUT should not contain:
+      """
+      unused
+      """
+
+  Scenario: Iterators and arrays produce the same CSV, JSON and YAML output
+    Given an empty directory
+    And a compare.php file:
+      """
+      <?php
+      $items = array(
+          array( 'post_title' => 'First', 'post_status' => 'publish', 'meta' => array( 'a' => 1 ), 'sticky' => true ),
+          (object) array( 'post_title' => 'Second, with "quotes"', 'post_status' => 'draft', 'meta' => null, 'sticky' => false ),
+          array( 'post_title' => str_repeat( 'x', 3000 ), 'post_status' => '=formula', 'meta' => array(), 'sticky' => false ),
+      );
+      $assoc_args = array( 'format' => $args[0], 'fields' => 'title,status,meta,sticky' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, null, 'post' );
+      if ( 'generator' === $args[1] ) {
+          $formatter->display_items( ( function () use ( $items ) {
+              yield from $items;
+          } )() );
+      } else {
+          $formatter->display_items( $items );
+      }
+      """
+
+    When I run `wp eval-file compare.php csv array --skip-wordpress`
+    Then save STDOUT as {CSV_ARRAY}
+
+    When I run `wp eval-file compare.php csv generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {CSV_ARRAY}
+      """
+    And STDOUT should contain:
+      """
+      post_title,post_status,meta,sticky
+      """
+    And STDERR should be empty
+
+    When I run `wp eval-file compare.php json array --skip-wordpress`
+    Then save STDOUT as {JSON_ARRAY}
+
+    When I run `wp eval-file compare.php json generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {JSON_ARRAY}
+      """
+    And STDERR should be empty
+
+    When I run `wp eval-file compare.php yaml array --skip-wordpress`
+    Then save STDOUT as {YAML_ARRAY}
+
+    When I run `wp eval-file compare.php yaml generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {YAML_ARRAY}
+      """
+    And STDOUT should contain:
+      """
+      post_title: First
+      """
+    And STDERR should be empty
+
+  Scenario: Iterators and arrays produce the same table output and warnings
+    Given an empty directory
+    And a compare-table.php file:
+      """
+      <?php
+      $items = array(
+          (object) array( 'post_title' => 'First', 'post_name' => 'first', 'name' => 'unprefixed', 'meta' => array( 'a' => 1 ) ),
+          array( 'post_title' => 'Second', 'post_status' => 'draft', 'sticky' => true ),
+      );
+      $assoc_args = array( 'format' => 'table', 'fields' => 'title,name,status,meta,sticky,missing' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, null, 'post' );
+      if ( 'generator' === $args[0] ) {
+          $formatter->display_items( ( function () use ( $items ) {
+              yield from $items;
+          } )() );
+      } else {
+          $formatter->display_items( $items );
+      }
+      """
+
+    When I try `wp eval-file compare-table.php array --skip-wordpress`
+    Then save STDOUT as {TABLE_ARRAY}
+    And STDERR should be:
+      """
+      Warning: Field not found in any item: missing.
+      """
+
+    When I try `wp eval-file compare-table.php generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {TABLE_ARRAY}
+      """
+    And STDOUT should contain:
+      """
+      unprefixed
+      """
+    And STDERR should be:
+      """
+      Warning: Field not found in any item: missing.
+      """
+
+  Scenario: Iterators and arrays produce the same table output
+    Given an empty directory
+    And a compare-table.php file:
+      """
+      <?php
+      $items = array(
+          array( 'post_title' => 'First', 'post_status' => 'publish', 'meta' => array( 'a' => 1 ), 'sticky' => true ),
+          (object) array( 'post_title' => "Second\nline", 'post_status' => 'draft', 'meta' => null, 'sticky' => false ),
+          array( 'post_title' => str_repeat( 'x', 3000 ), 'post_status' => "tab\there", 'meta' => array(), 'sticky' => false ),
+      );
+      $assoc_args = array( 'format' => 'table', 'fields' => 'title,status,meta,sticky' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args, null, 'post' );
+      if ( 'generator' === $args[0] ) {
+          $formatter->display_items( ( function () use ( $items ) {
+              yield from $items;
+          } )() );
+      } else {
+          $formatter->display_items( $items );
+      }
+      """
+
+    When I run `wp eval-file compare-table.php array --skip-wordpress`
+    Then save STDOUT as {TABLE_ARRAY}
+
+    When I run `wp eval-file compare-table.php generator --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {TABLE_ARRAY}
+      """
+    And STDOUT should match /^post_title\tpost_status\tmeta\tsticky$/m
+    And STDERR should be empty
+
+  Scenario: Iterators whose first item lacks a requested field are not streamed
+    Given an empty directory
+    And a missing-field.php file:
+      """
+      <?php
+      $generate = function () {
+          yield array( 'name' => 'Session 1' );
+          yield array( 'name' => 'Session 2', 'custom' => 456 );
+      };
+      $assoc_args = array( 'format' => 'csv', 'fields' => 'name,custom' );
+      $formatter  = new WP_CLI\Formatter( $assoc_args );
+      $formatter->display_items( $generate() );
+      """
+
+    When I run `wp eval-file missing-field.php --skip-wordpress`
+    Then STDOUT should be CSV containing:
+      | name      | custom |
+      | Session 1 |        |
+      | Session 2 | 456    |
+    And STDERR should be empty

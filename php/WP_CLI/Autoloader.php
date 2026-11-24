@@ -18,7 +18,7 @@ class Autoloader {
 	/**
 	 * Array containing the registered namespace structures
 	 *
-	 * @var array
+	 * @var array<int, array{root: string, base_dir: string, prefix: string, suffix: string, lowercase: bool, underscores: bool}>
 	 */
 	protected $namespaces = [];
 
@@ -36,6 +36,7 @@ class Autoloader {
 	 * Registers the autoload callback with the SPL autoload system.
 	 *
 	 * @param bool $prepend Whether to prepend the autoloader on the stack instead of appending it.
+	 * @return void
 	 */
 	public function register( $prepend = false ) {
 		spl_autoload_register( [ $this, 'autoload' ], true, $prepend );
@@ -43,6 +44,8 @@ class Autoloader {
 
 	/**
 	 * Unregisters the autoload callback with the SPL autoload system.
+	 *
+	 * @return void
 	 */
 	public function unregister() {
 		spl_autoload_unregister( [ $this, 'autoload' ] );
@@ -87,6 +90,7 @@ class Autoloader {
 	 * system.
 	 *
 	 * @param string $class The class that got requested by the spl_autoloader.
+	 * @return void
 	 */
 	public function autoload( $class ) {
 

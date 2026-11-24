@@ -26,6 +26,7 @@ class CLI_Cache_Command extends WP_CLI_Command {
 	 *     Success: Cache cleared.
 	 *
 	 * @subcommand clear
+	 * @return void
 	 */
 	public function cache_clear() {
 		$cache = WP_CLI::get_cache();
@@ -50,6 +51,7 @@ class CLI_Cache_Command extends WP_CLI_Command {
 	 *     Success: Cache pruned.
 	 *
 	 * @subcommand prune
+	 * @return void
 	 */
 	public function cache_prune() {
 		$cache = WP_CLI::get_cache();

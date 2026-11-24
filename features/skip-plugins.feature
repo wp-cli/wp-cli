@@ -19,10 +19,10 @@ Feature: Skipping plugins
       """
 
     # The specified plugin should still show up as an active plugin
-    When I run `wp --skip-plugins=akismet plugin status akismet`
-    Then STDOUT should contain:
+    When I run `wp --skip-plugins=akismet plugin get akismet --field=status`
+    Then STDOUT should be:
       """
-      Status: Active
+      active
       """
 
     # The un-specified plugin should continue to be loaded

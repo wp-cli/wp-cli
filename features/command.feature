@@ -44,9 +44,8 @@ Feature: WP-CLI Commands
       class Custom_Command_Class extends WP_CLI_Command {
 
           public function valid() {
-             WP_CLI::success( 'Hello world' );
+              WP_CLI::success( 'Hello world' );
           }
-
       }
       WP_CLI::add_command( 'command', 'Custom_Command_Class' );
       """
@@ -70,8 +69,8 @@ Feature: WP-CLI Commands
        *
        * @when before_wp_load
        */
-      $foo = function( $args ) {
-        WP_CLI::success( $args[0] );
+      $foo = function ( $args ) {
+          WP_CLI::success( $args[0] );
       };
       WP_CLI::add_command( 'foo', $foo );
       """
@@ -114,7 +113,7 @@ Feature: WP-CLI Commands
        * @when before_wp_load
        */
       function foo( $args ) {
-        WP_CLI::success( $args[0] );
+          WP_CLI::success( $args[0] );
       }
       WP_CLI::add_command( 'foo', 'foo' );
       """
@@ -149,21 +148,21 @@ Feature: WP-CLI Commands
       """
       <?php
       class Foo_Class extends WP_CLI_Command {
-        private $prefix;
-        public function __construct( $prefix ) {
-          $this->prefix = $prefix;
-        }
-        /**
-         * My awesome class method command
-         *
-         * <message>
-         * : An awesome message to display
-         *
-         * @when before_wp_load
-         */
-        function foo( $args ) {
-          WP_CLI::success( $this->prefix . ':' . $args[0] );
-        }
+          private $prefix;
+          public function __construct( $prefix ) {
+              $this->prefix = $prefix;
+          }
+          /**
+           * My awesome class method command
+           *
+           * <message>
+           * : An awesome message to display
+           *
+           * @when before_wp_load
+           */
+          public function foo( $args ) {
+              WP_CLI::success( $this->prefix . ':' . $args[0] );
+          }
       }
       $foo = new Foo_Class( 'boo' );
       WP_CLI::add_command( 'foo', array( $foo, 'foo' ) );
@@ -199,17 +198,17 @@ Feature: WP-CLI Commands
       """
       <?php
       class Foo_Class extends WP_CLI_Command {
-        /**
-         * My awesome class method command
-         *
-         * <message>
-         * : An awesome message to display
-         *
-         * @when before_wp_load
-         */
-        function foo( $args ) {
-          WP_CLI::success( $args[0] );
-        }
+          /**
+           * My awesome class method command
+           *
+           * <message>
+           * : An awesome message to display
+           *
+           * @when before_wp_load
+           */
+          public function foo( $args ) {
+              WP_CLI::success( $args[0] );
+          }
       }
       WP_CLI::add_command( 'foo', array( 'Foo_Class', 'foo' ) );
       """
@@ -244,19 +243,19 @@ Feature: WP-CLI Commands
       """
       <?php
       class Foo_Class {
-        private $message;
-        public function __construct( $message ) {
-          $this->message = $message;
-        }
+          private $message;
+          public function __construct( $message ) {
+              $this->message = $message;
+          }
 
-        /**
-         * My awesome class method command
-         *
-         * @when before_wp_load
-         */
-        function __invoke( $args ) {
-          WP_CLI::success( $this->message );
-        }
+          /**
+           * My awesome class method command
+           *
+           * @when before_wp_load
+           */
+          public function __invoke( $args ) {
+              WP_CLI::success( $this->message );
+          }
       }
       $foo = new Foo_Class( 'bar' );
       WP_CLI::add_command( 'instantiated-command', $foo );
@@ -275,19 +274,19 @@ Feature: WP-CLI Commands
       """
       <?php
       class Foo_Class extends WP_CLI_Command {
-        /**
-         * My awesome class method command
-         *
-         * <message>
-         * : An awesome message to display
-         *
-         * @when before_wp_load
-         */
-        function foo( $args ) {
-          WP_CLI::success( $args[0] );
-        }
+          /**
+           * My awesome class method command
+           *
+           * <message>
+           * : An awesome message to display
+           *
+           * @when before_wp_load
+           */
+          public function foo( $args ) {
+              WP_CLI::success( $args[0] );
+          }
       }
-      $foo = new Foo_Class;
+      $foo = new Foo_Class();
       WP_CLI::add_command( 'bar', array( $foo, 'bar' ) );
       """
 
@@ -303,37 +302,41 @@ Feature: WP-CLI Commands
       """
       <?php
       function foo( $args, $assoc_args ) {
-        $message = array_shift( $args );
-        WP_CLI::log( 'Message is: ' . $message );
-        WP_CLI::success( $assoc_args['meal'] );
+          $message = array_shift( $args );
+          WP_CLI::log( 'Message is: ' . $message );
+          WP_CLI::success( $assoc_args['meal'] );
       }
-      WP_CLI::add_command( 'foo', 'foo', array(
-        'shortdesc'   => 'My awesome function command',
-        'when'        => 'before_wp_load',
-        'synopsis'    => array(
+      WP_CLI::add_command(
+          'foo',
+          'foo',
           array(
-            'type'          => 'positional',
-            'name'          => 'message',
-            'description'   => 'An awesome message to display',
-            'optional'      => false,
-            'options'       => array( 'hello', 'goodbye' ),
-          ),
-          array(
-            'type'          => 'assoc',
-            'name'          => 'apple',
-            'description'   => 'A type of fruit.',
-            'optional'      => false,
-          ),
-          array(
-            'type'          => 'assoc',
-            'name'          => 'meal',
-            'description'   => 'A type of meal.',
-            'optional'      => true,
-            'default'       => 'breakfast',
-            'options'       => array( 'breakfast', 'lunch', 'dinner' ),
-          ),
-        ),
-      ) );
+              'shortdesc' => 'My awesome function command',
+              'when'      => 'before_wp_load',
+              'synopsis'  => array(
+                  array(
+                      'type'        => 'positional',
+                      'name'        => 'message',
+                      'description' => 'An awesome message to display',
+                      'optional'    => false,
+                      'options'     => array( 'hello', 'goodbye' ),
+                  ),
+                  array(
+                      'type'        => 'assoc',
+                      'name'        => 'apple',
+                      'description' => 'A type of fruit.',
+                      'optional'    => false,
+                  ),
+                  array(
+                      'type'        => 'assoc',
+                      'name'        => 'meal',
+                      'description' => 'A type of meal.',
+                      'optional'    => true,
+                      'default'     => 'breakfast',
+                      'options'     => array( 'breakfast', 'lunch', 'dinner' ),
+                  ),
+              ),
+          )
+      );
       """
     And a wp-cli.yml file:
       """
@@ -429,18 +432,22 @@ Feature: WP-CLI Commands
     And a test-cmd.php file:
       """
       <?php
-      WP_CLI::add_command( 'foo', function( $args ){
-        WP_CLI::log( count( $args ) );
-      }, array(
-        'when' => 'before_wp_load',
-        'synopsis' => array(
+      WP_CLI::add_command(
+          'foo',
+          function ( $args ) {
+              WP_CLI::log( count( $args ) );
+          },
           array(
-            'type'      => 'positional',
-            'name'      => 'arg',
-            'repeating' => true,
-          ),
-        ),
-      ));
+              'when'     => 'before_wp_load',
+              'synopsis' => array(
+                  array(
+                      'type'      => 'positional',
+                      'name'      => 'arg',
+                      'repeating' => true,
+                  ),
+              ),
+          )
+      );
       """
     And a wp-cli.yml file:
       """
@@ -465,18 +472,22 @@ Feature: WP-CLI Commands
     And a test-cmd.php file:
       """
       <?php
-      WP_CLI::add_command( 'foo', function( $_, $assoc_args ){
-        WP_CLI::log( \WP_CLI\Utils\get_flag_value( $assoc_args, 'honk' ) ? 'honked' : 'nohonk' );
-      }, array(
-        'when' => 'before_wp_load',
-        'synopsis' => array(
+      WP_CLI::add_command(
+          'foo',
+          function ( $_, $assoc_args ) {
+              WP_CLI::log( \WP_CLI\Utils\get_flag_value( $assoc_args, 'honk' ) ? 'honked' : 'nohonk' );
+          },
           array(
-            'type'     => 'flag',
-            'name'     => 'honk',
-            'optional' => true,
-          ),
-        ),
-      ));
+              'when'     => 'before_wp_load',
+              'synopsis' => array(
+                  array(
+                      'type'     => 'flag',
+                      'name'     => 'honk',
+                      'optional' => true,
+                  ),
+              ),
+          )
+      );
       """
     And a wp-cli.yml file:
       """
@@ -527,13 +538,17 @@ Feature: WP-CLI Commands
       """
       <?php
       function foo() {
-        WP_CLI::success( 'Command run.' );
+          WP_CLI::success( 'Command run.' );
       }
-      WP_CLI::add_command( 'foo', 'foo', array(
-        'shortdesc'   => 'My awesome function command',
-        'when'        => 'before_wp_load',
-        'longdesc'    => '## EXAMPLES' . PHP_EOL . PHP_EOL . '  # Run the custom foo command',
-      ) );
+      WP_CLI::add_command(
+          'foo',
+          'foo',
+          array(
+              'shortdesc' => 'My awesome function command',
+              'when'      => 'before_wp_load',
+              'longdesc'  => '## EXAMPLES' . PHP_EOL . PHP_EOL . '  # Run the custom foo command',
+          )
+      );
       """
     And a wp-cli.yml file:
       """
@@ -568,40 +583,44 @@ Feature: WP-CLI Commands
     Given a hello-command.php file:
       """
       <?php
-        $hello_command = function( $args, $assoc_args ) {
+        $hello_command = function ( $args, $assoc_args ) {
             list( $name ) = $args;
-            $type = $assoc_args['type'];
+            $type         = $assoc_args['type'];
             WP_CLI::$type( "Hello, $name!" );
             if ( isset( $assoc_args['honk'] ) ) {
                 WP_CLI::log( 'Honk!' );
             }
         };
-        WP_CLI::add_command( 'example hello', $hello_command, array(
-            'shortdesc' => 'Prints a greeting.',
-            'synopsis' => array(
-                array(
-                    'type'      => 'positional',
-                    'name'      => 'name',
-                    'description' => 'Name of person to greet.',
-                    'optional'  => false,
-                    'repeating' => false,
-                ),
-                array(
-                    'type'     => 'assoc',
-                    'name'     => 'type',
-                    'optional' => true,
-                    'default'  => 'success',
-                    'options'  => array( 'success', 'error' ),
-                ),
-                array(
-                    'type'     => 'flag',
-                    'name'     => 'honk',
-                    'optional' => true,
-                ),
-            ),
-            'when' => 'after_wp_load',
-            'longdesc'    => "\r\n## EXAMPLES\n\n# Say hello to Newman\nwp example hello Newman\nSuccess: Hello, Newman!",
-      ) );
+          WP_CLI::add_command(
+              'example hello',
+              $hello_command,
+              array(
+                  'shortdesc' => 'Prints a greeting.',
+                  'synopsis'  => array(
+                      array(
+                          'type'        => 'positional',
+                          'name'        => 'name',
+                          'description' => 'Name of person to greet.',
+                          'optional'    => false,
+                          'repeating'   => false,
+                      ),
+                      array(
+                          'type'     => 'assoc',
+                          'name'     => 'type',
+                          'optional' => true,
+                          'default'  => 'success',
+                          'options'  => array( 'success', 'error' ),
+                      ),
+                      array(
+                          'type'     => 'flag',
+                          'name'     => 'honk',
+                          'optional' => true,
+                      ),
+                  ),
+                  'when'      => 'after_wp_load',
+                  'longdesc'  => "\r\n## EXAMPLES\n\n# Say hello to Newman\nwp example hello Newman\nSuccess: Hello, Newman!",
+              )
+          );
       """
 
     When I run `wp --require=hello-command.php help example hello`
@@ -647,31 +666,35 @@ Feature: WP-CLI Commands
     Given a test-reordering.php file:
       """
       <?php
-      WP_CLI::add_command( 'test-reordering', function () { }, [
-        'shortdesc' => 'Test reordering of arguments.',
-        'synopsis'  => [
+      WP_CLI::add_command(
+          'test-reordering',
+          function () { },
           [
-            'type'        => 'flag',
-            'name'        => 'my-flag',
-            'description' => 'Flag something',
-          ],
-          [
-            'type'        => 'assoc',
-            'name'        => 'my-assoc',
-            'description' => 'Assoc something',
-            'options'     => [ 'a', 'b', 'c' ],
-            'default'     => 'a',
-          ],
-          [
-            'type'        => 'positional',
-            'name'        => 'my-positional',
-            'description' => 'Positional something',
-            'optional'    => false,
-            'repeating'   => false,
-          ],
-        ],
-        'when'      => 'before_wp_load',
-      ] );
+              'shortdesc' => 'Test reordering of arguments.',
+              'synopsis'  => [
+                  [
+                      'type'        => 'flag',
+                      'name'        => 'my-flag',
+                      'description' => 'Flag something',
+                  ],
+                  [
+                      'type'        => 'assoc',
+                      'name'        => 'my-assoc',
+                      'description' => 'Assoc something',
+                      'options'     => [ 'a', 'b', 'c' ],
+                      'default'     => 'a',
+                  ],
+                  [
+                      'type'        => 'positional',
+                      'name'        => 'my-positional',
+                      'description' => 'Positional something',
+                      'optional'    => false,
+                      'repeating'   => false,
+                  ],
+              ],
+              'when'      => 'before_wp_load',
+          ]
+      );
       """
 
     When I run `wp --require=test-reordering.php help test-reordering`
@@ -740,13 +763,13 @@ Feature: WP-CLI Commands
        *
        * @when before_wp_load
        */
-      $foo = function( $args, $assoc_args ) {
-        $out = array(
-          'bar'     => isset( $args[0] ) ? $args[0] : '',
-          'shop'    => isset( $args[1] ) ? $args[1] : '',
-          'burrito' => isset( $assoc_args['burrito'] ) ? $assoc_args['burrito'] : '',
-        );
-        WP_CLI::print_value( $out, array( 'format' => 'yaml' ) );
+      $foo = function ( $args, $assoc_args ) {
+          $out = array(
+              'bar'     => isset( $args[0] ) ? $args[0] : '',
+              'shop'    => isset( $args[1] ) ? $args[1] : '',
+              'burrito' => isset( $assoc_args['burrito'] ) ? $assoc_args['burrito'] : '',
+          );
+          WP_CLI::print_value( $out, array( 'format' => 'yaml' ) );
       };
       WP_CLI::add_command( 'foo', $foo );
       """
@@ -851,11 +874,11 @@ Feature: WP-CLI Commands
        *
        * @when before_wp_load
        */
-      $foo = function( $args, $assoc_args ) {
-        $out = array(
-          'burrito' => isset( $args[0] ) ? $args[0] : '',
-        );
-        WP_CLI::print_value( $out, array( 'format' => 'yaml' ) );
+      $foo = function ( $args, $assoc_args ) {
+          $out = array(
+              'burrito' => isset( $args[0] ) ? $args[0] : '',
+          );
+          WP_CLI::print_value( $out, array( 'format' => 'yaml' ) );
       };
       WP_CLI::add_command( 'foo', $foo );
       """
@@ -885,10 +908,13 @@ Feature: WP-CLI Commands
     And a remove-comment.php file:
       """
       <?php
-      WP_CLI::add_hook( 'after_add_command:comment', function () {
-        $command = WP_CLI::get_root_command();
-        $command->remove_subcommand( 'comment' );
-      } );
+      WP_CLI::add_hook(
+          'after_add_command:comment',
+          function () {
+              $command = WP_CLI::get_root_command();
+              $command->remove_subcommand( 'comment' );
+          }
+      );
       """
 
     When I run `wp`
@@ -911,14 +937,17 @@ Feature: WP-CLI Commands
       /**
        * @when before_wp_load
        */
-      $before_invoke = function() {
-        WP_CLI::success( 'Invoked' );
+      $before_invoke      = function () {
+          WP_CLI::success( 'Invoked' );
       };
-      $before_invoke_args = array( 'before_invoke' => function() {
-        WP_CLI::success( 'before invoke' );
-      }, 'after_invoke' => function() {
-        WP_CLI::success( 'after invoke' );
-      });
+      $before_invoke_args = array(
+          'before_invoke' => function () {
+              WP_CLI::success( 'before invoke' );
+          },
+          'after_invoke'  => function () {
+              WP_CLI::success( 'after invoke' );
+          },
+      );
       WP_CLI::add_command( 'before invoke', $before_invoke, $before_invoke_args );
       WP_CLI::add_command( 'before-invoke', $before_invoke, $before_invoke_args );
       """
@@ -956,19 +985,19 @@ Feature: WP-CLI Commands
       """
       <?php
       class Foo_Class {
-        private $message;
-        public function __construct( $message ) {
-          $this->message = $message;
-        }
+          private $message;
+          public function __construct( $message ) {
+              $this->message = $message;
+          }
 
-        /**
-         * My awesome class method command
-         *
-         * @when before_wp_load
-         */
-        function message( $args ) {
-          WP_CLI::success( $this->message );
-        }
+          /**
+           * My awesome class method command
+           *
+           * @when before_wp_load
+           */
+          public function message( $args ) {
+              WP_CLI::success( $this->message );
+          }
       }
       $foo = new Foo_Class( 'bar' );
       WP_CLI::add_command( 'instantiated-command', $foo );
@@ -1114,6 +1143,80 @@ Feature: WP-CLI Commands
       Did you mean
       """
 
+  Scenario: WP-CLI shows a hint for a command that is not registered
+    Given a WP installation
+    And a hint.php file:
+      """
+      <?php
+      WP_CLI::add_hook(
+        'unregistered_command_hint',
+        function ( $hint, $command ) {
+          if ( 'ftpdeploy' === $command ) {
+            return "The 'ftpdeploy' command is provided by the wp-cli/ftpdeploy-command package.";
+          }
+
+          if ( 'cli ftpdeploy' === $command ) {
+            return "The 'cli ftpdeploy' subcommand is provided by the wp-cli/ftpdeploy-command package.";
+          }
+
+          return $hint;
+        }
+      );
+      """
+
+    When I try `wp --require=hint.php ftpdeploy`
+    Then STDERR should contain:
+      """
+      Error: 'ftpdeploy' is not a registered wp command. See 'wp help' for available commands.
+      The 'ftpdeploy' command is provided by the wp-cli/ftpdeploy-command package.
+      """
+    And the return code should be 1
+
+    When I try `wp --require=hint.php cli ftpdeploy`
+    Then STDERR should contain:
+      """
+      Error: 'ftpdeploy' is not a registered subcommand of 'cli'. See 'wp help cli' for available subcommands.
+      The 'cli ftpdeploy' subcommand is provided by the wp-cli/ftpdeploy-command package.
+      """
+    And the return code should be 1
+
+    When I try `wp --require=hint.php nonexistent`
+    Then STDERR should contain:
+      """
+      Error: 'nonexistent' is not a registered wp command. See 'wp help' for available commands.
+      """
+    And STDERR should not contain:
+      """
+      ftpdeploy-command
+      """
+    And the return code should be 1
+
+  Scenario: WP-CLI shows the hint after the suggestion for a command that is not registered
+    Given a WP installation
+    And a hint.php file:
+      """
+      <?php
+      WP_CLI::add_hook(
+        'unregistered_command_hint',
+        function ( $hint, $command ) {
+          if ( 'category' === $command ) {
+            return "The 'category' command is provided by the acme/category-command package.";
+          }
+
+          return $hint;
+        }
+      );
+      """
+
+    When I try `wp --require=hint.php category list`
+    Then STDERR should contain:
+      """
+      Error: 'category' is not a registered wp command. See 'wp help' for available commands.
+      Did you mean 'wp term <command>'?
+      The 'category' command is provided by the acme/category-command package.
+      """
+    And the return code should be 1
+
   Scenario: WP-CLI suggests matching parameters when user entry contains typos
     Given an empty directory
 
@@ -1134,9 +1237,12 @@ Feature: WP-CLI Commands
     And a abort-add-command.php file:
       """
       <?php
-      WP_CLI::add_hook( 'before_add_command:test-command-2', function ( $addition ) {
-        $addition->abort( 'Testing hooks.' );
-      } );
+      WP_CLI::add_hook(
+          'before_add_command:test-command-2',
+          function ( $addition ) {
+              $addition->abort( 'Testing hooks.' );
+          }
+      );
 
       WP_CLI::add_command( 'test-command-1', function () {} );
       WP_CLI::add_command( 'test-command-2', function () {} );
@@ -1169,9 +1275,12 @@ Feature: WP-CLI Commands
       class TestCommand {
       }
 
-      WP_CLI::add_hook( 'after_add_command:test-command', function () {
-        WP_CLI::add_command( 'test-command sub-command', function () {} );
-      } );
+      WP_CLI::add_hook(
+          'after_add_command:test-command',
+          function () {
+              WP_CLI::add_command( 'test-command sub-command', function () {} );
+          }
+      );
 
       WP_CLI::add_command( 'test-command', 'TestCommand' );
       """
@@ -1224,12 +1333,17 @@ Feature: WP-CLI Commands
       }
 
       function test_function() {
-        \WP_CLI::success( 'unknown-parent child-command' );
+          \WP_CLI::success( 'unknown-parent child-command' );
       }
 
       WP_CLI::add_command( 'unknown-parent child-command', 'test_function' );
 
-      WP_CLI::add_command( 'test-command sub-command', function () { \WP_CLI::success( 'test-command sub-command' ); } );
+      WP_CLI::add_command(
+          'test-command sub-command',
+          function () {
+              \WP_CLI::success( 'test-command sub-command' );
+          }
+      );
 
       WP_CLI::add_command( 'test-command', 'TestCommand' );
       """
@@ -1272,12 +1386,17 @@ Feature: WP-CLI Commands
       }
 
       function test_function() {
-        \WP_CLI::success( 'unknown-parent child-command' );
+          \WP_CLI::success( 'unknown-parent child-command' );
       }
 
       WP_CLI::add_command( 'unknown-parent child-command', 'test_function' );
 
-      WP_CLI::add_command( 'test-command sub-command', function () { \WP_CLI::success( 'test-command sub-command' ); } );
+      WP_CLI::add_command(
+          'test-command sub-command',
+          function () {
+              \WP_CLI::success( 'test-command sub-command' );
+          }
+      );
 
       WP_CLI::add_command( 'test-command', 'TestCommand' );
       """
@@ -1319,16 +1438,24 @@ Feature: WP-CLI Commands
       }
 
       function test_function() {
-        \WP_CLI::success( 'unknown-parent child-command' );
+          \WP_CLI::success( 'unknown-parent child-command' );
       }
 
-      WP_CLI::add_hook( 'after_wp_load', function(){
-        WP_CLI::add_command( 'unknown-parent child-command', 'test_function' );
+      WP_CLI::add_hook(
+          'after_wp_load',
+          function () {
+              WP_CLI::add_command( 'unknown-parent child-command', 'test_function' );
 
-        WP_CLI::add_command( 'test-command sub-command', function () { \WP_CLI::success( 'test-command sub-command' ); } );
+              WP_CLI::add_command(
+                  'test-command sub-command',
+                  function () {
+                      \WP_CLI::success( 'test-command sub-command' );
+                  }
+              );
 
-        WP_CLI::add_command( 'test-command', 'TestCommand' );
-      });
+              WP_CLI::add_command( 'test-command', 'TestCommand' );
+          }
+      );
       """
 
     # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
@@ -1370,10 +1497,10 @@ Feature: WP-CLI Commands
            * @when after_wp_load
            */
           public function after_wp_load() {
-             var_dump( function_exists( 'home_url' ) );
+              var_dump( function_exists( 'home_url' ) );
           }
           public function before_wp_load() {
-             var_dump( function_exists( 'home_url' ) );
+              var_dump( function_exists( 'home_url' ) );
           }
       }
       WP_CLI::add_command( 'command', 'Custom_Command_Class' );
@@ -1418,11 +1545,11 @@ Feature: WP-CLI Commands
            * @when before_wp_load
            */
           public function before_wp_load() {
-             var_dump( function_exists( 'home_url' ) );
+              var_dump( function_exists( 'home_url' ) );
           }
 
           public function after_wp_load() {
-             var_dump( function_exists( 'home_url' ) );
+              var_dump( function_exists( 'home_url' ) );
           }
       }
       WP_CLI::add_command( 'command', 'Custom_Command_Class' );
@@ -1462,7 +1589,7 @@ Feature: WP-CLI Commands
            * @when after_wp_load
            */
           public function __invoke() {
-             var_dump( function_exists( 'home_url' ) );
+              var_dump( function_exists( 'home_url' ) );
           }
       }
       WP_CLI::add_command( 'command', 'Custom_Command_Class' );
@@ -1601,7 +1728,7 @@ Feature: WP-CLI Commands
        * My Actual Command.
        */
       class My_Actual_Command extends WP_CLI_Command {
-        public function test() {}
+          public function test() {}
       }
 
       WP_CLI::add_command( 'my-namespace', 'My_Command_Namespace' );
@@ -1623,9 +1750,12 @@ Feature: WP-CLI Commands
     And a test-cmd.php file:
       """
       <?php
-      WP_CLI::add_wp_hook( 'plugins_loaded', function(){
-        WP_CLI::add_command( 'core custom-subcommand', function() {});
-      });
+      WP_CLI::add_wp_hook(
+          'plugins_loaded',
+          function () {
+              WP_CLI::add_command( 'core custom-subcommand', function () {} );
+          }
+      );
       """
     And a wp-cli.yml file:
       """
@@ -1662,9 +1792,12 @@ Feature: WP-CLI Commands
       <?php
       // Plugin Name: Custom Command
 
-      add_action( 'cli_init', function() {
-        WP_CLI::add_command( 'custom', function () {} );
-      } );
+      add_action(
+          'cli_init',
+          function () {
+              WP_CLI::add_command( 'custom', function () {} );
+          }
+      );
       """
     And I run `wp plugin activate custom-command`
     # TODO: Throwing deprecations with PHP 8.1+ and WP < 5.9
@@ -1680,17 +1813,17 @@ Feature: WP-CLI Commands
       """
       <?php
       class Test_Command {
-        /**
-         * test
-         *
-         * @alias bar
-         *
-         * @when before_wp_load
-         *
-         */
-        public function foo( $args, $assoc_args ) {
-          echo 'Hello' . PHP_EOL;
-        }
+          /**
+           * test
+           *
+           * @alias bar
+           *
+           * @when before_wp_load
+           *
+           */
+          public function foo( $args, $assoc_args ) {
+              echo 'Hello' . PHP_EOL;
+          }
       }
 
       WP_CLI::add_command( 'test', Test_Command::class );
@@ -1715,11 +1848,17 @@ Feature: WP-CLI Commands
       <?php
       // Plugin Name: Test CLI After Load
 
-      add_action( 'cli_init', function(){
-        WP_CLI::add_command( 'afterload', function () {
-          \WP_CLI::success( 'afterload command executed' );
-        });
-      });
+      add_action(
+          'cli_init',
+          function () {
+              WP_CLI::add_command(
+                  'afterload',
+                  function () {
+                      \WP_CLI::success( 'afterload command executed' );
+                  }
+              );
+          }
+      );
       """
     And a session_no file:
       """
@@ -1770,10 +1909,10 @@ Feature: WP-CLI Commands
        * @when before_wp_load
        */
       function test_ids_command( $args ) {
-        WP_CLI::log( 'Number of arguments: ' . count( $args ) );
-        foreach ( $args as $id ) {
-          WP_CLI::log( 'ID: ' . $id );
-        }
+          WP_CLI::log( 'Number of arguments: ' . count( $args ) );
+          foreach ( $args as $id ) {
+              WP_CLI::log( 'ID: ' . $id );
+          }
       }
       WP_CLI::add_command( 'test-ids', 'test_ids_command' );
       """
@@ -1831,8 +1970,8 @@ Feature: WP-CLI Commands
        *
        * @when before_wp_load
        */
-      $foo = function( $args, $assoc_args ) {
-        WP_CLI::success( 'Command executed' );
+      $foo = function ( $args, $assoc_args ) {
+          WP_CLI::success( 'Command executed' );
       };
       WP_CLI::add_command( 'testcommand', $foo );
       """
@@ -1861,8 +2000,8 @@ Feature: WP-CLI Commands
        *
        * @when before_wp_load
        */
-      $foo = function( $args, $assoc_args ) {
-        WP_CLI::success( 'Command executed' );
+      $foo = function ( $args, $assoc_args ) {
+          WP_CLI::success( 'Command executed' );
       };
       WP_CLI::add_command( 'multiconflict', $foo );
       """
@@ -1892,8 +2031,8 @@ Feature: WP-CLI Commands
        *
        * @when before_wp_load
        */
-      $foo = function( $args, $assoc_args ) {
-        WP_CLI::success( 'Command executed' );
+      $foo = function ( $args, $assoc_args ) {
+          WP_CLI::success( 'Command executed' );
       };
       WP_CLI::add_command( 'noconflict', $foo );
       """
@@ -1919,41 +2058,41 @@ Feature: WP-CLI Commands
        * @when before_wp_load
        */
       class TestCommand {
-        /**
-         * Method with debug conflict
-         *
-         * ## OPTIONS
-         *
-         * [--debug]
-         * : Debug flag that conflicts
-         */
-        public function with_debug( $args, $assoc_args ) {
-          WP_CLI::success( 'Method executed' );
-        }
+          /**
+           * Method with debug conflict
+           *
+           * ## OPTIONS
+           *
+           * [--debug]
+           * : Debug flag that conflicts
+           */
+          public function with_debug( $args, $assoc_args ) {
+              WP_CLI::success( 'Method executed' );
+          }
 
-        /**
-         * Method with user conflict
-         *
-         * ## OPTIONS
-         *
-         * --user=<user>
-         * : User argument that conflicts
-         */
-        public function with_user( $args, $assoc_args ) {
-          WP_CLI::success( 'Method executed' );
-        }
+          /**
+           * Method with user conflict
+           *
+           * ## OPTIONS
+           *
+           * --user=<user>
+           * : User argument that conflicts
+           */
+          public function with_user( $args, $assoc_args ) {
+              WP_CLI::success( 'Method executed' );
+          }
 
-        /**
-         * Method with no conflicts
-         *
-         * ## OPTIONS
-         *
-         * [--custom]
-         * : Custom flag
-         */
-        public function clean( $args, $assoc_args ) {
-          WP_CLI::success( 'Method executed' );
-        }
+          /**
+           * Method with no conflicts
+           *
+           * ## OPTIONS
+           *
+           * [--custom]
+           * : Custom flag
+           */
+          public function clean( $args, $assoc_args ) {
+              WP_CLI::success( 'Method executed' );
+          }
       }
       WP_CLI::add_command( 'testcmd', 'TestCommand' );
       """
@@ -1984,8 +2123,8 @@ Feature: WP-CLI Commands
        * @skipglobalargcheck
        * @when before_wp_load
        */
-      $foo = function( $args, $assoc_args ) {
-        WP_CLI::success( 'Command executed' );
+      $foo = function ( $args, $assoc_args ) {
+          WP_CLI::success( 'Command executed' );
       };
       WP_CLI::add_command( 'skipwarning', $foo );
 
@@ -1999,8 +2138,8 @@ Feature: WP-CLI Commands
        *
        * @when before_wp_load
        */
-      $bar = function( $args, $assoc_args ) {
-        WP_CLI::success( 'Command executed' );
+      $bar = function ( $args, $assoc_args ) {
+          WP_CLI::success( 'Command executed' );
       };
       WP_CLI::add_command( 'showwarning', $bar );
       """
@@ -2015,3 +2154,368 @@ Feature: WP-CLI Commands
       Warning: The `showwarning` command is registering an argument '--quiet' that conflicts with a global argument of the same name.
       """
 
+  Scenario: Declarative deprecations for commands and arguments
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * Deprecated command.
+       *
+       * ## OPTIONS
+       *
+       * [--old=<old>]
+       * : Old parameter.
+       * ---
+       * deprecated: Use `--new` instead.
+       * ---
+       *
+       * [--old-with-default=<old-with-default>]
+       * : Old parameter with default.
+       * ---
+       * default: fallback
+       * deprecated: Use `--new-with-default` instead.
+       * ---
+       *
+       * [--no-desc=<no-desc>]
+       * ---
+       * deprecated: Use `--other` instead.
+       * ---
+       *
+       * @synopsis [--old=<old>] [--old-with-default=<old-with-default>] [--no-desc=<no-desc>]
+       * @deprecated Use `wp replacement` instead.
+       * @when before_wp_load
+       */
+      $deprecated = function ( $args, $assoc_args ) {
+          WP_CLI::success( 'Deprecated command executed' );
+      };
+      WP_CLI::add_command( 'deprecated-cmd', $deprecated );
+
+      /**
+       * Bare deprecated command.
+       *
+       * @deprecated
+       * @when before_wp_load
+       */
+      $bare_deprecated = function ( $args, $assoc_args ) {
+          WP_CLI::success( 'Bare deprecated command executed' );
+      };
+      WP_CLI::add_command( 'bare-deprecated-cmd', $bare_deprecated );
+      """
+
+    When I run `wp --require=custom-cmd.php help deprecated-cmd`
+    Then STDOUT should contain:
+      """
+      Deprecated: Use `wp replacement` instead.
+      """
+    And STDOUT should contain:
+      """
+      Old parameter. Deprecated: Use `--new` instead.
+      """
+    And STDOUT should contain:
+      """
+      Old parameter with default. Deprecated: Use `--new-with-default` instead.
+      """
+    And STDOUT should contain:
+      """
+        [--no-desc=<no-desc>]
+          Deprecated: Use `--other` instead.
+      """
+
+    When I run `wp --require=custom-cmd.php help bare-deprecated-cmd`
+    Then STDOUT should contain:
+      """
+      Deprecated.
+      """
+
+    When I try `wp --require=custom-cmd.php bare-deprecated-cmd`
+    Then STDERR should contain:
+      """
+      Warning: The `bare-deprecated-cmd` command is deprecated.
+      """
+    And STDERR should not contain:
+      """
+      @when
+      """
+    And STDOUT should contain:
+      """
+      Success: Bare deprecated command executed
+      """
+
+    When I try `wp --require=custom-cmd.php deprecated-cmd --old=value`
+    Then STDERR should contain:
+      """
+      Warning: The `deprecated-cmd` command is deprecated. Use `wp replacement` instead.
+      """
+    And STDERR should contain:
+      """
+      Warning: The `--old` argument for `deprecated-cmd` is deprecated. Use `--new` instead.
+      """
+    And STDERR should not contain:
+      """
+      Warning: The `--old-with-default` argument for `deprecated-cmd` is deprecated.
+      """
+    And STDOUT should contain:
+      """
+      Success: Deprecated command executed
+      """
+
+    When I try `wp --require=custom-cmd.php deprecated-cmd --old-with-default=custom`
+    Then STDERR should contain:
+      """
+      Warning: The `deprecated-cmd` command is deprecated. Use `wp replacement` instead.
+      """
+    And STDERR should contain:
+      """
+      Warning: The `--old-with-default` argument for `deprecated-cmd` is deprecated. Use `--new-with-default` instead.
+      """
+    And STDERR should not contain:
+      """
+      Warning: The `--old` argument for `deprecated-cmd` is deprecated.
+      """
+    And STDOUT should contain:
+      """
+      Success: Deprecated command executed
+      """
+
+    When I try `wp --require=custom-cmd.php deprecated-cmd --no-desc=custom`
+    Then STDERR should contain:
+      """
+      Warning: The `--no-desc` argument for `deprecated-cmd` is deprecated. Use `--other` instead.
+      """
+
+    Given a prompt-val file:
+      """
+      val
+      """
+
+    When I try `wp --prompt=old --require=custom-cmd.php deprecated-cmd < prompt-val`
+    Then STDERR should contain:
+      """
+      Warning: The `--old` argument for `deprecated-cmd` is deprecated. Use `--new` instead.
+      """
+
+  Scenario: Commands registered by class name are only materialized when needed
+    Given an empty directory
+    And a lazy-cmd.php file:
+      """
+      <?php
+      /**
+       * My lazy command.
+       */
+      class My_Lazy_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from lazy command.' );
+          }
+      }
+
+      WP_CLI::add_command( 'my-lazy', 'My_Lazy_Command' );
+      """
+
+    When I run `wp --require=lazy-cmd.php --debug=commands cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Registering lazy command: my-lazy
+      """
+    And STDOUT should not contain:
+      """
+      Adding command: my-lazy
+      """
+
+    When I run `wp --require=lazy-cmd.php my-lazy hello`
+    Then STDOUT should be:
+      """
+      Success: Hello from lazy command.
+      """
+
+    When I run `wp --require=lazy-cmd.php help my-lazy`
+    Then STDOUT should contain:
+      """
+      My lazy command.
+      """
+    And STDOUT should match /hello\s+Says hello\./
+
+  Scenario: A lazily registered command keeps the class definition that was available when it was first registered
+    Given an empty directory
+    And a project/Shadowed_Command.php file:
+      """
+      <?php
+      class Shadowed_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the project.' );
+          }
+      }
+      """
+    And a bundled/Shadowed_Command.php file:
+      """
+      <?php
+      class Shadowed_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the bundle.' );
+          }
+      }
+      """
+    And a shadowed-cmd.php file:
+      """
+      <?php
+      if ( ! class_exists( 'Composer\Autoload\ClassLoader', false ) ) {
+          require WP_CLI_VENDOR_DIR . '/composer/ClassLoader.php';
+      }
+
+      $project_loader = new Composer\Autoload\ClassLoader();
+      $project_loader->addClassMap( [ 'Shadowed_Command' => __DIR__ . '/project/Shadowed_Command.php' ] );
+      $project_loader->register( true );
+
+      WP_CLI::add_command( 'shadowed', 'Shadowed_Command' );
+
+      // A loader registered later, like the one of a Phar that bundles an
+      // older copy of the same command, is consulted first.
+      $bundled_loader = new Composer\Autoload\ClassLoader();
+      $bundled_loader->addClassMap( [ 'Shadowed_Command' => __DIR__ . '/bundled/Shadowed_Command.php' ] );
+      $bundled_loader->register( true );
+
+      WP_CLI::add_command( 'shadowed', 'Shadowed_Command' );
+      """
+
+    When I run `wp --require=shadowed-cmd.php shadowed hello`
+    Then STDOUT should be:
+      """
+      Success: Hello from the project.
+      """
+
+  Scenario: A deferred lazily registered command keeps the class definition that was available when it was first registered
+    Given an empty directory
+    And a project/Shadowed_Child_Command.php file:
+      """
+      <?php
+      class Shadowed_Child_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the project.' );
+          }
+      }
+      """
+    And a bundled/Shadowed_Child_Command.php file:
+      """
+      <?php
+      class Shadowed_Child_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the bundle.' );
+          }
+      }
+      """
+    And a shadowed-cmd.php file:
+      """
+      <?php
+      if ( ! class_exists( 'Composer\Autoload\ClassLoader', false ) ) {
+          require WP_CLI_VENDOR_DIR . '/composer/ClassLoader.php';
+      }
+
+      $project_loader = new Composer\Autoload\ClassLoader();
+      $project_loader->addClassMap( [ 'Shadowed_Child_Command' => __DIR__ . '/project/Shadowed_Child_Command.php' ] );
+      $project_loader->register( true );
+
+      // Deferred until its parent command exists, and given with a leading backslash.
+      WP_CLI::add_command( 'shadowed-parent child', '\Shadowed_Child_Command' );
+
+      $bundled_loader = new Composer\Autoload\ClassLoader();
+      $bundled_loader->addClassMap( [ 'Shadowed_Child_Command' => __DIR__ . '/bundled/Shadowed_Child_Command.php' ] );
+      $bundled_loader->register( true );
+
+      /**
+       * Parent command.
+       */
+      class Shadowed_Parent_Command extends WP_CLI\Dispatcher\CommandNamespace {}
+
+      WP_CLI::add_command( 'shadowed-parent', 'Shadowed_Parent_Command' );
+      """
+
+    When I run `wp --require=shadowed-cmd.php shadowed-parent child hello`
+    Then STDOUT should be:
+      """
+      Success: Hello from the project.
+      """
+
+  Scenario: A lazily registered command respects an autoloader that comes before the Composer one
+    Given an empty directory
+    And a project/Preceded_Command.php file:
+      """
+      <?php
+      class Preceded_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the project.' );
+          }
+      }
+      """
+    And a bundled/Preceded_Command.php file:
+      """
+      <?php
+      class Preceded_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the bundle.' );
+          }
+      }
+      """
+    And a preceded-cmd.php file:
+      """
+      <?php
+      if ( ! class_exists( 'Composer\Autoload\ClassLoader', false ) ) {
+          require WP_CLI_VENDOR_DIR . '/composer/ClassLoader.php';
+      }
+
+      spl_autoload_register(
+          static function ( $class_name ) {
+              if ( 'Preceded_Command' === $class_name ) {
+                  require __DIR__ . '/project/Preceded_Command.php';
+              }
+          },
+          true,
+          true
+      );
+
+      $bundled_loader = new Composer\Autoload\ClassLoader();
+      $bundled_loader->addClassMap( [ 'Preceded_Command' => __DIR__ . '/bundled/Preceded_Command.php' ] );
+      $bundled_loader->register();
+
+      WP_CLI::add_command( 'preceded', 'Preceded_Command' );
+      """
+
+    When I run `wp --require=preceded-cmd.php preceded hello`
+    Then STDOUT should be:
+      """
+      Success: Hello from the project.
+      """

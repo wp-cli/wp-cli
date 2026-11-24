@@ -6,9 +6,17 @@ Feature: Load WP-CLI
     And a wp-content/mu-plugins/test.php file:
       """
       <?php
-      add_action( 'plugins_loaded', function(){
-        wp_signon( array( 'user_login' => 'testuser', 'user_password' => 'testuser' ) );
-      });
+      add_action(
+          'plugins_loaded',
+          function () {
+              wp_signon(
+                  array(
+                      'user_login'    => 'testuser',
+                      'user_password' => 'testuser',
+                  )
+              );
+          }
+      );
       """
 
     When I run `wp option get home`
@@ -35,7 +43,6 @@ Feature: Load WP-CLI
               WP_CLI::get_runner()->load_wordpress();
               WP_CLI::log( 'load_wordpress() can safely be called twice.' );
           }
-
       }
       WP_CLI::add_command( 'load-wordpress', 'Load_WordPress_Command_Class' );
       """
@@ -69,7 +76,6 @@ Feature: Load WP-CLI
               WP_CLI::get_runner()->load_wordpress();
               WP_CLI::log( 'load_wordpress() can safely be called twice.' );
           }
-
       }
       WP_CLI::add_command( 'load-wordpress', 'Load_WordPress_Command_Class' );
       """
@@ -234,9 +240,12 @@ Feature: Load WP-CLI
     And a wp-content/mu-plugins/redirect.php file:
       """
       <?php
-      add_action( 'init', function(){
-          wp_redirect( 'http://apple.com' );
-      });
+      add_action(
+          'init',
+          function () {
+              wp_redirect( 'http://apple.com' );
+          }
+      );
       """
 
     When I try `wp option get home`
@@ -250,9 +259,12 @@ Feature: Load WP-CLI
     And a wp-content/mu-plugins/redirect.php file:
       """
       <?php
-      add_action( 'init', function(){
-          wp_redirect( 'http://apple.com' );
-      });
+      add_action(
+          'init',
+          function () {
+              wp_redirect( 'http://apple.com' );
+          }
+      );
       """
 
     When I try `wp plugin list --debug=bootstrap`
@@ -297,18 +309,48 @@ Feature: Load WP-CLI
       Error: Error establishing a database connection.
       """
 
+  @require-php-8.0
+  Scenario Outline: Leave out deprecation notices while testing, however reporting all errors is configured
+    Given an empty directory
+    # Declaring an optional parameter before a required one is deprecated as of PHP 8.0.
+    And a deprecated.php file:
+      """
+      <?php
+      function wp_cli_test_optional_before_required( $optional = null, $required ) {}
+      echo 'done';
+      """
+
+    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--derror_reporting=<error_reporting>} eval-file deprecated.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      done
+      """
+    And STDERR should be empty
+
+    Examples:
+      | error_reporting |
+      | E_ALL           |
+      | -1              |
+
   Scenario: Allow WP_CLI hooks to pass arguments to callbacks
     Given an empty directory
     And a my-command.php file:
       """
       <?php
 
-      WP_CLI::add_hook( 'foo', function( $bar ){
-        WP_CLI::log( $bar );
-      });
-      WP_CLI::add_command( 'my-command', function( $args ){
-        WP_CLI::do_hook( 'foo', $args[0] );
-      }, array( 'when' => 'before_wp_load' ) );
+      WP_CLI::add_hook(
+          'foo',
+          function ( $bar ) {
+              WP_CLI::log( $bar );
+          }
+      );
+      WP_CLI::add_command(
+          'my-command',
+          function ( $args ) {
+              WP_CLI::do_hook( 'foo', $args[0] );
+          },
+          array( 'when' => 'before_wp_load' )
+      );
       """
 
     When I run `wp --require=my-command.php my-command bar`
@@ -324,12 +366,14 @@ Feature: Load WP-CLI
     And a eval-table-prefix.php file:
       """
       <?php
-      global $table_prefix; echo $table_prefix;
+      global $table_prefix;
+      echo $table_prefix;
       """
     And a eval-blog-id.php file:
       """
       <?php
-      global $blog_id; echo $blog_id;
+      global $blog_id;
+      echo $blog_id;
       """
 
     When I run `wp eval-file eval-table-prefix.php`
@@ -359,8 +403,10 @@ Feature: Load WP-CLI
   Scenario: Use --assume-https to preserve HTTPS scheme in URL functions
     Given a WP multisite installation
     And I run `wp option update siteurl https://example.com`
-    And I run `wp site option update siteurl https://example.com`
-    And I run `wp site option update home https://example.com`
+    And these setup commands:
+      | command                                           |
+      | wp site option update siteurl https://example.com |
+      | wp site option update home https://example.com    |
 
     When I run `wp option get siteurl`
     Then STDOUT should be:
@@ -503,10 +549,10 @@ Feature: Load WP-CLI
       <?php
       // Force ms_not_installed() to be triggered by returning empty network
       WP_CLI::add_wp_hook(
-        'the_networks',
-        static function() {
-          return [];
-        }
+          'the_networks',
+          static function () {
+              return [];
+          }
       );
       """
     And I run `wp config delete DOMAIN_CURRENT_SITE --type=constant`
@@ -533,13 +579,13 @@ Feature: Load WP-CLI
       <?php
       // Force ms_not_installed() to be triggered by returning empty network
       WP_CLI::add_wp_hook(
-        'the_networks',
-        static function() {
-          return [
-            new \WP_Network( new stdClass() ),
-            new \WP_Network( new stdClass() ),
-          ];
-        }
+          'the_networks',
+          static function () {
+              return [
+                  new \WP_Network( new stdClass() ),
+                  new \WP_Network( new stdClass() ),
+              ];
+          }
       );
       """
     And I run `wp config delete DOMAIN_CURRENT_SITE --type=constant`
@@ -587,8 +633,8 @@ Feature: Load WP-CLI
     And a check-autoloaders.php file:
       """
       <?php
-      $autoloaders = spl_autoload_functions();
-      $first = $autoloaders[0];
+      $autoloaders  = spl_autoload_functions();
+      $first        = $autoloaders[0];
       $plugin_index = array_search( 'wpcli_test_mu_autoload', $autoloaders, true );
       echo ( $plugin_index !== false && 0 !== $plugin_index ) ? 'WP-CLI autoloader is first' : 'Plugin autoloader is first';
       """

@@ -9,18 +9,19 @@
     "license": "MIT",
     "require": {
         "php": ">=7.2.24 || ^8.0",
+        "composer/semver": "^1.4 || ^2 || ^3",
         "mustache/mustache": "^3.0.0",
         "wp-cli/mustangostang-spyc": "^0.6.3",
-        "wp-cli/php-cli-tools": "~0.12.7"
+        "wp-cli/php-cli-tools": "~0.13.2"
     },
     "require-dev": {
         "justinrainbow/json-schema": "^6.3",
-        "roave/security-advisories": "dev-latest",
-        "wp-cli/db-command": "^2",
-        "wp-cli/entity-command": "^2",
-        "wp-cli/extension-command": "^2",
-        "wp-cli/package-command": "^2",
-        "wp-cli/wp-cli-tests": "^5"
+        "wp-cli/db-command": "^2 || ^3",
+        "wp-cli/entity-command": "^2 || ^3",
+        "wp-cli/extension-command": "^2 || ^3",
+        "wp-cli/language-command": "^2 || ^3",
+        "wp-cli/package-command": "^2 || ^3",
+        "wp-cli/wp-cli-tests": "^5.4.2"
     },
     "suggest": {
         "ext-curl": "For better performance when making HTTP requests",
@@ -39,7 +40,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "2.13.x-dev"
+            "dev-main": "3.0.x-dev"
         },
         "commands": [
             "cli",
@@ -74,6 +75,7 @@
         "behat": "run-behat-tests",
         "behat-rerun": "rerun-behat-tests",
         "lint": "run-linter-tests",
+        "lint-gherkin": "run-gherkin-lint-tests",
         "phpcs": "run-phpcs-tests",
         "phpcbf": "run-phpcbf-cleanup",
         "phpstan": "run-phpstan-tests",
@@ -81,6 +83,7 @@
         "prepare-tests": "install-package-tests",
         "test": [
             "@lint",
+            "@lint-gherkin",
             "@phpcs",
             "@phpstan",
             "@phpunit",

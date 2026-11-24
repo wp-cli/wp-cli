@@ -34,15 +34,19 @@ class MockQuietLogger extends WP_CLI\Loggers\Quiet {
 
 class LoggingTest extends TestCase {
 
-	public function testLogDebug(): void {
+	public function testLogDebugRegularLogger(): void {
 		$message = 'This is a test message.';
 
 		$regular_logger = new MockRegularLogger( false );
 		$this->expectOutputRegex( "/Debug: {$message} \(\d+\.*\d*s\)/" );
 		$regular_logger->debug( $message );
+	}
+
+	public function testLogDebugQuietLogger(): void {
+		$message = 'This is a test message.';
 
 		$quiet_logger = new MockQuietLogger();
-		$this->expectOutputRegex( "/Debug: {$message} \(\d+\.*\d*s\)/" );
+		$this->expectOutputString( '' );
 		$quiet_logger->debug( $message );
 	}
 

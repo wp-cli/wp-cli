@@ -41,7 +41,7 @@ class CSV implements Countable, Iterator {
 	/**
 	 * The column names.
 	 *
-	 * @var array
+	 * @var array<int, string|null>
 	 */
 	private $columns;
 
@@ -110,7 +110,7 @@ class CSV implements Countable, Iterator {
 
 			$element = [];
 			foreach ( $this->columns as $i => $key ) {
-				if ( isset( $row[ $i ] ) ) {
+				if ( null !== $key && isset( $row[ $i ] ) ) {
 					$element[ $key ] = $row[ $i ];
 				}
 			}

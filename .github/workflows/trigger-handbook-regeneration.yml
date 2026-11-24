@@ -1,0 +1,26 @@
+name: Trigger Handbook Regeneration
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  trigger-handbook:
+    name: Trigger Handbook Regeneration
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'wp-cli' }}
+    steps:
+      - name: Trigger repository dispatch in wp-cli/handbook
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.ACTIONS_BOT }}
+          script: |
+            await github.rest.repos.createDispatchEvent({
+              owner: 'wp-cli',
+              repo: 'handbook',
+              event_type: 'regenerate-handbook',
+              client_payload: {}
+            });

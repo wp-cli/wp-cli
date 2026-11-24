@@ -32,14 +32,29 @@ class RootCommand extends CompositeCommand {
 	}
 
 	/**
+	 * Get a directly registered subcommand without materializing it.
+	 *
+	 * @param string $name Subcommand name.
+	 * @return Subcommand|CompositeCommand|false
+	 */
+	public function get_registered_subcommand( $name ) {
+		Utils\load_command( $name );
+
+		return parent::get_registered_subcommand( $name );
+	}
+
+	/**
 	 * Find a subcommand registered on the root
 	 * command.
 	 *
-	 * @param array $args
-	 * @return Subcommand|false
+	 * @param array<string> $args
+	 * @return Subcommand|CompositeCommand|false
 	 */
 	public function find_subcommand( &$args ) {
 		$command = array_shift( $args );
+		if ( null === $command ) {
+			return false;
+		}
 
 		Utils\load_command( $command );
 
@@ -47,6 +62,6 @@ class RootCommand extends CompositeCommand {
 			return false;
 		}
 
-		return $this->subcommands[ $command ];
+		return $this->materialize_subcommand( $command );
 	}
 }

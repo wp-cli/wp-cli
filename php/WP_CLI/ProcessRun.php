@@ -40,7 +40,7 @@ class ProcessRun {
 	/**
 	 * Environment variables set for this process.
 	 *
-	 * @var array
+	 * @var array<string, string>|null
 	 */
 	public $env;
 
@@ -59,7 +59,7 @@ class ProcessRun {
 	public $run_time;
 
 	/**
-	 * @param array $props Properties of executed command.
+	 * @param array<string, mixed> $props Properties of executed command.
 	 */
 	public function __construct( $props ) {
 		foreach ( $props as $key => $value ) {

@@ -80,17 +80,28 @@ final class WpOrgApi {
 	/**
 	 * Options to pass onto the Requests library for executing the remote calls.
 	 *
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	private $options;
 
 	/**
+	 * Cache for responses that never change, or null to use WP_CLI::get_cache().
+	 *
+	 * @var FileCache|false|null
+	 */
+	private $cache;
+
+	/**
 	 * WpOrgApi constructor.
 	 *
-	 * @param array $options Associative array of options to pass to the API abstraction.
+	 * @param array<string, mixed> $options Associative array of options to pass to the API abstraction.
+	 * @param FileCache|false|null $cache   Optional. Cache for responses that never change, like the
+	 *                                      checksums of a WordPress release. False to disable caching.
+	 *                                      Defaults to WP_CLI::get_cache().
 	 */
-	public function __construct( $options = [] ) {
+	public function __construct( $options = [], $cache = null ) {
 		$this->options = $options;
+		$this->cache   = $cache;
 	}
 
 	/**
@@ -98,10 +109,29 @@ final class WpOrgApi {
 	 *
 	 * @param string $version Version string to query.
 	 * @param string $locale  Optional. Locale to query. Defaults to 'en_US'.
-	 * @return false|array False on failure. An array of checksums on success.
+	 * @return array<mixed>|false False on failure. An array of checksums on success.
 	 * @throws RuntimeException If the remote request fails.
 	 */
 	public function get_core_checksums( $version, $locale = 'en_US' ) {
+		// The checksums of a release never change, unlike those of nightly builds.
+		$cache     = false;
+		$cache_key = "core/checksums-{$version}-{$locale}.json";
+		if (
+			preg_match( '/^\d+\.\d+(\.\d+)?(-(beta|RC)\d+)?$/i', $version )
+			&& preg_match( '/^[A-Za-z0-9_]+$/', $locale )
+		) {
+			$cache = $this->get_cache();
+		}
+
+		if ( $cache ) {
+			$cached    = $cache->read( $cache_key );
+			$checksums = false !== $cached ? json_decode( $cached, true ) : null;
+			if ( self::is_checksum_map( $checksums ) ) {
+				\WP_CLI::debug( "Using cached checksums for WordPress {$version} ({$locale}).", 'wporgapi' );
+				return $checksums;
+			}
+		}
+
 		$data = [
 			'version' => $version,
 			'locale'  => $locale,
@@ -123,6 +153,12 @@ final class WpOrgApi {
 			return false;
 		}
 
+		// With `insecure`, the response may come from a retry without certificate
+		// verification, so it must not be trusted by later runs.
+		if ( $cache && empty( $this->options['insecure'] ) && self::is_checksum_map( $response['checksums'] ) ) {
+			$cache->write( $cache_key, (string) json_encode( $response['checksums'] ) );
+		}
+
 		return $response['checksums'];
 	}
 
@@ -130,7 +166,7 @@ final class WpOrgApi {
 	 * Gets a core version check.
 	 *
 	 * @param string $locale Optional. Locale to request a version check for. Defaults to 'en_US'.
-	 * @return array|false False on failure. Associative array of the offer on success.
+	 * @return array<string, mixed>|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
 	public function get_core_version_check( $locale = 'en_US' ) {
@@ -153,7 +189,7 @@ final class WpOrgApi {
 	 * Gets a download offer.
 	 *
 	 * @param string $locale Optional. Locale to request an offer from. Defaults to 'en_US'.
-	 * @return array|false False on failure. Associative array of the offer on success.
+	 * @return array<string, mixed>|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
 	public function get_core_download_offer( $locale = 'en_US' ) {
@@ -181,7 +217,7 @@ final class WpOrgApi {
 	 *
 	 * @param string $plugin  Plugin slug to query.
 	 * @param string $version Version string to query.
-	 * @return false|array False on failure. An array of checksums on success.
+	 * @return array<mixed>|false False on failure. An array of checksums on success.
 	 * @throws RuntimeException If the remote request fails.
 	 */
 	public function get_plugin_checksums( $plugin, $version ) {
@@ -208,10 +244,10 @@ final class WpOrgApi {
 	/**
 	 * Gets a plugin's info.
 	 *
-	 * @param string $plugin Plugin slug to query.
-	 * @param string $locale Optional. Locale to request info for. Defaults to 'en_US'.
-	 * @param array $fields Optional. Fields to include/omit from the response.
-	 * @return array|false False on failure. Associative array of the offer on success.
+	 * @param string                      $plugin Plugin slug to query.
+	 * @param string                      $locale Optional. Locale to request info for. Defaults to 'en_US'.
+	 * @param array<string, bool>|array<string> $fields Optional. Fields to include/omit from the response.
+	 * @return array<string, mixed>|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
 	public function get_plugin_info( $plugin, $locale = 'en_US', array $fields = [] ) {
@@ -243,10 +279,10 @@ final class WpOrgApi {
 	/**
 	 * Gets a theme's info.
 	 *
-	 * @param string $theme  Theme slug to query.
-	 * @param string $locale Optional. Locale to request info for. Defaults to 'en_US'.
-	 * @param array $fields Optional. Fields to include/omit from the response.
-	 * @return array|false False on failure. Associative array of the offer on success.
+	 * @param string                      $theme  Theme slug to query.
+	 * @param string                      $locale Optional. Locale to request info for. Defaults to 'en_US'.
+	 * @param array<string, bool>|array<string> $fields Optional. Fields to include/omit from the response.
+	 * @return array<string, mixed>|false False on failure. Associative array of the offer on success.
 	 * @throws RuntimeException If the remote request failed.
 	 */
 	public function get_theme_info( $theme, $locale = 'en_US', array $fields = [] ) {
@@ -286,12 +322,46 @@ final class WpOrgApi {
 	}
 
 	/**
+	 * Whether the given value is a non-empty map of file names to checksums.
+	 *
+	 * @param mixed $checksums Value to check.
+	 * @return bool
+	 * @phpstan-assert-if-true array<string, string> $checksums
+	 */
+	private static function is_checksum_map( $checksums ) {
+		if ( ! is_array( $checksums ) || empty( $checksums ) ) {
+			return false;
+		}
+
+		foreach ( $checksums as $file => $checksum ) {
+			if ( ! is_string( $file ) || ! is_string( $checksum ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Gets the cache for responses that never change.
+	 *
+	 * @return FileCache|false
+	 */
+	private function get_cache() {
+		if ( null === $this->cache ) {
+			return \WP_CLI::get_cache();
+		}
+
+		return $this->cache;
+	}
+
+	/**
 	 * Execute a remote GET request.
 	 *
-	 * @param string $url     URL to execute the GET request on.
-	 * @param array  $headers Optional. Associative array of headers.
-	 * @param array  $options Optional. Associative array of options.
-	 * @return mixed|false False on failure. Decoded JSON on success.
+	 * @param string                $url     URL to execute the GET request on.
+	 * @param array<string, string> $headers Optional. Associative array of headers.
+	 * @param array<string, mixed>  $options Optional. Associative array of options.
+	 * @return array<mixed>|false False on failure. Decoded JSON on success.
 	 * @throws RuntimeException If the JSON could not be decoded.
 	 */
 	private function json_get_request( $url, $headers = [], $options = [] ) {
@@ -314,15 +384,19 @@ final class WpOrgApi {
 			throw new RuntimeException( 'Failed to decode JSON: ' . json_last_error_msg() );
 		}
 
+		if ( ! is_array( $data ) ) {
+			return false;
+		}
+
 		return $data;
 	}
 
 	/**
 	 * Execute a remote GET request.
 	 *
-	 * @param string $url     URL to execute the GET request on.
-	 * @param array  $headers Optional. Associative array of headers.
-	 * @param array  $options Optional. Associative array of options.
+	 * @param string                $url     URL to execute the GET request on.
+	 * @param array<string, string> $headers Optional. Associative array of headers.
+	 * @param array<string, mixed>  $options Optional. Associative array of options.
 	 * @return string Response body.
 	 * @throws RuntimeException If the remote request fails.
 	 */

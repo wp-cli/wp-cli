@@ -8,22 +8,31 @@ use WP_CLI\Runner;
 
 /**
  * Base logger class
+ *
+ * @method void error( string $message )
+ * @method void error_multi_line( array<int, string> $message_lines )
  */
 abstract class Base {
 
+	/**
+	 * @var bool
+	 */
 	protected $in_color = false;
 
 	/**
 	 * Informational message.
 	 *
 	 * @param string $message Message to write.
+	 * @param bool   $newline Optional. Whether to append a newline. Default true.
+	 * @return void
 	 */
-	abstract public function info( $message );
+	abstract public function info( $message, $newline = true );
 
 	/**
 	 * Success message.
 	 *
 	 * @param string $message Message to write.
+	 * @return void
 	 */
 	abstract public function success( $message );
 
@@ -31,6 +40,7 @@ abstract class Base {
 	 * Warning message.
 	 *
 	 * @param string $message Message to write.
+	 * @return void
 	 */
 	abstract public function warning( $message );
 
@@ -50,6 +60,7 @@ abstract class Base {
 	 * @param string $message Message to write.
 	 * @param string|bool $group Organize debug message to a specific group.
 	 * Use `false` for no group.
+	 * @return void
 	 */
 	public function debug( $message, $group = false ) {
 		static $start_time = null;
@@ -76,6 +87,7 @@ abstract class Base {
 	 *
 	 * @param resource $handle Commonly STDOUT or STDERR.
 	 * @param string $str Message to write.
+	 * @return void
 	 */
 	protected function write( $handle, $str ) {
 		fwrite( $handle, $str );
@@ -88,6 +100,7 @@ abstract class Base {
 	 * @param string $label Prefix message with a label.
 	 * @param string $color Colorize label with a given color.
 	 * @param resource $handle Resource to write to. Defaults to STDOUT.
+	 * @return void
 	 */
 	protected function _line( $message, $label, $color, $handle = STDOUT ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Used in third party extensions.
 		if ( class_exists( 'cli\Colors' ) ) {

@@ -26,8 +26,8 @@ function get_bootstrap_steps() {
 		Bootstrap\InitializeFormatter::class,
 		Bootstrap\RegisterShutdownHandler::class,
 		Bootstrap\CheckRoot::class,
-		Bootstrap\IncludeRequestsAutoloader::class,
 		Bootstrap\DefineProtectedCommands::class,
+		Bootstrap\IncludeRequestsAutoloader::class,
 		Bootstrap\LoadExecCommand::class,
 		Bootstrap\LoadRequiredCommand::class,
 		Bootstrap\IncludeFallbackAutoloader::class,
@@ -44,6 +44,8 @@ function get_bootstrap_steps() {
  *
  * The Composer autoloader is not active yet at this point, so we need to use a
  * custom autoloader to fetch the bootstrap classes in a flexible way.
+ *
+ * @return void
  */
 function prepare_bootstrap() {
 	require_once WP_CLI_ROOT . '/php/WP_CLI/Autoloader.php';
@@ -70,6 +72,8 @@ function initialize_bootstrap_state() {
  *
  * Loops over each of the provided steps, instantiates it and then calls its
  * `process()` method.
+ *
+ * @return void
  */
 function bootstrap() {
 	prepare_bootstrap();

@@ -4,12 +4,6 @@ use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
 class HttpRequestLoggingTest extends TestCase {
-
-	public static function set_up_before_class() {
-		require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
-		require_once __DIR__ . '/mock-requests-transport.php';
-	}
-
 	public function testHttpRequestOptionsHookReceivesAllParameters(): void {
 		$hook_called      = false;
 		$received_method  = null;

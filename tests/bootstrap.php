@@ -17,4 +17,7 @@ require_once WP_CLI_ROOT . '/bundle/rmccue/requests/src/Autoload.php';
 
 require_once __DIR__ . '/includes/wpdb.php';
 
+// @phpstan-ignore staticMethod.internal
 \WpOrg\Requests\Autoload::register();
+
+require_once __DIR__ . '/includes/mock-requests-transport.php';

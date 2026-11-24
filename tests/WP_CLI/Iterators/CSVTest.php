@@ -87,6 +87,11 @@ class CSVTest extends TestCase {
 		}
 	}
 
+	/**
+	 * @param array<int, array<int, string>> $data
+	 * @param string                         $delimiter
+	 * @return string
+	 */
 	private function create_csv_file( $data, $delimiter = ',' ) {
 		$filename = tempnam( sys_get_temp_dir(), 'wp-cli-tests-' );
 

@@ -4,13 +4,15 @@ namespace WP_CLI;
 
 /**
  * Checks if the list of parameters matches the specification defined in the synopsis.
+ *
+ * @phpstan-import-type CommandSynopsis from \WP_CLI
  */
 class SynopsisValidator {
 
 	/**
 	 * Structured representation of command synopsis.
 	 *
-	 * @var array
+	 * @var array<int, array<string, mixed>>
 	 */
 	private $spec;
 
@@ -24,23 +26,28 @@ class SynopsisValidator {
 	/**
 	 * Get any unknown arguments.
 	 *
-	 * @return array
+	 * @return array<int, string>
 	 */
 	public function get_unknown() {
-		return array_column(
-			$this->query_spec(
-				[
-					'type' => 'unknown',
-				]
-			),
-			'token'
+		return array_map(
+			function ( $v ) {
+				return is_scalar( $v ) ? (string) $v : '';
+			},
+			array_column(
+				$this->query_spec(
+					[
+						'type' => 'unknown',
+					]
+				),
+				'token'
+			)
 		);
 	}
 
 	/**
 	 * Check whether there are enough positional arguments.
 	 *
-	 * @param array $args Positional arguments.
+	 * @param array<int, string> $args Positional arguments.
 	 * @return bool
 	 */
 	public function enough_positionals( $args ) {
@@ -57,8 +64,8 @@ class SynopsisValidator {
 	/**
 	 * Check for any unknown positionals.
 	 *
-	 * @param array $args Positional arguments.
-	 * @return array
+	 * @param array<int, string> $args Positional arguments.
+	 * @return array<int, string>
 	 */
 	public function unknown_positionals( $args ) {
 		$positional_repeating = $this->query_spec(
@@ -86,8 +93,8 @@ class SynopsisValidator {
 	/**
 	 * Check that all required keys are present and that they have values.
 	 *
-	 * @param array $assoc_args Parameters passed to command.
-	 * @return array
+	 * @param array<string, mixed> $assoc_args Parameters passed to command.
+	 * @return array{0: array{fatal: array<string, string>, warning: array<string, string>}, 1: array<int, string>}
 	 */
 	public function validate_assoc( $assoc_args ) {
 		$assoc_spec = $this->query_spec(
@@ -104,13 +111,13 @@ class SynopsisValidator {
 		$to_unset = [];
 
 		foreach ( $assoc_spec as $param ) {
-			$key = $param['name'];
+			$key = is_scalar( $param['name'] ) ? (string) $param['name'] : '';
 
 			if ( ! isset( $assoc_args[ $key ] ) ) {
 				if ( ! $param['optional'] ) {
 					$errors['fatal'][ $key ] = "missing --$key parameter";
 				}
-			} elseif ( true === $assoc_args[ $key ] && ! $param['value']['optional'] ) {
+			} elseif ( true === $assoc_args[ $key ] && is_array( $param['value'] ) && ! $param['value']['optional'] ) {
 					$error_type                    = ( ! $param['optional'] ) ? 'fatal' : 'warning';
 					$errors[ $error_type ][ $key ] = "--$key parameter needs a value";
 
@@ -122,39 +129,57 @@ class SynopsisValidator {
 	}
 
 	/**
+	 * Check whether the synopsis accepts arbitrary parameters.
+	 *
+	 * A `--<field>=<value>` token means the command takes keys that cannot be
+	 * enumerated up front, so an unrecognized parameter is not automatically
+	 * an error.
+	 *
+	 * @return bool
+	 */
+	public function has_generic() {
+		return (bool) count(
+			$this->query_spec(
+				[
+					'type' => 'generic',
+				]
+			)
+		);
+	}
+
+	/**
 	 * Check whether there are unknown parameters supplied.
 	 *
-	 * @param array $assoc_args Parameters passed to command.
-	 * @return array
+	 * @param array<string, mixed> $assoc_args     Parameters passed to command.
+	 * @param bool                 $ignore_generic Whether to report unknown parameters even
+	 *                                             when the synopsis has a generic token.
+	 *                                             Callers that pass true are responsible for
+	 *                                             deciding which of the returned parameters
+	 *                                             are actually errors.
+	 * @return array<int, string>
 	 */
-	public function unknown_assoc( $assoc_args ) {
-		$generic = $this->query_spec(
-			[
-				'type' => 'generic',
-			]
-		);
-
-		if ( count( $generic ) ) {
+	public function unknown_assoc( $assoc_args, $ignore_generic = false ) {
+		if ( ! $ignore_generic && $this->has_generic() ) {
 			return [];
 		}
 
 		$known_assoc = [];
 
 		foreach ( $this->spec as $param ) {
-			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) ) {
+			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) && is_string( $param['name'] ) ) {
 				$known_assoc[] = $param['name'];
 			}
 		}
 
-		return array_diff( array_keys( $assoc_args ), $known_assoc );
+		return array_values( array_diff( array_map( 'strval', array_keys( $assoc_args ) ), $known_assoc ) );
 	}
 
 	/**
 	 * Filters a list of associative arrays, based on a set of key => value arguments.
 	 *
-	 * @param array $args An array of key => value arguments to match against
-	 * @param string $operator
-	 * @return array
+	 * @param array<string, mixed> $args An array of key => value arguments to match against
+	 * @param string               $operator
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function query_spec( $args, $operator = 'AND' ) {
 		$operator = strtoupper( $operator );

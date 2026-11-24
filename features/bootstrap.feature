@@ -57,7 +57,7 @@ Feature: Bootstrap WP-CLI
       """
       <?php
       if ( ! class_exists( 'WP_CLI' ) ) {
-        return;
+          return;
       }
       // Override bundled command.
       WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
@@ -66,9 +66,9 @@ Feature: Bootstrap WP-CLI
       """
       <?php
       class Custom_Eval_Command extends WP_CLI_Command {
-        public function __invoke() {
-          WP_CLI::success( "WP-Override-Eval" );
-        }
+          public function __invoke() {
+              WP_CLI::success( 'WP-Override-Eval' );
+          }
       }
       """
     And a override/composer.json file:
@@ -102,42 +102,42 @@ Feature: Bootstrap WP-CLI
       """
       <?php
       if ( ! class_exists( 'WP_CLI' ) ) {
-        return;
+          return;
       }
-      $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
+      $autoload = __DIR__ . '/vendor/autoload.php';
       if ( file_exists( $autoload ) && ! class_exists( 'Custom_CLI_Command' ) ) {
-        require_once $autoload;
+          require_once $autoload;
       }
       // Override framework command.
       WP_CLI::add_command( 'cli', 'Custom_CLI_Command', array( 'when' => 'before_wp_load' ) );
       // Override bundled command.
       WP_CLI::add_hook(
-        'after_add_command:eval',
-        static function () {
-          static $added = false;
-          if ( ! $added ) {
-            $added = true;
-            WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
+          'after_add_command:eval',
+          static function () {
+              static $added = false;
+              if ( ! $added ) {
+                  $added = true;
+                  WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
+              }
           }
-        }
       );
       """
     And a override/src/Custom_CLI_Command.php file:
       """
       <?php
       class Custom_CLI_Command extends WP_CLI_Command {
-        public function version() {
-          WP_CLI::success( "WP-Override-CLI" );
-        }
+          public function version() {
+              WP_CLI::success( 'WP-Override-CLI' );
+          }
       }
       """
     And a override/src/Custom_Eval_Command.php file:
       """
       <?php
       class Custom_Eval_Command extends WP_CLI_Command {
-        public function __invoke() {
-          WP_CLI::success( "WP-Override-Eval" );
-        }
+          public function __invoke() {
+              WP_CLI::success( 'WP-Override-Eval' );
+          }
       }
       """
     And a override/composer.json file:
@@ -190,42 +190,42 @@ Feature: Bootstrap WP-CLI
       """
       <?php
       if ( ! class_exists( 'WP_CLI' ) ) {
-        return;
+          return;
       }
-      $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
+      $autoload = __DIR__ . '/vendor/autoload.php';
       if ( file_exists( $autoload ) && ! class_exists( 'Custom_CLI_Command' ) ) {
-        require_once $autoload;
+          require_once $autoload;
       }
       // Override framework command.
       WP_CLI::add_command( 'cli', 'Custom_CLI_Command', array( 'when' => 'before_wp_load' ) );
       // Override bundled command.
       WP_CLI::add_hook(
-        'after_add_command:eval',
-        static function () {
-          static $added = false;
-          if ( ! $added ) {
-            $added = true;
-            WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
+          'after_add_command:eval',
+          static function () {
+              static $added = false;
+              if ( ! $added ) {
+                  $added = true;
+                  WP_CLI::add_command( 'eval', 'Custom_Eval_Command', array( 'when' => 'before_wp_load' ) );
+              }
           }
-        }
       );
       """
     And a override/src/Custom_CLI_Command.php file:
       """
       <?php
       class Custom_CLI_Command extends WP_CLI_Command {
-        public function version() {
-          WP_CLI::success( "WP-Override-CLI" );
-        }
+          public function version() {
+              WP_CLI::success( 'WP-Override-CLI' );
+          }
       }
       """
     And a override/src/Custom_Eval_Command.php file:
       """
       <?php
       class Custom_Eval_Command extends WP_CLI_Command {
-        public function __invoke() {
-          WP_CLI::success( "WP-Override-Eval" );
-        }
+          public function __invoke() {
+              WP_CLI::success( 'WP-Override-Eval' );
+          }
       }
       """
     And a override/composer.json file:
@@ -278,20 +278,23 @@ Feature: Bootstrap WP-CLI
       """
       <?php
       if ( ! class_exists( 'WP_CLI' ) ) {
-        return;
+          return;
       }
 
-      WP_CLI::add_hook( 'before_wp_load', static function () {
-        WP_CLI::add_command( 'plugin', 'My_Extended_Plugin_Command' );
-      } );
+      WP_CLI::add_hook(
+          'before_wp_load',
+          static function () {
+              WP_CLI::add_command( 'plugin', 'My_Extended_Plugin_Command' );
+          }
+      );
       """
     And a override/src/My_Extended_Plugin_Command.php file:
       """
       <?php
       class My_Extended_Plugin_Command extends Plugin_Command {
-        public function install( $args, $assoc_args ) {
-          WP_CLI::error( 'Plugin installation has been disabled.' );
-        }
+          public function install( $args, $assoc_args ) {
+              WP_CLI::error( 'Plugin installation has been disabled.' );
+          }
       }
       """
     And a override/composer.json file:
@@ -516,10 +519,9 @@ Feature: Bootstrap WP-CLI
       namespace WP_CLI\Bootstrap;
 
       // To override posix_geteuid in our namespace
-      function posix_geteuid() {
+    function posix_geteuid() {
         return 0;
-      }
-    ?>
+    }
     """
 
     And I try `WP_CLI_EARLY_REQUIRE=include.php wp cli version --debug`
@@ -547,3 +549,90 @@ Feature: Bootstrap WP-CLI
     # installed packages override phar-bundled versions.
     When I try `wp cli version --debug`
     Then STDERR should match /WP_CLI\\Bootstrap\\IncludeFallbackAutoloader[\s\S]*WP_CLI\\Bootstrap\\IncludePackageAutoloader/
+
+  Scenario: Protected commands skip WP root discovery and Requests autoloader from current directory
+    Given an empty directory
+    And an index.php file:
+      """
+      <?php
+      file_put_contents( __DIR__ . '/executed_index.txt', '1' );
+      require __DIR__ . '/wp-blog-header.php';
+      """
+    And a wp-includes/Requests/src/Autoload.php file:
+      """
+      <?php
+      file_put_contents( __DIR__ . '/../../../executed_requests.txt', '1' );
+      """
+
+    When I run `wp cli info`
+    Then the return code should be 0
+    And the executed_index.txt file should not exist
+    And the executed_requests.txt file should not exist
+
+    When I run `wp package list`
+    Then the return code should be 0
+    And the executed_index.txt file should not exist
+    And the executed_requests.txt file should not exist
+
+  Scenario: Commands that do not load WordPress do not execute Requests autoloaders from the working directory
+    Given an empty directory
+    And a wp-load.php file:
+      """
+      <?php
+      """
+    And a wp-includes/version.php file:
+      """
+      <?php
+      $wp_version = '6.7';
+      """
+    And a wp-includes/Requests/src/Autoload.php file:
+      """
+      <?php
+      file_put_contents( __DIR__ . '/../../../executed_requests_v2.txt', '1' );
+      """
+    And a wp-includes/class-requests.php file:
+      """
+      <?php
+      file_put_contents( __DIR__ . '/../executed_requests_v1.txt', '1' );
+      """
+
+    When I run `wp cli version`
+    Then the return code should be 0
+    And the executed_requests_v2.txt file should not exist
+    And the executed_requests_v1.txt file should not exist
+
+    When I run `wp eval "echo WP_CLI\RequestsLibrary::is_cli() && class_exists( '\WpOrg\Requests\Requests' ) ? 'bundled' : 'unexpected';" --skip-wordpress`
+    Then STDOUT should be:
+      """
+      bundled
+      """
+    And the executed_requests_v2.txt file should not exist
+    And the executed_requests_v1.txt file should not exist
+
+    When I try `wp plugin list`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      'wp-config.php' not found.
+      """
+    And the executed_requests_v2.txt file should not exist
+    And the executed_requests_v1.txt file should not exist
+
+    When I try `wp eval "echo 'should not run';"`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      'wp-config.php' not found.
+      """
+    And the executed_requests_v2.txt file should not exist
+    And the executed_requests_v1.txt file should not exist
+
+    When I try `wp --http=http://example.com option get home`
+    Then the return code should be 1
+    And the executed_requests_v2.txt file should not exist
+    And the executed_requests_v1.txt file should not exist
+
+    When I try `wp nonexistent-command`
+    Then the return code should be 1
+    And the executed_requests_v2.txt file should not exist
+    And the executed_requests_v1.txt file should not exist

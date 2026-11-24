@@ -12,7 +12,7 @@ final class Frontend implements Context {
 	/**
 	 * Process the context to set up the environment correctly.
 	 *
-	 * @param array $config Associative array of configuration data.
+	 * @param array<string, mixed> $config Associative array of configuration data.
 	 *
 	 * @return void
 	 */

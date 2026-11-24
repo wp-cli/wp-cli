@@ -7,17 +7,26 @@ use IteratorIterator;
 /**
  * Applies one or more callbacks to an item before returning it.
  *
- * @phpstan-extends IteratorIterator<int, mixed, \Iterator>
+ * @template TKey of int|string
+ * @template TValue
+ * @template TRet
+ * @extends IteratorIterator<TKey, TRet, \Iterator<TKey, TValue>>
  */
 class Transform extends IteratorIterator {
 
 	/**
 	 * List of transformer callbacks.
 	 *
-	 * @var array
+	 * @var array<callable(mixed): mixed>
 	 */
 	private $transformers = [];
 
+	/**
+	 * Add a transformer callback.
+	 *
+	 * @param callable(mixed): mixed $fn
+	 * @return void
+	 */
 	public function add_transform( $fn ) {
 		$this->transformers[] = $fn;
 	}

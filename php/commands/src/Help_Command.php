@@ -2,8 +2,10 @@
 
 use cli\Shell;
 use WP_CLI\Dispatcher;
-use WP_CLI\Utils;
+use WP_CLI\DocParser;
 use WP_CLI\Process;
+use WP_CLI\SynopsisParser;
+use WP_CLI\Utils;
 
 class Help_Command extends WP_CLI_Command {
 
@@ -29,8 +31,9 @@ class Help_Command extends WP_CLI_Command {
 	 *     # get full help for `core`, including all subcommands
 	 *     wp help core --full
 	 *
-	 * @param string[] $args
-	 * @param array    $assoc_args
+	 * @param string[]             $args
+	 * @param array<string, mixed> $assoc_args
+	 * @return void
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$r = WP_CLI::get_runner()->find_command_to_run( $args, Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
@@ -48,16 +51,29 @@ class Help_Command extends WP_CLI_Command {
 		}
 	}
 
+	/**
+	 * @param Dispatcher\CompositeCommand|Dispatcher\Subcommand $command
+	 * @return void
+	 */
 	private static function show_help( $command ) {
 		self::pass_through_pager( self::get_help_as_string( $command ) );
 	}
 
+	/**
+	 * @param array<int, string> $matches
+	 * @return string
+	 */
 	private static function rewrap_param_desc( $matches ) {
 		$param = $matches[1];
 		$desc  = self::indent( "\t\t", $matches[2] );
 		return "\t$param\n$desc\n\n";
 	}
 
+	/**
+	 * @param string $whitespace
+	 * @param string $text
+	 * @return string
+	 */
 	private static function indent( $whitespace, $text ) {
 		$lines = explode( "\n", $text );
 		foreach ( $lines as &$line ) {
@@ -182,6 +198,11 @@ class Help_Command extends WP_CLI_Command {
 		return $process ? proc_close( $process ) : -1;
 	}
 
+	/**
+	 * @param Dispatcher\CompositeCommand|Dispatcher\Subcommand $command
+	 * @param string|null                                        $longdesc_with_links
+	 * @return string
+	 */
 	private static function get_initial_markdown( $command, $longdesc_with_links = null ) {
 		$name = implode( ' ', Dispatcher\get_path( $command ) );
 
@@ -205,6 +226,10 @@ class Help_Command extends WP_CLI_Command {
 				$binding['shortdesc'] .= "\n\nThis command runs on the '$hook_name' hook, $hook_description";
 			}
 		}
+		$deprecation_message = self::get_command_deprecation_message( $command );
+		if ( null !== $deprecation_message ) {
+			$binding['shortdesc'] .= "\n\nDeprecated" . ( '' !== $deprecation_message ? ': ' . $deprecation_message : '.' );
+		}
 
 		// Add description paragraphs from longdesc to shortdesc for DESCRIPTION section
 		if ( null === $longdesc_with_links ) {
@@ -224,6 +249,10 @@ class Help_Command extends WP_CLI_Command {
 		return Utils\mustache_render( 'man.mustache', $binding );
 	}
 
+	/**
+	 * @param Dispatcher\CompositeCommand $command
+	 * @return array<int, string>
+	 */
 	private static function render_subcommands( $command ) {
 		$subcommands = [];
 		foreach ( $command->get_subcommands() as $subcommand ) {
@@ -259,6 +288,10 @@ class Help_Command extends WP_CLI_Command {
 		return $lines;
 	}
 
+	/**
+	 * @param Dispatcher\CompositeCommand|Dispatcher\Subcommand $command
+	 * @return string
+	 */
 	private static function get_help_full( $command ) {
 		$out = self::get_help_as_string( $command );
 
@@ -274,8 +307,13 @@ class Help_Command extends WP_CLI_Command {
 		return $out;
 	}
 
+	/**
+	 * @param Dispatcher\CompositeCommand|Dispatcher\Subcommand $command
+	 * @return string
+	 */
 	private static function get_help_as_string( $command ) {
 		$longdesc_with_links = self::parse_reference_links( $command->get_longdesc() );
+		$longdesc_with_links = self::inject_argument_deprecations( $command, $longdesc_with_links );
 		$out                 = self::get_initial_markdown( $command, $longdesc_with_links );
 
 		$subcommands       = '';
@@ -326,6 +364,84 @@ class Help_Command extends WP_CLI_Command {
 		return $out;
 	}
 
+	/**
+	 * Get deprecation message for a command from its docblock.
+	 *
+	 * @param object $command Command instance.
+	 * @return string|null Deprecation message string if deprecated, null otherwise.
+	 */
+	private static function get_command_deprecation_message( $command ) {
+		if ( ! method_exists( $command, 'get_docparser' ) ) {
+			return null;
+		}
+
+		$docparser = $command->get_docparser();
+		if ( ! $docparser || ! $docparser->has_tag( 'deprecated' ) ) {
+			return null;
+		}
+
+		return $docparser->get_deprecation_message();
+	}
+
+	/**
+	 * Inject argument deprecation notices into help long description.
+	 *
+	 * @param object $command Command instance.
+	 * @param string $longdesc Help long description.
+	 * @return string
+	 */
+	private static function inject_argument_deprecations( $command, $longdesc ) {
+		if ( ! method_exists( $command, 'get_docparser' ) || ! method_exists( $command, 'get_synopsis' ) ) {
+			return $longdesc;
+		}
+
+		$docparser = $command->get_docparser();
+		if ( ! $docparser ) {
+			return $longdesc;
+		}
+
+		$synopsis_spec         = SynopsisParser::parse( $command->get_synopsis() );
+		$deprecated_assoc_args = DocParser::get_deprecated_assoc_args( $synopsis_spec, $docparser );
+		if ( empty( $deprecated_assoc_args ) ) {
+			return $longdesc;
+		}
+
+		foreach ( $synopsis_spec as $spec ) {
+			$name = isset( $spec['name'] ) && is_string( $spec['name'] ) ? $spec['name'] : '';
+			if ( '' === $name || ! isset( $deprecated_assoc_args[ $name ] ) ) {
+				continue;
+			}
+
+			$deprecation_message = $deprecated_assoc_args[ $name ];
+			$notice              = 'Deprecated' . ( '' !== $deprecation_message ? ': ' . $deprecation_message : '.' );
+			$token_raw           = $spec['token'] ?? '';
+			$token_str           = is_string( $token_raw ) ? $token_raw : '';
+			$token               = preg_quote( $token_str, '/' );
+			$pattern             = '/^(' . $token . ')(\n:[ \t]*[^\n]*)?(\n|$)/m';
+			$longdesc            = (string) preg_replace_callback(
+				$pattern,
+				static function ( $matches ) use ( $notice ) {
+					$desc_line = isset( $matches[2] ) ? $matches[2] : '';
+					if ( '' !== $desc_line && ':' !== trim( substr( $desc_line, 1 ) ) ) {
+						return $matches[1] . $desc_line . ' ' . $notice . $matches[3];
+					}
+
+					return $matches[1] . "\n: " . $notice . $matches[3];
+				},
+				$longdesc,
+				1
+			);
+		}
+
+		return $longdesc;
+	}
+
+	/**
+	 * Get max length of strings.
+	 *
+	 * @param array<string> $strings
+	 * @return int
+	 */
 	private static function get_max_len( $strings ) {
 		$max_len = 0;
 		foreach ( $strings as $str ) {
@@ -349,32 +465,141 @@ class Help_Command extends WP_CLI_Command {
 
 		// Process if there is description text at the head of `$longdesc`.
 		if ( trim( $description ) ) {
-			$links   = []; // An array of URLs from the description.
-			$pattern = '/\[.+?\]\((https?:\/\/.+?)\)/';
-			$newdesc = (string) preg_replace_callback(
-				$pattern,
-				static function ( $matches ) use ( &$links ) {
-					static $count = 0;
-					$count++;
-					$links[] = $matches[1];
-					return str_replace( '(' . $matches[1] . ')', '[' . $count . ']', $matches[0] );
-				},
-				$description
-			);
+			$pattern = '/\[([^\]]+)\]\((https?:\/\/.+?)\)/';
+			if ( self::supports_hyperlinks() ) {
+				$newdesc = (string) preg_replace_callback(
+					$pattern,
+					static function ( $matches ) {
+						return self::create_hyperlink( $matches[2], $matches[1] );
+					},
+					$description
+				);
+			} else {
+				$links   = []; // An array of URLs from the description.
+				$newdesc = (string) preg_replace_callback(
+					$pattern,
+					static function ( $matches ) use ( &$links ) {
+						static $count = 0;
+						$count++;
+						$links[] = $matches[2];
+						return '[' . $matches[1] . '][' . $count . ']';
+					},
+					$description
+				);
 
-			$footnote = '';
-			foreach ( $links as $i => $link ) {
-				$n         = $i + 1;
-				$footnote .= '[' . $n . '] ' . $link . "\n";
+				$footnote = '';
+				foreach ( $links as $i => $link ) {
+					$n         = $i + 1;
+					$footnote .= '[' . $n . '] ' . $link . "\n";
+				}
+
+				if ( $footnote ) {
+					$newdesc = trim( $newdesc ) . "\n\n---\n" . $footnote;
+				}
 			}
 
-			if ( $footnote ) {
-				$newdesc  = trim( $newdesc ) . "\n\n---\n" . $footnote;
+			if ( trim( $description ) !== trim( $newdesc ) ) {
 				$longdesc = str_replace( trim( $description ), trim( $newdesc ), $longdesc );
 			}
 		}
 
 		return $longdesc;
+	}
+
+	/**
+	 * Determine whether the terminal supports OSC 8 hyperlinks.
+	 *
+	 * @return bool
+	 */
+	private static function supports_hyperlinks() {
+		$force_hyperlink = getenv( 'FORCE_HYPERLINK' );
+		if ( false !== $force_hyperlink ) {
+			$force_hyperlink = trim( $force_hyperlink );
+			if ( is_numeric( $force_hyperlink ) ) {
+				return (int) $force_hyperlink > 0;
+			}
+
+			return '' !== $force_hyperlink;
+		}
+
+		$is_stdout_tty = false;
+		if ( function_exists( 'stream_isatty' ) ) {
+			$is_stdout_tty = stream_isatty( STDOUT );
+		} elseif ( function_exists( 'posix_isatty' ) ) {
+			$is_stdout_tty = posix_isatty( STDOUT );
+		}
+
+		if ( ! $is_stdout_tty || getenv( 'CI' ) ) {
+			return false;
+		}
+
+		if ( false !== getenv( 'WT_SESSION' )
+			|| false !== getenv( 'KONSOLE_VERSION' )
+			|| false !== getenv( 'DOMTERM' )
+			|| 'xterm-kitty' === getenv( 'TERM' ) ) {
+			return true;
+		}
+
+		$term_program         = getenv( 'TERM_PROGRAM' );
+		$term_program_version = getenv( 'TERM_PROGRAM_VERSION' );
+		switch ( $term_program ) {
+			case 'iTerm.app':
+				return false !== $term_program_version && version_compare( $term_program_version, '3.1', '>=' );
+
+			case 'WezTerm':
+				if ( false !== $term_program_version && preg_match( '/^0-unstable-\d{4}-\d{2}-\d{2}$/', $term_program_version ) ) {
+					$date = substr( $term_program_version, strlen( '0-unstable-' ) );
+					return $date >= '2020-06-20';
+				}
+				if ( false !== $term_program_version && preg_match( '/^\d{8}/', $term_program_version ) ) {
+					$version = (int) substr( $term_program_version, 0, 8 );
+					return $version >= 20200620;
+				}
+				return false;
+
+			case 'vscode':
+				if ( false !== getenv( 'CURSOR_TRACE_ID' ) ) {
+					return true;
+				}
+				return false !== $term_program_version && version_compare( $term_program_version, '1.72', '>=' );
+
+			case 'ghostty':
+			case 'zed':
+				return true;
+		}
+
+		$vte_version = getenv( 'VTE_VERSION' );
+		if ( '0.50.0' === $vte_version ) {
+			return false;
+		}
+		if ( false !== $vte_version ) {
+			if ( preg_match( '/^(\d{3,4})$/', $vte_version, $matches ) ) {
+				$version = $matches[1];
+				$minor   = (int) substr( $version, 0, -2 );
+				return $minor >= 50;
+			}
+
+			if ( preg_match( '/^(\d+)\.(\d+)/', $vte_version, $matches ) ) {
+				$major = (int) $matches[1];
+				$minor = (int) $matches[2];
+				return $major > 0 || $minor >= 50;
+			}
+		}
+
+		return in_array( getenv( 'TERM' ), [ 'alacritty', 'xterm-kitty' ], true );
+	}
+
+	/**
+	 * Create an OSC 8 hyperlink.
+	 *
+	 * @param string $url  URL for the hyperlink.
+	 * @param string $text Link text.
+	 * @return string
+	 */
+	private static function create_hyperlink( $url, $text ) {
+		$url  = (string) preg_replace( '/[\x00-\x1F\x7F-\x9F]/', '', (string) $url );
+		$text = (string) preg_replace( '/[\x00-\x1F\x7F-\x9F]/', '', (string) $text );
+		return "\033]8;;{$url}\033\\{$text}\033]8;;\033\\";
 	}
 
 	/**

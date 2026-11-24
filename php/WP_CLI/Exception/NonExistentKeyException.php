@@ -14,6 +14,7 @@ class NonExistentKeyException extends OutOfBoundsException {
 
 	/**
 	 * @param RecursiveDataStructureTraverser<T> $traverser
+	 * @return void
 	 */
 	public function set_traverser( $traverser ) {
 		$this->traverser = $traverser;

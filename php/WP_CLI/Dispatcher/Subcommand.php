@@ -86,6 +86,7 @@ class Subcommand extends CompositeCommand {
 	 * Set the synopsis string for this subcommand.
 	 *
 	 * @param string $synopsis
+	 * @return void
 	 */
 	public function set_synopsis( $synopsis ) {
 		$this->synopsis = $synopsis;
@@ -106,6 +107,7 @@ class Subcommand extends CompositeCommand {
 	 * Print the usage details to the end user.
 	 *
 	 * @param string $prefix
+	 * @return void
 	 */
 	public function show_usage( $prefix = 'usage: ' ) {
 		\WP_CLI::line( $this->get_usage( $prefix ) );
@@ -130,10 +132,9 @@ class Subcommand extends CompositeCommand {
 	 * Wrapper for CLI Tools' prompt() method.
 	 *
 	 * @param string $question
-	 * @param mixed $default
 	 * @return string|false
 	 */
-	private function prompt( $question, $default = null ) {
+	private function prompt( $question ) {
 
 		$question .= ': ';
 		if ( function_exists( 'readline' ) ) {
@@ -152,31 +153,32 @@ class Subcommand extends CompositeCommand {
 	/**
 	 * Get the description for an argument from documentation.
 	 *
-	 * @param array $spec_arg Argument specification from SynopsisParser
-	 * @param DocParser $docparser DocParser instance for retrieving descriptions
-	 * @param string $longdesc Long description text for regex matching
+	 * @param array<string, mixed> $spec_arg Argument specification from SynopsisParser
+	 * @param DocParser            $docparser DocParser instance for retrieving descriptions
+	 * @param string               $longdesc Long description text for regex matching
 	 * @return string Description text, or empty string if not found
 	 */
 	private function get_arg_description( $spec_arg, $docparser, $longdesc ) {
 		$description = '';
+		$name        = is_string( $spec_arg['name'] ) ? $spec_arg['name'] : '';
 
 		if ( 'positional' === $spec_arg['type'] ) {
-			$description = $docparser->get_arg_desc( $spec_arg['name'] );
+			$description = $docparser->get_arg_desc( $name );
 			// If get_arg_desc doesn't find it (e.g., for simple <arg> without modifiers),
 			// try a simpler pattern that matches <arg> followed by : description,
 			// using a pattern consistent with DocParser::get_arg_desc().
 			if ( empty( $description ) ) {
-				$arg_pattern = '/\[?<' . preg_quote( $spec_arg['name'], '/' ) . ">.+\n:\s*(.+?)(\n|$)/";
+				$arg_pattern = '/\[?<' . preg_quote( $name, '/' ) . ">.*\n:\s*(.+?)(\n|$)/";
 				if ( preg_match( $arg_pattern, $longdesc, $matches ) ) {
 					$description = trim( $matches[1] );
 				}
 			}
 		} elseif ( 'assoc' === $spec_arg['type'] ) {
-			$description = $docparser->get_param_desc( $spec_arg['name'] );
+			$description = $docparser->get_param_desc( $name );
 		} elseif ( 'flag' === $spec_arg['type'] ) {
 			// For flags, the pattern is [--flag] not [--flag=<value>]
 			// So we need a custom regex pattern in the longdesc
-			$flag_pattern = '/\[?--' . preg_quote( $spec_arg['name'], '/' ) . "\]\s*\n:\s*(.+?)(\n|$)/";
+			$flag_pattern = '/\[?--' . preg_quote( $name, '/' ) . "\]\s*\n:\s*(.+?)(\n|$)/";
 			if ( preg_match( $flag_pattern, $longdesc, $matches ) ) {
 				$description = trim( $matches[1] );
 			}
@@ -189,9 +191,9 @@ class Subcommand extends CompositeCommand {
 	 * Interactively prompt the user for input
 	 * based on defined synopsis and passed arguments.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 * @return array
+	 * @param array<mixed>         $args
+	 * @param array<string, mixed> $assoc_args
+	 * @return array{0: array<mixed>, 1: array<string, mixed>}
 	 */
 	private function prompt_args( $args, $assoc_args ) {
 
@@ -201,9 +203,6 @@ class Subcommand extends CompositeCommand {
 			return [ $args, $assoc_args ];
 		}
 
-		// Create a docparser to get default values and descriptions
-		$docparser = $this->create_mock_docparser();
-
 		// To skip the already provided positional arguments, we need to count
 		// how many we had already received.
 		$arg_index = 0;
@@ -211,6 +210,8 @@ class Subcommand extends CompositeCommand {
 		$spec = array_filter(
 			SynopsisParser::parse( $synopsis ),
 			function ( $spec_arg ) use ( $args, $assoc_args, &$arg_index ) {
+				/** @var array<string, mixed> $spec_arg */
+				$name = isset( $spec_arg['name'] ) && is_string( $spec_arg['name'] ) ? $spec_arg['name'] : '';
 				switch ( $spec_arg['type'] ) {
 					case 'positional':
 						// Only prompt for the positional arguments that are not
@@ -224,18 +225,15 @@ class Subcommand extends CompositeCommand {
 					default:
 						// Prompt for the specific flags that were not provided
 						// yet, based on name.
-						return ! isset( $assoc_args[ $spec_arg['name'] ] );
+						return ! isset( $assoc_args[ $name ] );
 				}
 			}
 		);
 
 		$spec = array_values( $spec );
 
-		/**
-		 * @var string|true $prompt_args
-		 */
 		$prompt_args = WP_CLI::get_config( 'prompt' );
-		if ( true !== $prompt_args ) {
+		if ( is_string( $prompt_args ) ) {
 			$prompt_args = explode( ',', $prompt_args );
 		}
 
@@ -247,6 +245,8 @@ class Subcommand extends CompositeCommand {
 		$args = [];
 
 		foreach ( $spec as $key => $spec_arg ) {
+			/** @var array<string, mixed> $spec_arg */
+			$spec_name = isset( $spec_arg['name'] ) && is_string( $spec_arg['name'] ) ? $spec_arg['name'] : '';
 
 			// When prompting for specific arguments (e.g. --prompt=user_pass),
 			// ignore all arguments that don't match.
@@ -254,7 +254,16 @@ class Subcommand extends CompositeCommand {
 				if ( 'assoc' !== $spec_arg['type'] ) {
 					continue;
 				}
-				if ( ! in_array( $spec_arg['name'], $prompt_args, true ) ) {
+				$matched = in_array( $spec_name, $prompt_args, true );
+				if ( ! $matched && ! empty( $spec_arg['aliases'] ) && is_array( $spec_arg['aliases'] ) ) {
+					foreach ( $spec_arg['aliases'] as $alias ) {
+						if ( is_string( $alias ) && in_array( $alias, $prompt_args, true ) ) {
+							$matched = true;
+							break;
+						}
+					}
+				}
+				if ( ! $matched ) {
 					continue;
 				}
 			}
@@ -264,7 +273,8 @@ class Subcommand extends CompositeCommand {
 			// 'generic' permits arbitrary key=value (e.g. [--<field>=<value>] )
 			if ( 'generic' === $spec_arg['type'] ) {
 
-				list( $key_token, $value_token ) = explode( '=', $spec_arg['token'] );
+				$token                           = isset( $spec_arg['token'] ) && is_string( $spec_arg['token'] ) ? $spec_arg['token'] : '';
+				list( $key_token, $value_token ) = explode( '=', $token );
 
 				$repeat = false;
 				do {
@@ -297,7 +307,8 @@ class Subcommand extends CompositeCommand {
 				} while ( $repeat );
 
 			} else {
-				$prompt      = $current_prompt . $spec_arg['token'];
+				$token       = isset( $spec_arg['token'] ) && is_string( $spec_arg['token'] ) ? $spec_arg['token'] : '';
+				$prompt      = $current_prompt . $token;
 				$default_val = null;
 
 				// Add description if available
@@ -313,11 +324,11 @@ class Subcommand extends CompositeCommand {
 					$prompt .= ' (Y/n)';
 				} elseif ( 'positional' === $spec_arg['type'] || 'assoc' === $spec_arg['type'] ) {
 					$spec_args = ( 'positional' === $spec_arg['type'] )
-						? $docparser->get_arg_args( $spec_arg['name'] )
-						: $docparser->get_param_args( $spec_arg['name'] );
+						? $docparser->get_arg_args( $spec_name )
+						: $docparser->get_param_args( $spec_name );
 					if ( null !== $spec_args && isset( $spec_args['default'] ) ) {
 						$default_val = $spec_args['default'];
-						$prompt     .= ' [' . $default_val . ']';
+						$prompt     .= ' [' . ( is_scalar( $default_val ) ? (string) $default_val : '' ) . ']';
 					}
 				}
 
@@ -332,21 +343,22 @@ class Subcommand extends CompositeCommand {
 				}
 
 				if ( '' !== $response ) {
+					$resp_str = is_string( $response ) ? $response : ( is_scalar( $response ) ? (string) $response : '' );
 					switch ( $spec_arg['type'] ) {
 						case 'positional':
 							if ( $spec_arg['repeating'] ) {
-								$response = explode( ' ', $response );
+								$response = explode( ' ', $resp_str );
 							} else {
-								$response = [ $response ];
+								$response = [ $resp_str ];
 							}
 							$args = array_merge( $args, $response );
 							break;
 						case 'assoc':
-							$assoc_args[ $spec_arg['name'] ] = $response;
+							$assoc_args[ $spec_name ] = $response;
 							break;
 						case 'flag':
-							if ( 'Y' === strtoupper( $response ) ) {
-								$assoc_args[ $spec_arg['name'] ] = true;
+							if ( 'Y' === strtoupper( $resp_str ) ) {
+								$assoc_args[ $spec_name ] = true;
 							}
 							break;
 					}
@@ -373,19 +385,12 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
-	 * Resolve argument aliases to their canonical names.
+	 * Resolve alias argument names to their canonical parameter names.
 	 *
-	 * Takes an associative array of arguments and replaces any aliases
-	 * with their canonical parameter names. This allows commands to define
-	 * shorter versions of arguments (e.g., -w for --with-dependencies).
-	 *
-	 * For repeating parameters, alias values are merged with any canonical
-	 * values already provided rather than being discarded.
-	 *
-	 * @param array $assoc_args      Arguments passed to command.
-	 * @param array $aliases         Map of alias => canonical_name.
-	 * @param array $repeating_params Map of canonical_name => true for repeating params.
-	 * @return array Arguments with aliases resolved to canonical names.
+	 * @param array<string, mixed>  $assoc_args      Arguments passed to command.
+	 * @param array<string, string> $aliases         Map of alias => canonical_name.
+	 * @param array<string, bool>   $repeating_params Map of canonical_name => true for repeating params.
+	 * @return array<string, mixed> Arguments with aliases resolved to canonical names.
 	 */
 	private function resolve_arg_aliases( $assoc_args, $aliases, $repeating_params = [] ) {
 		if ( empty( $aliases ) ) {
@@ -441,10 +446,10 @@ class Subcommand extends CompositeCommand {
 	 * Throws warnings or errors if arguments are missing
 	 * or invalid.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 * @param array $extra_args
-	 * @return array list of invalid $assoc_args keys to unset
+	 * @param array<mixed>         $args
+	 * @param array<string, mixed> $assoc_args
+	 * @param array<string, mixed> $extra_args
+	 * @return array{0: array<string>, 1: array<mixed>, 2: array<string, mixed>, 3: array<string, mixed>} list of invalid $assoc_args keys to unset
 	 */
 	private function validate_args( $args, $assoc_args, $extra_args ) {
 		$synopsis = $this->get_synopsis();
@@ -465,12 +470,22 @@ class Subcommand extends CompositeCommand {
 			);
 		}
 
-		if ( ! $validator->enough_positionals( $args ) ) {
+		/** @var array<int, string> $positionals */
+		$positionals = array_values(
+			array_map(
+				static function ( $val ) {
+					return is_string( $val ) ? $val : ( is_scalar( $val ) ? (string) $val : '' );
+				},
+				$args
+			)
+		);
+
+		if ( ! $validator->enough_positionals( $positionals ) ) {
 			$this->show_usage();
 			exit( 1 );
 		}
 
-		$unknown_positionals = $validator->unknown_positionals( $args );
+		$unknown_positionals = $validator->unknown_positionals( $positionals );
 		if ( ! empty( $unknown_positionals ) ) {
 			\WP_CLI::error(
 				'Too many positional arguments: ' .
@@ -486,52 +501,55 @@ class Subcommand extends CompositeCommand {
 		];
 		$docparser     = $this->create_mock_docparser();
 		foreach ( $synopsis_spec as $spec ) {
+			$spec_name = isset( $spec['name'] ) && is_string( $spec['name'] ) ? $spec['name'] : '';
+
 			if ( 'positional' === $spec['type'] ) {
-				$spec_args = $docparser->get_arg_args( $spec['name'] );
+				$spec_args = $docparser->get_arg_args( $spec_name );
 				if ( ! isset( $args[ $i ] ) ) {
 					if ( isset( $spec_args['default'] ) ) {
 						$args[ $i ] = $spec_args['default'];
 					}
 				}
-				if ( isset( $spec_args['options'] ) ) {
+				if ( isset( $spec_args['options'] ) && is_array( $spec_args['options'] ) ) {
+					$options = $spec_args['options'];
 					if ( ! empty( $spec['repeating'] ) ) {
 						do {
 							// phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
-							if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) {
+							if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $options ) ) {
 								\WP_CLI::error( 'Invalid value specified for positional arg.' );
 							}
 							++$i;
 						} while ( isset( $args[ $i ] ) );
-					} elseif ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) { // phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
+					} elseif ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $options ) ) { // phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
 						\WP_CLI::error( 'Invalid value specified for positional arg.' );
 					}
 				}
 				++$i;
 			} elseif ( 'assoc' === $spec['type'] ) {
-				$spec_args = $docparser->get_param_args( $spec['name'] );
+				$spec_args = $docparser->get_param_args( $spec_name );
 
 				// Handle repeating parameter (e.g., [--status=<status>...])
-				if ( isset( $assoc_args[ $spec['name'] ] ) && is_array( $assoc_args[ $spec['name'] ] ) ) {
+				if ( isset( $assoc_args[ $spec_name ] ) && is_array( $assoc_args[ $spec_name ] ) ) {
 					// If repeating is not set, use only the last value
 					if ( empty( $spec['repeating'] ) ) {
-						$values       = $assoc_args[ $spec['name'] ];
+						$values       = $assoc_args[ $spec_name ];
 						$values_count = count( $values );
 						if ( $values_count > 0 ) {
-							$assoc_args[ $spec['name'] ] = $values[ $values_count - 1 ];
+							$assoc_args[ $spec_name ] = $values[ $values_count - 1 ];
 						}
 					}
 				}
 
-				if ( ! isset( $assoc_args[ $spec['name'] ] ) && ! isset( $extra_args[ $spec['name'] ] ) ) {
+				if ( ! isset( $assoc_args[ $spec_name ] ) && ! isset( $extra_args[ $spec_name ] ) ) {
 					if ( isset( $spec_args['default'] ) ) {
-						$assoc_args[ $spec['name'] ] = $spec_args['default'];
+						$assoc_args[ $spec_name ] = $spec_args['default'];
 					}
 				}
-				if ( isset( $assoc_args[ $spec['name'] ] ) && isset( $spec_args['options'] ) ) {
+				if ( isset( $assoc_args[ $spec_name ] ) && isset( $spec_args['options'] ) && is_array( $spec_args['options'] ) ) {
 					/**
 					 * @var string|string[] $value
 					 */
-					$value   = $assoc_args[ $spec['name'] ];
+					$value   = $assoc_args[ $spec_name ];
 					$options = $spec_args['options'];
 
 					// Handle validation for multiple values
@@ -539,7 +557,7 @@ class Subcommand extends CompositeCommand {
 						foreach ( $value as $single_value ) {
 							// phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
 							if ( ! in_array( $single_value, $options ) ) {
-								$errors['fatal'][ $spec['name'] ] = "Invalid value '{$single_value}' specified for '{$spec['name']}'";
+								$errors['fatal'][ $spec_name ] = "Invalid value '{$single_value}' specified for '{$spec_name}'";
 								break;
 							}
 						}
@@ -561,7 +579,7 @@ class Subcommand extends CompositeCommand {
 						) {
 							continue;
 						}
-						$errors['fatal'][ $spec['name'] ] = "Invalid value specified for '{$spec['name']}'";
+						$errors['fatal'][ $spec_name ] = "Invalid value specified for '{$spec_name}'";
 					}
 				}
 			}
@@ -576,12 +594,47 @@ class Subcommand extends CompositeCommand {
 		}
 
 		if ( 'help' !== $this->name ) {
-			foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
-				$suggestion    = Utils\get_suggestion(
+			// A `--<field>=<value>` token means the command accepts keys that cannot be
+			// enumerated up front, so an unrecognized parameter is not an error there. It
+			// is still worth a word when it looks like a typo of a documented one, because
+			// the command would otherwise accept it and silently do nothing with it.
+			$has_generic = $validator->has_generic();
+
+			// The candidate set for those commands is their own `--<name>` parameters.
+			// Global parameters are harmless as a hint on an error raised anyway, but a
+			// catch-all command's arguments share their namespace: `wp post list --cat=5`
+			// and `--s=hello` are real query vars two edits away from `--path` and `--ssh`.
+			// Positional names are left out for the same reason: `wp db query --xml` is a
+			// real mysql option two edits away from `<sql>`.
+			$parameters = $has_generic
+				? $this->get_parameters( $synopsis_spec, false, [ 'assoc', 'flag' ] )
+				: $this->get_parameters( $synopsis_spec );
+
+			foreach ( $validator->unknown_assoc( $assoc_args, $has_generic ) as $key ) {
+				// The alias map in get_suggestion() is command vocabulary and ignores the
+				// threshold. That is fine when a suggestion merely decorates an error we
+				// already decided to raise, but here it would be the thing raising it.
+				$suggestion = Utils\get_suggestion(
 					$key,
-					$this->get_parameters( $synopsis_spec ),
-					$threshold = 2
+					$parameters,
+					2,
+					! $has_generic
 				);
+
+				if ( $has_generic ) {
+					if ( '' === $suggestion || self::is_prefix_of_other( $key, $suggestion ) ) {
+						continue;
+					}
+
+					// The parameter is passed through untouched; the command decides what it
+					// means. So this is a warning, not an error, and the exit code is unaffected.
+					$errors['warning'][] = sprintf(
+						'--%s looks like a typo of --%s',
+						$key,
+						$suggestion
+					);
+					continue;
+				}
 
 				$errors['fatal'][] = sprintf(
 					'unknown --%s parameter%s',
@@ -595,7 +648,7 @@ class Subcommand extends CompositeCommand {
 			$out = 'Parameter errors:';
 			foreach ( $errors['fatal'] as $key => $error ) {
 				$out .= "\n {$error}";
-				$desc = $docparser->get_param_desc( $key );
+				$desc = $docparser->get_param_desc( (string) $key );
 				if ( '' !== $desc ) {
 					$out .= " ({$desc})";
 				}
@@ -626,7 +679,7 @@ class Subcommand extends CompositeCommand {
 		$sensitive_args = [];
 
 		foreach ( $synopsis_spec as $spec ) {
-			if ( 'assoc' === $spec['type'] ) {
+			if ( 'assoc' === $spec['type'] && isset( $spec['name'] ) && is_string( $spec['name'] ) ) {
 				$spec_args = $docparser->get_param_args( $spec['name'] );
 				if ( isset( $spec_args['sensitive'] ) && $spec_args['sensitive'] ) {
 					$sensitive_args[] = $spec['name'];
@@ -638,17 +691,63 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Get deprecated assoc arguments from the synopsis.
+	 *
+	 * @return array<string,string> Deprecated argument names and their deprecation messages.
+	 */
+	private function get_deprecated_assoc_args() {
+		$synopsis = $this->get_synopsis();
+		if ( ! $synopsis ) {
+			return [];
+		}
+
+		return DocParser::get_deprecated_assoc_args( $synopsis, $this->create_mock_docparser() );
+	}
+
+	/**
+	 * Get the parsed synopsis of the global parameters.
+	 *
+	 * Built from the configurator spec directly instead of rendering and re-parsing
+	 * the help text, as this runs on every command invocation.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function get_global_params_spec() {
+		static $spec = null;
+
+		if ( null === $spec ) {
+			$synopsis = [];
+			foreach ( WP_CLI::get_configurator()->get_spec() as $key => $details ) {
+				if ( false === $details['runtime'] || isset( $details['deprecated'] ) || isset( $details['hidden'] ) ) {
+					continue;
+				}
+
+				$synopsis[] = true === $details['runtime']
+					? "--[no-]$key"
+					: "--$key" . ( is_string( $details['runtime'] ) ? $details['runtime'] : '' );
+			}
+
+			$spec = SynopsisParser::parse( implode( ' ', $synopsis ) );
+		}
+
+		return $spec;
+	}
+
+	/**
 	 * Invoke the subcommand with the supplied arguments.
 	 * Given a --prompt argument, interactively request input
 	 * from the end user.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @param array<mixed>         $args
+	 * @param array<string, mixed> $assoc_args
+	 * @param array<mixed>         $extra_args
+	 * @return void
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) {
 		static $prompted_once = false;
 
 		// Build alias map from the parsed synopsis and resolve to canonical names.
+		/** @var array<string, string> $aliases */
 		$aliases          = [];
 		$repeating_params = [];
 		$synopsis_spec    = SynopsisParser::parse( $this->get_synopsis() );
@@ -656,35 +755,38 @@ class Subcommand extends CompositeCommand {
 		// Build a set of assoc/flag canonical names (local + global) for conflict detection.
 		// Positional parameter names are excluded because an alias matching a positional
 		// name would not cause any real ambiguity (--alias vs bare positional).
+		/** @var list<string> $assoc_flag_names */
 		$assoc_flag_names = [];
 		foreach ( $synopsis_spec as $param ) {
-			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) ) {
+			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) && isset( $param['name'] ) && is_string( $param['name'] ) ) {
 				$assoc_flag_names[] = $param['name'];
 			}
-			if ( 'assoc' === $param['type'] && ! empty( $param['repeating'] ) ) {
+			if ( 'assoc' === $param['type'] && ! empty( $param['repeating'] ) && isset( $param['name'] ) && is_string( $param['name'] ) ) {
 				$repeating_params[ $param['name'] ] = true;
 			}
 		}
-		foreach ( SynopsisParser::parse( $this->get_global_params() ) as $param ) {
-			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) ) {
+		foreach ( self::get_global_params_spec() as $param ) {
+			if ( in_array( $param['type'], [ 'assoc', 'flag' ], true ) && isset( $param['name'] ) && is_string( $param['name'] ) ) {
 				$assoc_flag_names[] = $param['name'];
 			}
 		}
-		$assoc_flag_names = array_unique( $assoc_flag_names );
+		$assoc_flag_names = array_values( array_unique( $assoc_flag_names ) );
 
 		foreach ( $synopsis_spec as $param ) {
-			if ( empty( $param['aliases'] ) ) {
+			if ( empty( $param['aliases'] ) || ! is_array( $param['aliases'] ) || ! isset( $param['name'] ) || ! is_string( $param['name'] ) ) {
 				continue;
 			}
 
+			$param_name = $param['name'];
 			foreach ( $param['aliases'] as $alias ) {
+				$alias = is_string( $alias ) ? $alias : ( is_scalar( $alias ) ? (string) $alias : '' );
 				// Detect duplicate aliases (same alias used for different params).
-				if ( isset( $aliases[ $alias ] ) && $aliases[ $alias ] !== $param['name'] ) {
+				if ( isset( $aliases[ $alias ] ) && $aliases[ $alias ] !== $param_name ) {
 					WP_CLI::warning(
 						sprintf(
 							"Alias '%s' for parameter '%s' conflicts with existing alias for parameter '%s'. Skipping.",
 							$alias,
-							$param['name'],
+							$param_name,
 							$aliases[ $alias ]
 						)
 					);
@@ -692,18 +794,18 @@ class Subcommand extends CompositeCommand {
 				}
 
 				// Detect aliases that conflict with an assoc/flag canonical parameter name.
-				if ( in_array( $alias, $assoc_flag_names, true ) && $alias !== $param['name'] ) {
+				if ( in_array( $alias, $assoc_flag_names, true ) && $alias !== $param_name ) {
 					WP_CLI::warning(
 						sprintf(
 							"Alias '%s' for parameter '%s' conflicts with an existing parameter name. Skipping.",
 							$alias,
-							$param['name']
+							$param_name
 						)
 					);
 					continue;
 				}
 
-				$aliases[ $alias ] = $param['name'];
+				$aliases[ $alias ] = $param_name;
 			}
 		}
 		if ( ! empty( $aliases ) ) {
@@ -731,20 +833,64 @@ class Subcommand extends CompositeCommand {
 		}
 		$args += $extra_positionals;
 
+		$provided_assoc_arg_names = [];
+		foreach ( [ $assoc_args, $extra_args ] as $assoc_arg_set ) {
+			foreach ( $assoc_arg_set as $arg_name => $value ) {
+				if ( ! is_numeric( $arg_name ) ) {
+					$provided_assoc_arg_names[ $arg_name ] = true;
+				}
+			}
+		}
+
 		list( $to_unset, $args, $assoc_args, $extra_args ) = $this->validate_args( $args, $assoc_args, $extra_args );
 
 		foreach ( $to_unset as $key ) {
 			unset( $assoc_args[ $key ] );
 		}
 
-		$path   = get_path( $this->get_parent() );
-		$parent = implode( ' ', array_slice( $path, 1 ) );
-		$cmd    = $this->name;
+		$parent_cmd = $this->get_parent();
+		$path       = $parent_cmd ? get_path( $parent_cmd ) : [];
+		$parent     = implode( ' ', array_slice( $path, 1 ) );
+		$cmd        = $this->name;
 		if ( $parent ) {
+			/**
+			 * Action triggered before a parent command is invoked.
+			 *
+			 * @param string $parent Parent command name.
+			 */
 			WP_CLI::do_hook( "before_invoke:{$parent}", $parent );
 			$cmd = $parent . ' ' . $cmd;
 		}
+
+		/**
+		 * Action triggered before a command is invoked.
+		 *
+		 * @param string $cmd Command name.
+		 */
 		WP_CLI::do_hook( "before_invoke:{$cmd}", $cmd );
+
+		$docparser = $this->get_docparser();
+		if ( $docparser && $docparser->has_tag( 'deprecated' ) ) {
+			$deprecation_message = $docparser->get_deprecation_message();
+			$warning             = sprintf( 'The `%s` command is deprecated.', $cmd );
+			if ( '' !== $deprecation_message ) {
+				$warning .= ' ' . $deprecation_message;
+			}
+			WP_CLI::warning( $warning );
+		}
+
+		foreach ( $this->get_deprecated_assoc_args() as $arg_name => $deprecation_message ) {
+			if ( ! isset( $provided_assoc_arg_names[ $arg_name ] ) ) {
+				continue;
+			}
+
+			$warning = sprintf( 'The `--%s` argument for `%s` is deprecated.', $arg_name, $cmd );
+			if ( '' !== $deprecation_message ) {
+				$warning .= ' ' . $deprecation_message;
+			}
+
+			WP_CLI::warning( $warning );
+		}
 
 		// Check if `--prompt` arg passed or not.
 		if ( $prompted_once ) {
@@ -759,6 +905,9 @@ class Subcommand extends CompositeCommand {
 			// Get list of sensitive arguments to mask in output
 			$sensitive_args = $this->get_sensitive_args();
 
+			/** @var array<bool|float|int|string|null> $args_str */
+			$args_str = $args;
+
 			WP_CLI::log(
 				sprintf(
 					'wp %s %s',
@@ -767,7 +916,7 @@ class Subcommand extends CompositeCommand {
 						implode(
 							' ',
 							[
-								ltrim( Utils\args_to_str( $args ), ' ' ),
+								ltrim( Utils\args_to_str( $args_str ), ' ' ),
 								ltrim( Utils\assoc_args_to_str( $actual_args, $sensitive_args ), ' ' ),
 							]
 						),
@@ -780,26 +929,82 @@ class Subcommand extends CompositeCommand {
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 
 		if ( $parent ) {
+			/**
+			 * Action triggered after a parent command has been invoked.
+			 *
+			 * @param string $parent Parent command name.
+			 */
 			WP_CLI::do_hook( "after_invoke:{$parent}", $parent );
 		}
+
+		/**
+		 * Action triggered after a command has been invoked.
+		 *
+		 * @param string $cmd Command name.
+		 */
 		WP_CLI::do_hook( "after_invoke:{$cmd}", $cmd );
+	}
+
+	/**
+	 * Check whether one of two parameter names is a strict prefix of the other.
+	 *
+	 * A documented family of parameters often nests this way (`page` and `paged`,
+	 * `tag` and `tag_id`), and one of the pair being undocumented is no reason to
+	 * doubt it. A typo, on the other hand, is not usually a clean truncation.
+	 *
+	 * @param string $a First parameter name.
+	 * @param string $b Second parameter name.
+	 *
+	 * @return bool
+	 */
+	private static function is_prefix_of_other( $a, $b ) {
+		if ( $a === $b ) {
+			return false;
+		}
+
+		return 0 === strpos( $a, $b ) || 0 === strpos( $b, $a );
 	}
 
 	/**
 	 * Get an array of parameter names, by merging the command-specific and the
 	 * global parameters.
 	 *
-	 * @param array $spec Optional. Specification of the current command.
+	 * @param array<int, array<string, mixed>> $spec           Optional. Specification of the current command.
+	 * @param bool                             $include_global Optional. Whether to include the global parameters.
+	 * @param array<int, string>               $types          Optional. Restrict the command-specific parameters to
+	 *                                                         these synopsis types ('positional', 'assoc', 'flag').
+	 *                                                         Empty means no restriction.
 	 *
-	 * @return array Array of parameter names
+	 * @return array<int, string> Array of parameter names
 	 */
-	private function get_parameters( $spec = [] ) {
-		$local_parameters  = array_column( $spec, 'name' );
-		$global_parameters = array_column(
-			SynopsisParser::parse( $this->get_global_params() ),
-			'name'
+	private function get_parameters( $spec = [], $include_global = true, $types = [] ) {
+		if ( ! empty( $types ) ) {
+			$spec = array_filter(
+				$spec,
+				static function ( $param ) use ( $types ) {
+					return isset( $param['type'] ) && in_array( $param['type'], $types, true );
+				}
+			);
+		}
+
+		/** @var list<string> $local_parameters */
+		$local_parameters = array_values( array_filter( array_column( $spec, 'name' ), 'is_string' ) );
+
+		if ( ! $include_global ) {
+			return array_values( array_unique( $local_parameters ) );
+		}
+
+		/** @var list<string> $global_parameters */
+		$global_parameters = array_values(
+			array_filter(
+				array_column(
+					self::get_global_params_spec(),
+					'name'
+				),
+				'is_string'
+			)
 		);
 
-		return array_unique( array_merge( $local_parameters, $global_parameters ) );
+		return array_values( array_unique( array_merge( $local_parameters, $global_parameters ) ) );
 	}
 }

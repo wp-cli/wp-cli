@@ -5,6 +5,7 @@ namespace WP_CLI\Context;
 use WP_CLI;
 use WP_CLI\Context;
 use WP_CLI\Fetchers\User;
+use WP_Session_Tokens;
 use WP_User;
 
 /**
@@ -15,7 +16,7 @@ final class Admin implements Context {
 	/**
 	 * Process the context to set up the environment correctly.
 	 *
-	 * @param array $config Associative array of configuration data.
+	 * @param array<string, mixed> $config Associative array of configuration data.
 	 * @return void
 	 */
 	public function process( $config ) {
@@ -44,9 +45,9 @@ final class Admin implements Context {
 		WP_CLI::add_wp_hook(
 			'plugins_loaded',
 			function () use ( $config ) {
-				if ( isset( $config['user'] ) ) {
+				if ( isset( $config['user'] ) && ( is_string( $config['user'] ) || is_int( $config['user'] ) ) ) {
 					$fetcher       = new User();
-					$user          = $fetcher->get_check( $config['user'] );
+					$user          = $fetcher->get_check( (string) $config['user'] );
 					$admin_user_id = $user->ID;
 				} else {
 					$admin_user_id = $this->find_admin_user_id();
@@ -141,6 +142,10 @@ final class Admin implements Context {
 	 * A lot of premium plugins/themes have their custom update routines locked
 	 * behind an is_admin() call.
 	 *
+	 * A single session token is shared by both auth cookies and destroyed
+	 * again on shutdown, so that running commands in the admin context does
+	 * not leave stale sessions behind for the admin user.
+	 *
 	 * @param int<1, max> $admin_user_id to log in as
 	 *
 	 * @return void
@@ -150,16 +155,28 @@ final class Admin implements Context {
 
 		$expiration = time() + DAY_IN_SECONDS;
 
+		$manager = WP_Session_Tokens::get_instance( $admin_user_id );
+		$token   = $manager->create( $expiration );
+
+		WP_CLI::add_wp_hook(
+			'shutdown',
+			static function () use ( $manager, $token ) {
+				$manager->destroy( $token );
+			}
+		);
+
 		$_COOKIE[ AUTH_COOKIE ] = wp_generate_auth_cookie(
 			$admin_user_id,
 			$expiration,
-			'auth'
+			'auth',
+			$token
 		);
 
 		$_COOKIE[ SECURE_AUTH_COOKIE ] = wp_generate_auth_cookie(
 			$admin_user_id,
 			$expiration,
-			'secure_auth'
+			'secure_auth',
+			$token
 		);
 	}
 

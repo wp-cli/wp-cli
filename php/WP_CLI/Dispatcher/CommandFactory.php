@@ -17,15 +17,20 @@ use WP_CLI\Utils;
  */
 class CommandFactory {
 
-	// Cache of file contents, indexed by filename. Only used if opcache.save_comments is disabled.
+	/**
+	 * Cache of file contents, indexed by filename. Only used if opcache.save_comments is disabled.
+	 *
+	 * @var array<string, array<int, string>>
+	 */
 	private static $file_contents = [];
 
 	/**
 	 * Create a new CompositeCommand (or Subcommand if class has __invoke())
 	 *
-	 * @param string                                       $name     Represents how the command should be invoked
-	 * @param string|callable-string|callable|array|object $callable A subclass of WP_CLI_Command, a function, or a closure
-	 * @param RootCommand|CompositeCommand                 $parent   The new command's parent Composite (or Root) command
+	 * @param string                                              $name     Represents how the command should be invoked
+	 * @param string|callable-string|callable|array<mixed>|object $callable A subclass of WP_CLI_Command, a function, or a closure
+	 * @param RootCommand|CompositeCommand                        $parent   The new command's parent Composite (or Root) command
+	 * @return Subcommand|CompositeCommand|CommandNamespace
 	 */
 	public static function create( $name, $callable, $parent ) {
 
@@ -67,6 +72,8 @@ class CommandFactory {
 
 	/**
 	 * Clear the file contents cache.
+	 *
+	 * @return void
 	 */
 	public static function clear_file_contents_cache() {
 		self::$file_contents = [];
@@ -80,6 +87,7 @@ class CommandFactory {
 	 *                                                                        If false, will be determined from the documented subject, represented by `$reflection`.
 	 * @param mixed                                               $callable   A callable function or closure, or class name and method
 	 * @param ReflectionClass|ReflectionMethod|ReflectionFunction $reflection Reflection instance, for doc parsing
+	 * @return Subcommand
 	 *
 	 * @template T of object
 	 * @phpstan-param ReflectionClass<T>|ReflectionMethod|ReflectionFunction $reflection
@@ -103,7 +111,9 @@ class CommandFactory {
 
 		$when_invoked = function ( $args, $assoc_args ) use ( $callable ) {
 			if ( is_array( $callable ) ) {
-				$callable[0] = is_object( $callable[0] ) ? $callable[0] : new $callable[0]();
+				if ( is_string( $callable[0] ) ) {
+					$callable[0] = new $callable[0]();
+				}
 
 				/**
 				 * @var callable $command
@@ -139,6 +149,7 @@ class CommandFactory {
 	 * @param RootCommand|CompositeCommand $parent   The new command's parent Root or Composite command
 	 * @param string                       $name     Represents how the command should be invoked
 	 * @param class-string                 $callable
+	 * @return CompositeCommand
 	 */
 	private static function create_composite_command( $parent, $name, $callable ) {
 		$reflection  = new ReflectionClass( $callable );
@@ -174,6 +185,7 @@ class CommandFactory {
 	 * @param RootCommand|CompositeCommand $parent   The new namespace's parent Root or Composite command.
 	 * @param string                       $name     Represents how the command should be invoked
 	 * @param class-string                 $callable
+	 * @return CommandNamespace
 	 */
 	private static function create_namespace( $parent, $name, $callable ) {
 		$reflection  = new ReflectionClass( $callable );

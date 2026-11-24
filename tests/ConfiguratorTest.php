@@ -12,13 +12,13 @@ class ConfiguratorTest extends TestCase {
 		$this->assertCount( 1, $args[0] );
 		$this->assertCount( 2, $args[1] );
 
-		$this->assertEquals( 'foo', $args[0][0] );
+		$this->assertSame( 'foo', $args[0][0] );
 
-		$this->assertEquals( 'bar', $args[1][0][0] );
+		$this->assertSame( 'bar', $args[1][0][0] );
 		$this->assertTrue( $args[1][0][1] );
 
-		$this->assertEquals( 'baz', $args[1][1][0] );
-		$this->assertEquals( 'text', $args[1][1][1] );
+		$this->assertSame( 'baz', $args[1][1][0] );
+		$this->assertSame( 'text', $args[1][1][1] );
 	}
 
 	public function testExtractAssocNoValue(): void {
@@ -27,13 +27,13 @@ class ConfiguratorTest extends TestCase {
 		$this->assertCount( 1, $args[0] );
 		$this->assertCount( 2, $args[1] );
 
-		$this->assertEquals( 'foo', $args[0][0] );
+		$this->assertSame( 'foo', $args[0][0] );
 
-		$this->assertEquals( 'bar', $args[1][0][0] );
-		$this->assertEmpty( $args[1][0][1] );
+		$this->assertSame( 'bar', $args[1][0][0] );
+		$this->assertSame( '', $args[1][0][1] );
 
-		$this->assertEquals( 'baz', $args[1][1][0] );
-		$this->assertEquals( 'text', $args[1][1][1] );
+		$this->assertSame( 'baz', $args[1][1][0] );
+		$this->assertSame( 'text', $args[1][1][1] );
 	}
 
 	public function testExtractAssocGlobalLocal(): void {
@@ -44,10 +44,10 @@ class ConfiguratorTest extends TestCase {
 		$this->assertCount( 2, $args[2] );
 		$this->assertCount( 3, $args[3] );
 
-		$this->assertEquals( 'url', $args[2][0][0] );
-		$this->assertEquals( 'foo.dev', $args[2][0][1] );
-		$this->assertEquals( 'url', $args[3][2][0] );
-		$this->assertEquals( 'bar.dev', $args[3][2][1] );
+		$this->assertSame( 'url', $args[2][0][0] );
+		$this->assertSame( 'foo.dev', $args[2][0][1] );
+		$this->assertSame( 'url', $args[3][2][0] );
+		$this->assertSame( 'bar.dev', $args[3][2][1] );
 	}
 
 	public function testExtractAssocDoubleDashInValue(): void {
@@ -56,8 +56,8 @@ class ConfiguratorTest extends TestCase {
 		$this->assertCount( 0, $args[0] );
 		$this->assertCount( 1, $args[1] );
 
-		$this->assertEquals( 'test', $args[1][0][0] );
-		$this->assertEquals( 'text--text', $args[1][0][1] );
+		$this->assertSame( 'test', $args[1][0][0] );
+		$this->assertSame( 'text--text', $args[1][0][1] );
 	}
 
 	public function testExtractAssocDoubleDashDelimiter(): void {
@@ -67,10 +67,10 @@ class ConfiguratorTest extends TestCase {
 		$this->assertCount( 2, $args[0] );
 		$this->assertCount( 1, $args[1] );
 
-		$this->assertEquals( 'foo', $args[0][0] );
-		$this->assertEquals( '--baz=text', $args[0][1] );
+		$this->assertSame( 'foo', $args[0][0] );
+		$this->assertSame( '--baz=text', $args[0][1] );
 
-		$this->assertEquals( 'bar', $args[1][0][0] );
+		$this->assertSame( 'bar', $args[1][0][0] );
 		$this->assertTrue( $args[1][0][1] );
 	}
 
@@ -83,11 +83,11 @@ class ConfiguratorTest extends TestCase {
 		$this->assertCount( 1, $args[2] );
 		$this->assertCount( 0, $args[3] );
 
-		$this->assertEquals( 'command', $args[0][0] );
-		$this->assertEquals( '--require=/blah', $args[0][1] );
+		$this->assertSame( 'command', $args[0][0] );
+		$this->assertSame( '--require=/blah', $args[0][1] );
 
-		$this->assertEquals( 'url', $args[2][0][0] );
-		$this->assertEquals( 'foo.dev', $args[2][0][1] );
+		$this->assertSame( 'url', $args[2][0][0] );
+		$this->assertSame( 'foo.dev', $args[2][0][1] );
 	}
 
 	public function testExtractAssocDoubleDashDelimiterAtStart(): void {
@@ -99,8 +99,8 @@ class ConfiguratorTest extends TestCase {
 		$this->assertCount( 0, $args[2] );
 		$this->assertCount( 0, $args[3] );
 
-		$this->assertEquals( 'command', $args[0][0] );
-		$this->assertEquals( '--option=value', $args[0][1] );
+		$this->assertSame( 'command', $args[0][0] );
+		$this->assertSame( '--option=value', $args[0][1] );
 	}
 
 	public function testExtractAssocDoubleDashDelimiterMultipleArgs(): void {
@@ -110,11 +110,11 @@ class ConfiguratorTest extends TestCase {
 		$this->assertCount( 5, $args[0] );
 		$this->assertCount( 0, $args[1] );
 
-		$this->assertEquals( 'option', $args[0][0] );
-		$this->assertEquals( 'get', $args[0][1] );
-		$this->assertEquals( 'home', $args[0][2] );
-		$this->assertEquals( '--require=/blah', $args[0][3] );
-		$this->assertEquals( '--no-color', $args[0][4] );
+		$this->assertSame( 'option', $args[0][0] );
+		$this->assertSame( 'get', $args[0][1] );
+		$this->assertSame( 'home', $args[0][2] );
+		$this->assertSame( '--require=/blah', $args[0][3] );
+		$this->assertSame( '--no-color', $args[0][4] );
 	}
 
 	/**
@@ -148,13 +148,13 @@ class ConfiguratorTest extends TestCase {
 		$this->assertCount( 1, $args[0] );
 		$this->assertCount( 2, $args[1] );
 
-		$this->assertEquals( 'list', $args[0][0] );
+		$this->assertSame( 'list', $args[0][0] );
 
-		$this->assertEquals( 'status', $args[1][0][0] );
-		$this->assertEquals( 'active', $args[1][0][1] );
+		$this->assertSame( 'status', $args[1][0][0] );
+		$this->assertSame( 'active', $args[1][0][1] );
 
-		$this->assertEquals( 'status', $args[1][1][0] );
-		$this->assertEquals( 'parent', $args[1][1][1] );
+		$this->assertSame( 'status', $args[1][1][0] );
+		$this->assertSame( 'parent', $args[1][1][1] );
 	}
 
 	public function testParseArgsAggregatesMultipleValues(): void {
@@ -195,5 +195,116 @@ class ConfiguratorTest extends TestCase {
 		// The last --no-verbose should win, so verbose should be false.
 		$this->assertArrayHasKey( 'verbose', $assoc_args2 );
 		$this->assertFalse( $assoc_args2['verbose'] );
+	}
+
+	public function testParseArgsStrictModeKeepsUnknownGlobalFlags(): void {
+		$original_value = getenv( 'WP_CLI_STRICT_ARGS_MODE' );
+		putenv( 'WP_CLI_STRICT_ARGS_MODE=1' );
+
+		try {
+			$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+
+			// `--info` and `--version` aren't part of the runtime config spec, but since
+			// there's no positional command argument, they're classified as "global" flags.
+			// They must still surface in $assoc_args so `Runner::back_compat_conversions()`
+			// can turn them into `cli info` / `cli version`, instead of being silently dropped.
+			$parsed = $configurator->parse_args( [ '--info' ] );
+			$this->assertSame( [], $parsed[0] );
+			$this->assertArrayHasKey( 'info', $parsed[1] );
+			$this->assertTrue( $parsed[1]['info'] );
+
+			// A known runtime config key (e.g. `--url`) should still be routed to
+			// runtime_config, not $assoc_args, preserving strict mode's original behavior.
+			$parsed_url = $configurator->parse_args( [ '--url=foo.dev', 'command' ] );
+			$this->assertArrayNotHasKey( 'url', $parsed_url[1] );
+			$this->assertArrayHasKey( 'url', $parsed_url[2] );
+			$this->assertSame( 'foo.dev', $parsed_url[2]['url'] );
+
+			// Repeated unknown global flags should aggregate into an array, same as
+			// repeated local flags, instead of the last value silently overwriting the rest.
+			$parsed_repeated = $configurator->parse_args( [ '--foo=1', '--foo=2' ] );
+			$this->assertArrayHasKey( 'foo', $parsed_repeated[1] );
+			$this->assertSame( [ '1', '2' ], $parsed_repeated[1]['foo'] );
+
+			// Repeated boolean global flags should use last-wins behavior.
+			$parsed_bool = $configurator->parse_args( [ '--bar', '--no-bar' ] );
+			$this->assertArrayHasKey( 'bar', $parsed_bool[1] );
+			$this->assertFalse( $parsed_bool[1]['bar'] );
+		} finally {
+			putenv( false === $original_value ? 'WP_CLI_STRICT_ARGS_MODE' : "WP_CLI_STRICT_ARGS_MODE={$original_value}" );
+		}
+	}
+
+	public function testMergeYmlSelfInheritRecursionGuard(): void {
+		$temp_dir = sys_get_temp_dir();
+		$file     = tempnam( $temp_dir, 'wp-cli-test-self-' );
+		file_put_contents( $file, "_:\n  inherit: " . basename( $file ) . "\nfoo: bar\n" );
+
+		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+		$configurator->merge_yml( $file );
+
+		[ , $extra_config ] = $configurator->to_array();
+
+		unlink( $file );
+
+		$this->assertEquals( 'bar', $extra_config['foo'] );
+	}
+
+	public function testMergeYmlCircularInheritRecursionGuard(): void {
+		$temp_dir = sys_get_temp_dir();
+		$file1    = tempnam( $temp_dir, 'wp-cli-test-1-' ) . '.yml';
+		$file2    = tempnam( $temp_dir, 'wp-cli-test-2-' ) . '.yml';
+
+		file_put_contents( $file1, "_:\n  inherit: " . basename( $file2 ) . "\nfoo: bar\n" );
+		file_put_contents( $file2, "_:\n  inherit: " . basename( $file1 ) . "\nfoo: baz\nbaz: qux\n" );
+
+		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+		$configurator->merge_yml( $file1 );
+
+		[ , $extra_config ] = $configurator->to_array();
+
+		unlink( $file1 );
+		unlink( $file2 );
+
+		$this->assertEquals( 'bar', $extra_config['foo'] );
+		$this->assertEquals( 'qux', $extra_config['baz'] );
+	}
+
+	public function testGetEnvRequireFiles(): void {
+		$previous = getenv( 'WP_CLI_REQUIRE' );
+
+		try {
+			putenv( 'WP_CLI_REQUIRE= /path/to/one.php,,/path/to/two.php ' );
+			$this->assertSame( [ '/path/to/one.php', '/path/to/two.php' ], Configurator::get_env_require_files() );
+
+			putenv( 'WP_CLI_REQUIRE=' );
+			$this->assertSame( [], Configurator::get_env_require_files() );
+
+			putenv( 'WP_CLI_REQUIRE' );
+			$this->assertSame( [], Configurator::get_env_require_files() );
+		} finally {
+			putenv( false === $previous ? 'WP_CLI_REQUIRE' : "WP_CLI_REQUIRE={$previous}" );
+		}
+	}
+
+	public function testEnvRequireFilesAreMergedIntoConfig(): void {
+		$previous = getenv( 'WP_CLI_REQUIRE' );
+		$env_file = (string) tempnam( sys_get_temp_dir(), 'wp-cli-test-env-' );
+		$cmd_file = (string) tempnam( sys_get_temp_dir(), 'wp-cli-test-cmd-' );
+
+		try {
+			putenv( "WP_CLI_REQUIRE={$env_file}" );
+
+			$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
+			$configurator->merge_array( [ 'require' => [ $cmd_file ] ] );
+
+			[ $config ] = $configurator->to_array();
+
+			$this->assertSame( [ $env_file, $cmd_file ], $config['require'] );
+		} finally {
+			putenv( false === $previous ? 'WP_CLI_REQUIRE' : "WP_CLI_REQUIRE={$previous}" );
+			unlink( $env_file );
+			unlink( $cmd_file );
+		}
 	}
 }

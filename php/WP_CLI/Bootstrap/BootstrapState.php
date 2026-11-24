@@ -26,7 +26,7 @@ class BootstrapState {
 	/**
 	 * Internal storage of the state values.
 	 *
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	private $state = [];
 

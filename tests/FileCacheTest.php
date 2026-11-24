@@ -6,11 +6,6 @@ use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
 class FileCacheTest extends TestCase {
-
-	public static function set_up_before_class() {
-		require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
-	}
-
 	/**
 	 * Test get_root() deals with backslashed directory.
 	 */
@@ -57,6 +52,16 @@ class FileCacheTest extends TestCase {
 		$result = $method->invokeArgs( $cache, [ $cache_dir . '/test1' ] );
 		$this->assertTrue( $result );
 		$this->assertTrue( is_dir( $cache_dir . '/test1' ) );
+		if ( ! Utils\is_windows() ) {
+			// Assert the write bits rather than a literal mode: the exact result depends on the
+			// umask, and what matters is that no other local user can write into the cache.
+			$perms = fileperms( $cache_dir . '/test1' ) & 0777;
+			$this->assertSame(
+				0,
+				$perms & 0022,
+				sprintf( 'Cache directory must not be group- or world-writable, got %o.', $perms )
+			);
+		}
 
 		// Try to create the same directory again. it should return true.
 		$result = $method->invokeArgs( $cache, [ $cache_dir . '/test1' ] );
@@ -67,7 +72,7 @@ class FileCacheTest extends TestCase {
 			// It should be failed because permission denied.
 			$logger->stderr = '';
 			chmod( $cache_dir . '/test1', 0000 );
-			$result   = $method->invokeArgs( $cache, [ $cache_dir . '/test1/error' ] );
+			$method->invokeArgs( $cache, [ $cache_dir . '/test1/error' ] );
 			$expected = "/^Warning: Failed to create directory '.+': mkdir\(\): Permission denied\.$/";
 			$this->assertMatchesRegularExpression( $expected, $logger->stderr );
 		}
@@ -75,7 +80,7 @@ class FileCacheTest extends TestCase {
 		// It should be failed because file exists.
 		$logger->stderr = '';
 		file_put_contents( $cache_dir . '/test2', '' );
-		$result   = $method->invokeArgs( $cache, [ $cache_dir . '/test2' ] );
+		$method->invokeArgs( $cache, [ $cache_dir . '/test2' ] );
 		$expected = "/^Warning: Failed to create directory '.+': mkdir\(\): File exists\.$/";
 		$this->assertMatchesRegularExpression( $expected, $logger->stderr );
 

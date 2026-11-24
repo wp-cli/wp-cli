@@ -13,12 +13,12 @@ Feature: Argument aliases support
        * [--with-dependencies|w]
        * : Include dependencies in the operation.
        */
-      $test_command = function( $args, $assoc_args ) {
-        if ( isset( $assoc_args['with-dependencies'] ) ) {
-          WP_CLI::success( 'with-dependencies is set' );
-        } else {
-          WP_CLI::error( 'with-dependencies is not set' );
-        }
+      $test_command = function ( $args, $assoc_args ) {
+          if ( isset( $assoc_args['with-dependencies'] ) ) {
+              WP_CLI::success( 'with-dependencies is set' );
+          } else {
+              WP_CLI::error( 'with-dependencies is not set' );
+          }
       };
       WP_CLI::add_command( 'test-alias', $test_command );
       """
@@ -48,12 +48,12 @@ Feature: Argument aliases support
        * [--verbose|v|wordy]
        * : Enable verbose output.
        */
-      $test_command = function( $args, $assoc_args ) {
-        if ( isset( $assoc_args['verbose'] ) ) {
-          WP_CLI::success( 'verbose is set' );
-        } else {
-          WP_CLI::error( 'verbose is not set' );
-        }
+      $test_command = function ( $args, $assoc_args ) {
+          if ( isset( $assoc_args['verbose'] ) ) {
+              WP_CLI::success( 'verbose is set' );
+          } else {
+              WP_CLI::error( 'verbose is not set' );
+          }
       };
       WP_CLI::add_command( 'test-alias', $test_command );
       """
@@ -89,12 +89,12 @@ Feature: Argument aliases support
        * [--number=<number>|n]
        * : A number value.
        */
-      $test_command = function( $args, $assoc_args ) {
-        if ( isset( $assoc_args['number'] ) ) {
-          WP_CLI::success( 'number is ' . $assoc_args['number'] );
-        } else {
-          WP_CLI::error( 'number is not set' );
-        }
+      $test_command = function ( $args, $assoc_args ) {
+          if ( isset( $assoc_args['number'] ) ) {
+              WP_CLI::success( 'number is ' . $assoc_args['number'] );
+          } else {
+              WP_CLI::error( 'number is not set' );
+          }
       };
       WP_CLI::add_command( 'test-alias', $test_command );
       """
@@ -124,12 +124,12 @@ Feature: Argument aliases support
        * [--include-deps|with-dependencies]
        * : Include dependencies.
        */
-      $test_command = function( $args, $assoc_args ) {
-        if ( isset( $assoc_args['include-deps'] ) ) {
-          WP_CLI::success( 'include-deps is set' );
-        } else {
-          WP_CLI::error( 'include-deps is not set' );
-        }
+      $test_command = function ( $args, $assoc_args ) {
+          if ( isset( $assoc_args['include-deps'] ) ) {
+              WP_CLI::success( 'include-deps is set' );
+          } else {
+              WP_CLI::error( 'include-deps is not set' );
+          }
       };
       WP_CLI::add_command( 'test-alias', $test_command );
       """
@@ -159,8 +159,8 @@ Feature: Argument aliases support
        * [--format=<format>|f]
        * : Output format.
        */
-      $test_command = function( $args, $assoc_args ) {
-        WP_CLI::success( 'format is ' . $assoc_args['format'] );
+      $test_command = function ( $args, $assoc_args ) {
+          WP_CLI::success( 'format is ' . $assoc_args['format'] );
       };
       WP_CLI::add_command( 'test-alias', $test_command );
       """
@@ -184,8 +184,8 @@ Feature: Argument aliases support
        * --type=<type>|t
        * : Required type parameter.
        */
-      $test_command = function( $args, $assoc_args ) {
-        WP_CLI::success( 'type is ' . $assoc_args['type'] );
+      $test_command = function ( $args, $assoc_args ) {
+          WP_CLI::success( 'type is ' . $assoc_args['type'] );
       };
       WP_CLI::add_command( 'test-alias', $test_command );
       """
@@ -225,7 +225,7 @@ Feature: Argument aliases support
        * [--format=<format>|f]
        * : Output format.
        */
-      $test_command = function( $args, $assoc_args ) {};
+      $test_command = function ( $args, $assoc_args ) {};
       WP_CLI::add_command( 'test-alias', $test_command );
       """
 
@@ -238,3 +238,116 @@ Feature: Argument aliases support
       """
       [--format=<format>|f]
       """
+
+  Scenario: Prompting for required parameter with alias (value spec on canonical)
+    Given a WP install
+    And a custom-command.php file:
+      """
+      <?php
+      /**
+       * Test command with required parameter and alias.
+       *
+       * ## OPTIONS
+       *
+       * --type=<type>|t
+       * : Required type parameter.
+       */
+      $test_command = function ( $args, $assoc_args ) {
+          WP_CLI::success( 'type is ' . $assoc_args['type'] );
+      };
+      WP_CLI::add_command( 'test-alias', $test_command );
+      """
+    And a session file:
+      """
+      post
+      """
+
+    When I run `wp --require=custom-command.php test-alias --prompt=type < session`
+    Then STDOUT should contain:
+      """
+      Success: type is post
+      """
+
+  Scenario: Prompting for required parameter with alias (value spec on alias)
+    Given a WP install
+    And a custom-command.php file:
+      """
+      <?php
+      /**
+       * Test command with required parameter and alias (value spec on alias).
+       *
+       * ## OPTIONS
+       *
+       * --admin_password|admin_pass=<password>
+       * : Admin password.
+       */
+      $test_command = function ( $args, $assoc_args ) {
+          WP_CLI::success( 'password is ' . $assoc_args['admin_password'] );
+      };
+      WP_CLI::add_command( 'test-alias', $test_command );
+      """
+    And a session file:
+      """
+      wpcli
+      """
+
+    When I run `wp --require=custom-command.php test-alias --prompt=admin_password < session`
+    Then STDOUT should contain:
+      """
+      Success: password is wpcli
+      """
+
+  Scenario: Prompting using alias name
+    Given a WP install
+    And a custom-command.php file:
+      """
+      <?php
+      /**
+       * Test command with required parameter and alias.
+       *
+       * ## OPTIONS
+       *
+       * --type=<type>|t
+       * : Required type parameter.
+       */
+      $test_command = function ( $args, $assoc_args ) {
+          WP_CLI::success( 'type is ' . $assoc_args['type'] );
+      };
+      WP_CLI::add_command( 'test-alias', $test_command );
+      """
+    And a session file:
+      """
+      page
+      """
+
+    When I run `wp --require=custom-command.php test-alias --prompt=t < session`
+    Then STDOUT should contain:
+      """
+      Success: type is page
+      """
+
+  Scenario: Passing alias on command line bypasses prompt
+    Given a WP install
+    And a custom-command.php file:
+      """
+      <?php
+      /**
+       * Test command with required parameter and alias.
+       *
+       * ## OPTIONS
+       *
+       * --type=<type>|t
+       * : Required type parameter.
+       */
+      $test_command = function ( $args, $assoc_args ) {
+          WP_CLI::success( 'type is ' . $assoc_args['type'] );
+      };
+      WP_CLI::add_command( 'test-alias', $test_command );
+      """
+
+    When I run `wp --require=custom-command.php test-alias -t=post --prompt=type`
+    Then STDOUT should contain:
+      """
+      Success: type is post
+      """
+

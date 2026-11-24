@@ -46,7 +46,7 @@ Feature: Create shortcuts to specific WordPress installs
       Did you mean 'test2'?
       """
 
-  Scenario: Treat global params as local when included in alias
+  Scenario: Support global params alongside alias-defined params
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
       """
@@ -60,14 +60,10 @@ Feature: Create shortcuts to specific WordPress installs
       https://example.com
       """
 
-    When I try `wp @foo option get home --path=foo`
-    Then STDERR should contain:
+    When I run `wp @foo option get home --path=foo`
+    Then STDOUT should be:
       """
-      Parameter errors:
-      """
-    And STDERR should contain:
-      """
-      unknown --path parameter
+      https://example.com
       """
 
     When I run `wp @foo eval "echo get_current_user_id();" --user=admin`
@@ -89,14 +85,41 @@ Feature: Create shortcuts to specific WordPress installs
       1
       """
 
-    When I try `wp @foo eval "echo get_current_user_id();" --user=admin`
-    Then STDERR should contain:
+    When I run `wp @foo eval "echo get_current_user_id();" --user=admin`
+    Then STDOUT should be:
       """
-      Parameter errors:
+      1
       """
-    And STDERR should contain:
+
+  Scenario: CLI arguments take precedence over differing alias-defined configuration
+    Given a WP installation in 'foo'
+    And a WP installation in 'bar'
+    And a wp-cli.yml file:
       """
-      unknown --user parameter
+      @foo:
+        path: foo
+        user: admin
+      @bar:
+        path: bar
+      """
+
+    When I run `wp @bar option update home "https://bar.example.com"`
+    And I run `wp @foo option get home --path=bar`
+    Then STDOUT should be:
+      """
+      https://bar.example.com
+      """
+
+    When I run `wp @foo user create editor editor@example.com --role=editor --porcelain`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp @foo eval "echo get_current_user_id();" --user=editor`
+    Then STDOUT should be:
+      """
+      2
       """
 
   Scenario: Support global params specific to the WordPress install, not WP-CLI generally
@@ -134,12 +157,16 @@ Feature: Create shortcuts to specific WordPress installs
         path: {TEST_DIR}/foo
       """
 
-    When I run `wp cli aliases`
+    When I try `wp cli aliases`
     Then STDOUT should be YAML containing:
       """
       @all: Run command against every registered alias.
       @foo:
         path: {TEST_DIR}/foo
+      """
+    And STDERR should contain:
+      """
+      The 'wp cli aliases' syntax is deprecated and will be removed in WP-CLI 4.0. Use 'wp cli alias list' instead.
       """
 
     When I run `wp cli alias list --format=json`
@@ -155,10 +182,14 @@ Feature: Create shortcuts to specific WordPress installs
       '@foo' =>
       """
 
-    When I run `wp cli aliases --format=json`
+    When I try `wp cli aliases --format=json`
     Then STDOUT should be JSON containing:
       """
       {"@all":"Run command against every registered alias.","@foo":{"path":"{TEST_DIR}/foo"}}
+      """
+    And STDERR should contain:
+      """
+      The 'wp cli aliases' syntax is deprecated and will be removed in WP-CLI 4.0. Use 'wp cli alias list' instead.
       """
 
   Scenario: Get alias information
@@ -226,6 +257,53 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
   @skip-windows @skip-macos
+  Scenario: Adds ssh_config to ssh command
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        ssh_config: /path/to/ssh/config
+      """
+
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -F '/path/to/ssh/config' -T -vvv
+      """
+
+  Scenario: SSH alias with leading hyphen in proxyjump should error
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @badproxy:
+        ssh: user@host:/path/to/wordpress
+        proxyjump: -oProxyCommand=id
+      """
+    When I try `wp @badproxy cli info`
+    Then STDERR should contain:
+      """
+      Error: Invalid SSH proxyjump: value cannot start with a hyphen.
+      """
+    And the return code should be 1
+
+  Scenario: SSH alias with a non-string key should error
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @badkey:
+        ssh: user@host:/path/to/wordpress
+        key:
+          - identityfile.key
+      """
+    When I try `wp @badkey cli info`
+    Then STDERR should contain:
+      """
+      Error: Invalid SSH key: value must be a string.
+      """
+    And the return code should be 1
+
+  @skip-windows @skip-macos
   Scenario: Vagrant SSH disables strict host key checking
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -237,7 +315,69 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo --debug --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -T -vvv '' 'wp --debug --version'
+      Running SSH command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -T -vvv '' 'WP_CLI_SSH_RUN=1 wp --debug --version'
+      """
+
+  Scenario: Alias can opt out of root-level ssh configuration
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: docker:user@wordpress
+      @local:
+        ssh: false
+      """
+    When I try `wp @local --debug --version`
+    Then STDERR should not contain:
+      """
+      Running SSH command:
+      """
+
+  @skip-windows @skip-macos
+  Scenario: Explicit CLI --ssh flag overrides alias ssh and root ssh
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: docker:root@wordpress
+      @foo:
+        ssh: docker:alias@wordpress
+      """
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp @foo --debug --ssh=docker:cli@wordpress --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: docker exec --user 'cli' 'wordpress' sh -c
+      """
+
+  @skip-windows @skip-macos
+  Scenario: Relative-path alias with inherited root ssh preserves relative path
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: docker:user@wordpress
+      @foo:
+        path: relative/path
+      """
+    When I try `WP_CLI_DOCKER_NO_INTERACTIVE=1 wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      --workdir 'relative/path'
+      """
+
+  @skip-windows @skip-macos
+  Scenario: Alias inherits root-level proxyjump, key, and ssh_config defaults
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      ssh: user@host
+      proxyjump: rootjump
+      key: rootkey.key
+      ssh_config: /root/ssh_config
+      @foo:
+        path: /other/path
+      """
+    When I try `wp @foo --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -F '/root/ssh_config' -J 'rootjump' -i 'rootkey.key' -T -vvv 'user@host' 'WP_CLI_SSH_RUN=1 env WP_CLI_RUNTIME_ALIAS=
       """
 
   @skip-windows @skip-macos
@@ -313,7 +453,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo plugin list --debug`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; wp plugin list --debug'
+      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; WP_CLI_SSH_RUN=1 wp plugin list --debug'
       """
 
   @skip-windows @skip-macos
@@ -328,7 +468,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo post create --post_title=My Title --debug`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; wp post create --post_title=My Title
+      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; WP_CLI_SSH_RUN=1 wp post create --post_title=My Title
       """
 
   @skip-windows @skip-macos
@@ -344,7 +484,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo --debug --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv 'user@host' 'env WP_CLI_RUNTIME_ALIAS=
+      Running SSH command: ssh -T -vvv 'user@host' 'WP_CLI_SSH_RUN=1 env WP_CLI_RUNTIME_ALIAS=
       """
     And STDERR should contain:
       """
@@ -397,7 +537,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @foo --debug --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -T -vvv 'user@host' 'env WP_CLI_RUNTIME_ALIAS=
+      Running SSH command: ssh -T -vvv 'user@host' 'WP_CLI_SSH_RUN=1 env WP_CLI_RUNTIME_ALIAS=
       """
     And STDERR should contain:
       """
@@ -728,11 +868,16 @@ Feature: Create shortcuts to specific WordPress installs
       http://subsite.example.com
       """
 
-    When I try `wp @subsite option get siteurl --url=subsite.example.com`
-    Then STDERR should be:
+    When I run `wp @subsite option get siteurl --url=http://subsite.example.com`
+    Then STDOUT should be:
       """
-      Error: Parameter errors:
-       unknown --url parameter
+      http://subsite.example.com
+      """
+
+    When I run `wp @subsite option get siteurl --url=https://example.com`
+    Then STDOUT should be:
+      """
+      https://example.com
       """
 
   # TODO: Investigate on Windows why `@bar` is missing from @foobar output.

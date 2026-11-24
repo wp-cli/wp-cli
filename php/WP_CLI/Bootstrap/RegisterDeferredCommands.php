@@ -40,8 +40,11 @@ final class RegisterDeferredCommands implements BootstrapStep {
 
 	/**
 	 * Add deferred commands that are still waiting to be processed.
+	 *
+	 * @return void
 	 */
 	public function add_deferred_commands() {
+		/** @var array<string, array{callable: callable, args: array<string, mixed>}> $deferred_additions */
 		$deferred_additions = WP_CLI::get_deferred_additions();
 
 		foreach ( $deferred_additions as $name => $addition ) {
@@ -49,7 +52,7 @@ final class RegisterDeferredCommands implements BootstrapStep {
 			foreach ( $addition as $addition_key => $addition_value ) {
 				// Describe the callable as a string instead of directly printing it
 				// for better debug info.
-				if ( 'callable' === $addition_key ) {
+				if ( 'callable' === $addition_key && is_callable( $addition_value ) ) {
 					$addition_value = Utils\describe_callable( $addition_value );
 
 				} elseif ( is_array( $addition_value ) ) {
@@ -59,7 +62,7 @@ final class RegisterDeferredCommands implements BootstrapStep {
 				$addition_data[] = sprintf(
 					'%s: %s',
 					$addition_key,
-					$addition_value
+					is_scalar( $addition_value ) ? (string) $addition_value : ''
 				);
 			}
 
