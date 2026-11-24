@@ -337,6 +337,70 @@ Feature: Utilities that depend on WordPress code
       wp_posts
       """
 
+  # Drop-ins like HyperDB or LudicrousDB leave $wpdb->dbname empty.
+  # See https://github.com/wp-cli/search-replace-command/issues/207
+  @require-mysql
+  Scenario: Get WP table names when $wpdb->dbname is empty
+    Given a WP installation
+    And I run `wp config set WP_DEBUG true --raw`
+    And I run `wp db query "CREATE TABLE wp_xx_posts ( id int );"`
+    And I run `wp db query "CREATE TABLE xx_wp_posts ( id int );"`
+    And I run `wp db query "CREATE VIEW wp_posts_view AS ( SELECT ID from wp_posts );"`
+    And a table_names.php file:
+      """
+      <?php
+      /**
+       * Test WP get table names with an empty $wpdb->dbname.
+       *
+       * ## OPTIONS
+       *
+       * [<table>...]
+       * : List tables based on wildcard search.
+       *
+       * [--all-tables-with-prefix]
+       * : List all tables that match the table prefix.
+       *
+       * [--base-tables-only]
+       * : Restrict returned tables to those that are not views.
+       *
+       * [--views-only]
+       * : Restrict returned tables to those that are views.
+       */
+      function test_wp_get_table_names( $args, $assoc_args ) {
+          global $wpdb;
+          $wpdb->dbname = '';
+          $tables       = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
+          if ( $tables ) {
+              echo implode( PHP_EOL, $tables ) . PHP_EOL;
+          }
+      }
+      WP_CLI::add_command( 'get_table_names', 'test_wp_get_table_names' );
+      """
+
+    When I run `wp --require=table_names.php get_table_names 'wp_post*'`
+    Then STDOUT should be:
+      """
+      wp_postmeta
+      wp_posts
+      """
+    And STDERR should be empty
+
+    When I run `wp --require=table_names.php get_table_names '*posts*' --all-tables-with-prefix`
+    Then STDOUT should be:
+      """
+      wp_posts
+      wp_posts_view
+      wp_xx_posts
+      """
+    And STDERR should be empty
+
+    When I run `wp --require=table_names.php get_table_names '*posts*' --all-tables-with-prefix --views-only`
+    Then STDOUT should be:
+      """
+      wp_posts_view
+      """
+    And STDERR should be empty
+
   # `wp db query` does not yet work on SQLite,
   # See https://github.com/wp-cli/db-command/issues/234
   @require-mysql

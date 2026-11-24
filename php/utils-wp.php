@@ -504,19 +504,23 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 		$tables = $wpdb->get_col( $tables_sql, 0 );
 
 	} elseif ( get_flag_value( $assoc_args, 'all-tables-with-prefix' ) ) {
+		$filter_by_prefix = false;
 		if ( empty( $tables_sql ) ) {
 			$tables_sql = $wpdb->prepare( 'SHOW TABLES LIKE %s', esc_like( $wpdb->get_blog_prefix() ) . '%' );
 		} else {
 			$dbname = ! empty( $wpdb->dbname ) ? $wpdb->dbname : (string) $wpdb->get_var( 'SELECT DATABASE()' );
 			if ( ! empty( $dbname ) ) {
 				$tables_sql .= sprintf( " AND %s LIKE '%s'", esc_sql_ident( 'Tables_in_' . $dbname ), esc_like( $wpdb->get_blog_prefix() ) . '%' );
+			} else {
+				$filter_by_prefix = true;
 			}
 		}
 
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared, see above.
 		$tables = $wpdb->get_col( $tables_sql, 0 );
 
-		if ( ! empty( $tables_sql ) && empty( $dbname ) ) {
+		// Only filter in PHP when the prefix condition could not be added to the query.
+		if ( $filter_by_prefix ) {
 			$blog_prefix = $wpdb->get_blog_prefix();
 			$tables      = array_values(
 				array_filter(
@@ -558,7 +562,7 @@ function wp_get_table_names( $args, $assoc_args = [] ) {
 			// Fallback when database name cannot be determined (e.g. drop-ins like HyperDB or LudicrousDB).
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is safe.
 			$all_tables = (array) $wpdb->get_col( 'SHOW TABLES', 0 );
-			$tables     = array_values( array_intersect( $wp_tables, $all_tables ) );
+			$tables     = array_values( array_intersect( $all_tables, $wp_tables ) );
 		} else {
 			// Note: BC change 1.5.0, tables are sorted (via TABLES view).
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- uses esc_sql_ident() and $wpdb->_escape().
