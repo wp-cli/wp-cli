@@ -97,6 +97,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * * PHP binary used.
 	 * * PHP binary version.
 	 * * PHP memory limit.
+	 * * OS virtual memory limit (`ulimit -v`), where it can be determined.
 	 * * php.ini configuration file used (which is typically different than web).
 	 * * WP-CLI root dir: where WP-CLI is installed (if non-Phar install).
 	 * * WP-CLI global config: where the global config YAML file is located.
@@ -126,6 +127,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *     PHP binary:  /usr/bin/php
 	 *     PHP version: 7.1.12-1+ubuntu16.04.1+deb.sury.org+1
 	 *     PHP memory limit: 512M
+	 *     OS virtual memory limit (ulimit -v): unlimited
 	 *     php.ini used:    /etc/php/7.1/cli/php.ini
 	 *     WP-CLI root dir:    phar://wp-cli.phar
 	 *     WP-CLI packages dir:    /home/person/.wp-cli/packages/
