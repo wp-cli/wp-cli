@@ -361,6 +361,42 @@ final class RunnerTest extends TestCase {
 		$this->assertSame( '/cli/bin/wp', $runner->get_ssh_binary() );
 	}
 
+	public function testGetSshBinaryBlankValuesFallBackToFileConfig(): void {
+		$runner_class = new ReflectionClass( Runner::class );
+		$runner       = $runner_class->newInstanceWithoutConstructor();
+
+		$prop_alias           = $runner_class->getProperty( 'alias' );
+		$prop_aliases         = $runner_class->getProperty( 'aliases' );
+		$prop_runtime_config  = $runner_class->getProperty( 'runtime_config' );
+		$prop_file_ssh_binary = $runner_class->getProperty( 'file_ssh_binary' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$prop_alias->setAccessible( true );
+			// @phpstan-ignore method.deprecated
+			$prop_aliases->setAccessible( true );
+			// @phpstan-ignore method.deprecated
+			$prop_runtime_config->setAccessible( true );
+			// @phpstan-ignore method.deprecated
+			$prop_file_ssh_binary->setAccessible( true );
+		}
+
+		// A blank alias and runtime value must not hide the file-configured binary.
+		$prop_alias->setValue( $runner, 'myalias' );
+		$prop_aliases->setValue( $runner, [ 'myalias' => [ 'ssh-binary' => '' ] ] );
+		$prop_runtime_config->setValue( $runner, [ 'ssh-binary' => ' ' ] );
+		$prop_file_ssh_binary->setValue( $runner, '/global/wp' );
+
+		$prev_env = getenv( 'WP_CLI_SSH_BINARY' );
+		putenv( 'WP_CLI_SSH_BINARY' );
+		try {
+			$this->assertSame( '/global/wp', $runner->get_ssh_binary() );
+		} finally {
+			if ( false !== $prev_env ) {
+				putenv( 'WP_CLI_SSH_BINARY=' . $prev_env );
+			}
+		}
+	}
+
 	public function testGetSshBinaryInvalidAliasType(): void {
 		$class_wp_cli_capture_exit = new ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		if ( PHP_VERSION_ID < 80100 ) {

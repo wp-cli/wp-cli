@@ -481,6 +481,29 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
   @skip-windows @skip-macos
+  Scenario: Blank alias or runtime ssh-binary falls back to the global ssh-binary
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      ssh-binary: /global/bin/wp
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        ssh-binary: ""
+      """
+
+    When I try `wp @foo plugin list --debug`
+    Then STDERR should contain:
+      """
+      WP_CLI_SSH_RUN=1 /global/bin/wp plugin list --debug'
+      """
+
+    When I try `wp @foo plugin list --ssh-binary= --debug`
+    Then STDERR should contain:
+      """
+      WP_CLI_SSH_RUN=1 /global/bin/wp plugin list
+      """
+
+  @skip-windows @skip-macos
   Scenario: SSH command uses wp-cli full command prefix in alias
     Given a WP installation in 'foo'
     And a wp-cli.yml file:

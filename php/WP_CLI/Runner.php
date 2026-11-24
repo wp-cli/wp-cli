@@ -101,6 +101,14 @@ class Runner {
 	private $runtime_config;
 
 	/**
+	 * The `ssh-binary` value from the config files, captured before runtime
+	 * arguments and alias config are merged on top of it.
+	 *
+	 * @var mixed
+	 */
+	private $file_ssh_binary;
+
+	/**
 	 * Whether or not to colorize output.
 	 *
 	 * @var bool
@@ -1355,8 +1363,9 @@ class Runner {
 	 * Get the binary command to execute remotely over SSH.
 	 *
 	 * Checks the runtime CLI config first, then the alias-level configuration,
-	 * then global config, then WP_CLI_SSH_BINARY environment variable / config,
-	 * falling back to 'wp'.
+	 * then global config (falling back to the file-configured value when a blank
+	 * runtime or alias value replaced it), then WP_CLI_SSH_BINARY environment
+	 * variable / config, falling back to 'wp'.
 	 *
 	 * @return string
 	 */
@@ -1382,6 +1391,11 @@ class Runner {
 		$config_binary = WP_CLI::get_config( 'ssh-binary' );
 		if ( is_string( $config_binary ) && '' !== trim( $config_binary ) ) {
 			return trim( $config_binary );
+		}
+
+		// A blank runtime or alias value may have replaced the global config value above.
+		if ( is_string( $this->file_ssh_binary ) && '' !== trim( $this->file_ssh_binary ) ) {
+			return trim( $this->file_ssh_binary );
 		}
 
 		$env_binary = Utils\get_env_or_config( 'WP_CLI_SSH_BINARY' );
@@ -1855,6 +1869,8 @@ class Runner {
 			$config                          = $configurator->to_array();
 			$this->required_files['project'] = isset( $config[0]['require'] ) ? (array) $config[0]['require'] : [];
 			$this->required_files['runtime'] = [];
+			// Keep the file-configured binary so a blank runtime or alias value cannot hide it.
+			$this->file_ssh_binary = isset( $config[0]['ssh-binary'] ) ? $config[0]['ssh-binary'] : null;
 		}
 
 		// Runtime config and args
