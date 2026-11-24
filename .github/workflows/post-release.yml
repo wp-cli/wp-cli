@@ -696,6 +696,9 @@ jobs:
     permissions:
       contents: read
 
+    env:
+      VERSION: ${{ needs.verify-release.outputs.version }}
+
     steps:
       - name: Check out wp-cli/wp-cli-dev for maintenance tools
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -704,29 +707,33 @@ jobs:
           persist-credentials: false
           path: wp-cli-dev
 
-      - name: Set up PHP and Composer
+      - name: Set up PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
           php-version: 'latest'
           coverage: none
-          tools: composer
-        env:
-          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Bounded because this job holds the post-release concurrency group: a
-      # stalled org-wide clone would otherwise sit there for six hours. Runs
-      # with the default token only; ACTIONS_BOT is handed to the one command
-      # below that needs it, never to Composer.
-      - name: Install dependencies for maintenance tools
-        if: ${{ env.DRY_RUN != 'true' }}
-        timeout-minutes: 20
+      # The maintenance commands only need a `wp` executable run from the
+      # wp-cli-dev checkout, which loads them through its wp-cli.yml. The
+      # published Phar that `verify-release` checked against the release key
+      # is one, so neither Composer nor an org-wide clone runs next to
+      # ACTIONS_BOT.
+      - name: Download the verified release assets
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: verified-release-${{ needs.verify-release.outputs.version }}
+          path: verify
+
+      - name: Verify the downloaded Phar
         env:
-          # The wp-cli-dev composer install clones the whole WP-CLI org via its
-          # pre-install-cmd hook, so let it use every core the runner has.
-          CLONE_JOBS: 8
+          EXPECTED_SHA512: ${{ needs.verify-release.outputs.phar_sha512 }}
         run: |
-          cd wp-cli-dev
-          composer install --no-interaction
+          ACTUAL="$(sha512sum "verify/wp-cli-${VERSION}.phar" | cut -d ' ' -f 1)"
+
+          if [ -z "$EXPECTED_SHA512" ] || [ "$ACTUAL" != "$EXPECTED_SHA512" ]; then
+            echo "::error::The downloaded Phar ($ACTUAL) is not the one that was verified ($EXPECTED_SHA512)."
+            exit 1
+          fi
 
       # `--bundle` takes the list from the `packages` section of the bundle's
       # composer.lock, which never contains wp-cli/wp-cli-bundle itself, and
@@ -742,10 +749,9 @@ jobs:
             exit 0
           fi
 
+          WP="$PWD/verify/wp-cli-${VERSION}.phar"
           cd wp-cli-dev
 
-          # Registered as `maintenance release` in wp-cli-dev's bootstrap.php,
-          # with `close-released` as a subcommand of that.
-          vendor/bin/wp maintenance release close-released \
+          php "$WP" maintenance release close-released \
             wp-cli/wp-cli wp-cli/wp-cli-bundle wp-cli/package-command \
             --bundle

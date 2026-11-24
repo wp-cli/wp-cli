@@ -16,8 +16,10 @@ name: Release
 #
 # Three jobs on purpose:
 #
-# - `inspect` holds no secrets and is the only job that executes the Phar.
-# - `notes` holds no secrets and is the only job that runs Composer.
+# - `inspect` holds no secrets and checks the release Phar before anything
+#   executes it.
+# - `notes` holds no secrets and runs the wp-cli-dev maintenance commands
+#   with the Phar that `inspect` checked.
 # - `publish` holds ACTIONS_BOT, runs in the `release` environment, and only
 #   ever uploads what the other two produced.
 
@@ -311,26 +313,33 @@ jobs:
           persist-credentials: false
           path: wp-cli-dev
 
-      - name: Set up PHP and Composer
+      - name: Set up PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
           php-version: 'latest'
           coverage: none
-          tools: composer
-        env:
-          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Bounded because this job holds the release concurrency group: a stalled
-      # clone would otherwise block every later release run for six hours.
-      - name: Install dependencies for maintenance tools
-        timeout-minutes: 20
+      # The maintenance commands only need a `wp` executable run from the
+      # wp-cli-dev checkout, which loads them through its wp-cli.yml. The
+      # release Phar `inspect` just verified is one, so there is no need to
+      # install wp-cli-dev and clone the whole org with it.
+      - name: Download the release assets
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: release-assets-${{ needs.inspect.outputs.version }}
+          path: release-assets
+
+      - name: Verify the downloaded Phar
         env:
-          # The wp-cli-dev composer install clones the whole WP-CLI org via its
-          # pre-install-cmd hook, so let it use every core the runner has.
-          CLONE_JOBS: 8
+          VERSION: ${{ needs.inspect.outputs.version }}
+          EXPECTED_SHA512: ${{ needs.inspect.outputs.phar_sha512 }}
         run: |
-          cd wp-cli-dev
-          composer install --no-interaction
+          ACTUAL="$(sha512sum "release-assets/wp-cli-${VERSION}.phar" | cut -d ' ' -f 1)"
+
+          if [ -z "$EXPECTED_SHA512" ] || [ "$ACTUAL" != "$EXPECTED_SHA512" ]; then
+            echo "::error::The downloaded Phar ($ACTUAL) is not the one that was inspected ($EXPECTED_SHA512)."
+            exit 1
+          fi
 
       # Both commands take the release explicitly (wp-cli/wp-cli-dev): the
       # milestone titled after it in wp-cli/wp-cli-bundle, wp-cli/wp-cli and
@@ -348,14 +357,16 @@ jobs:
           VERSION: ${{ needs.inspect.outputs.version }}
         run: |
           mkdir -p release-notes
+          WP="$PWD/release-assets/wp-cli-${VERSION}.phar"
           cd wp-cli-dev
 
-          vendor/bin/wp maintenance contrib-list --release="$VERSION" --format=markdown > ../release-notes/contributors.md
-          vendor/bin/wp maintenance release-notes --release="$VERSION" > ../release-notes/changelog.md
+          php "$WP" maintenance contrib-list --release="$VERSION" --format=markdown > ../release-notes/contributors.md
+          php "$WP" maintenance release-notes --release="$VERSION" > ../release-notes/changelog.md
 
-          # Informational lines go to stderr, so the files only hold the
-          # markdown; a missing milestone or an empty lock leaves them
-          # without a single contributor link or heading.
+          # contrib-list prints the contributor and pull request totals (for
+          # the release post) above the list itself. A missing milestone or an
+          # empty lock leaves the files without a single contributor link or
+          # heading.
           if ! grep -q '^\[@' ../release-notes/contributors.md; then
             echo "::error::The contributor list came back without any contributors. Does the $VERSION milestone exist in wp-cli/wp-cli-bundle, wp-cli/wp-cli and wp-cli/handbook?"
             cat ../release-notes/contributors.md
@@ -379,8 +390,6 @@ jobs:
             cat release-notes/changelog.md
           } > release-notes/release_notes.md
 
-      # Kept as an artifact so the generated notes survive even if a later
-      # step fails and the milestones have since been closed.
       - name: Upload generated release notes
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:

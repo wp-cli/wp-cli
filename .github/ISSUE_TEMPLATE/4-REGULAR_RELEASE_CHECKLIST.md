@@ -26,29 +26,20 @@ assignees: ''
     WP_CLI_PACKAGES_DIR=bin/packages ../wp-cli-bundle/vendor/bin/wp handbook gen-all
     ```
 
-- [ ] Fetch the list of contributors (from within the [`wp-cli/wp-cli-dev`](https://githubcom/wp-cli/wp-cli-dev/) project repo)
+- [ ] Release the bundled packages that have unreleased changes (from within the [`wp-cli/wp-cli-dev`](https://github.com/wp-cli/wp-cli-dev/) project repo)
 
-    From within the `wp-cli/wp-cli-dev` project repo, use `wp maintenance contrib-list` to generate a list of release contributors:
+    `wp maintenance release plan --bundle` lists the packages with unreleased changes and what still needs deciding for each. Ask Claude Code to "update the bundle" (`/update-bundle`) to release them and refresh the bundle's `composer.lock` in one go, or use `wp maintenance release generate` per package. The release notes below are built from these releases, so do this first.
 
-    ```
-    GITHUB_TOKEN=<token> wp maintenance contrib-list --format=markdown
-    ```
+- [ ] Preview the contributor list and release notes (from within the [`wp-cli/wp-cli-dev`](https://github.com/wp-cli/wp-cli-dev/) project repo)
 
-    This script identifies pull request creators from `wp-cli/wp-cli-bundle`, `wp-cli/wp-cli`, `wp-cli/handbook`, and all bundled WP-CLI commands (e.g. `wp-cli/*-command`).
-
-    For `wp-cli/wp-cli-bundle`, `wp-cli/wp-cli` and `wp-cli/handbook`, the script uses the currently open release milestone.
-
-    For all bundled WP-CLI commands, the script uses all closed milestones since the last WP-CLI release (as identified by the version present in the `composer.lock` file). If a command was newly bundled since last release, contributors to that command will need to be manually added to the list.
-
-    The script will also produce a total contributor and pull request count you can use in the release post.
-
-- [ ] Generate release notes for all packages (from within the [`wp-cli/wp-cli-dev`](https://githubcom/wp-cli/wp-cli-dev/) project repo)
-
-    From within the `wp-cli/wp-cli-dev` project repo, use `wp maintenance release-notes` to generate the release notes:
+    The `Release` workflow generates both and puts them on the draft releases, but the release post needs them earlier:
 
     ```
-    GITHUB_TOKEN=<token> wp maintenance release-notes
+    wp maintenance contrib-list --release=3.x.0 --format=markdown
+    wp maintenance release-notes --release=3.x.0
     ```
+
+    They cover the `3.x.0` milestone of `wp-cli/wp-cli-bundle`, `wp-cli/wp-cli` and `wp-cli/handbook`, plus every bundled package release since the previous bundle release, read from the bundle's `composer.lock` (the default branch until the release tag exists). `contrib-list` also prints the total contributor and pull request count for the release post.
 
 - [ ] Draft release post on the [make.wordpress.org CLI blog](https://make.wordpress.org/cli/wp-admin/post-new.php)
 
