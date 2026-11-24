@@ -401,6 +401,83 @@ Feature: Utilities that depend on WordPress code
       """
     And STDERR should be empty
 
+  # When neither $wpdb->dbname nor SELECT DATABASE() yields a name, the
+  # lookup falls back to filtering the SHOW TABLES result in PHP.
+  @require-mysql
+  Scenario: Get WP table names when the database name cannot be determined
+    Given a WP installation
+    And I run `wp db query "CREATE TABLE wp_xx_posts ( id int );"`
+    And I run `wp db query "CREATE TABLE xx_wp_posts ( id int );"`
+    And I run `wp db query "CREATE VIEW wp_posts_view AS ( SELECT ID from wp_posts );"`
+    And a table_names.php file:
+      """
+      <?php
+      /**
+       * Test WP get table names when the database name cannot be determined.
+       *
+       * ## OPTIONS
+       *
+       * [<table>...]
+       * : List tables based on wildcard search.
+       *
+       * [--all-tables-with-prefix]
+       * : List all tables that match the table prefix.
+       *
+       * [--base-tables-only]
+       * : Restrict returned tables to those that are not views.
+       *
+       * [--views-only]
+       * : Restrict returned tables to those that are views.
+       */
+      function test_wp_get_table_names( $args, $assoc_args ) {
+          global $wpdb;
+          $wpdb->dbname = '';
+          // Simulate a connection that cannot report its database name.
+          add_filter(
+              'query',
+              function ( $query ) {
+                  return 'SELECT DATABASE()' === $query ? 'SELECT NULL' : $query;
+              }
+          );
+          $tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
+          if ( $tables ) {
+              echo implode( PHP_EOL, $tables ) . PHP_EOL;
+          }
+      }
+      WP_CLI::add_command( 'get_table_names', 'test_wp_get_table_names' );
+      """
+
+    When I run `wp --require=table_names.php get_table_names 'wp_post*'`
+    Then STDOUT should be:
+      """
+      wp_postmeta
+      wp_posts
+      """
+    And STDERR should be empty
+
+    When I run `wp --require=table_names.php get_table_names 'wp_post*' --base-tables-only`
+    Then STDOUT should be:
+      """
+      wp_postmeta
+      wp_posts
+      """
+    And STDERR should be empty
+
+    When I run `wp --require=table_names.php get_table_names '*posts*' --all-tables-with-prefix --views-only`
+    Then STDOUT should be:
+      """
+      wp_posts_view
+      """
+    And STDERR should be empty
+
+    When I run `wp --require=table_names.php get_table_names '*posts*' --all-tables-with-prefix --base-tables-only`
+    Then STDOUT should be:
+      """
+      wp_posts
+      wp_xx_posts
+      """
+    And STDERR should be empty
+
   # SQLite drop-ins may leave $wpdb->dbname empty and do not implement DATABASE().
   @require-sqlite
   Scenario: Get WP table names on SQLite when $wpdb->dbname is empty
