@@ -1809,6 +1809,39 @@ Feature: Have a config file
     And the return code should be 1
 
   @skip-windows
+  Scenario: Answering the trust prompt with "y" carries over to commands launched through runcommand
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      require:
+        - nested-command.php
+      """
+    And a nested-command.php file:
+      """
+      <?php
+      WP_CLI::add_command(
+          'test-nested',
+          function () {
+              $version = WP_CLI::runcommand( 'cli version', array( 'return' => true ) );
+              WP_CLI::log( 'Nested: ' . $version );
+          },
+          array( 'when' => 'before_wp_load' )
+      );
+      """
+    And a config/config.yml file:
+      """
+      color: false
+      """
+
+    When I try `printf 'y\n' | WP_CLI_TRUST_PROJECT_CONFIG= WP_CLI_CONFIG_PATH={RUN_DIR}/config/config.yml script -qec "wp test-nested" /dev/null`
+    Then STDOUT should contain:
+      """
+      Nested: WP-CLI
+      """
+    And the return code should be 0
+    And the config/trusted-configs.json file should not exist
+
+  @skip-windows
   Scenario: A symlinked project config does not share the approval of its target
     Given an empty directory
     And a safe/wp-cli.yml file:

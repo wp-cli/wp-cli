@@ -3056,10 +3056,12 @@ function check_project_config_trust( $project_config_path, array $directives, $d
 
 	if ( 'a' === $answer ) {
 		save_path_to_global_trust_config( $project_config_path, $config_files );
-		return true;
 	}
 
-	if ( 'y' === $answer ) {
+	if ( 'a' === $answer || 'y' === $answer ) {
+		// Commands launched through WP_CLI::runcommand() read the same project
+		// config, so pass the approval on instead of asking again in each of them.
+		putenv( 'WP_CLI_TRUST_PROJECT_CONFIG=' . ( false !== $env_trust && '' !== trim( $env_trust ) ? $env_trust . ',' : '' ) . $trust_key );
 		return true;
 	}
 
