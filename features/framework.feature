@@ -309,6 +309,29 @@ Feature: Load WP-CLI
       Error: Error establishing a database connection.
       """
 
+  @require-php-8.0
+  Scenario Outline: Leave out deprecation notices while testing, however reporting all errors is configured
+    Given an empty directory
+    # Declaring an optional parameter before a required one is deprecated as of PHP 8.0.
+    And a deprecated.php file:
+      """
+      <?php
+      function wp_cli_test_optional_before_required( $optional = null, $required ) {}
+      echo 'done';
+      """
+
+    When I run `{INVOKE_WP_CLI_WITH_PHP_ARGS--derror_reporting=<error_reporting>} eval-file deprecated.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      done
+      """
+    And STDERR should be empty
+
+    Examples:
+      | error_reporting |
+      | E_ALL           |
+      | -1              |
+
   Scenario: Allow WP_CLI hooks to pass arguments to callbacks
     Given an empty directory
     And a my-command.php file:
@@ -380,8 +403,10 @@ Feature: Load WP-CLI
   Scenario: Use --assume-https to preserve HTTPS scheme in URL functions
     Given a WP multisite installation
     And I run `wp option update siteurl https://example.com`
-    And I run `wp site option update siteurl https://example.com`
-    And I run `wp site option update home https://example.com`
+    And these setup commands:
+      | command                                           |
+      | wp site option update siteurl https://example.com |
+      | wp site option update home https://example.com    |
 
     When I run `wp option get siteurl`
     Then STDOUT should be:
