@@ -752,6 +752,11 @@ jobs:
           WP="$PWD/verify/wp-cli-${VERSION}.phar"
           cd wp-cli-dev
 
+          # See the Release workflow: trust wp-cli-dev's wp-cli.yml, and only
+          # that file, so its `require` loads the maintenance commands without
+          # an interactive prompt.
+          export WP_CLI_TRUST_PROJECT_CONFIG="$PWD/wp-cli.yml"
+
           php "$WP" maintenance release close-released \
             wp-cli/wp-cli wp-cli/wp-cli-bundle wp-cli/package-command \
             --bundle

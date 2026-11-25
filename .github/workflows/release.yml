@@ -360,6 +360,12 @@ jobs:
           WP="$PWD/release-assets/wp-cli-${VERSION}.phar"
           cd wp-cli-dev
 
+          # wp-cli-dev's wp-cli.yml loads the maintenance commands through a
+          # `require`, which a WP-CLI with project config trust (wp-cli/wp-cli#6365)
+          # only acts on once trusted. There is no TTY to ask, so trust exactly
+          # this file. Older versions ignore the variable.
+          export WP_CLI_TRUST_PROJECT_CONFIG="$PWD/wp-cli.yml"
+
           php "$WP" maintenance contrib-list --release="$VERSION" --format=markdown > ../release-notes/contributors.md
           php "$WP" maintenance release-notes --release="$VERSION" > ../release-notes/changelog.md
 
