@@ -74,6 +74,13 @@ class WP_CLI {
 	private static $deferred_additions = [];
 
 	/**
+	 * Composer autoloaders that located the classes of deferred lazy commands, keyed by command name.
+	 *
+	 * @var array<string, \Composer\Autoload\ClassLoader|null>
+	 */
+	private static $deferred_class_loaders = [];
+
+	/**
 	 * Cached list of global argument names.
 	 *
 	 * @var array<string>|null
@@ -493,20 +500,28 @@ class WP_CLI {
 	}
 
 	/**
-	 * Check whether a class is loaded, or can be located by a Composer autoloader, without loading it.
+	 * Find out whether a class can be loaded, and which Composer autoloader would load it, without loading it.
 	 *
 	 * @param string $class_name Class name.
-	 * @return bool
+	 * @return bool|\Composer\Autoload\ClassLoader The Composer autoloader that would load the class, true if
+	 *                                                the class is loaded already or another autoloader comes
+	 *                                                before that one, or false if no Composer autoloader can.
 	 */
-	private static function is_class_loadable_without_autoloading( $class_name ) {
+	private static function find_class_loader( $class_name ) {
 		if ( class_exists( $class_name, false ) ) {
 			return true;
 		}
 
+		$after_other_autoloader = false;
 		foreach ( spl_autoload_functions() ?: [] as $autoloader ) {
-			if ( is_array( $autoloader ) && $autoloader[0] instanceof \Composer\Autoload\ClassLoader
-				&& $autoloader[0]->findFile( ltrim( $class_name, '\\' ) ) ) {
-				return true;
+			if ( ! is_array( $autoloader ) || ! $autoloader[0] instanceof \Composer\Autoload\ClassLoader ) {
+				// There is no telling whether this one would load the class first.
+				$after_other_autoloader = true;
+				continue;
+			}
+
+			if ( $autoloader[0]->findFile( ltrim( $class_name, '\\' ) ) ) {
+				return $after_other_autoloader ? true : $autoloader[0];
 			}
 		}
 
@@ -574,12 +589,28 @@ class WP_CLI {
 
 		// Commands registered by class name are only loaded once they are actually needed,
 		// unless arguments are passed that require inspecting the command right away.
-		$is_lazy = is_string( $callable )
+		$class_loader = is_string( $callable )
 			&& false === strpos( $callable, '::' )
 			&& ! function_exists( $callable )
-			&& self::is_class_loadable_without_autoloading( $callable )
+			? self::find_class_loader( $callable )
+			: false;
+		$is_lazy      = is_string( $callable )
+			&& false !== $class_loader
 			&& ! array_intersect( [ 'shortdesc', 'longdesc', 'synopsis', 'when' ], array_keys( $args ) )
 			&& ! getenv( 'WP_CLI_DISABLE_LAZY_COMMANDS' );
+
+		// Autoloaders registered later, such as the one of the Phar when a project
+		// requires its own copy of a bundled command, may provide a different
+		// definition of the same class. Remember which one an eager registration
+		// would have loaded.
+		$class_loader = $class_loader instanceof \Composer\Autoload\ClassLoader ? $class_loader : null;
+
+		if ( ! empty( $args['is_deferred'] ) && array_key_exists( $name, self::$deferred_class_loaders ) ) {
+			if ( $is_lazy ) {
+				$class_loader = self::$deferred_class_loaders[ $name ];
+			}
+			unset( self::$deferred_class_loaders[ $name ] );
+		}
 
 		$valid = false;
 		if ( $is_lazy ) {
@@ -656,6 +687,10 @@ class WP_CLI {
 				} else {
 					self::debug( "Deferring command: {$name}", 'commands' );
 
+					if ( $is_lazy ) {
+						self::$deferred_class_loaders[ $name ] = $class_loader;
+					}
+
 					/**
 					 * @var callable $callable
 					 */
@@ -679,9 +714,9 @@ class WP_CLI {
 		if ( $is_lazy && ! $addition->was_aborted() && ( ! $existing_command || $existing_command instanceof LazyCommand ) ) {
 			/** @var class-string $callable */
 			if ( $existing_command instanceof LazyCommand ) {
-				$existing_command->add_class( $callable );
+				$existing_command->add_class( $callable, $class_loader );
 			} else {
-				$command->add_subcommand( $leaf_name, new LazyCommand( $command, $leaf_name, $callable ) );
+				$command->add_subcommand( $leaf_name, new LazyCommand( $command, $leaf_name, $callable, $class_loader ) );
 			}
 
 			self::debug( "Registering lazy command: {$name}", 'commands' );
