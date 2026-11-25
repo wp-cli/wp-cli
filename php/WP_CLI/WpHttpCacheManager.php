@@ -120,7 +120,9 @@ class WpHttpCacheManager {
 	 * answer those downloads from disk, so a bulk update spends its network
 	 * time on all packages at once instead of on each in turn.
 	 *
-	 * Only URLs that are whitelisted and not yet cached are fetched. A URL
+	 * Only URLs that are whitelisted and not yet cached are fetched. When
+	 * WordPress is loaded, URLs and redirect targets it would refuse as
+	 * unsafe (wp_http_validate_url()) are left to the upgrader too. A URL
 	 * whose download fails validation is left out of the cache, so the
 	 * upgrader's own download still runs for it. Fetching is skipped when the
 	 * cache is disabled or when WordPress is configured to block or proxy
@@ -150,6 +152,11 @@ class WpHttpCacheManager {
 				continue;
 			}
 			if ( $this->cache->has( $this->whitelist[ $url ]['key'], $this->whitelist[ $url ]['ttl'] ) ) {
+				continue;
+			}
+			// The upgrader downloads with reject_unsafe_urls, which refuses local and
+			// private hosts; a cached copy would let such a package through.
+			if ( function_exists( 'wp_http_validate_url' ) && ! wp_http_validate_url( $url ) ) {
 				continue;
 			}
 			$pending[] = $url;
@@ -287,7 +294,23 @@ class WpHttpCacheManager {
 		];
 
 		/** This hook is documented in php/utils.php */
-		return WP_CLI::do_hook( 'http_request_options', $options, 'GET', $url, null, [] );
+		$options = WP_CLI::do_hook( 'http_request_options', $options, 'GET', $url, null, [] );
+
+		// Check redirect targets the way the upgrader's own download does.
+		if ( function_exists( 'wp_http_validate_url' ) && is_callable( [ 'WP_Http', 'validate_redirects' ] ) ) {
+			$hooks = isset( $options['hooks'] ) && is_object( $options['hooks'] ) ? $options['hooks'] : null;
+			if ( null === $hooks ) {
+				/** @var class-string $hooks_class */
+				$hooks_class = RequestsLibrary::is_v1() ? 'Requests_Hooks' : 'WpOrg\\Requests\\Hooks';
+				$hooks       = new $hooks_class();
+			}
+			if ( method_exists( $hooks, 'register' ) ) {
+				$hooks->register( 'requests.before_redirect', [ 'WP_Http', 'validate_redirects' ] );
+				$options['hooks'] = $hooks;
+			}
+		}
+
+		return $options;
 	}
 
 	/**

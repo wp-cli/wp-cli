@@ -24,6 +24,20 @@ class Prefetch_Requests_Transport implements Transport {
 	public static $batches = [];
 
 	/**
+	 * Redirect targets, keyed by the URL that answers with a redirect to them.
+	 *
+	 * @var array<string, string>
+	 */
+	public static $redirects = [];
+
+	/**
+	 * URLs requested on their own, which happens when a redirect is followed.
+	 *
+	 * @var array<int, string>
+	 */
+	public static $singles = [];
+
+	/**
 	 * @param string              $url
 	 * @param array<mixed>        $headers
 	 * @param array<mixed>|string $data
@@ -31,7 +45,10 @@ class Prefetch_Requests_Transport implements Transport {
 	 * @return string
 	 */
 	public function request( $url, $headers = [], $data = [], $options = [] ) {
-		throw new Exception( 'Single requests are not expected during a prefetch.' );
+		self::$singles[] = $url;
+		/** @var array{filename: string} $options */
+		file_put_contents( $options['filename'], (string) self::$body );
+		return 'HTTP/1.1 200 OK';
 	}
 
 	/**
@@ -49,6 +66,10 @@ class Prefetch_Requests_Transport implements Transport {
 		$responses = [];
 		foreach ( $requests as $id => $request ) {
 			/** @var array{options: array{filename: string}} $request */
+			if ( isset( self::$redirects[ $id ] ) ) {
+				$responses[ $id ] = "HTTP/1.1 302 Found\r\nLocation: " . self::$redirects[ $id ];
+				continue;
+			}
 			file_put_contents( $request['options']['filename'], self::$body );
 			$responses[ $id ] = 'HTTP/1.1 200 OK';
 		}

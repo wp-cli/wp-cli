@@ -8,6 +8,7 @@ use WP_CLI\WpHttpCacheManager;
 
 require_once __DIR__ . '/includes/wp-filter-stub.php';
 require_once __DIR__ . '/includes/prefetch-requests-transport.php';
+require_once __DIR__ . '/includes/wp-http-stub.php';
 
 class WpHttpCacheManagerPrefetchTest extends TestCase {
 
@@ -68,12 +69,14 @@ class WpHttpCacheManagerPrefetchTest extends TestCase {
 		$this->cache     = new FileCache( $this->cache_dir, 600, 1024 * 1024 );
 		$this->manager   = new WpHttpCacheManager( $this->cache );
 
-		Prefetch_Requests_Transport::$body    = null;
-		Prefetch_Requests_Transport::$batches = [];
-		$this->stale_temp_files               = $this->temp_files();
-		self::$intercept                      = true;
-		self::$odd_transport_urls             = [];
-		self::$throwing_urls                  = [];
+		Prefetch_Requests_Transport::$body      = null;
+		Prefetch_Requests_Transport::$batches   = [];
+		Prefetch_Requests_Transport::$redirects = [];
+		Prefetch_Requests_Transport::$singles   = [];
+		$this->stale_temp_files                 = $this->temp_files();
+		self::$intercept                        = true;
+		self::$odd_transport_urls               = [];
+		self::$throwing_urls                    = [];
 
 		// Hooks cannot be removed, so the one registered here stays out of the way outside these tests.
 		if ( ! self::$hooked ) {
@@ -250,6 +253,34 @@ class WpHttpCacheManagerPrefetchTest extends TestCase {
 		// a.zip's temp file was created before the hook threw for b.zip.
 		$this->assertSame( [], Prefetch_Requests_Transport::$batches );
 		$this->assertFalse( $this->cache->has( 'plugin/a-1.0.zip' ) );
+		$this->assert_no_temp_files_left();
+	}
+
+	public function test_prefetch_leaves_urls_wordpress_considers_unsafe_to_the_upgrader(): void {
+		Prefetch_Requests_Transport::$body = $this->zip_bytes();
+		foreach ( [ 'a', 'b', 'c' ] as $name ) {
+			$host = 'c' === $name ? 'internal.example' : 'example.com';
+			$this->manager->whitelist_url( "https://{$host}/{$name}.zip", "plugin/{$name}-1.0.zip" );
+		}
+
+		$this->assertSame( 2, $this->manager->prefetch( [ 'https://example.com/a.zip', 'https://example.com/b.zip', 'https://internal.example/c.zip' ] ) );
+		$this->assertSame( [ [ 'https://example.com/a.zip', 'https://example.com/b.zip' ] ], Prefetch_Requests_Transport::$batches );
+		$this->assertFalse( $this->cache->has( 'plugin/c-1.0.zip' ) );
+	}
+
+	public function test_prefetch_checks_redirect_targets(): void {
+		Prefetch_Requests_Transport::$body      = $this->zip_bytes();
+		Prefetch_Requests_Transport::$redirects = [
+			'https://example.com/a.zip' => 'https://cdn.example.com/a.zip',
+			'https://example.com/b.zip' => 'https://internal.example/b.zip',
+		];
+		$this->manager->whitelist_url( 'https://example.com/a.zip', 'plugin/a-1.0.zip' );
+		$this->manager->whitelist_url( 'https://example.com/b.zip', 'plugin/b-1.0.zip' );
+
+		$this->assertSame( 1, $this->manager->prefetch( [ 'https://example.com/a.zip', 'https://example.com/b.zip' ] ) );
+		$this->assertSame( [ 'https://cdn.example.com/a.zip' ], Prefetch_Requests_Transport::$singles );
+		$this->assertNotFalse( $this->cache->has( 'plugin/a-1.0.zip' ) );
+		$this->assertFalse( $this->cache->has( 'plugin/b-1.0.zip' ) );
 		$this->assert_no_temp_files_left();
 	}
 
