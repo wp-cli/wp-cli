@@ -1034,8 +1034,13 @@ class Runner {
 		$wp_binary = $this->get_ssh_binary();
 		$wp_args   = array_slice( (array) $GLOBALS['argv'], 1 );
 
-		if ( $this->alias && ! empty( $wp_args[0] ) && ( '@' . $this->alias === $wp_args[0] || "--alias={$this->alias}" === $wp_args[0] ) ) {
-			array_shift( $wp_args );
+		// Arguments after the `--` delimiter are positional values, never connection options or aliases.
+		$end_of_options = array_search( '--', $wp_args, true );
+		$option_args    = false === $end_of_options ? $wp_args : array_slice( $wp_args, 0, (int) $end_of_options );
+
+		// `@alias` can only be the first argument, but `--alias=` can appear anywhere among the options.
+		// The alias argument itself is removed by the filter below.
+		if ( $this->alias && ( ( isset( $option_args[0] ) && '@' . $this->alias === $option_args[0] ) || in_array( "--alias={$this->alias}", $option_args, true ) ) ) {
 			$runtime_alias = [];
 			$alias_config  = $this->aliases[ $this->alias ];
 			if ( is_array( $alias_config ) ) {
@@ -1062,6 +1067,9 @@ class Runner {
 		$alias_regex = '#' . Configurator::ALIAS_REGEX . '#';
 		/** @var string $v */
 		foreach ( $wp_args as $k => $v ) {
+			if ( false !== $end_of_options && $k >= $end_of_options ) {
+				break;
+			}
 			if ( preg_match( '#^--ssh(?:-args|-binary)?(?:=|$)|--alias=#', $v ) || preg_match( $alias_regex, $v ) ) {
 				unset( $wp_args[ $k ] );
 			}

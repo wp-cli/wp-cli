@@ -547,6 +547,45 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
   @skip-windows @skip-macos
+  Scenario: Runtime alias is forwarded when --alias does not come first
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: user@host
+        path: /path/to/production
+      """
+
+    When I try `wp --ssh-binary=/remote/wp --alias=prod --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'user@host' 'WP_CLI_SSH_RUN=1 env WP_CLI_RUNTIME_ALIAS=
+      """
+    And STDERR should contain:
+      """
+      \/path\/to\/production
+      """
+    And STDERR should contain:
+      """
+      /remote/wp @prod --debug --version'
+      """
+
+  @skip-windows @skip-macos
+  Scenario: Arguments after the end-of-options delimiter are forwarded unchanged
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+      """
+
+    When I try `wp @foo option update example --debug -- --ssh-binary=literal @bar --alias=baz`
+    Then STDERR should contain:
+      """
+      WP_CLI_SSH_RUN=1 wp option update example --debug -- --ssh-binary=literal '\''@bar'\'' --alias=baz'
+      """
+
+  @skip-windows @skip-macos
   Scenario: Two aliases with same SSH host but different paths generate different remote commands
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
