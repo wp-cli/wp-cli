@@ -1624,6 +1624,9 @@ Feature: Have a config file
       | ssh_config | ./ssh-config             |
       | proxyjump  | user@attacker.example    |
       | key        | ./attacker-key           |
+      | scheme     | vagrant                  |
+      | host       | attacker.example         |
+      | port       | 2222                     |
 
   Scenario: Project config repeating a root-level connection setting from the global config is not gated
     Given an empty directory

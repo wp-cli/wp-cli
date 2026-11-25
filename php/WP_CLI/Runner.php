@@ -1878,9 +1878,12 @@ class Runner {
 		// what the local `ssh` invocation looks like: `ssh_config` and `proxyjump`
 		// reach the SSH command builder and can execute a local `ProxyCommand`,
 		// `key` picks the identity that is handed to a remote host, and `ssh` /
-		// `http` redirect the whole command. `ssh` and `http` are declared in the
-		// config spec, the others only exist as extra config.
-		$root_connection_keys = [ 'ssh', 'http', 'ssh_config', 'proxyjump', 'key' ];
+		// `http` redirect the whole command. `scheme`, `host` and `port` fill in
+		// whatever `--ssh` leaves out: `scheme: vagrant` or `docker-compose-run`
+		// turns `--ssh=<host>` into a local `vagrant` / `docker compose` call that
+		// evaluates the project's Vagrantfile or compose file. `ssh` and `http` are
+		// declared in the config spec, the others only exist as extra config.
+		$root_connection_keys = [ 'ssh', 'http', 'ssh_config', 'proxyjump', 'key', 'scheme', 'host', 'port' ];
 
 		// File config
 		{
