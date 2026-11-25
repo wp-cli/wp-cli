@@ -66,6 +66,14 @@ final class RestartWithOpcache implements BootstrapStep {
 			return $state;
 		}
 
+		// OPcache runs the compiled code it finds in the file cache. A directory that other
+		// users can write to, e.g. one created in advance in a shared WP_CLI_CACHE_DIR, would
+		// let them inject code. It's created with 0700 above, so this only rejects existing ones.
+		if ( ! Utils\is_windows() && ! self::is_private_dir( $cache_dir ) ) {
+			WP_CLI::debug( "Not restarting with OPcache: {$cache_dir} is writable by other users or owned by another user.", 'bootstrap' );
+			return $state;
+		}
+
 		if ( OpcacheRestarter::is_file_cache_active() ) {
 			WP_CLI::debug( 'Using OPcache\'s file cache in ' . ini_get( 'opcache.file_cache' ), 'bootstrap' );
 		}
@@ -76,5 +84,26 @@ final class RestartWithOpcache implements BootstrapStep {
 		( new OpcacheRestarter( $cache_dir ) )->check();
 
 		return $state;
+	}
+
+	/**
+	 * Whether a directory is owned by the current user and not writable by the group or others.
+	 *
+	 * @param string $dir Directory to check.
+	 * @return bool
+	 */
+	private static function is_private_dir( $dir ) {
+		clearstatcache( true, $dir );
+
+		$perms = @fileperms( $dir );
+		if ( false === $perms || ( $perms & 0022 ) ) {
+			return false;
+		}
+
+		if ( function_exists( 'posix_geteuid' ) && @fileowner( $dir ) !== posix_geteuid() ) {
+			return false;
+		}
+
+		return true;
 	}
 }

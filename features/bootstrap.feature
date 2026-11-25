@@ -574,7 +574,6 @@ Feature: Bootstrap WP-CLI
     And the executed_index.txt file should not exist
     And the executed_requests.txt file should not exist
 
-
   @skip-windows
   Scenario: Restart with OPcache's file cache when WP_CLI_OPCACHE is set
     Given an empty directory
@@ -609,7 +608,16 @@ Feature: Bootstrap WP-CLI
     And STDERR should be empty
     And the return code should be 3
 
-    When I run `./wp-without-opcache eval 'echo ini_get( "opcache.file_cache" ) ? "file cache" : "no file cache";' --skip-wordpress`
+    # A file cache directory that other users can write to is not used.
+    When I try `chmod 777 cache/opcache`
+    And I run `WP_CLI_OPCACHE=1 ./wp-without-opcache eval 'echo ini_get( "opcache.file_cache" ) ? "file cache" : "no file cache";' --skip-wordpress`
+    Then STDOUT should be:
+      """
+      no file cache
+      """
+
+    When I try `chmod 700 cache/opcache`
+    And I run `./wp-without-opcache eval 'echo ini_get( "opcache.file_cache" ) ? "file cache" : "no file cache";' --skip-wordpress`
     Then STDOUT should be:
       """
       no file cache
