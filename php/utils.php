@@ -2635,7 +2635,9 @@ function format_bytes_string( $bytes, $decimals = 0, $unit = '' ) {
 	if ( is_string( $bytes ) ) {
 		$bytes = (float) $bytes;
 	}
-	if ( 0 === (int) $bytes ) {
+	// Avoid an (int) cast here: casting a float that is out of the integer
+	// range (e.g. 1.5e26) triggers a warning on PHP 8.5+.
+	if ( abs( (float) $bytes ) < 1 ) {
 		return '0 B';
 	}
 
