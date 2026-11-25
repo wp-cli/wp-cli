@@ -472,6 +472,61 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
   @skip-windows @skip-macos
+  Scenario: SSH command uses custom binary specified in alias
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        ssh-binary: /home/bin/wp
+      """
+
+    When I try `wp @foo plugin list --debug`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; WP_CLI_SSH_RUN=1 /home/bin/wp plugin list --debug'
+      """
+
+  @skip-windows @skip-macos
+  Scenario: Blank alias or runtime ssh-binary falls back to the global ssh-binary
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      ssh-binary: /global/bin/wp
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        ssh-binary: ""
+      """
+
+    When I try `wp @foo plugin list --debug`
+    Then STDERR should contain:
+      """
+      WP_CLI_SSH_RUN=1 /global/bin/wp plugin list --debug'
+      """
+
+    When I try `wp @foo plugin list --ssh-binary= --debug`
+    Then STDERR should contain:
+      """
+      WP_CLI_SSH_RUN=1 /global/bin/wp plugin list
+      """
+
+  @skip-windows @skip-macos
+  Scenario: SSH command uses wp-cli full command prefix in alias
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+        wp-cli: php /home/wp-cli.phar
+      """
+
+    When I try `wp @foo plugin list --debug`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'user@host' 'cd '\''/path/to/wordpress'\''; WP_CLI_SSH_RUN=1 php /home/wp-cli.phar plugin list --debug'
+      """
+
+  @skip-windows @skip-macos
   Scenario: Uses env command for runtime alias with separate path line
     Given a WP installation in 'foo'
     And a wp-cli.yml file:
@@ -489,6 +544,45 @@ Feature: Create shortcuts to specific WordPress installs
     And STDERR should contain:
       """
       wp @foo
+      """
+
+  @skip-windows @skip-macos
+  Scenario: Runtime alias is forwarded when --alias does not come first
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @prod:
+        ssh: user@host
+        path: /path/to/production
+      """
+
+    When I try `wp --ssh-binary=/remote/wp --alias=prod --debug --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -T -vvv 'user@host' 'WP_CLI_SSH_RUN=1 env WP_CLI_RUNTIME_ALIAS=
+      """
+    And STDERR should contain:
+      """
+      \/path\/to\/production
+      """
+    And STDERR should contain:
+      """
+      /remote/wp @prod --debug --version'
+      """
+
+  @skip-windows @skip-macos
+  Scenario: Arguments after the end-of-options delimiter are forwarded unchanged
+    Given a WP installation in 'foo'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        ssh: user@host:/path/to/wordpress
+      """
+
+    When I try `wp @foo option update example --debug -- --ssh-binary=literal @bar --alias=baz`
+    Then STDERR should contain:
+      """
+      WP_CLI_SSH_RUN=1 wp option update example --debug -- --ssh-binary=literal '\''@bar'\'' --alias=baz'
       """
 
   @skip-windows @skip-macos
