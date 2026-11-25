@@ -167,10 +167,10 @@ Feature: CLI Cache
       <?php
       // Seed mt_rand() so that the 1 in 51 check in WP_CLI::get_cache() schedules the cleanup.
       for ( $seed = 0; ; $seed++ ) {
-        mt_srand( $seed );
-        if ( 0 === mt_rand( 0, 50 ) ) {
-          break;
-        }
+          mt_srand( $seed );
+          if ( 0 === mt_rand( 0, 50 ) ) {
+              break;
+          }
       }
       mt_srand( $seed );
       WP_CLI::get_cache();
@@ -187,17 +187,17 @@ Feature: CLI Cache
       <?php
       $cache  = WP_CLI::get_cache();
       $limits = Closure::bind(
-        function () {
-          return array(
-            'ttl'      => $this->ttl,
-            'max_size' => $this->max_size,
-          );
-        },
-        $cache,
-        get_class( $cache )
+          function () {
+              return array(
+                  'ttl'      => $this->ttl,
+                  'max_size' => $this->max_size,
+              );
+          },
+          $cache,
+          get_class( $cache )
       );
       foreach ( $limits() as $name => $value ) {
-        WP_CLI::log( $name . ': ' . $value );
+          WP_CLI::log( $name . ': ' . $value );
       }
       """
 
@@ -232,10 +232,10 @@ Feature: CLI Cache
 
       // Seed mt_rand() so that the 1 in 51 check in WP_CLI::get_cache() schedules the cleanup.
       for ( $seed = 0; ; $seed++ ) {
-        mt_srand( $seed );
-        if ( 0 === mt_rand( 0, 50 ) ) {
-          break;
-        }
+          mt_srand( $seed );
+          if ( 0 === mt_rand( 0, 50 ) ) {
+              break;
+          }
       }
       mt_srand( $seed );
       WP_CLI::get_cache();
