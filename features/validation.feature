@@ -66,14 +66,14 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'entity update',
-      	function ( $args, $assoc_args ) {
-      		ksort( $assoc_args );
-      		foreach ( $assoc_args as $key => $value ) {
-      			WP_CLI::log( "{$key}={$value}" );
-      		}
-      		WP_CLI::success( "Updated {$args[0]}." );
-      	}
+          'entity update',
+          function ( $args, $assoc_args ) {
+              ksort( $assoc_args );
+              foreach ( $assoc_args as $key => $value ) {
+                  WP_CLI::log( "{$key}={$value}" );
+              }
+              WP_CLI::success( "Updated {$args[0]}." );
+          }
       );
       """
 
@@ -193,14 +193,14 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'entity update',
-      	function ( $args, $assoc_args ) {
-      		ksort( $assoc_args );
-      		foreach ( $assoc_args as $key => $value ) {
-      			WP_CLI::log( "{$key}={$value}" );
-      		}
-      		WP_CLI::success( "Updated {$args[0]}." );
-      	}
+          'entity update',
+          function ( $args, $assoc_args ) {
+              ksort( $assoc_args );
+              foreach ( $assoc_args as $key => $value ) {
+                  WP_CLI::log( "{$key}={$value}" );
+              }
+              WP_CLI::success( "Updated {$args[0]}." );
+          }
       );
 
       /**
@@ -215,10 +215,10 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'entity create',
-      	function ( $args, $assoc_args ) {
-      		WP_CLI::success( 'Created.' );
-      	}
+          'entity create',
+          function ( $args, $assoc_args ) {
+              WP_CLI::success( 'Created.' );
+          }
       );
       """
 
@@ -277,14 +277,14 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'entity query',
-      	function ( $args, $assoc_args ) {
-      		ksort( $assoc_args );
-      		foreach ( $assoc_args as $key => $value ) {
-      			WP_CLI::log( "{$key}={$value}" );
-      		}
-      		WP_CLI::success( "Ran {$args[0]}." );
-      	}
+          'entity query',
+          function ( $args, $assoc_args ) {
+              ksort( $assoc_args );
+              foreach ( $assoc_args as $key => $value ) {
+                  WP_CLI::log( "{$key}={$value}" );
+              }
+              WP_CLI::success( "Ran {$args[0]}." );
+          }
       );
       """
 
@@ -330,14 +330,14 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'entity list',
-      	function ( $args, $assoc_args ) {
-      		ksort( $assoc_args );
-      		foreach ( $assoc_args as $key => $value ) {
-      			WP_CLI::log( "{$key}={$value}" );
-      		}
-      		WP_CLI::success( 'Listed.' );
-      	}
+          'entity list',
+          function ( $args, $assoc_args ) {
+              ksort( $assoc_args );
+              foreach ( $assoc_args as $key => $value ) {
+                  WP_CLI::log( "{$key}={$value}" );
+              }
+              WP_CLI::success( 'Listed.' );
+          }
       );
       """
 
@@ -384,14 +384,14 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'entity update',
-      	function ( $args, $assoc_args ) {
-      		ksort( $assoc_args );
-      		foreach ( $assoc_args as $key => $value ) {
-      			WP_CLI::log( "{$key}={$value}" );
-      		}
-      		WP_CLI::success( "Updated {$args[0]}." );
-      	}
+          'entity update',
+          function ( $args, $assoc_args ) {
+              ksort( $assoc_args );
+              foreach ( $assoc_args as $key => $value ) {
+                  WP_CLI::log( "{$key}={$value}" );
+              }
+              WP_CLI::success( "Updated {$args[0]}." );
+          }
       );
 
       /**
@@ -403,10 +403,10 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'entity create',
-      	function ( $args, $assoc_args ) {
-      		WP_CLI::success( 'Created.' );
-      	}
+          'entity create',
+          function ( $args, $assoc_args ) {
+              WP_CLI::success( 'Created.' );
+          }
       );
       """
 
@@ -459,10 +459,10 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'rock-on',
-      	function ( $args, $assoc_args ) {
-      		WP_CLI::success( var_export( $assoc_args['volume'], true ) );
-      	}
+          'rock-on',
+          function ( $args, $assoc_args ) {
+              WP_CLI::success( var_export( $assoc_args['volume'], true ) );
+          }
       );
       """
 
