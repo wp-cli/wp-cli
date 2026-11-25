@@ -89,7 +89,7 @@ class Completions {
 			return;
 		}
 
-		list( $command, $args, $assoc_args ) = $r;
+		list( $command, , $assoc_args ) = $r;
 
 		$spec = SynopsisParser::parse( $command->get_synopsis() );
 
@@ -273,7 +273,7 @@ class Completions {
 				'site list',
 				[
 					'return'       => 'stdout',
-					'command_args' => [ '--field=url', '--number=-1', '--format=json' ],
+					'command_args' => [ '--field=url', '--number=0', '--format=json' ],
 				]
 			);
 

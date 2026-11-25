@@ -66,14 +66,14 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'entity update',
-      	function ( $args, $assoc_args ) {
-      		ksort( $assoc_args );
-      		foreach ( $assoc_args as $key => $value ) {
-      			WP_CLI::log( "{$key}={$value}" );
-      		}
-      		WP_CLI::success( "Updated {$args[0]}." );
-      	}
+          'entity update',
+          function ( $args, $assoc_args ) {
+              ksort( $assoc_args );
+              foreach ( $assoc_args as $key => $value ) {
+                  WP_CLI::log( "{$key}={$value}" );
+              }
+              WP_CLI::success( "Updated {$args[0]}." );
+          }
       );
       """
 
@@ -193,14 +193,14 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'entity update',
-      	function ( $args, $assoc_args ) {
-      		ksort( $assoc_args );
-      		foreach ( $assoc_args as $key => $value ) {
-      			WP_CLI::log( "{$key}={$value}" );
-      		}
-      		WP_CLI::success( "Updated {$args[0]}." );
-      	}
+          'entity update',
+          function ( $args, $assoc_args ) {
+              ksort( $assoc_args );
+              foreach ( $assoc_args as $key => $value ) {
+                  WP_CLI::log( "{$key}={$value}" );
+              }
+              WP_CLI::success( "Updated {$args[0]}." );
+          }
       );
 
       /**
@@ -215,10 +215,10 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'entity create',
-      	function ( $args, $assoc_args ) {
-      		WP_CLI::success( 'Created.' );
-      	}
+          'entity create',
+          function ( $args, $assoc_args ) {
+              WP_CLI::success( 'Created.' );
+          }
       );
       """
 
@@ -249,6 +249,14 @@ Feature: Argument validation
       Did you mean '--path'?
       """
 
+    # Hiding the global parameters from help output does not stop them from being suggested.
+    When I try `WP_CLI_SUPPRESS_GLOBAL_PARAMS=true wp --require=custom-cmd.php entity create --cat=5`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Did you mean '--path'?
+      """
+
   Scenario: A catch-all command does not measure its parameters against positional ones
     Given an empty directory
     And a custom-cmd.php file:
@@ -269,21 +277,21 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'entity query',
-      	function ( $args, $assoc_args ) {
-      		ksort( $assoc_args );
-      		foreach ( $assoc_args as $key => $value ) {
-      			WP_CLI::log( "{$key}={$value}" );
-      		}
-      		WP_CLI::success( "Ran {$args[0]}." );
-      	}
+          'entity query',
+          function ( $args, $assoc_args ) {
+              ksort( $assoc_args );
+              foreach ( $assoc_args as $key => $value ) {
+                  WP_CLI::log( "{$key}={$value}" );
+              }
+              WP_CLI::success( "Ran {$args[0]}." );
+          }
       );
       """
 
     # '--xml' is two edits from the positional '<sql>', and a real option of the
     # client the command hands its parameters to. A positional argument cannot
     # be spelled `--sql` in the first place, so it is not a candidate.
-    When I run `wp --require=custom-cmd.php entity query 'SELECT 1' --xml=1`
+    When I run `wp --require=custom-cmd.php entity query "SELECT 1" --xml=1`
     Then STDOUT should contain:
       """
       xml=1
@@ -295,7 +303,7 @@ Feature: Argument validation
     And STDERR should be empty
 
     # The documented parameters of the command remain candidates.
-    When I try `wp --require=custom-cmd.php entity query 'SELECT 1' --fomat=json`
+    When I try `wp --require=custom-cmd.php entity query "SELECT 1" --fomat=json`
     Then the return code should be 0
     And STDERR should contain:
       """
@@ -322,14 +330,14 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'entity list',
-      	function ( $args, $assoc_args ) {
-      		ksort( $assoc_args );
-      		foreach ( $assoc_args as $key => $value ) {
-      			WP_CLI::log( "{$key}={$value}" );
-      		}
-      		WP_CLI::success( 'Listed.' );
-      	}
+          'entity list',
+          function ( $args, $assoc_args ) {
+              ksort( $assoc_args );
+              foreach ( $assoc_args as $key => $value ) {
+                  WP_CLI::log( "{$key}={$value}" );
+              }
+              WP_CLI::success( 'Listed.' );
+          }
       );
       """
 
@@ -376,14 +384,14 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'entity update',
-      	function ( $args, $assoc_args ) {
-      		ksort( $assoc_args );
-      		foreach ( $assoc_args as $key => $value ) {
-      			WP_CLI::log( "{$key}={$value}" );
-      		}
-      		WP_CLI::success( "Updated {$args[0]}." );
-      	}
+          'entity update',
+          function ( $args, $assoc_args ) {
+              ksort( $assoc_args );
+              foreach ( $assoc_args as $key => $value ) {
+                  WP_CLI::log( "{$key}={$value}" );
+              }
+              WP_CLI::success( "Updated {$args[0]}." );
+          }
       );
 
       /**
@@ -395,10 +403,10 @@ Feature: Argument validation
        * @when before_wp_load
        */
       WP_CLI::add_command(
-      	'entity create',
-      	function ( $args, $assoc_args ) {
-      		WP_CLI::success( 'Created.' );
-      	}
+          'entity create',
+          function ( $args, $assoc_args ) {
+              WP_CLI::success( 'Created.' );
+          }
       );
       """
 
@@ -427,4 +435,64 @@ Feature: Argument validation
     And STDERR should contain:
       """
       Did you mean '--create'?
+      """
+
+  Scenario: A parameter whose value is optional honors its documented default and options
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * Plays some music.
+       *
+       * ## OPTIONS
+       *
+       * [--volume[=<level>]]
+       * : How loud to play it.
+       * ---
+       * default: quiet
+       * options:
+       *   - quiet
+       *   - loud
+       * ---
+       *
+       * @when before_wp_load
+       */
+      WP_CLI::add_command(
+          'rock-on',
+          function ( $args, $assoc_args ) {
+              WP_CLI::success( var_export( $assoc_args['volume'], true ) );
+          }
+      );
+      """
+
+    # The documented default is applied when the parameter is left out.
+    When I run `wp --require=custom-cmd.php rock-on`
+    Then STDOUT should be:
+      """
+      Success: 'quiet'
+      """
+    And STDERR should be empty
+
+    When I run `wp --require=custom-cmd.php rock-on --volume=loud`
+    Then STDOUT should be:
+      """
+      Success: 'loud'
+      """
+    And STDERR should be empty
+
+    # Passed as a flag, the value stays boolean and clears the options check.
+    When I run `wp --require=custom-cmd.php rock-on --volume`
+    Then STDOUT should be:
+      """
+      Success: true
+      """
+    And STDERR should be empty
+
+    # A value outside the documented list is rejected.
+    When I try `wp --require=custom-cmd.php rock-on --volume=deafening`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Invalid value specified for 'volume' (How loud to play it.)
       """

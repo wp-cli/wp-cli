@@ -3,8 +3,14 @@ Feature: Skipping themes
   Scenario: Skipping themes via global flag
     Given a WP installation
     # Themes will already be installed on WP core trunk.
-    And I try `wp theme install twentysixteen`
-    And I try `wp theme install twentyseventeen --activate`
+    And these installed themes:
+      """
+      twentysixteen
+      """
+    And these installed and active themes:
+      """
+      twentyseventeen
+      """
 
     When I run `wp eval "var_export( function_exists( 'twentyseventeen_body_classes' ) );"`
     Then STDOUT should be:
@@ -57,7 +63,11 @@ Feature: Skipping themes
   @require-php-7.4
   Scenario: Skip parent and child themes
     Given a WP installation
-    And I run `wp theme install moina moina-blog`
+    And these installed themes:
+      """
+      moina
+      moina-blog
+      """
 
     When I run `wp theme activate moina`
     And I run `wp eval "var_export( function_exists( 'moina_setup' ) );"`
@@ -122,8 +132,14 @@ Feature: Skipping themes
         - classic
         - default
       """
-    And I run `wp theme install classic --activate`
-    And I run `wp theme install default`
+    And these installed and active themes:
+      """
+      classic
+      """
+    And these installed themes:
+      """
+      default
+      """
 
     # The classic theme should show up as an active theme
     # The default theme should show up as an installed theme
@@ -148,7 +164,10 @@ Feature: Skipping themes
   @require-wp-6.1 @require-php-7.4
   Scenario: Skip a theme using block patterns
     Given a WP installation
-    And I run `wp theme install blockline --activate`
+    And these installed and active themes:
+      """
+      blockline
+      """
 
     When I run `wp eval "var_dump( function_exists( 'blockline_support' ) );"`
     Then STDOUT should be:
@@ -165,8 +184,14 @@ Feature: Skipping themes
   @require-wp-6.1 @require-php-7.4
   Scenario: Skip a theme using block patterns with Gutenberg active
     Given a WP installation
-    And I run `wp plugin install gutenberg --activate`
-    And I run `wp theme install blockline --activate`
+    And these installed and active plugins:
+      """
+      gutenberg
+      """
+    And these installed and active themes:
+      """
+      blockline
+      """
 
     When I run `wp eval "var_dump( function_exists( 'blockline_support' ) );"`
     Then STDOUT should be:

@@ -44,13 +44,13 @@ class UtilsTest extends TestCase {
 
 	public function testGetSemVer(): void {
 		$original_version = '0.19.1';
-		$this->assertEmpty( Utils\get_named_sem_ver( '0.18.0', $original_version ) );
-		$this->assertEmpty( Utils\get_named_sem_ver( '0.19.1', $original_version ) );
-		$this->assertEmpty( Utils\get_named_sem_ver( 'nonsense', $original_version ) );
-		$this->assertEmpty( Utils\get_named_sem_ver( '0.18.1-beta3', $original_version ) );
-		$this->assertEmpty( Utils\get_named_sem_ver( '0.19.1-dev1', $original_version ) );
-		$this->assertEmpty( Utils\get_named_sem_ver( '0.19.1-beta3', $original_version ) );
-		$this->assertEmpty( Utils\get_named_sem_ver( '0.19.2-dev1', $original_version ) ); // -dev suffix not accepted by SemVer.
+		$this->assertSame( '', Utils\get_named_sem_ver( '0.18.0', $original_version ) );
+		$this->assertSame( '', Utils\get_named_sem_ver( '0.19.1', $original_version ) );
+		$this->assertSame( '', Utils\get_named_sem_ver( 'nonsense', $original_version ) );
+		$this->assertSame( '', Utils\get_named_sem_ver( '0.18.1-beta3', $original_version ) );
+		$this->assertSame( '', Utils\get_named_sem_ver( '0.19.1-dev1', $original_version ) );
+		$this->assertSame( '', Utils\get_named_sem_ver( '0.19.1-beta3', $original_version ) );
+		$this->assertSame( '', Utils\get_named_sem_ver( '0.19.2-dev1', $original_version ) ); // -dev suffix not accepted by SemVer.
 		$this->assertSame( 'patch', Utils\get_named_sem_ver( '0.19.2-beta3', $original_version ) );
 		$this->assertSame( 'patch', Utils\get_named_sem_ver( '0.19.2', $original_version ) );
 		$this->assertSame( 'minor', Utils\get_named_sem_ver( '0.20.0', $original_version ) );
@@ -61,13 +61,13 @@ class UtilsTest extends TestCase {
 
 	public function testGetSemVerWP(): void {
 		$original_version = '3.0';
-		$this->assertEmpty( Utils\get_named_sem_ver( '2.8', $original_version ) );
-		$this->assertEmpty( Utils\get_named_sem_ver( '2.9.1', $original_version ) );
-		$this->assertEmpty( Utils\get_named_sem_ver( 'nonsense', $original_version ) );
-		$this->assertEmpty( Utils\get_named_sem_ver( '2.0-beta3', $original_version ) );
-		$this->assertEmpty( Utils\get_named_sem_ver( '3.0-dev1', $original_version ) );
-		$this->assertEmpty( Utils\get_named_sem_ver( '3.0-beta3', $original_version ) );
-		$this->assertEmpty( Utils\get_named_sem_ver( '3.0.1-dev1', $original_version ) ); // -dev suffix not accepted by SemVer.
+		$this->assertSame( '', Utils\get_named_sem_ver( '2.8', $original_version ) );
+		$this->assertSame( '', Utils\get_named_sem_ver( '2.9.1', $original_version ) );
+		$this->assertSame( '', Utils\get_named_sem_ver( 'nonsense', $original_version ) );
+		$this->assertSame( '', Utils\get_named_sem_ver( '2.0-beta3', $original_version ) );
+		$this->assertSame( '', Utils\get_named_sem_ver( '3.0-dev1', $original_version ) );
+		$this->assertSame( '', Utils\get_named_sem_ver( '3.0-beta3', $original_version ) );
+		$this->assertSame( '', Utils\get_named_sem_ver( '3.0.1-dev1', $original_version ) ); // -dev suffix not accepted by SemVer.
 		$this->assertSame( 'patch', Utils\get_named_sem_ver( '3.0.1-beta3', $original_version ) );
 		$this->assertSame( 'patch', Utils\get_named_sem_ver( '3.0.1', $original_version ) );
 		$this->assertSame( 'minor', Utils\get_named_sem_ver( '3.1-beta3', $original_version ) );
@@ -142,10 +142,6 @@ class UtilsTest extends TestCase {
 
 		// Host and path, no port, with scp notation.
 		$testcase = 'foo.com:~/path/to/dir';
-		$expected = [
-			'host' => 'foo.com',
-			'path' => '~/path/to/dir',
-		];
 		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertNull( Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -753,6 +749,7 @@ class UtilsTest extends TestCase {
 			[ 'spam', 'spammed' ],
 			[ 'toggle', 'toggled' ],
 			[ 'uninstall', 'uninstalled' ],
+			[ 'unspam', 'unspammed' ],
 			[ 'update', 'updated' ],
 			// Some others.
 			[ 'call', 'called' ],
@@ -765,6 +762,9 @@ class UtilsTest extends TestCase {
 			[ 'slay', 'slayed' ], // One vowel + final "y" excluded (nearly all irregular anyway).
 			[ 'submit', 'submited' ], // BUG: multi-voweled verbs that double not catered for - should be "submitted".
 			[ 'try', 'tried' ],
+			[ 'unpin', 'unpinned' ], // "un" prefix + one vowel + final consonant.
+			[ 'unlock', 'unlocked' ],
+			[ 'untrash', 'untrashed' ],
 		];
 	}
 
@@ -844,12 +844,11 @@ class UtilsTest extends TestCase {
 		$logger = new Loggers\Execution();
 		WP_CLI::set_logger( $logger );
 
-		$exception = null;
-
 		try {
 			Utils\report_batch_operation_results( $noun, $verb, $total, $successes, $failures, $skips );
+		// phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 		} catch ( ExitException $ex ) {
-			$exception = $ex;
+			// Expected when the batch operation reports an error.
 		}
 		$this->assertSame( $stdout, $logger->stdout );
 		$this->assertSame( $stderr, $logger->stderr );
@@ -969,7 +968,7 @@ class UtilsTest extends TestCase {
 	public function test_esc_like_with_wpdb( string $input, string $expected ): void {
 		global $wpdb;
 
-		$wpdb = $this->createMock( WP_CLI_Mock_WPDB::class );
+		$wpdb = $this->createStub( WP_CLI_Mock_WPDB::class );
 		$wpdb->method( 'esc_like' )
 			->willReturn( addcslashes( $input, '_%\\' ) );
 
@@ -1188,6 +1187,28 @@ class UtilsTest extends TestCase {
 		$this->assertStringContainsString( '\'-123,45', $csv_content );
 	}
 
+	public function testWriteCsvWithHeadersThatNeedEscaping(): void {
+		$temp_file = tmpfile();
+
+		Utils\write_csv(
+			$temp_file,
+			[
+				[
+					'@amount' => '42',
+					'=total'  => '100',
+					'name'    => 'Order',
+				],
+			],
+			[ '@amount', '=total', 'name' ]
+		);
+
+		rewind( $temp_file );
+		$csv_content = str_replace( "\r\n", "\n", (string) stream_get_contents( $temp_file ) );
+
+		// The header cells are escaped, but the values are still looked up by the original names.
+		$this->assertSame( "'@amount,'=total,name\n42,100,Order\n", $csv_content );
+	}
+
 	public function testWriteCsvWithoutHeaders(): void {
 		// Create a temporary file
 		$temp_file = tmpfile();
@@ -1326,6 +1347,8 @@ class UtilsTest extends TestCase {
 			[ -1536, 1, '', '-1.5 KB' ],
 			[ 5000, 0, 'FOO', '5 KB' ],
 			[ 1.5e26, 0, '', '150 YB' ],
+			[ 0.5, 0, '', '0 B' ],
+			[ -0.5, 0, '', '0 B' ],
 		];
 	}
 
@@ -1411,5 +1434,59 @@ class UtilsTest extends TestCase {
 		);
 
 		return escapeshellarg( $php ) . ' -r ' . escapeshellarg( $code );
+	}
+
+	public function testFindExecutable(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'PATH lookup of executables is only used on Unix-like systems.' );
+		}
+
+		$base = sys_get_temp_dir() . '/wp-cli-find-executable-' . uniqid();
+		mkdir( "$base/not-executable", 0777, true );
+		mkdir( "$base/executable" );
+		file_put_contents( "$base/not-executable/wp-cli-test-binary", '' );
+		file_put_contents( "$base/executable/wp-cli-test-binary", "#!/bin/sh\n" );
+		chmod( "$base/not-executable/wp-cli-test-binary", 0644 );
+		chmod( "$base/executable/wp-cli-test-binary", 0755 );
+
+		$path = getenv( 'PATH' );
+		// Includes an empty entry, which must be skipped rather than resolved to the current directory.
+		putenv( "PATH=$base/not-executable::$base/executable" );
+
+		try {
+			$this->assertSame( "$base/executable/wp-cli-test-binary", Utils\find_executable( 'wp-cli-test-binary' ) );
+			$this->assertSame( '', Utils\find_executable( 'wp-cli-test-binary-that-does-not-exist' ) );
+		} finally {
+			putenv( false === $path ? 'PATH' : "PATH=$path" );
+			unlink( "$base/not-executable/wp-cli-test-binary" );
+			unlink( "$base/executable/wp-cli-test-binary" );
+			rmdir( "$base/not-executable" );
+			rmdir( "$base/executable" );
+			rmdir( $base );
+		}
+	}
+
+	public function testGetBinaryVersionOutputRunsBinaryOnce(): void {
+		if ( Utils\is_windows() ) {
+			$this->markTestSkipped( 'Uses a shell script as a fake binary.' );
+		}
+
+		$base    = sys_get_temp_dir() . '/wp-cli-binary-version-' . uniqid();
+		$counter = "$base/calls";
+		mkdir( $base );
+		file_put_contents( "$base/fake-mysql", "#!/bin/sh\necho call >> " . escapeshellarg( $counter ) . "\necho 'fake-mysql  Ver 1.0'\n" );
+		file_put_contents( "$base/failing-mysql", "#!/bin/sh\nexit 1\n" );
+		chmod( "$base/fake-mysql", 0755 );
+		chmod( "$base/failing-mysql", 0755 );
+
+		try {
+			$this->assertSame( "fake-mysql  Ver 1.0\n", Utils\get_binary_version_output( "$base/fake-mysql" ) );
+			$this->assertSame( "fake-mysql  Ver 1.0\n", Utils\get_binary_version_output( "$base/fake-mysql" ) );
+			$this->assertSame( "call\n", file_get_contents( $counter ) );
+			$this->assertNull( Utils\get_binary_version_output( "$base/failing-mysql" ) );
+		} finally {
+			array_map( 'unlink', glob( "$base/*" ) ?: [] );
+			rmdir( $base );
+		}
 	}
 }

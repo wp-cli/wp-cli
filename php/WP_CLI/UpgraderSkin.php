@@ -62,11 +62,6 @@ class UpgraderSkin extends WP_Upgrader_Skin {
 	 * @param mixed  ...$args Optional text replacements.
 	 */
 	public function feedback( $string, ...$args ) {
-		$args_array = [];
-		foreach ( $args as $arg ) {
-			$args_array[] = $args;
-		}
-
 		$this->process_feedback( $string, $args );
 	}
 

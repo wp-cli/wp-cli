@@ -9,6 +9,9 @@ updates:
       - scope:distribution
     cooldown:
       default-days: 7
+      # Packages from our own org are trusted, so they are updated immediately.
+      exclude:
+        - "wp-cli/*"
   # Only wp-cli-tests carries a package.json, holding the pinned version of the
   # Gherkin linter. This is a no-op in every other repository.
   - package-ecosystem: npm

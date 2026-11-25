@@ -1,5 +1,6 @@
 <?php
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use WP_CLI\Formatter;
 use WP_CLI\Tests\TestCase;
 
@@ -225,6 +226,611 @@ class FormatterTest extends TestCase {
 
 		$this->assertTrue( $called, 'Custom handler should override built-in format' );
 		$this->assertSame( 'OVERRIDDEN', $output );
+	}
+
+	public function test_json_from_iterator_matches_array(): void {
+		$items = [
+			[
+				'post_title' => 'First',
+				'post_meta'  => [ 'a' => 1 ],
+				'unused'     => 'x',
+			],
+			(object) [
+				'post_title' => 'Second "quoted"',
+				'post_meta'  => null,
+				'unused'     => 'y',
+			],
+		];
+
+		$generator = ( static function () use ( $items ) {
+			yield from $items;
+		} )();
+
+		$outputs = [];
+		foreach ( [ $items, new ArrayIterator( $items ), $generator ] as $input ) {
+			$assoc_args = [
+				'format' => 'json',
+				'fields' => 'title,meta',
+			];
+			$formatter  = new Formatter( $assoc_args, null, 'post' );
+
+			ob_start();
+			$formatter->display_items( $input );
+			$outputs[] = ob_get_clean();
+		}
+
+		$this->assertSame( '[{"post_title":"First","post_meta":{"a":1}},{"post_title":"Second \\"quoted\\"","post_meta":null}]', $outputs[0] );
+		$this->assertSame( $outputs[0], $outputs[1] );
+		$this->assertSame( $outputs[0], $outputs[2] );
+	}
+
+	/**
+	 * Rows with repeated keys, e.g. from `yield from`, are all output, whether the items
+	 * are streamed or not.
+	 *
+	 * @dataProvider data_iterator_fields
+	 */
+	#[DataProvider( 'data_iterator_fields' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function test_iterator_with_repeated_keys_outputs_all_rows( string $fields ): void {
+		$generator = ( static function () {
+			yield from [ [ 'name' => 'a' ], [ 'name' => 'b' ] ];
+			yield from [
+				[
+					'name'   => 'c',
+					'custom' => 'x',
+				],
+				[
+					'name'   => 'd',
+					'custom' => 'y',
+				],
+			];
+		} )();
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, explode( ',', $fields ) );
+
+		ob_start();
+		$formatter->display_items( $generator );
+		/** @var array<int, array<string, mixed>> $rows */
+		$rows = json_decode( (string) ob_get_clean(), true );
+
+		$this->assertSame( [ 'a', 'b', 'c', 'd' ], array_column( $rows, 'name' ) );
+	}
+
+	/**
+	 * Transformations of an iterator run once per item, whether the items are streamed or not.
+	 *
+	 * @dataProvider data_iterator_fields
+	 */
+	#[DataProvider( 'data_iterator_fields' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function test_iterator_transformations_run_once_per_item( string $fields ): void {
+		$calls = 0;
+		$items = WP_CLI\Utils\iterator_map(
+			[
+				[ 'name' => 'a' ],
+				[
+					'name'   => 'b',
+					'custom' => 'x',
+				],
+			],
+			static function ( $item ) use ( &$calls ) {
+				$item['number'] = ++$calls;
+				return $item;
+			}
+		);
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, explode( ',', $fields . ',number' ) );
+
+		ob_start();
+		$formatter->display_items( $items );
+		/** @var array<int, array<string, mixed>> $rows */
+		$rows = json_decode( (string) ob_get_clean(), true );
+
+		$this->assertSame( [ 1, 2 ], array_column( $rows, 'number' ) );
+		$this->assertSame( 2, $calls );
+	}
+
+	/**
+	 * Fields that are all in the first item, so the items are streamed, and fields that
+	 * are not, so they are not.
+	 *
+	 * @return array<string, array{string}>
+	 */
+	public static function data_iterator_fields(): array {
+		return [
+			'streamed'     => [ 'name' ],
+			'not streamed' => [ 'name,custom' ],
+		];
+	}
+
+	public function test_yaml_from_iterator_matches_array(): void {
+		$items = [
+			[
+				'ID'    => 1,
+				'title' => 'Hello: world',
+				'tags'  => [ 'a', 'b' ],
+				'meta'  => [ 'k' => [ 'x' => 1 ] ],
+				'multi' => "line1\nline2",
+				'flag'  => true,
+				'none'  => null,
+			],
+			[
+				'ID'    => 2,
+				'title' => '- dash',
+				'tags'  => [],
+				'meta'  => [],
+				'multi' => '#hash',
+				'flag'  => false,
+				'none'  => 'null',
+			],
+		];
+
+		$outputs = [];
+		$inputs  = [
+			'array'          => $items,
+			'iterator'       => new ArrayIterator( $items ),
+			'empty array'    => [],
+			'empty iterator' => new ArrayIterator( [] ),
+		];
+
+		foreach ( $inputs as $type => $input ) {
+			$assoc_args = [ 'format' => 'yaml' ];
+			$formatter  = new Formatter( $assoc_args, [ 'ID', 'title', 'tags', 'meta', 'multi', 'flag', 'none' ] );
+
+			ob_start();
+			$formatter->display_items( $input );
+			$outputs[ $type ] = ob_get_clean();
+		}
+
+		$this->assertSame( $outputs['array'], $outputs['iterator'] );
+		$this->assertSame( $outputs['empty array'], $outputs['empty iterator'] );
+		$this->assertStringContainsString( "title: 'Hello: world'", (string) $outputs['iterator'] );
+	}
+
+	public function test_yaml_is_streamed_from_iterator(): void {
+		/** @var string[] $read */
+		$read      = [];
+		$generator = ( function () use ( &$read ) {
+			foreach ( [ 'a', 'b' ] as $name ) {
+				$read[] = $name . ' at ' . ob_get_length();
+				yield [ 'name' => $name ];
+			}
+		} )();
+
+		$assoc_args = [ 'format' => 'yaml' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+
+		ob_start();
+		$formatter->display_items( $generator );
+		$output = (string) ob_get_clean();
+
+		// The second item is only read after the first one was written.
+		$this->assertSame( [ 'a at 0', 'b at ' . strpos( $output, '- ', 6 ) ], $read );
+	}
+
+	public function test_json_from_empty_iterator(): void {
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+
+		ob_start();
+		$formatter->display_items( new ArrayIterator( [] ) );
+		$this->assertSame( '[]', ob_get_clean() );
+	}
+
+	public function test_overridden_builtin_format_receives_all_items_from_iterator(): void {
+		$received = null;
+		Formatter::add_format(
+			'json',
+			function ( $items ) use ( &$received ) {
+				$received = $items;
+			}
+		);
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+
+		ob_start();
+		$formatter->display_items( new ArrayIterator( [ [ 'name' => 'a' ], [ 'name' => 'b' ] ] ) );
+		ob_end_clean();
+
+		$this->assertSame( [ [ 'name' => 'a' ], [ 'name' => 'b' ] ], $received );
+	}
+
+	public function test_streaming_custom_format_receives_items_one_by_one(): void {
+		$log      = [];
+		$is_array = null;
+		$args     = null;
+		Formatter::add_format(
+			'test_stream',
+			function ( $items, $fields, $formatter, $handler_args ) use ( &$log, &$is_array, &$args ) {
+				$is_array = is_array( $items );
+				$args     = $handler_args;
+				foreach ( $items as $item ) {
+					$log[] = [ 'output', $item ];
+				}
+			},
+			[ 'streaming' => true ]
+		);
+
+		$assoc_args = [
+			'format' => 'test_stream',
+			'fields' => 'name,ID',
+		];
+		$formatter  = new Formatter( $assoc_args, null, 'post' );
+
+		$generator = ( function () use ( &$log ) {
+			foreach ( [ [ 1, 'a' ], [ 2, 'b' ] ] as list( $id, $name ) ) {
+				$log[] = [ 'read', $id ];
+				yield (object) [
+					'ID'        => $id,
+					'post_name' => $name,
+					'extra'     => 'x',
+				];
+			}
+		} )();
+
+		$formatter->display_items( $generator );
+
+		$this->assertFalse( $is_array );
+		$this->assertIsArray( $args );
+		$this->assertTrue( $args['streaming'] );
+		// Each item is passed on before the next one is read, with only the requested fields.
+		$this->assertSame(
+			[
+				[ 'read', 1 ],
+				[
+					'output',
+					[
+						'post_name' => 'a',
+						'ID'        => 1,
+					],
+				],
+				[ 'read', 2 ],
+				[
+					'output',
+					[
+						'post_name' => 'b',
+						'ID'        => 2,
+					],
+				],
+			],
+			$log
+		);
+	}
+
+	public function test_streaming_custom_format_receives_array_items_as_array(): void {
+		$received = null;
+		$args     = null;
+		Formatter::add_format(
+			'test_stream',
+			function ( $items, $fields, $formatter, $handler_args ) use ( &$received, &$args ) {
+				$received = $items;
+				$args     = $handler_args;
+			},
+			[ 'streaming' => true ]
+		);
+
+		$assoc_args = [ 'format' => 'test_stream' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+		$formatter->display_items( [ [ 'name' => 'a' ], [ 'name' => 'b' ] ] );
+
+		$this->assertSame( [ [ 'name' => 'a' ], [ 'name' => 'b' ] ], $received );
+		$this->assertIsArray( $args );
+		$this->assertArrayNotHasKey( 'streaming', $args );
+	}
+
+	public function test_streaming_scalar_items_without_fields(): void {
+		$is_array = null;
+		Formatter::add_format(
+			'test_stream',
+			function ( $items ) use ( &$is_array ) {
+				$is_array = is_array( $items );
+				echo implode( ',', iterator_to_array( $items, false ) );
+			},
+			[ 'streaming' => true ]
+		);
+
+		$assoc_args = [ 'format' => 'test_stream' ];
+		$formatter  = new Formatter( $assoc_args );
+
+		ob_start();
+		$formatter->display_items( new ArrayIterator( [ 1, 2, 3 ] ) );
+		$output = ob_get_clean();
+
+		$this->assertFalse( $is_array );
+		$this->assertSame( '1,2,3', $output );
+
+		$assoc_args = [ 'format' => 'json' ];
+		$formatter  = new Formatter( $assoc_args );
+
+		ob_start();
+		$formatter->display_items( new ArrayIterator( [ 1, 2, 3 ] ) );
+		$output = ob_get_clean();
+
+		$this->assertSame( '[1,2,3]', $output );
+	}
+
+	public function test_overriding_builtin_format_with_streaming_receives_items_one_by_one(): void {
+		$received = null;
+		Formatter::add_format(
+			'csv',
+			function ( $items ) use ( &$received ) {
+				$received = is_array( $items ) ? 'array' : iterator_to_array( $items, false );
+			},
+			[ 'streaming' => true ]
+		);
+
+		$assoc_args = [ 'format' => 'csv' ];
+		$formatter  = new Formatter( $assoc_args, [ 'name', 'tags' ] );
+		$formatter->display_items(
+			new ArrayIterator(
+				[
+					[
+						'name' => 'a',
+						'tags' => [ 'x' ],
+					],
+				]
+			)
+		);
+
+		// Like for an array of items, CSV values are JSON-encoded.
+		$this->assertSame(
+			[
+				[
+					'name' => 'a',
+					'tags' => '["x"]',
+				],
+			],
+			$received
+		);
+	}
+
+	public function test_table_rows_from_iterator_are_written_as_they_are_read_when_piped(): void {
+		$previous_pipe = getenv( 'SHELL_PIPE' );
+		putenv( 'SHELL_PIPE=1' );
+
+		/** @var string[] $read */
+		$read      = [];
+		$generator = ( function () use ( &$read ) {
+			foreach ( [ 'a', 'b' ] as $name ) {
+				$read[] = $name . ' after ' . str_replace( "\n", '|', (string) ob_get_contents() );
+				yield [ 'name' => $name ];
+			}
+		} )();
+
+		ob_start();
+		try {
+			$assoc_args = [ 'format' => 'table' ];
+			$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+			$formatter->display_items( $generator );
+		} finally {
+			$output = ob_get_clean();
+			putenv( false === $previous_pipe ? 'SHELL_PIPE' : "SHELL_PIPE=$previous_pipe" );
+		}
+
+		// The first item is read to resolve the fields before anything is written. After that,
+		// each row is written before the next one is read.
+		$this->assertSame( [ 'a after ', 'b after name|a|' ], $read );
+		$this->assertSame( "name\na\nb\n", $output );
+	}
+
+	public function test_table_restores_colors_when_reading_items_throws(): void {
+		$runner         = WP_CLI::get_runner();
+		$colorize       = new \ReflectionProperty( $runner, 'colorize' );
+		$colors_enabled = new \ReflectionProperty( \cli\Colors::class, '_enabled' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
+			$colorize->setAccessible( true );
+			// @phpstan-ignore method.deprecated
+			$colors_enabled->setAccessible( true );
+		}
+		$previous_colorize = $colorize->getValue( $runner );
+		$previous_enabled  = $colors_enabled->getValue();
+
+		$colorize->setValue( $runner, true );
+		\cli\Colors::enable( true );
+
+		$generator = ( function () {
+			yield [ 'name' => 'a' ];
+			throw new \RuntimeException( 'Failed to read item' );
+		} )();
+
+		$caught = null;
+		ob_start();
+		try {
+			$assoc_args = [ 'format' => 'table' ];
+			$formatter  = new Formatter( $assoc_args, [ 'name' ] );
+			$formatter->display_items( $generator );
+		} catch ( \RuntimeException $e ) {
+			$caught = $e;
+		} finally {
+			ob_end_clean();
+			$colors_after = \cli\Colors::shouldColorize();
+			$colorize->setValue( $runner, $previous_colorize );
+			$colors_enabled->setValue( null, $previous_enabled );
+		}
+
+		$this->assertInstanceOf( \RuntimeException::class, $caught );
+		$this->assertTrue( $colors_after );
+	}
+
+	public function test_non_streamed_iterator_items_are_read_while_they_are_current(): void {
+		$received = null;
+		Formatter::add_format(
+			'test_collect',
+			function ( $items ) use ( &$received ) {
+				$received = $items;
+			}
+		);
+
+		// Like the meta of a post whose chunk was cleared from the object cache, the magic
+		// property of each item is only available until the next item is generated.
+		$available = [];
+		$generator = ( function () use ( &$available ) {
+			foreach ( [ 1, 2 ] as $id ) {
+				$available = [ $id => "meta $id" ];
+				yield new class( $id, $available ) {
+					/** @var int */
+					public $ID;
+
+					/** @var array<int, string> */
+					private $available;
+
+					/**
+					 * @param int                $id
+					 * @param array<int, string> $available
+					 */
+					public function __construct( $id, &$available ) {
+						$this->ID        = $id;
+						$this->available = &$available;
+					}
+
+					/**
+					 * @param string $name
+					 * @return bool
+					 */
+					public function __isset( $name ) {
+						return 'meta' === $name;
+					}
+
+					/**
+					 * @param string $name
+					 * @return string|null
+					 */
+					public function __get( $name ) {
+						return $this->available[ $this->ID ] ?? null;
+					}
+				};
+			}
+		} )();
+
+		$assoc_args = [ 'format' => 'test_collect' ];
+		$formatter  = new Formatter( $assoc_args, [ 'ID', 'meta' ] );
+		$formatter->display_items( $generator );
+
+		$this->assertSame(
+			[
+				[
+					'ID'   => 1,
+					'meta' => 'meta 1',
+				],
+				[
+					'ID'   => 2,
+					'meta' => 'meta 2',
+				],
+			],
+			$received
+		);
+	}
+
+	public function test_non_streamed_iterator_items_only_read_the_resolved_key(): void {
+		$received = null;
+		Formatter::add_format(
+			'test_collect',
+			function ( $items ) use ( &$received ) {
+				$received = $items;
+			}
+		);
+		$get_received = function () use ( &$received ) {
+			return $received;
+		};
+
+		$reads = 0;
+		$make  = function ( $title ) use ( &$reads ) {
+			return new class( $title, $reads ) {
+				/** @var string */
+				public $title;
+
+				/** @var int */
+				private $reads;
+
+				/**
+				 * @param string $title
+				 * @param int    $reads
+				 */
+				public function __construct( $title, &$reads ) {
+					$this->title = $title;
+					$this->reads = &$reads;
+				}
+
+				/**
+				 * @param string $name
+				 * @return bool
+				 */
+				public function __isset( $name ) {
+					return 'post_title' === $name;
+				}
+
+				/**
+				 * @param string $name
+				 * @return string
+				 */
+				public function __get( $name ) {
+					++$this->reads;
+					return 'unused';
+				}
+			};
+		};
+
+		$assoc_args = [ 'format' => 'test_collect' ];
+		$formatter  = new Formatter( $assoc_args, [ 'title' ], 'post' );
+		$formatter->display_items( new ArrayIterator( [ $make( 'a' ), $make( 'b' ) ] ) );
+
+		$this->assertSame( [ [ 'title' => 'a' ], [ 'title' => 'b' ] ], $get_received() );
+		$this->assertSame( 0, $reads );
+
+		// A field resolved to the prefixed key by an earlier item uses that key for later items.
+		$items = [
+			[ 'post_title' => 'prefixed' ],
+			[
+				'title'      => 'unprefixed',
+				'post_title' => 'second',
+			],
+		];
+		foreach ( [ $items, new ArrayIterator( $items ) ] as $input ) {
+			$assoc_args = [ 'format' => 'test_collect' ];
+			$formatter  = new Formatter( $assoc_args, [ 'title' ], 'post' );
+			$formatter->display_items( $input );
+			$this->assertSame( [ [ 'post_title' => 'prefixed' ], [ 'post_title' => 'second' ] ], $get_received() );
+		}
+	}
+
+	public function test_non_streamed_iterator_matches_array(): void {
+		$outputs = [];
+		Formatter::add_format(
+			'test_collect',
+			function ( $items, $fields ) use ( &$outputs ) {
+				$outputs[] = [ $items, $fields ];
+			}
+		);
+
+		$items = [
+			(object) [
+				'ID'         => 1,
+				'post_title' => 'First',
+				'post_name'  => 'first',
+				'name'       => 'unprefixed',
+			],
+			[
+				'ID'          => 2,
+				'post_title'  => 'Second',
+				'post_status' => 'draft',
+			],
+		];
+
+		foreach ( [ $items, new ArrayIterator( $items ) ] as $input ) {
+			$assoc_args = [
+				'format' => 'test_collect',
+				'fields' => 'ID,title,name,status',
+			];
+			$formatter  = new Formatter( $assoc_args, null, 'post' );
+			$formatter->display_items( $input );
+		}
+
+		$this->assertCount( 2, $outputs );
+		$this->assertSame( $outputs[0], $outputs[1] );
+		$this->assertSame( [ 'ID', 'post_title', 'name', 'post_status' ], $outputs[1][1] );
 	}
 
 	public function test_add_single_value_format(): void {

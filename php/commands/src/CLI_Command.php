@@ -97,6 +97,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * * PHP binary used.
 	 * * PHP binary version.
 	 * * PHP memory limit.
+	 * * OS virtual memory limit (`ulimit -v`), where it can be determined.
 	 * * php.ini configuration file used (which is typically different than web).
 	 * * WP-CLI root dir: where WP-CLI is installed (if non-Phar install).
 	 * * WP-CLI global config: where the global config YAML file is located.
@@ -126,6 +127,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *     PHP binary:  /usr/bin/php
 	 *     PHP version: 7.1.12-1+ubuntu16.04.1+deb.sury.org+1
 	 *     PHP memory limit: 512M
+	 *     OS virtual memory limit (ulimit -v): unlimited
 	 *     php.ini used:    /etc/php/7.1/cli/php.ini
 	 *     WP-CLI root dir:    phar://wp-cli.phar
 	 *     WP-CLI packages dir:    /home/person/.wp-cli/packages/
@@ -160,7 +162,11 @@ class CLI_Command extends WP_CLI_Command {
 			$packages_dir = null;
 		}
 
-		$memory_limit = ini_get( 'memory_limit' );
+		$memory_limit              = ini_get( 'memory_limit' );
+		$os_virtual_memory         = $this->get_virtual_memory_ulimit();
+		$os_virtual_memory_display = is_int( $os_virtual_memory )
+			? $this->format_kilobytes( $os_virtual_memory )
+			: $os_virtual_memory;
 
 		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$info = [
@@ -169,6 +175,7 @@ class CLI_Command extends WP_CLI_Command {
 				'php_binary_path'          => $php_bin,
 				'php_version'              => PHP_VERSION,
 				'php_memory_limit'         => $memory_limit,
+				'os_virtual_memory_limit'  => $os_virtual_memory_display,
 				'php_ini_used'             => get_cfg_var( 'cfg_file_path' ),
 				'mysql_binary_path'        => Utils\get_mysql_binary_path(),
 				'mysql_version'            => Utils\get_mysql_version(),
@@ -194,6 +201,7 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::line( "PHP binary:\t" . $php_bin );
 			WP_CLI::line( "PHP version:\t" . PHP_VERSION );
 			WP_CLI::line( "PHP memory limit:\t" . $memory_limit );
+			WP_CLI::line( "OS virtual memory limit (ulimit -v):\t" . $os_virtual_memory_display );
 			WP_CLI::line( "php.ini used:\t" . $cfg_file_path );
 			WP_CLI::line( "MySQL binary:\t" . Utils\get_mysql_binary_path() );
 			WP_CLI::line( "MySQL version:\t" . Utils\get_mysql_version() );
@@ -209,27 +217,28 @@ class CLI_Command extends WP_CLI_Command {
 		}
 
 		// Emit a warning if the memory limit is set to a low value.
-		$this->check_memory_limit( $memory_limit );
+		$this->check_memory_limit( $memory_limit, $os_virtual_memory );
 	}
 
 	/**
 	 * Checks if the PHP memory limit is too low and emits a warning if needed.
 	 *
-	 * @param string $memory_limit The current memory limit value from ini_get().
+	 * Also checks for a restrictive OS-level virtual memory limit (`ulimit -v`),
+	 * which is a separate constraint from PHP's `memory_limit` and a common
+	 * cause of "mmap() failed: Cannot allocate memory" errors on shared hosting
+	 * even when `memory_limit` itself looks sufficient.
+	 *
+	 * @param string     $memory_limit         The current memory limit value from ini_get().
+	 * @param int|string $os_virtual_memory_kb The `ulimit -v` value in kilobytes, or 'unlimited'/'n/a'.
 	 * @return void
 	 */
-	private function check_memory_limit( $memory_limit ) {
-		// If memory limit is -1 (unlimited), no warning needed.
-		if ( '-1' === $memory_limit ) {
-			return;
-		}
-
-		// Convert memory limit string (e.g., "256M", "1G") to bytes.
-		$limit_bytes = $this->convert_to_bytes( $memory_limit );
+	private function check_memory_limit( $memory_limit, $os_virtual_memory_kb = 'n/a' ) {
+		// Convert memory limit string (e.g., "256M", "1G") to bytes. Returns -1 if unlimited.
+		$php_limit_bytes = ( '-1' === $memory_limit ) ? -1 : $this->convert_to_bytes( $memory_limit );
 
 		// Warn if limit is below 512M.
 		// This is a reasonable threshold for CLI operations.
-		if ( $limit_bytes > 0 && $limit_bytes < self::MEMORY_LIMIT_WARNING_THRESHOLD ) {
+		if ( $php_limit_bytes > 0 && $php_limit_bytes < self::MEMORY_LIMIT_WARNING_THRESHOLD ) {
 			WP_CLI::warning(
 				sprintf(
 					'PHP memory limit is set to %s. This may be too low for some WP-CLI operations. Consider increasing it to at least 512M or setting it to -1 (unlimited) for CLI usage.',
@@ -237,6 +246,87 @@ class CLI_Command extends WP_CLI_Command {
 				)
 			);
 		}
+
+		if ( ! is_int( $os_virtual_memory_kb ) ) {
+			return;
+		}
+
+		// When PHP's own memory_limit is unlimited, fall back to the same
+		// threshold used above as a reasonable reference point.
+		$reference_bytes = ( -1 === $php_limit_bytes ) ? self::MEMORY_LIMIT_WARNING_THRESHOLD : $php_limit_bytes;
+		$os_limit_bytes  = $os_virtual_memory_kb * 1024;
+
+		if ( $reference_bytes > 0 && $os_limit_bytes < $reference_bytes ) {
+			$php_limit_description = ( -1 === $php_limit_bytes )
+				? 'unlimited'
+				: $memory_limit;
+
+			WP_CLI::warning(
+				sprintf(
+					"This shell's OS-level virtual memory limit (`ulimit -v`) is set to %s, which is lower than PHP's memory limit (%s). This is a common cause of \"mmap() failed: Cannot allocate memory\" errors even though memory_limit itself looks sufficient. Increasing memory_limit will not help; ask your hosting provider to raise the OS-level limit instead.",
+					$this->format_kilobytes( $os_virtual_memory_kb ),
+					$php_limit_description
+				)
+			);
+		}
+	}
+
+	/**
+	 * Gets the OS-level virtual memory limit (`ulimit -v`) currently in effect for this process, in kilobytes.
+	 *
+	 * `ulimit -v` maps to the POSIX `RLIMIT_AS` resource limit, which caps the
+	 * total virtual address space a process may map. It is inherited by child
+	 * processes, so shelling out to a fresh `sh` reports the limit already in
+	 * effect for the running PHP process. This is distinct from PHP's own
+	 * `memory_limit` setting, and some hosting environments (e.g. restrictive
+	 * SSH jails) constrain it independently, and often more tightly.
+	 *
+	 * @return int|string The limit in kilobytes, 'unlimited', or 'n/a' if it could not be determined.
+	 */
+	private function get_virtual_memory_ulimit() {
+		if ( Utils\is_windows() || ! function_exists( 'shell_exec' ) ) {
+			return 'n/a';
+		}
+
+		$output = @shell_exec( 'ulimit -v 2>/dev/null' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+
+		if ( ! is_string( $output ) || '' === trim( $output ) ) {
+			return 'n/a';
+		}
+
+		$output = trim( $output );
+
+		if ( ! is_numeric( $output ) ) {
+			return 'unlimited';
+		}
+
+		return (int) $output;
+	}
+
+	/**
+	 * Formats a kilobyte value as a human-readable string (e.g. "512M").
+	 *
+	 * @param int $kilobytes The value in kilobytes.
+	 * @return string
+	 */
+	private function format_kilobytes( $kilobytes ) {
+		$units      = [ 'K', 'M', 'G', 'T' ];
+		$last_index = count( $units ) - 1;
+		$value      = (float) $kilobytes;
+		$index      = 0;
+
+		while ( $value >= 1024 && $index < $last_index ) {
+			$value /= 1024;
+			++$index;
+		}
+
+		$value = floor( $value * 100 ) / 100;
+
+		if ( floor( $value ) === $value ) {
+			$value = (int) $value;
+		}
+
+		return $value . $units[ $index ];
 	}
 
 	/**
@@ -464,13 +554,11 @@ class CLI_Command extends WP_CLI_Command {
 			$this->check_manifest_php_requirement( 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.manifest.json', $assoc_args );
 			WP_CLI::confirm( sprintf( 'You are currently using WP-CLI version %s. Would you like to update to the latest nightly version?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar';
-			$md5_url      = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.md5';
 			$sha512_url   = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.sha512';
 		} elseif ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
 			$this->check_manifest_php_requirement( 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.manifest.json', $assoc_args );
 			WP_CLI::confirm( sprintf( 'You are currently using WP-CLI version %s. Would you like to update to the latest stable release?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
-			$md5_url      = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.md5';
 			$sha512_url   = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.sha512';
 		} else {
 
@@ -492,7 +580,6 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to %s?', WP_CLI_VERSION, $newest['version'] ), $assoc_args );
 
 			$download_url = $newest['package_url'];
-			$md5_url      = str_replace( '.phar', '.phar.md5', $download_url );
 			$sha512_url   = str_replace( '.phar', '.phar.sha512', $download_url );
 		}
 
@@ -511,7 +598,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		unset( $options['filename'] );
 
-		$this->validate_hashes( $temp, $sha512_url, $md5_url );
+		$this->validate_hash( $temp, $sha512_url );
 
 		$allow_root   = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
 		$php_binary   = escapeshellarg( Utils\get_php_binary() );
@@ -691,11 +778,10 @@ class CLI_Command extends WP_CLI_Command {
 	/**
 	 * @param string $file       Release file path.
 	 * @param string $sha512_url URL to sha512 hash.
-	 * @param string $md5_url    URL to md5 hash.
 	 *
 	 * @throws \WP_CLI\ExitException
 	 */
-	private function validate_hashes( $file, $sha512_url, $md5_url ): void {
+	private function validate_hash( $file, $sha512_url ): void {
 		// Note: Utils\http_request() is intentionally called without the 'insecure' option
 		// to ensure hash fetches remain TLS certificate-verified even if --insecure was used for downloading the phar.
 
@@ -712,23 +798,6 @@ class CLI_Command extends WP_CLI_Command {
 		}
 
 		WP_CLI::log( "sha512 hash verified: $release_sha512" );
-
-		// MD5 is an optional additional check and must never be a replacement for SHA-512.
-		if ( $md5_url ) {
-			$response = Utils\http_request( 'GET', $md5_url );
-			if ( '20' !== substr( (string) $response->status_code, 0, 2 ) ) {
-				WP_CLI::log( "Couldn't access md5 hash for release (HTTP code {$response->status_code})." );
-				return;
-			}
-
-			$file_md5    = hash_file( 'md5', $file );
-			$release_md5 = trim( $response->body );
-			if ( $file_md5 !== $release_md5 ) {
-				WP_CLI::error( "md5 hash for download ($file_md5) is different than the release hash ($release_md5)." );
-			}
-
-			WP_CLI::log( "md5 hash verified: $release_md5" );
-		}
 	}
 
 	/**
@@ -980,7 +1049,7 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Dumps the list of global parameters, as JSON or in var_export format.
+	 * Dumps the list of global parameters, as JSON or in plaintext format.
 	 *
 	 * ## OPTIONS
 	 *
@@ -988,7 +1057,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * : Display current values also.
 	 *
 	 * [--format=<format>]
-	 * : Render output in a particular format.
+	 * : Render output in a particular format. Note: `var_export` is an alias for `plaintext`.
 	 * ---
 	 * default: json
 	 * options:
@@ -1001,6 +1070,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 *     # Dump the list of global parameters.
 	 *     $ wp cli param-dump --format=var_export
+	 *     $ wp cli param-dump --format=plaintext
 	 *     array (
 	 *       'path' =>
 	 *       array (

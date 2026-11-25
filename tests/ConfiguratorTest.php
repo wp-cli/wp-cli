@@ -30,7 +30,7 @@ class ConfiguratorTest extends TestCase {
 		$this->assertSame( 'foo', $args[0][0] );
 
 		$this->assertSame( 'bar', $args[1][0][0] );
-		$this->assertEmpty( $args[1][0][1] );
+		$this->assertSame( '', $args[1][0][1] );
 
 		$this->assertSame( 'baz', $args[1][1][0] );
 		$this->assertSame( 'text', $args[1][1][1] );
@@ -243,7 +243,7 @@ class ConfiguratorTest extends TestCase {
 		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
 		$configurator->merge_yml( $file );
 
-		[ $config, $extra_config ] = $configurator->to_array();
+		[ , $extra_config ] = $configurator->to_array();
 
 		unlink( $file );
 
@@ -261,7 +261,7 @@ class ConfiguratorTest extends TestCase {
 		$configurator = new Configurator( __DIR__ . '/../php/config-spec.php' );
 		$configurator->merge_yml( $file1 );
 
-		[ $config, $extra_config ] = $configurator->to_array();
+		[ , $extra_config ] = $configurator->to_array();
 
 		unlink( $file1 );
 		unlink( $file2 );

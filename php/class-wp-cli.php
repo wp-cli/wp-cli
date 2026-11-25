@@ -7,6 +7,7 @@ use WP_CLI\Dispatcher;
 use WP_CLI\Dispatcher\CommandAddition;
 use WP_CLI\Dispatcher\CommandFactory;
 use WP_CLI\Dispatcher\DisabledCommand;
+use WP_CLI\Dispatcher\LazyCommand;
 use WP_CLI\Dispatcher\CommandNamespace;
 use WP_CLI\Dispatcher\CompositeCommand;
 use WP_CLI\Dispatcher\RootCommand;
@@ -52,6 +53,17 @@ class WP_CLI {
 	private static $hooks_passed = [];
 
 	/**
+	 * Hooks with arguments that work like actions rather than filters.
+	 *
+	 * Every callback receives the original arguments: return values are ignored, and changes
+	 * made through by-reference parameters don't reach the next callback. Add any new hook
+	 * that passes arguments without using the callbacks' return values here.
+	 *
+	 * @var array<string, true>
+	 */
+	private static $action_hooks = [ 'find_command_to_run_pre' => true ];
+
+	/**
 	 * @var bool
 	 */
 	private static $capture_exit = false;
@@ -60,6 +72,13 @@ class WP_CLI {
 	 * @var array<int|string, mixed>
 	 */
 	private static $deferred_additions = [];
+
+	/**
+	 * Composer autoloaders that located the classes of deferred lazy commands, keyed by command name.
+	 *
+	 * @var array<string, \Composer\Autoload\ClassLoader|null>
+	 */
+	private static $deferred_class_loaders = [];
 
 	/**
 	 * Cached list of global argument names.
@@ -136,10 +155,14 @@ class WP_CLI {
 
 		if ( ! $cache ) {
 			$dir      = Utils\get_cache_dir();
-			$ttl      = (int) Utils\get_env_or_config( 'WP_CLI_CACHE_EXPIRY' ) ? : 15552000;
-			$max_size = (int) Utils\get_env_or_config( 'WP_CLI_CACHE_MAX_SIZE' ) ? : 314572800;
-			// 6 months, 300mb
-			$cache = new FileCache( $dir, $ttl, $max_size );
+			$ttl      = Utils\get_env_or_config( 'WP_CLI_CACHE_EXPIRY' );
+			$max_size = Utils\get_env_or_config( 'WP_CLI_CACHE_MAX_SIZE' );
+			// 6 months, 300mb. A value of 0 turns that limit off.
+			$cache = new FileCache(
+				$dir,
+				( (int) $ttl || is_numeric( $ttl ) ) ? (int) $ttl : 15552000,
+				( (int) $max_size || is_numeric( $max_size ) ) ? (int) $max_size : 314572800
+			);
 
 			// Clean older files on shutdown with 1/50 probability.
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand -- no crypto and WP not loaded.
@@ -280,7 +303,7 @@ class WP_CLI {
 	 * * `after_add_command:<command>` - After the command was added.
 	 * * `before_invoke:<command>` (1) - Just before a command is invoked.
 	 * * `after_invoke:<command>` (1) - Just after a command is invoked.
-	 * * `find_command_to_run_pre` - Just before WP-CLI finds the command to run.
+	 * * `find_command_to_run_pre` (1) - Just before WP-CLI finds the command to run.
 	 * * `unregistered_command_hint` (2) - Filters the hint shown for a command
 	 *   that is not registered.
 	 * * `before_registering_contexts` (1) - Before the contexts are registered.
@@ -293,7 +316,9 @@ class WP_CLI {
 	 *
 	 * The parentheses behind the hook name denote the number of arguments
 	 * being passed into the hook. For such hooks, the callback should return
-	 * the first argument again, making them work like a WP filter.
+	 * the first argument again, making them work like a WP filter. The exception
+	 * is `find_command_to_run_pre`, which works like a WP action: every callback
+	 * receives the same arguments, and return values are ignored.
 	 *
 	 * WP-CLI commands can create their own hooks with `WP_CLI::do_hook()`.
 	 *
@@ -381,7 +406,11 @@ class WP_CLI {
 				'hooks'
 			);
 
-			if ( $has_args ) {
+			if ( $has_args && isset( self::$action_hooks[ $when ] ) ) {
+				// A copy for each callback, so by-reference parameters can't change the next one's arguments.
+				$callback_args = $args;
+				$callback( ...$callback_args );
+			} elseif ( $has_args ) {
 				$return_value = $callback( ...$args );
 				if ( isset( $return_value ) ) {
 					$args[0] = $return_value;
@@ -420,7 +449,7 @@ class WP_CLI {
 		if ( function_exists( 'add_filter' ) ) {
 			add_filter( $tag, $function_to_add, $priority, $accepted_args );
 		} else {
-			$idx = self::wp_hook_build_unique_id( $tag, $function_to_add, $priority );
+			$idx = self::wp_hook_build_unique_id( $function_to_add );
 
 			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- This is intentional & the purpose of this function.
 			$wp_filter[ $tag ][ $priority ][ $idx ] = [
@@ -438,12 +467,10 @@ class WP_CLI {
 	 *
 	 * Essentially _wp_filter_build_unique_id() without needing access to _wp_filter_build_unique_id()
 	 *
-	 * @param string   $tag
 	 * @param callable $function
-	 * @param int      $priority
 	 * @return string|false
 	 */
-	private static function wp_hook_build_unique_id( $tag, $function, $priority ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $priority retained to match core's _wp_filter_build_unique_id() signature.
+	private static function wp_hook_build_unique_id( $function ) {
 		if ( is_string( $function ) ) {
 			return $function;
 		}
@@ -467,6 +494,35 @@ class WP_CLI {
 		if ( is_string( $function[0] ) ) {
 			// Static Calling.
 			return $function[0] . '::' . $function[1];
+		}
+
+		return false;
+	}
+
+	/**
+	 * Find out whether a class can be loaded, and which Composer autoloader would load it, without loading it.
+	 *
+	 * @param string $class_name Class name.
+	 * @return bool|\Composer\Autoload\ClassLoader The Composer autoloader that would load the class, true if
+	 *                                                the class is loaded already or another autoloader comes
+	 *                                                before that one, or false if no Composer autoloader can.
+	 */
+	private static function find_class_loader( $class_name ) {
+		if ( class_exists( $class_name, false ) ) {
+			return true;
+		}
+
+		$after_other_autoloader = false;
+		foreach ( spl_autoload_functions() ?: [] as $autoloader ) {
+			if ( ! is_array( $autoloader ) || ! $autoloader[0] instanceof \Composer\Autoload\ClassLoader ) {
+				// There is no telling whether this one would load the class first.
+				$after_other_autoloader = true;
+				continue;
+			}
+
+			if ( $autoloader[0]->findFile( ltrim( $class_name, '\\' ) ) ) {
+				return $after_other_autoloader ? true : $autoloader[0];
+			}
 		}
 
 		return false;
@@ -531,8 +587,36 @@ class WP_CLI {
 			return false;
 		}
 
+		// Commands registered by class name are only loaded once they are actually needed,
+		// unless arguments are passed that require inspecting the command right away.
+		$class_loader = is_string( $callable )
+			&& false === strpos( $callable, '::' )
+			&& ! function_exists( $callable )
+			? self::find_class_loader( $callable )
+			: false;
+		$is_lazy      = is_string( $callable )
+			&& false !== $class_loader
+			&& ! array_intersect( [ 'shortdesc', 'longdesc', 'synopsis', 'when' ], array_keys( $args ) )
+			&& ! getenv( 'WP_CLI_DISABLE_LAZY_COMMANDS' );
+
+		// Autoloaders registered later, such as the one of the Phar when a project
+		// requires its own copy of a bundled command, may provide a different
+		// definition of the same class. Remember which one an eager registration
+		// would have loaded.
+		$class_loader = $class_loader instanceof \Composer\Autoload\ClassLoader ? $class_loader : null;
+
+		if ( ! empty( $args['is_deferred'] ) && array_key_exists( $name, self::$deferred_class_loaders ) ) {
+			if ( $is_lazy ) {
+				$class_loader = self::$deferred_class_loaders[ $name ];
+			}
+			unset( self::$deferred_class_loaders[ $name ] );
+		}
+
 		$valid = false;
-		if ( is_callable( $callable ) ) {
+		if ( $is_lazy ) {
+			// Validated once the command is materialized.
+			$valid = true;
+		} elseif ( is_callable( $callable ) ) {
 			$valid = true;
 		} elseif ( is_string( $callable ) && class_exists( $callable ) ) {
 			$valid = true;
@@ -577,7 +661,12 @@ class WP_CLI {
 		while ( ! empty( $path ) ) {
 			$subcommand_name = $path[0];
 			$parent          = implode( ' ', $path );
-			$subcommand      = $command->find_subcommand( $path );
+			$subcommand      = $command->get_registered_subcommand( $subcommand_name );
+			if ( $subcommand ) {
+				array_shift( $path );
+			} else {
+				$subcommand = $command->find_subcommand( $path );
+			}
 
 			// Parent not found. Defer addition or create an empty container as
 			// needed.
@@ -598,6 +687,10 @@ class WP_CLI {
 				} else {
 					self::debug( "Deferring command: {$name}", 'commands' );
 
+					if ( $is_lazy ) {
+						self::$deferred_class_loaders[ $name ] = $class_loader;
+					}
+
 					/**
 					 * @var callable $callable
 					 */
@@ -616,6 +709,29 @@ class WP_CLI {
 			$command = $subcommand;
 		}
 
+		$existing_command = $command->get_registered_subcommand( $leaf_name );
+
+		if ( $is_lazy && ! $addition->was_aborted() && ( ! $existing_command || $existing_command instanceof LazyCommand ) ) {
+			/** @var class-string $callable */
+			if ( $existing_command instanceof LazyCommand ) {
+				$existing_command->add_class( $callable, $class_loader );
+			} else {
+				$command->add_subcommand( $leaf_name, new LazyCommand( $command, $leaf_name, $callable, $class_loader ) );
+			}
+
+			self::debug( "Registering lazy command: {$name}", 'commands' );
+
+			/**
+			 * Action triggered after a command has been added to WP-CLI.
+			 */
+			self::do_hook( "after_add_command:{$name}" );
+			return true;
+		}
+
+		if ( $is_lazy && ! class_exists( $callable ) ) {
+			self::error( sprintf( 'Callable %s does not exist, and cannot be registered as `wp %s`.', (string) json_encode( $callable ), $name ) );
+		}
+
 		$leaf_command = CommandFactory::create( $leaf_name, $callable, $command );
 
 		if ( $addition->was_aborted() ) {
@@ -624,13 +740,16 @@ class WP_CLI {
 
 		// Only add a command namespace if the command itself does not exist yet.
 		if ( $leaf_command instanceof CommandNamespace
-			&& array_key_exists( $leaf_name, $command->get_subcommands() ) ) {
+			&& false !== $command->get_registered_subcommand( $leaf_name ) ) {
 			return false;
 		}
 
 		// Reattach commands attached to namespace to real command.
 		$subcommand_name  = (array) $leaf_name;
-		$existing_command = $command->find_subcommand( $subcommand_name );
+		$existing_command = $command->get_registered_subcommand( $leaf_name );
+		if ( $existing_command instanceof LazyCommand ) {
+			$existing_command = $command->find_subcommand( $subcommand_name );
+		}
 		if ( $existing_command instanceof CompositeCommand && $existing_command->can_have_subcommands() ) {
 			if ( $leaf_command instanceof CommandNamespace || ! $leaf_command->can_have_subcommands() ) {
 				$command_to_keep = $existing_command;
@@ -1256,7 +1375,7 @@ class WP_CLI {
 				return json_encode( $data );
 			}
 
-			return '"' . $data . '"';
+			return '"' . ( is_scalar( $data ) ? $data : '' ) . '"';
 		};
 
 		if ( $errors instanceof WP_Error ) {
@@ -1630,7 +1749,7 @@ class WP_CLI {
 			$configurator = self::get_configurator();
 			$argv         = array_slice( $argv, 1 );
 
-			list( $ignore1, $ignore2, $runtime_config ) = $configurator->parse_args( $argv );
+			list( , , $runtime_config ) = $configurator->parse_args( $argv );
 			foreach ( $runtime_config as $k => $v ) {
 				if ( preg_match( "|^--{$k}=?$|", $command ) ) {
 					unset( $runtime_config[ $k ] );
@@ -1689,9 +1808,9 @@ class WP_CLI {
 				];
 			}
 		} else {
-			$configurator                               = self::get_configurator();
-			$argv                                       = Utils\parse_str_to_argv( $command );
-			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
+			$configurator              = self::get_configurator();
+			$argv                      = Utils\parse_str_to_argv( $command );
+			list( $args, $assoc_args ) = $configurator->parse_args( $argv );
 			if ( $return ) {
 				$existing_logger = self::$logger;
 				self::$logger    = new Execution();

@@ -587,9 +587,9 @@ Feature: WP-CLI Commands
             list( $name ) = $args;
             $type         = $assoc_args['type'];
             WP_CLI::$type( "Hello, $name!" );
-            if ( isset( $assoc_args['honk'] ) ) {
-                WP_CLI::log( 'Honk!' );
-            }
+          if ( isset( $assoc_args['honk'] ) ) {
+              WP_CLI::log( 'Honk!' );
+          }
         };
           WP_CLI::add_command(
               'example hello',
@@ -1149,34 +1149,34 @@ Feature: WP-CLI Commands
       """
       <?php
       WP_CLI::add_hook(
-        'unregistered_command_hint',
-        function ( $hint, $command ) {
-          if ( 'ftp' === $command ) {
-            return "The 'ftp' command is provided by the wp-cli/ftp-command package.";
-          }
+          'unregistered_command_hint',
+          function ( $hint, $command ) {
+              if ( 'ftpdeploy' === $command ) {
+                  return "The 'ftpdeploy' command is provided by the wp-cli/ftpdeploy-command package.";
+              }
 
-          if ( 'cli ftp' === $command ) {
-            return "The 'cli ftp' subcommand is provided by the wp-cli/ftp-command package.";
-          }
+              if ( 'cli ftpdeploy' === $command ) {
+                  return "The 'cli ftpdeploy' subcommand is provided by the wp-cli/ftpdeploy-command package.";
+              }
 
-          return $hint;
-        }
+              return $hint;
+          }
       );
       """
 
-    When I try `wp --require=hint.php ftp`
+    When I try `wp --require=hint.php ftpdeploy`
     Then STDERR should contain:
       """
-      Error: 'ftp' is not a registered wp command. See 'wp help' for available commands.
-      The 'ftp' command is provided by the wp-cli/ftp-command package.
+      Error: 'ftpdeploy' is not a registered wp command. See 'wp help' for available commands.
+      The 'ftpdeploy' command is provided by the wp-cli/ftpdeploy-command package.
       """
     And the return code should be 1
 
-    When I try `wp --require=hint.php cli ftp`
+    When I try `wp --require=hint.php cli ftpdeploy`
     Then STDERR should contain:
       """
-      Error: 'ftp' is not a registered subcommand of 'cli'. See 'wp help cli' for available subcommands.
-      The 'cli ftp' subcommand is provided by the wp-cli/ftp-command package.
+      Error: 'ftpdeploy' is not a registered subcommand of 'cli'. See 'wp help cli' for available subcommands.
+      The 'cli ftpdeploy' subcommand is provided by the wp-cli/ftpdeploy-command package.
       """
     And the return code should be 1
 
@@ -1187,7 +1187,7 @@ Feature: WP-CLI Commands
       """
     And STDERR should not contain:
       """
-      ftp-command
+      ftpdeploy-command
       """
     And the return code should be 1
 
@@ -1197,14 +1197,14 @@ Feature: WP-CLI Commands
       """
       <?php
       WP_CLI::add_hook(
-        'unregistered_command_hint',
-        function ( $hint, $command ) {
-          if ( 'category' === $command ) {
-            return "The 'category' command is provided by the acme/category-command package.";
-          }
+          'unregistered_command_hint',
+          function ( $hint, $command ) {
+              if ( 'category' === $command ) {
+                  return "The 'category' command is provided by the acme/category-command package.";
+              }
 
-          return $hint;
-        }
+              return $hint;
+          }
       );
       """
 
@@ -2293,4 +2293,229 @@ Feature: WP-CLI Commands
     Then STDERR should contain:
       """
       Warning: The `--old` argument for `deprecated-cmd` is deprecated. Use `--new` instead.
+      """
+
+  Scenario: Commands registered by class name are only materialized when needed
+    Given an empty directory
+    And a lazy-cmd.php file:
+      """
+      <?php
+      /**
+       * My lazy command.
+       */
+      class My_Lazy_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from lazy command.' );
+          }
+      }
+
+      WP_CLI::add_command( 'my-lazy', 'My_Lazy_Command' );
+      """
+
+    When I run `wp --require=lazy-cmd.php --debug=commands cli version 2>&1`
+    Then STDOUT should contain:
+      """
+      Registering lazy command: my-lazy
+      """
+    And STDOUT should not contain:
+      """
+      Adding command: my-lazy
+      """
+
+    When I run `wp --require=lazy-cmd.php my-lazy hello`
+    Then STDOUT should be:
+      """
+      Success: Hello from lazy command.
+      """
+
+    When I run `wp --require=lazy-cmd.php help my-lazy`
+    Then STDOUT should contain:
+      """
+      My lazy command.
+      """
+    And STDOUT should match /hello\s+Says hello\./
+
+  Scenario: A lazily registered command keeps the class definition that was available when it was first registered
+    Given an empty directory
+    And a project/Shadowed_Command.php file:
+      """
+      <?php
+      class Shadowed_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the project.' );
+          }
+      }
+      """
+    And a bundled/Shadowed_Command.php file:
+      """
+      <?php
+      class Shadowed_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the bundle.' );
+          }
+      }
+      """
+    And a shadowed-cmd.php file:
+      """
+      <?php
+      if ( ! class_exists( 'Composer\Autoload\ClassLoader', false ) ) {
+          require WP_CLI_VENDOR_DIR . '/composer/ClassLoader.php';
+      }
+
+      $project_loader = new Composer\Autoload\ClassLoader();
+      $project_loader->addClassMap( [ 'Shadowed_Command' => __DIR__ . '/project/Shadowed_Command.php' ] );
+      $project_loader->register( true );
+
+      WP_CLI::add_command( 'shadowed', 'Shadowed_Command' );
+
+      // A loader registered later, like the one of a Phar that bundles an
+      // older copy of the same command, is consulted first.
+      $bundled_loader = new Composer\Autoload\ClassLoader();
+      $bundled_loader->addClassMap( [ 'Shadowed_Command' => __DIR__ . '/bundled/Shadowed_Command.php' ] );
+      $bundled_loader->register( true );
+
+      WP_CLI::add_command( 'shadowed', 'Shadowed_Command' );
+      """
+
+    When I run `wp --require=shadowed-cmd.php shadowed hello`
+    Then STDOUT should be:
+      """
+      Success: Hello from the project.
+      """
+
+  Scenario: A deferred lazily registered command keeps the class definition that was available when it was first registered
+    Given an empty directory
+    And a project/Shadowed_Child_Command.php file:
+      """
+      <?php
+      class Shadowed_Child_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the project.' );
+          }
+      }
+      """
+    And a bundled/Shadowed_Child_Command.php file:
+      """
+      <?php
+      class Shadowed_Child_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the bundle.' );
+          }
+      }
+      """
+    And a shadowed-cmd.php file:
+      """
+      <?php
+      if ( ! class_exists( 'Composer\Autoload\ClassLoader', false ) ) {
+          require WP_CLI_VENDOR_DIR . '/composer/ClassLoader.php';
+      }
+
+      $project_loader = new Composer\Autoload\ClassLoader();
+      $project_loader->addClassMap( [ 'Shadowed_Child_Command' => __DIR__ . '/project/Shadowed_Child_Command.php' ] );
+      $project_loader->register( true );
+
+      // Deferred until its parent command exists, and given with a leading backslash.
+      WP_CLI::add_command( 'shadowed-parent child', '\Shadowed_Child_Command' );
+
+      $bundled_loader = new Composer\Autoload\ClassLoader();
+      $bundled_loader->addClassMap( [ 'Shadowed_Child_Command' => __DIR__ . '/bundled/Shadowed_Child_Command.php' ] );
+      $bundled_loader->register( true );
+
+      /**
+       * Parent command.
+       */
+      class Shadowed_Parent_Command extends WP_CLI\Dispatcher\CommandNamespace {}
+
+      WP_CLI::add_command( 'shadowed-parent', 'Shadowed_Parent_Command' );
+      """
+
+    When I run `wp --require=shadowed-cmd.php shadowed-parent child hello`
+    Then STDOUT should be:
+      """
+      Success: Hello from the project.
+      """
+
+  Scenario: A lazily registered command respects an autoloader that comes before the Composer one
+    Given an empty directory
+    And a project/Preceded_Command.php file:
+      """
+      <?php
+      class Preceded_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the project.' );
+          }
+      }
+      """
+    And a bundled/Preceded_Command.php file:
+      """
+      <?php
+      class Preceded_Command extends WP_CLI_Command {
+          /**
+           * Says hello.
+           *
+           * @when before_wp_load
+           */
+          public function hello() {
+              WP_CLI::success( 'Hello from the bundle.' );
+          }
+      }
+      """
+    And a preceded-cmd.php file:
+      """
+      <?php
+      if ( ! class_exists( 'Composer\Autoload\ClassLoader', false ) ) {
+          require WP_CLI_VENDOR_DIR . '/composer/ClassLoader.php';
+      }
+
+      spl_autoload_register(
+          static function ( $class_name ) {
+              if ( 'Preceded_Command' === $class_name ) {
+                  require __DIR__ . '/project/Preceded_Command.php';
+              }
+          },
+          true,
+          true
+      );
+
+      $bundled_loader = new Composer\Autoload\ClassLoader();
+      $bundled_loader->addClassMap( [ 'Preceded_Command' => __DIR__ . '/bundled/Preceded_Command.php' ] );
+      $bundled_loader->register();
+
+      WP_CLI::add_command( 'preceded', 'Preceded_Command' );
+      """
+
+    When I run `wp --require=preceded-cmd.php preceded hello`
+    Then STDOUT should be:
+      """
+      Success: Hello from the project.
       """
