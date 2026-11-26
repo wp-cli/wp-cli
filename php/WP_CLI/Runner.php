@@ -755,6 +755,29 @@ class Runner {
 	}
 
 	/**
+	 * Ask whether to run the suggested command instead of a mistyped one.
+	 *
+	 * Works like WP_CLI::confirm(), except when STDIN ends before an answer,
+	 * as in cron jobs or CI: nobody declined, the command that was asked for
+	 * did not run, so the run ends with exit code 1.
+	 *
+	 * @param string $question Question to display.
+	 */
+	private function confirm_suggestion( $question ): void {
+		fwrite( STDOUT, $question . ' [y/n] ' );
+
+		$answer = fgets( STDIN );
+
+		if ( false === $answer ) {
+			WP_CLI::halt( 1 );
+		}
+
+		if ( 'y' !== strtolower( trim( $answer ) ) ) {
+			exit;
+		}
+	}
+
+	/**
 	 * Given positional arguments, find the command to execute.
 	 *
 	 * @param array<int, string> $args
@@ -819,7 +842,7 @@ class Runner {
 								}
 
 								WP_CLI::warning( $error );
-								WP_CLI::confirm( $suggestion_text );
+								$this->confirm_suggestion( $suggestion_text );
 								return $suggested_command_to_run;
 							}
 						}
@@ -884,7 +907,7 @@ class Runner {
 							}
 
 							WP_CLI::warning( $error );
-							WP_CLI::confirm( $suggestion_text );
+							$this->confirm_suggestion( $suggestion_text );
 							return $suggested_command_to_run;
 						}
 					}

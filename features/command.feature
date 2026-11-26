@@ -1043,6 +1043,62 @@ Feature: WP-CLI Commands
       Did you mean
       """
 
+  @skip-windows
+  Scenario: WP-CLI fails on a mistyped command when the suggestion gets no answer
+    Given a WP installation
+
+    When I try `wp clu < /dev/null`
+    Then STDERR should contain:
+      """
+      Warning: 'clu' is not a registered wp command
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'cli'? [y/n]
+      """
+    And STDOUT should not contain:
+      """
+      See 'wp help cli <command>' for more information on a specific command.
+      """
+    And the return code should be 1
+
+    When I try `wp cli nfo < /dev/null`
+    Then STDOUT should contain:
+      """
+      Did you mean 'info'? [y/n]
+      """
+    And STDOUT should not contain:
+      """
+      WP-CLI version:
+      """
+    And the return code should be 1
+
+    Given a runcommand-typo.php file:
+      """
+      <?php
+      WP_CLI::add_command(
+          'runcommand-typo',
+          function () {
+              $result = WP_CLI::runcommand(
+                  'clu',
+                  array(
+                      'launch'     => false,
+                      'exit_error' => false,
+                      'return'     => 'all',
+                  )
+              );
+              WP_CLI::log( 'Return code: ' . $result->return_code );
+          },
+          array( 'when' => 'before_wp_load' )
+      );
+      """
+
+    When I try `wp --require=runcommand-typo.php runcommand-typo < /dev/null`
+    Then STDOUT should contain:
+      """
+      Return code: 1
+      """
+
   Scenario: WP-CLI optionally runs matching commands when user entry contains typos
     Given a WP installation
     And a session_yes file:
