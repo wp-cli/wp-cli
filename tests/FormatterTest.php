@@ -975,7 +975,7 @@ class FormatterTest extends TestCase {
 		$formatter->display_item( $dummy );
 		$output = ob_get_clean();
 
-		$this->assertSame( '{"public_prop":"public_val"}', $output );
+		$this->assertSame( '{"public_prop":"public_val"}' . "\n", $output );
 	}
 
 	public function test_display_item_object_inaccessible_protected_property_issues_warning(): void {
@@ -999,7 +999,7 @@ class FormatterTest extends TestCase {
 			$formatter->display_item( $dummy );
 			$output = ob_get_clean();
 
-			$this->assertSame( '{"public_prop":"public_val"}', $output );
+			$this->assertSame( '{"public_prop":"public_val"}' . "\n", $output );
 			$this->assertStringContainsString( 'Field not found in item: protected_prop.', $logger->stderr );
 		} finally {
 			WP_CLI::set_logger( $prev_logger );
@@ -1038,7 +1038,7 @@ class FormatterTest extends TestCase {
 		$formatter->display_item( $dummy );
 		$output = ob_get_clean();
 
-		$this->assertSame( '{"protected_prop":"protected_val"}', $output );
+		$this->assertSame( '{"protected_prop":"protected_val"}' . "\n", $output );
 	}
 
 	public function test_display_items_with_traversable(): void {

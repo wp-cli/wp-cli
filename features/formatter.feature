@@ -531,6 +531,33 @@ Feature: Format output
       name,"Custom Name"
       """
 
+  Scenario: Single item JSON output ends with a newline
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $item = [
+          'name'    => 'Custom Name',
+          'version' => '1.0',
+      ];
+
+      $assoc_args = [
+          'format' => 'json',
+          'fields' => [ 'name', 'version' ],
+      ];
+
+      $formatter = new WP_CLI\Formatter( $assoc_args );
+      $formatter->display_item( $item );
+      echo 'END';
+      """
+
+    When I run `wp eval-file file.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {"name":"Custom Name","version":"1.0"}
+      END
+      """
+
   Scenario: Table alignment with right and left aligned columns
     Given an empty directory
     And a file.php file:
