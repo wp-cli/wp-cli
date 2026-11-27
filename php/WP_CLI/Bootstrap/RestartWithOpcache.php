@@ -29,7 +29,9 @@ final class RestartWithOpcache implements BootstrapStep {
 	 * @return BootstrapState Modified state to pass to the next step.
 	 */
 	public function process( BootstrapState $state ) {
-		if ( ! Utils\get_env_or_config( 'WP_CLI_OPCACHE' ) || ! extension_loaded( 'Zend OPcache' ) ) {
+		// `false`, `off`, `no` and `0` turn it off, as do an empty or unset value.
+		$enabled = filter_var( Utils\get_env_or_config( 'WP_CLI_OPCACHE' ), FILTER_VALIDATE_BOOLEAN );
+		if ( ! $enabled || ! extension_loaded( 'Zend OPcache' ) ) {
 			return $state;
 		}
 
@@ -56,6 +58,12 @@ final class RestartWithOpcache implements BootstrapStep {
 		}
 
 		$cache_dir = Utils\get_cache_dir() . '/opcache';
+
+		// The path is written into an ini file as a double-quoted value.
+		if ( false !== strpbrk( $cache_dir, "\"\r\n" ) ) {
+			WP_CLI::debug( "Not restarting with OPcache: {$cache_dir} contains a quote or line break.", 'bootstrap' );
+			return $state;
+		}
 		if ( ! is_dir( $cache_dir ) && ! @mkdir( $cache_dir, 0700, true ) && ! is_dir( $cache_dir ) ) {
 			WP_CLI::debug( "Not restarting with OPcache: cannot create {$cache_dir}.", 'bootstrap' );
 			return $state;
@@ -94,6 +102,11 @@ final class RestartWithOpcache implements BootstrapStep {
 	 */
 	private static function is_private_dir( $dir ) {
 		clearstatcache( true, $dir );
+
+		// fileperms() and fileowner() follow symlinks, so reject them outright.
+		if ( is_link( $dir ) ) {
+			return false;
+		}
 
 		$perms = @fileperms( $dir );
 		if ( false === $perms || ( $perms & 0022 ) ) {

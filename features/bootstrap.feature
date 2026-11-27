@@ -623,6 +623,29 @@ Feature: Bootstrap WP-CLI
       no file cache
       """
 
+    # `false`, `off` and `no` turn it off.
+    When I run `WP_CLI_OPCACHE=false ./wp-without-opcache eval 'echo ini_get( "opcache.file_cache" ) ? "file cache" : "no file cache";' --skip-wordpress`
+    Then STDOUT should be:
+      """
+      no file cache
+      """
+
+    When I run `WP_CLI_OPCACHE=off ./wp-without-opcache eval 'echo ini_get( "opcache.file_cache" ) ? "file cache" : "no file cache";' --skip-wordpress`
+    Then STDOUT should be:
+      """
+      no file cache
+      """
+
+    # A symlinked file cache directory is not used, even if its target is private.
+    When I run `mv cache/opcache private-opcache && ln -s ../private-opcache cache/opcache`
+    And I run `WP_CLI_OPCACHE=1 ./wp-without-opcache eval 'echo ini_get( "opcache.file_cache" ) ? "file cache" : "no file cache";' --skip-wordpress`
+    Then STDOUT should be:
+      """
+      no file cache
+      """
+
+    When I run `rm cache/opcache && mv private-opcache cache/opcache`
+
     When I run `WP_CLI_OPCACHE=1 EXTRA_PHP_ARGS='-d opcache.save_comments=0 -d opcache.validate_timestamps=0' ./wp-without-opcache eval 'echo ( ! extension_loaded( "Zend OPcache" ) || ( ini_get( "opcache.save_comments" ) && ini_get( "opcache.validate_timestamps" ) ) ) ? "ok" : "not ok";' --skip-wordpress`
     Then STDOUT should be:
       """

@@ -92,6 +92,47 @@ class FileCacheTest extends TestCase {
 		WP_CLI::set_logger( $prev_logger );
 	}
 
+	public function test_opcache_directory_is_left_alone(): void {
+		$cache_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache', true );
+		$opcache   = $cache_dir . '/opcache/abc123/var/www';
+		mkdir( $opcache, 0700, true );
+		file_put_contents( $opcache . '/index.php.bin', str_repeat( '1', 40 ) );
+		mkdir( $opcache . '/sub' );
+		file_put_contents( $opcache . '/sub/index.php.bin', str_repeat( '2', 40 ) );
+
+		$cache = new FileCache( $cache_dir, 60, 32 );
+		$cache->write( 'core/index.php.bin', 'download' );
+
+		// Files with the same name in the OPcache directory are not treated as duplicates.
+		$cache->prune();
+		$this->assertFileExists( $opcache . '/index.php.bin' );
+		$this->assertFileExists( $opcache . '/sub/index.php.bin' );
+
+		// They don't count towards the size limit (32 bytes, exceeded by them alone), so cleaning
+		// neither evicts them nor the download.
+		$cache->clean();
+		$this->assertFileExists( $opcache . '/index.php.bin' );
+		$this->assertFileExists( $opcache . '/sub/index.php.bin' );
+		$this->assertFileExists( $cache_dir . '/core/index.php.bin' );
+
+		// Clearing the cache leaves them alone, but removes the download.
+		$cache->clear();
+		$this->assertFileDoesNotExist( $cache_dir . '/core/index.php.bin' );
+		$this->assertFileExists( $opcache . '/index.php.bin' );
+		$this->assertFileExists( $opcache . '/sub/index.php.bin' );
+
+		// Clean up.
+		unlink( $opcache . '/sub/index.php.bin' );
+		unlink( $opcache . '/index.php.bin' );
+		rmdir( $opcache . '/sub' );
+		rmdir( $opcache );
+		rmdir( $cache_dir . '/opcache/abc123/var' );
+		rmdir( $cache_dir . '/opcache/abc123' );
+		rmdir( $cache_dir . '/opcache' );
+		@rmdir( $cache_dir . '/core' );
+		rmdir( $cache_dir );
+	}
+
 	public function test_export(): void {
 		$max_size   = 32;
 		$ttl        = 60;

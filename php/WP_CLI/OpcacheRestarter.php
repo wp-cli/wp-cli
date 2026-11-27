@@ -58,7 +58,7 @@ final class OpcacheRestarter extends XdebugHandler {
 	}
 
 	/**
-	 * Add the OPcache settings to the restart command.
+	 * Add the OPcache settings to the temporary ini file used by the restarted process.
 	 *
 	 * The restarted process keeps the other settings of the current one, including OPcache
 	 * settings from `php.ini` that had no effect while OPcache was off for the CLI. These
@@ -70,28 +70,27 @@ final class OpcacheRestarter extends XdebugHandler {
 	 * - `opcache.save_comments`: Commands are defined by their doc comments.
 	 * - `opcache.validate_timestamps`: Edited files have to be compiled again.
 	 *
+	 * They are appended to the temporary ini file, after xdebug-handler's own
+	 * `opcache.enable_cli=0`, so they take precedence. This doesn't depend on the layout of the
+	 * restart command, and keeps the cache path out of the process list.
+	 *
 	 * @param non-empty-list<string> $command PHP binary, its options, the script and its arguments.
 	 * @return void
 	 */
 	protected function restart( array $command ): void {
-		// The command starts with the PHP binary and `-n -c <tmp ini>`, followed by the script.
-		array_splice(
-			$command,
-			4,
-			0,
-			[
-				'-d',
-				'opcache.enable_cli=1',
-				'-d',
-				'opcache.file_cache=' . $this->cache_dir,
-				'-d',
-				'opcache.file_cache_only=1',
-				'-d',
-				'opcache.save_comments=1',
-				'-d',
-				'opcache.validate_timestamps=1',
-			]
-		);
+		$settings = PHP_EOL
+			. 'opcache.enable_cli=1' . PHP_EOL
+			. 'opcache.file_cache="' . $this->cache_dir . '"' . PHP_EOL
+			. 'opcache.file_cache_only=1' . PHP_EOL
+			. 'opcache.save_comments=1' . PHP_EOL
+			. 'opcache.validate_timestamps=1' . PHP_EOL;
+
+		// xdebug-handler has already prepared the environment for the restart, so restart in any
+		// case. Without the settings, the restarted process just doesn't use the file cache.
+		$tmp_ini = $this->tmpIni; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Inherited from XdebugHandler.
+		if ( ! is_string( $tmp_ini ) || ! is_writable( $tmp_ini ) || false === file_put_contents( $tmp_ini, $settings, FILE_APPEND ) ) {
+			\WP_CLI::debug( 'Could not add the OPcache settings to the temporary ini file.', 'bootstrap' );
+		}
 
 		parent::restart( $command );
 	}
