@@ -16,6 +16,7 @@ namespace WP_CLI;
 use DateTime;
 use Exception;
 use FilesystemIterator;
+use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
@@ -492,10 +493,20 @@ class FileCache {
 			// We explicitly do NOT include FilesystemIterator::FOLLOW_SYMLINKS flag.
 			// This prevents the iterator from traversing into symlinked directories.
 			// We also filter out symlink files themselves with !isLink() check.
+			$root = rtrim( $this->root, '/' );
+
+			// OPcache's file cache lives in `opcache/` under the cache root (see
+			// RestartWithOpcache). OPcache manages it, so leave it out of pruning,
+			// size-based cleanup and clearing.
 			$iterator = new RecursiveIteratorIterator(
-				new RecursiveDirectoryIterator(
-					$this->root,
-					FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS
+				new RecursiveCallbackFilterIterator(
+					new RecursiveDirectoryIterator(
+						$this->root,
+						FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS
+					),
+					static function ( SplFileInfo $file ) use ( $root ) {
+						return ! ( $file->isDir() && 'opcache' === $file->getFilename() && rtrim( $file->getPath(), '/' ) === $root );
+					}
 				),
 				RecursiveIteratorIterator::LEAVES_ONLY
 			);

@@ -24,6 +24,7 @@ function get_bootstrap_steps() {
 		Bootstrap\InitializeColorization::class,
 		Bootstrap\InitializeLogger::class,
 		Bootstrap\InitializeFormatter::class,
+		Bootstrap\RestartWithOpcache::class,
 		Bootstrap\RegisterShutdownHandler::class,
 		Bootstrap\CheckRoot::class,
 		Bootstrap\DefineProtectedCommands::class,
