@@ -1351,7 +1351,7 @@ Feature: WP-CLI Commands
     When I try `WP_CLI_AUTOCORRECT=1 wp cli alias ad @added --set-user=editor --config=project`
     Then STDOUT should contain:
       """
-      Success: Added '@added' alias.
+      Success: Added 'added' alias.
       """
     And the return code should be 0
 
