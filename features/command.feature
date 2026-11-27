@@ -1331,6 +1331,8 @@ Feature: WP-CLI Commands
     Given an empty directory
     And a wp-cli.yml file:
       """
+      @test:
+        user: admin
       """
 
     When I try `WP_CLI_AUTOCORRECT=1 wp cli has-comman cli`
@@ -1339,17 +1341,17 @@ Feature: WP-CLI Commands
     When I try `WP_CLI_AUTOCORRECT=1 wp clii has-command cli`
     Then the return code should be 0
 
-    When I try `WP_CLI_AUTOCORRECT=1 wp cli alias ad @test --set-user=admin`
-    Then STDOUT should contain:
-      """
-      Success: Added '@test' alias.
-      """
-    And the return code should be 0
-
     When I try `WP_CLI_AUTOCORRECT=1 wp cli alias gte @test`
     Then STDOUT should contain:
       """
-      @test:
+      user: admin
+      """
+    And the return code should be 0
+
+    When I try `WP_CLI_AUTOCORRECT=1 wp cli alias ad @added --set-user=editor --config=project`
+    Then STDOUT should contain:
+      """
+      Success: Added '@added' alias.
       """
     And the return code should be 0
 
