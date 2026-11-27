@@ -8,6 +8,8 @@ assignees: 'schlessera'
 ---
 # Patch Release Checklist - v2.x.x
 
+The release automation (`Prepare Release`, `Release`, `Post-Release Automation`) only handles `X.Y.0` releases cut from `main`. Patch releases are cut from a release branch and follow the manual process below; the workflows reject non-zero patch versions, and `Post-Release Automation` skips a published `vX.Y.Z` release with a notice.
+
 ### Preparation
 
 - [ ] Write release post on the [Make.org CLI blog](https://make.wordpress.org/cli/wp-admin/post-new.php)
@@ -88,6 +90,7 @@ assignees: 'schlessera'
     cp wp-cli-release.phar wp-cli.phar
     cp wp-cli-release.manifest.json wp-cli.manifest.json
     md5 -q wp-cli.phar > wp-cli.phar.md5
+    shasum -a 256 wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha256
     shasum -a 512 wp-cli.phar | cut -d ' ' -f 1 > wp-cli.phar.sha512
     ```
 
@@ -121,6 +124,7 @@ assignees: 'schlessera'
     cp wp-cli.phar.gpg wp-cli-2.x.x.phar.gpg
     cp wp-cli.phar.asc wp-cli-2.x.x.phar.asc
     cp wp-cli.phar.md5 wp-cli-2.x.x.phar.md5
+    cp wp-cli.phar.sha256 wp-cli-2.x.x.phar.sha256
     cp wp-cli.phar.sha512 wp-cli-2.x.x.phar.sha512
     cp wp-cli.manifest.json wp-cli-2.x.x.manifest.json
     ```
@@ -149,25 +153,19 @@ assignees: 'schlessera'
 
     Due to aggressive caching by the GitHub servers, the scripts might pull in cached version of the previous release instead of the new one. This seems to resolve automatically in a period of 24 hours.
 
-### Updating the Homebrew formula (should happen automatically)
+### Verifying the Homebrew formulae
 
-- [ ] Update the url and sha256 here: https://github.com/Homebrew/homebrew-core/blob/master/Formula/wp-cli.rb#L4-L5
+- [ ] Verify the Homebrew formulae were bumped.
 
-    The easiest way to do so is by using the following command:
+    This happens on its own. Homebrew autobumps every `homebrew-core` formula that has not opted out via `no_autobump!` or a `livecheck ... skip`, and neither [`wp-cli`](https://github.com/Homebrew/homebrew-core/blob/master/Formula/w/wp-cli.rb) nor [`wp-cli-completion`](https://github.com/Homebrew/homebrew-core/blob/master/Formula/w/wp-cli-completion.rb) does. BrewTestBot polls every 3 hours, so expect the bump PRs to show up **a few hours after the release is published** — there is nothing to do but confirm they landed.
+
+    If nothing has appeared by the next day, check [BrewTestBot's pull requests](https://github.com/Homebrew/homebrew-core/pulls?q=is%3Apr+author%3Aapp%2Fbrewtestbot+wp-cli) and only then open one by hand:
 
     ```
-    brew bump-formula-pr --strict wp-cli --url=https://github.com/wp-cli/wp-cli/releases/download/v2.x.x/wp-cli-2.x.x.phar --sha256=$(wget -qO- https://github.com/wp-cli/wp-cli/releases/download/v2.x.x/wp-cli-2.x.x.phar - | sha256sum | cut -d " " -f 1)
+    brew bump-formula-pr --strict wp-cli --url=https://github.com/wp-cli/wp-cli/releases/download/v2.x.x/wp-cli-2.x.x.phar --sha256=$(wget -qO- https://github.com/wp-cli/wp-cli/releases/download/v2.x.x/wp-cli-2.x.x.phar | sha256sum | cut -d " " -f 1)
     ```
 
-### Updating the website
-
-- [ ] Verify <https://github.com/wp-cli/wp-cli.github.com#readme> is up-to-date
-
-- [ ] Update the [roadmap](https://make.wordpress.org/cli/handbook/roadmap/)
-
-- [ ] Update all version references on the homepage (and localized homepages).
-
-- [ ] Tag a release of the website
+    Note that `wp-cli-completion` tracks the Git tag tarball rather than the Phar, so it needs its own bump with a different `--url`.
 
 ### Announcing
 
