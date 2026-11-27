@@ -195,8 +195,12 @@ class Runner {
 		// Search the value of @when from the command method.
 		// Use 'none' for autocorrect to avoid suggesting wrong alternatives
 		// for commands that may be registered later (e.g., via after_wp_load).
-		$real_when = '';
-		$r         = $this->find_command_to_run( $this->arguments, 'none' );
+		// WordPress only loads with readable core files and a wp-config.php; without
+		// them, no more commands get registered.
+		$wp_will_load = $this->wp_exists() && $this->wp_is_readable() && Utils\locate_wp_config();
+		$autocorrect  = $wp_will_load ? 'none' : $this->get_autocorrect_mode();
+		$real_when    = '';
+		$r            = $this->find_command_to_run( $this->arguments, $autocorrect );
 		if ( is_array( $r ) ) {
 			list( , , $cmd_path ) = $r;
 
