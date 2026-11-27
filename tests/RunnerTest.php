@@ -273,4 +273,61 @@ final class RunnerTest extends TestCase {
 		$this->assertStringContainsString( sprintf( '-i %s', escapeshellarg( '/custom/alias/key' ) ), $command );
 		$this->assertStringNotContainsString( '/default/vagrant/identityfile', $command );
 	}
+
+	/**
+	 * @dataProvider dataGetAutocorrectMode
+	 * @param string|false $env_value
+	 * @param string       $expected
+	 */
+	#[DataProvider( 'dataGetAutocorrectMode' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testGetAutocorrectMode( $env_value, string $expected ): void {
+		$prev_autocorrect = getenv( 'WP_CLI_AUTOCORRECT' );
+		$prev_shell_pipe  = getenv( 'SHELL_PIPE' );
+
+		// Force non-interactive mode so the default branch is deterministic under PHPUnit.
+		putenv( 'SHELL_PIPE=1' );
+
+		if ( false === $env_value ) {
+			putenv( 'WP_CLI_AUTOCORRECT' );
+		} else {
+			putenv( 'WP_CLI_AUTOCORRECT=' . $env_value );
+		}
+
+		try {
+			$runner_class = new ReflectionClass( Runner::class );
+			$runner       = $runner_class->newInstanceWithoutConstructor();
+			$this->assertSame( $expected, $runner->get_autocorrect_mode() );
+		} finally {
+			if ( false === $prev_autocorrect ) {
+				putenv( 'WP_CLI_AUTOCORRECT' );
+			} else {
+				putenv( 'WP_CLI_AUTOCORRECT=' . $prev_autocorrect );
+			}
+
+			if ( false === $prev_shell_pipe ) {
+				putenv( 'SHELL_PIPE' );
+			} else {
+				putenv( 'SHELL_PIPE=' . $prev_shell_pipe );
+			}
+		}
+	}
+
+	public static function dataGetAutocorrectMode(): array {
+		return [
+			'unset defaults to none when non-interactive' => [ false, 'none' ],
+			'empty defaults to none when non-interactive' => [ '', 'none' ],
+			'numeric 1 enables auto'                      => [ '1', 'auto' ],
+			'auto enables auto'                           => [ 'auto', 'auto' ],
+			'true enables auto'                           => [ 'true', 'auto' ],
+			'yes enables auto'                            => [ 'yes', 'auto' ],
+			'confirm forces prompt'                       => [ 'confirm', 'confirm' ],
+			'prompt forces prompt'                        => [ 'prompt', 'confirm' ],
+			'mixed-case PROMPT forces prompt'             => [ ' PROMPT ', 'confirm' ],
+			'none disables prompt'                        => [ 'none', 'none' ],
+			'zero disables prompt'                        => [ '0', 'none' ],
+			'false disables prompt'                       => [ 'false', 'none' ],
+			'no disables prompt'                          => [ 'no', 'none' ],
+			'off disables prompt'                         => [ 'off', 'none' ],
+		];
+	}
 }
