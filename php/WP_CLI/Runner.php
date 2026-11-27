@@ -767,7 +767,19 @@ class Runner {
 	 * @return 'none'|'confirm'|'auto'
 	 */
 	public function get_autocorrect_mode() {
-		$autocorrect = Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' );
+		$autocorrect = getenv( 'WP_CLI_AUTOCORRECT' );
+
+		if ( false === $autocorrect
+			&& isset( $this->extra_config['env'] )
+			&& is_array( $this->extra_config['env'] )
+			&& array_key_exists( 'WP_CLI_AUTOCORRECT', $this->extra_config['env'] )
+		) {
+			$config_value = $this->extra_config['env']['WP_CLI_AUTOCORRECT'];
+			if ( false === $config_value ) {
+				return 'none';
+			}
+			$autocorrect = (string) $config_value;
+		}
 
 		if ( false === $autocorrect || '' === $autocorrect ) {
 			return Utils\is_interactive() ? 'confirm' : 'none';

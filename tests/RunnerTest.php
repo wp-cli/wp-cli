@@ -330,4 +330,67 @@ final class RunnerTest extends TestCase {
 			'off disables prompt'                         => [ 'off', 'none' ],
 		];
 	}
+
+	/**
+	 * @dataProvider dataGetAutocorrectModeFromConfig
+	 * @param mixed        $config_value
+	 * @param string|false $env_value
+	 * @param string       $expected
+	 */
+	#[DataProvider( 'dataGetAutocorrectModeFromConfig' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testGetAutocorrectModeFromConfig( $config_value, $env_value, string $expected ): void {
+		$prev_autocorrect = getenv( 'WP_CLI_AUTOCORRECT' );
+		$prev_shell_pipe  = getenv( 'SHELL_PIPE' );
+
+		putenv( 'SHELL_PIPE=1' );
+
+		if ( false === $env_value ) {
+			putenv( 'WP_CLI_AUTOCORRECT' );
+		} else {
+			putenv( 'WP_CLI_AUTOCORRECT=' . $env_value );
+		}
+
+		try {
+			$runner_class = new ReflectionClass( Runner::class );
+			$runner       = $runner_class->newInstanceWithoutConstructor();
+
+			$prop_extra_config = $runner_class->getProperty( 'extra_config' );
+			if ( PHP_VERSION_ID < 80100 ) {
+				// @phpstan-ignore method.deprecated
+				$prop_extra_config->setAccessible( true );
+			}
+			$prop_extra_config->setValue(
+				$runner,
+				[
+					'env' => [
+						'WP_CLI_AUTOCORRECT' => $config_value,
+					],
+				]
+			);
+
+			$this->assertSame( $expected, $runner->get_autocorrect_mode() );
+		} finally {
+			if ( false === $prev_autocorrect ) {
+				putenv( 'WP_CLI_AUTOCORRECT' );
+			} else {
+				putenv( 'WP_CLI_AUTOCORRECT=' . $prev_autocorrect );
+			}
+
+			if ( false === $prev_shell_pipe ) {
+				putenv( 'SHELL_PIPE' );
+			} else {
+				putenv( 'SHELL_PIPE=' . $prev_shell_pipe );
+			}
+		}
+	}
+
+	public static function dataGetAutocorrectModeFromConfig(): array {
+		return [
+			'YAML boolean false disables prompt' => [ false, false, 'none' ],
+			'YAML boolean true enables auto'     => [ true, false, 'auto' ],
+			'YAML confirm forces prompt'         => [ 'confirm', false, 'confirm' ],
+			'YAML empty falls back to default'   => [ '', false, 'none' ],
+			'env overrides YAML boolean false'   => [ false, 'confirm', 'confirm' ],
+		];
+	}
 }
