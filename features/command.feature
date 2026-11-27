@@ -1329,24 +1329,29 @@ Feature: WP-CLI Commands
 
   Scenario: WP-CLI preserves positional arguments when autocorrecting commands and subcommands
     Given an empty directory
+    And a wp-cli.yml file:
+      """
+      """
 
-    When I run `WP_CLI_AUTOCORRECT=1 wp cli has-comman cli`
+    When I try `WP_CLI_AUTOCORRECT=1 wp cli has-comman cli`
     Then the return code should be 0
 
-    When I run `WP_CLI_AUTOCORRECT=1 wp clii has-command cli`
+    When I try `WP_CLI_AUTOCORRECT=1 wp clii has-command cli`
     Then the return code should be 0
 
-    When I run `WP_CLI_AUTOCORRECT=1 wp cli alias ad @test --set-user=admin`
+    When I try `WP_CLI_AUTOCORRECT=1 wp cli alias ad @test --set-user=admin`
     Then STDOUT should contain:
       """
       Success: Added '@test' alias.
       """
+    And the return code should be 0
 
-    When I run `WP_CLI_AUTOCORRECT=1 wp cli alias gte @test`
+    When I try `WP_CLI_AUTOCORRECT=1 wp cli alias gte @test`
     Then STDOUT should contain:
       """
       @test:
       """
+    And the return code should be 0
 
   Scenario: WP-CLI shows a hint for a command that is not registered
     Given a WP installation
