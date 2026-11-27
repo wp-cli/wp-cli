@@ -273,4 +273,133 @@ final class RunnerTest extends TestCase {
 		$this->assertStringContainsString( sprintf( '-i %s', escapeshellarg( '/custom/alias/key' ) ), $command );
 		$this->assertStringNotContainsString( '/default/vagrant/identityfile', $command );
 	}
+
+	/**
+	 * @dataProvider dataGetAutocorrectMode
+	 * @param string|false $env_value
+	 * @param bool|null    $is_interactive
+	 * @param string       $expected
+	 */
+	#[DataProvider( 'dataGetAutocorrectMode' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testGetAutocorrectMode( $env_value, ?bool $is_interactive, string $expected ): void {
+		$prev_autocorrect = getenv( 'WP_CLI_AUTOCORRECT' );
+		$prev_shell_pipe  = getenv( 'SHELL_PIPE' );
+
+		// Force non-interactive mode so the default branch is deterministic under PHPUnit.
+		putenv( 'SHELL_PIPE=1' );
+
+		if ( false === $env_value ) {
+			putenv( 'WP_CLI_AUTOCORRECT' );
+		} else {
+			putenv( 'WP_CLI_AUTOCORRECT=' . $env_value );
+		}
+
+		try {
+			$runner_class = new ReflectionClass( Runner::class );
+			$runner       = $runner_class->newInstanceWithoutConstructor();
+			$this->assertSame( $expected, $runner->get_autocorrect_mode( $is_interactive ) );
+		} finally {
+			if ( false === $prev_autocorrect ) {
+				putenv( 'WP_CLI_AUTOCORRECT' );
+			} else {
+				putenv( 'WP_CLI_AUTOCORRECT=' . $prev_autocorrect );
+			}
+
+			if ( false === $prev_shell_pipe ) {
+				putenv( 'SHELL_PIPE' );
+			} else {
+				putenv( 'SHELL_PIPE=' . $prev_shell_pipe );
+			}
+		}
+	}
+
+	public static function dataGetAutocorrectMode(): array {
+		return [
+			'unset defaults to none when non-interactive' => [ false, null, 'none' ],
+			'empty defaults to none when non-interactive' => [ '', null, 'none' ],
+			'whitespace defaults to none when non-interactive' => [ '   ', null, 'none' ],
+			'unset defaults to confirm when interactive'  => [ false, true, 'confirm' ],
+			'empty defaults to confirm when interactive'  => [ '', true, 'confirm' ],
+			'whitespace defaults to confirm when interactive' => [ '   ', true, 'confirm' ],
+			'numeric 1 enables auto'                      => [ '1', null, 'auto' ],
+			'auto enables auto'                           => [ 'auto', null, 'auto' ],
+			'true enables auto'                           => [ 'true', null, 'auto' ],
+			'yes enables auto'                            => [ 'yes', null, 'auto' ],
+			'confirm forces prompt'                       => [ 'confirm', null, 'confirm' ],
+			'prompt forces prompt'                        => [ 'prompt', null, 'confirm' ],
+			'mixed-case PROMPT forces prompt'             => [ ' PROMPT ', null, 'confirm' ],
+			'none disables prompt'                        => [ 'none', true, 'none' ],
+			'zero disables prompt'                        => [ '0', true, 'none' ],
+			'false disables prompt'                       => [ 'false', true, 'none' ],
+			'no disables prompt'                          => [ 'no', true, 'none' ],
+			'off disables prompt'                         => [ 'off', true, 'none' ],
+		];
+	}
+
+	/**
+	 * @dataProvider dataGetAutocorrectModeFromConfig
+	 * @param mixed        $config_value
+	 * @param string|false $env_value
+	 * @param bool|null    $is_interactive
+	 * @param string       $expected
+	 */
+	#[DataProvider( 'dataGetAutocorrectModeFromConfig' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
+	public function testGetAutocorrectModeFromConfig( $config_value, $env_value, ?bool $is_interactive, string $expected ): void {
+		$prev_autocorrect = getenv( 'WP_CLI_AUTOCORRECT' );
+		$prev_shell_pipe  = getenv( 'SHELL_PIPE' );
+
+		putenv( 'SHELL_PIPE=1' );
+
+		if ( false === $env_value ) {
+			putenv( 'WP_CLI_AUTOCORRECT' );
+		} else {
+			putenv( 'WP_CLI_AUTOCORRECT=' . $env_value );
+		}
+
+		try {
+			$runner_class = new ReflectionClass( Runner::class );
+			$runner       = $runner_class->newInstanceWithoutConstructor();
+
+			$prop_extra_config = $runner_class->getProperty( 'extra_config' );
+			if ( PHP_VERSION_ID < 80100 ) {
+				// @phpstan-ignore method.deprecated
+				$prop_extra_config->setAccessible( true );
+			}
+			$prop_extra_config->setValue(
+				$runner,
+				[
+					'env' => [
+						'WP_CLI_AUTOCORRECT' => $config_value,
+					],
+				]
+			);
+
+			$this->assertSame( $expected, $runner->get_autocorrect_mode( $is_interactive ) );
+		} finally {
+			if ( false === $prev_autocorrect ) {
+				putenv( 'WP_CLI_AUTOCORRECT' );
+			} else {
+				putenv( 'WP_CLI_AUTOCORRECT=' . $prev_autocorrect );
+			}
+
+			if ( false === $prev_shell_pipe ) {
+				putenv( 'SHELL_PIPE' );
+			} else {
+				putenv( 'SHELL_PIPE=' . $prev_shell_pipe );
+			}
+		}
+	}
+
+	public static function dataGetAutocorrectModeFromConfig(): array {
+		return [
+			'YAML boolean false disables prompt when interactive' => [ false, false, true, 'none' ],
+			'YAML boolean true enables auto'   => [ true, false, null, 'auto' ],
+			'YAML confirm forces prompt'       => [ 'confirm', false, null, 'confirm' ],
+			'YAML empty falls back to default (non-interactive)' => [ '', false, null, 'none' ],
+			'YAML empty falls back to default (interactive)' => [ '', false, true, 'confirm' ],
+			'YAML whitespace falls back to default (non-interactive)' => [ ' ', false, null, 'none' ],
+			'YAML whitespace falls back to default (interactive)' => [ ' ', false, true, 'confirm' ],
+			'env overrides YAML boolean false' => [ false, 'confirm', null, 'confirm' ],
+		];
+	}
 }

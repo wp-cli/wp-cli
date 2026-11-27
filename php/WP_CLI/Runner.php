@@ -755,6 +755,81 @@ class Runner {
 	}
 
 	/**
+	 * Determine the autocorrect mode to use for mistyped commands.
+	 *
+	 * Reads `WP_CLI_AUTOCORRECT` from the environment or config file:
+	 * - `'auto'` or truthy (`1`, `true`, `yes`, `on`): run the suggestion automatically.
+	 * - `'confirm'` or `'prompt'`: prompt interactively even without a terminal.
+	 * - `'none'` or falsy (`0`, `false`, `no`, `off`): never prompt; fail with an error.
+	 * - Unset or empty: prompt only when running interactively (TTY on STDIN and STDOUT),
+	 *   otherwise fail with an error so scripted and automated runs match pre-3.0 behavior.
+	 *
+	 * @param bool|null $is_interactive Optional. Override terminal interactivity check.
+	 *                                  Defaults to Utils\is_interactive() when null.
+	 * @return 'none'|'confirm'|'auto'
+	 */
+	public function get_autocorrect_mode( ?bool $is_interactive = null ) {
+		$autocorrect = getenv( 'WP_CLI_AUTOCORRECT' );
+
+		if ( false === $autocorrect
+			&& isset( $this->extra_config['env'] )
+			&& is_array( $this->extra_config['env'] )
+			&& array_key_exists( 'WP_CLI_AUTOCORRECT', $this->extra_config['env'] )
+		) {
+			$config_value = $this->extra_config['env']['WP_CLI_AUTOCORRECT'];
+			if ( false === $config_value ) {
+				return 'none';
+			}
+			$autocorrect = (string) $config_value;
+		}
+
+		$normalized = false === $autocorrect ? '' : strtolower( trim( $autocorrect ) );
+
+		if ( '' === $normalized ) {
+			if ( null === $is_interactive ) {
+				$is_interactive = Utils\is_interactive();
+			}
+
+			return $is_interactive ? 'confirm' : 'none';
+		}
+
+		if ( in_array( $normalized, [ 'confirm', 'prompt' ], true ) ) {
+			return 'confirm';
+		}
+
+		if ( in_array( $normalized, [ 'none', '0', 'false', 'no', 'off' ], true ) ) {
+			return 'none';
+		}
+
+		return 'auto';
+	}
+
+	/**
+	 * Ask whether to run the suggested command instead of a mistyped one.
+	 *
+	 * Works like WP_CLI::confirm(), except when STDIN ends before an answer
+	 * (for example Ctrl-D in a terminal, or EOF when prompting is forced):
+	 * nobody declined, the command that was asked for did not run, so the run
+	 * halts with exit code 1.
+	 *
+	 * @param string $question Question to display.
+	 * @return void
+	 */
+	private function confirm_suggestion( $question ) {
+		fwrite( STDOUT, $question . ' [y/n] ' );
+
+		$answer = fgets( STDIN );
+
+		if ( false === $answer ) {
+			WP_CLI::halt( 1 );
+		}
+
+		if ( 'y' !== strtolower( trim( $answer ) ) ) {
+			WP_CLI::halt( 0 );
+		}
+	}
+
+	/**
 	 * Given positional arguments, find the command to execute.
 	 *
 	 * @param array<int, string> $args
@@ -819,7 +894,7 @@ class Runner {
 								}
 
 								WP_CLI::warning( $error );
-								WP_CLI::confirm( $suggestion_text );
+								$this->confirm_suggestion( $suggestion_text );
 								return $suggested_command_to_run;
 							}
 						}
@@ -884,7 +959,7 @@ class Runner {
 							}
 
 							WP_CLI::warning( $error );
-							WP_CLI::confirm( $suggestion_text );
+							$this->confirm_suggestion( $suggestion_text );
 							return $suggested_command_to_run;
 						}
 					}
@@ -929,7 +1004,7 @@ class Runner {
 		if ( ! empty( $options['back_compat_conversions'] ) ) {
 			list( $args, $assoc_args ) = self::back_compat_conversions( $args, $assoc_args );
 		}
-		$r = $this->find_command_to_run( $args, Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
+		$r = $this->find_command_to_run( $args, $this->get_autocorrect_mode() );
 		if ( is_string( $r ) ) {
 			WP_CLI::error( $r );
 		}
@@ -1747,7 +1822,7 @@ class Runner {
 			$this->show_synopsis_if_composite_command();
 			$is_help                = $this->cmd_starts_with( [ 'help' ] );
 			$args                   = $is_help ? array_slice( $this->arguments, 1 ) : $this->arguments;
-			$suggestion_or_disabled = $this->find_command_to_run( $args, Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' );
+			$suggestion_or_disabled = $this->find_command_to_run( $args, $this->get_autocorrect_mode() );
 			if ( is_string( $suggestion_or_disabled ) ) {
 				if ( ! preg_match( '/disabled from the config file.$/', $suggestion_or_disabled ) ) {
 					WP_CLI::warning( "No WordPress installation found. If the command '" . implode( ' ', $args ) . "' is in a plugin or theme, pass --path=`path/to/wordpress`." );
@@ -2170,7 +2245,7 @@ class Runner {
 				|| count( $this->arguments ) > 2
 			) ) {
 			$cmd_args    = array_slice( $this->arguments, 1 );
-			$autocorrect = ( ! $this->wp_exists() || ! Utils\locate_wp_config() ) ? ( Utils\get_env_or_config( 'WP_CLI_AUTOCORRECT' ) ? 'auto' : 'confirm' ) : 'none';
+			$autocorrect = ( ! $this->wp_exists() || ! Utils\locate_wp_config() ) ? $this->get_autocorrect_mode() : 'none';
 			$r           = $this->find_command_to_run( $cmd_args, $autocorrect );
 
 			if ( is_array( $r ) ) {

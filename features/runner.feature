@@ -80,7 +80,7 @@ Feature: Runner WP-CLI
       y
       """
 
-    When I try `wp network option < session_no`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp network option < session_no`
     Then STDERR should contain:
       """
       Warning: 'option' is not a registered subcommand of 'network'. See 'wp help network' for available subcommands.
@@ -91,7 +91,7 @@ Feature: Runner WP-CLI
       """
     And the return code should be 0
 
-    When I try `wp network option < session_yes`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp network option < session_yes`
     Then STDERR should contain:
       """
       Warning: 'option' is not a registered subcommand of 'network'. See 'wp help network' for available subcommands.

@@ -345,7 +345,7 @@ Feature: Get help about WP-CLI commands
       y
       """
 
-    When I try `wp help confi < session_no`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp help confi < session_no`
     Then STDERR should contain:
       """
       Warning: 'confi' is not a registered wp command. See 'wp help' for available commands.
@@ -364,7 +364,7 @@ Feature: Get help about WP-CLI commands
       """
     And the return code should be 0
 
-    When I try `wp help confi < session_yes`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp help confi < session_yes`
     Then STDERR should contain:
       """
       Warning: 'confi' is not a registered wp command. See 'wp help' for available commands.
@@ -387,7 +387,7 @@ Feature: Get help about WP-CLI commands
       """
     And the return code should be 0
 
-    When I try `wp help cor < session_yes`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp help cor < session_yes`
     Then STDERR should contain:
       """
       Warning: 'cor' is not a registered wp command. See 'wp help' for available commands.
@@ -410,7 +410,7 @@ Feature: Get help about WP-CLI commands
       """
     And the return code should be 0
 
-    When I try `wp help d < session_yes`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp help d < session_yes`
     Then STDERR should contain:
       """
       Warning: 'd' is not a registered wp command. See 'wp help' for available commands.
@@ -433,7 +433,7 @@ Feature: Get help about WP-CLI commands
       """
     And the return code should be 0
 
-    When I try `wp help packag < session_yes`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp help packag < session_yes`
     Then STDERR should contain:
       """
       Warning: 'packag' is not a registered wp command. See 'wp help' for available commands.
@@ -467,7 +467,7 @@ Feature: Get help about WP-CLI commands
       y
       """
 
-    When I try `wp help config creat < session_no`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp help config creat < session_no`
     Then STDERR should contain:
       """
       Warning: 'creat' is not a registered subcommand of 'config'. See 'wp help config' for available subcommands.
@@ -486,7 +486,7 @@ Feature: Get help about WP-CLI commands
       """
     And the return code should be 0
 
-    When I try `wp help config creat < session_yes`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp help config creat < session_yes`
     Then STDERR should contain:
       """
       Warning: 'creat' is not a registered subcommand of 'config'. See 'wp help config' for available subcommands.
@@ -509,7 +509,7 @@ Feature: Get help about WP-CLI commands
       """
     And the return code should be 0
 
-    When I try `wp help core versio < session_yes`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp help core versio < session_yes`
     Then STDERR should contain:
       """
       Warning: 'versio' is not a registered subcommand of 'core'. See 'wp help core' for available subcommands.
@@ -532,7 +532,7 @@ Feature: Get help about WP-CLI commands
       """
     And the return code should be 0
 
-    When I try `wp help core versio < session_yes`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp help core versio < session_yes`
     Then STDERR should contain:
       """
       Warning: 'versio' is not a registered subcommand of 'core'. See 'wp help core' for available subcommands.
@@ -555,7 +555,7 @@ Feature: Get help about WP-CLI commands
       """
     And the return code should be 0
 
-    When I try `wp help db chec < session_yes`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp help db chec < session_yes`
     Then STDERR should contain:
       """
       Warning: 'chec' is not a registered subcommand of 'db'. See 'wp help db' for available subcommands.
@@ -586,7 +586,7 @@ Feature: Get help about WP-CLI commands
       y
       """
 
-    When I try `wp hel post seta < session_yes_yes`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp hel post seta < session_yes_yes`
     Then STDERR should contain:
       """
       Warning: 'hel' is not a registered wp command. See 'wp help' for available commands.

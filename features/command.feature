@@ -50,7 +50,7 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'command', 'Custom_Command_Class' );
       """
 
-    When I try `wp --require=custom-cmd.php command invalid < session_no`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp --require=custom-cmd.php command invalid < session_no`
     Then STDERR should contain:
       """
       Warning: 'invalid' is not a registered subcommand of 'command'. See 'wp help command' for available subcommands.
@@ -1017,7 +1017,7 @@ Feature: WP-CLI Commands
       n
       """
 
-    When I try `wp clu < session_no`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp clu < session_no`
     Then STDERR should contain:
       """
       Warning: 'clu' is not a registered wp command
@@ -1027,7 +1027,7 @@ Feature: WP-CLI Commands
       Did you mean 'cli'? [y/n]
       """
 
-    When I try `wp cli nfo < session_no`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp cli nfo < session_no`
     Then STDERR should contain:
       """
       Warning: 'nfo' is not a registered subcommand of 'cli'
@@ -1037,10 +1037,147 @@ Feature: WP-CLI Commands
       Did you mean 'info'? [y/n]
       """
 
-    When I try `wp cli beyondlevenshteinthreshold`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp cli beyondlevenshteinthreshold`
     Then STDOUT should not contain:
       """
       Did you mean
+      """
+
+  Scenario: WP-CLI fails with an error on mistyped commands in non-interactive mode
+    Given a WP installation
+    And a piped_input file:
+      """
+      hello
+      """
+
+    When I try `wp clu`
+    Then STDERR should contain:
+      """
+      Error: 'clu' is not a registered wp command
+      """
+    And STDERR should contain:
+      """
+      Did you mean 'cli'?
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I try `wp cli nfo`
+    Then STDERR should contain:
+      """
+      Error: 'nfo' is not a registered subcommand of 'cli'
+      """
+    And STDERR should contain:
+      """
+      Did you mean 'info'?
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I try `wp clu < piped_input`
+    Then STDERR should contain:
+      """
+      Error: 'clu' is not a registered wp command
+      """
+    And STDERR should contain:
+      """
+      Did you mean 'cli'?
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    Given a runcommand-typo.php file:
+      """
+      <?php
+      WP_CLI::add_command(
+          'runcommand-typo',
+          function () {
+              $result = WP_CLI::runcommand(
+                  'clu',
+                  array(
+                      'launch'     => false,
+                      'exit_error' => false,
+                      'return'     => 'all',
+                  )
+              );
+              WP_CLI::log( 'Return code: ' . $result->return_code );
+              WP_CLI::log( 'Stdout empty: ' . ( '' === $result->stdout ? 'yes' : 'no' ) );
+          },
+          array( 'when' => 'before_wp_load' )
+      );
+      """
+
+    When I run `wp --require=runcommand-typo.php runcommand-typo`
+    Then STDOUT should contain:
+      """
+      Return code: 1
+      Stdout empty: yes
+      """
+
+  Scenario: WP-CLI fails on a mistyped command when a forced suggestion prompt gets no answer
+    Given a WP installation
+    And I run `php -r 'file_put_contents( "empty_stdin", "" );'`
+    And a session_no file:
+      """
+      n
+      """
+
+    When I try `WP_CLI_AUTOCORRECT=confirm wp clu < empty_stdin`
+    Then STDERR should contain:
+      """
+      Warning: 'clu' is not a registered wp command
+      """
+    And STDOUT should contain:
+      """
+      Did you mean 'cli'? [y/n]
+      """
+    And STDOUT should not contain:
+      """
+      See 'wp help cli <command>' for more information on a specific command.
+      """
+    And the return code should be 1
+
+    When I try `WP_CLI_AUTOCORRECT=prompt wp cli nfo < empty_stdin`
+    Then STDOUT should contain:
+      """
+      Did you mean 'info'? [y/n]
+      """
+    And STDOUT should not contain:
+      """
+      WP-CLI version:
+      """
+    And the return code should be 1
+
+    Given a runcommand-typo-confirm.php file:
+      """
+      <?php
+      WP_CLI::add_command(
+          'runcommand-typo-confirm',
+          function () {
+              $result = WP_CLI::runcommand(
+                  'clu',
+                  array(
+                      'launch'     => false,
+                      'exit_error' => false,
+                      'return'     => 'all',
+                  )
+              );
+              WP_CLI::log( 'Return code: ' . $result->return_code );
+          },
+          array( 'when' => 'before_wp_load' )
+      );
+      """
+
+    When I try `WP_CLI_AUTOCORRECT=confirm wp --require=runcommand-typo-confirm.php runcommand-typo-confirm < empty_stdin`
+    Then STDOUT should contain:
+      """
+      Return code: 1
+      """
+
+    When I try `WP_CLI_AUTOCORRECT=confirm wp --require=runcommand-typo-confirm.php runcommand-typo-confirm < session_no`
+    Then STDOUT should contain:
+      """
+      Return code: 0
       """
 
   Scenario: WP-CLI optionally runs matching commands when user entry contains typos
@@ -1050,7 +1187,7 @@ Feature: WP-CLI Commands
       y
       """
 
-    When I try `wp clu < session_yes`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp clu < session_yes`
     Then STDERR should contain:
       """
       Warning: 'clu' is not a registered wp command
@@ -1064,7 +1201,7 @@ Feature: WP-CLI Commands
       See 'wp help cli <command>' for more information on a specific command.
       """
 
-    When I try `wp cli nfo < session_yes`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp cli nfo < session_yes`
     Then STDERR should contain:
       """
       Warning: 'nfo' is not a registered subcommand of 'cli'
@@ -1875,7 +2012,7 @@ Feature: WP-CLI Commands
 
     # Test with a typo - it should not suggest wrong alternatives
     # before WordPress loads. This is the regression we're fixing.
-    When I try `wp afterloa < session_no`
+    When I try `WP_CLI_AUTOCORRECT=confirm wp afterloa < session_no`
     Then STDERR should contain:
       """
       Warning: 'afterloa' is not a registered wp command.
