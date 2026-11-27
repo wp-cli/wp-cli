@@ -764,9 +764,11 @@ class Runner {
 	 * - Unset or empty: prompt only when running interactively (TTY on STDIN and STDOUT),
 	 *   otherwise fail with an error so scripted and automated runs match pre-3.0 behavior.
 	 *
+	 * @param bool|null $is_interactive Optional. Override terminal interactivity check.
+	 *                                  Defaults to Utils\is_interactive() when null.
 	 * @return 'none'|'confirm'|'auto'
 	 */
-	public function get_autocorrect_mode() {
+	public function get_autocorrect_mode( ?bool $is_interactive = null ) {
 		$autocorrect = getenv( 'WP_CLI_AUTOCORRECT' );
 
 		if ( false === $autocorrect
@@ -781,11 +783,15 @@ class Runner {
 			$autocorrect = (string) $config_value;
 		}
 
-		if ( false === $autocorrect || '' === $autocorrect ) {
-			return Utils\is_interactive() ? 'confirm' : 'none';
-		}
+		$normalized = false === $autocorrect ? '' : strtolower( trim( $autocorrect ) );
 
-		$normalized = strtolower( trim( $autocorrect ) );
+		if ( '' === $normalized ) {
+			if ( null === $is_interactive ) {
+				$is_interactive = Utils\is_interactive();
+			}
+
+			return $is_interactive ? 'confirm' : 'none';
+		}
 
 		if ( in_array( $normalized, [ 'confirm', 'prompt' ], true ) ) {
 			return 'confirm';

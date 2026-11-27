@@ -277,10 +277,11 @@ final class RunnerTest extends TestCase {
 	/**
 	 * @dataProvider dataGetAutocorrectMode
 	 * @param string|false $env_value
+	 * @param bool|null    $is_interactive
 	 * @param string       $expected
 	 */
 	#[DataProvider( 'dataGetAutocorrectMode' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testGetAutocorrectMode( $env_value, string $expected ): void {
+	public function testGetAutocorrectMode( $env_value, ?bool $is_interactive, string $expected ): void {
 		$prev_autocorrect = getenv( 'WP_CLI_AUTOCORRECT' );
 		$prev_shell_pipe  = getenv( 'SHELL_PIPE' );
 
@@ -296,7 +297,7 @@ final class RunnerTest extends TestCase {
 		try {
 			$runner_class = new ReflectionClass( Runner::class );
 			$runner       = $runner_class->newInstanceWithoutConstructor();
-			$this->assertSame( $expected, $runner->get_autocorrect_mode() );
+			$this->assertSame( $expected, $runner->get_autocorrect_mode( $is_interactive ) );
 		} finally {
 			if ( false === $prev_autocorrect ) {
 				putenv( 'WP_CLI_AUTOCORRECT' );
@@ -314,20 +315,24 @@ final class RunnerTest extends TestCase {
 
 	public static function dataGetAutocorrectMode(): array {
 		return [
-			'unset defaults to none when non-interactive' => [ false, 'none' ],
-			'empty defaults to none when non-interactive' => [ '', 'none' ],
-			'numeric 1 enables auto'                      => [ '1', 'auto' ],
-			'auto enables auto'                           => [ 'auto', 'auto' ],
-			'true enables auto'                           => [ 'true', 'auto' ],
-			'yes enables auto'                            => [ 'yes', 'auto' ],
-			'confirm forces prompt'                       => [ 'confirm', 'confirm' ],
-			'prompt forces prompt'                        => [ 'prompt', 'confirm' ],
-			'mixed-case PROMPT forces prompt'             => [ ' PROMPT ', 'confirm' ],
-			'none disables prompt'                        => [ 'none', 'none' ],
-			'zero disables prompt'                        => [ '0', 'none' ],
-			'false disables prompt'                       => [ 'false', 'none' ],
-			'no disables prompt'                          => [ 'no', 'none' ],
-			'off disables prompt'                         => [ 'off', 'none' ],
+			'unset defaults to none when non-interactive' => [ false, null, 'none' ],
+			'empty defaults to none when non-interactive' => [ '', null, 'none' ],
+			'whitespace defaults to none when non-interactive' => [ '   ', null, 'none' ],
+			'unset defaults to confirm when interactive'  => [ false, true, 'confirm' ],
+			'empty defaults to confirm when interactive'  => [ '', true, 'confirm' ],
+			'whitespace defaults to confirm when interactive' => [ '   ', true, 'confirm' ],
+			'numeric 1 enables auto'                      => [ '1', null, 'auto' ],
+			'auto enables auto'                           => [ 'auto', null, 'auto' ],
+			'true enables auto'                           => [ 'true', null, 'auto' ],
+			'yes enables auto'                            => [ 'yes', null, 'auto' ],
+			'confirm forces prompt'                       => [ 'confirm', null, 'confirm' ],
+			'prompt forces prompt'                        => [ 'prompt', null, 'confirm' ],
+			'mixed-case PROMPT forces prompt'             => [ ' PROMPT ', null, 'confirm' ],
+			'none disables prompt'                        => [ 'none', true, 'none' ],
+			'zero disables prompt'                        => [ '0', true, 'none' ],
+			'false disables prompt'                       => [ 'false', true, 'none' ],
+			'no disables prompt'                          => [ 'no', true, 'none' ],
+			'off disables prompt'                         => [ 'off', true, 'none' ],
 		];
 	}
 
@@ -335,10 +340,11 @@ final class RunnerTest extends TestCase {
 	 * @dataProvider dataGetAutocorrectModeFromConfig
 	 * @param mixed        $config_value
 	 * @param string|false $env_value
+	 * @param bool|null    $is_interactive
 	 * @param string       $expected
 	 */
 	#[DataProvider( 'dataGetAutocorrectModeFromConfig' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
-	public function testGetAutocorrectModeFromConfig( $config_value, $env_value, string $expected ): void {
+	public function testGetAutocorrectModeFromConfig( $config_value, $env_value, ?bool $is_interactive, string $expected ): void {
 		$prev_autocorrect = getenv( 'WP_CLI_AUTOCORRECT' );
 		$prev_shell_pipe  = getenv( 'SHELL_PIPE' );
 
@@ -368,7 +374,7 @@ final class RunnerTest extends TestCase {
 				]
 			);
 
-			$this->assertSame( $expected, $runner->get_autocorrect_mode() );
+			$this->assertSame( $expected, $runner->get_autocorrect_mode( $is_interactive ) );
 		} finally {
 			if ( false === $prev_autocorrect ) {
 				putenv( 'WP_CLI_AUTOCORRECT' );
@@ -386,11 +392,14 @@ final class RunnerTest extends TestCase {
 
 	public static function dataGetAutocorrectModeFromConfig(): array {
 		return [
-			'YAML boolean false disables prompt' => [ false, false, 'none' ],
-			'YAML boolean true enables auto'     => [ true, false, 'auto' ],
-			'YAML confirm forces prompt'         => [ 'confirm', false, 'confirm' ],
-			'YAML empty falls back to default'   => [ '', false, 'none' ],
-			'env overrides YAML boolean false'   => [ false, 'confirm', 'confirm' ],
+			'YAML boolean false disables prompt when interactive' => [ false, false, true, 'none' ],
+			'YAML boolean true enables auto'   => [ true, false, null, 'auto' ],
+			'YAML confirm forces prompt'       => [ 'confirm', false, null, 'confirm' ],
+			'YAML empty falls back to default (non-interactive)' => [ '', false, null, 'none' ],
+			'YAML empty falls back to default (interactive)' => [ '', false, true, 'confirm' ],
+			'YAML whitespace falls back to default (non-interactive)' => [ ' ', false, null, 'none' ],
+			'YAML whitespace falls back to default (interactive)' => [ ' ', false, true, 'confirm' ],
+			'env overrides YAML boolean false' => [ false, 'confirm', null, 'confirm' ],
 		];
 	}
 }
