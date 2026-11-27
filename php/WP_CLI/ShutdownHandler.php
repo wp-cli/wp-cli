@@ -294,20 +294,6 @@ class ShutdownHandler {
 		// Default: only prompt when there is a human around to answer. Scripted
 		// usage (cron, CI, deployment tooling) needs to fail right away instead
 		// of blocking on input that will never arrive.
-		return self::is_interactive();
-	}
-
-	/**
-	 * Check whether the current command is running interactively.
-	 *
-	 * Both input and output need to be attached to a terminal: without a
-	 * terminal on STDIN there is nobody to answer the prompt, and without one
-	 * on STDOUT the prompt itself would end up in a pipe or file instead of in
-	 * front of the user.
-	 *
-	 * @return bool
-	 */
-	private static function is_interactive() {
 		return Utils\is_interactive();
 	}
 
