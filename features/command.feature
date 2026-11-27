@@ -1355,6 +1355,13 @@ Feature: WP-CLI Commands
       """
     And the return code should be 0
 
+    When I try `WP_CLI_AUTOCORRECT=1 wp clii invalid-subcmd`
+    Then STDOUT should contain:
+      """
+      See 'wp help cli <command>' for more information on a specific command.
+      """
+    And the return code should be 0
+
   Scenario: WP-CLI shows a hint for a command that is not registered
     Given a WP installation
     And a hint.php file:
