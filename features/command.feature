@@ -1328,7 +1328,7 @@ Feature: WP-CLI Commands
       """
 
   Scenario: WP-CLI preserves positional arguments when autocorrecting commands and subcommands
-    Given an empty directory
+    Given a WP installation
     And a wp-cli.yml file:
       """
       @test:
