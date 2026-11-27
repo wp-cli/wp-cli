@@ -318,6 +318,7 @@ class Formatter {
 					} else {
 						echo json_encode( $item );
 					}
+					echo "\n";
 				} elseif ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
 						// phpcs:ignore PHPCompatibility.Constants.NewConstants.json_partial_output_on_errorFound
 						echo json_encode( $items, JSON_PARTIAL_OUTPUT_ON_ERROR );
