@@ -1280,6 +1280,53 @@ Feature: WP-CLI Commands
       Did you mean
       """
 
+  Scenario: WP-CLI runs a corrected command outside a WordPress installation
+    Given an empty directory
+    And a session_yes file:
+      """
+      y
+      """
+
+    When I try `WP_CLI_AUTOCORRECT=confirm wp clu < session_yes`
+    Then STDOUT should contain:
+      """
+      Did you mean 'cli'? [y/n]
+      """
+    And STDOUT should contain:
+      """
+      See 'wp help cli <command>' for more information on a specific command.
+      """
+    And the return code should be 0
+
+    When I run `WP_CLI_AUTOCORRECT=1 wp clii version`
+    Then STDOUT should contain:
+      """
+      WP-CLI
+      """
+
+    When I run `WP_CLI_AUTOCORRECT=1 wp hep`
+    Then STDOUT should contain:
+      """
+      Manage WordPress through the command-line.
+      """
+
+    When I try `WP_CLI_AUTOCORRECT=1 wp pluign list`
+    Then STDERR should contain:
+      """
+      Error: This does not seem to be a WordPress installation.
+      """
+    And the return code should be 1
+
+  Scenario: WP-CLI runs a corrected command in WordPress files without a wp-config.php
+    Given an empty directory
+    And WP files
+
+    When I run `WP_CLI_AUTOCORRECT=1 wp conifg create --dbname=wordpress --dbuser=wordpress --skip-check`
+    Then STDOUT should contain:
+      """
+      Success: Generated 'wp-config.php' file.
+      """
+
   Scenario: WP-CLI shows a hint for a command that is not registered
     Given a WP installation
     And a hint.php file:
