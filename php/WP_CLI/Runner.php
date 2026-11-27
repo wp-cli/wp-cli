@@ -887,11 +887,11 @@ class Runner {
 						$suggestion_text = "Did you mean '{$suggestion}'?";
 
 						if ( 'none' !== $autocorrect ) {
-							$suggested_command_to_run = $this->find_command_to_run( explode( ' ', "$parent_name $suggestion" ) );
+							$suggested_command_to_run = $this->find_command_to_run( array_merge( explode( ' ', "$parent_name $suggestion" ), $args ) );
 
 							if ( is_array( $suggested_command_to_run ) ) {
 								// Override potentially misspelled cmd with the corrected one.
-								$this->arguments = $suggested_command_to_run[2];
+								$this->arguments = array_merge( $suggested_command_to_run[2], $suggested_command_to_run[1] );
 
 								if ( 'auto' === $autocorrect ) {
 									return $suggested_command_to_run;
@@ -945,7 +945,7 @@ class Runner {
 							$suggested_command_to_run = $this->find_command_to_run( array_merge( [ $suggestion ], $args ), 'auto' );
 
 							if ( is_array( $suggested_command_to_run ) ) {
-								$this->arguments = $suggested_command_to_run[2];
+								$this->arguments = array_merge( $suggested_command_to_run[2], $suggested_command_to_run[1] );
 							}
 						}
 
@@ -953,7 +953,7 @@ class Runner {
 							$suggested_command_to_run = $this->find_command_to_run( [ $suggestion ], 'auto' );
 
 							if ( is_array( $suggested_command_to_run ) ) {
-								$this->arguments = $suggested_command_to_run[2];
+								$this->arguments = array_merge( $suggested_command_to_run[2], $suggested_command_to_run[1] );
 							}
 						}
 

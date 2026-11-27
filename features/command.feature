@@ -1327,6 +1327,27 @@ Feature: WP-CLI Commands
       Success: Generated 'wp-config.php' file.
       """
 
+  Scenario: WP-CLI preserves positional arguments when autocorrecting commands and subcommands
+    Given an empty directory
+
+    When I run `WP_CLI_AUTOCORRECT=1 wp cli has-comman cli`
+    Then the return code should be 0
+
+    When I run `WP_CLI_AUTOCORRECT=1 wp clii has-command cli`
+    Then the return code should be 0
+
+    When I run `WP_CLI_AUTOCORRECT=1 wp cli alias ad @test --set-user=admin`
+    Then STDOUT should contain:
+      """
+      Success: Added '@test' alias.
+      """
+
+    When I run `WP_CLI_AUTOCORRECT=1 wp cli alias gte @test`
+    Then STDOUT should contain:
+      """
+      @test:
+      """
+
   Scenario: WP-CLI shows a hint for a command that is not registered
     Given a WP installation
     And a hint.php file:
